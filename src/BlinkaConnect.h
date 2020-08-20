@@ -37,7 +37,7 @@
 
 // Reserved BlinkaConnect topics
 #define TOPIC_DESCRIPTION "/description" ///< Device description topic
-#define TOPIC_SIGNALS     "/signals"     ///< Device signals topic
+#define TOPIC_SIGNALS     "/signals/"     ///< Device signals topic
 
 #define BC_PRINTER Serial ///< Where debug messages will be printed
 #define BC_DEBUG
@@ -154,12 +154,12 @@ class BlinkaConnect {
         Adafruit_MQTT *_mqtt;                         /*!< Reference to Adafruit_MQTT, _mqtt. */
 
         // Internal Server
-        // const char *_mqtt_broker = "0.tcp.ngrok.io"; /*!< MQTT Broker URL */
-        // uint16_t _mqtt_port = 0000;                 /*!< MQTT Broker URL */
+        const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
+        uint16_t _mqtt_port = 14174;                 /*!< MQTT Broker URL */
 
         // Production Server
-        const char *_mqtt_broker = "3.87.30.189"; /*!< MQTT Broker URL */
-        uint16_t _mqtt_port = 1883;                           /*!< MQTT Broker URL */
+        //const char *_mqtt_broker = "3.87.30.189"; /*!< MQTT Broker URL */
+        //uint16_t _mqtt_port = 1883;                           /*!< MQTT Broker URL */
 
         const char *_deviceId; /*!< Adafruit IO+ device identifier string */
         uint16_t _hw_vid;   /*!< USB vendor identifer */
@@ -169,9 +169,13 @@ class BlinkaConnect {
         char *_topic_description; /*!< MQTT topic for the device description  */
         char *_topic_description_status; /*!< MQTT subtopic carrying the description status resp. from the broker */
         char *_topic_signals;     /*!< MQTT topic for the device's commands */
+        char *_topic_signals_in;     /*!< Device -> Server communication channel */
+        char *_topic_signals_out;     /*!< Server -> Device communication channel */
 
         Adafruit_MQTT_Subscribe *_topic_description_sub;
         Adafruit_MQTT_Subscribe *_topic_signals_sub;
+        Adafruit_MQTT_Publish *_topic_signals_in_pub;
+        Adafruit_MQTT_Subscribe *_topic_signals_out_sub;
         Adafruit_MQTT_Subscribe *_subscription;
 
         static char _value[45]; /*!< Data to send back to BlinkaConnect, max. IO data len */

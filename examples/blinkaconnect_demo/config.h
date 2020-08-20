@@ -15,10 +15,10 @@
     #if !defined(SPIWIFI_SS) // if the wifi definition isnt in the board variant
         // Don't change the names of these #define's! they match the variant ones
         #define SPIWIFI SPI
-        #define SPIWIFI_SS 13 // Chip select pin
-        #define NINA_ACK 11   // a.k.a BUSY or READY pin
-        #define NINA_RESETN 12 // Reset pin
-        #define NINA_GPIO0 -1 // Not connected
+        #define SPIWIFI_SS 10 // Chip select pin
+        #define NINA_ACK 7   // a.k.a BUSY or READY pin
+        #define NINA_RESETN 5 // Reset pin
+        #define NINA_GPIO0 6 // Not connected
     #endif
 
     BlinkaConnect_WiFi bc(WIFI_SSID, WIFI_PASS, SPIWIFI_SS,

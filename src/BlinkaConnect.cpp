@@ -54,6 +54,8 @@ BlinkaConnect::BlinkaConnect() {
     _topic_description = 0;
     _topic_description_status = 0;
     _topic_signals = 0;
+    _topic_signals_in = 0;
+    _topic_signals_out = 0;
 
     _init();
 }
@@ -68,6 +70,9 @@ void BlinkaConnect::_init() {
     _topic_description = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_DESCRIPTION) + strlen("/devices/") + 1);
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/") + strlen("/status") + 1);
     _topic_signals = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/") + 1);
+    _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/in") + 1);
+    _topic_signals_out = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/out") + 1);
+
 
     // build description topic
     if (_topic_description) {
@@ -89,6 +94,22 @@ void BlinkaConnect::_init() {
         strcat(_topic_signals, TOPIC_SIGNALS);
     }
 
+    // build signals topic
+    if (_topic_signals_in) {
+        strcpy(_topic_signals_in, "devices/");
+        strcat(_topic_signals_in, _deviceId);
+        strcat(_topic_signals_in, TOPIC_SIGNALS);
+        strcat(_topic_signals_in, "in");
+    }
+
+    // build signals out topic
+    if (_topic_signals_out) {
+        strcpy(_topic_signals_out, "devices/");
+        strcat(_topic_signals_out, _deviceId);
+        strcat(_topic_signals_out, TOPIC_SIGNALS);
+        strcat(_topic_signals_out, "out");
+    }
+
     // Assign board type info
     _hw_vid = USB_VID;
     _hw_pid = USB_PID;
@@ -103,6 +124,8 @@ BlinkaConnect::~BlinkaConnect() {
     // re-allocate topics
     free(_topic_description);
     free(_topic_signals);
+    free(_topic_signals_in);
+    free(_topic_signals_out);
 }
 
 /**************************************************************************/
@@ -370,12 +393,15 @@ void BlinkaConnect::connect() {
     _status = BC_IDLE;
     _boardStatus = BC_BOARD_DEF_IDLE;
 
-    // Create a subscription to the signals topic
-    // TODO: signals feed should be built, not hardcoded
-    _topic_signals_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signals);
-    
-    _topic_signals_sub->setCallback(cbSignalTopic);
-    _mqtt->subscribe(_topic_signals_sub);
+    // Subscription to listen to commands from the server
+    BC_DEBUG_PRINT("\nTopic Name: ");
+    BC_DEBUG_PRINTLN(_topic_signals_out);
+    _topic_signals_out_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signals_out);
+    _topic_signals_out_sub->setCallback(cbSignalTopic);
+    _mqtt->subscribe(_topic_signals_out_sub);
+
+    // Publish to outgoing commands channel, server listens to this sub-topic
+    _topic_signals_in_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signals_in);
 
     // Create a subscription to the description status response topic
     _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
