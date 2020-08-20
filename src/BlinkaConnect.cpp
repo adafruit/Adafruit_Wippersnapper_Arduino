@@ -53,7 +53,6 @@ BlinkaConnect::BlinkaConnect() {
     // Reserved MQTT Topics //
     _topic_description = 0;
     _topic_description_status = 0;
-    _topic_signals = 0;
     _topic_signals_in = 0;
     _topic_signals_out = 0;
 
@@ -69,7 +68,6 @@ void BlinkaConnect::_init() {
     // dynamically allocate memory for reserved topics
     _topic_description = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_DESCRIPTION) + strlen("/devices/") + 1);
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/") + strlen("/status") + 1);
-    _topic_signals = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/") + 1);
     _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/in") + 1);
     _topic_signals_out = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/out") + 1);
 
@@ -87,14 +85,7 @@ void BlinkaConnect::_init() {
         strcat(_topic_description_status, TOPIC_DESCRIPTION);
         strcat(_topic_description_status, "/status");
     }
-    // build signals topic
-    if (_topic_signals) {
-        strcpy(_topic_signals, "devices/");
-        strcat(_topic_signals, _deviceId);
-        strcat(_topic_signals, TOPIC_SIGNALS);
-    }
-
-    // build signals topic
+    // build signals incoming topic
     if (_topic_signals_in) {
         strcpy(_topic_signals_in, "devices/");
         strcat(_topic_signals_in, _deviceId);
@@ -102,7 +93,7 @@ void BlinkaConnect::_init() {
         strcat(_topic_signals_in, "in");
     }
 
-    // build signals out topic
+    // build signals outgoing topic
     if (_topic_signals_out) {
         strcpy(_topic_signals_out, "devices/");
         strcat(_topic_signals_out, _deviceId);
@@ -123,7 +114,6 @@ void BlinkaConnect::_init() {
 BlinkaConnect::~BlinkaConnect() {
     // re-allocate topics
     free(_topic_description);
-    free(_topic_signals);
     free(_topic_signals_in);
     free(_topic_signals_out);
 }
@@ -206,7 +196,7 @@ bool BlinkaConnect::sendPinEvent() {
 
   Serial.print("Encoded size is: ");Serial.println(stream.bytes_written);
 
-  // _mqtt->publish("devices/pyportal/signals", buffer, stream.bytes_written, 0);
+  _mqtt->publish(_topic_signals_in, buffer, stream.bytes_written, 0);
   return true;
 }
 
@@ -394,8 +384,6 @@ void BlinkaConnect::connect() {
     _boardStatus = BC_BOARD_DEF_IDLE;
 
     // Subscription to listen to commands from the server
-    BC_DEBUG_PRINT("\nTopic Name: ");
-    BC_DEBUG_PRINTLN(_topic_signals_out);
     _topic_signals_out_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signals_out);
     _topic_signals_out_sub->setCallback(cbSignalTopic);
     _mqtt->subscribe(_topic_signals_out_sub);

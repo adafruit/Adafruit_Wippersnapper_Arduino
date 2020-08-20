@@ -168,12 +168,10 @@ class BlinkaConnect {
         // MQTT topics
         char *_topic_description; /*!< MQTT topic for the device description  */
         char *_topic_description_status; /*!< MQTT subtopic carrying the description status resp. from the broker */
-        char *_topic_signals;     /*!< MQTT topic for the device's commands */
         char *_topic_signals_in;     /*!< Device -> Server communication channel */
         char *_topic_signals_out;     /*!< Server -> Device communication channel */
 
         Adafruit_MQTT_Subscribe *_topic_description_sub;
-        Adafruit_MQTT_Subscribe *_topic_signals_sub;
         Adafruit_MQTT_Publish *_topic_signals_in_pub;
         Adafruit_MQTT_Subscribe *_topic_signals_out_sub;
         Adafruit_MQTT_Subscribe *_subscription;
