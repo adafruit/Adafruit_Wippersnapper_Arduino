@@ -182,7 +182,7 @@ bool BlinkaConnect::sendPinEvent() {
   pin_v1_PinEventRequest msg;
 
   // Encode payload
-  strcpy(msg.pin_name, bc_pinInfo.pinName);
+  strcpy(msg.pin_name, bc_pinInfo.PinNameFull);
   itoa(bc_pinInfo.pinValue, msg.pin_value, 10);
 
   // Encode PinEventRequest message
@@ -228,6 +228,7 @@ bool BlinkaConnect::pinConfig()
     BC_DEBUG_PRINT("Direction : ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.direction);
     BC_DEBUG_PRINT("Pull enabled: ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.pull);
 
+    bc_pinInfo.PinNameFull = signalMessage.payload.pin_config.pin_name;
     // strip "D" or "A" from "circuitpython-style" pin_name
     char* pinName = signalMessage.payload.pin_config.pin_name + 1;
     bc_pinInfo.pinName = pinName;

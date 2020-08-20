@@ -135,6 +135,7 @@ class BlinkaConnect {
 
         struct pinInfo {
             char *pinName;
+            char *PinNameFull;
             int pinValue;
             int prvPinValue; // holds prv. pin state
         };
