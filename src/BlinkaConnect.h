@@ -143,6 +143,8 @@ class BlinkaConnect {
 
         static Timer<16, millis, char *> t_timer;
 
+        static char timerPin[3];
+
     private:
         void _init();
 

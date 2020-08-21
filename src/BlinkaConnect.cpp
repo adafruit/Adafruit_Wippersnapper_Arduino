@@ -39,6 +39,7 @@ uint8_t BlinkaConnect::_buffer[128];
 char BlinkaConnect:: _value[45];
 Timer<16U, &millis, char *> BlinkaConnect::t_timer;
 BlinkaConnect::pinInfo BlinkaConnect::bc_pinInfo;
+char BlinkaConnect::timerPin[3];
 /**************************************************************************/
 /*!
     @brief    Instantiates the BlinkaConnect client object.
@@ -160,7 +161,7 @@ bool BlinkaConnect::cbDigitalRead(char *pinName) {
 
   // debug TODO remove
   BC_DEBUG_PRINT("Pin Values: "); BC_DEBUG_PRINT(bc_pinInfo.pinValue);
-  BC_DEBUG_PRINT(" "); BC_DEBUG_PRINT(bc_pinInfo.prvPinValue);
+  BC_DEBUG_PRINT(" "); BC_DEBUG_PRINTLN(bc_pinInfo.prvPinValue);
   return true; // repeat every xMS
 }
 
@@ -182,7 +183,8 @@ bool BlinkaConnect::sendPinEvent() {
   pin_v1_PinEventRequest msg;
 
   // Encode payload
-  strcpy(msg.pin_name, bc_pinInfo.PinNameFull);
+  strcpy(msg.pin_name, "D"); // TODO: hotfix for broker to identify in desc., remove
+  strcat(msg.pin_name, timerPin);
   itoa(bc_pinInfo.pinValue, msg.pin_value, 10);
 
   // Encode PinEventRequest message
@@ -250,7 +252,8 @@ bool BlinkaConnect::pinConfig()
                 BC_DEBUG_PRINTLN("* Configuring digital input pin");
                 long timerMs = signalMessage.payload.pin_config.period;
                 BC_DEBUG_PRINTLN(timerMs);
-                auto task = t_timer.every(timerMs, cbDigitalRead, bc_pinInfo.pinName);
+                strcpy(timerPin, pinName);
+                auto task = t_timer.every(timerMs, cbDigitalRead, timerPin);
             }
             BC_DEBUG_PRINTLN("Configuring digital pin direction");
             pinMode(atoi(bc_pinInfo.pinName), signalMessage.payload.pin_config.direction);
