@@ -3,7 +3,7 @@
 
 #ifndef PB_SIGNAL_V1_SIGNAL_V1_SIGNAL_PB_H_INCLUDED
 #define PB_SIGNAL_V1_SIGNAL_V1_SIGNAL_PB_H_INCLUDED
-#include <pb.h>
+#include <nanopb/pb.h>
 #include "sensor.pb.h"
 #include "pin.pb.h"
 #include "location.pb.h"

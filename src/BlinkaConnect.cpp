@@ -404,7 +404,7 @@ void BlinkaConnect::connect() {
     // subscribe
     _mqtt->subscribe(_topic_description_sub);
 
-    BC_DEBUG_PRINT("Connecting to Adafruit IO.");
+    BC_DEBUG_PRINT("Connecting to BlinkaConnect.");
 
     // Connect network interface
     _connect();
@@ -683,29 +683,29 @@ const __FlashStringHelper *BlinkaConnect::statusText() {
     case BC_NET_DISCONNECTED:
         return F("Network disconnected.");
     case BC_DISCONNECTED:
-        return F("Disconnected from Adafruit IO.");
+        return F("Disconnected from BlinkaConnect.");
     // FAILURE
     case BC_NET_CONNECT_FAILED:
         return F("Network connection failed.");
     case BC_CONNECT_FAILED:
-        return F("Adafruit IO connection failed.");
+        return F("BlinkaConnect connection failed.");
     case BC_FINGERPRINT_INVALID:
-        return F("Adafruit IO SSL fingerprint verification failed.");
+        return F("BlinkaConnect SSL fingerprint verification failed.");
     case BC_AUTH_FAILED:
-        return F("Adafruit IO authentication failed.");
+        return F("BlinkaConnect authentication failed.");
     // SUCCESS
     case BC_NET_CONNECTED:
         return F("Network connected.");
     case BC_CONNECTED:
-        return F("Adafruit IO connected.");
+        return F("BlinkaConnect connected.");
     case BC_CONNECTED_INSECURE:
-        return F("Adafruit IO connected. **THIS CONNECTION IS INSECURE** SSL/TLS "
+        return F("BlinkaConnect connected. **THIS CONNECTION IS INSECURE** SSL/TLS "
                 "not supported for this platform.");
     case BC_FINGERPRINT_UNSUPPORTED:
-        return F("Adafruit IO connected over SSL/TLS. Fingerprint verification "
+        return F("BlinkaConnect connected over SSL/TLS. Fingerprint verification "
                 "unsupported.");
     case BC_FINGERPRINT_VALID:
-        return F("Adafruit IO connected over SSL/TLS. Fingerprint valid.");
+        return F("BlinkaConnect connected over SSL/TLS. Fingerprint valid.");
     default:
         return F("Unknown status code");
   }
