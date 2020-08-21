@@ -21,7 +21,7 @@
     #define USB_PID 0x8036
 #elif defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
     #define USB_VID 0x239A
-    #define USB_PID 0x8037
+    #define USB_PID 0x8038
 #elif defined(ADAFRUIT_METRO_M4_EXPRESS)
     #define USB_VID 0x239A
     #define USB_PID 0x8021
