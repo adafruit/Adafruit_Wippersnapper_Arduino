@@ -155,12 +155,12 @@ class BlinkaConnect {
         Adafruit_MQTT *_mqtt;                         /*!< Reference to Adafruit_MQTT, _mqtt. */
 
         // Internal Server
-        const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
-        uint16_t _mqtt_port = 14174;                 /*!< MQTT Broker URL */
+        //const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
+        //uint16_t _mqtt_port = 14174;                 /*!< MQTT Broker URL */
 
         // Production Server
-        //const char *_mqtt_broker = "3.87.30.189"; /*!< MQTT Broker URL */
-        //uint16_t _mqtt_port = 1883;                           /*!< MQTT Broker URL */
+        const char *_mqtt_broker = "3.87.30.189"; /*!< MQTT Broker URL */
+        uint16_t _mqtt_port = 1883;                           /*!< MQTT Broker URL */
 
         const char *_deviceId; /*!< Adafruit IO+ device identifier string */
         uint16_t _hw_vid;   /*!< USB vendor identifer */
