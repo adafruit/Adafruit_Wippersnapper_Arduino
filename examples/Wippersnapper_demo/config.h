@@ -1,4 +1,4 @@
-#include "WipperSnapper_Networking.h"
+#include "Wippersnapper_Networking.h"
 
 /******** WiFi *************/
 
@@ -21,8 +21,8 @@
         #define NINA_GPIO0 6 // Not connected
     #endif
 
-    WipperSnapper_WiFi bc(WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
+    Wippersnapper_WiFi bc(WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
                     NINA_ACK, NINA_RESETN, NINA_GPIO0, &SPIWIFI);
     #else
-    WipperSnapper_WiFi bc(WIFI_SSID, WIFI_PASS);
+    Wippersnapper_WiFi bc(WIFI_SSID, WIFI_PASS);
 #endif
