@@ -1,8 +1,8 @@
 /*!
- * @file BlinkaConnect_AIRLIFT.h
+ * @file WipperSnapper_AIRLIFT.h
  *
  * This is a driver for using the Adafruit AirLift 
- * ESP32 Co-Processor with BlinkaConnect.
+ * ESP32 Co-Processor with WipperSnapper.
  *
  * The ESP32 uses SPI to communicate. Three lines (CS, ACK, RST) are required
  * to communicate with the ESP32.
@@ -17,10 +17,10 @@
  *
  */
 
-#ifndef BLINKACONNECT_AIRLIFT_H
-#define BLINKACONNECT_AIRLIFT_H
+#ifndef WIPPERSNAPPER_AIRLIFT_H
+#define WIPPERSNAPPER_AIRLIFT_H
 
-#include "BlinkaConnect.h"
+#include "WipperSnapper.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
@@ -34,7 +34,7 @@
     @brief  Class for interacting with AirLift Co-Processors.
 */
 /****************************************************************************/
-class BlinkaConnect_AIRLIFT : public BlinkaConnect {
+class WipperSnapper_AIRLIFT : public WipperSnapper {
 
 public:
   /**************************************************************************/
@@ -58,9 +58,9 @@ public:
             a SPIClass
   */
   /**************************************************************************/
-  BlinkaConnect_AIRLIFT(const char *ssid, const char *ssidPassword,
+  WipperSnapper_AIRLIFT(const char *ssid, const char *ssidPassword,
                         int ssPin, int ackPin, int rstPin,
-                        int gpio0Pin, SPIClass *wifi): BlinkaConnect() {
+                        int gpio0Pin, SPIClass *wifi): WipperSnapper() {
     _wifi = wifi;
     _ssPin = ssPin;
     _ackPin = ackPin;
@@ -79,7 +79,7 @@ public:
   @brief  Destructor for the Adafruit IO AirLift class.
   */
   /**************************************************************************/
-  ~BlinkaConnect_AIRLIFT() {
+  ~WipperSnapper_AIRLIFT() {
       if (_mqtt)
         delete _mqtt;
   }
@@ -101,10 +101,10 @@ public:
   /********************************************************/
   /*!
   @brief  Returns the network status of an ESP32 module.
-  @return bc_status_t
+  @return ws_status_t
   */
   /********************************************************/
-  bc_status_t networkStatus() {
+  ws_status_t networkStatus() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
       return BC_NET_CONNECTED;
@@ -119,7 +119,7 @@ public:
 
   /*******************************************************************/
   /*!
-  @brief  Returns the type of network connection used by BlinkaConnect
+  @brief  Returns the type of network connection used by WipperSnapper
   @return AIRLIFT
   */
   /*******************************************************************/
@@ -177,4 +177,4 @@ protected:
   }
 };
 
-#endif //BLINKACONNECT_AIRLIFT_H
+#endif //WIPPERSNAPPER_AIRLIFT_H

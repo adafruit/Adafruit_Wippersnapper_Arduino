@@ -1,4 +1,4 @@
-#include "BlinkaConnect_Networking.h"
+#include "WipperSnapper_Networking.h"
 
 /******** WiFi *************/
 
@@ -21,8 +21,8 @@
         #define NINA_GPIO0 6 // Not connected
     #endif
 
-    BlinkaConnect_WiFi bc(WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
+    WipperSnapper_WiFi bc(WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
                     NINA_ACK, NINA_RESETN, NINA_GPIO0, &SPIWIFI);
     #else
-    BlinkaConnect_WiFi bc(WIFI_SSID, WIFI_PASS);
+    WipperSnapper_WiFi bc(WIFI_SSID, WIFI_PASS);
 #endif

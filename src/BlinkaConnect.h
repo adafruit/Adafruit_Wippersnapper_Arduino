@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef BLINKACONNECT_H
-#define BLINKACONNECT_H
+#ifndef WIPPERSNAPPER_H
+#define WIPPERSNAPPER_H
 
 // Nanopb
 #include <nanopb/pb_common.h>
@@ -33,9 +33,9 @@
 #include <arduino-timer.h>
 
 // Internal libraries
-#include "BlinkaConnect_Boards.h"
+#include "WipperSnapper_Boards.h"
 
-// Reserved BlinkaConnect topics
+// Reserved WipperSnapper topics
 #define TOPIC_DESCRIPTION "/description" ///< Device description topic
 #define TOPIC_SIGNALS     "/signals/"     ///< Device signals topic
 
@@ -75,9 +75,9 @@ typedef enum {
   BC_FINGERPRINT_VALID = 24,       // Valid BC_SSL_FINGERPRINT
 
   BC_BOARD_DESC_INVALID = 25       // Unable to send board description
-} bc_status_t;
+} ws_status_t;
 
-// BlinkaConnect board definition status
+// WipperSnapper board definition status
 typedef enum {
     BC_BOARD_DEF_IDLE,
     BC_BOARD_DEF_SEND_FAILED,
@@ -86,15 +86,15 @@ typedef enum {
     BC_BOARD_DEF_INAVLID_VID,
     BC_BOARD_DEF_INVALID_PID,
     BC_BOARD_DEF_UNSPECIFIED
-} bc_board_status_t;
+} ws_board_status_t;
 
 
 
-class BlinkaConnect {
+class WipperSnapper {
     
     public:
-        BlinkaConnect();
-        virtual ~BlinkaConnect();
+        WipperSnapper();
+        virtual ~WipperSnapper();
 
         void connect();
         virtual void _connect() = 0;
@@ -103,18 +103,18 @@ class BlinkaConnect {
         virtual void _disconnect() = 0;
 
         const __FlashStringHelper *statusText();
-        virtual bc_status_t networkStatus() = 0;
-        bc_status_t status();
-        bc_status_t mqttStatus();
-        bc_board_status_t getBoardStatus();
+        virtual ws_status_t networkStatus() = 0;
+        ws_status_t status();
+        ws_status_t mqttStatus();
+        ws_board_status_t getBoardStatus();
 
         bool sendBoardDescription();
         bool sendGetHardwareDescription();
 
-        bc_status_t checkNetworkConnection(uint32_t timeStart);
-        bc_status_t checkMQTTConnection(uint32_t timeStart);
+        ws_status_t checkNetworkConnection(uint32_t timeStart);
+        ws_status_t checkMQTTConnection(uint32_t timeStart);
         void ping();
-        bc_status_t run();
+        ws_status_t run();
 
         bool decodeSignalMessage();
         bool executeSignalMessageEvent();
@@ -139,7 +139,7 @@ class BlinkaConnect {
             int pinValue;
             int prvPinValue; // holds prv. pin state
         };
-        static pinInfo bc_pinInfo;
+        static pinInfo ws_pinInfo;
 
         static Timer<16, millis, char *> t_timer;
 
@@ -149,7 +149,7 @@ class BlinkaConnect {
         void _init();
 
     protected:
-        bc_status_t _status = BC_IDLE; /*!< Adafruit IO connection status */
+        ws_status_t _status = BC_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
         uint32_t _prv_ping = 0;
@@ -179,8 +179,8 @@ class BlinkaConnect {
         Adafruit_MQTT_Subscribe *_topic_signals_out_sub;
         Adafruit_MQTT_Subscribe *_subscription;
 
-        static char _value[45]; /*!< Data to send back to BlinkaConnect, max. IO data len */
-        static char _prv_value[45]; /*!< Data to send back to BlinkaConnect, max. IO data len */
+        static char _value[45]; /*!< Data to send back to WipperSnapper, max. IO data len */
+        static char _prv_value[45]; /*!< Data to send back to WipperSnapper, max. IO data len */
 };
 
-#endif // ADAFRUIT_BLINKACONNECT_H
+#endif // ADAFRUIT_WIPPERSNAPPER_H

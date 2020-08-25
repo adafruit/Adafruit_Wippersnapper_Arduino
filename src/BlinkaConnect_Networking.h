@@ -1,5 +1,5 @@
 /*!
- * @file BlinkaConnect_Networking.h
+ * @file WipperSnapper_Networking.h
  *
  * This file includes network interfaces at compile-time.
  *
@@ -13,16 +13,16 @@
  *
  */
 
-#ifndef BLINKACONNECT_NETWORKING_H
-#define BLINKACONNECT_NETWORKING_H
+#ifndef WIPPERSNAPPER_NETWORKING_H
+#define WIPPERSNAPPER_NETWORKING_H
 
 #if defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || \
     defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_EXPRESS) || \
     defined(USE_AIRLIFT)
-        #include "network_interfaces/BlinkaConnect_AIRLIFT.h"
-        typedef BlinkaConnect_AIRLIFT BlinkaConnect_WiFi;
+        #include "network_interfaces/WipperSnapper_AIRLIFT.h"
+        typedef WipperSnapper_AIRLIFT WipperSnapper_WiFi;
 #else
     #warning "Must define network interface in config.h!"
 #endif
 
-#endif // BLINKACONNECT_NETWORKING_H
+#endif // WIPPERSNAPPER_NETWORKING_H

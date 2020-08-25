@@ -1,5 +1,5 @@
 /*!
- * @file BlinkaConnect_Boards.h
+ * @file WipperSnapper_Boards.h
  *
  * This file determines board type at compile-time
  *
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef ADAFRUIT_BLINKACONNECT_BOARDS_H
-#define ADAFRUIT_BLINKACONNECT_BOARDS_H
+#ifndef ADAFRUIT_WIPPERSNAPPER_BOARDS_H
+#define ADAFRUIT_WIPPERSNAPPER_BOARDS_H
 
 #if defined(ADAFRUIT_PYPORTAL)
     #define USB_VID 0x239A
@@ -26,8 +26,8 @@
     #define USB_VID 0x239A
     #define USB_PID 0x8021
 #else
-  #warning "Board not identified within BlinkaConnect_Boards.h!"
+  #warning "Board not identified within WipperSnapper_Boards.h!"
 #endif
 
 
-#endif // ADAFRUIT_BLINKACONNECT_BOARDS_H
+#endif // ADAFRUIT_WIPPERSNAPPER_BOARDS_H

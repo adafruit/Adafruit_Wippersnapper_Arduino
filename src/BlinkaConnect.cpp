@@ -1,13 +1,13 @@
 /*!
- * @file BlinkaConnect.cpp
+ * @file WipperSnapper.cpp
  *
- * @mainpage Adafruit BlinkaConnect Wrapper
+ * @mainpage Adafruit WipperSnapper Wrapper
  *
  * @section intro_sec Introduction
  *
- * This is the documentation for Adafruit's BlinkaConnect wrapper for the
+ * This is the documentation for Adafruit's WipperSnapper wrapper for the
  * Arduino platform.  It is designed specifically to work with the
- * Adafruit IO+ BlinkaConnect IoT platform.
+ * Adafruit IO+ WipperSnapper IoT platform.
  *
  *
  * Adafruit invests time and resources providing this open source code,
@@ -30,22 +30,22 @@
  *
  */
 
-#include "BlinkaConnect.h"
+#include "WipperSnapper.h"
 
-bc_board_status_t _boardStatus; // TODO: move to header
+ws_board_status_t _boardStatus; // TODO: move to header
 
-uint16_t BlinkaConnect::bufSize;
-uint8_t BlinkaConnect::_buffer[128];
-char BlinkaConnect:: _value[45];
-Timer<16U, &millis, char *> BlinkaConnect::t_timer;
-BlinkaConnect::pinInfo BlinkaConnect::bc_pinInfo;
-char BlinkaConnect::timerPin[3];
+uint16_t WipperSnapper::bufSize;
+uint8_t WipperSnapper::_buffer[128];
+char WipperSnapper:: _value[45];
+Timer<16U, &millis, char *> WipperSnapper::t_timer;
+WipperSnapper::pinInfo WipperSnapper::ws_pinInfo;
+char WipperSnapper::timerPin[3];
 /**************************************************************************/
 /*!
-    @brief    Instantiates the BlinkaConnect client object.
+    @brief    Instantiates the WipperSnapper client object.
 */
 /**************************************************************************/
-BlinkaConnect::BlinkaConnect() {
+WipperSnapper::WipperSnapper() {
     _mqtt = 0;     // MQTT Client object
     _deviceId = "myDevice"; // Adafruit IO+ device name
     _hw_vid = 0;       // Hardware's usb vendor id
@@ -62,10 +62,10 @@ BlinkaConnect::BlinkaConnect() {
 
 /**************************************************************************/
 /*!
-    @brief    Initializes BlinkaConnect object
+    @brief    Initializes WipperSnapper object
 */
 /**************************************************************************/
-void BlinkaConnect::_init() {
+void WipperSnapper::_init() {
     // dynamically allocate memory for reserved topics
     _topic_description = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_DESCRIPTION) + strlen("/devices/") + 1);
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/") + strlen("/status") + 1);
@@ -109,10 +109,10 @@ void BlinkaConnect::_init() {
 
 /**************************************************************************/
 /*!
-    @brief    BlinkaConnect destructor
+    @brief    WipperSnapper destructor
 */
 /**************************************************************************/
-BlinkaConnect::~BlinkaConnect() {
+WipperSnapper::~WipperSnapper() {
     // re-allocate topics
     free(_topic_description);
     free(_topic_signals_in);
@@ -127,7 +127,7 @@ BlinkaConnect::~BlinkaConnect() {
           array is used as an unique identifier for the message type.
 */
 /**************************************************************************/
-bool BlinkaConnect::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message)
+bool WipperSnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message)
 {
     pb_field_iter_t iter;
 
@@ -153,15 +153,15 @@ bool BlinkaConnect::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
     @brief    ISR which reads the value of a digital pin and updates pinInfo.
 */
 /****************************************************************************/
-bool BlinkaConnect::cbDigitalRead(char *pinName) {
+bool WipperSnapper::cbDigitalRead(char *pinName) {
   BC_DEBUG_PRINT("cbDigitalRead(");BC_DEBUG_PRINT(pinName);BC_DEBUG_PRINTLN(")");
 
   // Read and store pinName into struct.
-  bc_pinInfo.pinValue = digitalRead((unsigned)atoi(pinName));
+  ws_pinInfo.pinValue = digitalRead((unsigned)atoi(pinName));
 
   // debug TODO remove
-  BC_DEBUG_PRINT("Pin Values: "); BC_DEBUG_PRINT(bc_pinInfo.pinValue);
-  BC_DEBUG_PRINT(" "); BC_DEBUG_PRINTLN(bc_pinInfo.prvPinValue);
+  BC_DEBUG_PRINT("Pin Values: "); BC_DEBUG_PRINT(ws_pinInfo.pinValue);
+  BC_DEBUG_PRINT(" "); BC_DEBUG_PRINTLN(ws_pinInfo.prvPinValue);
   return true; // repeat every xMS
 }
 
@@ -171,7 +171,7 @@ bool BlinkaConnect::cbDigitalRead(char *pinName) {
             otherwise false;
 */
 /**************************************************************************/
-bool BlinkaConnect::sendPinEvent() {
+bool WipperSnapper::sendPinEvent() {
   uint8_t buffer[128]; // message buffer, TODO: Make this a shared buffer
   bool status = false;
 
@@ -185,7 +185,7 @@ bool BlinkaConnect::sendPinEvent() {
   // Encode payload
   strcpy(msg.pin_name, "D"); // TODO: hotfix for broker to identify in desc., remove
   strcat(msg.pin_name, timerPin);
-  itoa(bc_pinInfo.pinValue, msg.pin_value, 10);
+  itoa(ws_pinInfo.pinValue, msg.pin_value, 10);
 
   // Encode PinEventRequest message
   status = encode_unionmessage(&stream, pin_v1_PinEventRequest_fields, &msg);
@@ -208,7 +208,7 @@ bool BlinkaConnect::sendPinEvent() {
 */
 /**************************************************************************/
 // Process pin events from the broker
-bool BlinkaConnect::pinEvent() {
+bool WipperSnapper::pinEvent() {
     // strip "D" or "A" from "circuitpython-style" pin_name
     char* pinName = signalMessage.payload.pin_event.pin_name + 1;
     // Set pin value
@@ -223,17 +223,17 @@ bool BlinkaConnect::pinEvent() {
     @brief    Configures a pin's mode, direction, pull and period.
 */
 /**************************************************************************/
-bool BlinkaConnect::pinConfig()
+bool WipperSnapper::pinConfig()
 {
     BC_DEBUG_PRINT("Pin Name: ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
     BC_DEBUG_PRINT("Mode: ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
     BC_DEBUG_PRINT("Direction : ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.direction);
     BC_DEBUG_PRINT("Pull enabled: ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.pull);
 
-    bc_pinInfo.PinNameFull = signalMessage.payload.pin_config.pin_name;
+    ws_pinInfo.PinNameFull = signalMessage.payload.pin_config.pin_name;
     // strip "D" or "A" from "circuitpython-style" pin_name
     char* pinName = signalMessage.payload.pin_config.pin_name + 1;
-    bc_pinInfo.pinName = pinName;
+    ws_pinInfo.pinName = pinName;
 
     // TODO: Check for pullup, configure!
 
@@ -256,7 +256,7 @@ bool BlinkaConnect::pinConfig()
                 auto task = t_timer.every(timerMs, cbDigitalRead, timerPin);
             }
             BC_DEBUG_PRINTLN("Configuring digital pin direction");
-            pinMode(atoi(bc_pinInfo.pinName), signalMessage.payload.pin_config.direction);
+            pinMode(atoi(ws_pinInfo.pinName), signalMessage.payload.pin_config.direction);
             break;
         default:
             BC_DEBUG_PRINTLN("Unable to obtain pin configuration from message.")
@@ -273,7 +273,7 @@ bool BlinkaConnect::pinConfig()
                 payload and payload length.
 */
 /**************************************************************************/
-void BlinkaConnect::cbSignalTopic(char *data, uint16_t len) {
+void WipperSnapper::cbSignalTopic(char *data, uint16_t len) {
     BC_DEBUG_PRINTLN("cbSignalTopic()");
     memcpy(_buffer, data, len);
     bufSize = len;
@@ -285,7 +285,7 @@ void BlinkaConnect::cbSignalTopic(char *data, uint16_t len) {
         NOTE: Should be executed in-order after a new _buffer is recieved.
 */
 /**************************************************************************/
-bool BlinkaConnect::decodeSignalMessage() {
+bool WipperSnapper::decodeSignalMessage() {
     // create a stream which reads from buffer
     pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
     // decode the message
@@ -305,7 +305,7 @@ bool BlinkaConnect::decodeSignalMessage() {
                 type.
 */
 /**************************************************************************/
-bool BlinkaConnect::executeSignalMessageEvent() {
+bool WipperSnapper::executeSignalMessageEvent() {
     // Executes signal message event based on payload type
     switch(signalMessage.which_payload) {
         case signal_v1_CreateSignalRequest_pin_config_tag:
@@ -379,10 +379,10 @@ void cbDescriptionStatus(char *data, uint16_t len) {
 
 /**************************************************************************/
 /*!
-    @brief    Connects to Adafruit IO+ BlinkaConnect broker.
+    @brief    Connects to Adafruit IO+ WipperSnapper broker.
 */
 /**************************************************************************/
-void BlinkaConnect::connect() {
+void WipperSnapper::connect() {
     BC_DEBUG_PRINTLN("::connect()");
     _status = BC_IDLE;
     _boardStatus = BC_BOARD_DEF_IDLE;
@@ -404,7 +404,7 @@ void BlinkaConnect::connect() {
     // subscribe
     _mqtt->subscribe(_topic_description_sub);
 
-    BC_DEBUG_PRINT("Connecting to BlinkaConnect.");
+    BC_DEBUG_PRINT("Connecting to WipperSnapper.");
 
     // Connect network interface
     _connect();
@@ -426,10 +426,10 @@ void BlinkaConnect::connect() {
 
 /**************************************************************************/
 /*!
-    @brief    Disconnects from Adafruit IO+ BlinkaConnect.
+    @brief    Disconnects from Adafruit IO+ WipperSnapper.
 */
 /**************************************************************************/
-void BlinkaConnect::disconnect() {
+void WipperSnapper::disconnect() {
     _disconnect();
 }
 
@@ -438,7 +438,7 @@ void BlinkaConnect::disconnect() {
     @brief    Checks and handles network interface connection.
 */
 /**************************************************************************/
-bc_status_t BlinkaConnect::checkNetworkConnection(uint32_t timeStart) {
+ws_status_t WipperSnapper::checkNetworkConnection(uint32_t timeStart) {
     if (status() < BC_NET_CONNECTED) {
         BC_DEBUG_PRINTLN("connection failed, reconnecting...");
         unsigned long startRetry = millis();
@@ -461,7 +461,7 @@ bc_status_t BlinkaConnect::checkNetworkConnection(uint32_t timeStart) {
     @brief    Checks and handles connection to MQTT broker.
 */
 /**************************************************************************/
-bc_status_t BlinkaConnect::checkMQTTConnection(uint32_t timeStart) {
+ws_status_t WipperSnapper::checkMQTTConnection(uint32_t timeStart) {
     while(mqttStatus() != BC_CONNECTED && millis() - timeStart < 60000) {
     }
     if (mqttStatus() != BC_CONNECTED) {
@@ -475,7 +475,7 @@ bc_status_t BlinkaConnect::checkMQTTConnection(uint32_t timeStart) {
     @brief    Pings MQTT broker to keep connection alive.
 */
 /**************************************************************************/
-void BlinkaConnect::ping() {
+void WipperSnapper::ping() {
     if (millis() > (_prv_ping + 60000)) {
         _mqtt->ping();
         _prv_ping = millis();
@@ -487,7 +487,7 @@ void BlinkaConnect::ping() {
     @brief    Processes incoming commands and handles network connection.
 */
 /**************************************************************************/
-bc_status_t BlinkaConnect::run() {
+ws_status_t WipperSnapper::run() {
     uint32_t timeStart = millis();
     // increment software timer
     t_timer.tick();
@@ -500,7 +500,7 @@ bc_status_t BlinkaConnect::run() {
     // Ping broker if keepalive elapsed
     ping();
 
-    // Process all incoming packets from BlinkaConnect MQTT Broker
+    // Process all incoming packets from WipperSnapper MQTT Broker
     _mqtt->processPackets(500);
 
     // Handle incoming signal message
@@ -521,11 +521,11 @@ bc_status_t BlinkaConnect::run() {
         memcpy(_buffer_state, _buffer, sizeof(_buffer));
     }
     // Send updated pin value to broker
-    if ( bc_pinInfo.pinValue != bc_pinInfo.prvPinValue ) {
-        BC_DEBUG_PRINT("Pin Values: "); BC_DEBUG_PRINT(bc_pinInfo.pinValue);
-        BC_DEBUG_PRINT(" "); BC_DEBUG_PRINT(bc_pinInfo.prvPinValue);
+    if ( ws_pinInfo.pinValue != ws_pinInfo.prvPinValue ) {
+        BC_DEBUG_PRINT("Pin Values: "); BC_DEBUG_PRINT(ws_pinInfo.pinValue);
+        BC_DEBUG_PRINT(" "); BC_DEBUG_PRINT(ws_pinInfo.prvPinValue);
         sendPinEvent();
-        bc_pinInfo.prvPinValue = bc_pinInfo.pinValue;
+        ws_pinInfo.prvPinValue = ws_pinInfo.pinValue;
     }
 
     return status();
@@ -533,10 +533,10 @@ bc_status_t BlinkaConnect::run() {
 
 /**************************************************************************/
 /*!
-    @brief    Sends board description message to BlinkaConnect
+    @brief    Sends board description message to WipperSnapper
 */
 /**************************************************************************/
-bool BlinkaConnect::sendBoardDescription() {
+bool WipperSnapper::sendBoardDescription() {
     BC_DEBUG_PRINT("Publishing board description...");
     uint8_t buffer[128]; // message stored in this buffer
     size_t message_length;
@@ -574,7 +574,7 @@ bool BlinkaConnect::sendBoardDescription() {
     @brief    Sends board description message and verifies broker's response
 */
 /***************************************************************************/
-bool BlinkaConnect::sendGetHardwareDescription(){
+bool WipperSnapper::sendGetHardwareDescription(){
         // Send hardware characteristics to broker
         if (!sendBoardDescription()) {
             _boardStatus = BC_BOARD_DEF_SEND_FAILED;
@@ -595,11 +595,11 @@ bool BlinkaConnect::sendGetHardwareDescription(){
 /**************************************************************************/
 /*!
     @brief    Returns the network status.
-    @return   BlinkaConnect network status.
+    @return   WipperSnapper network status.
 */
 /**************************************************************************/
-bc_status_t BlinkaConnect::status() {
-  bc_status_t net_status = networkStatus();
+ws_status_t WipperSnapper::status() {
+  ws_status_t net_status = networkStatus();
 
   // if we aren't connected, return network status
   if (net_status != BC_NET_CONNECTED) {
@@ -615,10 +615,10 @@ bc_status_t BlinkaConnect::status() {
 /**************************************************************************/
 /*!
     @brief    Returns the board definition status
-    @return   BlinkaConnect board definition status
+    @return   WipperSnapper board definition status
 */
 /**************************************************************************/
-bc_board_status_t BlinkaConnect::getBoardStatus() {
+ws_board_status_t WipperSnapper::getBoardStatus() {
     return _boardStatus;
 }
 
@@ -628,7 +628,7 @@ bc_board_status_t BlinkaConnect::getBoardStatus() {
     @return   True if connected, otherwise False.
 */
 /**************************************************************************/
-bc_status_t BlinkaConnect::mqttStatus() {
+ws_status_t WipperSnapper::mqttStatus() {
   // if the connection failed,
   // return so we don't hammer IO
   if (_status == BC_CONNECT_FAILED) {
@@ -675,7 +675,7 @@ bc_status_t BlinkaConnect::mqttStatus() {
    value
 */
 /**************************************************************************/
-const __FlashStringHelper *BlinkaConnect::statusText() {
+const __FlashStringHelper *WipperSnapper::statusText() {
   switch (_status) {
     // CONNECTING
     case BC_IDLE:
@@ -683,29 +683,29 @@ const __FlashStringHelper *BlinkaConnect::statusText() {
     case BC_NET_DISCONNECTED:
         return F("Network disconnected.");
     case BC_DISCONNECTED:
-        return F("Disconnected from BlinkaConnect.");
+        return F("Disconnected from WipperSnapper.");
     // FAILURE
     case BC_NET_CONNECT_FAILED:
         return F("Network connection failed.");
     case BC_CONNECT_FAILED:
-        return F("BlinkaConnect connection failed.");
+        return F("WipperSnapper connection failed.");
     case BC_FINGERPRINT_INVALID:
-        return F("BlinkaConnect SSL fingerprint verification failed.");
+        return F("WipperSnapper SSL fingerprint verification failed.");
     case BC_AUTH_FAILED:
-        return F("BlinkaConnect authentication failed.");
+        return F("WipperSnapper authentication failed.");
     // SUCCESS
     case BC_NET_CONNECTED:
         return F("Network connected.");
     case BC_CONNECTED:
-        return F("BlinkaConnect connected.");
+        return F("WipperSnapper connected.");
     case BC_CONNECTED_INSECURE:
-        return F("BlinkaConnect connected. **THIS CONNECTION IS INSECURE** SSL/TLS "
+        return F("WipperSnapper connected. **THIS CONNECTION IS INSECURE** SSL/TLS "
                 "not supported for this platform.");
     case BC_FINGERPRINT_UNSUPPORTED:
-        return F("BlinkaConnect connected over SSL/TLS. Fingerprint verification "
+        return F("WipperSnapper connected over SSL/TLS. Fingerprint verification "
                 "unsupported.");
     case BC_FINGERPRINT_VALID:
-        return F("BlinkaConnect connected over SSL/TLS. Fingerprint valid.");
+        return F("WipperSnapper connected over SSL/TLS. Fingerprint valid.");
     default:
         return F("Unknown status code");
   }
