@@ -425,13 +425,13 @@ void Wippersnapper::generate_feeds() {
         _topic_signals_out = 0;
     }
 
+    /*
     BC_DEBUG_PRINTLN("Generated topics: ");
     BC_DEBUG_PRINTLN(_topic_description);
     BC_DEBUG_PRINTLN(_topic_description_status);
     BC_DEBUG_PRINTLN(_topic_signals_in);
     BC_DEBUG_PRINTLN(_topic_signals_out);
-
-
+    */
 }
 
 /**************************************************************************/
@@ -446,12 +446,11 @@ void Wippersnapper::connect() {
 
     BC_DEBUG_PRINTLN("Generating WS Feeds...");
     generate_feeds();
-    // TODO: Print out feeds it generated
 
     // Subscription to listen to commands from the server
     _topic_signals_out_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signals_out);
     _topic_signals_out_sub->setCallback(cbSignalTopic);
-    //_mqtt->subscribe(_topic_signals_out_sub);
+    _mqtt->subscribe(_topic_signals_out_sub);
 
     // Publish to outgoing commands channel, server listens to this sub-topic
     _topic_signals_in_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signals_in);
@@ -463,7 +462,7 @@ void Wippersnapper::connect() {
     _topic_description_sub->setCallback(cbDescriptionStatus);
 
     // subscribe
-    //_mqtt->subscribe(_topic_description_sub);
+    _mqtt->subscribe(_topic_description_sub);
 
     BC_DEBUG_PRINT("Connecting to Wippersnapper.");
 
