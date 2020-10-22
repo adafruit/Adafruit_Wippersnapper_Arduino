@@ -36,8 +36,9 @@
 #include "Wippersnapper_Boards.h"
 
 // Reserved Wippersnapper topics
-#define TOPIC_DESCRIPTION "/info/" ///< Device description topic
-#define TOPIC_SIGNALS     "/signals/"     ///< Device signals topic
+#define TOPIC_WS "/wprsnpr/"            ///< Global /wprsnpr/ topic
+#define TOPIC_DESCRIPTION "/info/"      ///< Device description topic
+#define TOPIC_SIGNALS     "/signals/"   ///< Device signals topic
 
 #define BC_PRINTER Serial ///< Where debug messages will be printed
 #define BC_DEBUG

@@ -371,46 +371,69 @@ void Wippersnapper::generate_feeds() {
     // Assign board type, defined at compile-time
     _boardId = BOARD_ID;
 
+    //TODO:  Create device ID
+
     // Assign board type info
-    // TODO: This should move somewhere else...
+    // TODO: Do we still need this?
     _hw_vid = USB_VID;
     _hw_pid = USB_PID;
 
-    // dynamically allocate memory for reserved topics
+    // allocate memory for reserved topics
     _topic_description = (char *)malloc(sizeof(char) * strlen(_username) + strlen(TOPIC_DESCRIPTION) + 1);
 
-    // TODO: These should be built using the UID
-    _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + strlen(TOPIC_SIGNALS) + strlen("/devices/") + strlen("/status") + 1);
-    _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/in") + 1);
-    _topic_signals_out = (char *)malloc(sizeof(char) * strlen(_deviceId) + strlen(TOPIC_SIGNALS) + strlen("/devices/out") + 1);
+    // Check-in status topic
+    _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
+    + strlen("/") + sizeof(char) * strlen(_username) +  strlen("/wprsnpr/") + \
+    strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
+
+    _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_username) + \
+    + strlen("/") + sizeof(char) * strlen(_username) +  strlen("/wprsnpr/") + \
+    strlen(TOPIC_SIGNALS) + strlen("in") + 1);
+
+    _topic_signals_out = (char *)malloc(sizeof(char) * strlen(_username) + \
+    + strlen("/") + sizeof(char) * strlen(_username) +  strlen("/wprsnpr/") + \
+    strlen(TOPIC_SIGNALS) + strlen("out") + 1);
 
 
-    // build description topic
+    // Build description check-in topic
     if (_topic_description) {
         strcpy(_topic_description, _username);
         strcat(_topic_description, TOPIC_DESCRIPTION);
+    } else { // malloc failed
+        _topic_description  = 0;
     }
+
     // build description status topic
     if (_topic_description_status) {
-        strcpy(_topic_description_status, "devices/");
-        strcat(_topic_description_status, _deviceId);
+        strcpy(_topic_description_status, _username);
+        strcat(_topic_description_status, "/");
+        strcpy(_topic_description_status, "DEVICE123"); // DEVICE ID TODO
         strcat(_topic_description_status, TOPIC_DESCRIPTION);
-        strcat(_topic_description_status, "/status");
+        strcat(_topic_description_status, "status");
+    } else { // malloc failed
+        _topic_description_status = 0;
     }
-    // build signals incoming topic
+
+    // build incoming signal topic
     if (_topic_signals_in) {
-        strcpy(_topic_signals_in, "devices/");
-        strcat(_topic_signals_in, _deviceId);
-        strcat(_topic_signals_in, TOPIC_SIGNALS);
-        strcat(_topic_signals_in, "in");
+        strcpy(_topic_description_status, _username);
+        strcat(_topic_description_status, "/");
+        strcpy(_topic_description_status, "DEVICE123"); // DEVICE ID TODO
+        strcat(_topic_description_status, TOPIC_SIGNALS);
+        strcat(_topic_description_status, "in");
+    } else { // malloc failed
+        _topic_description_status = 0;
     }
 
     // build signals outgoing topic
     if (_topic_signals_out) {
-        strcpy(_topic_signals_out, "devices/");
-        strcat(_topic_signals_out, _deviceId);
-        strcat(_topic_signals_out, TOPIC_SIGNALS);
-        strcat(_topic_signals_out, "out");
+        strcpy(_topic_description_status, _username);
+        strcat(_topic_description_status, "/");
+        strcpy(_topic_description_status, "DEVICE123"); // DEVICE ID TODO
+        strcat(_topic_description_status, TOPIC_SIGNALS);
+        strcat(_topic_description_status, "out");
+    } else { // malloc failed
+        _topic_description_status = 0;
     }
 
 
