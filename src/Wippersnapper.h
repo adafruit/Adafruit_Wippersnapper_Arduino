@@ -174,7 +174,8 @@ class Wippersnapper {
         const char *_boardId;  /*!< Adafruit IO+ board string */
         uint16_t _hw_vid;      /*!< USB vendor identifer */
         uint16_t _hw_pid;      /*!< USB product identifier */
-        uint8_t _uid[6];
+        uint8_t _uid[6];       /*!< Unique network iface identifier */
+        char *_device_uid;     /*!< Unique device identifier  */
 
         // MQTT topics
         char *_topic_description; /*!< MQTT topic for the device description  */

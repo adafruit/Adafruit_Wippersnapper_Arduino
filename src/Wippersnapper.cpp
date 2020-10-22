@@ -347,35 +347,24 @@ void cbDescriptionStatus(char *data, uint16_t len) {
 void Wippersnapper::generate_feeds() {
 
     // Check and set network iface UID
-    BC_DEBUG_PRINT(_boardId);
     setUID();
-     for (int i = 0; i < sizeof(_uid); i++) {
-        BC_DEBUG_PRINTLN(_uid[i]);
-    }
 
-    // TODO: Simplify this
-    // Strip the bottom 3 bytes from the UID
-    uint8_t uid[3];
-
-    BC_DEBUG_PRINTLN("Bottom 3 UID");
+    // Move the top 3 bytes from the UID
     for (int i = 5; i > 2; i--) {
-        uid[6-1-i]  = _uid[i];
-    }
-    // free space 
-    delete [] _uid;
-    BC_DEBUG_PRINTLN("uid2");
-     for (int i = 0; i < 3; i++) {
-        BC_DEBUG_PRINTLN(uid[i]);
+        _uid[6-1-i]  = _uid[i];
     }
 
-    char macStr[9];
-    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x",uid[0], uid[1], uid[2]);
+    char sUID[9];
+    snprintf(sUID, sizeof(sUID), "%02x%02x%02x",_uid[0], _uid[1], _uid[2]);
+
+    BC_DEBUG_PRINTLN(sUID);
 
     // Assign board type, defined at compile-time
     _boardId = BOARD_ID;
-
-    //TODO:  Create device ID
-    _device_uid = (char *)malloc(sizeof(char) + strlen(_boardId);
+    // Create device UID
+    _device_uid = (char *)malloc(sizeof(char) + strlen(_boardId) + strlen(sUID));
+    strcpy(_device_uid, _boardId);
+    strcat(_device_uid, sUID);
 
     // Assign board type info
     // TODO: Do we still need this?
@@ -387,17 +376,16 @@ void Wippersnapper::generate_feeds() {
 
     // Check-in status topic
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/") + strlen(_username) +  strlen("/wprsnpr/") + \
+    + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
     _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/") + strlen(_username) +  strlen("/wprsnpr/") + \
+    + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("in") + 1);
 
     _topic_signals_out = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/") + strlen(_username) +  strlen("/wprsnpr/") + \
+    + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("out") + 1);
-
 
     // Build description check-in topic
     if (_topic_description) {
@@ -411,7 +399,7 @@ void Wippersnapper::generate_feeds() {
     if (_topic_description_status) {
         strcpy(_topic_description_status, _username);
         strcat(_topic_description_status, "/");
-        strcpy(_topic_description_status, "DEVICE123"); // DEVICE ID TODO
+        strcpy(_topic_description_status, _device_uid);
         strcat(_topic_description_status, TOPIC_DESCRIPTION);
         strcat(_topic_description_status, "status");
     } else { // malloc failed
@@ -422,7 +410,7 @@ void Wippersnapper::generate_feeds() {
     if (_topic_signals_in) {
         strcpy(_topic_description_status, _username);
         strcat(_topic_description_status, "/");
-        strcpy(_topic_description_status, "DEVICE123"); // DEVICE ID TODO
+        strcpy(_topic_description_status, "DEVICE123");
         strcat(_topic_description_status, TOPIC_SIGNALS);
         strcat(_topic_description_status, "in");
     } else { // malloc failed
@@ -433,7 +421,7 @@ void Wippersnapper::generate_feeds() {
     if (_topic_signals_out) {
         strcpy(_topic_description_status, _username);
         strcat(_topic_description_status, "/");
-        strcpy(_topic_description_status, "DEVICE123"); // DEVICE ID TODO
+        strcpy(_topic_description_status, _device_uid);
         strcat(_topic_description_status, TOPIC_SIGNALS);
         strcat(_topic_description_status, "out");
     } else { // malloc failed
