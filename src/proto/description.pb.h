@@ -17,8 +17,7 @@ extern "C" {
 typedef enum _description_v1_CreateDescriptionResponse_Response {
     description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED = 0,
     description_v1_CreateDescriptionResponse_Response_RESPONSE_OK = 1,
-    description_v1_CreateDescriptionResponse_Response_RESPONSE_VID_NOT_FOUND = 2,
-    description_v1_CreateDescriptionResponse_Response_RESPONSE_PID_NOT_FOUND = 3
+    description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND = 2
 } description_v1_CreateDescriptionResponse_Response;
 
 /* Struct definitions */
@@ -42,7 +41,8 @@ typedef struct _description_v1_CreateDescriptionResponse {
 } description_v1_CreateDescriptionResponse;
 
 typedef struct _description_v1_CreateDescriptionRequest {
-    char machine_name[50];
+    char machine_name[24];
+    int32_t mac_addr;
     int32_t usb_vid;
     int32_t usb_pid;
     bool has_version;
@@ -52,17 +52,17 @@ typedef struct _description_v1_CreateDescriptionRequest {
 
 /* Helper constants for enums */
 #define _description_v1_CreateDescriptionResponse_Response_MIN description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED
-#define _description_v1_CreateDescriptionResponse_Response_MAX description_v1_CreateDescriptionResponse_Response_RESPONSE_PID_NOT_FOUND
-#define _description_v1_CreateDescriptionResponse_Response_ARRAYSIZE ((description_v1_CreateDescriptionResponse_Response)(description_v1_CreateDescriptionResponse_Response_RESPONSE_PID_NOT_FOUND+1))
+#define _description_v1_CreateDescriptionResponse_Response_MAX description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND
+#define _description_v1_CreateDescriptionResponse_Response_ARRAYSIZE ((description_v1_CreateDescriptionResponse_Response)(description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND+1))
 
 
 /* Initializer values for message structs */
-#define description_v1_CreateDescriptionRequest_init_default {"", 0, 0, false, description_v1_CreateDescriptionRequest_Version_init_default}
+#define description_v1_CreateDescriptionRequest_init_default {"", 0, 0, 0, false, description_v1_CreateDescriptionRequest_Version_init_default}
 #define description_v1_CreateDescriptionRequest_Version_init_default {0, 0, 0, {{NULL}, NULL}}
 #define description_v1_CreateDescriptionResponse_init_default {_description_v1_CreateDescriptionResponse_Response_MIN}
 #define description_v1_GetDefinitionRequest_init_default {{{NULL}, NULL}}
 #define description_v1_GetDefinitionResponse_init_default {{{NULL}, NULL}}
-#define description_v1_CreateDescriptionRequest_init_zero {"", 0, 0, false, description_v1_CreateDescriptionRequest_Version_init_zero}
+#define description_v1_CreateDescriptionRequest_init_zero {"", 0, 0, 0, false, description_v1_CreateDescriptionRequest_Version_init_zero}
 #define description_v1_CreateDescriptionRequest_Version_init_zero {0, 0, 0, {{NULL}, NULL}}
 #define description_v1_CreateDescriptionResponse_init_zero {_description_v1_CreateDescriptionResponse_Response_MIN}
 #define description_v1_GetDefinitionRequest_init_zero {{{NULL}, NULL}}
@@ -77,16 +77,18 @@ typedef struct _description_v1_CreateDescriptionRequest {
 #define description_v1_CreateDescriptionRequest_Version_label_tag 4
 #define description_v1_CreateDescriptionResponse_response_tag 1
 #define description_v1_CreateDescriptionRequest_machine_name_tag 1
-#define description_v1_CreateDescriptionRequest_usb_vid_tag 2
-#define description_v1_CreateDescriptionRequest_usb_pid_tag 3
-#define description_v1_CreateDescriptionRequest_version_tag 4
+#define description_v1_CreateDescriptionRequest_mac_addr_tag 2
+#define description_v1_CreateDescriptionRequest_usb_vid_tag 3
+#define description_v1_CreateDescriptionRequest_usb_pid_tag 4
+#define description_v1_CreateDescriptionRequest_version_tag 5
 
 /* Struct field encoding specification for nanopb */
 #define description_v1_CreateDescriptionRequest_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   machine_name,      1) \
-X(a, STATIC,   SINGULAR, INT32,    usb_vid,           2) \
-X(a, STATIC,   SINGULAR, INT32,    usb_pid,           3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  version,           4)
+X(a, STATIC,   SINGULAR, INT32,    mac_addr,          2) \
+X(a, STATIC,   SINGULAR, INT32,    usb_vid,           3) \
+X(a, STATIC,   SINGULAR, INT32,    usb_pid,           4) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  version,           5)
 #define description_v1_CreateDescriptionRequest_CALLBACK NULL
 #define description_v1_CreateDescriptionRequest_DEFAULT NULL
 #define description_v1_CreateDescriptionRequest_version_MSGTYPE description_v1_CreateDescriptionRequest_Version

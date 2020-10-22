@@ -322,11 +322,8 @@ void cbDescriptionStatus(char *data, uint16_t len) {
         case description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
             _boardStatus = BC_BOARD_DEF_OK;
             break;
-        case description_v1_CreateDescriptionResponse_Response_RESPONSE_VID_NOT_FOUND:
-            _boardStatus = BC_BOARD_DEF_INAVLID_VID;
-            break;
-        case description_v1_CreateDescriptionResponse_Response_RESPONSE_PID_NOT_FOUND:
-            _boardStatus = BC_BOARD_DEF_INVALID_PID;
+        case description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
+            _boardStatus = BC_BOARD_DEF_INVALID;
             break;
         case description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
             _boardStatus = BC_BOARD_DEF_UNSPECIFIED;
@@ -641,6 +638,7 @@ bool Wippersnapper::sendGetHardwareDescription(){
             BC_DEBUG_PRINTLN("Unable to send board description to broker");
             return false;
         }
+        BC_DEBUG_PRINTLN("Sent board description to broker!");
 
         // Verify broker responds OK
         BC_DEBUG_PRINTLN("Verifying board definition response")
