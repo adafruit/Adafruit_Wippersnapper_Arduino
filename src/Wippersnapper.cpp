@@ -368,10 +368,14 @@ void Wippersnapper::generate_feeds() {
         BC_DEBUG_PRINTLN(uid[i]);
     }
 
+    char macStr[9];
+    snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x",uid[0], uid[1], uid[2]);
+
     // Assign board type, defined at compile-time
     _boardId = BOARD_ID;
 
     //TODO:  Create device ID
+    _device_uid = (char *)malloc(sizeof(char) + strlen(_boardId);
 
     // Assign board type info
     // TODO: Do we still need this?
@@ -383,15 +387,15 @@ void Wippersnapper::generate_feeds() {
 
     // Check-in status topic
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/") + sizeof(char) * strlen(_username) +  strlen("/wprsnpr/") + \
+    + strlen("/") + strlen(_username) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
     _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/") + sizeof(char) * strlen(_username) +  strlen("/wprsnpr/") + \
+    + strlen("/") + strlen(_username) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("in") + 1);
 
     _topic_signals_out = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/") + sizeof(char) * strlen(_username) +  strlen("/wprsnpr/") + \
+    + strlen("/") + strlen(_username) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("out") + 1);
 
 
