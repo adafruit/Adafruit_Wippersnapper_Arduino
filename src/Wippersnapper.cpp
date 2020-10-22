@@ -353,11 +353,8 @@ void Wippersnapper::generate_feeds() {
     for (int i = 5; i > 2; i--) {
         _uid[6-1-i]  = _uid[i];
     }
-
     char sUID[9];
     snprintf(sUID, sizeof(sUID), "%02x%02x%02x",_uid[0], _uid[1], _uid[2]);
-
-    BC_DEBUG_PRINTLN(sUID);
 
     // Assign board type, defined at compile-time
     _boardId = BOARD_ID;
@@ -376,8 +373,7 @@ void Wippersnapper::generate_feeds() {
 
     // Check-in status topic
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
-    strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
+    + strlen("/wprsnpr/") + strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
     _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
@@ -395,11 +391,12 @@ void Wippersnapper::generate_feeds() {
         _topic_description  = 0;
     }
 
+    // {}/wprsnpr/{}/info/status
     // build description status topic
     if (_topic_description_status) {
         strcpy(_topic_description_status, _username);
-        strcat(_topic_description_status, "/");
-        strcpy(_topic_description_status, _device_uid);
+        strcat(_topic_description_status, "/wprsnpr/");
+        strcat(_topic_description_status, _device_uid);
         strcat(_topic_description_status, TOPIC_DESCRIPTION);
         strcat(_topic_description_status, "status");
     } else { // malloc failed
@@ -408,25 +405,31 @@ void Wippersnapper::generate_feeds() {
 
     // build incoming signal topic
     if (_topic_signals_in) {
-        strcpy(_topic_description_status, _username);
-        strcat(_topic_description_status, "/");
-        strcpy(_topic_description_status, "DEVICE123");
-        strcat(_topic_description_status, TOPIC_SIGNALS);
-        strcat(_topic_description_status, "in");
+        strcpy(_topic_signals_in, _username);
+        strcat(_topic_signals_in, "/wprsnpr/");
+        strcat(_topic_signals_in, _device_uid);
+        strcat(_topic_signals_in, TOPIC_SIGNALS);
+        strcat(_topic_signals_in, "in");
     } else { // malloc failed
-        _topic_description_status = 0;
+        _topic_signals_in = 0;
     }
 
     // build signals outgoing topic
     if (_topic_signals_out) {
-        strcpy(_topic_description_status, _username);
-        strcat(_topic_description_status, "/");
-        strcpy(_topic_description_status, _device_uid);
-        strcat(_topic_description_status, TOPIC_SIGNALS);
-        strcat(_topic_description_status, "out");
+        strcpy(_topic_signals_out, _username);
+        strcat(_topic_signals_out, "/wprsnpr/");
+        strcat(_topic_signals_out, _device_uid);
+        strcat(_topic_signals_out, TOPIC_SIGNALS);
+        strcat(_topic_signals_out, "in");
     } else { // malloc failed
-        _topic_description_status = 0;
+        _topic_signals_out = 0;
     }
+
+    BC_DEBUG_PRINTLN("Generated topics: ");
+    BC_DEBUG_PRINTLN(_topic_description);
+    BC_DEBUG_PRINTLN(_topic_description_status);
+    BC_DEBUG_PRINTLN(_topic_signals_in);
+    BC_DEBUG_PRINTLN(_topic_signals_out);
 
 
 }
