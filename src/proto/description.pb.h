@@ -41,7 +41,7 @@ typedef struct _description_v1_CreateDescriptionResponse {
 } description_v1_CreateDescriptionResponse;
 
 typedef struct _description_v1_CreateDescriptionRequest {
-    char machine_name[24];
+    char machine_name[64];
     int32_t mac_addr;
     int32_t usb_vid;
     int32_t usb_pid;

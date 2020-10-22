@@ -366,7 +366,7 @@ void Wippersnapper::generate_feeds() {
     _hw_pid = USB_PID;
 
     // allocate memory for reserved topics
-    _topic_description = (char *)malloc(sizeof(char) * strlen(_username) + strlen(TOPIC_DESCRIPTION) + 1);
+    _topic_description = (char *)malloc(sizeof(char) * strlen(_username) + strlen("/wprsnpr") + strlen(TOPIC_DESCRIPTION) + 1);
 
     // Check-in status topic
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
@@ -383,7 +383,7 @@ void Wippersnapper::generate_feeds() {
     // Build description check-in topic
     if (_topic_description) {
         strcpy(_topic_description, _username);
-        strcat(_topic_description, TOPIC_DESCRIPTION);
+        strcat(_topic_description, "/wprsnpr/info");
     } else { // malloc failed
         _topic_description  = 0;
     }
@@ -417,18 +417,11 @@ void Wippersnapper::generate_feeds() {
         strcat(_topic_signals_out, "/wprsnpr/");
         strcat(_topic_signals_out, _device_uid);
         strcat(_topic_signals_out, TOPIC_SIGNALS);
-        strcat(_topic_signals_out, "in");
+        strcat(_topic_signals_out, "out");
     } else { // malloc failed
         _topic_signals_out = 0;
     }
 
-    /*
-    BC_DEBUG_PRINTLN("Generated topics: ");
-    BC_DEBUG_PRINTLN(_topic_description);
-    BC_DEBUG_PRINTLN(_topic_description_status);
-    BC_DEBUG_PRINTLN(_topic_signals_in);
-    BC_DEBUG_PRINTLN(_topic_signals_out);
-    */
 }
 
 /**************************************************************************/
@@ -604,9 +597,8 @@ bool Wippersnapper::sendBoardDescription() {
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
     // fill message fields
-    strcpy(message.machine_name, _deviceId);
-    message.usb_vid = USB_VID;
-    message.usb_pid = USB_PID;
+    strcpy(message.machine_name, _boardId);
+    message.mac_addr = 0x01;
 
     // encode message
     status = pb_encode(&stream, description_v1_CreateDescriptionRequest_fields, &message);
