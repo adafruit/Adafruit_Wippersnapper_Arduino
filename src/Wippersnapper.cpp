@@ -598,7 +598,7 @@ bool Wippersnapper::sendBoardDescription() {
 
     // fill message fields
     strcpy(message.machine_name, _boardId);
-    message.mac_addr = 0x01;
+    message.mac_addr = 0x01; // TODO: Pull from UID!
 
     // encode message
     status = pb_encode(&stream, description_v1_CreateDescriptionRequest_fields, &message);

@@ -1,10 +1,16 @@
+/************************ Adafruit IO Config *******************************/
+
+// visit io.adafruit.com if you need to create an account,
+// or if you need your Adafruit IO key.
+#define IO_USERNAME "YOUR_IO_USERNAME"
+#define IO_KEY "YOUR_IO_KEY"
+
+/******************************* WIFI **************************************/
 #include "Wippersnapper_Networking.h"
 
-/******** WiFi *************/
-
 /*** Network Configuration ***/
-#define WIFI_SSID ""
-#define WIFI_PASS ""
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PASS "YOUR_SSID_PASS"
 
 /** Uncomment the network interface you're using **/
 #define USE_AIRLIFT
@@ -21,8 +27,8 @@
         #define NINA_GPIO0 6 // Not connected
     #endif
 
-    Wippersnapper_WiFi bc(WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
+    Wippersnapper_WiFi ws(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
                     NINA_ACK, NINA_RESETN, NINA_GPIO0, &SPIWIFI);
     #else
-    Wippersnapper_WiFi bc(WIFI_SSID, WIFI_PASS);
+    Wippersnapper_WiFi ws(WIFI_SSID, WIFI_PASS);
 #endif
