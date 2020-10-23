@@ -301,7 +301,7 @@ bool Wippersnapper::executeSignalMessageEvent() {
 */
 /**************************************************************************/
 void cbDescriptionStatus(char *data, uint16_t len) {
-    BC_DEBUG_PRINTLN("cbDescriptionStatus()");
+    // BC_DEBUG_PRINTLN("cbDescriptionStatus()");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 
@@ -332,8 +332,8 @@ void cbDescriptionStatus(char *data, uint16_t len) {
             _boardStatus = BC_BOARD_DEF_UNSPECIFIED;
     }
 
-    BC_DEBUG_PRINT("Board def. response: ")
-    BC_DEBUG_PRINTLN(_boardStatus);
+    BC_DEBUG_PRINT("\nSuccessfully checked in, waiting for commands...")
+    // BC_DEBUG_PRINTLN(_boardStatus);
 }
 
 /**************************************************************************/
@@ -350,8 +350,8 @@ void Wippersnapper::generate_feeds() {
     for (int i = 5; i > 2; i--) {
         _uid[6-1-i]  = _uid[i];
     }
-    char sUID[9];
-    snprintf(sUID, sizeof(sUID), "%02x%02x%02x",_uid[0], _uid[1], _uid[2]);
+    
+    snprintf(sUID, sizeof(sUID), "%02d%02d%02d",_uid[0], _uid[1], _uid[2]);
 
     // Assign board type, defined at compile-time
     _boardId = BOARD_ID;
@@ -388,7 +388,6 @@ void Wippersnapper::generate_feeds() {
         _topic_description  = 0;
     }
 
-    // {}/wprsnpr/{}/info/status
     // build description status topic
     if (_topic_description_status) {
         strcpy(_topic_description_status, _username);
@@ -430,11 +429,11 @@ void Wippersnapper::generate_feeds() {
 */
 /**************************************************************************/
 void Wippersnapper::connect() {
-    BC_DEBUG_PRINTLN("::connect()");
+    // BC_DEBUG_PRINTLN("::connect()");
     _status = BC_IDLE;
     _boardStatus = BC_BOARD_DEF_IDLE;
 
-    BC_DEBUG_PRINTLN("Generating WS Feeds...");
+    //BC_DEBUG_PRINTLN("Generating WS Feeds...");
     generate_feeds();
 
     // Subscription to listen to commands from the server
@@ -448,13 +447,11 @@ void Wippersnapper::connect() {
     // Create a subscription to the description status response topic
     _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
 
-    // set callback
+    // set callback and subscribe
     _topic_description_sub->setCallback(cbDescriptionStatus);
-
-    // subscribe
     _mqtt->subscribe(_topic_description_sub);
 
-    BC_DEBUG_PRINT("Connecting to Wippersnapper.");
+    // BC_DEBUG_PRINT("Connecting to Wippersnapper.");
 
     // Connect network interface
     _connect();
@@ -587,7 +584,7 @@ ws_status_t Wippersnapper::run() {
 */
 /**************************************************************************/
 bool Wippersnapper::sendBoardDescription() {
-    BC_DEBUG_PRINT("Publishing board description...");
+    BC_DEBUG_PRINT("Checking into Wippersnapper...");
     uint8_t buffer[128]; // message stored in this buffer
     size_t message_length;
     bool status;
@@ -598,7 +595,7 @@ bool Wippersnapper::sendBoardDescription() {
 
     // fill message fields
     strcpy(message.machine_name, _boardId);
-    message.mac_addr = 0x01; // TODO: Pull from UID!
+    message.mac_addr = atoi(sUID); // TODO: Pull from UID!
 
     // encode message
     status = pb_encode(&stream, description_v1_CreateDescriptionRequest_fields, &message);
@@ -613,7 +610,7 @@ bool Wippersnapper::sendBoardDescription() {
 
     // publish message
     _mqtt->publish(_topic_description, buffer, message_length, 0);
-    BC_DEBUG_PRINTLN("Published!");
+    //BC_DEBUG_PRINTLN("Published!");
     _boardStatus = BC_BOARD_DEF_SENT;
     return true;
 }
@@ -630,14 +627,14 @@ bool Wippersnapper::sendGetHardwareDescription(){
             BC_DEBUG_PRINTLN("Unable to send board description to broker");
             return false;
         }
-        BC_DEBUG_PRINTLN("Sent board description to broker!");
+        // BC_DEBUG_PRINTLN("Sent check-in message to Wippersnapper!");
 
         // Verify broker responds OK
-        BC_DEBUG_PRINTLN("Verifying board definition response")
+        // BC_DEBUG_PRINTLN("Verifying board definition response")
         while (getBoardStatus() != BC_BOARD_DEF_OK) {
             BC_DEBUG_PRINT(".");
             // TODO: needs a retry+timeout loop here!!
-            _mqtt->processPackets(500); // run a processing loop
+            _mqtt->processPackets(50); // run a processing loop
         }
         return true;
 }

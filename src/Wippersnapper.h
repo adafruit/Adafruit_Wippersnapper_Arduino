@@ -175,6 +175,7 @@ class Wippersnapper {
         uint16_t _hw_pid;      /*!< USB product identifier */
         uint8_t _uid[6];       /*!< Unique network iface identifier */
         char *_device_uid;     /*!< Unique device identifier  */
+        char sUID[9];
 
         // MQTT topics
         char *_topic_description; /*!< MQTT topic for the device description  */
