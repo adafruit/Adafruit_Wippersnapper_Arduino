@@ -461,7 +461,7 @@ void Wippersnapper::connect() {
         BC_DEBUG_PRINT(".");
         delay(500);
     }
-    BC_DEBUG_PRINTLN("Connected!");
+    BC_DEBUG_PRINTLN("\nConnected!");
 
     // Send hardware description to broker
     if (!sendGetHardwareDescription()){
