@@ -93,7 +93,7 @@ public:
   void firmwareCheck() {
     _fv = WiFi.firmwareVersion();
     if (_fv < NINAFWVER) {
-        BC_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the latest version.");
+        WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the latest version.");
     }
   }
 
@@ -116,13 +116,13 @@ public:
   ws_status_t networkStatus() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
-      return BC_NET_CONNECTED;
+      return WS_NET_CONNECTED;
     case WL_CONNECT_FAILED:
-      return BC_NET_CONNECT_FAILED;
+      return WS_NET_CONNECT_FAILED;
     case WL_IDLE_STATUS:
-      return BC_IDLE;
+      return WS_IDLE;
     default:
-      return BC_NET_DISCONNECTED;
+      return WS_NET_DISCONNECTED;
     }
   }
 
@@ -152,7 +152,7 @@ protected:
   /**************************************************************************/
   void _connect() {
     if (strlen(_ssid) == 0) {
-      _status = BC_SSID_INVALID;
+      _status = WS_SSID_INVALID;
     } else {
       // setup ESP32 pins
       if (_ssPin != -1) {
@@ -167,12 +167,12 @@ protected:
 
       // check for esp32 module
       if (WiFi.status() == WL_NO_MODULE) {
-        BC_DEBUG_PRINT("No ESP32 module detected!");
+        WS_DEBUG_PRINT("No ESP32 module detected!");
         return;
       }
 
       WiFi.begin(_ssid, _pass);
-      _status = BC_NET_DISCONNECTED;
+      _status = WS_NET_DISCONNECTED;
     }
   }
 

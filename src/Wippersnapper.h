@@ -40,52 +40,52 @@
 #define TOPIC_DESCRIPTION "/info/"      ///< Device description topic
 #define TOPIC_SIGNALS     "/signals/"   ///< Device signals topic
 
-#define BC_PRINTER Serial ///< Where debug messages will be printed
-#define BC_DEBUG
+#define WS_PRINTER Serial ///< Where debug messages will be printed
+#define WS_DEBUG
 // Define actual debug output functions when necessary.
-#ifdef BC_DEBUG
-#define BC_DEBUG_PRINT(...)                                                   \
-  { BC_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
-#define BC_DEBUG_PRINTLN(...)                                                 \
-  { BC_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#ifdef WS_DEBUG
+#define WS_DEBUG_PRINT(...)                                                   \
+  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
+#define WS_DEBUG_PRINTLN(...)                                                 \
+  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
 #else
-#define BC_DEBUG_PRINT(...)                                                   \
+#define WS_DEBUG_PRINT(...)                                                   \
   {} ///< Prints debug output
-#define BC_DEBUG_PRINTLN(...)                                                 \
+#define WS_DEBUG_PRINTLN(...)                                                 \
   {} ///< Prints line from debug output.
 #endif
 
 // Adafruit IO Status States
 typedef enum {
-  BC_IDLE = 0,               // Waiting for connection establishement
-  BC_NET_DISCONNECTED = 1,   // Network disconnected
-  BC_DISCONNECTED = 2,       // Disconnected from Adafruit IO
-  BC_FINGERPRINT_UNKOWN = 3, // Unknown BC_SSL_FINGERPRINT
+  WS_IDLE = 0,               // Waiting for connection establishement
+  WS_NET_DISCONNECTED = 1,   // Network disconnected
+  WS_DISCONNECTED = 2,       // Disconnected from Adafruit IO
+  WS_FINGERPRINT_UNKOWN = 3, // Unknown WS_SSL_FINGERPRINT
 
-  BC_NET_CONNECT_FAILED = 10,  // Failed to connect to network
-  BC_CONNECT_FAILED = 11,      // Failed to connect to Adafruit IO
-  BC_FINGERPRINT_INVALID = 12, // Unknown BC_SSL_FINGERPRINT
-  BC_AUTH_FAILED = 13, // Invalid Adafruit IO login credentials provided.
-  BC_SSID_INVALID =
+  WS_NET_CONNECT_FAILED = 10,  // Failed to connect to network
+  WS_CONNECT_FAILED = 11,      // Failed to connect to Adafruit IO
+  WS_FINGERPRINT_INVALID = 12, // Unknown WS_SSL_FINGERPRINT
+  WS_AUTH_FAILED = 13, // Invalid Adafruit IO login credentials provided.
+  WS_SSID_INVALID =
       14, // SSID is "" or otherwise invalid, connection not attempted
 
-  BC_NET_CONNECTED = 20,           // Connected to Adafruit IO
-  BC_CONNECTED = 21,               // Connected to network
-  BC_CONNECTED_INSECURE = 22,      // Insecurely (non-SSL) connected to network
-  BC_FINGERPRINT_UNSUPPORTED = 23, // Unsupported BC_SSL_FINGERPRINT
-  BC_FINGERPRINT_VALID = 24,       // Valid BC_SSL_FINGERPRINT
+  WS_NET_CONNECTED = 20,           // Connected to Adafruit IO
+  WS_CONNECTED = 21,               // Connected to network
+  WS_CONNECTED_INSECURE = 22,      // Insecurely (non-SSL) connected to network
+  WS_FINGERPRINT_UNSUPPORTED = 23, // Unsupported WS_SSL_FINGERPRINT
+  WS_FINGERPRINT_VALID = 24,       // Valid WS_SSL_FINGERPRINT
 
-  BC_BOARD_DESC_INVALID = 25       // Unable to send board description
+  WS_BOARD_DESC_INVALID = 25       // Unable to send board description
 } ws_status_t;
 
 // Wippersnapper board definition status
 typedef enum {
-    BC_BOARD_DEF_IDLE,
-    BC_BOARD_DEF_SEND_FAILED,
-    BC_BOARD_DEF_SENT,
-    BC_BOARD_DEF_OK,
-    BC_BOARD_DEF_INVALID,
-    BC_BOARD_DEF_UNSPECIFIED
+    WS_BOARD_DEF_IDLE,
+    WS_BOARD_DEF_SEND_FAILED,
+    WS_BOARD_DEF_SENT,
+    WS_BOARD_DEF_OK,
+    WS_BOARD_DEF_INVALID,
+    WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
 
@@ -154,7 +154,7 @@ class Wippersnapper {
         void _init();
 
     protected:
-        ws_status_t _status = BC_IDLE; /*!< Adafruit IO connection status */
+        ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
         uint32_t _prv_ping = 0;

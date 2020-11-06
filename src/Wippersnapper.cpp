@@ -116,14 +116,14 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
 */
 /****************************************************************************/
 bool Wippersnapper::cbDigitalRead(char *pinName) {
-  BC_DEBUG_PRINT("cbDigitalRead(");BC_DEBUG_PRINT(pinName);BC_DEBUG_PRINTLN(")");
+  WS_DEBUG_PRINT("cbDigitalRead(");WS_DEBUG_PRINT(pinName);WS_DEBUG_PRINTLN(")");
 
   // Read and store pinName into struct.
   ws_pinInfo.pinValue = digitalRead((unsigned)atoi(pinName));
 
   // debug TODO remove
-  BC_DEBUG_PRINT("Pin Values: "); BC_DEBUG_PRINT(ws_pinInfo.pinValue);
-  BC_DEBUG_PRINT(" "); BC_DEBUG_PRINTLN(ws_pinInfo.prvPinValue);
+  WS_DEBUG_PRINT("Pin Values: "); WS_DEBUG_PRINT(ws_pinInfo.pinValue);
+  WS_DEBUG_PRINT(" "); WS_DEBUG_PRINTLN(ws_pinInfo.prvPinValue);
   return true; // repeat every xMS
 }
 
@@ -174,8 +174,8 @@ bool Wippersnapper::pinEvent() {
     // strip "D" or "A" from "circuitpython-style" pin_name
     char* pinName = signalMessage.payload.pin_event.pin_name + 1;
     // Set pin value
-    BC_DEBUG_PRINT("Setting ")BC_DEBUG_PRINT(atoi(pinName));
-    BC_DEBUG_PRINT(" to ");BC_DEBUG_PRINTLN(atoi(signalMessage.payload.pin_event.pin_value));
+    WS_DEBUG_PRINT("Setting ")WS_DEBUG_PRINT(atoi(pinName));
+    WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(atoi(signalMessage.payload.pin_event.pin_value));
     digitalWrite(atoi(pinName), atoi(signalMessage.payload.pin_event.pin_value));
     return true;
 }
@@ -187,10 +187,10 @@ bool Wippersnapper::pinEvent() {
 /**************************************************************************/
 bool Wippersnapper::pinConfig()
 {
-    BC_DEBUG_PRINT("Pin Name: ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
-    BC_DEBUG_PRINT("Mode: ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
-    BC_DEBUG_PRINT("Direction : ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.direction);
-    BC_DEBUG_PRINT("Pull enabled: ");BC_DEBUG_PRINTLN(signalMessage.payload.pin_config.pull);
+    WS_DEBUG_PRINT("Pin Name: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
+    WS_DEBUG_PRINT("Mode: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
+    WS_DEBUG_PRINT("Direction : ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.direction);
+    WS_DEBUG_PRINT("Pull enabled: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pull);
 
     ws_pinInfo.PinNameFull = signalMessage.payload.pin_config.pin_name;
     // strip "D" or "A" from "circuitpython-style" pin_name
@@ -203,25 +203,25 @@ bool Wippersnapper::pinConfig()
     switch(signalMessage.payload.pin_config.mode) {
         case pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG:
             if (signalMessage.payload.pin_config.direction == pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-                BC_DEBUG_PRINTLN("* Configuring Analog input pin.");
+                WS_DEBUG_PRINTLN("* Configuring Analog input pin.");
             } else {
-                BC_DEBUG_PRINTLN("* Configuring Analog output pin.");
+                WS_DEBUG_PRINTLN("* Configuring Analog output pin.");
             }
             break;
         case pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL:
             // TODO: _INPUT is incorrect, should be 0x0 not 0x1
             if (signalMessage.payload.pin_config.direction == 0) {
-                BC_DEBUG_PRINTLN("* Configuring digital input pin");
+                WS_DEBUG_PRINTLN("* Configuring digital input pin");
                 long timerMs = signalMessage.payload.pin_config.period;
-                BC_DEBUG_PRINTLN(timerMs);
+                WS_DEBUG_PRINTLN(timerMs);
                 strcpy(timerPin, pinName);
                 auto task = t_timer.every(timerMs, cbDigitalRead, timerPin);
             }
-            BC_DEBUG_PRINTLN("Configuring digital pin direction");
+            WS_DEBUG_PRINTLN("Configuring digital pin direction");
             pinMode(atoi(ws_pinInfo.pinName), signalMessage.payload.pin_config.direction);
             break;
         default:
-            BC_DEBUG_PRINTLN("Unable to obtain pin configuration from message.")
+            WS_DEBUG_PRINTLN("Unable to obtain pin configuration from message.")
             return false;
             break;
     }
@@ -236,7 +236,7 @@ bool Wippersnapper::pinConfig()
 */
 /**************************************************************************/
 void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
-    BC_DEBUG_PRINTLN("cbSignalTopic()");
+    WS_DEBUG_PRINTLN("cbSignalTopic()");
     memcpy(_buffer, data, len);
     bufSize = len;
 }
@@ -255,7 +255,7 @@ bool Wippersnapper::decodeSignalMessage() {
     status = pb_decode(&stream, signal_v1_CreateSignalRequest_fields, &signalMessage);
 
     if (!status) {
-        BC_DEBUG_PRINTLN("Unable to decode signal message");
+        WS_DEBUG_PRINTLN("Unable to decode signal message");
         return false;
     }
     return true;
@@ -301,7 +301,7 @@ bool Wippersnapper::executeSignalMessageEvent() {
 */
 /**************************************************************************/
 void cbDescriptionStatus(char *data, uint16_t len) {
-    // BC_DEBUG_PRINTLN("cbDescriptionStatus()");
+    // WS_DEBUG_PRINTLN("cbDescriptionStatus()");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 
@@ -314,26 +314,26 @@ void cbDescriptionStatus(char *data, uint16_t len) {
     status = pb_decode(&stream, description_v1_CreateDescriptionResponse_fields, &message);
 
     if (!status) {
-        BC_DEBUG_PRINTLN("Error decoding description status message!");
+        WS_DEBUG_PRINTLN("Error decoding description status message!");
     }
 
     // set board status
     switch (message.response) {
         case description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-            _boardStatus = BC_BOARD_DEF_OK;
+            _boardStatus = WS_BOARD_DEF_OK;
             break;
         case description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
-            _boardStatus = BC_BOARD_DEF_INVALID;
+            _boardStatus = WS_BOARD_DEF_INVALID;
             break;
         case description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
-            _boardStatus = BC_BOARD_DEF_UNSPECIFIED;
+            _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
             break;
         default:
-            _boardStatus = BC_BOARD_DEF_UNSPECIFIED;
+            _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
     }
 
-    BC_DEBUG_PRINT("\nSuccessfully checked in, waiting for commands...")
-    // BC_DEBUG_PRINTLN(_boardStatus);
+    WS_DEBUG_PRINT("\nSuccessfully checked in, waiting for commands...")
+    // WS_DEBUG_PRINTLN(_boardStatus);
 }
 
 /**************************************************************************/
@@ -429,11 +429,11 @@ void Wippersnapper::generate_feeds() {
 */
 /**************************************************************************/
 void Wippersnapper::connect() {
-    // BC_DEBUG_PRINTLN("::connect()");
-    _status = BC_IDLE;
-    _boardStatus = BC_BOARD_DEF_IDLE;
+    // WS_DEBUG_PRINTLN("::connect()");
+    _status = WS_IDLE;
+    _boardStatus = WS_BOARD_DEF_IDLE;
 
-    //BC_DEBUG_PRINTLN("Generating WS Feeds...");
+    //WS_DEBUG_PRINTLN("Generating WS Feeds...");
     generate_feeds();
 
     // Subscription to listen to commands from the server
@@ -451,22 +451,22 @@ void Wippersnapper::connect() {
     _topic_description_sub->setCallback(cbDescriptionStatus);
     _mqtt->subscribe(_topic_description_sub);
 
-    // BC_DEBUG_PRINT("Connecting to Wippersnapper.");
+    // WS_DEBUG_PRINT("Connecting to Wippersnapper.");
 
     // Connect network interface
     _connect();
 
     // Wait for connection to broker
-    while (status() < BC_CONNECTED) {
-        BC_DEBUG_PRINT(".");
+    while (status() < WS_CONNECTED) {
+        WS_DEBUG_PRINT(".");
         delay(500);
     }
-    BC_DEBUG_PRINTLN("\nConnected!");
+    WS_DEBUG_PRINTLN("\nConnected!");
 
     // Send hardware description to broker
     if (!sendGetHardwareDescription()){
         // TODO: get error types back from function instead of bool, verify against resp.
-        BC_DEBUG_PRINTLN("Hardware description process failed!");
+        WS_DEBUG_PRINTLN("Hardware description process failed!");
     }
 
 }
@@ -486,10 +486,10 @@ void Wippersnapper::disconnect() {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
-    if (status() < BC_NET_CONNECTED) {
-        BC_DEBUG_PRINTLN("connection failed, reconnecting...");
+    if (status() < WS_NET_CONNECTED) {
+        WS_DEBUG_PRINTLN("connection failed, reconnecting...");
         unsigned long startRetry = millis();
-        while (status() < BC_CONNECTED) { // return an error on timeout
+        while (status() < WS_CONNECTED) { // return an error on timeout
             if (millis() - startRetry > 5000) {
                 return status();
             }
@@ -509,9 +509,9 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
-    while(mqttStatus() != BC_CONNECTED && millis() - timeStart < 60000) {
+    while(mqttStatus() != WS_CONNECTED && millis() - timeStart < 60000) {
     }
-    if (mqttStatus() != BC_CONNECTED) {
+    if (mqttStatus() != WS_CONNECTED) {
         return status();
     }
     return status();
@@ -555,13 +555,13 @@ ws_status_t Wippersnapper::run() {
     // TODO: Sizeof may not work, possibly use bufSize instead
     n = memcmp(_buffer, _buffer_state, sizeof(_buffer));
     if (! n == 0) {
-        BC_DEBUG_PRINTLN("New data in message buffer");
+        WS_DEBUG_PRINTLN("New data in message buffer");
         // Decode signal message
         if (! decodeSignalMessage()) {
             return status();
         }
         if (! executeSignalMessageEvent()) {
-                BC_DEBUG_PRINTLN("Err: Event failed to execute.");
+                WS_DEBUG_PRINTLN("Err: Event failed to execute.");
         }
         // update _buffer_state with contents of new message
         // TODO: Sizeof may not work, possibly use bufSize instead
@@ -569,8 +569,8 @@ ws_status_t Wippersnapper::run() {
     }
     // Send updated pin value to broker
     if ( ws_pinInfo.pinValue != ws_pinInfo.prvPinValue ) {
-        BC_DEBUG_PRINT("Pin Values: "); BC_DEBUG_PRINT(ws_pinInfo.pinValue);
-        BC_DEBUG_PRINT(" "); BC_DEBUG_PRINT(ws_pinInfo.prvPinValue);
+        WS_DEBUG_PRINT("Pin Values: "); WS_DEBUG_PRINT(ws_pinInfo.pinValue);
+        WS_DEBUG_PRINT(" "); WS_DEBUG_PRINT(ws_pinInfo.prvPinValue);
         sendPinEvent();
         ws_pinInfo.prvPinValue = ws_pinInfo.pinValue;
     }
@@ -584,7 +584,7 @@ ws_status_t Wippersnapper::run() {
 */
 /**************************************************************************/
 bool Wippersnapper::sendBoardDescription() {
-    BC_DEBUG_PRINT("Checking into Wippersnapper...");
+    WS_DEBUG_PRINT("Checking into Wippersnapper...");
     uint8_t buffer[128]; // message stored in this buffer
     size_t message_length;
     bool status;
@@ -603,15 +603,15 @@ bool Wippersnapper::sendBoardDescription() {
 
     // verify message
     if (!status) {
-        BC_DEBUG_PRINTLN("encoding description message failed!");
+        WS_DEBUG_PRINTLN("encoding description message failed!");
         //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
         return false;
     }
 
     // publish message
     _mqtt->publish(_topic_description, buffer, message_length, 0);
-    //BC_DEBUG_PRINTLN("Published!");
-    _boardStatus = BC_BOARD_DEF_SENT;
+    //WS_DEBUG_PRINTLN("Published!");
+    _boardStatus = WS_BOARD_DEF_SENT;
     return true;
 }
 
@@ -623,16 +623,16 @@ bool Wippersnapper::sendBoardDescription() {
 bool Wippersnapper::sendGetHardwareDescription(){
         // Send hardware characteristics to broker
         if (!sendBoardDescription()) {
-            _boardStatus = BC_BOARD_DEF_SEND_FAILED;
-            BC_DEBUG_PRINTLN("Unable to send board description to broker");
+            _boardStatus = WS_BOARD_DEF_SEND_FAILED;
+            WS_DEBUG_PRINTLN("Unable to send board description to broker");
             return false;
         }
-        // BC_DEBUG_PRINTLN("Sent check-in message to Wippersnapper!");
+        // WS_DEBUG_PRINTLN("Sent check-in message to Wippersnapper!");
 
         // Verify broker responds OK
-        // BC_DEBUG_PRINTLN("Verifying board definition response")
-        while (getBoardStatus() != BC_BOARD_DEF_OK) {
-            BC_DEBUG_PRINT(".");
+        // WS_DEBUG_PRINTLN("Verifying board definition response")
+        while (getBoardStatus() != WS_BOARD_DEF_OK) {
+            WS_DEBUG_PRINT(".");
             // TODO: needs a retry+timeout loop here!!
             _mqtt->processPackets(50); // run a processing loop
         }
@@ -649,7 +649,7 @@ ws_status_t Wippersnapper::status() {
   ws_status_t net_status = networkStatus();
 
   // if we aren't connected, return network status
-  if (net_status != BC_NET_CONNECTED) {
+  if (net_status != WS_NET_CONNECTED) {
     _status = net_status;
     return _status;
   }
@@ -678,14 +678,14 @@ ws_board_status_t Wippersnapper::getBoardStatus() {
 ws_status_t Wippersnapper::mqttStatus() {
   // if the connection failed,
   // return so we don't hammer IO
-  if (_status == BC_CONNECT_FAILED) {
-    BC_DEBUG_PRINT("mqttStatus() failed to connect");
-    BC_DEBUG_PRINTLN(_mqtt->connectErrorString(_status));
+  if (_status == WS_CONNECT_FAILED) {
+    WS_DEBUG_PRINT("mqttStatus() failed to connect");
+    WS_DEBUG_PRINTLN(_mqtt->connectErrorString(_status));
     return _status;
   }
 
   if (_mqtt->connected())
-    return BC_CONNECTED;
+    return WS_CONNECTED;
 
   // prevent fast reconnect attempts, except for the first time through
   if (_last_mqtt_connect == 0 ||
@@ -693,12 +693,12 @@ ws_status_t Wippersnapper::mqttStatus() {
     _last_mqtt_connect = millis();
     switch (_mqtt->connect(_username, _key)) {
     case 0:
-      return BC_CONNECTED;
+      return WS_CONNECTED;
     case 1: // invalid mqtt protocol
     case 2: // client id rejected
     case 4: // malformed user/pass
     case 5: // unauthorized
-      return BC_CONNECT_FAILED;
+      return WS_CONNECT_FAILED;
     case 3: // mqtt service unavailable
     case 6: // throttled
     case 7: // banned -> all MQTT bans are temporary, so eventual retry is
@@ -706,12 +706,12 @@ ws_status_t Wippersnapper::mqttStatus() {
       // delay to prevent fast reconnects and fast returns (backward
       // compatibility)
         delay(60000);
-      return BC_DISCONNECTED;
+      return WS_DISCONNECTED;
     default:
-      return BC_DISCONNECTED;
+      return WS_DISCONNECTED;
     }
   }
-  return BC_DISCONNECTED;
+  return WS_DISCONNECTED;
 }
 
 
@@ -725,33 +725,33 @@ ws_status_t Wippersnapper::mqttStatus() {
 const __FlashStringHelper *Wippersnapper::statusText() {
   switch (_status) {
     // CONNECTING
-    case BC_IDLE:
+    case WS_IDLE:
         return F("Idle. Waiting for connect to be called...");
-    case BC_NET_DISCONNECTED:
+    case WS_NET_DISCONNECTED:
         return F("Network disconnected.");
-    case BC_DISCONNECTED:
+    case WS_DISCONNECTED:
         return F("Disconnected from Wippersnapper.");
     // FAILURE
-    case BC_NET_CONNECT_FAILED:
+    case WS_NET_CONNECT_FAILED:
         return F("Network connection failed.");
-    case BC_CONNECT_FAILED:
+    case WS_CONNECT_FAILED:
         return F("Wippersnapper connection failed.");
-    case BC_FINGERPRINT_INVALID:
+    case WS_FINGERPRINT_INVALID:
         return F("Wippersnapper SSL fingerprint verification failed.");
-    case BC_AUTH_FAILED:
+    case WS_AUTH_FAILED:
         return F("Wippersnapper authentication failed.");
     // SUCCESS
-    case BC_NET_CONNECTED:
+    case WS_NET_CONNECTED:
         return F("Network connected.");
-    case BC_CONNECTED:
+    case WS_CONNECTED:
         return F("Wippersnapper connected.");
-    case BC_CONNECTED_INSECURE:
+    case WS_CONNECTED_INSECURE:
         return F("Wippersnapper connected. **THIS CONNECTION IS INSECURE** SSL/TLS "
                 "not supported for this platform.");
-    case BC_FINGERPRINT_UNSUPPORTED:
+    case WS_FINGERPRINT_UNSUPPORTED:
         return F("Wippersnapper connected over SSL/TLS. Fingerprint verification "
                 "unsupported.");
-    case BC_FINGERPRINT_VALID:
+    case WS_FINGERPRINT_VALID:
         return F("Wippersnapper connected over SSL/TLS. Fingerprint valid.");
     default:
         return F("Unknown status code");
