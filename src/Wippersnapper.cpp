@@ -63,8 +63,8 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
     // Reserved MQTT Topics //
     _topic_description = 0;
     _topic_description_status = 0;
-    _topic_signals_in = 0;
-    _topic_signals_out = 0;
+    _topic_signal_device = 0;
+    _topic_signal_brkr = 0;
 
     //_init();
 }
@@ -77,8 +77,8 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
 Wippersnapper::~Wippersnapper() {
     // re-allocate topics
     free(_topic_description);
-    free(_topic_signals_in);
-    free(_topic_signals_out);
+    free(_topic_signal_device);
+    free(_topic_signal_brkr);
 }
 
 /**************************************************************************/
@@ -160,7 +160,7 @@ bool Wippersnapper::sendPinEvent() {
 
   Serial.print("Encoded size is: ");Serial.println(stream.bytes_written);
 
-  _mqtt->publish(_topic_signals_in, buffer, stream.bytes_written, 0);
+  _mqtt->publish(_topic_signal_device, buffer, stream.bytes_written, 0);
   return true;
 }
 
@@ -372,13 +372,13 @@ void Wippersnapper::generate_feeds() {
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/wprsnpr/") + strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
-    _topic_signals_in = (char *)malloc(sizeof(char) * strlen(_username) + \
+    _topic_signal_device = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
-    strlen(TOPIC_SIGNALS) + strlen("in") + 1);
+    strlen(TOPIC_SIGNALS) + strlen("device") + 1);
 
-    _topic_signals_out = (char *)malloc(sizeof(char) * strlen(_username) + \
+    _topic_signal_brkr = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
-    strlen(TOPIC_SIGNALS) + strlen("out") + 1);
+    strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
     // Build description check-in topic
     if (_topic_description) {
@@ -400,25 +400,25 @@ void Wippersnapper::generate_feeds() {
     }
 
     // build incoming signal topic
-    if (_topic_signals_in) {
-        strcpy(_topic_signals_in, _username);
-        strcat(_topic_signals_in, "/wprsnpr/");
-        strcat(_topic_signals_in, _device_uid);
-        strcat(_topic_signals_in, TOPIC_SIGNALS);
-        strcat(_topic_signals_in, "in");
+    if (_topic_signal_device) {
+        strcpy(_topic_signal_device, _username);
+        strcat(_topic_signal_device, "/wprsnpr/");
+        strcat(_topic_signal_device, _device_uid);
+        strcat(_topic_signal_device, TOPIC_SIGNALS);
+        strcat(_topic_signal_device, "device");
     } else { // malloc failed
-        _topic_signals_in = 0;
+        _topic_signal_device = 0;
     }
 
     // build signals outgoing topic
-    if (_topic_signals_out) {
-        strcpy(_topic_signals_out, _username);
-        strcat(_topic_signals_out, "/wprsnpr/");
-        strcat(_topic_signals_out, _device_uid);
-        strcat(_topic_signals_out, TOPIC_SIGNALS);
-        strcat(_topic_signals_out, "out");
+    if (_topic_signal_brkr) {
+        strcpy(_topic_signal_brkr, _username);
+        strcat(_topic_signal_brkr, "/wprsnpr/");
+        strcat(_topic_signal_brkr, _device_uid);
+        strcat(_topic_signal_brkr, TOPIC_SIGNALS);
+        strcat(_topic_signal_brkr, "broker");
     } else { // malloc failed
-        _topic_signals_out = 0;
+        _topic_signal_brkr = 0;
     }
 
 }
@@ -437,12 +437,12 @@ void Wippersnapper::connect() {
     generate_feeds();
 
     // Subscription to listen to commands from the server
-    _topic_signals_out_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signals_out);
-    _topic_signals_out_sub->setCallback(cbSignalTopic);
-    _mqtt->subscribe(_topic_signals_out_sub);
+    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signal_brkr);
+    _topic_signal_brkr_sub->setCallback(cbSignalTopic);
+    _mqtt->subscribe(_topic_signal_brkr_sub);
 
     // Publish to outgoing commands channel, server listens to this sub-topic
-    _topic_signals_in_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signals_in);
+    _topic_signal_device_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signal_device);
 
     // Create a subscription to the description status response topic
     _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
