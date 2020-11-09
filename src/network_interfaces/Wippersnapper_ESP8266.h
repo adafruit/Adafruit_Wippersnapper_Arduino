@@ -13,8 +13,6 @@
  *
  */
 
-#ifndef WIPPERSNAPPER_ESP8266_H
-#define WIPPERSNAPPER_ESP8266_H
 
 #ifdef ESP8266
 
@@ -53,8 +51,7 @@ public:
     _pass = ssidPassword;
     
     _client = new WiFiClientSecure;
-    // TODO: add IO SSL Fingerprint!
-    //_client->setFingerprint(AIO_SSL_FINGERPRINT);
+    _client->setFingerprint(WS_SSL_FINGERPRINT);
 
     _mqtt = new Adafruit_MQTT_Client(_client, _mqtt_broker, _mqtt_port);
     }
@@ -126,13 +123,11 @@ protected:
     if (strlen(_ssid) == 0) {
         _status = WS_SSID_INVALID;
     } else {
-        _disconnect();
-        delay(100);
+        delay(1000);
         WiFi.begin(_ssid, _pass);
-        delay(100);
+        delay(2000);
         _status = WS_NET_DISCONNECTED;
     }
-
   }
 
   /**************************************************************************/
@@ -142,9 +137,8 @@ protected:
   /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
-    delay(500);
+    delay(300);
   }
 };
 
 #endif // ESP8266
-#endif //Wippersnapper_ESP8266_H
