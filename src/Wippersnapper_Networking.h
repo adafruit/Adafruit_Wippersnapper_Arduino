@@ -21,7 +21,7 @@
     defined(USE_AIRLIFT)
         #include "network_interfaces/Wippersnapper_AIRLIFT.h"
         typedef Wippersnapper_AIRLIFT Wippersnapper_WiFi;
-#elif defined(ESP8266)
+#elif defined(ARDUINO_ARCH_ESP8266)
     #include "network_interfaces/Wippersnapper_ESP8266.h"
     typedef Wippersnapper_ESP8266 Wippersnapper_WiFi;
 #else

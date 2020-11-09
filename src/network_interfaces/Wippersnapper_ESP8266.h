@@ -16,8 +16,7 @@
 #ifndef WIPPERSNAPPER_ESP8266_H
 #define WIPPERSNAPPER_ESP8266_H
 
-
-#include "AdafruitIO.h"
+#include  "Wippersnapper.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
@@ -53,10 +52,10 @@ public:
     _pass = ssidPassword;
     
     _client = new WiFiClientSecure;
-    _client->setFingerprint(AIO_SSL_FINGERPRINT); // TODO: add IO SSL Fingerprint!
+    // TODO: add IO SSL Fingerprint!
+    //_client->setFingerprint(AIO_SSL_FINGERPRINT);
 
-    _mqtt_client = new WiFiClient;
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, _mqtt_port);
+    _mqtt = new Adafruit_MQTT_Client(_client, _mqtt_broker, _mqtt_port);
     }
 
   /**************************************************************************/
@@ -114,7 +113,7 @@ protected:
   String _fv = "0.0.0";
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-  WiFiClient *_mqtt_client;
+  WiFiClientSecure *_client;
 
 
   /**************************************************************************/
