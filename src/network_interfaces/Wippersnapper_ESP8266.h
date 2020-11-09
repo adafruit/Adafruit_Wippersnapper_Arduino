@@ -16,14 +16,15 @@
 #ifndef WIPPERSNAPPER_ESP8266_H
 #define WIPPERSNAPPER_ESP8266_H
 
+#ifdef ESP8266
+
+
 #include  "Wippersnapper.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "ESP8266WiFi.h"
 #include "WiFiClientSecure.h"
-
-
 
 /****************************************************************************/
 /*!
@@ -145,4 +146,5 @@ protected:
   }
 };
 
+#endif // ESP8266
 #endif //Wippersnapper_ESP8266_H

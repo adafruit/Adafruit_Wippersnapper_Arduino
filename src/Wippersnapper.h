@@ -167,7 +167,7 @@ class Wippersnapper {
 
         // Staging Server
         const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
-        uint16_t _mqtt_port = 1883;                  /*!< MQTT Broker URL */
+        uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
 
         const char *_deviceId; /*!< Adafruit IO+ device identifier string */
         const char *_boardId;  /*!< Adafruit IO+ board string */

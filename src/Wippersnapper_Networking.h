@@ -24,6 +24,9 @@
 #elif defined(ARDUINO_ARCH_ESP8266)
     #include "network_interfaces/Wippersnapper_ESP8266.h"
     typedef Wippersnapper_ESP8266 Wippersnapper_WiFi;
+#elif defined(ARDUINO_ARCH_ESP32)
+    #include "network_interfaces/Wippersnapper_ESP32.h"
+    typedef Wippersnapper_ESP32 Wippersnapper_WiFi;
 #else
     #warning "Must define network interface in config.h!"
 #endif

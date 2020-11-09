@@ -34,6 +34,11 @@
     #define USB_VID 0xEA60
     #define USB_PID 0x10C4
     #define BOARD_ID "adafruit_huzzah_8266"
+#elif defined(ARDUINO_ARCH_ESP32)
+    // Feather Huzzah ESP32
+    #define USB_VID 0xEA60
+    #define USB_PID 0x10C4
+    #define BOARD_ID "adafruit_huzzah_32"
 #else
   #warning "Board not identified within Wippersnapper_Boards.h!"
 #endif
