@@ -91,11 +91,15 @@ typedef enum {
 // latest fingerprint can be generated with
 // echo | openssl s_client -connect io.adafruit.com:443 | openssl x509
 // -fingerprint -noout
-#define WS_SSL_FINGERPRINT                                                    \
-  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF" ///< Latest
+//#define WS_SSL_FINGERPRINT                                                    \
+//  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF" ///< Latest
                                                                 ///< Adafruit IO
                                                                 ///< SSL
                                                                 ///< Fingerprint
+
+// Fingerprint for IO.Adafruit.us staging server
+#define WS_SSL_FINGERPRINT \
+"17 23 00 BC 97 8A E0 8F D5 C7 B7 F2 A7 F3 63 A7 79 82 BA EA"
 
 class Wippersnapper {
     
