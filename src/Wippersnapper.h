@@ -88,6 +88,14 @@ typedef enum {
     WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
+// latest fingerprint can be generated with
+// echo | openssl s_client -connect io.adafruit.com:443 | openssl x509
+// -fingerprint -noout
+#define WS_SSL_FINGERPRINT                                                    \
+  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF" ///< Latest
+                                                                ///< Adafruit IO
+                                                                ///< SSL
+                                                                ///< Fingerprint
 
 class Wippersnapper {
     

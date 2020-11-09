@@ -69,7 +69,7 @@ public:
     _ssid = ssid;
     _pass = ssidPassword;
 
-    _mqtt_client = new WiFiClient;
+    _mqtt_client = new WiFiSSLClient;
     _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, _mqtt_port);
     }
 
@@ -141,7 +141,7 @@ protected:
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   int _ssPin, _ackPin, _rstPin, _gpio0Pin = -1;
 
-  WiFiClient *_mqtt_client;
+  WiFiSSLClient *_mqtt_client;
 
   SPIClass *_wifi;
 
