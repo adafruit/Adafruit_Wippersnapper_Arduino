@@ -366,11 +366,13 @@ void Wippersnapper::generate_feeds() {
     _hw_pid = USB_PID;
 
     // allocate memory for reserved topics
-    _topic_description = (char *)malloc(sizeof(char) * strlen(_username) + strlen("/wprsnpr") + strlen(TOPIC_DESCRIPTION) + 1);
+    _topic_description = (char *)malloc(sizeof(char) * strlen(_username) \
+    + strlen("/wprsnpr") + strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
     // Check-in status topic
     _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
-    + strlen("/wprsnpr/") + strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
+    + strlen("/wprsnpr/") + strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + \
+    strlen("status") + strlen("broker") + 1);
 
     _topic_signal_device = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
@@ -383,10 +385,13 @@ void Wippersnapper::generate_feeds() {
     // Build description check-in topic
     if (_topic_description) {
         strcpy(_topic_description, _username);
-        strcat(_topic_description, "/wprsnpr/info");
+        strcat(_topic_description, "/wprsnpr");
+        strcat(_topic_description, TOPIC_DESCRIPTION);
+        strcat(_topic_description, "status");
     } else { // malloc failed
         _topic_description  = 0;
     }
+
 
     // build description status topic
     if (_topic_description_status) {
@@ -395,6 +400,7 @@ void Wippersnapper::generate_feeds() {
         strcat(_topic_description_status, _device_uid);
         strcat(_topic_description_status, TOPIC_DESCRIPTION);
         strcat(_topic_description_status, "status");
+        strcat(_topic_description_status, "/broker");
     } else { // malloc failed
         _topic_description_status = 0;
     }
@@ -451,17 +457,18 @@ void Wippersnapper::connect() {
     _topic_description_sub->setCallback(cbDescriptionStatus);
     _mqtt->subscribe(_topic_description_sub);
 
-    // WS_DEBUG_PRINT("Connecting to Wippersnapper.");
-
     // Connect network interface
+    WS_DEBUG_PRINT("Connecting to WiFi...");
     _connect();
+    WS_DEBUG_PRINTLN("Connected!");
 
     // Wait for connection to broker
+    WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
     while (status() < WS_CONNECTED) {
         WS_DEBUG_PRINT(".");
         delay(500);
     }
-    WS_DEBUG_PRINTLN("\nConnected!");
+    WS_DEBUG_PRINTLN("Connected!");
 
     // Send hardware description to broker
     if (!sendGetHardwareDescription()){
@@ -589,7 +596,7 @@ bool Wippersnapper::sendBoardDescription() {
     size_t message_length;
     bool status;
 
-    // initialize message definition
+    // initialize message description
     description_v1_CreateDescriptionRequest message = description_v1_CreateDescriptionRequest_init_zero;
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
@@ -610,7 +617,7 @@ bool Wippersnapper::sendBoardDescription() {
 
     // publish message
     _mqtt->publish(_topic_description, buffer, message_length, 0);
-    //WS_DEBUG_PRINTLN("Published!");
+    WS_DEBUG_PRINTLN("Published board description, waiting for response!");
     _boardStatus = WS_BOARD_DEF_SENT;
     return true;
 }
@@ -627,10 +634,10 @@ bool Wippersnapper::sendGetHardwareDescription(){
             WS_DEBUG_PRINTLN("Unable to send board description to broker");
             return false;
         }
-        // WS_DEBUG_PRINTLN("Sent check-in message to Wippersnapper!");
+        WS_DEBUG_PRINTLN("Sent check-in message to Wippersnapper!");
 
         // Verify broker responds OK
-        // WS_DEBUG_PRINTLN("Verifying board definition response")
+        WS_DEBUG_PRINTLN("Verifying board definition response")
         while (getBoardStatus() != WS_BOARD_DEF_OK) {
             WS_DEBUG_PRINT(".");
             // TODO: needs a retry+timeout loop here!!

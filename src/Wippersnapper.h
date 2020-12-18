@@ -97,7 +97,7 @@ typedef enum {
                                                                 ///< SSL
                                                                 ///< Fingerprint
 
-// Fingerprint for IO.Adafruit.us staging server
+// Fingerprint for io.adafruit.us staging server
 #define WS_SSL_FINGERPRINT \
 "17 23 00 BC 97 8A E0 8F D5 C7 B7 F2 A7 F3 63 A7 79 82 BA EA"
 
@@ -174,13 +174,18 @@ class Wippersnapper {
         Adafruit_MQTT *_mqtt;                         /*!< Reference to Adafruit_MQTT, _mqtt. */
 
         // PoC Server
-        //const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
+        // const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
         // uint16_t _mqtt_port = 18653;                 /*!< MQTT Broker URL */
 
         // Staging Server
         const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
         uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
 
+        // Production Server
+        // const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
+        // uint16_t _mqtt_port = 8883;                   /*!< MQTT Broker URL */
+
+        // Device information
         const char *_deviceId; /*!< Adafruit IO+ device identifier string */
         const char *_boardId;  /*!< Adafruit IO+ board string */
         uint16_t _hw_vid;      /*!< USB vendor identifer */
@@ -190,10 +195,10 @@ class Wippersnapper {
         char sUID[9];
 
         // MQTT topics
-        char *_topic_description; /*!< MQTT topic for the device description  */
+        char *_topic_description;        /*!< MQTT topic for the device description  */
         char *_topic_description_status; /*!< MQTT subtopic carrying the description status resp. from the broker */
         char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
-        char *_topic_signal_device;     /*!< Device->Wprsnpr messages */
+        char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
         Adafruit_MQTT_Subscribe *_topic_description_sub;
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
