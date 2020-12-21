@@ -19,13 +19,13 @@
 #define WIPPERSNAPPER_H
 
 // Nanopb
+#include <pb.h>
 #include <nanopb/pb_common.h>
-#include <nanopb/pb.h>
 #include <nanopb/pb_encode.h>
 #include <nanopb/pb_decode.h>
 // Protocol buffer messages
-#include <wippersnapper/description.pb.h> // description.proto
-#include <wippersnapper/signal.pb.h>      // signal.proto
+#include <wippersnapper/description/v1/description.pb.h>    // description.proto
+#include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
 
 // External libraries
 #include "Adafruit_MQTT.h"
