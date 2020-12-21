@@ -24,8 +24,8 @@
 #include <nanopb/pb_encode.h>
 #include <nanopb/pb_decode.h>
 // Protocol buffer messages
-#include <proto/description.pb.h> // description.proto
-#include <proto/signal.pb.h>      // signal.proto
+#include <wippersnapper/description.pb.h> // description.proto
+#include <wippersnapper/signal.pb.h>      // signal.proto
 
 // External libraries
 #include "Adafruit_MQTT.h"
