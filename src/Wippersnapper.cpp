@@ -181,18 +181,19 @@ bool Wippersnapper::pinEvent() {
     return true;
 } */
 
+
 /**************************************************************************/
 /*!
     @brief    Configures a pin's mode, direction, pull and period.
 */
 /**************************************************************************/
-/* bool Wippersnapper::pinConfig()
-{
-    WS_DEBUG_PRINT("Pin Name: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
-    WS_DEBUG_PRINT("Mode: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
-    WS_DEBUG_PRINT("Direction : ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.direction);
-    WS_DEBUG_PRINT("Pull enabled: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pull);
+bool Wippersnapper::pinConfig() {
+    //WS_DEBUG_PRINT("Pin Name: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
+    //WS_DEBUG_PRINT("Mode: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
+    //WS_DEBUG_PRINT("Direction : ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.direction);
+    //WS_DEBUG_PRINT("Pull enabled: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pull);
 
+/* 
     ws_pinInfo.PinNameFull = signalMessage.payload.pin_config.pin_name;
     // strip "D" or "A" from "circuitpython-style" pin_name
     char* pinName = signalMessage.payload.pin_config.pin_name + 1;
@@ -225,10 +226,10 @@ bool Wippersnapper::pinEvent() {
             WS_DEBUG_PRINTLN("Unable to obtain pin configuration from message.")
             return false;
             break;
-    }
+    } */
     // TODO: Replace this with a return from within the switch case's calling methods
     return true;
-} */
+}
 
 /**************************************************************************/
 /*!
@@ -273,7 +274,7 @@ bool Wippersnapper::executeSignalMessageEvent() {
     switch(signalMessage.which_payload) {
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             Serial.println("DEBUG: Pin config callback");
-            //pinConfig();
+            pinConfig();
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
             Serial.println("DEBUG: Pin event callback");

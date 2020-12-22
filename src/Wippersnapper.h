@@ -147,6 +147,10 @@ class Wippersnapper {
         uint8_t _buffer_state[128]; /*!< Holds previous contents of static _buffer */
         // Protobuf structs
         wippersnapper_signal_v1_CreateSignalRequest signalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+        // Empty pin config struct
+        wippersnapper_pin_v1_ConfigurePinRequest pinMessage = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
+        
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
