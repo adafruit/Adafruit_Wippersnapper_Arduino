@@ -211,12 +211,15 @@ bool Wippersnapper::decodePinConfigPacket(wippersnapper_signal_v1_CreateSignalRe
     // Register callback, cbDecodePinConfigs
     decodedSignalMsg->payload.pin_configs.list.funcs.decode = &Wippersnapper::cbDecodePinConfigs;
 
-/*     // attempt to decode signal and check for errors
-    if (!pb_decode(&stream, proto_message_fields, proto_msg)) {
+
+    // TODO: code below is not working properly
+    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
+
+    if (!pb_decode(&stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, decodedSignalMsg)) {
         //printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
         WS_DEBUG_PRINTLN("Decoding failed");
         return false;
-    } */
+    }
 
     return true;
 }
