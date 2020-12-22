@@ -95,7 +95,6 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
 
     if (!pb_field_iter_begin(&iter, wippersnapper_signal_v1_CreateSignalRequest_fields, message))
         return false;
-
     do
     {
         if (iter.submsg_desc == messagetype)
@@ -188,8 +187,26 @@ bool Wippersnapper::pinEvent() {
 /**************************************************************************/
 bool Wippersnapper::cbDecodePinConfigs(pb_istream_t *istream, const pb_field_t *field, void **arg) {
     bool is_success = true;
+    //TODO: for some reason, this doesn't get called during decodePinConfigPacket
+    // possibly bc its expecting static..?
+    WS_DEBUG_PRINTLN("cbDecodePinConfigs()");
 
-    WS_DEBUG_PRINTLN("debug: cbDecodePinConfigs()");
+    // Null args, fail
+    if ((NULL == arg) || (NULL == *arg)) {
+        is_success = false;
+    }
+
+    // Attempt to decode a wippersnapper_pin_v1_ConfigurePinRequest message
+    wippersnapper_pin_v1_ConfigurePinRequest protoPinRequestMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
+
+    if (!pb_decode(istream, wippersnapper_pin_v1_ConfigurePinRequest_fields, &protoPinRequestMsg)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to decode ConfigurePinRequest message");
+      is_success = false;
+    }
+
+    // TODO: Build message struct
+
+    // TODO: Point to the next message
 
     return is_success;
 }
@@ -200,6 +217,7 @@ bool Wippersnapper::cbDecodePinConfigs(pb_istream_t *istream, const pb_field_t *
 */
 /**************************************************************************/
 bool Wippersnapper::decodePinConfigPacket(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
+    bool is_success = true;
     WS_DEBUG_PRINTLN("Decode pin config packet");
     // Empty array of pinConfig messages
     // TODO: not sure if this should be elsewhere...
@@ -209,16 +227,19 @@ bool Wippersnapper::decodePinConfigPacket(wippersnapper_signal_v1_CreateSignalRe
     // Pass arguments to callback, cbDecodePinConfigs
     decodedSignalMsg->payload.pin_configs.list.arg = (void *)&decodedPinConfigMsgs;
     // Register callback, cbDecodePinConfigs
+    // TODO: Are we actually trying to call this? doesn't seem like its being invoked
     decodedSignalMsg->payload.pin_configs.list.funcs.decode = &Wippersnapper::cbDecodePinConfigs;
+    WS_DEBUG_PRINTLN("Registered cb");
 
-
-    // TODO: code below is not working properly
+    // TODO: This isn't correct...
+    // call pb_decode
     pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
 
-    if (!pb_decode(&stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, decodedSignalMsg)) {
-        //printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
-        WS_DEBUG_PRINTLN("Decoding failed");
-        return false;
+    // decode the signal message packet
+    if (!pb_decode(&stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, \
+            decodedSignalMsg)) {
+        WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message packet.");
+        is_success = false;
     }
 
     return true;
@@ -337,7 +358,6 @@ bool Wippersnapper::executeSignalMessageCb(wippersnapper_signal_v1_CreateSignalR
             if (!decodePinConfigPacket(decodedSignalMsg)) {
                 WS_DEBUG_PRINTLN("ERROR: Could not decode pin config message");
             }
-
             // TODO: Execute each pin config message one by one
             // and set is_executed to true
             // Executing pin configuration message(s)
@@ -346,6 +366,7 @@ bool Wippersnapper::executeSignalMessageCb(wippersnapper_signal_v1_CreateSignalR
         case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
             Serial.println("DEBUG: Executing pinEvent");
             //pinEvent();
+            is_executed = true;
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_sensor_configs_tag:
             Serial.println("DEBUG: Executing sensorConfig");
