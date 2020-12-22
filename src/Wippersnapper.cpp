@@ -288,12 +288,13 @@ bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequ
                 successfully, false otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::executeSignalMessageCb(pb_size_t signalTag) {
-    is_executed = true;
-    switch(signalTag) {
+bool Wippersnapper::executeSignalMessageCb(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
+    bool is_executed = true;
+
+    switch(decodedSignalMsg->which_payload) { // decode signal message tag
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             Serial.println("DEBUG: Executing pinConfig");
-            if (!pinConfig()){
+            if (!pinConfig()){ // TODO: pass signal msg's pin config list
                 is_executed = false;
             }
             break;
@@ -590,7 +591,7 @@ ws_status_t Wippersnapper::run() {
         }
 
         // Execute the signal message's callback
-        if (! executeSignalMessageCb(decodedSignalMessage.which_payload)) {
+        if (! executeSignalMessageCb(&decodedSignalMessage)) {
             WS_DEBUG_PRINTLN("ERROR: Failed to execute signal message callback.");
             return status();
         }
