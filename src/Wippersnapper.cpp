@@ -133,7 +133,7 @@ bool Wippersnapper::cbDigitalRead(char *pinName) {
             otherwise false;
 */
 /**************************************************************************/
-bool Wippersnapper::sendPinEvent() {
+/* bool Wippersnapper::sendPinEvent() {
   uint8_t buffer[128]; // message buffer, TODO: Make this a shared buffer
   bool status = false;
 
@@ -163,13 +163,14 @@ bool Wippersnapper::sendPinEvent() {
   _mqtt->publish(_topic_signal_device, buffer, stream.bytes_written, 0);
   return true;
 }
+ */
 
 /**************************************************************************/
 /*!
     @brief    Executes pin events from the broker
 */
 /**************************************************************************/
-// Process pin events from the broker
+/* // Process pin events from the broker
 bool Wippersnapper::pinEvent() {
     // strip "D" or "A" from "circuitpython-style" pin_name
     char* pinName = signalMessage.payload.pin_event.pin_name + 1;
@@ -178,14 +179,14 @@ bool Wippersnapper::pinEvent() {
     WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(atoi(signalMessage.payload.pin_event.pin_value));
     digitalWrite(atoi(pinName), atoi(signalMessage.payload.pin_event.pin_value));
     return true;
-}
+} */
 
 /**************************************************************************/
 /*!
     @brief    Configures a pin's mode, direction, pull and period.
 */
 /**************************************************************************/
-bool Wippersnapper::pinConfig()
+/* bool Wippersnapper::pinConfig()
 {
     WS_DEBUG_PRINT("Pin Name: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
     WS_DEBUG_PRINT("Mode: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
@@ -227,7 +228,7 @@ bool Wippersnapper::pinConfig()
     }
     // TODO: Replace this with a return from within the switch case's calling methods
     return true;
-}
+} */
 
 /**************************************************************************/
 /*!
@@ -272,11 +273,11 @@ bool Wippersnapper::executeSignalMessageEvent() {
     switch(signalMessage.which_payload) {
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             Serial.println("DEBUG: Pin config callback");
-            pinConfig();
+            //pinConfig();
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
             Serial.println("DEBUG: Pin event callback");
-            pinEvent();
+            //pinEvent();
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_sensor_configs_tag:
             Serial.println("DEBUG: Sensor config callback");
@@ -575,7 +576,7 @@ ws_status_t Wippersnapper::run() {
     if ( ws_pinInfo.pinValue != ws_pinInfo.prvPinValue ) {
         WS_DEBUG_PRINT("Pin Values: "); WS_DEBUG_PRINT(ws_pinInfo.pinValue);
         WS_DEBUG_PRINT(" "); WS_DEBUG_PRINT(ws_pinInfo.prvPinValue);
-        sendPinEvent();
+        //sendPinEvent();
         ws_pinInfo.prvPinValue = ws_pinInfo.pinValue;
     }
 
