@@ -189,10 +189,13 @@ bool decodePinConfigPacket(wippersnapper_pin_v1_ConfigurePinRequests *decodedPin
 /**************************************************************************/
 /*!
     @brief    Configures a pin's mode, direction, pull and period.
+    @return   true if the pin has been successfully configured.
 */
 /**************************************************************************/
 bool Wippersnapper::pinConfig() {
+    bool has_executed = false;
 
+    // !WIP!
     // Empty array of pinConfig messages
     wippersnapper_pin_v1_ConfigurePinRequests decodedConfigMsgs = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
     //decodePinConfigPacket(&decodedConfigMsgs);
@@ -237,8 +240,9 @@ bool Wippersnapper::pinConfig() {
             return false;
             break;
     } */
-    // TODO: Replace this with a return from within the switch case's calling methods
-    return true;
+    has_executed = true; // TODO: remove, debug only!
+
+    return has_executed;
 }
 
 /**************************************************************************/
@@ -280,29 +284,34 @@ bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequ
     @brief    Executes a signal message callback function.
     @param    signalTag
                 Signal's field tag.
+    @return   true if the signal message's callback has been executed
+                successfully, false otherwise.
 */
 /**************************************************************************/
 bool Wippersnapper::executeSignalMessageCb(pb_size_t signalTag) {
+    is_executed = true;
     switch(signalTag) {
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
-            Serial.println("DEBUG: Pin config callback");
-            //pinConfig();
+            Serial.println("DEBUG: Executing pinConfig");
+            if (!pinConfig()){
+                is_executed = false;
+            }
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
-            Serial.println("DEBUG: Pin event callback");
+            Serial.println("DEBUG: Executing pinEvent");
             //pinEvent();
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_sensor_configs_tag:
-            Serial.println("DEBUG: Sensor config callback");
+            Serial.println("DEBUG: Executing sensorConfig");
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_sensor_events_tag:
-            Serial.println("DEBUG: Sensor event callback");
+            Serial.println("DEBUG: Executing sensorEvent");
             break;
         default:
-            return false;
+            is_executed = false;
             break;
     }
-    return true;
+    return is_executed;
 }
 
 /**************************************************************************/
@@ -321,7 +330,7 @@ void cbDescriptionStatus(char *data, uint16_t len) {
     // create input stream for buffer
     pb_istream_t stream = pb_istream_from_buffer(buffer, len);
     // decode the stream
-    if (pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message)) {
+    if (!pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message)) {
         WS_DEBUG_PRINTLN("Error decoding description status message!");
     } else {    // set board status
         switch (message.response) {
