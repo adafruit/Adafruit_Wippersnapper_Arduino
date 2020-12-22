@@ -278,12 +278,12 @@ bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequ
                 type.
 */
 /**************************************************************************/
-bool Wippersnapper::executeSignalMessageEvent() {
-/*     // Executes signal message event based on payload type
-    switch(signalMessage.which_payload) {
+bool Wippersnapper::executeSignalMessageEvent(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
+     // Executes signal message event based on payload type
+    switch(decodedSignalMsg->which_payload) {
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             Serial.println("DEBUG: Pin config callback");
-            pinConfig();
+            //pinConfig();
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
             Serial.println("DEBUG: Pin event callback");
@@ -298,7 +298,7 @@ bool Wippersnapper::executeSignalMessageEvent() {
         default:
             return false;
             break;
-    } */
+    }
     return true;
 }
 
@@ -581,7 +581,7 @@ ws_status_t Wippersnapper::run() {
             return status();
         }
 
-        if (! executeSignalMessageEvent()) {
+        if (! executeSignalMessageEvent(&signalMessage)) {
             WS_DEBUG_PRINTLN("Err: Event failed to execute.");
             return status();
         }

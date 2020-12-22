@@ -131,7 +131,7 @@ class Wippersnapper {
         ws_status_t run();
 
         bool decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequest *signal);
-        bool executeSignalMessageEvent();
+        bool executeSignalMessageEvent(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg);
 
         bool pinConfig();
         bool decodePinConfigPacket(wippersnapper_pin_v1_ConfigurePinRequests *decodedPinConfigMsgs);
