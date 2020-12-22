@@ -93,7 +93,7 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
 {
     pb_field_iter_t iter;
 
-    if (!pb_field_iter_begin(&iter, signal_v1_CreateSignalRequest_fields, message))
+    if (!pb_field_iter_begin(&iter, wippersnapper_signal_v1_CreateSignalRequest_fields, message))
         return false;
 
     do
@@ -201,14 +201,14 @@ bool Wippersnapper::pinConfig()
 
     // Configure pin mode and direction
     switch(signalMessage.payload.pin_config.mode) {
-        case pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG:
-            if (signalMessage.payload.pin_config.direction == pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+        case wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG:
+            if (signalMessage.payload.pin_config.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
                 WS_DEBUG_PRINTLN("* Configuring Analog input pin.");
             } else {
                 WS_DEBUG_PRINTLN("* Configuring Analog output pin.");
             }
             break;
-        case pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL:
+        case wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL:
             // TODO: _INPUT is incorrect, should be 0x0 not 0x1
             if (signalMessage.payload.pin_config.direction == 0) {
                 WS_DEBUG_PRINTLN("* Configuring digital input pin");
@@ -252,7 +252,7 @@ bool Wippersnapper::decodeSignalMessage() {
     pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
     // decode the message
     bool status;
-    status = pb_decode(&stream, signal_v1_CreateSignalRequest_fields, &signalMessage);
+    status = pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &signalMessage);
 
     if (!status) {
         WS_DEBUG_PRINTLN("Unable to decode signal message");
@@ -270,22 +270,19 @@ bool Wippersnapper::decodeSignalMessage() {
 bool Wippersnapper::executeSignalMessageEvent() {
     // Executes signal message event based on payload type
     switch(signalMessage.which_payload) {
-        case signal_v1_CreateSignalRequest_pin_config_tag:
+        case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             Serial.println("DEBUG: Pin config callback");
             pinConfig();
             break;
-        case signal_v1_CreateSignalRequest_pin_event_tag:
+        case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
             Serial.println("DEBUG: Pin event callback");
             pinEvent();
             break;
-        case signal_v1_CreateSignalRequest_sensor_config_tag:
+        case wippersnapper_signal_v1_CreateSignalRequest_sensor_configs_tag:
             Serial.println("DEBUG: Sensor config callback");
             break;
-        case signal_v1_CreateSignalRequest_sensor_event_tag:
+        case wippersnapper_signal_v1_CreateSignalRequest_sensor_events_tag:
             Serial.println("DEBUG: Sensor event callback");
-            break;
-        case signal_v1_CreateSignalRequest_location_request_tag:
-            Serial.println("DEBUG: Location request callback");
             break;
         default:
             return false;
@@ -306,12 +303,12 @@ void cbDescriptionStatus(char *data, uint16_t len) {
     memcpy(buffer, data, len);
 
     // init. CreateDescriptionResponse message
-    description_v1_CreateDescriptionResponse message = description_v1_CreateDescriptionResponse_init_zero;
+    wippersnapper_description_v1_CreateDescriptionResponse message = wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
     // create input stream for buffer
     pb_istream_t stream = pb_istream_from_buffer(buffer, len);
     // decode the stream
     bool status;
-    status = pb_decode(&stream, description_v1_CreateDescriptionResponse_fields, &message);
+    status = pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message);
 
     if (!status) {
         WS_DEBUG_PRINTLN("Error decoding description status message!");
@@ -319,13 +316,13 @@ void cbDescriptionStatus(char *data, uint16_t len) {
 
     // set board status
     switch (message.response) {
-        case description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
+        case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
             _boardStatus = WS_BOARD_DEF_OK;
             break;
-        case description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
+        case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
             _boardStatus = WS_BOARD_DEF_INVALID;
             break;
-        case description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
+        case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
             _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
             break;
         default:
@@ -597,7 +594,7 @@ bool Wippersnapper::sendBoardDescription() {
     bool status;
 
     // initialize message description
-    description_v1_CreateDescriptionRequest message = description_v1_CreateDescriptionRequest_init_zero;
+    wippersnapper_description_v1_CreateDescriptionRequest message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
     // fill message fields
@@ -605,7 +602,7 @@ bool Wippersnapper::sendBoardDescription() {
     message.mac_addr = atoi(sUID); // TODO: Pull from UID!
 
     // encode message
-    status = pb_encode(&stream, description_v1_CreateDescriptionRequest_fields, &message);
+    status = pb_encode(&stream, wippersnapper_description_v1_CreateDescriptionRequest_fields, &message);
     message_length = stream.bytes_written;
 
     // verify message

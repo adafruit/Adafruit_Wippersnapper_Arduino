@@ -1,9 +1,9 @@
 /*!
- * @file BlinkaConnect.h
+ * @file Wippersnapper.h
  *
- * This is the documentation for Adafruit's BlinkaConnect wrapper for the
- * Arduino platform.  It is designed specifically to work with the
- * Adafruit IO+ BlinkaConnect IoT platform.
+ * This is the documentation for Adafruit's Wippersnapper firmware for the
+ * Arduino platform. It is designed specifically to work with
+ * Adafruit IO Wippersnapper IoT platform.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -146,7 +146,7 @@ class Wippersnapper {
         static uint8_t _buffer[128]; /*!< Shared buffer to save callback payload */
         uint8_t _buffer_state[128]; /*!< Holds previous contents of static _buffer */
         // Protobuf structs
-        signal_v1_CreateSignalRequest signalMessage = signal_v1_CreateSignalRequest_init_zero;
+        wippersnapper_signal_v1_CreateSignalRequest signalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
