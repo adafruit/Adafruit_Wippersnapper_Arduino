@@ -181,9 +181,17 @@ bool Wippersnapper::pinEvent() {
     return true;
 } */
 
-bool decodePinConfigPacket(wippersnapper_pin_v1_ConfigurePinRequests *decodedPinConfigMsgs) {
+bool Wippersnapper::decodePinConfigPacket(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
     WS_DEBUG_PRINTLN("Decode pin config packet");
+    // Empty array of pinConfig messages
+    // TODO: not sure if this should be elsewhere...
+    // Maybe we could return it and let pinConfig iterate over the array?
+    wippersnapper_pin_v1_ConfigurePinRequests decodedPinConfigMsgs = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
+
+
+
     return true;
+
 }
 
 /**************************************************************************/
@@ -192,13 +200,14 @@ bool decodePinConfigPacket(wippersnapper_pin_v1_ConfigurePinRequests *decodedPin
     @return   true if the pin has been successfully configured.
 */
 /**************************************************************************/
-bool Wippersnapper::pinConfig() {
+bool Wippersnapper::pinConfig(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
     bool has_executed = false;
 
-    // !WIP!
-    // Empty array of pinConfig messages
-    wippersnapper_pin_v1_ConfigurePinRequests decodedConfigMsgs = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
-    //decodePinConfigPacket(&decodedConfigMsgs);
+/* 
+    if (!decodePinConfigPacket(&decodedSignalMsg)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to decode pinConfig message(s)");
+        has_executed = false;
+    } */
 
     //WS_DEBUG_PRINT("Pin Name: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
     //WS_DEBUG_PRINT("Mode: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
@@ -289,14 +298,20 @@ bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequ
 */
 /**************************************************************************/
 bool Wippersnapper::executeSignalMessageCb(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
-    bool is_executed = true;
+    bool is_executed = false;
 
     switch(decodedSignalMsg->which_payload) { // decode signal message tag
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
-            Serial.println("DEBUG: Executing pinConfig");
-            if (!pinConfig()){ // TODO: pass signal msg's pin config list
-                is_executed = false;
+            Serial.println("DEBUG: Decoding pinConfig message(s)");
+            // Attempt to decode pin configuration message(s)
+            if (!decodePinConfigPacket(decodedSignalMsg)) {
+                WS_DEBUG_PRINTLN("ERROR: Could not decode pin config message");
             }
+
+            // TODO: Execute each pin config message one by one
+            // and set is_executed to true
+            // Executing pin configuration message(s)
+            is_executed = true;
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
             Serial.println("DEBUG: Executing pinEvent");
