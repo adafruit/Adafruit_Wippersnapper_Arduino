@@ -257,6 +257,9 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
 /*!
     @brief    Decodes a signal buffer protobuf message.
         NOTE: Should be executed in-order after a new _buffer is recieved.
+    @param    signal
+              Encoded signal message.
+    @return   true if successfully decoded signal message, false otherwise.
 */
 /**************************************************************************/
 bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequest *signal) {
@@ -275,6 +278,8 @@ bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequ
 /**************************************************************************/
 /*!
     @brief    Executes a signal message callback function.
+    @param    signalTag
+                Signal's field tag.
 */
 /**************************************************************************/
 bool Wippersnapper::executeSignalMessageCb(pb_size_t signalTag) {
@@ -307,35 +312,31 @@ bool Wippersnapper::executeSignalMessageCb(pb_size_t signalTag) {
 */
 /**************************************************************************/
 void cbDescriptionStatus(char *data, uint16_t len) {
-    // WS_DEBUG_PRINTLN("cbDescriptionStatus()");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 
     // init. CreateDescriptionResponse message
     wippersnapper_description_v1_CreateDescriptionResponse message = wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
+
     // create input stream for buffer
     pb_istream_t stream = pb_istream_from_buffer(buffer, len);
     // decode the stream
-    bool status;
-    status = pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message);
-
-    if (!status) {
+    if (pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message)) {
         WS_DEBUG_PRINTLN("Error decoding description status message!");
-    }
-
-    // set board status
-    switch (message.response) {
-        case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-            _boardStatus = WS_BOARD_DEF_OK;
-            break;
-        case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
-            _boardStatus = WS_BOARD_DEF_INVALID;
-            break;
-        case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
-            _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
-            break;
-        default:
-            _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+    } else {    // set board status
+        switch (message.response) {
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
+                _boardStatus = WS_BOARD_DEF_OK;
+                break;
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
+                _boardStatus = WS_BOARD_DEF_INVALID;
+                break;
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
+                _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                break;
+            default:
+                _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+        }
     }
 
     WS_DEBUG_PRINT("\nSuccessfully checked in, waiting for commands...")
