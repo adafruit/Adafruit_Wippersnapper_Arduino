@@ -181,6 +181,22 @@ bool Wippersnapper::pinEvent() {
     return true;
 } */
 
+/**************************************************************************/
+/*!
+    @brief    Invoked for each repeated ConfigurePinRequest message.
+*/
+/**************************************************************************/
+static bool Wippersnapper::cbDecodePinConfigs(pb_istream_t *istream, const pb_field_t *field, void **arg) {
+    bool is_success = true;
+
+    return is_success;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Invoked for each repeated ConfigurePinRequest message.
+*/
+/**************************************************************************/
 bool Wippersnapper::decodePinConfigPacket(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
     WS_DEBUG_PRINTLN("Decode pin config packet");
     // Empty array of pinConfig messages
@@ -188,10 +204,19 @@ bool Wippersnapper::decodePinConfigPacket(wippersnapper_signal_v1_CreateSignalRe
     // Maybe we could return it and let pinConfig iterate over the array?
     wippersnapper_pin_v1_ConfigurePinRequests decodedPinConfigMsgs = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
 
+    // Register callback cbDecodePinConfigs
+    decodedSignalMsg->payload.pin_configs.list.funcs.decode = &cbDecodePinConfigs;
+    // Pass arguments to callback
+    decodedSignalMsg->payload.pin_configs.list.arg = (void *)&decodedPinConfigMsgs;
 
+    // attempt to decode signal and check for errors
+    if (!pb_decode(&stream, proto_message_fields, proto_msg)) {
+        //printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+        WS_DEBUG_PRINTLN("Decoding failed");
+        return false;
+    }
 
     return true;
-
 }
 
 /**************************************************************************/
