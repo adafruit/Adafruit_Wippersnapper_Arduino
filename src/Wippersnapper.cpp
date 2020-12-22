@@ -274,13 +274,11 @@ bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequ
 
 /**************************************************************************/
 /*!
-    @brief    Calls a function handler provided a signal message's payload
-                type.
+    @brief    Executes a signal message callback function.
 */
 /**************************************************************************/
-bool Wippersnapper::executeSignalMessageEvent(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
-     // Executes signal message event based on payload type
-    switch(decodedSignalMsg->which_payload) {
+bool Wippersnapper::executeSignalMessageCb(pb_size_t signalTag) {
+    switch(signalTag) {
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             Serial.println("DEBUG: Pin config callback");
             //pinConfig();
@@ -573,18 +571,20 @@ ws_status_t Wippersnapper::run() {
         WS_DEBUG_PRINTLN("New data in message buffer");
 
         // Create empty signal packet struct.
-        wippersnapper_signal_v1_CreateSignalRequest signalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+        wippersnapper_signal_v1_CreateSignalRequest decodedSignalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
-        // Attempt to decode the signal message packet
-        if (! decodeSignalMessage(&signalMessage)) {
+        // Attempt to decode a signal message packet
+        if (! decodeSignalMessage(&decodedSignalMessage)) {
             WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
             return status();
         }
 
-        if (! executeSignalMessageEvent(&signalMessage)) {
-            WS_DEBUG_PRINTLN("Err: Event failed to execute.");
+        // Execute the signal message's callback
+        if (! executeSignalMessageCb(decodedSignalMessage.which_payload)) {
+            WS_DEBUG_PRINTLN("ERROR: Failed to execute signal message callback.");
             return status();
         }
+
         // update _buffer_state with contents of new message
         // TODO: Sizeof may not work, possibly use bufSize instead
         memcpy(_buffer_state, _buffer, sizeof(_buffer));
