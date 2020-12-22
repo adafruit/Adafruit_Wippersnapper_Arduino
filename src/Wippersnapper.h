@@ -149,9 +149,6 @@ class Wippersnapper {
         static uint8_t _buffer[128]; /*!< Shared buffer to save callback payload */
         uint8_t _buffer_state[128]; /*!< Holds previous contents of static _buffer */
 
-        // Protobuf structs
-        wippersnapper_signal_v1_CreateSignalRequest signalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 

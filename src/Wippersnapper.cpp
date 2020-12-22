@@ -260,19 +260,16 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
 */
 /**************************************************************************/
 bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequest *signal) {
-    WS_DEBUG_PRINTLN("Decoding signal message...")
+    bool is_success = true;
     // create a stream which reads from buffer
     pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
-    // decode the message
-    bool status;
-    status = pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &signal);
 
-    if (!status) {
-        WS_DEBUG_PRINTLN("Unable to decode signal message");
-        return false;
+    // decode the signal message packet
+    if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, signal)) {
+        is_success = false;
     }
-    WS_DEBUG_PRINTLN("Decoded signal message!");
-    return true;
+
+    return is_success;
 }
 
 /**************************************************************************/
@@ -282,7 +279,7 @@ bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequ
 */
 /**************************************************************************/
 bool Wippersnapper::executeSignalMessageEvent() {
-    // Executes signal message event based on payload type
+/*     // Executes signal message event based on payload type
     switch(signalMessage.which_payload) {
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             Serial.println("DEBUG: Pin config callback");
@@ -301,7 +298,7 @@ bool Wippersnapper::executeSignalMessageEvent() {
         default:
             return false;
             break;
-    }
+    } */
     return true;
 }
 
@@ -574,14 +571,19 @@ ws_status_t Wippersnapper::run() {
     n = memcmp(_buffer, _buffer_state, sizeof(_buffer));
     if (! n == 0) {
         WS_DEBUG_PRINTLN("New data in message buffer");
-        // Create empty signalMessage
+
+        // Create empty signal packet struct.
         wippersnapper_signal_v1_CreateSignalRequest signalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+        // Attempt to decode the signal message packet
         if (! decodeSignalMessage(&signalMessage)) {
             WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
-            return false;
+            return status();
         }
+
         if (! executeSignalMessageEvent()) {
-                WS_DEBUG_PRINTLN("Err: Event failed to execute.");
+            WS_DEBUG_PRINTLN("Err: Event failed to execute.");
+            return status();
         }
         // update _buffer_state with contents of new message
         // TODO: Sizeof may not work, possibly use bufSize instead
