@@ -319,24 +319,43 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
 
 /**************************************************************************/
 /*!
+    @brief      Sets payload callbacks inside the signal message's
+                submessage.
+*/
+/**************************************************************************/
+bool Wippersnapper::cbSignalMsg((pb_istream_t *stream, const pb_field_t *field, void **arg)) {
+    bool is_success = true;
+    WS_DEBUG_PRINTLN("cbSignalMsg");
+
+    wippersnapper_signal_v1_CreateSignalRequest *topmsg = field->message;
+
+    return is_success;
+}
+
+/**************************************************************************/
+/*!
     @brief    Decodes a signal buffer protobuf message.
         NOTE: Should be executed in-order after a new _buffer is recieved.
-    @param    signal
+    @param    encodedSignalMsg
               Encoded signal message.
     @return   true if successfully decoded signal message, false otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::decodeSignalMessage(wippersnapper_signal_v1_CreateSignalRequest *signal) {
+bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg) {
     bool is_success = true;
-    // create a stream which reads from buffer
-    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
+    WS_DEBUG_PRINTLN("decodeSignalMsg");
 
-    // decode the signal message packet
+    /* Set up the payload callback, which will set up the callbacks for
+    each oneof payload field once the field tag is known */
+    encodedSignalMsg->cb_payload.funcs.decode = cbSignalMsg;
+
+    // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
+    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
     if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, signal)) {
+        WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
         is_success = false;
     }
-
-    return is_success;
+    return is_success
 }
 
 /**************************************************************************/
@@ -651,16 +670,16 @@ ws_status_t Wippersnapper::run() {
         wippersnapper_signal_v1_CreateSignalRequest decodedSignalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
         // Attempt to decode a signal message packet
-        if (! decodeSignalMessage(&decodedSignalMessage)) {
+        if (! decodeSignalMsg(&decodedSignalMessage)) {
             WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
             return status();
         }
 
-        // Execute the signal message's callback
+/*         // Execute the signal message's callback
         if (! executeSignalMessageCb(&decodedSignalMessage)) {
             WS_DEBUG_PRINTLN("ERROR: Failed to execute signal message callback.");
             return status();
-        }
+        } */
 
         // update _buffer_state with contents of new message
         // TODO: Sizeof may not work, possibly use bufSize instead
