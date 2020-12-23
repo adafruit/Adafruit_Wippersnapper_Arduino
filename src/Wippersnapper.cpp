@@ -252,6 +252,13 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     bufSize = len;
 }
 
+// TODO: Doxy!
+bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg)
+{
+    WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
+    return true;
+}
+
 /**************************************************************************/
 /*!
     @brief      Sets payload callbacks inside the signal message's
@@ -262,19 +269,24 @@ bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, v
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbSignalMsg");
 
-    switch(field->tag) {
-        case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
-            WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Configuration");
-            // Set up decode pb_callback_t for pin configs
-            break;
-        case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
-            WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Event");
-            // TODO: Set up decode pb_callback_t for pin configs
-            break;
-        default:
-            WS_DEBUG_PRINTLN("ERROR: Unexpected signal msg tag.");
-            break;
+    if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag) {
+        WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Configuration");
+        // Empty array to hold decoded pin configurations
+        wippersnapper_pin_v1_ConfigurePinRequests decodedPinConfigs = wippersnapper_pin_v1_ConfigurePinRequests_init_zero; 
+        wippersnapper_pin_v1_ConfigurePinRequests pinConfigMsg = field->pData;
+        // Set up decode callback
+        pinConfigMsg->list.funcs.decode = &Wippersnapper::cbDecodePinConfigMsg;
+        pinConfigMsg->list.args = decodedPinConfigs;
     }
+    else if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
+        WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Event");
+    }
+    else {
+        WS_DEBUG_PRINTLN("ERROR: Unexpected signal msg tag.");
+    }
+
+    // once this is returned, pb_dec_submessage()
+    // decodes the submessage contents.
     return is_success;
 }
 
