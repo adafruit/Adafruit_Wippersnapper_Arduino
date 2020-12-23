@@ -323,12 +323,21 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
                 submessage.
 */
 /**************************************************************************/
-bool Wippersnapper::cbSignalMsg((pb_istream_t *stream, const pb_field_t *field, void **arg)) {
+bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbSignalMsg");
 
-    wippersnapper_signal_v1_CreateSignalRequest *topmsg = field->message;
-
+    switch(field->tag) {
+        case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
+            WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Configuration");
+            break;
+        case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
+            WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Event");
+            break;
+        default:
+            WS_DEBUG_PRINTLN("ERROR: Unexpected signal msg tag.");
+            break;
+    }
     return is_success;
 }
 
@@ -347,15 +356,15 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
     /* Set up the payload callback, which will set up the callbacks for
     each oneof payload field once the field tag is known */
-    encodedSignalMsg->cb_payload.funcs.decode = cbSignalMsg;
+    encodedSignalMsg->cb_payload.funcs.decode = &Wippersnapper::cbSignalMsg;
 
     // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
     pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
-    if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, signal)) {
+    if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, encodedSignalMsg)) {
         WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
         is_success = false;
     }
-    return is_success
+    return is_success;
 }
 
 /**************************************************************************/
