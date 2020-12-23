@@ -182,71 +182,6 @@ bool Wippersnapper::pinEvent() {
 
 /**************************************************************************/
 /*!
-    @brief    Invoked for each repeated ConfigurePinRequest message.
-*/
-/**************************************************************************/
-bool Wippersnapper::cbDecodePinConfigs(pb_istream_t *istream, const pb_field_t *field, void **arg) {
-    bool is_success = true;
-    //TODO: for some reason, this doesn't get called during decodePinConfigPacket
-    // possibly bc its expecting static..?
-    WS_DEBUG_PRINTLN("cbDecodePinConfigs()");
-
-    // Null args, fail
-    if ((NULL == arg) || (NULL == *arg)) {
-        is_success = false;
-    }
-
-    // Attempt to decode a wippersnapper_pin_v1_ConfigurePinRequest message
-    wippersnapper_pin_v1_ConfigurePinRequest protoPinRequestMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
-
-    if (!pb_decode(istream, wippersnapper_pin_v1_ConfigurePinRequest_fields, &protoPinRequestMsg)) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to decode ConfigurePinRequest message");
-      is_success = false;
-    }
-
-    // TODO: Build message struct
-
-    // TODO: Point to the next message
-
-    return is_success;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Invoked for each repeated ConfigurePinRequest message.
-*/
-/**************************************************************************/
-bool Wippersnapper::decodePinConfigPacket(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
-    bool is_success = true;
-    WS_DEBUG_PRINTLN("Decode pin config packet");
-    // Empty array of pinConfig messages
-    // TODO: not sure if this should be elsewhere...
-    // Maybe we could return it and let pinConfig iterate over the array?
-    wippersnapper_pin_v1_ConfigurePinRequests decodedPinConfigMsgs = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
-
-    // Pass arguments to callback, cbDecodePinConfigs
-    decodedSignalMsg->payload.pin_configs.list.arg = (void *)&decodedPinConfigMsgs;
-    // Register callback, cbDecodePinConfigs
-    // TODO: Are we actually trying to call this? doesn't seem like its being invoked
-    decodedSignalMsg->payload.pin_configs.list.funcs.decode = &Wippersnapper::cbDecodePinConfigs;
-    WS_DEBUG_PRINTLN("Registered cb");
-
-    // TODO: This isn't correct...
-    // call pb_decode
-    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
-
-    // decode the signal message packet
-    if (!pb_decode(&stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, \
-            decodedSignalMsg)) {
-        WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message packet.");
-        is_success = false;
-    }
-
-    return true;
-}
-
-/**************************************************************************/
-/*!
     @brief    Configures a pin's mode, direction, pull and period.
     @return   true if the pin has been successfully configured.
 */
@@ -330,9 +265,11 @@ bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, v
     switch(field->tag) {
         case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
             WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Configuration");
+            // Set up decode pb_callback_t for pin configs
             break;
         case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
             WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Event");
+            // TODO: Set up decode pb_callback_t for pin configs
             break;
         default:
             WS_DEBUG_PRINTLN("ERROR: Unexpected signal msg tag.");
@@ -365,48 +302,6 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
         is_success = false;
     }
     return is_success;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Executes a signal message callback function.
-    @param    signalTag
-                Signal's field tag.
-    @return   true if the signal message's callback has been executed
-                successfully, false otherwise.
-*/
-/**************************************************************************/
-bool Wippersnapper::executeSignalMessageCb(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
-    bool is_executed = false;
-
-    switch(decodedSignalMsg->which_payload) { // decode signal message tag
-        case wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag:
-            Serial.println("DEBUG: Decoding pinConfig message(s)");
-            // Attempt to decode pin configuration message(s)
-            if (!decodePinConfigPacket(decodedSignalMsg)) {
-                WS_DEBUG_PRINTLN("ERROR: Could not decode pin config message");
-            }
-            // TODO: Execute each pin config message one by one
-            // and set is_executed to true
-            // Executing pin configuration message(s)
-            is_executed = true;
-            break;
-        case wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag:
-            Serial.println("DEBUG: Executing pinEvent");
-            //pinEvent();
-            is_executed = true;
-            break;
-        case wippersnapper_signal_v1_CreateSignalRequest_sensor_configs_tag:
-            Serial.println("DEBUG: Executing sensorConfig");
-            break;
-        case wippersnapper_signal_v1_CreateSignalRequest_sensor_events_tag:
-            Serial.println("DEBUG: Executing sensorEvent");
-            break;
-        default:
-            is_executed = false;
-            break;
-    }
-    return is_executed;
 }
 
 /**************************************************************************/
@@ -683,12 +578,6 @@ ws_status_t Wippersnapper::run() {
             WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
             return status();
         }
-
-/*         // Execute the signal message's callback
-        if (! executeSignalMessageCb(&decodedSignalMessage)) {
-            WS_DEBUG_PRINTLN("ERROR: Failed to execute signal message callback.");
-            return status();
-        } */
 
         // update _buffer_state with contents of new message
         // TODO: Sizeof may not work, possibly use bufSize instead
