@@ -34,7 +34,7 @@
 
 ws_board_status_t _boardStatus; // TODO: move to header
 
-uint16_t Wippersnapper::bufSize;
+
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
 Timer<16U, &millis, char *> Wippersnapper::t_timer;
@@ -107,61 +107,6 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
     return false;
 }
 
-/****************************************************************************/
-/*!
-    @brief    ISR which reads the value of a digital pin and updates pinInfo.
-*/
-/****************************************************************************/
-bool Wippersnapper::cbDigitalRead(char *pinName) {
-  WS_DEBUG_PRINT("cbDigitalRead(");WS_DEBUG_PRINT(pinName);WS_DEBUG_PRINTLN(")");
-
-  // Read and store pinName into struct.
-  ws_pinInfo.pinValue = digitalRead((unsigned)atoi(pinName));
-
-  // debug TODO remove
-  WS_DEBUG_PRINT("Pin Values: "); WS_DEBUG_PRINT(ws_pinInfo.pinValue);
-  WS_DEBUG_PRINT(" "); WS_DEBUG_PRINTLN(ws_pinInfo.prvPinValue);
-  return true; // repeat every xMS
-}
-
-/**************************************************************************/
-/*!
-    @brief    Returns if succcessfully sent pin event to MQTT broker,
-            otherwise false;
-*/
-/**************************************************************************/
-/* bool Wippersnapper::sendPinEvent() {
-  uint8_t buffer[128]; // message buffer, TODO: Make this a shared buffer
-  bool status = false;
-
-  // create output stream for buffer
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-  //pb_ostream_t stream = {0};
-
-  // Create PinEventRequest message type
-  pin_v1_PinEventRequest msg;
-
-  // Encode payload
-  strcpy(msg.pin_name, "D"); // TODO: hotfix for broker to identify in desc., remove
-  strcat(msg.pin_name, timerPin);
-  itoa(ws_pinInfo.pinValue, msg.pin_value, 10);
-
-  // Encode PinEventRequest message
-  status = encode_unionmessage(&stream, pin_v1_PinEventRequest_fields, &msg);
-
-  if (!status)
-  {
-      Serial.println("Encoding failed!");
-      return false;
-  }
-
-  Serial.print("Encoded size is: ");Serial.println(stream.bytes_written);
-
-  _mqtt->publish(_topic_signal_device, buffer, stream.bytes_written, 0);
-  return true;
-}
- */
-
 /**************************************************************************/
 /*!
     @brief    Executes pin events from the broker
@@ -180,14 +125,13 @@ bool Wippersnapper::pinEvent() {
 
 /**************************************************************************/
 /*!
-    @brief    Executes when signal topic receives a new message and copies
-                payload and payload length.
+    @brief    Executes when signal topic receives a new message. Fills
+                shared buffer with data from payload.
 */
 /**************************************************************************/
 void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("cbSignalTopic()");
     memcpy(_buffer, data, len);
-    bufSize = len;
 }
 
 /****************************************************************************/
@@ -244,7 +188,7 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
     // pb_decode the stream into a pinReqMessage
     wippersnapper_pin_v1_ConfigurePinRequest pinReqMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequest_fields, &pinReqMsg)) {
-        WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
+        WS_DEBUG_PRINTLN("L191 ERROR: Could not decode CreateSignalRequest")
         is_success = false;
     }
 
@@ -252,10 +196,22 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
     if (! configPinReq(&pinReqMsg)){
         WS_DEBUG_PRINTLN("Unable to configure pin");
         is_success = false;
-    };
+    }
 
     // TODO: Freeup struct members
     return is_success;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Decodes wippersnapper_pin_v1_ConfigurePinRequests messages.
+*/
+/**************************************************************************/
+bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+    bool is_success = true;
+    WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
+
+    // TODO: Decode stream into a PinEvent
 }
 
 /**************************************************************************/
@@ -273,18 +229,29 @@ bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, v
 
     if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag) {
         WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Configuration");
+        // array to store the decoded CreateSignalRequests data
         wippersnapper_pin_v1_ConfigurePinRequests msg = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
+        // set up callback
         msg.list.funcs.decode = &Wippersnapper::cbDecodePinConfigMsg;
         msg.list.arg = field->pData;
-
-    if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, &msg)) {
-        WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
-        is_success = false;
-    }
-
+        // decode each ConfigurePinRequest sub-message
+        if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, &msg)) {
+            WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
+            is_success = false;
+        }
     }
     else if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
         WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Event");
+        // array to store the decoded PinEvents data
+        wippersnapper_pin_v1_PinEvents msg = wippersnapper_pin_v1_PinEvents_init_zero;
+        // set up callback
+        msg.list.funcs.decode = &Wippersnapper::cbDecodePinEventMsg;
+        msg.list.arg = field->pData;
+        // decode each PinEvents sub-message
+        if (!pb_decode(stream, wippersnapper_pin_v1_PinEvents_fields, &msg)) {
+            WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
+            is_success = false;
+        }
     }
     else {
         WS_DEBUG_PRINTLN("ERROR: Unexpected signal msg tag.");
@@ -313,9 +280,9 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
     encodedSignalMsg->cb_payload.funcs.decode = &Wippersnapper::cbSignalMsg;
 
     // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
-    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
+    pb_istream_t stream = pb_istream_from_buffer(_buffer, sizeof(_buffer));
     if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, encodedSignalMsg)) {
-        WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
+        WS_DEBUG_PRINTLN("L285 ERROR: Could not decode CreateSignalRequest")
         is_success = false;
     }
     return is_success;
@@ -582,7 +549,6 @@ ws_status_t Wippersnapper::run() {
 
     // Handle incoming signal message
     int n; // TODO: decl. in .h instead
-    // TODO: Sizeof may not work, possibly use bufSize instead
     n = memcmp(_buffer, _buffer_state, sizeof(_buffer));
     if (! n == 0) {
         WS_DEBUG_PRINTLN("New data in message buffer");
