@@ -130,6 +130,9 @@ class Wippersnapper {
         void ping();
         ws_status_t run();
 
+        // MQTT topic callbacks
+        static void cbSignalTopic(char *data, uint16_t len);
+
         // Signal message
         static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
@@ -140,9 +143,9 @@ class Wippersnapper {
 
         // Pin event message
         static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        static bool writePinEvent(wippersnapper_pin_v1_PinEvent *pinEventMsg);
 
-        static void cbSignalTopic(char *data, uint16_t len);
-
+        // Adafruit IO Credentials
         const char *_username; /*!< Adafruit IO Username. */
         const char *_key;      /*!< Adafruit IO Key. */
 
@@ -153,6 +156,7 @@ class Wippersnapper {
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
+        // TODO: Possibly remove?
         struct pinInfo {
             char *pinName;
             char *PinNameFull;
