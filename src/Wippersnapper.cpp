@@ -190,6 +190,48 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     bufSize = len;
 }
 
+/****************************************************************************/
+/*!
+    @brief    Configures a pin according to a 
+                wippersnapper_pin_v1_ConfigurePinRequest message.
+    @param    pinMsg
+              Pointer to a wippersnapper_pin_v1_ConfigurePinRequest message.
+*/
+/****************************************************************************/
+bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+    bool is_configured = true;
+    WS_DEBUG_PRINTLN("configPinReq");
+
+    // strip "a/d" circuitpython pin name prefix
+    char* pinName = pinMsg->pin_name + 1;
+    if (pinMsg->mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
+        // Configure a digital pin
+        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+            pinMode(atoi(pinName), pinMsg->direction);
+            WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
+        }
+        else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+            WS_DEBUG_PRINTLN("Configuring digital input pin");
+        }
+        else {
+            WS_DEBUG_PRINTLN("Unable to configure digital pin");
+        }
+    }
+    else if (pinMsg->mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG) {
+        // Configure an analog pin
+        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+            WS_DEBUG_PRINTLN("Configuring analog output pin");
+        }
+        else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+            WS_DEBUG_PRINTLN("Configuring analog input pin");
+        }
+        else {
+            WS_DEBUG_PRINTLN("Unable to configure digital pin");
+        }
+    }
+    return is_configured;
+}
+
 /**************************************************************************/
 /*!
     @brief  Decodes wippersnapper_pin_v1_ConfigurePinRequests messages.
@@ -207,36 +249,11 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
     }
 
     // TODO: Pass the configuration msg to another method, check ret.
+    if (! configPinReq(&pinReqMsg)){
+        WS_DEBUG_PRINTLN("Unable to configure pin");
+        is_success = false;
+    };
 
-    // Configure pin
-    WS_DEBUG_PRINT("Configuring Pin: "); WS_DEBUG_PRINTLN(pinReqMsg.pin_name);
-    char* pinName = pinReqMsg.pin_name + 1; // TODO: Maybe not reqd.
-
-    if (pinReqMsg.mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
-        // Configure a digital pin
-        if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            WS_DEBUG_PRINTLN("Configuring digital output pin");
-            pinMode(atoi(pinName), pinReqMsg.direction);
-        }
-        else if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring digital input pin");
-        }
-        else {
-            WS_DEBUG_PRINTLN("Unable to configure digital pin");
-        }
-    }
-    else if (pinReqMsg.mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG) {
-        // Configure an analog pin
-        if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            WS_DEBUG_PRINTLN("Configuring analog output pin");
-        }
-        else if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring analog input pin");
-        }
-        else {
-            WS_DEBUG_PRINTLN("Unable to configure digital pin");
-        }
-    }
     // TODO: Freeup struct members
     return is_success;
 }

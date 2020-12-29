@@ -131,11 +131,12 @@ class Wippersnapper {
         ws_status_t run();
 
         // Signal message
-        bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
         static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
 
-        // Pin configuration
+        // Pin configure message
         static bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
         bool pinEvent();
         bool sendPinEvent();
