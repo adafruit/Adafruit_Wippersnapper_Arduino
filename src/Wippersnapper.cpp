@@ -34,7 +34,7 @@
 
 ws_board_status_t _boardStatus; // TODO: move to header
 
-
+uint16_t Wippersnapper::bufSize;
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
 Timer<16U, &millis, char *> Wippersnapper::t_timer;
@@ -132,6 +132,7 @@ bool Wippersnapper::pinEvent() {
 void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("cbSignalTopic()");
     memcpy(_buffer, data, len);
+    bufSize = len;
 }
 
 /****************************************************************************/
@@ -280,7 +281,7 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
     encodedSignalMsg->cb_payload.funcs.decode = &Wippersnapper::cbSignalMsg;
 
     // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
-    pb_istream_t stream = pb_istream_from_buffer(_buffer, sizeof(_buffer));
+    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
     if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, encodedSignalMsg)) {
         WS_DEBUG_PRINTLN("L285 ERROR: Could not decode CreateSignalRequest")
         is_success = false;
