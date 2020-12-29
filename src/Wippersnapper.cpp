@@ -109,22 +109,6 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
 
 /**************************************************************************/
 /*!
-    @brief    Executes pin events from the broker
-*/
-/**************************************************************************/
-/* // Process pin events from the broker
-bool Wippersnapper::pinEvent() {
-    // strip "D" or "A" from "circuitpython-style" pin_name
-    char* pinName = signalMessage.payload.pin_event.pin_name + 1;
-    // Set pin value
-    WS_DEBUG_PRINT("Setting ")WS_DEBUG_PRINT(atoi(pinName));
-    WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(atoi(signalMessage.payload.pin_event.pin_value));
-    digitalWrite(atoi(pinName), atoi(signalMessage.payload.pin_event.pin_value));
-    return true;
-} */
-
-/**************************************************************************/
-/*!
     @brief    Executes when signal topic receives a new message. Fills
                 shared buffer with data from payload.
 */
@@ -179,7 +163,7 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
 
 /**************************************************************************/
 /*!
-    @brief  Decodes wippersnapper_pin_v1_ConfigurePinRequests messages.
+    @brief  Decodes repeated ConfigurePinRequests messages.
 */
 /**************************************************************************/
 bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
@@ -205,14 +189,36 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
 
 /**************************************************************************/
 /*!
-    @brief  Decodes wippersnapper_pin_v1_ConfigurePinRequests messages.
+    @brief  Decodes repeated PinEvents messages.
 */
 /**************************************************************************/
 bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
-    WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
+    WS_DEBUG_PRINTLN("cbDecodePinEventMsg");
 
-    // TODO: Decode stream into a PinEvent
+    // Decode stream into a PinEvent
+    wippersnapper_pin_v1_PinEvent pinEventMsg = wippersnapper_pin_v1_PinEvent_init_zero;
+    if (!pb_decode(stream, wippersnapper_pin_v1_PinEvent_fields, &pinEventMsg)) {
+        WS_DEBUG_PRINTLN("ERROR: Could not decode PinEvents")
+        is_success = false;
+    }
+
+    // TODO: do something with the pin event
+    // check if A or D and perform analog or digital write dependiong
+    char* pinName = pinEventMsg.pin_name + 1;
+
+    if (pinEventMsg.pin_name[0] == 'D') {
+        WS_DEBUG_PRINTLN("Digital Pin Event: ");
+        // TODO: implement digitalWrite
+    }
+    else if (pinEventMsg.pin_name[0] == 'A') {
+        WS_DEBUG_PRINTLN('Analog pin event: ');
+        // TODO: implement analogWrite w/ pin_value
+    } else {
+        WS_DEBUG_PRINTLN("Invalid pin event name");
+        is_success = false;
+    }
+    return is_success;
 }
 
 /**************************************************************************/

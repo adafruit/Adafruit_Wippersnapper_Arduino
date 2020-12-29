@@ -140,7 +140,6 @@ class Wippersnapper {
 
         // Pin event message
         static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
-        bool pinEvent();
 
         static void cbSignalTopic(char *data, uint16_t len);
 
