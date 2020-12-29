@@ -257,8 +257,22 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
 /**************************************************************************/
 bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
+    bool is_success = true;
     WS_DEBUG_PRINTLN("**cbDecodePinConfigMsg()");
-    return true;
+
+    wippersnapper_pin_v1_ConfigurePinRequest pinReqMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
+
+    // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
+    //pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
+    if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequest_fields, &pinReqMsg)) {
+        WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
+        is_success = false;
+    }
+
+    WS_DEBUG_PRINTLN("decoded...");
+    WS_DEBUG_PRINTLN(pinReqMsg.pin_name);
+
+    return is_success;
 }
 
 /**************************************************************************/
