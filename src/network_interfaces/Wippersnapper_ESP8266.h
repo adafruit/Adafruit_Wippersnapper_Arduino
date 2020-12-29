@@ -49,11 +49,10 @@ public:
                         const char *ssidPassword): Wippersnapper(aio_user, aio_key) {
     _ssid = ssid;
     _pass = ssidPassword;
-    
     _client = new WiFiClientSecure;
     _client->setFingerprint(WS_SSL_FINGERPRINT);
 
-    _mqtt = new Adafruit_MQTT_Client(_client, _mqtt_broker, _mqtt_port);
+    _mqtt = new Adafruit_MQTT_Client(_client, _mqtt_broker, _mqtt_port, aio_user, aio_key);
     }
 
   /**************************************************************************/

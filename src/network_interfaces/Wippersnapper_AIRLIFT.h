@@ -70,7 +70,7 @@ public:
     _pass = ssidPassword;
 
     _mqtt_client = new WiFiSSLClient;
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, _mqtt_port);
+    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, _mqtt_port, aio_user, aio_key);
     }
 
   /**************************************************************************/
