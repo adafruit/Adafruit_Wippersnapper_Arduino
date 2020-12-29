@@ -262,15 +262,29 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
 
     wippersnapper_pin_v1_ConfigurePinRequest pinReqMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
 
-    // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
-    //pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
+    // pb_decode the stream into a pinReqMessage
     if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequest_fields, &pinReqMsg)) {
         WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
         is_success = false;
     }
+    // Configure pin
+    WS_DEBUG_PRINT("Configuring Pin: "); WS_DEBUG_PRINTLN(pinReqMsg.pin_name);
+    char* pinName = pinReqMsg.pin_name + 1; // TODO: Maybe not reqd.
 
-    WS_DEBUG_PRINTLN("decoded...");
-    WS_DEBUG_PRINTLN(pinReqMsg.pin_name);
+    if (pinReqMsg.mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
+        // Configure a digital pin
+        if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+            WS_DEBUG_PRINTLN("Configuring output pin");
+        }
+        else if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+            WS_DEBUG_PRINTLN("Configuring input pin");
+        }
+        else {
+            WS_DEBUG_PRINTLN("Unable to configure digital pin");
+        }
+    }
+
+    // TODO: Freeup struct members
 
     return is_success;
 }
