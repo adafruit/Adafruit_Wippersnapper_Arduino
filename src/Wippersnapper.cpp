@@ -208,12 +208,14 @@ bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *
     char* pinName = pinEventMsg.pin_name + 1;
 
     if (pinEventMsg.pin_name[0] == 'D') {
-        WS_DEBUG_PRINTLN("Digital Pin Event: ");
-        // TODO: implement digitalWrite
+        WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
+        WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinEventMsg.pin_value);
+        digitalWrite(atoi(pinName), atoi(pinEventMsg.pin_value));
     }
     else if (pinEventMsg.pin_name[0] == 'A') {
-        WS_DEBUG_PRINTLN('Analog pin event: ');
-        // TODO: implement analogWrite w/ pin_value
+        WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
+        WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinEventMsg.pin_value);
+        analogWrite(atoi(pinName), atoi(pinEventMsg.pin_value));
     } else {
         WS_DEBUG_PRINTLN("Invalid pin event name");
         is_success = false;
