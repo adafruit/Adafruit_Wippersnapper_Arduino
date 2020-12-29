@@ -180,66 +180,6 @@ bool Wippersnapper::pinEvent() {
 
 /**************************************************************************/
 /*!
-    @brief    Configures a pin's mode, direction, pull and period.
-    @return   true if the pin has been successfully configured.
-*/
-/**************************************************************************/
-bool Wippersnapper::pinConfig(wippersnapper_signal_v1_CreateSignalRequest *decodedSignalMsg) {
-    bool has_executed = false;
-
-/* 
-    if (!decodePinConfigPacket(&decodedSignalMsg)) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to decode pinConfig message(s)");
-        has_executed = false;
-    } */
-
-    //WS_DEBUG_PRINT("Pin Name: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pin_name);
-    //WS_DEBUG_PRINT("Mode: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.mode);
-    //WS_DEBUG_PRINT("Direction : ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.direction);
-    //WS_DEBUG_PRINT("Pull enabled: ");WS_DEBUG_PRINTLN(signalMessage.payload.pin_config.pull);
-
-
-/* 
-    ws_pinInfo.PinNameFull = signalMessage.payload.pin_config.pin_name;
-    // strip "D" or "A" from "circuitpython-style" pin_name
-    char* pinName = signalMessage.payload.pin_config.pin_name + 1;
-    ws_pinInfo.pinName = pinName;
-
-    // TODO: Check for pullup, configure!
-
-    // Configure pin mode and direction
-    switch(signalMessage.payload.pin_config.mode) {
-        case wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG:
-            if (signalMessage.payload.pin_config.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-                WS_DEBUG_PRINTLN("* Configuring Analog input pin.");
-            } else {
-                WS_DEBUG_PRINTLN("* Configuring Analog output pin.");
-            }
-            break;
-        case wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL:
-            // TODO: _INPUT is incorrect, should be 0x0 not 0x1
-            if (signalMessage.payload.pin_config.direction == 0) {
-                WS_DEBUG_PRINTLN("* Configuring digital input pin");
-                long timerMs = signalMessage.payload.pin_config.period;
-                WS_DEBUG_PRINTLN(timerMs);
-                strcpy(timerPin, pinName);
-                auto task = t_timer.every(timerMs, cbDigitalRead, timerPin);
-            }
-            WS_DEBUG_PRINTLN("Configuring digital pin direction");
-            pinMode(atoi(ws_pinInfo.pinName), signalMessage.payload.pin_config.direction);
-            break;
-        default:
-            WS_DEBUG_PRINTLN("Unable to obtain pin configuration from message.")
-            return false;
-            break;
-    } */
-    has_executed = true; // TODO: remove, debug only!
-
-    return has_executed;
-}
-
-/**************************************************************************/
-/*!
     @brief    Executes when signal topic receives a new message and copies
                 payload and payload length.
 */
@@ -255,18 +195,19 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     @brief  Decodes wippersnapper_pin_v1_ConfigurePinRequests messages.
 */
 /**************************************************************************/
-bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg)
-{
+bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
-    WS_DEBUG_PRINTLN("**cbDecodePinConfigMsg()");
-
-    wippersnapper_pin_v1_ConfigurePinRequest pinReqMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
+    WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
 
     // pb_decode the stream into a pinReqMessage
+    wippersnapper_pin_v1_ConfigurePinRequest pinReqMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequest_fields, &pinReqMsg)) {
         WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
         is_success = false;
     }
+
+    // TODO: Pass the configuration msg to another method, check ret.
+
     // Configure pin
     WS_DEBUG_PRINT("Configuring Pin: "); WS_DEBUG_PRINTLN(pinReqMsg.pin_name);
     char* pinName = pinReqMsg.pin_name + 1; // TODO: Maybe not reqd.
@@ -274,18 +215,29 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
     if (pinReqMsg.mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
         // Configure a digital pin
         if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            WS_DEBUG_PRINTLN("Configuring output pin");
+            WS_DEBUG_PRINTLN("Configuring digital output pin");
+            pinMode(atoi(pinName), pinReqMsg.direction);
         }
         else if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring input pin");
+            WS_DEBUG_PRINTLN("Configuring digital input pin");
         }
         else {
             WS_DEBUG_PRINTLN("Unable to configure digital pin");
         }
     }
-
+    else if (pinReqMsg.mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG) {
+        // Configure an analog pin
+        if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+            WS_DEBUG_PRINTLN("Configuring analog output pin");
+        }
+        else if (pinReqMsg.direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+            WS_DEBUG_PRINTLN("Configuring analog input pin");
+        }
+        else {
+            WS_DEBUG_PRINTLN("Unable to configure digital pin");
+        }
+    }
     // TODO: Freeup struct members
-
     return is_success;
 }
 
