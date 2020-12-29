@@ -101,11 +101,9 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
         {
             if (!pb_encode_tag_for_field(stream, &iter))
                 return false;
-            
             return pb_encode_submessage(stream, messagetype, message);
         }
     } while (pb_field_iter_next(&iter));
-    
     return false;
 }
 
@@ -252,10 +250,14 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     bufSize = len;
 }
 
-// TODO: Doxy!
+/**************************************************************************/
+/*!
+    @brief  Decodes wippersnapper_pin_v1_ConfigurePinRequests messages.
+*/
+/**************************************************************************/
 bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
-    WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
+    WS_DEBUG_PRINTLN("**cbDecodePinConfigMsg()");
     return true;
 }
 
@@ -269,14 +271,20 @@ bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, v
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbSignalMsg");
 
+    pb_size_t arr_sz = field->array_size;
+    WS_DEBUG_PRINT("Sub-messages found: "); WS_DEBUG_PRINTLN(arr_sz);
+
     if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_configs_tag) {
         WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Configuration");
-        // Empty array to hold decoded pin configurations
-        wippersnapper_pin_v1_ConfigurePinRequests decodedPinConfigs = wippersnapper_pin_v1_ConfigurePinRequests_init_zero; 
-        wippersnapper_pin_v1_ConfigurePinRequests pinConfigMsg = field->pData;
-        // Set up decode callback
-        pinConfigMsg->list.funcs.decode = &Wippersnapper::cbDecodePinConfigMsg;
-        pinConfigMsg->list.args = decodedPinConfigs;
+        wippersnapper_pin_v1_ConfigurePinRequests msg = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
+        msg.list.funcs.decode = &Wippersnapper::cbDecodePinConfigMsg;
+        msg.list.arg = field->pData;
+
+    if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, &msg)) {
+        WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
+        is_success = false;
+    }
+
     }
     else if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
         WS_DEBUG_PRINTLN("Signal Msg Tag: Pin Event");
