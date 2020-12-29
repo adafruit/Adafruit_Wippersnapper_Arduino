@@ -349,7 +349,7 @@ void cbDescriptionStatus(char *data, uint16_t len) {
         }
     }
 
-    WS_DEBUG_PRINT("\nSuccessfully checked in, waiting for commands...")
+    WS_DEBUG_PRINTLN("\nSuccessfully checked in, waiting for commands...")
     // WS_DEBUG_PRINTLN(_boardStatus);
 }
 
@@ -477,7 +477,7 @@ void Wippersnapper::connect() {
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
     _connect();
-    WS_DEBUG_PRINTLN("Connected!");
+    WS_DEBUG_PRINTLN("WiFi Connected!");
 
     // Wait for connection to broker
     WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
@@ -485,7 +485,7 @@ void Wippersnapper::connect() {
         WS_DEBUG_PRINT(".");
         delay(500);
     }
-    WS_DEBUG_PRINTLN("Connected!");
+    WS_DEBUG_PRINTLN("MQTT Connected!");
 
     // Send hardware description to broker
     if (!sendGetHardwareDescription()){
@@ -659,7 +659,6 @@ bool Wippersnapper::sendGetHardwareDescription(){
         WS_DEBUG_PRINTLN("Verifying board definition response")
         while (getBoardStatus() != WS_BOARD_DEF_OK) {
             WS_DEBUG_PRINT(".");
-            // TODO: needs a retry+timeout loop here!!
             _mqtt->processPackets(50); // run a processing loop
         }
         return true;
