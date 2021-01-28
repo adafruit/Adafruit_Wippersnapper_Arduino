@@ -491,9 +491,10 @@ void Wippersnapper::connect() {
     WS_DEBUG_PRINTLN("MQTT Connected!");
 
     // Send hardware description to broker
-    if (!sendGetHardwareDescription()){
+    if (!sendGetHardwareDescription(10)){
         // TODO: get error types back from function instead of bool, verify against resp.
-        WS_DEBUG_PRINTLN("Hardware description process failed!");
+        WS_DEBUG_PRINTLN("Board not identified with broker.");
+        for(;;);
     }
 
 }
@@ -522,7 +523,8 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
             }
             delay(500);
         }
-        if (!sendGetHardwareDescription()){
+
+        if (!sendGetHardwareDescription(10)){
             // TODO: get error types back from function instead of bool, verify against resp.
             return status();
         }
@@ -613,7 +615,7 @@ ws_status_t Wippersnapper::run() {
 */
 /**************************************************************************/
 bool Wippersnapper::sendBoardDescription() {
-    WS_DEBUG_PRINT("Checking into Wippersnapper...");
+    WS_DEBUG_PRINT("Publishing board definition...");
     uint8_t buffer[128]; // message stored in this buffer
     size_t message_length;
     bool status;
@@ -649,20 +651,29 @@ bool Wippersnapper::sendBoardDescription() {
     @brief    Sends board description message and verifies broker's response
 */
 /***************************************************************************/
-bool Wippersnapper::sendGetHardwareDescription(){
-        // Send hardware characteristics to broker
+bool Wippersnapper::sendGetHardwareDescription(uint8_t retries=10){
+        uint8_t retryCount = 0;
+
+        // Publish board definition message to broker
         if (!sendBoardDescription()) {
             _boardStatus = WS_BOARD_DEF_SEND_FAILED;
             WS_DEBUG_PRINTLN("Unable to send board description to broker");
             return false;
         }
-        WS_DEBUG_PRINTLN("Sent check-in message to Wippersnapper!");
+        WS_DEBUG_PRINTLN("Sent definition message to Wippersnapper");
 
-        // Verify broker responds OK
-        WS_DEBUG_PRINTLN("Verifying board definition response")
-        while (getBoardStatus() != WS_BOARD_DEF_OK) {
-            WS_DEBUG_PRINT(".");
-            _mqtt->processPackets(50); // run a processing loop
+        // Validate broker's response
+        while (_boardStatus == WS_BOARD_DEF_SENT) {
+            _mqtt->processPackets(500); // process messages
+            delay(1000);
+            retryCount++;
+            if (retryCount >= retries) {
+                WS_DEBUG_PRINTLN("Unable to validate board with broker, failing out..");
+                return false;
+            }
+        }
+        if (!_boardStatus == WS_BOARD_DEF_OK) {
+            return false;
         }
         return true;
 }
