@@ -9,6 +9,15 @@ NOTE: This library is pre-alpha and may have bugs.
 * Within the Arduino IDE, select Sketch -> Include Library -> Add .ZIP Library
 * Select the .ZIP you downloaded
 
+## Usage
+
+* Within the Arduino IDE, select File -> Examples -> Adafruit Wippersnapper -> Wippersnapper_demo
+* In `config.h`, set `IO_USERNAME` and `IO_KEY` to your Adafruit IO Staging credentials.
+* In `config.h`, set `WIFI_SSID` and `WIFI_PASS` to your WiFi credentials.
+* If you are using an Adafruit AirLift Co-Processor board - uncomment the `//#define USE_AIRLIFT` line.
+* On a web browser, navigate to the [Adafruit IO staging website](https://io.adafruit.us/)
+* Compile and upload the sketch to your board.
+* Your board should automatically run the Wippersnapper demo sketch and connect to Adafruit IO.
 
 ## Adding Hardware
 [Hardware Specification for adding boards to WipperSnapper](https://github.com/adafruit/WipperSnapper_Boards)
