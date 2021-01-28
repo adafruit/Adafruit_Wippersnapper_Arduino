@@ -660,7 +660,6 @@ bool Wippersnapper::sendGetHardwareDescription(uint8_t retries=10){
             WS_DEBUG_PRINTLN("Unable to send board description to broker");
             return false;
         }
-        WS_DEBUG_PRINTLN("Sent definition message to Wippersnapper");
 
         // Validate broker's response
         while (_boardStatus == WS_BOARD_DEF_SENT) {
@@ -668,11 +667,12 @@ bool Wippersnapper::sendGetHardwareDescription(uint8_t retries=10){
             delay(1000);
             retryCount++;
             if (retryCount >= retries) {
+                WS_DEBUG_PRINTLN(_boardStatus);
                 WS_DEBUG_PRINTLN("Unable to validate board with broker, failing out..");
                 return false;
             }
         }
-        if (!_boardStatus == WS_BOARD_DEF_OK) {
+        if (!_boardStatus == wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK) {
             return false;
         }
         return true;
