@@ -350,7 +350,6 @@ void cbDescriptionStatus(char *data, uint16_t len) {
     }
 
     WS_DEBUG_PRINTLN("\nSuccessfully checked in, waiting for commands...")
-    // WS_DEBUG_PRINTLN(_boardStatus);
 }
 
 /**************************************************************************/
@@ -373,9 +372,11 @@ void Wippersnapper::generate_feeds() {
     // Assign board type, defined at compile-time
     _boardId = BOARD_ID;
     // Create device UID
-    _device_uid = (char *)malloc(sizeof(char) + strlen(_boardId) + strlen(sUID));
-    strcpy(_device_uid, _boardId);
+    _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") + strlen(_boardId) + strlen(sUID));
+    strcpy(_device_uid, "io-wipper-");
+    strcat(_device_uid, _boardId);
     strcat(_device_uid, sUID);
+    //self._device_uid = "io-wipper-{}{}".format(self._board.name, str(mac_addr))
 
     // Create MQTT client object
     setupMQTTClient(_device_uid);
@@ -672,7 +673,7 @@ bool Wippersnapper::sendGetHardwareDescription(uint8_t retries=10){
                 return false;
             }
         }
-        if (!_boardStatus == wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK) {
+        if (!_boardStatus == WS_BOARD_DEF_OK) {
             return false;
         }
         return true;
