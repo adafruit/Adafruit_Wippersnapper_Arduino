@@ -1,5 +1,14 @@
 # WipperSnapper_Arduino
-Arduino Library for WipperSnapper web application.
+Arduino Library for Adafruit Wippersnapper.
+
+NOTE: This library is pre-alpha and may have bugs.
+
+## Installation
+
+* Download the [latest .ZIP for this library](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/archive/master.zip)
+* Within the Arduino IDE, select Sketch -> Include Library -> Add .ZIP Library
+* Select the .ZIP you downloaded
+
 
 ## Adding Hardware
 [Hardware Specification for adding boards to WipperSnapper](https://github.com/adafruit/WipperSnapper_Boards)
