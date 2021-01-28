@@ -31,7 +31,7 @@
 
 /****************************************************************************/
 /*!
-    @brief  Class for interacting with AirLift Co-Processors.
+    @brief  Class for using the AirLift Co-Processor network iface.
 */
 /****************************************************************************/
 class Wippersnapper_AIRLIFT : public Wippersnapper {
@@ -40,8 +40,10 @@ public:
   /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for AirLift devices.
-  @param    deviceId
-            The Adafruit IO+ device identifier, TODO
+  @param    aio_user
+            Adafruit IO username.
+  @param    aio_key
+            Adafruit IO active key.
   @param    ssid
             The WiFi network's SSID.
   @param    ssidPassword

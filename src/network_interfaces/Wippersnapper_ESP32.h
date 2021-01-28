@@ -1,7 +1,7 @@
 /*!
- * @file Wippersnapper_ESP8266.h
+ * @file Wippersnapper_ESP32.h
  *
- * This is a driver for using an ESP8266 with Wippersnapper.
+ * This is a driver for using the ESP32 with Adafruit IO Wippersnapper
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,63 +13,62 @@
  *
  */
 
+#ifndef Wippersnapper_ESP32_H
+#define Wippersnapper_ESP32_H
 
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP32
 
-
-#include  "Wippersnapper.h"
+#include "Wippersnapper.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
-#include "ESP8266WiFi.h"
 #include "WiFiClientSecure.h"
+#include <WiFi.h>
+
 
 /****************************************************************************/
 /*!
-    @brief  Class for interacting with the Espressif ESP8266.
+    @brief  Class for using the ESP32 network interface.
 */
 /****************************************************************************/
-class Wippersnapper_ESP8266 : public Wippersnapper {
+class Wippersnapper_ESP32 : public Wippersnapper {
 
 public:
   /**************************************************************************/
   /*!
-  @brief  Initializes the Adafruit IO class for ESP8266 devices.
+  @brief  Initializes the Adafruit IO class for AirLift devices.
   @param    aio_user
             Adafruit IO username.
   @param    aio_key
-            Adafruit IO+ key.
+            Adafruit IO active key.
   @param    ssid
-            Desired WiFi network SSID.
+            The WiFi network's SSID.
   @param    ssidPassword
-            Desired WiFi network password.
+            The WiFi network's password.
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266(const char *aio_user, const char *aio_key, const char *ssid,
+  Wippersnapper_ESP32(const char *aio_user, const char *aio_key, const char *ssid,
                         const char *ssidPassword): Wippersnapper(aio_user, aio_key) {
     _ssid = ssid;
     _pass = ssidPassword;
     _aio_user = aio_user;
     _aio_key = aio_key;
     _mqtt_client = new WiFiClientSecure;
-    _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
     }
 
   /**************************************************************************/
   /*!
-  @brief  Destructor for the Adafruit IO ESP8266.
+  @brief  Destructor for the Adafruit IO AirLift class.
   */
   /**************************************************************************/
-  ~Wippersnapper_ESP8266() {
+  ~Wippersnapper_ESP32() {
       if (_mqtt_client)
         delete _mqtt_client;
-      if (_mqtt)
-        delete _mqtt;
   }
 
   /********************************************************/
   /*!
-  @brief  TODO: Get the ESP8266 MAC address
+  @brief  Gets the AirLift interface's MAC Address.
   */
   /********************************************************/
   void setUID() {
@@ -89,10 +88,9 @@ public:
                 _mqtt_port, clientID, _aio_user, _aio_key);
   }
 
-
   /********************************************************/
   /*!
-  @brief  Returns the network status of an ESP8266 module.
+  @brief  Returns the network status of an ESP32 module.
   @return ws_status_t
   */
   /********************************************************/
@@ -112,10 +110,10 @@ public:
   /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
-  @return "wifi"
+  @return ESP32
   */
   /*******************************************************************/
-  const char *connectionType() { return "wifi"; }
+  const char *connectionType() { return "ESP32"; }
 
 protected:
   const char *_ssid;
@@ -136,9 +134,10 @@ protected:
     if (strlen(_ssid) == 0) {
         _status = WS_SSID_INVALID;
     } else {
-        delay(1000);
+        _disconnect();
+        delay(100);
         WiFi.begin(_ssid, _pass);
-        delay(2000);
+        delay(100);
         _status = WS_NET_DISCONNECTED;
     }
   }
@@ -150,8 +149,9 @@ protected:
   /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
-    delay(300);
+    delay(500);
   }
 };
 
-#endif // ESP8266
+#endif // ARDUINO_ARCH_ESP32
+#endif //Wippersnapper_ESP32_H

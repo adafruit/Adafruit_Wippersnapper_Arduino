@@ -208,7 +208,11 @@ bool Wippersnapper::writePinEvent(wippersnapper_pin_v1_PinEvent *pinEventMsg) {
     else if (pinEventMsg->pin_name[0] == 'A') {
         WS_DEBUG_PRINT("Analog Pin Event: Set ");WS_DEBUG_PRINT(pinName);
         WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinEventMsg->pin_value);
-        analogWrite(atoi(pinName), atoi(pinEventMsg->pin_value));
+        #ifndef ARDUINO_ARCH_ESP32
+            analogWrite(atoi(pinName), atoi(pinEventMsg->pin_value));
+        #else
+            WS_DEBUG_PRINTLN("ESP32 AnalogWrite not implemented yet.");
+        #endif
     } else {
         WS_DEBUG_PRINTLN("Invalid pin event name");
         is_success = false;
