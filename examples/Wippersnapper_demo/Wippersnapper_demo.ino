@@ -1,4 +1,4 @@
-// Wippersnapper
+// Adafruit IO Wippersnapper
 //
 // Adafruit invests time and resources providing this open source code.
 // Please support Adafruit and open source hardware by purchasing
@@ -17,14 +17,16 @@ void setup() {
   Serial.begin(115200);
 
   // wait for serial monitor to open
-  while(! Serial);
+  // while(! Serial);
 
-  Serial.print("Connecting to Adafruit Wippersnapper");
-  
-  bc.connect();
+  Serial.println("Connecting to Wippersnapper");
+
+  ws.connect();
+
+  Serial.print("Connected to Wippersnapper!");
 
 }
 
 void loop() {
-  bc.run();
+  ws.run();
 }

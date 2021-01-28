@@ -2,18 +2,19 @@
 
 // visit io.adafruit.com if you need to create an account,
 // or if you need your Adafruit IO key.
-#define IO_USERNAME "YOUR_IO_USERNAME"
-#define IO_KEY "YOUR_IO_KEY"
+#define IO_USERNAME "YOUR_USERNAME"
+#define IO_KEY "YOUR_KEY"
 
 /******************************* WIFI **************************************/
 #include "Wippersnapper_Networking.h"
 
 /*** Network Configuration ***/
 #define WIFI_SSID "YOUR_SSID"
-#define WIFI_PASS "YOUR_SSID_PASS"
+#define WIFI_PASS "YOUR_SSID_PASSWORD"
 
-/** Uncomment the network interface you're using **/
-#define USE_AIRLIFT
+// Uncomment the line below if using an AirLift Co-Processor
+//#define USE_AIRLIFT
+
 #if defined(USE_AIRLIFT) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) ||         \
     defined(ADAFRUIT_PYPORTAL)
 
@@ -29,6 +30,6 @@
 
     Wippersnapper_WiFi ws(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
                     NINA_ACK, NINA_RESETN, NINA_GPIO0, &SPIWIFI);
-    #else
-    Wippersnapper_WiFi ws(WIFI_SSID, WIFI_PASS);
+#else
+Wippersnapper_WiFi ws(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 #endif
