@@ -377,6 +377,9 @@ void Wippersnapper::generate_feeds() {
     strcpy(_device_uid, _boardId);
     strcat(_device_uid, sUID);
 
+    // Create MQTT client object
+    setupMQTTClient(_device_uid);
+
     // Assign board type info
     // TODO: Do we still need this?
     _hw_vid = USB_VID;

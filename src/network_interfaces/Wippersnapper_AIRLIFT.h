@@ -68,9 +68,9 @@ public:
     _gpio0Pin = gpio0Pin;
     _ssid = ssid;
     _pass = ssidPassword;
-
+    _aio_user = aio_user;
+    _aio_key = aio_key;
     _mqtt_client = new WiFiSSLClient;
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, _mqtt_port, aio_user, aio_key);
     }
 
   /**************************************************************************/
@@ -109,6 +109,18 @@ public:
 
   /********************************************************/
   /*!
+  @brief  Sets up an Adafruit_MQTT_Client
+  @param  clientID
+          MQTT client identifier
+  */
+  /********************************************************/
+  void setupMQTTClient(const char *clientID) {
+    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, \
+                _mqtt_port, clientID, _aio_user, _aio_key);
+  }
+
+  /********************************************************/
+  /*!
   @brief  Returns the network status of an ESP32 module.
   @return ws_status_t
   */
@@ -137,6 +149,8 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
+  const char *_aio_user;
+  const char *_aio_key;
   String _fv = "0.0.0";
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   int _ssPin, _ackPin, _rstPin, _gpio0Pin = -1;

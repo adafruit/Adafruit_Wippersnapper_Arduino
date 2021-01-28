@@ -113,14 +113,16 @@ class Wippersnapper {
         void disconnect();
         virtual void _disconnect() = 0;
 
-        void generate_feeds(); // Generate device-specific WS feeds
         virtual void setUID() = 0;
+        virtual void setupMQTTClient(const char *clientID) = 0;
 
         const __FlashStringHelper *statusText();
         virtual ws_status_t networkStatus() = 0;
         ws_status_t status();
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
+
+        void generate_feeds(); // Generate device-specific WS feeds
 
         bool sendBoardDescription();
         bool sendGetHardwareDescription();
