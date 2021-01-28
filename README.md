@@ -5,6 +5,16 @@ NOTE: This library is pre-alpha.
 
 ## Installation
 
+Prior to installation, make sure you have your Arduino IDE configured for the board you're using with this library:
+* [Metro M4 AirLift Express](https://learn.adafruit.com/adafruit-metro-m4-express-airlift-wifi/setup)
+* [Huzzah32](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/using-with-arduino-ide)
+* [Huzzah8266](https://learn.adafruit.com/adafruit-feather-huzzah-esp8266/using-arduino-ide)
+* [PyPortal](https://learn.adafruit.com/adafruit-pyportal/setup)
+
+This library requires the following dependencies to be installed from the Arduino Library Manager:
+* [Adafruit MQTT Library](https://github.com/adafruit/Adafruit_MQTT_Library)
+* [arduino-timer](https://github.com/contrem/arduino-timer)
+
 * Download the [latest .ZIP for this library](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/archive/master.zip)
 * Within the Arduino IDE, select Sketch -> Include Library -> Add .ZIP Library
 * Select the .ZIP you downloaded
