@@ -51,8 +51,8 @@ public:
     _pass = ssidPassword;
     _aio_user = aio_user;
     _aio_key = aio_key;
-    _client = new WiFiClientSecure;
-    _client->setFingerprint(WS_SSL_FINGERPRINT);
+    _mqtt_client = new WiFiClientSecure;
+    _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
     }
 
   /**************************************************************************/
@@ -61,8 +61,8 @@ public:
   */
   /**************************************************************************/
   ~Wippersnapper_ESP8266() {
-      if (_client)
-        delete _client;
+      if (_mqtt_client)
+        delete _mqtt_client;
       if (_mqtt)
         delete _mqtt;
   }
@@ -85,7 +85,8 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, _mqtt_port, _aio_user, _aio_key, clientID);
+    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, \
+                _mqtt_port, clientID, _aio_user, _aio_key);
   }
 
 
@@ -124,7 +125,7 @@ protected:
   String _fv = "0.0.0";
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-  WiFiClientSecure *_client;
+  WiFiClientSecure *_mqtt_client;
 
 
   /**************************************************************************/

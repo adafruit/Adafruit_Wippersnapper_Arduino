@@ -99,7 +99,7 @@ typedef enum {
 // Adafruit IO Staging SSL Fingerprint
 // Fingerprint for io.adafruit.us staging server
 #define WS_SSL_FINGERPRINT \
-    "F3 81 68 00 17 5D DB D2 B1 9F 2E AC 35 54 49 C1 52 15 09 C7"
+    "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
 
 class Wippersnapper {
 
