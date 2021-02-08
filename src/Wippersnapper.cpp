@@ -616,6 +616,7 @@ ws_status_t Wippersnapper::run() {
 */
 /**************************************************************************/
 bool Wippersnapper::registerBoard() {
+    bool status;
     WS_DEBUG_PRINT("registerBoard");
 
     Wippersnapper_Registration *newBoard = new Wippersnapper_Registration(this);
@@ -623,13 +624,15 @@ bool Wippersnapper::registerBoard() {
     newBoard->set_uid(atoi(sUID));
 
     if (! newBoard->encode_description()){
-        return false;
+        status = false;
     }
 
     if (! newBoard->publish_description()) {
-        return false;
+        status = false;
     }
-    return true;
+
+    delete newBoard;
+    return status;
 }
 
 /***************************************************************************/

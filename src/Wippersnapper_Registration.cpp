@@ -1,7 +1,7 @@
 /*!
  * @file Wippersnapper_Checkin.cpp
  *
- * This file provides an API for registering a 
+ * This file provides an API for registering a
  * device with the Wippersnapper MQTT broker.
  *
  * Adafruit invests time and resources providing this open source code,
@@ -16,12 +16,24 @@
 
 #include "Wippersnapper_Registration.h"
 
+/**************************************************************************/
+/*!
+    @brief    Creates a new instance of a registration object.
+    @param    *ws
+              Reference to Wippersnapper.
+*/
+/**************************************************************************/
 Wippersnapper_Registration::Wippersnapper_Registration(Wippersnapper *ws) {
     _ws = ws;
     wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
 
 }
 
+/************************************************************/
+/*!
+    @brief    Registration destructor
+*/
+/************************************************************/
 Wippersnapper_Registration::~Wippersnapper_Registration() {
     if (_message_buffer)
         free(_message_buffer);
@@ -33,12 +45,26 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
         _uid = 0;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Sets the message's machine_name field.
+    @param    machine_name
+              Valid machine name.
+*/
+/**************************************************************************/
 void Wippersnapper_Registration::set_machine_name(const char *machine_name) {
     _machine_name = machine_name;
     strcpy(_message.machine_name, _machine_name);
 
 }
 
+/**************************************************************************/
+/*!
+    @brief    Sets the message's mac_addr field.
+    @param    uid
+              Valid unique identifier.
+*/
+/**************************************************************************/
 void Wippersnapper_Registration::set_uid(int32_t uid) {
     _uid = uid;
     _message.mac_addr = _uid;
