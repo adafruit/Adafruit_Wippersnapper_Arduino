@@ -31,7 +31,6 @@
 // External libraries
 #include "Adafruit_MQTT.h"
 #include "Arduino.h"
-#include <arduino-timer.h>
 
 // Internal libraries
 #include "Wippersnapper_Boards.h"
@@ -164,9 +163,6 @@ class Wippersnapper {
         };
         static pinInfo ws_pinInfo;
 
-        static Timer<16, millis, char *> t_timer;
-
-        static char timerPin[3];
 
     private:
         void _init();

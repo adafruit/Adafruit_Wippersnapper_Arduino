@@ -37,9 +37,7 @@ ws_board_status_t _boardStatus; // TODO: move to header
 uint16_t Wippersnapper::bufSize;
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
-Timer<16U, &millis, char *> Wippersnapper::t_timer;
 Wippersnapper::pinInfo Wippersnapper::ws_pinInfo;
-char Wippersnapper::timerPin[3];
 /**************************************************************************/
 /*!
     @brief    Instantiates the Wippersnapper client object.
@@ -570,8 +568,6 @@ void Wippersnapper::ping() {
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
     uint32_t timeStart = millis();
-    // increment software timer
-    t_timer.tick();
 
     // Check network connection
     checkNetworkConnection(timeStart); // TODO: handle this better
