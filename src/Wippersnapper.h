@@ -97,6 +97,10 @@ typedef enum {
 #define WS_SSL_FINGERPRINT \
     "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
 
+/* MQTT Configuration */
+// Keep Alive interval, in ms
+#define WS_KEEP_ALIVE_TIME 60000
+
 class Wippersnapper {
 
     public:

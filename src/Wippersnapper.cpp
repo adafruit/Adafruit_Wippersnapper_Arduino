@@ -541,7 +541,7 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
-    while(mqttStatus() != WS_CONNECTED && millis() - timeStart < 60000) {
+    while(mqttStatus() != WS_CONNECTED && millis() - timeStart < WS_KEEPALIVE_INTERVAL) {
     }
     if (mqttStatus() != WS_CONNECTED) {
         return status();
@@ -555,7 +555,7 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 */
 /**************************************************************************/
 void Wippersnapper::ping() {
-    if (millis() > (_prv_ping + 60000)) {
+    if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL)) {
         _mqtt->ping();
         _prv_ping = millis();
     }
@@ -729,7 +729,7 @@ ws_status_t Wippersnapper::mqttStatus() {
 
   // prevent fast reconnect attempts, except for the first time through
   if (_last_mqtt_connect == 0 ||
-      millis() - _last_mqtt_connect > 60000) {
+      millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL) {
     _last_mqtt_connect = millis();
     switch (_mqtt->connect(_username, _key)) {
     case 0:
@@ -745,7 +745,7 @@ ws_status_t Wippersnapper::mqttStatus() {
             // permitted
       // delay to prevent fast reconnects and fast returns (backward
       // compatibility)
-        delay(60000);
+        delay(WS_KEEPALIVE_INTERVAL);
       return WS_DISCONNECTED;
     default:
       return WS_DISCONNECTED;
