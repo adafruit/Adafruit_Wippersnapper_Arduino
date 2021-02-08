@@ -25,15 +25,14 @@
 #include <nanopb/pb_decode.h>
 
 #include <wippersnapper/description/v1/description.pb.h>    // description.proto
-
+#include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
+#include <wippersnapper/pin/v1/pin.pb.h>                    // pin.proto
 
 // External libraries
 #include "Adafruit_MQTT.h"
 #include "Arduino.h"
 
 // Internal libraries
-#include "Wippersnapper_Boards.h"
-#include "Wippersnapper_Decoders.h"
 #include "Wippersnapper_Registration.h"
 
 // Reserved Wippersnapper topics

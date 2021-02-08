@@ -16,26 +16,43 @@
 
 #include "Wippersnapper_Registration.h"
 
-Wippersnapper_Registration::Wippersnapper_Registration(const char *machine_name, int32_t uid) {
+Wippersnapper_Registration::Wippersnapper_Registration() {
+    wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
+}
+
+Wippersnapper_Registration::~Wippersnapper_Registration() {
+}
+
+void Wippersnapper_Registration::set_machine_name(const char *machine_name) {
     _machine_name = machine_name;
+    strcpy(message.machine_name, _machine_name);
+
+}
+
+void Wippersnapper_Registration::set_uid(int32_t uid) {
     _uid = uid;
+    message.mac_addr = _uid;
 }
 
 /**************************************************************************/
 /*!
-    @brief    Creates new board description request message containing
-                device-specific information.
+    @brief    Encodes a CreateDescriptionRequest message.
 */
 /**************************************************************************/
-void Wippersnapper_Registration::set_description() {
-    wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
+bool Wippersnapper_Registration::encode_description() {
+    status = true;
     pb_ostream_t _msg_stream = pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
-    // fill message fields
-    strcpy(message.machine_name, _machine_name);
-    message.mac_addr = _uid;
+    // encode message
+    _status = pb_encode(&_msg_stream, wippersnapper_description_v1_CreateDescriptionRequest_fields, &_message);
+    _message_len = _msg_stream.bytes_written;
 
-    // encode message fields
+    // verify message
+    if (!_status) {
+        WS_DEBUG_PRINTLN("encoding description message failed!");
+        //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+    }
+    return _status;
 }
 
 /**************************************************************************/

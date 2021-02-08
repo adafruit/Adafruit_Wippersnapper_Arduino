@@ -20,8 +20,13 @@
 
 class Wippersnapper_Registration {
     public:
-        Wippersnapper_Registration(const char *machine_name, int32_t uid);
-        void set_description();
+        Wippersnapper_Registration();
+        ~Wippersnapper_Registration();
+
+        void set_machine_name(const char *machine_name);
+        void set_uid(int32_t uid);
+
+        bool encode_description();
         bool publish_description();
         bool validate_description(int retries);
 

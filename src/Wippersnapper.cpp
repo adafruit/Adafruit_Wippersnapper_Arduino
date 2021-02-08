@@ -616,34 +616,19 @@ ws_status_t Wippersnapper::run() {
 */
 /**************************************************************************/
 bool Wippersnapper::sendBoardDescription() {
-    WS_DEBUG_PRINT("Publishing board definition...");
-    uint8_t buffer[128]; // message stored in this buffer
-    size_t message_length;
-    bool status;
+    WS_DEBUG_PRINT("sendBoardDescription");
 
-    // initialize message description
-    wippersnapper_description_v1_CreateDescriptionRequest message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    Wippersnapper_Registration *newBoard = new Wippersnapper_Registration;
+    newBoard->set_machine_name(_boardId);
+    newBoard->set_uid(atoi(sUID));
 
-    // fill message fields
-    strcpy(message.machine_name, _boardId);
-    message.mac_addr = atoi(sUID); // TODO: Pull from UID!
-
-    // encode message
-    status = pb_encode(&stream, wippersnapper_description_v1_CreateDescriptionRequest_fields, &message);
-    message_length = stream.bytes_written;
-
-    // verify message
-    if (!status) {
-        WS_DEBUG_PRINTLN("encoding description message failed!");
-        //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+    if (! newBoard->encode_description()){
         return false;
     }
 
-    // publish message
-    _mqtt->publish(_topic_description, buffer, message_length, 0);
-    WS_DEBUG_PRINTLN("Published board description, waiting for response!");
-    _boardStatus = WS_BOARD_DEF_SENT;
+    if (! newBoard->publish_description()) {
+        return false;
+    }
     return true;
 }
 
