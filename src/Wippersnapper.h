@@ -18,6 +18,15 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
+// Nanopb dependencies
+#include <pb.h>
+#include <nanopb/pb_common.h>
+#include <nanopb/pb_encode.h>
+#include <nanopb/pb_decode.h>
+
+#include <wippersnapper/description/v1/description.pb.h>    // description.proto
+
+
 // External libraries
 #include "Adafruit_MQTT.h"
 #include "Arduino.h"
@@ -25,6 +34,7 @@
 // Internal libraries
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Decoders.h"
+#include "Wippersnapper_Registration.h"
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic

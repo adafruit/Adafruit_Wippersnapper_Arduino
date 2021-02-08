@@ -14,13 +14,7 @@
  *
  */
 
-// Nanopb dependencies
-#include <pb.h>
-#include <nanopb/pb_common.h>
-#include <nanopb/pb_encode.h>
-#include <nanopb/pb_decode.h>
 
 // Message wrappers
-#include <wippersnapper/description/v1/description.pb.h>    // description.proto
 #include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
 #include <wippersnapper/pin/v1/pin.pb.h>                    // pin.proto
