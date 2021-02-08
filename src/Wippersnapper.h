@@ -74,7 +74,6 @@ typedef enum {
   WS_CONNECTED_INSECURE = 22,      // Insecurely (non-SSL) connected to network
   WS_FINGERPRINT_UNSUPPORTED = 23, // Unsupported WS_SSL_FINGERPRINT
   WS_FINGERPRINT_VALID = 24,       // Valid WS_SSL_FINGERPRINT
-
   WS_BOARD_DESC_INVALID = 25       // Unable to send board description
 } ws_status_t;
 
@@ -99,7 +98,7 @@ typedef enum {
 
 /* MQTT Configuration */
 // Keep Alive interval, in ms
-#define WS_KEEPALIVE_INTERVAL 60000
+#define WS_KEEPALIVE_INTERVAL 10000
 
 class Wippersnapper {
 
