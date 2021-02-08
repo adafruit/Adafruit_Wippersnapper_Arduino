@@ -18,27 +18,18 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
-// Nanopb dependencies
-#include <pb.h>
-#include <nanopb/pb_common.h>
-#include <nanopb/pb_encode.h>
-#include <nanopb/pb_decode.h>
-
-// Message structures
-#include <wippersnapper/description/v1/description.pb.h>    // description.proto
-#include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
-
 // External libraries
 #include "Adafruit_MQTT.h"
 #include "Arduino.h"
 
 // Internal libraries
 #include "Wippersnapper_Boards.h"
+#include "Wippersnapper_Decoders.h"
 
 // Reserved Wippersnapper topics
-#define TOPIC_WS "/wprsnpr/"            ///< Global /wprsnpr/ topic
-#define TOPIC_DESCRIPTION "/info/"      ///< Device description topic
-#define TOPIC_SIGNALS     "/signals/"   ///< Device signals topic
+#define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
+#define TOPIC_DESCRIPTION   "/info/"      ///< Device description topic
+#define TOPIC_SIGNALS       "/signals/"   ///< Device signals topic
 
 #define WS_PRINTER Serial ///< Where debug messages will be printed
 
