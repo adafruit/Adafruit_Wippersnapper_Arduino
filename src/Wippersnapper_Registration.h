@@ -16,18 +16,22 @@
 #ifndef WIPPERSNAPPER_REGISTRATION_H
 #define WIPPERSNAPPER_REGISTRATION_H
 
-// TODO: Move description here
+#include <Wippersnapper.h>
 
 class Wippersnapper_Registration {
     public:
         Wippersnapper_Registration(const char *machine_name, int32_t uid);
+        void set_description();
         bool publish_description();
         bool validate_description(int retries);
-
 
     private:
         uint8_t _message_buffer;
         size_t _message_len;
+        bool _status;
+
+        pb_ostream_t _msg_stream;
+        wippersnapper_description_v1_CreateDescriptionRequest _message;
 
         // Description message contents
         const char * _machine_name;
