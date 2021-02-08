@@ -18,6 +18,8 @@
 
 #include <Wippersnapper.h>
 
+
+
 class Wippersnapper_Registration {
     public:
         Wippersnapper_Registration();
