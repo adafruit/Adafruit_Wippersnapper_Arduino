@@ -18,12 +18,13 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
-// Nanopb
+// Nanopb dependencies
 #include <pb.h>
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_encode.h>
 #include <nanopb/pb_decode.h>
-// Protocol buffer messages
+
+// Message structures
 #include <wippersnapper/description/v1/description.pb.h>    // description.proto
 #include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
 
@@ -41,7 +42,7 @@
 #define TOPIC_SIGNALS     "/signals/"   ///< Device signals topic
 
 #define WS_PRINTER Serial ///< Where debug messages will be printed
-#define WS_DEBUG
+
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                   \
@@ -87,10 +88,6 @@ typedef enum {
     WS_BOARD_DEF_INVALID,
     WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
-
-// latest fingerprint can be generated with
-// echo | openssl s_client -connect io.adafruit.com:443 | openssl x509
-// -fingerprint -noout
 
 // Adafruit IO Production SSL Fingerprint
 //#define WS_SSL_FINGERPRINT \

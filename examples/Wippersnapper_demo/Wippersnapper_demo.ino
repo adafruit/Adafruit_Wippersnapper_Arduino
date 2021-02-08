@@ -11,6 +11,8 @@
 
 #include "config.h"
 
+#define WS_DEBUG // Enable debugging output for testing
+
 void setup() {
 
   // start the serial connection
