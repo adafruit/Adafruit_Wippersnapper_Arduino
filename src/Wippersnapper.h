@@ -99,7 +99,7 @@ typedef enum {
 
 /* MQTT Configuration */
 // Keep Alive interval, in ms
-#define WS_KEEP_ALIVE_TIME 60000
+#define WS_KEEPALIVE_INTERVAL 60000
 
 class Wippersnapper {
 
