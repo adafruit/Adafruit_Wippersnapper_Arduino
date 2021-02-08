@@ -103,6 +103,8 @@ typedef enum {
 
 class Wippersnapper {
 
+    friend class Wippersnapper_Registration;
+
     public:
         Wippersnapper(const char *aio_username, const char *aio_key);
         virtual ~Wippersnapper();

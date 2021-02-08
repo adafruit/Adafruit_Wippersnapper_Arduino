@@ -73,7 +73,7 @@ bool Wippersnapper_Registration::encode_description() {
 bool Wippersnapper_Registration::publish_description() {
     WS_DEBUG_PRINT("Publishing description message...");
     // TODO: requires inherr.
-    //_mqtt->publish(_topic_description, _message_buffer, _message_len, 0);
+    _ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0);
 
     WS_DEBUG_PRINTLN("Published board description, waiting for response!");
     // TODO: requires inherr.
