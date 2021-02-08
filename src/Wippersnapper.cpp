@@ -615,8 +615,8 @@ ws_status_t Wippersnapper::run() {
     @brief    Sends board description message to Wippersnapper
 */
 /**************************************************************************/
-bool Wippersnapper::sendBoardDescription() {
-    WS_DEBUG_PRINT("sendBoardDescription");
+bool Wippersnapper::registerBoard() {
+    WS_DEBUG_PRINT("registerBoard");
 
     Wippersnapper_Registration *newBoard = new Wippersnapper_Registration;
     newBoard->set_machine_name(_boardId);
@@ -641,7 +641,7 @@ bool Wippersnapper::sendGetHardwareDescription(uint8_t retries=10){
         uint8_t retryCount = 0;
 
         // Publish board definition message to broker
-        if (!sendBoardDescription()) {
+        if (!registerBoard()) {
             _boardStatus = WS_BOARD_DEF_SEND_FAILED;
             WS_DEBUG_PRINTLN("Unable to send board description to broker");
             return false;

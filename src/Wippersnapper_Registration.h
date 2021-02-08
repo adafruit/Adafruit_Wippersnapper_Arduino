@@ -31,7 +31,7 @@ class Wippersnapper_Registration {
         bool validate_description(int retries);
 
     private:
-        uint8_t _message_buffer;
+        uint8_t _message_buffer[128];
         size_t _message_len;
         bool _status;
 

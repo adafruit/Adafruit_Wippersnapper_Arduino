@@ -33,6 +33,7 @@
 #include "Arduino.h"
 
 // Internal libraries
+#include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
 
 // Reserved Wippersnapper topics
@@ -123,7 +124,7 @@ class Wippersnapper {
 
         void generate_feeds(); // Generate device-specific WS feeds
 
-        bool sendBoardDescription();
+        bool registerBoard();
         bool sendGetHardwareDescription(uint8_t retries);
 
         ws_status_t checkNetworkConnection(uint32_t timeStart);

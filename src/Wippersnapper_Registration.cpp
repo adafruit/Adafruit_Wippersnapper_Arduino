@@ -25,13 +25,13 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
 
 void Wippersnapper_Registration::set_machine_name(const char *machine_name) {
     _machine_name = machine_name;
-    strcpy(message.machine_name, _machine_name);
+    strcpy(_message.machine_name, _machine_name);
 
 }
 
 void Wippersnapper_Registration::set_uid(int32_t uid) {
     _uid = uid;
-    message.mac_addr = _uid;
+    _message.mac_addr = _uid;
 }
 
 /**************************************************************************/
@@ -40,7 +40,7 @@ void Wippersnapper_Registration::set_uid(int32_t uid) {
 */
 /**************************************************************************/
 bool Wippersnapper_Registration::encode_description() {
-    status = true;
+    _status = true;
     pb_ostream_t _msg_stream = pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
     // encode message
@@ -62,9 +62,9 @@ bool Wippersnapper_Registration::encode_description() {
 /**************************************************************************/
 bool Wippersnapper_Registration::publish_description() {
     WS_DEBUG_PRINT("Publishing description message...");
-    _mqtt->publish(_topic_description, _message_buffer, _message_len, 0);
+    //_mqtt->publish(_topic_description, _message_buffer, _message_len, 0);
 
     WS_DEBUG_PRINTLN("Published board description, waiting for response!");
-    _boardStatus = WS_BOARD_DEF_SENT;
+    //_boardStatus = WS_BOARD_DEF_SENT;
     return true; // TODO: Catch failures from _mqtt->publish() calls!
 }
