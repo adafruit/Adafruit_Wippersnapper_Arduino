@@ -618,7 +618,7 @@ ws_status_t Wippersnapper::run() {
 bool Wippersnapper::registerBoard() {
     WS_DEBUG_PRINT("registerBoard");
 
-    Wippersnapper_Registration *newBoard = new Wippersnapper_Registration;
+    Wippersnapper_Registration *newBoard = new Wippersnapper_Registration(this);
     newBoard->set_machine_name(_boardId);
     newBoard->set_uid(atoi(sUID));
 

@@ -16,8 +16,10 @@
 
 #include "Wippersnapper_Registration.h"
 
-Wippersnapper_Registration::Wippersnapper_Registration() {
+Wippersnapper_Registration::Wippersnapper_Registration(Wippersnapper *ws) {
+    _ws = ws;
     wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
+
 }
 
 Wippersnapper_Registration::~Wippersnapper_Registration() {
@@ -26,7 +28,6 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
 
     if (_machine_name)
         free((char*)_machine_name);
-
 
     if (_uid)
         _uid = 0;
