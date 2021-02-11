@@ -96,13 +96,11 @@ bool Wippersnapper_Registration::encode_description() {
     @brief    Publishes description message to Wippersnapper.
 */
 /**************************************************************************/
-bool Wippersnapper_Registration::publish_description() {
+void Wippersnapper_Registration::publish_description() {
     WS_DEBUG_PRINT("Publishing description message...");
-    // TODO: requires inherr.
-    _ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0);
-
-    WS_DEBUG_PRINTLN("Published board description, waiting for response!");
-    // TODO: requires inherr.
-    //_boardStatus = WS_BOARD_DEF_SENT;
-    return true; // TODO: Catch failures from _mqtt->publish() calls!
+    if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
+        WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
+        _ws->_boardStatus = WS_BOARD_DEF_SEND_FAILED;
+    }
+    _ws->_boardStatus = WS_BOARD_DEF_SENT;
 }

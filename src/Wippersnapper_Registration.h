@@ -30,7 +30,7 @@ class Wippersnapper_Registration {
         void set_uid(int32_t uid);
 
         bool encode_description();
-        bool publish_description();
+        void publish_description();
         bool validate_description(int retries);
 
     private:

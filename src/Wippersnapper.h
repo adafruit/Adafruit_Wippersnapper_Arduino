@@ -126,7 +126,7 @@ class Wippersnapper {
 
         void generate_feeds(); // Generate device-specific WS feeds
 
-        bool registerBoard();
+        bool registerBoard(uint8_t retries);
         bool sendGetHardwareDescription(uint8_t retries);
 
         ws_status_t checkNetworkConnection(uint32_t timeStart);
@@ -136,6 +136,7 @@ class Wippersnapper {
 
         // MQTT topic callbacks
         static void cbSignalTopic(char *data, uint16_t len);
+        static void cbDescriptionStatus(char *data, uint16_t len);
 
         // Signal message
         static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
@@ -156,6 +157,8 @@ class Wippersnapper {
         static uint16_t bufSize;
         static uint8_t _buffer[128]; /*!< Shared buffer to save callback payload */
         uint8_t _buffer_state[128]; /*!< Holds previous contents of static _buffer */
+
+        static ws_board_status_t _boardStatus;
 
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);

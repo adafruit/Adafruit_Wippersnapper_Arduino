@@ -32,8 +32,7 @@
 
 #include "Wippersnapper.h"
 
-ws_board_status_t _boardStatus; // TODO: move to header
-
+ws_board_status_t Wippersnapper::_boardStatus;
 uint16_t Wippersnapper::bufSize;
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
@@ -323,7 +322,7 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
                 client's board description message.
 */
 /**************************************************************************/
-void cbDescriptionStatus(char *data, uint16_t len) {
+void Wippersnapper::cbDescriptionStatus(char *data, uint16_t len) {
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 
@@ -615,24 +614,29 @@ ws_status_t Wippersnapper::run() {
     @brief    Sends board description message to Wippersnapper
 */
 /**************************************************************************/
-bool Wippersnapper::registerBoard() {
-    bool status;
+bool Wippersnapper::registerBoard(uint8_t retries=10) {
     WS_DEBUG_PRINT("registerBoard");
 
+    // Create new board
     Wippersnapper_Registration *newBoard = new Wippersnapper_Registration(this);
+    // Set board identifiers
     newBoard->set_machine_name(_boardId);
     newBoard->set_uid(atoi(sUID));
 
-    if (! newBoard->encode_description()){
-        status = false;
+    // Encode and publish description message
+    if (! newBoard->encode_description()) {
+        WS_DEBUG_PRINTLN("Unable to encode registration message.");
+        return false;
     }
 
-    if (! newBoard->publish_description()) {
-        status = false;
-    }
+    newBoard->publish_description();
+    if (!_boardStatus == WS_BOARD_DEF_SENT)
+        return false;
+    WS_DEBUG_PRINTLN("Published board description, waiting for response...");
+
+    // TODO: Validate broker response
 
     delete newBoard;
-    return status;
 }
 
 /***************************************************************************/
@@ -642,6 +646,8 @@ bool Wippersnapper::registerBoard() {
 /***************************************************************************/
 bool Wippersnapper::sendGetHardwareDescription(uint8_t retries=10){
         uint8_t retryCount = 0;
+
+        // TODO: Below should eventually get moved into registerBoard() and we dep. this function!
 
         // Publish board definition message to broker
         if (!registerBoard()) {
