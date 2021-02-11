@@ -36,7 +36,6 @@ ws_board_status_t Wippersnapper::_boardStatus;
 uint16_t Wippersnapper::bufSize;
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
-Wippersnapper::pinInfo Wippersnapper::ws_pinInfo;
 /**************************************************************************/
 /*!
     @brief    Instantiates the Wippersnapper client object.
@@ -116,6 +115,7 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     bufSize = len;
 }
 
+
 /****************************************************************************/
 /*!
     @brief    Configures a pin according to a 
@@ -128,16 +128,23 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
     bool is_configured = true;
     WS_DEBUG_PRINTLN("configPinReq");
 
-    // strip "a/d" circuitpython pin name prefix
+    // strip "a/d" from pin name prefix
     char* pinName = pinMsg->pin_name + 1;
     if (pinMsg->mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
         // Configure a digital pin
+        pinMode(atoi(pinName), pinMsg->direction);
         if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            pinMode(atoi(pinName), pinMsg->direction);
             WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
         }
         else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring digital input pin");
+            WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
+            // TODO: Timer/state based?
+            // start with timer.
+            // setTimer(GPIOfunctionCallbackPtr, interval)
+            // NOTE: settimer() should automatically grab a timer slot
+            // NOTE: How would we identify each slot if were to free the timer?
+                // run() needs code to check each timer function we set here
+            // Note: need to make a GPIOfunctionCallback
         }
         else {
             WS_DEBUG_PRINTLN("Unable to configure digital pin");
@@ -323,9 +330,11 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 */
 /**************************************************************************/
 void Wippersnapper::cbDescriptionStatus(char *data, uint16_t len) {
+    // TODO: Not implemented
     WS_DEBUG_PRINTLN("\ncbDescriptionStatus");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
+
 
     // init. CreateDescriptionResponse message
     wippersnapper_description_v1_CreateDescriptionResponse message = wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
@@ -602,13 +611,7 @@ ws_status_t Wippersnapper::run() {
         // TODO: Sizeof may not work, possibly use bufSize instead
         memcpy(_buffer_state, _buffer, sizeof(_buffer));
     }
-    // Send updated pin value to broker
-    if ( ws_pinInfo.pinValue != ws_pinInfo.prvPinValue ) {
-        WS_DEBUG_PRINT("Pin Values: "); WS_DEBUG_PRINT(ws_pinInfo.pinValue);
-        WS_DEBUG_PRINT(" "); WS_DEBUG_PRINT(ws_pinInfo.prvPinValue);
-        //sendPinEvent();
-        ws_pinInfo.prvPinValue = ws_pinInfo.pinValue;
-    }
+
 
     return status();
 }

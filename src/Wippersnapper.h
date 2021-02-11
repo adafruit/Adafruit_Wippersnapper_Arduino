@@ -163,16 +163,6 @@ class Wippersnapper {
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
-        // TODO: Possibly remove?
-        struct pinInfo {
-            char *pinName;
-            char *PinNameFull;
-            int pinValue;
-            int prvPinValue; // holds prv. pin state
-        };
-        static pinInfo ws_pinInfo;
-
-
     private:
         void _init();
 
