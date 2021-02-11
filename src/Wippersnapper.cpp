@@ -323,6 +323,7 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 */
 /**************************************************************************/
 void Wippersnapper::cbDescriptionStatus(char *data, uint16_t len) {
+    WS_DEBUG_PRINTLN("\ncbDescriptionStatus");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 

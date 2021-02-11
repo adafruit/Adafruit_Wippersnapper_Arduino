@@ -41,7 +41,7 @@ class Wippersnapper_Registration {
         pb_ostream_t _msg_stream;
 
         // struct for description msg.
-        wippersnapper_description_v1_CreateDescriptionRequest _message;
+        //wippersnapper_description_v1_CreateDescriptionRequest _message;
 
         // Description message contents
         const char * _machine_name;
