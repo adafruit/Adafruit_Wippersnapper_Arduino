@@ -193,36 +193,38 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
 
 /****************************************************************************/
 /*!
+    @brief    Writes a PinEvent message to a digital pin.
+    @param    pinEventMsg
+              Pointer to a pinEvent message.
+*/
+/****************************************************************************/
+bool Wippersnapper::digitalWritePinEvent(wippersnapper_pin_v1_PinEvent *pinEventMsg) {
+    WS_DEBUG_PRINTLN("digitalWritePinEvent");
+    bool is_success = true;
+
+    char* pinName = pinEventMsg->pin_name + 1;
+    WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
+    WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinEventMsg->pin_value);
+    digitalWrite(atoi(pinName), atoi(pinEventMsg->pin_value));
+
+    return is_success;
+}
+
+/****************************************************************************/
+/*!
     @brief    Configures a pin according to a 
                 PinEvent message.
     @param    pinEventMsg
               Pointer to a pinEvent message.
 */
 /****************************************************************************/
-bool Wippersnapper::writePinEvent(wippersnapper_pin_v1_PinEvent *pinEventMsg) {
-    bool is_success = true;
-    WS_DEBUG_PRINTLN("writePinEvent");
-
-    char* pinName = pinEventMsg->pin_name + 1;
-    if (pinEventMsg->pin_name[0] == 'D') {
-        WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
-        WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinEventMsg->pin_value);
-        digitalWrite(atoi(pinName), atoi(pinEventMsg->pin_value));
-    }
-    else if (pinEventMsg->pin_name[0] == 'A') {
-        WS_DEBUG_PRINT("Analog Pin Event: Set ");WS_DEBUG_PRINT(pinName);
-        WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinEventMsg->pin_value);
-        #ifndef ARDUINO_ARCH_ESP32
-            analogWrite(atoi(pinName), atoi(pinEventMsg->pin_value));
-        #else
-            WS_DEBUG_PRINTLN("ESP32 AnalogWrite not implemented yet.");
-        #endif
-    } else {
-        WS_DEBUG_PRINTLN("Invalid pin event name");
-        is_success = false;
-    }
-    return is_success;
+void Wippersnapper::digitalWritePinEvent(char* pinName, int pinValue) {
+    WS_DEBUG_PRINTLN("digitalWritePinEvent");
+    WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
+    WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinValue);
+    digitalWrite(atoi(pinName), pinValue);
 }
+
 
 /**************************************************************************/
 /*!
@@ -240,10 +242,14 @@ bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *
         is_success = false;
     }
 
-    // Write to physical pin
-    if (! writePinEvent(&pinEventMsg)){
-        WS_DEBUG_PRINTLN("Unable to write to pin");
-        is_success = false;
+    // check pin mode
+    char* pinName = pinEventMsg->pin_name + 1;
+    if (pinEventMsg->pin_name[0] == 'D') {
+        int pinValue = atoi(pinEventMsg->pin_value);
+        digitalWritePinEvent(pinName, pinValue);
+    } else {
+        // TODO, Analog pin
+        WS_DEBUG_PRINTLN("Analog pin input!");
     }
 
     return is_success;

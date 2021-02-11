@@ -146,9 +146,9 @@ class Wippersnapper {
         static bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
-        // Pin event message
+        // Pin Event
         static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
-        static bool writePinEvent(wippersnapper_pin_v1_PinEvent *pinEventMsg);
+        static void digitalWritePinEvent(char* pinName, int pinValue);
 
         // Adafruit IO Credentials
         const char *_username; /*!< Adafruit IO Username. */
