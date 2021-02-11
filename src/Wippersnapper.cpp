@@ -624,17 +624,17 @@ void Wippersnapper::registerBoard(uint8_t retries=10) {
     Wippersnapper_Registration *newBoard = new Wippersnapper_Registration(this);
     WS_DEBUG_PRINT("Created newBoard..");
     // Set board identifiers
-    newBoard->set_machine_name(_boardId);
-    newBoard->set_uid(atoi(sUID));
+    newBoard->setMachineName(_boardId);
+    newBoard->setUID(atoi(sUID));
     WS_DEBUG_PRINT("set machine_name and uid..");
 
     // Encode and publish description message
-    if (! newBoard->encode_description()) {
+    if (! newBoard->encodeDescRequest()) {
         WS_DEBUG_PRINTLN("Unable to encode registration message.");
         delete newBoard;
         return;
     }
-    newBoard->publish_description();
+    newBoard->publishDescRequest();
     if (!_boardStatus == WS_BOARD_DEF_SENT)
         delete newBoard;
         return;

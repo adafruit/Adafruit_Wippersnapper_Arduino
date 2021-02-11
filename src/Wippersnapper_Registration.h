@@ -26,12 +26,15 @@ class Wippersnapper_Registration {
         Wippersnapper_Registration(Wippersnapper *ws);
         ~Wippersnapper_Registration();
 
-        void set_machine_name(const char *machine_name);
-        void set_uid(int32_t uid);
+        void setMachineName(const char *machine_name);
+        void setUID(int32_t uid);
 
-        bool encode_description();
-        void publish_description();
-        bool validate_description(int retries);
+        // Protobuf encoder wrappers
+        bool encodeDescRequest();
+        void decodeDescResponse(uint8_t buffer, uint16_t len);
+
+        // MQTT Publish function
+        void publishDescRequest();
 
     private:
         uint8_t _message_buffer[128];

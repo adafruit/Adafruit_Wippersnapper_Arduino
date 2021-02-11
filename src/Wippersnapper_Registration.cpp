@@ -52,7 +52,7 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
               Valid machine name.
 */
 /**************************************************************************/
-void Wippersnapper_Registration::set_machine_name(const char *machine_name) {
+void Wippersnapper_Registration::setMachineName(const char *machine_name) {
     _machine_name = machine_name;
     //strcpy(_message.machine_name, _machine_name);
 
@@ -65,7 +65,7 @@ void Wippersnapper_Registration::set_machine_name(const char *machine_name) {
               Valid unique identifier.
 */
 /**************************************************************************/
-void Wippersnapper_Registration::set_uid(int32_t uid) {
+void Wippersnapper_Registration::setUID(int32_t uid) {
     _uid = uid;
     //_message.mac_addr = _uid;
 }
@@ -75,7 +75,7 @@ void Wippersnapper_Registration::set_uid(int32_t uid) {
     @brief    Encodes a CreateDescriptionRequest message.
 */
 /**************************************************************************/
-bool Wippersnapper_Registration::encode_description() {
+bool Wippersnapper_Registration::encodeDescRequest() {
     WS_DEBUG_PRINTLN("encoding board description...");
     _status = true;
 
@@ -103,11 +103,45 @@ bool Wippersnapper_Registration::encode_description() {
     @brief    Publishes description message to Wippersnapper.
 */
 /**************************************************************************/
-void Wippersnapper_Registration::publish_description() {
+void Wippersnapper_Registration::publishDescRequest() {
     WS_DEBUG_PRINT("Publishing description message...");
     if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
         _ws->_boardStatus = WS_BOARD_DEF_SEND_FAILED;
     }
     _ws->_boardStatus = WS_BOARD_DEF_SENT;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Decodes description response from broker.
+*/
+/**************************************************************************/
+void Wippersnapper_Registration::decodeDescResponse(uint8_t buffer, uint16_t len) {
+    WS_DEBUG_PRINTLN("Decoding description response from broker");
+    // init. CreateDescriptionResponse message
+    wippersnapper_description_v1_CreateDescriptionResponse message = wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
+
+    // create input stream for buffer
+    pb_istream_t stream = pb_istream_from_buffer(&buffer, len);
+    // decode the stream
+    if (!pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message)) {
+        WS_DEBUG_PRINTLN("Error decoding description status message!");
+        _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+    } else {    // set board status
+        switch (message.response) {
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
+                _ws->_boardStatus = WS_BOARD_DEF_OK;
+                break;
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
+                _ws->_boardStatus = WS_BOARD_DEF_INVALID;
+                break;
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
+                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                break;
+            default:
+                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+        }
+    }
+
 }
