@@ -492,11 +492,12 @@ void Wippersnapper::connect() {
     }
     WS_DEBUG_PRINTLN("MQTT Connected!");
 
-    // Send hardware description to broker
-    if (!sendGetHardwareDescription(10)){
-        // TODO: get error types back from function instead of bool, verify against resp.
-        WS_DEBUG_PRINTLN("Board not identified with broker.");
-        for(;;);
+    WS_DEBUG_PRINTLN("Registering Board...")
+    // Register board with Wippersnapper
+    registerBoard(10);
+    if (!_boardStatus == WS_BOARD_DEF_OK) {
+        WS_DEBUG_PRINT("Unable to identify board with broker.");
+        WS_DEBUG_PRINTLN(_boardStatus);
     }
 
 }
@@ -526,10 +527,12 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
             delay(500);
         }
 
-        if (!sendGetHardwareDescription(10)){
+        
+
+/*         if (!sendGetHardwareDescription(10)){
             // TODO: get error types back from function instead of bool, verify against resp.
             return status();
-        }
+        } */
     }
     return status();
 }
@@ -614,63 +617,40 @@ ws_status_t Wippersnapper::run() {
     @brief    Sends board description message to Wippersnapper
 */
 /**************************************************************************/
-bool Wippersnapper::registerBoard(uint8_t retries=10) {
-    WS_DEBUG_PRINT("registerBoard");
-
+void Wippersnapper::registerBoard(uint8_t retries=10) {
+    WS_DEBUG_PRINT("registerBoard()");
     // Create new board
     Wippersnapper_Registration *newBoard = new Wippersnapper_Registration(this);
+    WS_DEBUG_PRINT("Created newBoard..");
     // Set board identifiers
     newBoard->set_machine_name(_boardId);
     newBoard->set_uid(atoi(sUID));
+    WS_DEBUG_PRINT("set machine_name and uid..");
 
     // Encode and publish description message
     if (! newBoard->encode_description()) {
         WS_DEBUG_PRINTLN("Unable to encode registration message.");
-        return false;
+        delete newBoard;
+        return;
     }
-
     newBoard->publish_description();
     if (!_boardStatus == WS_BOARD_DEF_SENT)
-        return false;
+        delete newBoard;
+        return;
     WS_DEBUG_PRINTLN("Published board description, waiting for response...");
 
-    // TODO: Validate broker response
-
+    // Obtain response from broker
+    uint8_t retryCount = 0;
+    while (_boardStatus == WS_BOARD_DEF_SENT) {
+        if (retryCount >= retries) {
+            WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
+            break;
+        }
+        _mqtt->processPackets(500); // process messages
+        delay(500);
+        retryCount++;
+    }
     delete newBoard;
-}
-
-/***************************************************************************/
-/*!
-    @brief    Sends board description message and verifies broker's response
-*/
-/***************************************************************************/
-bool Wippersnapper::sendGetHardwareDescription(uint8_t retries=10){
-        uint8_t retryCount = 0;
-
-        // TODO: Below should eventually get moved into registerBoard() and we dep. this function!
-
-        // Publish board definition message to broker
-        if (!registerBoard()) {
-            _boardStatus = WS_BOARD_DEF_SEND_FAILED;
-            WS_DEBUG_PRINTLN("Unable to send board description to broker");
-            return false;
-        }
-
-        // Validate broker's response
-        while (_boardStatus == WS_BOARD_DEF_SENT) {
-            _mqtt->processPackets(500); // process messages
-            delay(1000);
-            retryCount++;
-            if (retryCount >= retries) {
-                WS_DEBUG_PRINTLN(_boardStatus);
-                WS_DEBUG_PRINTLN("Unable to validate board with broker, failing out..");
-                return false;
-            }
-        }
-        if (!_boardStatus == WS_BOARD_DEF_OK) {
-            return false;
-        }
-        return true;
 }
 
 /**************************************************************************/

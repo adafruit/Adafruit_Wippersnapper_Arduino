@@ -76,13 +76,16 @@ void Wippersnapper_Registration::set_uid(int32_t uid) {
 */
 /**************************************************************************/
 bool Wippersnapper_Registration::encode_description() {
+    WS_DEBUG_PRINTLN("encoding board description...");
     _status = true;
     pb_ostream_t _msg_stream = pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
+    WS_DEBUG_PRINTLN("_msg_stream created...");
     // encode message
     _status = pb_encode(&_msg_stream, wippersnapper_description_v1_CreateDescriptionRequest_fields, &_message);
     _message_len = _msg_stream.bytes_written;
 
+    WS_DEBUG_PRINTLN("encoded board description...");
     // verify message
     if (!_status) {
         WS_DEBUG_PRINTLN("encoding description message failed!");

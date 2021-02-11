@@ -41,6 +41,7 @@
 #define TOPIC_DESCRIPTION   "/info/"      ///< Device description topic
 #define TOPIC_SIGNALS       "/signals/"   ///< Device signals topic
 
+#define WS_DEBUG
 #define WS_PRINTER Serial ///< Where debug messages will be printed
 
 // Define actual debug output functions when necessary.
@@ -126,8 +127,7 @@ class Wippersnapper {
 
         void generate_feeds(); // Generate device-specific WS feeds
 
-        bool registerBoard(uint8_t retries);
-        bool sendGetHardwareDescription(uint8_t retries);
+        void registerBoard(uint8_t retries);
 
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
