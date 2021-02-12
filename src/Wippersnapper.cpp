@@ -110,7 +110,11 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
 */
 /**************************************************************************/
 void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("cbSignalTopic()");
+    WS_DEBUG_PRINTLN("* Message on cbSignalTopic()");
+    WS_DEBUG_PRINT(len);WS_DEBUG_PRINTLN(" bytes.");
+    // zero-out buffer contents
+    _buffer[128] = { 0 };
+    // copy data to buffer
     memcpy(_buffer, data, len);
     bufSize = len;
 }
@@ -573,10 +577,10 @@ ws_status_t Wippersnapper::run() {
     ping();
 
     // Run any functions which utilize the timer
-    _wsTimer->run();
+    //_wsTimer->run();
 
     // Process all incoming packets from Wippersnapper MQTT Broker
-    _mqtt->processPackets(500);
+    _mqtt->processPackets(100);
 
     // Handle incoming signal message
     int n; // TODO: decl. in .h instead
@@ -594,7 +598,6 @@ ws_status_t Wippersnapper::run() {
         }
 
         // update _buffer_state with contents of new message
-        // TODO: Sizeof may not work, possibly use bufSize instead
         memcpy(_buffer_state, _buffer, sizeof(_buffer));
     }
 

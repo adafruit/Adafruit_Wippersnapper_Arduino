@@ -210,7 +210,7 @@ class Wippersnapper {
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
         Adafruit_MQTT_Subscribe *_subscription;
 
-        WSTimer *_wsTimer;
+        //WSTimer *_wsTimer;
 
         static char _value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
         static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
