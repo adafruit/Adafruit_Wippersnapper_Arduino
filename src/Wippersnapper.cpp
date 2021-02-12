@@ -627,14 +627,17 @@ void Wippersnapper::registerBoard(uint8_t retries=10) {
 
     // Encode and publish description message
     if (! newBoard->encodeDescRequest()) {
-        WS_DEBUG_PRINTLN("Unable to encode registration message.");
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode description message.");
         delete newBoard;
         return;
     }
+
     newBoard->publishDescRequest();
-    if (!_boardStatus == WS_BOARD_DEF_SENT)
+    if (!_boardStatus == WS_BOARD_DEF_SENT) {
+        WS_DEBUG_PRINTLN("ERROR: Failed publishing description to Wippersnapper");
         delete newBoard;
         return;
+    }
     WS_DEBUG_PRINTLN("Published board description, waiting for response...");
 
     // Obtain response from broker
