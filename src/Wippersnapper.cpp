@@ -140,7 +140,6 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
             WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
             // TODO: Timer/state based?
             // start with timer.
-            // setTimer(GPIOfunctionCallbackPtr, interval)
             // NOTE: settimer() should automatically grab a timer slot
             // NOTE: How would we identify each slot if were to free the timer?
                 // run() needs code to check each timer function we set here
@@ -573,6 +572,9 @@ ws_status_t Wippersnapper::run() {
 
     // Ping broker if keepalive elapsed
     ping();
+
+    // Run any functions which utilize the timer
+    _wsTimer->run();
 
     // Process all incoming packets from Wippersnapper MQTT Broker
     _mqtt->processPackets(500);

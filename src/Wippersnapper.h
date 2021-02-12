@@ -35,6 +35,7 @@
 // Internal libraries
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
+#include "Wippersnapper_Timer.h"
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
@@ -206,6 +207,8 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
         Adafruit_MQTT_Subscribe *_subscription;
+
+        WSTimer *_wsTimer;
 
         static char _value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
         static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
