@@ -21,14 +21,20 @@
     #define USB_VID 0x239A
     #define USB_PID 0x8036
     #define BOARD_ID "adafruit-pyportal-m4"
+    // Use TinyUSB - for SAMD/NRF52 Cores ONLY!
+    #define USE_TINYUSB
 #elif defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
     #define USB_VID 0x239A
     #define USB_PID 0x8038
     #define BOARD_ID "adafruit-metro-m4-airliftlite"
+    // Use TinyUSB - for SAMD/NRF52 Cores ONLY!
+    #define USE_TINYUSB
 #elif defined(ADAFRUIT_METRO_M4_EXPRESS)
     #define USB_VID 0x239A
     #define USB_PID 0x8021
     #define BOARD_ID "adafruit-metro-m4"
+    // Use TinyUSB - for SAMD/NRF52 Cores ONLY!
+    #define USE_TINYUSB
 #elif defined(ARDUINO_ARCH_ESP8266)
     // Feather Huzzah ESP8266, CP2104 USB/UART Bridge Controller
     #define USB_VID 0xEA60

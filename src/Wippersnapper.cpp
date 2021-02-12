@@ -309,6 +309,11 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
     }
     return is_success;
 }
+Wippersnapper* object_which_will_handle_signal;
+
+void cbDescStatus_Wrapper(char *data, uint16_t len) {
+    object_which_will_handle_signal->cbDescriptionStatus(data, len);
+}
 
 /**************************************************************************/
 /*!
@@ -473,7 +478,7 @@ void Wippersnapper::connect() {
     _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
 
     // set callback and subscribe
-    _topic_description_sub->setCallback(cbDescriptionStatus);
+    _topic_description_sub->setCallback(cbDescStatus_Wrapper);
     _mqtt->subscribe(_topic_description_sub);
 
     // Connect network interface

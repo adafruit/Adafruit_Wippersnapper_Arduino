@@ -137,7 +137,7 @@ class Wippersnapper {
 
         // MQTT topic callbacks
         static void cbSignalTopic(char *data, uint16_t len);
-        static void cbDescriptionStatus(char *data, uint16_t len);
+        void cbDescriptionStatus(char *data, uint16_t len);
 
         // Signal message
         static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
