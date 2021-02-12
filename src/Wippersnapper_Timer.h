@@ -55,10 +55,11 @@ public:
     void run();
 
     // call function f every d milliseconds
-    int setInterval(long d, timer_callback f);
+    // unsigned long due to https://playground.arduino.cc/Code/TimingRollover/
+    int setInterval(unsigned long d, timer_callback f);
 
     // call function f every d milliseconds for n times
-    int setTimer(long d, timer_callback f, int n);
+    int setTimer(unsigned long d, timer_callback f, int n);
 
     // destroy the specified timer
     void deleteTimer(int numTimer);
@@ -91,7 +92,7 @@ private:
     timer_callback callbacks[MAX_TIMERS];
 
     // delay values
-    long delays[MAX_TIMERS];
+    unsigned long delays[MAX_TIMERS];
 
     // number of runs to be executed for each timer
     int maxNumRuns[MAX_TIMERS];

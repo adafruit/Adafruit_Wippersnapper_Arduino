@@ -115,6 +115,14 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     bufSize = len;
 }
 
+/// Performs a digital read on `pinName`
+int Wippersnapper::cbDigitalRead(int pinName) {
+    WS_DEBUG_PRINT(pinName);WS_DEBUG_PRINT(" value: ");
+    int pinValue = digitalRead(pinName);
+    WS_DEBUG_PRINTLN(pinValue);
+    return pinValue;
+    // TODO: Encapsulate into a pinEvent
+}
 
 /****************************************************************************/
 /*!
@@ -125,8 +133,8 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
 */
 /****************************************************************************/
 bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+    WS_DEBUG_PRINTLN("configPinReq()");
     bool is_configured = true;
-    WS_DEBUG_PRINTLN("configPinReq");
 
     // strip "a/d" from pin name prefix
     char* pinName = pinMsg->pin_name + 1;
@@ -146,20 +154,11 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
             // Note: need to make a GPIOfunctionCallback
         }
         else {
-            WS_DEBUG_PRINTLN("Unable to configure digital pin");
+            WS_DEBUG_PRINTLN("ERROR: Unable to configure digital pin");
         }
     }
-    else if (pinMsg->mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_ANALOG) {
-        // Configure an analog pin
-        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            WS_DEBUG_PRINTLN("Configuring analog output pin");
-        }
-        else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring analog input pin");
-        }
-        else {
-            WS_DEBUG_PRINTLN("Unable to configure digital pin");
-        }
+    else {
+        WS_DEBUG_PRINTLN("ERROR: Unidentified pin mode");
     }
     return is_configured;
 }

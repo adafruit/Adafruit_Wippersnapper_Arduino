@@ -132,7 +132,7 @@ int WSTimer::findFirstFreeSlot() {
 }
 
 
-int WSTimer::setTimer(long d, timer_callback f, int n) {
+int WSTimer::setTimer(unsigned long d, timer_callback f, int n) {
     int freeTimer;
 
     freeTimer = findFirstFreeSlot();
@@ -156,7 +156,7 @@ int WSTimer::setTimer(long d, timer_callback f, int n) {
 }
 
 
-int WSTimer::setInterval(long d, timer_callback f) {
+int WSTimer::setInterval(unsigned long d, timer_callback f) {
     return setTimer(d, f, RUN_FOREVER);
 }
 
