@@ -140,36 +140,67 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
     WS_DEBUG_PRINTLN("configPinReq()");
     bool is_configured = true;
 
+    // TODO: This should be replaced with external callbacks to functions which
+    //      perform the requests
+    bool is_create = false;
+    bool is_delete = false;
+
+    // Check type of pin request
+    WS_DEBUG_PRINT("Pin Request Type: ");
+    switch (pinMsg->request_type) {
+        case wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE:
+            WS_DEBUG_PRINTLN("CREATE");
+            // TODO: call a create pin callback
+            is_create = true;
+            break;
+        case wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE:
+            WS_DEBUG_PRINTLN("DELETE");
+            // TODO: call a delete pin callback
+            is_delete = true;
+            break;
+        // TODO: Implement case for MODIFY
+        default:
+            WS_DEBUG_PRINTLN("ERROR, NOT FOUND.");
+            return false;
+    }
+
     // strip "a/d" from pin name prefix
     char* pinName = pinMsg->pin_name + 1;
-    if (pinMsg->mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
-        // Configure a digital pin
-        pinMode(atoi(pinName), pinMsg->direction);
-        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
+
+    // Initialize a new pin
+    if (is_create == true) {
+        // set pin mode
+        switch(pinMsg->mode) {
+            case wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL:
+                // Configure a digital pin
+                pinMode(atoi(pinName), pinMsg->direction);
+                break;
+            default:
+                WS_DEBUG_PRINTLN("ERROR: Invalid pin mode.");
+                return false;
         }
-        else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
-            // TODO: Timer/state based?
-            // start with timer.
-            // NOTE: settimer() should automatically grab a timer slot
-            // NOTE: How would we identify each slot if were to free the timer?
-                // run() needs code to check each timer function we set here
-            // Note: need to make a GPIOfunctionCallback
-        }
-        else {
-            WS_DEBUG_PRINTLN("ERROR: Unable to configure digital pin");
+
+        // set pin direction
+        switch(pinMsg->direction) {
+            case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT:
+                WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
+                digitalWrite(atoi(pinName), LOW); // initialize LOW
+                break;
+            case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT:
+                WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
+                // TODO!
+            default:
+                WS_DEBUG_PRINTLN("ERROR: Invalid pin direction");
         }
     }
-    else {
-        WS_DEBUG_PRINTLN("ERROR: Unidentified pin mode");
-    }
+
     return is_configured;
 }
 
 /**************************************************************************/
 /*!
-    @brief  Decodes repeated ConfigurePinRequests messages.
+    @brief  Sets up decoder callback for repeated pinConfig messages.
+            Calls configPinReq().
 */
 /**************************************************************************/
 bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
@@ -189,7 +220,6 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
         is_success = false;
     }
 
-    // TODO: Freeup struct members
     return is_success;
 }
 
@@ -238,8 +268,8 @@ bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *
 
 /**************************************************************************/
 /*!
-    @brief      Sets payload callbacks inside the signal message's
-                submessage.
+    @brief      Decodes signal message and sets decoder callbacks
+                to handle submessages.
 */
 /**************************************************************************/
 bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
