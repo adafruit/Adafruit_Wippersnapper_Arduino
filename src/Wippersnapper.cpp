@@ -138,7 +138,6 @@ int Wippersnapper::cbDigitalRead(int pinName) {
 /****************************************************************************/
 bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
     WS_DEBUG_PRINTLN("configPinReq()");
-    bool is_configured = true;
 
     // TODO: This should be replaced with external callbacks to functions which
     //      perform the requests
@@ -193,8 +192,13 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
                 WS_DEBUG_PRINTLN("ERROR: Invalid pin direction");
         }
     }
+    // Delete a configured pin (reset its state to floating)
+    else if (is_delete == true) {
+        WS_DEBUG_PRINT("Deleting pin on ");WS_DEBUG_PRINTLN(pinName);
+        pinMode(atoi(pinName), INPUT);
+    }
 
-    return is_configured;
+    return true;
 }
 
 /**************************************************************************/
