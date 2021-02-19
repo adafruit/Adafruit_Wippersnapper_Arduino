@@ -170,7 +170,7 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
     if (is_create == true) {
         // set pin mode
         switch(pinMsg->mode) {
-            case wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL:
+            case wippersnapper_pin_v1_Mode_MODE_DIGITAL:
                 // Configure a digital pin
                 pinMode(atoi(pinName), pinMsg->direction);
                 break;
