@@ -45,6 +45,31 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
         _uid = 0;
 }
 
+bool Wippersnapper_Registration::process_registration() {
+    bool is_registered = false;
+    FSMReg next_state = _state;
+
+    switch(_state) {
+        case FSMReg::REG_CREATE_MSG:
+            WS_DEBUG_PRINTLN("Creating registration message");
+            next_state = FSMReg::REG_ENCODE_MSG;
+        case FSMReg::REG_ENCODE_MSG:
+            WS_DEBUG_PRINTLN("Encoding registration message");
+            next_state = FSMReg::REG_PUBLISH_MSG;
+        case FSMReg::REG_PUBLISH_MSG:
+            WS_DEBUG_PRINTLN("Publishing registration message");
+            next_state = FSMReg::REG_DECODE_MSG;
+        case FSMReg::REG_DECODE_MSG:
+            WS_DEBUG_PRINTLN("Decoding registration message");
+            is_registered = true; // if successful
+            break;
+        default:
+            break;
+    }
+    return is_registered;
+}
+
+
 /**************************************************************************/
 /*!
     @brief    Sets the message's machine_name field.

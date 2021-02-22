@@ -26,6 +26,8 @@ class Wippersnapper_Registration {
         Wippersnapper_Registration(Wippersnapper *ws);
         ~Wippersnapper_Registration();
 
+        bool process_registration();
+
         void setMachineName(const char *machine_name);
         void setUID(int32_t uid);
 
@@ -37,6 +39,15 @@ class Wippersnapper_Registration {
         void publishDescRequest();
 
     private:
+
+        enum class FSMReg {
+            REG_CREATE_MSG,
+            REG_ENCODE_MSG,
+            REG_PUBLISH_MSG,
+            REG_DECODE_MSG,
+        };
+        FSMReg _state = FSMReg::REG_CREATE_MSG;
+
         uint8_t _message_buffer[128];
         size_t _message_len;
         bool _status;
