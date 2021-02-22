@@ -335,6 +335,12 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
     return is_success;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Provides void decodeRegMsg callback with a
+                wippersnapper object
+*/
+/**************************************************************************/
 Wippersnapper* object_which_will_handle_signal;
 static void cbDescStatus_Wrapper(char *data, uint16_t len) {
     object_which_will_handle_signal->_registerBoard->decodeRegMsg(data, len);
