@@ -33,17 +33,6 @@ class Wippersnapper_Registration {
         bool pollRegMsg();
         void decodeRegMsg(char *data, uint16_t len);
 
-        void setMachineName(const char *machine_name);
-        void setUID(int32_t uid);
-
-
-        // Protobuf encoder wrappers
-        bool encodeDescRequest();
-        void decodeDescResponse(uint8_t buffer, uint16_t len);
-
-        // MQTT Publish function
-        void publishDescRequest();
-
     private:
 
         enum class FSMReg {
