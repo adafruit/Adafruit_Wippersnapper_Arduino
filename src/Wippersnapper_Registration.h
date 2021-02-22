@@ -26,10 +26,15 @@ class Wippersnapper_Registration {
         Wippersnapper_Registration(Wippersnapper *ws);
         ~Wippersnapper_Registration();
 
-        bool process_registration();
+        bool processRegistration();
+        void createMsg();
+        void encodeMsg();
+        void publishMsg();
+        void processRegistration(char *data, uint16_t len);
 
         void setMachineName(const char *machine_name);
         void setUID(int32_t uid);
+
 
         // Protobuf encoder wrappers
         bool encodeDescRequest();
@@ -45,6 +50,7 @@ class Wippersnapper_Registration {
             REG_ENCODE_MSG,
             REG_PUBLISH_MSG,
             REG_DECODE_MSG,
+            REG_DECODED_MSG,
         };
         FSMReg _state = FSMReg::REG_CREATE_MSG;
 

@@ -35,7 +35,6 @@
 // Internal libraries
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
-#include "Wippersnapper_Timer.h"
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
@@ -103,6 +102,8 @@ typedef enum {
 // Keep Alive interval, in ms
 #define WS_KEEPALIVE_INTERVAL 10000
 
+class Wippersnapper_Registration;
+
 class Wippersnapper {
 
     friend class Wippersnapper_Registration;
@@ -167,10 +168,15 @@ class Wippersnapper {
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
+        Wippersnapper_Registration *_registerBoard;
+
     private:
         void _init();
 
     protected:
+
+        
+
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
@@ -208,7 +214,6 @@ class Wippersnapper {
         Adafruit_MQTT_Subscribe *_topic_description_sub;
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
-        Adafruit_MQTT_Subscribe *_subscription;
 
         //WSTimer *_wsTimer;
 

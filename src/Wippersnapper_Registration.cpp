@@ -45,22 +45,27 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
         _uid = 0;
 }
 
-bool Wippersnapper_Registration::process_registration() {
+bool Wippersnapper_Registration::processRegistration() {
     bool is_registered = false;
     FSMReg next_state = _state;
 
     switch(_state) {
         case FSMReg::REG_CREATE_MSG:
             WS_DEBUG_PRINTLN("Creating registration message");
+            createMsg();
             next_state = FSMReg::REG_ENCODE_MSG;
         case FSMReg::REG_ENCODE_MSG:
             WS_DEBUG_PRINTLN("Encoding registration message");
+            encodeMsg();
             next_state = FSMReg::REG_PUBLISH_MSG;
         case FSMReg::REG_PUBLISH_MSG:
             WS_DEBUG_PRINTLN("Publishing registration message");
+            //publishMsg();
             next_state = FSMReg::REG_DECODE_MSG;
         case FSMReg::REG_DECODE_MSG:
-            WS_DEBUG_PRINTLN("Decoding registration message");
+            //is_registered = true; // if successful
+            break;
+        case FSMReg::REG_DECODED_MSG:
             is_registered = true; // if successful
             break;
         default:
@@ -69,6 +74,75 @@ bool Wippersnapper_Registration::process_registration() {
     return is_registered;
 }
 
+void Wippersnapper_Registration::createMsg() {
+    _machine_name = _ws->_boardId;
+    _uid = atoi(_ws->sUID);
+}
+
+void Wippersnapper_Registration::encodeMsg() {
+    WS_DEBUG_PRINTLN("encoding board description...");
+    _status = true;
+
+    // Create message object
+    wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
+
+    // Encode fields
+    strcpy(_message.machine_name, _machine_name);
+    _message.mac_addr = _uid;
+
+    pb_ostream_t _msg_stream = pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
+
+    // encode message
+    _status = pb_encode(&_msg_stream, wippersnapper_description_v1_CreateDescriptionRequest_fields, &_message);
+    _message_len = _msg_stream.bytes_written;
+
+    // verify message
+    if (!_status) {
+        WS_DEBUG_PRINTLN("ERROR: encoding description message failed!");
+        //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+    }
+}
+
+void Wippersnapper_Registration::publishMsg() {
+    WS_DEBUG_PRINT("Publishing description message...");
+    if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
+        WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
+        _ws->_boardStatus = WS_BOARD_DEF_SEND_FAILED;
+    }
+    _ws->_boardStatus = WS_BOARD_DEF_SENT;
+}
+
+void Wippersnapper_Registration::processRegistration(char *data, uint16_t len) {
+    WS_DEBUG_PRINTLN("\ncbDescriptionStatusRegistration");
+    uint8_t buffer[len];
+    memcpy(buffer, data, len);
+
+    // init. CreateDescriptionResponse message
+    wippersnapper_description_v1_CreateDescriptionResponse message = wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
+
+    // create input stream for buffer
+    pb_istream_t stream = pb_istream_from_buffer(buffer, len);
+    // decode the stream
+    if (!pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message)) {
+        WS_DEBUG_PRINTLN("Error decoding description status message!");
+    } else {    // set board status
+        switch (message.response) {
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
+                _ws->_boardStatus = WS_BOARD_DEF_OK;
+                break;
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
+                _ws->_boardStatus = WS_BOARD_DEF_INVALID;
+                break;
+            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
+                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                break;
+            default:
+                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+        }
+    }
+
+    WS_DEBUG_PRINTLN("\nSuccessfully checked in, waiting for commands...");
+}
 
 /**************************************************************************/
 /*!

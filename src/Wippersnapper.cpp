@@ -309,10 +309,13 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
     }
     return is_success;
 }
-Wippersnapper* object_which_will_handle_signal;
 
-void cbDescStatus_Wrapper(char *data, uint16_t len) {
+Wippersnapper* object_which_will_handle_signal;
+static void cbDescStatus_Wrapper(char *data, uint16_t len) {
     object_which_will_handle_signal->cbDescriptionStatus(data, len);
+    //object_which_will_handle_signal-> newBoard.processRegistration(data, len);
+    //_registerBoard.processRegistration(data, len);
+    object_which_will_handle_signal->_registerBoard->processRegistration(data, len);
 }
 
 /**************************************************************************/
@@ -618,24 +621,22 @@ ws_status_t Wippersnapper::run() {
 void Wippersnapper::registerBoard(uint8_t retries=10) {
     WS_DEBUG_PRINT("registerBoard()");
     // Create new board
-    Wippersnapper_Registration *newBoard = new Wippersnapper_Registration(this);
+    _registerBoard = new Wippersnapper_Registration(this);
     WS_DEBUG_PRINT("Created newBoard..");
     // Set board identifiers
-    newBoard->setMachineName(_boardId);
-    newBoard->setUID(atoi(sUID));
+    _registerBoard->setMachineName(_boardId);
+    _registerBoard->setUID(atoi(sUID));
     WS_DEBUG_PRINT("set machine_name and uid..");
 
     // Encode and publish description message
-    if (! newBoard->encodeDescRequest()) {
+    if (! _registerBoard->encodeDescRequest()) {
         WS_DEBUG_PRINTLN("ERROR: Unable to encode description message.");
-        delete newBoard;
         return;
     }
 
-    newBoard->publishDescRequest();
+    _registerBoard->publishDescRequest();
     if (!_boardStatus == WS_BOARD_DEF_SENT) {
         WS_DEBUG_PRINTLN("ERROR: Failed publishing description to Wippersnapper");
-        delete newBoard;
         return;
     }
     WS_DEBUG_PRINTLN("Published board description, waiting for response...");
@@ -651,7 +652,7 @@ void Wippersnapper::registerBoard(uint8_t retries=10) {
         delay(500);
         retryCount++;
     }
-    delete newBoard;
+    //delete newBoard;
 }
 
 /**************************************************************************/
