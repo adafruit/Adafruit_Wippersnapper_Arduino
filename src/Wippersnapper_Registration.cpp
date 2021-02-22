@@ -52,19 +52,22 @@ bool Wippersnapper_Registration::processRegistration() {
     switch(_state) {
         case FSMReg::REG_CREATE_MSG:
             WS_DEBUG_PRINTLN("Creating registration message");
-            createMsg();
+            createRegMsg();
             next_state = FSMReg::REG_ENCODE_MSG;
         case FSMReg::REG_ENCODE_MSG:
             WS_DEBUG_PRINTLN("Encoding registration message");
-            encodeMsg();
+            encodeRegMsg();
             next_state = FSMReg::REG_PUBLISH_MSG;
         case FSMReg::REG_PUBLISH_MSG:
             WS_DEBUG_PRINTLN("Publishing registration message");
-            //publishMsg();
+            //publishRegMsg();
             next_state = FSMReg::REG_DECODE_MSG;
         case FSMReg::REG_DECODE_MSG:
-            //is_registered = true; // if successful
-            break;
+            if (!pollRegMsg()) {
+                next_state = FSMReg::REG_CREATE_MSG;
+            } else {
+                next_state = FSMReg::REG_DECODED_MSG;
+            }
         case FSMReg::REG_DECODED_MSG:
             is_registered = true; // if successful
             break;
@@ -74,12 +77,12 @@ bool Wippersnapper_Registration::processRegistration() {
     return is_registered;
 }
 
-void Wippersnapper_Registration::createMsg() {
+void Wippersnapper_Registration::createRegMsg() {
     _machine_name = _ws->_boardId;
     _uid = atoi(_ws->sUID);
 }
 
-void Wippersnapper_Registration::encodeMsg() {
+void Wippersnapper_Registration::encodeRegMsg() {
     WS_DEBUG_PRINTLN("encoding board description...");
     _status = true;
 
@@ -103,7 +106,7 @@ void Wippersnapper_Registration::encodeMsg() {
     }
 }
 
-void Wippersnapper_Registration::publishMsg() {
+void Wippersnapper_Registration::publishRegMsg() {
     WS_DEBUG_PRINT("Publishing description message...");
     if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
@@ -112,8 +115,24 @@ void Wippersnapper_Registration::publishMsg() {
     _ws->_boardStatus = WS_BOARD_DEF_SENT;
 }
 
-void Wippersnapper_Registration::processRegistration(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("\ncbDescriptionStatusRegistration");
+bool Wippersnapper_Registration::pollRegMsg() {
+    bool is_success = false;
+    // Obtain response from broker
+    uint8_t retryCount = 0;
+    while (_ws->_boardStatus == WS_BOARD_DEF_SENT) {
+        if (retryCount >= 5) {
+            WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
+            break;
+        }
+        _ws->_mqtt->processPackets(500); // process messages
+        delay(500);
+        retryCount++;
+    }
+    return is_success;
+}
+
+void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
+    WS_DEBUG_PRINTLN("\ndecodeRegMsg");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 

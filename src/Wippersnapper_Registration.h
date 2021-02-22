@@ -27,10 +27,11 @@ class Wippersnapper_Registration {
         ~Wippersnapper_Registration();
 
         bool processRegistration();
-        void createMsg();
-        void encodeMsg();
-        void publishMsg();
-        void processRegistration(char *data, uint16_t len);
+        void createRegMsg();
+        void encodeRegMsg();
+        void publishRegMsg();
+        bool pollRegMsg();
+        void decodeRegMsg(char *data, uint16_t len);
 
         void setMachineName(const char *machine_name);
         void setUID(int32_t uid);

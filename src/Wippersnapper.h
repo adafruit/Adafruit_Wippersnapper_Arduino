@@ -175,8 +175,6 @@ class Wippersnapper {
 
     protected:
 
-        
-
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */

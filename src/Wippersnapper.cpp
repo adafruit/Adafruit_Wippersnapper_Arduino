@@ -312,10 +312,10 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
 Wippersnapper* object_which_will_handle_signal;
 static void cbDescStatus_Wrapper(char *data, uint16_t len) {
-    object_which_will_handle_signal->cbDescriptionStatus(data, len);
+    //object_which_will_handle_signal->cbDescriptionStatus(data, len);
     //object_which_will_handle_signal-> newBoard.processRegistration(data, len);
     //_registerBoard.processRegistration(data, len);
-    object_which_will_handle_signal->_registerBoard->processRegistration(data, len);
+    object_which_will_handle_signal->_registerBoard->decodeRegMsg(data, len);
 }
 
 /**************************************************************************/
@@ -499,6 +499,7 @@ void Wippersnapper::connect() {
 
     WS_DEBUG_PRINTLN("Registering Board...")
     // Register board with Wippersnapper
+
     registerBoard(10);
     if (!_boardStatus == WS_BOARD_DEF_OK) {
         WS_DEBUG_PRINT("Unable to identify board with broker.");
@@ -622,37 +623,11 @@ void Wippersnapper::registerBoard(uint8_t retries=10) {
     WS_DEBUG_PRINT("registerBoard()");
     // Create new board
     _registerBoard = new Wippersnapper_Registration(this);
-    WS_DEBUG_PRINT("Created newBoard..");
-    // Set board identifiers
-    _registerBoard->setMachineName(_boardId);
-    _registerBoard->setUID(atoi(sUID));
-    WS_DEBUG_PRINT("set machine_name and uid..");
 
-    // Encode and publish description message
-    if (! _registerBoard->encodeDescRequest()) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to encode description message.");
-        return;
+    // Run the FSM for the registration process
+    if (!_registerBoard->processRegistration()) {
+        _boardStatus = WS_BOARD_DEF_INVALID;
     }
-
-    _registerBoard->publishDescRequest();
-    if (!_boardStatus == WS_BOARD_DEF_SENT) {
-        WS_DEBUG_PRINTLN("ERROR: Failed publishing description to Wippersnapper");
-        return;
-    }
-    WS_DEBUG_PRINTLN("Published board description, waiting for response...");
-
-    // Obtain response from broker
-    uint8_t retryCount = 0;
-    while (_boardStatus == WS_BOARD_DEF_SENT) {
-        if (retryCount >= retries) {
-            WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
-            break;
-        }
-        _mqtt->processPackets(500); // process messages
-        delay(500);
-        retryCount++;
-    }
-    //delete newBoard;
 }
 
 /**************************************************************************/
