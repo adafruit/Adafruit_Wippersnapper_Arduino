@@ -147,6 +147,17 @@ void setDigitalPinMode(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
 
 /****************************************************************************/
 /*!
+    @brief    "Releases" a previously configured digital pin
+*/
+/****************************************************************************/
+void deleteDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+    char* pinName = pinMsg->pin_name + 1;
+    WS_DEBUG_PRINT("Deleting pin on ");WS_DEBUG_PRINTLN(pinName);
+    pinMode(atoi(pinName), INPUT); // hi-z
+}
+
+/****************************************************************************/
+/*!
     @brief    Configures a pin according to a 
                 wippersnapper_pin_v1_ConfigurePinRequest message.
     @param    pinMsg
@@ -156,6 +167,7 @@ void setDigitalPinMode(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
 bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
     WS_DEBUG_PRINTLN("configPinReq");
     bool is_create = false;
+    bool is_delete = false;
 
      // Check request type
     if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
@@ -163,13 +175,20 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
         is_create = true;
     } else if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
         WS_DEBUG_PRINT("Deleting pin ");WS_DEBUG_PRINTLN(atoi(pinMsg->pin_name));
+        is_delete = true;
     }
 
-    if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
-        setDigitalPinMode(pinMsg);
+    if (is_create == true) { // initialize a new pin
+        if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
+            setDigitalPinMode(pinMsg);
+        }
+        // TODO: else, check for analog pin, setAnalogPinMode() call
     }
-
-
+    if (is_delete == true) { // delete a prv. initialized pin
+        if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
+            deleteDigitalPin(pinMsg);
+        }
+    }
     return true;
 }
 
