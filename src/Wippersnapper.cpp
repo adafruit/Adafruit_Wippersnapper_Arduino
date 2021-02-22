@@ -119,13 +119,30 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     bufSize = len;
 }
 
-/// Performs a digital read on `pinName`
-int Wippersnapper::cbDigitalRead(int pinName) {
-    WS_DEBUG_PRINT(pinName);WS_DEBUG_PRINT(" value: ");
-    int pinValue = digitalRead(pinName);
-    WS_DEBUG_PRINTLN(pinValue);
-    return pinValue;
-    // TODO: Encapsulate into a pinEvent
+
+/// PIN API ///
+/****************************************************************************/
+/*!
+    @brief    Configures a digital pin to behave as an input or an output.
+*/
+/****************************************************************************/
+void setDigitalPinMode(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+     // strip "a/d" from pin name prefix
+    char* pinName = pinMsg->pin_name + 1;
+
+    switch(pinMsg->direction) {
+        case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT:
+            WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
+            pinMode(atoi(pinName), OUTPUT);
+            digitalWrite(atoi(pinName), LOW); // initialize LOW
+            break;
+        case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT:
+            WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
+            pinMode(atoi(pinName), INPUT);
+            break;
+        default:
+            WS_DEBUG_PRINTLN("ERROR: Invalid pin direction");
+    }
 }
 
 /****************************************************************************/
@@ -137,34 +154,23 @@ int Wippersnapper::cbDigitalRead(int pinName) {
 */
 /****************************************************************************/
 bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-    WS_DEBUG_PRINTLN("configPinReq()");
-    bool is_configured = true;
+    WS_DEBUG_PRINTLN("configPinReq");
+    bool is_create = false;
 
-    // strip "a/d" from pin name prefix
-    char* pinName = pinMsg->pin_name + 1;
-    if (pinMsg->mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
-        // Configure a digital pin
-        pinMode(atoi(pinName), pinMsg->direction);
-        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
-        }
-        else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
-            // TODO: Timer/state based?
-            // start with timer.
-            // NOTE: settimer() should automatically grab a timer slot
-            // NOTE: How would we identify each slot if were to free the timer?
-                // run() needs code to check each timer function we set here
-            // Note: need to make a GPIOfunctionCallback
-        }
-        else {
-            WS_DEBUG_PRINTLN("ERROR: Unable to configure digital pin");
-        }
+     // Check request type
+    if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
+        WS_DEBUG_PRINT("Initializing new pin ");WS_DEBUG_PRINTLN(atoi(pinMsg->pin_name));
+        is_create = true;
+    } else if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
+        WS_DEBUG_PRINT("Deleting pin ");WS_DEBUG_PRINTLN(atoi(pinMsg->pin_name));
     }
-    else {
-        WS_DEBUG_PRINTLN("ERROR: Unidentified pin mode");
+
+    if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
+        setDigitalPinMode(pinMsg);
     }
-    return is_configured;
+
+
+    return true;
 }
 
 /**************************************************************************/
