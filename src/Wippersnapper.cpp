@@ -337,9 +337,6 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
 Wippersnapper* object_which_will_handle_signal;
 static void cbDescStatus_Wrapper(char *data, uint16_t len) {
-    //object_which_will_handle_signal->cbDescriptionStatus(data, len);
-    //object_which_will_handle_signal-> newBoard.processRegistration(data, len);
-    //_registerBoard.processRegistration(data, len);
     object_which_will_handle_signal->_registerBoard->decodeRegMsg(data, len);
 }
 

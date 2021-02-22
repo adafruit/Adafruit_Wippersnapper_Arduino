@@ -102,6 +102,7 @@ typedef enum {
 // Keep Alive interval, in ms
 #define WS_KEEPALIVE_INTERVAL 10000
 
+// forward declaration
 class Wippersnapper_Registration;
 
 class Wippersnapper {
