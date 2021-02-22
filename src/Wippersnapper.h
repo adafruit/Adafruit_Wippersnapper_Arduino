@@ -129,7 +129,7 @@ class Wippersnapper {
 
         void generate_feeds(); // Generate device-specific WS feeds
 
-        void registerBoard(uint8_t retries);
+        bool registerBoard(uint8_t retries);
 
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);

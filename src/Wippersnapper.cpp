@@ -462,11 +462,11 @@ void Wippersnapper::generate_feeds() {
 */
 /**************************************************************************/
 void Wippersnapper::connect() {
-    // WS_DEBUG_PRINTLN("::connect()");
+    WS_DEBUG_PRINTLN("connect()");
     _status = WS_IDLE;
     _boardStatus = WS_BOARD_DEF_IDLE;
 
-    //WS_DEBUG_PRINTLN("Generating WS Feeds...");
+    WS_DEBUG_PRINTLN("Generating feeds...");
     generate_feeds();
 
     // Subscription to listen to commands from the server
@@ -498,13 +498,11 @@ void Wippersnapper::connect() {
     WS_DEBUG_PRINTLN("MQTT Connected!");
 
     WS_DEBUG_PRINTLN("Registering Board...")
-    // Register board with Wippersnapper
-
-    registerBoard(10);
-    if (!_boardStatus == WS_BOARD_DEF_OK) {
-        WS_DEBUG_PRINT("Unable to identify board with broker.");
-        WS_DEBUG_PRINTLN(_boardStatus);
+    if (!registerBoard(10)) {
+        WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+        for(;;);
     }
+    WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
 
 }
 
@@ -619,15 +617,12 @@ ws_status_t Wippersnapper::run() {
     @brief    Sends board description message to Wippersnapper
 */
 /**************************************************************************/
-void Wippersnapper::registerBoard(uint8_t retries=10) {
-    WS_DEBUG_PRINT("registerBoard()");
+bool Wippersnapper::registerBoard(uint8_t retries=10) {
+    WS_DEBUG_PRINTLN("registerBoard()");
     // Create new board
     _registerBoard = new Wippersnapper_Registration(this);
-
     // Run the FSM for the registration process
-    if (!_registerBoard->processRegistration()) {
-        _boardStatus = WS_BOARD_DEF_INVALID;
-    }
+    return _registerBoard->processRegistration();
 }
 
 /**************************************************************************/

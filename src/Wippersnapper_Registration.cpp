@@ -60,7 +60,7 @@ bool Wippersnapper_Registration::processRegistration() {
             next_state = FSMReg::REG_PUBLISH_MSG;
         case FSMReg::REG_PUBLISH_MSG:
             WS_DEBUG_PRINTLN("Publishing registration message");
-            //publishRegMsg();
+            publishRegMsg();
             next_state = FSMReg::REG_DECODE_MSG;
         case FSMReg::REG_DECODE_MSG:
             if (!pollRegMsg()) {
