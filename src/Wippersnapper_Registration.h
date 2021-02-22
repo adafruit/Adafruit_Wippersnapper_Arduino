@@ -27,7 +27,6 @@ class Wippersnapper_Registration {
         ~Wippersnapper_Registration();
 
         bool processRegistration();
-        void createRegMsg();
         void encodeRegMsg();
         void publishRegMsg();
         bool pollRegMsg();
@@ -36,13 +35,12 @@ class Wippersnapper_Registration {
     private:
 
         enum class FSMReg {
-            REG_CREATE_MSG,
-            REG_ENCODE_MSG,
+            REG_CREATE_ENCODE_MSG,
             REG_PUBLISH_MSG,
             REG_DECODE_MSG,
             REG_DECODED_MSG,
         };
-        FSMReg _state = FSMReg::REG_CREATE_MSG;
+        FSMReg _state = FSMReg::REG_CREATE_ENCODE_MSG;
 
         uint8_t _message_buffer[128];
         size_t _message_len;

@@ -43,28 +43,35 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
 
     if (_uid)
         _uid = 0;
+
+    // reset FSM
+    _state = FSMReg::REG_CREATE_ENCODE_MSG;
 }
 
+/************************************************************/
+/*!
+    @brief    Registration State Machine. Handles the
+                hardware registration process.
+    @returns True if registered with Wippersnapper 
+                successfully, False otherwise.
+*/
+/************************************************************/
 bool Wippersnapper_Registration::processRegistration() {
     bool is_registered = false;
     FSMReg next_state = _state;
 
     switch(_state) {
-        case FSMReg::REG_CREATE_MSG:
-            WS_DEBUG_PRINTLN("Creating registration message");
-            createRegMsg();
-            next_state = FSMReg::REG_ENCODE_MSG;
-        case FSMReg::REG_ENCODE_MSG:
+        case FSMReg::REG_CREATE_ENCODE_MSG:
             WS_DEBUG_PRINTLN("Encoding registration message");
             encodeRegMsg();
             next_state = FSMReg::REG_PUBLISH_MSG;
         case FSMReg::REG_PUBLISH_MSG:
-            WS_DEBUG_PRINTLN("Publishing registration message");
+            WS_DEBUG_PRINTLN("-> Publishing registration message");
             publishRegMsg();
             next_state = FSMReg::REG_DECODE_MSG;
         case FSMReg::REG_DECODE_MSG:
             if (!pollRegMsg()) {
-                next_state = FSMReg::REG_CREATE_MSG;
+                next_state = FSMReg::REG_CREATE_ENCODE_MSG;
             } else {
                 next_state = FSMReg::REG_DECODED_MSG;
             }
@@ -77,17 +84,22 @@ bool Wippersnapper_Registration::processRegistration() {
     return is_registered;
 }
 
-void Wippersnapper_Registration::createRegMsg() {
-    _machine_name = _ws->_boardId;
-    _uid = atoi(_ws->sUID);
-}
 
+/************************************************************/
+/*!
+    @brief    Creates and encodes a registration protobuf
+                message.
+*/
+/************************************************************/
 void Wippersnapper_Registration::encodeRegMsg() {
-    WS_DEBUG_PRINTLN("encoding board description...");
     _status = true;
 
     // Create message object
     wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
+    
+    // Fill message object's fields
+    _machine_name = _ws->_boardId;
+    _uid = atoi(_ws->sUID);
 
     // Encode fields
     strcpy(_message.machine_name, _machine_name);
@@ -106,8 +118,13 @@ void Wippersnapper_Registration::encodeRegMsg() {
     }
 }
 
+/************************************************************/
+/*!
+    @brief    Publishes a registration message to the
+                Wippersnapper broker.
+*/
+/************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-    WS_DEBUG_PRINT("Publishing description message...");
     if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
         _ws->_boardStatus = WS_BOARD_DEF_SEND_FAILED;
@@ -131,8 +148,13 @@ bool Wippersnapper_Registration::pollRegMsg() {
     return is_success;
 }
 
+/************************************************************/
+/*!
+    @brief    Decodes registration message from broker.
+*/
+/************************************************************/
 void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("\ndecodeRegMsg");
+    WS_DEBUG_PRINTLN("-> GOT Registration Message");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 
