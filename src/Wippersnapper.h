@@ -35,7 +35,6 @@
 // Internal libraries
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
-#include "Wippersnapper_Timer.h"
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
@@ -103,6 +102,9 @@ typedef enum {
 // Keep Alive interval, in ms
 #define WS_KEEPALIVE_INTERVAL 10000
 
+// forward declaration
+class Wippersnapper_Registration;
+
 class Wippersnapper {
 
     friend class Wippersnapper_Registration;
@@ -128,7 +130,7 @@ class Wippersnapper {
 
         void generate_feeds(); // Generate device-specific WS feeds
 
-        void registerBoard(uint8_t retries);
+        bool registerBoard(uint8_t retries);
 
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
@@ -151,9 +153,6 @@ class Wippersnapper {
         static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         static void digitalWriteEvent(char *pinName, int pinValue);
 
-        // Digital Read
-        int cbDigitalRead(int pinName);
-
         // Adafruit IO Credentials
         const char *_username; /*!< Adafruit IO Username. */
         const char *_key;      /*!< Adafruit IO Key. */
@@ -167,10 +166,13 @@ class Wippersnapper {
         // Protobuf helpers
         bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
+        Wippersnapper_Registration *_registerBoard;
+
     private:
         void _init();
 
     protected:
+
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
@@ -208,7 +210,6 @@ class Wippersnapper {
         Adafruit_MQTT_Subscribe *_topic_description_sub;
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
-        Adafruit_MQTT_Subscribe *_subscription;
 
         //WSTimer *_wsTimer;
 

@@ -43,44 +43,65 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
 
     if (_uid)
         _uid = 0;
+
+    // reset FSM
+    _state = FSMReg::REG_CREATE_ENCODE_MSG;
 }
 
-/**************************************************************************/
+/************************************************************/
 /*!
-    @brief    Sets the message's machine_name field.
-    @param    machine_name
-              Valid machine name.
+    @brief    Registration State Machine. Handles the
+                hardware registration process.
+    @returns True if registered with Wippersnapper 
+                successfully, False otherwise.
 */
-/**************************************************************************/
-void Wippersnapper_Registration::setMachineName(const char *machine_name) {
-    _machine_name = machine_name;
-    //strcpy(_message.machine_name, _machine_name);
+/************************************************************/
+bool Wippersnapper_Registration::processRegistration() {
+    bool is_registered = false;
+    FSMReg next_state = _state;
 
+    switch(_state) {
+        case FSMReg::REG_CREATE_ENCODE_MSG:
+            WS_DEBUG_PRINTLN("Encoding registration message");
+            encodeRegMsg();
+            next_state = FSMReg::REG_PUBLISH_MSG;
+        case FSMReg::REG_PUBLISH_MSG:
+            WS_DEBUG_PRINTLN("-> Publishing registration message");
+            publishRegMsg();
+            next_state = FSMReg::REG_DECODE_MSG;
+        case FSMReg::REG_DECODE_MSG:
+            if (!pollRegMsg()) {
+                next_state = FSMReg::REG_CREATE_ENCODE_MSG;
+            } else {
+                next_state = FSMReg::REG_DECODED_MSG;
+            }
+        case FSMReg::REG_DECODED_MSG:
+            is_registered = true; // if successful
+            break;
+        default:
+            break;
+    }
+    return is_registered;
 }
 
-/**************************************************************************/
-/*!
-    @brief    Sets the message's mac_addr field.
-    @param    uid
-              Valid unique identifier.
-*/
-/**************************************************************************/
-void Wippersnapper_Registration::setUID(int32_t uid) {
-    _uid = uid;
-    //_message.mac_addr = _uid;
-}
 
-/**************************************************************************/
+/************************************************************/
 /*!
-    @brief    Encodes a CreateDescriptionRequest message.
+    @brief    Creates and encodes a registration protobuf
+                message.
 */
-/**************************************************************************/
-bool Wippersnapper_Registration::encodeDescRequest() {
-    WS_DEBUG_PRINTLN("encoding board description...");
+/************************************************************/
+void Wippersnapper_Registration::encodeRegMsg() {
     _status = true;
 
+    // Create message object
     wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
+    
+    // Fill message object's fields
+    _machine_name = _ws->_boardId;
+    _uid = atoi(_ws->sUID);
 
+    // Encode fields
     strcpy(_message.machine_name, _machine_name);
     _message.mac_addr = _uid;
 
@@ -92,19 +113,18 @@ bool Wippersnapper_Registration::encodeDescRequest() {
 
     // verify message
     if (!_status) {
-        WS_DEBUG_PRINTLN("encoding description message failed!");
+        WS_DEBUG_PRINTLN("ERROR: encoding description message failed!");
         //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
     }
-    return _status;
 }
 
-/**************************************************************************/
+/************************************************************/
 /*!
-    @brief    Publishes description message to Wippersnapper.
+    @brief    Publishes a registration message to the
+                Wippersnapper broker.
 */
-/**************************************************************************/
-void Wippersnapper_Registration::publishDescRequest() {
-    WS_DEBUG_PRINT("Publishing description message...");
+/************************************************************/
+void Wippersnapper_Registration::publishRegMsg() {
     if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
         _ws->_boardStatus = WS_BOARD_DEF_SEND_FAILED;
@@ -112,22 +132,40 @@ void Wippersnapper_Registration::publishDescRequest() {
     _ws->_boardStatus = WS_BOARD_DEF_SENT;
 }
 
-/**************************************************************************/
+bool Wippersnapper_Registration::pollRegMsg() {
+    bool is_success = false;
+    // Obtain response from broker
+    uint8_t retryCount = 0;
+    while (_ws->_boardStatus == WS_BOARD_DEF_SENT) {
+        if (retryCount >= 5) {
+            WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
+            break;
+        }
+        _ws->_mqtt->processPackets(500); // process messages
+        delay(500);
+        retryCount++;
+    }
+    return is_success;
+}
+
+/************************************************************/
 /*!
-    @brief    Decodes description response from broker.
+    @brief    Decodes registration message from broker.
 */
-/**************************************************************************/
-void Wippersnapper_Registration::decodeDescResponse(uint8_t buffer, uint16_t len) {
-    WS_DEBUG_PRINTLN("Decoding description response from broker");
+/************************************************************/
+void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
+    WS_DEBUG_PRINTLN("-> GOT Registration Message");
+    uint8_t buffer[len];
+    memcpy(buffer, data, len);
+
     // init. CreateDescriptionResponse message
     wippersnapper_description_v1_CreateDescriptionResponse message = wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
 
     // create input stream for buffer
-    pb_istream_t stream = pb_istream_from_buffer(&buffer, len);
+    pb_istream_t stream = pb_istream_from_buffer(buffer, len);
     // decode the stream
     if (!pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message)) {
         WS_DEBUG_PRINTLN("Error decoding description status message!");
-        _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
     } else {    // set board status
         switch (message.response) {
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
@@ -144,4 +182,5 @@ void Wippersnapper_Registration::decodeDescResponse(uint8_t buffer, uint16_t len
         }
     }
 
+    WS_DEBUG_PRINTLN("\nSuccessfully checked in, waiting for commands...");
 }

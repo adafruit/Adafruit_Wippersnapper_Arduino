@@ -119,13 +119,41 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
     bufSize = len;
 }
 
-/// Performs a digital read on `pinName`
-int Wippersnapper::cbDigitalRead(int pinName) {
-    WS_DEBUG_PRINT(pinName);WS_DEBUG_PRINT(" value: ");
-    int pinValue = digitalRead(pinName);
-    WS_DEBUG_PRINTLN(pinValue);
-    return pinValue;
-    // TODO: Encapsulate into a pinEvent
+
+/// PIN API ///
+/****************************************************************************/
+/*!
+    @brief    Configures a digital pin to behave as an input or an output.
+*/
+/****************************************************************************/
+void setDigitalPinMode(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+     // strip "a/d" from pin name prefix
+    char* pinName = pinMsg->pin_name + 1;
+
+    switch(pinMsg->direction) {
+        case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT:
+            WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
+            pinMode(atoi(pinName), OUTPUT);
+            digitalWrite(atoi(pinName), LOW); // initialize LOW
+            break;
+        case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT:
+            WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
+            pinMode(atoi(pinName), INPUT);
+            break;
+        default:
+            WS_DEBUG_PRINTLN("ERROR: Invalid pin direction");
+    }
+}
+
+/****************************************************************************/
+/*!
+    @brief    "Releases" a previously configured digital pin
+*/
+/****************************************************************************/
+void deleteDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+    char* pinName = pinMsg->pin_name + 1;
+    WS_DEBUG_PRINT("Deleting pin on ");WS_DEBUG_PRINTLN(pinName);
+    pinMode(atoi(pinName), INPUT); // hi-z
 }
 
 /****************************************************************************/
@@ -137,34 +165,31 @@ int Wippersnapper::cbDigitalRead(int pinName) {
 */
 /****************************************************************************/
 bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-    WS_DEBUG_PRINTLN("configPinReq()");
-    bool is_configured = true;
+    WS_DEBUG_PRINTLN("configPinReq");
+    bool is_create = false;
+    bool is_delete = false;
 
-    // strip "a/d" from pin name prefix
-    char* pinName = pinMsg->pin_name + 1;
-    if (pinMsg->mode == wippersnapper_pin_v1_ConfigurePinRequest_Mode_MODE_DIGITAL) {
-        // Configure a digital pin
-        pinMode(atoi(pinName), pinMsg->direction);
-        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-            WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
+     // Check request type
+    if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
+        WS_DEBUG_PRINT("Initializing new pin ");WS_DEBUG_PRINTLN(atoi(pinMsg->pin_name));
+        is_create = true;
+    } else if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
+        WS_DEBUG_PRINT("Deleting pin ");WS_DEBUG_PRINTLN(atoi(pinMsg->pin_name));
+        is_delete = true;
+    }
+
+    if (is_create == true) { // initialize a new pin
+        if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
+            setDigitalPinMode(pinMsg);
         }
-        else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-            WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
-            // TODO: Timer/state based?
-            // start with timer.
-            // NOTE: settimer() should automatically grab a timer slot
-            // NOTE: How would we identify each slot if were to free the timer?
-                // run() needs code to check each timer function we set here
-            // Note: need to make a GPIOfunctionCallback
-        }
-        else {
-            WS_DEBUG_PRINTLN("ERROR: Unable to configure digital pin");
+        // TODO: else, check for analog pin, setAnalogPinMode() call
+    }
+    if (is_delete == true) { // delete a prv. initialized pin
+        if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
+            deleteDigitalPin(pinMsg);
         }
     }
-    else {
-        WS_DEBUG_PRINTLN("ERROR: Unidentified pin mode");
-    }
-    return is_configured;
+    return true;
 }
 
 /**************************************************************************/
@@ -309,10 +334,16 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
     }
     return is_success;
 }
-Wippersnapper* object_which_will_handle_signal;
 
-void cbDescStatus_Wrapper(char *data, uint16_t len) {
-    object_which_will_handle_signal->cbDescriptionStatus(data, len);
+/**************************************************************************/
+/*!
+    @brief    Provides void decodeRegMsg callback with a
+                wippersnapper object
+*/
+/**************************************************************************/
+Wippersnapper* object_which_will_handle_signal;
+static void cbDescStatus_Wrapper(char *data, uint16_t len) {
+    object_which_will_handle_signal->_registerBoard->decodeRegMsg(data, len);
 }
 
 /**************************************************************************/
@@ -459,11 +490,11 @@ void Wippersnapper::generate_feeds() {
 */
 /**************************************************************************/
 void Wippersnapper::connect() {
-    // WS_DEBUG_PRINTLN("::connect()");
+    WS_DEBUG_PRINTLN("connect()");
     _status = WS_IDLE;
     _boardStatus = WS_BOARD_DEF_IDLE;
 
-    //WS_DEBUG_PRINTLN("Generating WS Feeds...");
+    WS_DEBUG_PRINTLN("Generating feeds...");
     generate_feeds();
 
     // Subscription to listen to commands from the server
@@ -495,12 +526,11 @@ void Wippersnapper::connect() {
     WS_DEBUG_PRINTLN("MQTT Connected!");
 
     WS_DEBUG_PRINTLN("Registering Board...")
-    // Register board with Wippersnapper
-    registerBoard(10);
-    if (!_boardStatus == WS_BOARD_DEF_OK) {
-        WS_DEBUG_PRINT("Unable to identify board with broker.");
-        WS_DEBUG_PRINTLN(_boardStatus);
+    if (!registerBoard(10)) {
+        WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+        for(;;);
     }
+    WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
 
 }
 
@@ -615,43 +645,12 @@ ws_status_t Wippersnapper::run() {
     @brief    Sends board description message to Wippersnapper
 */
 /**************************************************************************/
-void Wippersnapper::registerBoard(uint8_t retries=10) {
-    WS_DEBUG_PRINT("registerBoard()");
+bool Wippersnapper::registerBoard(uint8_t retries=10) {
+    WS_DEBUG_PRINTLN("registerBoard()");
     // Create new board
-    Wippersnapper_Registration *newBoard = new Wippersnapper_Registration(this);
-    WS_DEBUG_PRINT("Created newBoard..");
-    // Set board identifiers
-    newBoard->setMachineName(_boardId);
-    newBoard->setUID(atoi(sUID));
-    WS_DEBUG_PRINT("set machine_name and uid..");
-
-    // Encode and publish description message
-    if (! newBoard->encodeDescRequest()) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to encode description message.");
-        delete newBoard;
-        return;
-    }
-
-    newBoard->publishDescRequest();
-    if (!_boardStatus == WS_BOARD_DEF_SENT) {
-        WS_DEBUG_PRINTLN("ERROR: Failed publishing description to Wippersnapper");
-        delete newBoard;
-        return;
-    }
-    WS_DEBUG_PRINTLN("Published board description, waiting for response...");
-
-    // Obtain response from broker
-    uint8_t retryCount = 0;
-    while (_boardStatus == WS_BOARD_DEF_SENT) {
-        if (retryCount >= retries) {
-            WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
-            break;
-        }
-        _mqtt->processPackets(500); // process messages
-        delay(500);
-        retryCount++;
-    }
-    delete newBoard;
+    _registerBoard = new Wippersnapper_Registration(this);
+    // Run the FSM for the registration process
+    return _registerBoard->processRegistration();
 }
 
 /**************************************************************************/
