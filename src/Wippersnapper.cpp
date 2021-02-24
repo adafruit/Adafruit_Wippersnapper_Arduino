@@ -62,7 +62,6 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
     _topic_signal_device = 0;
     _topic_signal_brkr = 0;
 
-    //_init();
 }
 
 /**************************************************************************/
@@ -101,22 +100,6 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
         }
     } while (pb_field_iter_next(&iter));
     return false;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Executes when signal topic receives a new message. Fills
-                shared buffer with data from payload.
-*/
-/**************************************************************************/
-void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("* NEW message on signal topic");
-    WS_DEBUG_PRINT(len);WS_DEBUG_PRINTLN(" bytes.");
-    // zero-out buffer contents
-    memset(_buffer, 0, sizeof(_buffer));
-    // copy data to buffer
-    memcpy(_buffer, data, len);
-    bufSize = len;
 }
 
 
@@ -337,6 +320,22 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
 /**************************************************************************/
 /*!
+    @brief    Executes when signal topic receives a new message. Fills
+                shared buffer with data from payload.
+*/
+/**************************************************************************/
+void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
+    WS_DEBUG_PRINTLN("* NEW message on signal topic");
+    WS_DEBUG_PRINT(len);WS_DEBUG_PRINTLN(" bytes.");
+    // zero-out buffer contents
+    memset(_buffer, 0, sizeof(_buffer));
+    // copy data to buffer
+    memcpy(_buffer, data, len);
+    bufSize = len;
+}
+
+/**************************************************************************/
+/*!
     @brief    Provides void decodeRegMsg callback with a
                 wippersnapper object
 */
@@ -344,46 +343,6 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 Wippersnapper* object_which_will_handle_signal;
 static void cbDescStatus_Wrapper(char *data, uint16_t len) {
     object_which_will_handle_signal->_registerBoard->decodeRegMsg(data, len);
-}
-
-/**************************************************************************/
-/*!
-    @brief    Executes when the broker publishes a response to the
-                client's board description message.
-*/
-/**************************************************************************/
-void Wippersnapper::cbDescriptionStatus(char *data, uint16_t len) {
-    // TODO: Not implemented
-    WS_DEBUG_PRINTLN("\ncbDescriptionStatus");
-    uint8_t buffer[len];
-    memcpy(buffer, data, len);
-
-
-    // init. CreateDescriptionResponse message
-    wippersnapper_description_v1_CreateDescriptionResponse message = wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
-
-    // create input stream for buffer
-    pb_istream_t stream = pb_istream_from_buffer(buffer, len);
-    // decode the stream
-    if (!pb_decode(&stream, wippersnapper_description_v1_CreateDescriptionResponse_fields, &message)) {
-        WS_DEBUG_PRINTLN("Error decoding description status message!");
-    } else {    // set board status
-        switch (message.response) {
-            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-                _boardStatus = WS_BOARD_DEF_OK;
-                break;
-            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
-                _boardStatus = WS_BOARD_DEF_INVALID;
-                break;
-            case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
-                _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
-                break;
-            default:
-                _boardStatus = WS_BOARD_DEF_UNSPECIFIED;
-        }
-    }
-
-    WS_DEBUG_PRINTLN("\nSuccessfully checked in, waiting for commands...")
 }
 
 /**************************************************************************/
@@ -600,10 +559,10 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 
     if (_buffer[0] != 0) { // check if buffer set by signal topic callback
         // Empty struct for storing the signal message
-        _decodedSignalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+        _incomingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
         // Attempt to decode a signal message
-        if (! decodeSignalMsg(&_decodedSignalMessage)) {
+        if (! decodeSignalMsg(&_incomingSignalMsg)) {
             WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
             return false;
         }

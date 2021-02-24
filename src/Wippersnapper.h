@@ -144,7 +144,6 @@ class Wippersnapper {
 
         // MQTT topic callbacks
         static void cbSignalTopic(char *data, uint16_t len);
-        void cbDescriptionStatus(char *data, uint16_t len);
 
         // Signal message
         static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
@@ -215,12 +214,25 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
-        //WSTimer *_wsTimer;
-
         static char _value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
         static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
 
-        wippersnapper_signal_v1_CreateSignalRequest _decodedSignalMessage;
+        wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
+
+        // Holds data about a digital input timer
+        // members assigned from a PinConfigureRequest
+        struct timerDigitalInput {
+            uint8_t pinName;
+            uint8_t pinVal;
+            long timerInterval; // timer interval, in millis
+        };
+
+        // Holds info about all digital input timers
+        // TODO: This is currently fixed at "2" pins, we need to
+        // transmit the # of pins from the broker during registration
+        // and dynamically create this
+        timerDigitalInput _timersDigital[2];
+
 };
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H
