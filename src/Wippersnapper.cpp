@@ -109,23 +109,19 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
     @brief    Configures a digital pin to behave as an input or an output.
 */
 /****************************************************************************/
-void setDigitalPinMode(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-     // strip "a/d" from pin name prefix
-    char* pinName = pinMsg->pin_name + 1;
-
-    switch(pinMsg->direction) {
-        case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT:
-            WS_DEBUG_PRINT("Configured digital output pin on ");WS_DEBUG_PRINTLN(pinName);
-            pinMode(atoi(pinName), OUTPUT);
-            digitalWrite(atoi(pinName), LOW); // initialize LOW
-            break;
-        case wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT:
-            WS_DEBUG_PRINTLN("Configuring digital input pin on");WS_DEBUG_PRINTLN(pinName);
-            pinMode(atoi(pinName), INPUT);
-            break;
-        default:
-            WS_DEBUG_PRINTLN("ERROR: Invalid pin direction");
-    }
+void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName) {
+     if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+        //WS_DEBUG_PRINT("Configured digital output pin on "); WS_DEBUG_PRINTLN(pinName);
+        pinMode(pinName, OUTPUT);
+        digitalWrite(pinName, LOW); // initialize LOW
+     }
+     else if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+        //WS_DEBUG_PRINTLN("Configuring digital input pin on"); WS_DEBUG_PRINTLN(pinName);
+        pinMode(pinName, INPUT);
+     }
+     else {
+         WS_DEBUG_PRINTLN("ERROR: Invalid digital pin direction!");
+     }
 }
 
 /****************************************************************************/
@@ -133,10 +129,12 @@ void setDigitalPinMode(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
     @brief    "Releases" a previously configured digital pin
 */
 /****************************************************************************/
-void deleteDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-    char* pinName = pinMsg->pin_name + 1;
-    WS_DEBUG_PRINT("Deleting pin on ");WS_DEBUG_PRINTLN(pinName);
-    pinMode(atoi(pinName), INPUT); // hi-z
+void deinitDigitalPin(uint8_t pinName) {
+    WS_DEBUG_PRINT("Deinitializing pin ");
+    char cstr[16];
+    itoa(pinName, cstr, 10);
+    WS_DEBUG_PRINTLN(cstr);
+    pinMode(pinName, INPUT); // hi-z
 }
 
 /****************************************************************************/
@@ -161,16 +159,15 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
         is_delete = true;
     }
 
+    char* pinName = pinMsg->pin_name + 1;
     if (is_create == true) { // initialize a new pin
         if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
-            setDigitalPinMode(pinMsg);
+            initDigitalPin(pinMsg->direction, atoi(pinName));
         }
         // TODO: else, check for analog pin, setAnalogPinMode() call
     }
     if (is_delete == true) { // delete a prv. initialized pin
-        if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
-            deleteDigitalPin(pinMsg);
-        }
+        deinitDigitalPin(atoi(pinName));
     }
     return true;
 }
