@@ -137,6 +137,18 @@ void deinitDigitalPin(uint8_t pinName) {
     pinMode(pinName, INPUT); // hi-z
 }
 
+// todo
+int attachDigitalPinTimer(uint8_t pinName, float interval) {
+    WS_DEBUG_PRINT("Attaching timer # on pin # ");
+}
+
+// todo
+void detachDigitalPinTimer(uint8_t pinName) {
+    WS_DEBUG_PRINT("Freeing timer # on pin # ");
+    // todo, check which timer the pin is sitting on
+    // and detach
+}
+
 /****************************************************************************/
 /*!
     @brief    Configures a pin according to a 
@@ -160,13 +172,24 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
     }
 
     char* pinName = pinMsg->pin_name + 1;
+
     if (is_create == true) { // initialize a new pin
         if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
             initDigitalPin(pinMsg->direction, atoi(pinName));
+            // Check if direction requires a new timer
+            if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+                // allocate a new timer
+                int timerNum = attachDigitalPinTimer(atoi(pinName), pinMsg->period);
+            }
         }
         // TODO: else, check for analog pin, setAnalogPinMode() call
     }
+
     if (is_delete == true) { // delete a prv. initialized pin
+        // check if pin has a timer
+        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT)
+            detachDigitalPinTimer(atoi(pinName));
+        // deinitialize the digital pin
         deinitDigitalPin(atoi(pinName));
     }
     return true;
