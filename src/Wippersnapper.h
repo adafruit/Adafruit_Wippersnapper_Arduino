@@ -102,6 +102,10 @@ typedef enum {
 // Keep Alive interval, in ms
 #define WS_KEEPALIVE_INTERVAL 10000
 
+// MAXIMUM MQTT expected payload size, in bytes
+#define WS_MQTT_MAX_PAYLOAD_SIZE 128
+
+
 // forward declaration
 class Wippersnapper_Registration;
 
@@ -159,7 +163,7 @@ class Wippersnapper {
         const char *_key;      /*!< Adafruit IO Key. */
 
         static uint16_t bufSize;
-        static uint8_t _buffer[128]; /*!< Shared buffer to save callback payload */
+        static uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
 
         static ws_board_status_t _boardStatus;
 
