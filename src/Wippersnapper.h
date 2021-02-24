@@ -132,9 +132,11 @@ class Wippersnapper {
 
         bool registerBoard(uint8_t retries);
 
+        ws_status_t run();
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
-        ws_status_t run();
+        bool processSignalMessages(int16_t timeout);
+        
 
         // MQTT topic callbacks
         static void cbSignalTopic(char *data, uint16_t len);
@@ -158,7 +160,6 @@ class Wippersnapper {
 
         static uint16_t bufSize;
         static uint8_t _buffer[128]; /*!< Shared buffer to save callback payload */
-        uint8_t _buffer_state[128]; /*!< Holds previous contents of static _buffer */
 
         static ws_board_status_t _boardStatus;
 
@@ -214,6 +215,8 @@ class Wippersnapper {
 
         static char _value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
         static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
+
+        wippersnapper_signal_v1_CreateSignalRequest _decodedSignalMessage;
 };
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

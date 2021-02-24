@@ -110,10 +110,10 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
 */
 /**************************************************************************/
 void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("* Message on cbSignalTopic()");
+    WS_DEBUG_PRINTLN("* NEW message on signal topic");
     WS_DEBUG_PRINT(len);WS_DEBUG_PRINTLN(" bytes.");
     // zero-out buffer contents
-    _buffer[128] = { 0 };
+    memset(_buffer, 0, sizeof(_buffer));
     // copy data to buffer
     memcpy(_buffer, data, len);
     bufSize = len;
@@ -590,6 +590,31 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 
 /**************************************************************************/
 /*!
+    @brief    Handles MQTT messages on signal topic until timeout.
+    @param    timeout
+                timeout in milliseconds.
+*/
+/**************************************************************************/
+bool Wippersnapper::processSignalMessages(int16_t timeout) {
+    _mqtt->processPackets(timeout);
+
+    if (_buffer[0] != 0) { // check if buffer set by signal topic callback
+        // Empty struct for storing the signal message
+        _decodedSignalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+        // Attempt to decode a signal message
+        if (! decodeSignalMsg(&_decodedSignalMessage)) {
+            WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
+            return false;
+        }
+        memset(_buffer, 0, sizeof(_buffer));
+    }
+
+    return true;
+}
+
+/**************************************************************************/
+/*!
     @brief    Processes incoming commands and handles network connection.
 */
 /**************************************************************************/
@@ -605,27 +630,7 @@ ws_status_t Wippersnapper::run() {
     //_wsTimer->run();
 
     // Process all incoming packets from Wippersnapper MQTT Broker
-    _mqtt->processPackets(100);
-
-    // Handle incoming signal message
-    int n; // TODO: decl. in .h instead
-    n = memcmp(_buffer, _buffer_state, sizeof(_buffer));
-    if (! n == 0) {
-        WS_DEBUG_PRINTLN("New data in message buffer");
-
-        // Create empty signal packet struct.
-        wippersnapper_signal_v1_CreateSignalRequest decodedSignalMessage = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-        // Attempt to decode a signal message packet
-        if (! decodeSignalMsg(&decodedSignalMessage)) {
-            WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
-            return status();
-        }
-
-        // update _buffer_state with contents of new message
-        memcpy(_buffer_state, _buffer, sizeof(_buffer));
-    }
-
+    processSignalMessages(100);
 
     return status();
 }
