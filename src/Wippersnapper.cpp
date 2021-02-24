@@ -571,28 +571,21 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
 
 /**************************************************************************/
 /*!
-    @brief    Checks and handles connection to MQTT broker.
+    @brief    Handles MQTT broker connection.
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
-    while(mqttStatus() != WS_CONNECTED && millis() - timeStart < WS_KEEPALIVE_INTERVAL) {
-    }
+    // Check network connection
     if (mqttStatus() != WS_CONNECTED) {
         return status();
     }
-    return status();
-}
-
-/**************************************************************************/
-/*!
-    @brief    Pings MQTT broker to keep connection alive.
-*/
-/**************************************************************************/
-void Wippersnapper::ping() {
+    // Ping if > keepAlive interval
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL)) {
         _mqtt->ping();
         _prv_ping = millis();
     }
+
+    return status();
 }
 
 /**************************************************************************/
@@ -607,9 +600,6 @@ ws_status_t Wippersnapper::run() {
     checkNetworkConnection(timeStart); // TODO: handle this better
     // Check and handle MQTT connection
     checkMQTTConnection(timeStart); // TODO: handle this better
-
-    // Ping broker if keepalive elapsed
-    ping();
 
     // Run any functions which utilize the timer
     //_wsTimer->run();

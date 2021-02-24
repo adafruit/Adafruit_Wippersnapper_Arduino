@@ -134,7 +134,6 @@ class Wippersnapper {
 
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
-        void ping();
         ws_status_t run();
 
         // MQTT topic callbacks
