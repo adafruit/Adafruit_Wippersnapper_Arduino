@@ -89,6 +89,14 @@ typedef enum {
     WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
+// Holds data about a digital input timer
+// members assigned from a PinConfigureRequest
+struct timerDigitalInput {
+    uint8_t pinName;
+    //uint8_t pinVal;
+    long timerInterval; // timer interval, in millis
+};
+
 // Adafruit IO Production SSL Fingerprint
 //#define WS_SSL_FINGERPRINT \
 //  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF"
@@ -157,6 +165,9 @@ class Wippersnapper {
         static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         static void digitalWriteEvent(char *pinName, int pinValue);
 
+        // Digital Input
+        static void attachDigitalPinTimer(uint8_t pinName, float interval);
+
         // Adafruit IO Credentials
         const char *_username; /*!< Adafruit IO Username. */
         const char *_key;      /*!< Adafruit IO Key. */
@@ -219,19 +230,11 @@ class Wippersnapper {
 
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
 
-        // Holds data about a digital input timer
-        // members assigned from a PinConfigureRequest
-        struct timerDigitalInput {
-            uint8_t pinName;
-            uint8_t pinVal;
-            long timerInterval; // timer interval, in millis
-        };
-
         // Holds info about all digital input timers
         // TODO: This is currently fixed at "2" pins, we need to
         // transmit the # of pins from the broker during registration
         // and dynamically create this
-        timerDigitalInput _timersDigital[2];
+       static timerDigitalInput _timersDigital[2];
 
 };
 

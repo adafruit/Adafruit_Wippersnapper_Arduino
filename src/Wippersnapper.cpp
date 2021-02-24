@@ -36,6 +36,7 @@ ws_board_status_t Wippersnapper::_boardStatus;
 uint16_t Wippersnapper::bufSize;
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
+timerDigitalInput Wippersnapper::_timersDigital[2];
 /**************************************************************************/
 /*!
     @brief    Instantiates the Wippersnapper client object.
@@ -137,12 +138,25 @@ void deinitDigitalPin(uint8_t pinName) {
     pinMode(pinName, INPUT); // hi-z
 }
 
-// todo
-int attachDigitalPinTimer(uint8_t pinName, float interval) {
-    WS_DEBUG_PRINT("Attaching timer # on pin # ");
+/****************************************************************************/
+/*!
+    @brief    Attaches a timer to a digital pin.
+*/
+/****************************************************************************/
+void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
+    WS_DEBUG_PRINT("Attaching timer to pin #");
+    // Interval is in seconds, cast it to long and convert it to milliseconds
+    long interval_ms = (long)interval * 1000;
+    // assign it to a timer
+    timerDigitalInput timerPin = {pinName, interval_ms};
+    _timersDigital[pinName] = timerPin;
 }
 
-// todo
+/****************************************************************************/
+/*!
+    @brief    Detaches a timer from a digital pin
+*/
+/****************************************************************************/
 void detachDigitalPinTimer(uint8_t pinName) {
     WS_DEBUG_PRINT("Freeing timer # on pin # ");
     // todo, check which timer the pin is sitting on
@@ -178,8 +192,8 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
             initDigitalPin(pinMsg->direction, atoi(pinName));
             // Check if direction requires a new timer
             if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-                // allocate a new timer
-                int timerNum = attachDigitalPinTimer(atoi(pinName), pinMsg->period);
+                // attach a new timer
+                attachDigitalPinTimer(atoi(pinName), pinMsg->period);
             }
         }
         // TODO: else, check for analog pin, setAnalogPinMode() call
