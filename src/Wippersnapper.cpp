@@ -148,7 +148,7 @@ void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
     // Interval is in seconds, cast it to long and convert it to milliseconds
     long interval_ms = (long)interval * 1000;
     // assign it to a timer
-    timerDigitalInput timerPin = {pinName, interval_ms};
+    timerDigitalInput timerPin = {pinName, interval_ms, true};
     _timersDigital[pinName] = timerPin;
 }
 
@@ -612,15 +612,24 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-    uint32_t timeStart = millis();
+    uint32_t curTime = millis();
 
     // Check network connection
-    checkNetworkConnection(timeStart); // TODO: handle this better
+    checkNetworkConnection(curTime); // TODO: handle this better
     // Check and handle MQTT connection
-    checkMQTTConnection(timeStart); // TODO: handle this better
+    checkMQTTConnection(curTime); // TODO: handle this better
 
-    // Run any functions which utilize the timer
-    //_wsTimer->run();
+    // Process digital timers
+    for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
+        if (_timersDigital[i].isEnabled == true) { // validate if timer is enabled
+            // Check last time the timer was updated
+            if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
+                // service the timer
+                WS_DEBUG_PRINTLN("Timer expired on digital pin, servicing!");
+                // todo run subroutines here
+            }
+        }
+    }
 
     // Process all incoming packets from Wippersnapper MQTT Broker
     processSignalMessages(100);

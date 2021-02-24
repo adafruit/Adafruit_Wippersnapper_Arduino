@@ -95,7 +95,11 @@ struct timerDigitalInput {
     uint8_t pinName;
     //uint8_t pinVal;
     long timerInterval; // timer interval, in millis
+    long timerIntervalPrv; // time timer was previously serviced, in millis
+    bool isEnabled;
 };
+
+#define MAX_DIGITAL_TIMERS 2
 
 // Adafruit IO Production SSL Fingerprint
 //#define WS_SSL_FINGERPRINT \
@@ -234,7 +238,7 @@ class Wippersnapper {
         // TODO: This is currently fixed at "2" pins, we need to
         // transmit the # of pins from the broker during registration
         // and dynamically create this
-       static timerDigitalInput _timersDigital[2];
+       static timerDigitalInput _timersDigital[MAX_DIGITAL_TIMERS];
 
 };
 
