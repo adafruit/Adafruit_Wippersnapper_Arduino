@@ -150,7 +150,8 @@ class Wippersnapper {
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
         bool processSignalMessages(int16_t timeout);
-        
+
+        int encodeSignalMsg(uint8_t signalPayloadType);
 
         // MQTT topic callbacks
         static void cbSignalTopic(char *data, uint16_t len);

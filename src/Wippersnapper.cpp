@@ -181,9 +181,59 @@ int digitalReadSvc(uint8_t pinName) {
     return pinVal;
 }
 
-// TODO
-// Wippersnapper::encodePinEvent() {
+/****************************************************************************/
+/*!
+    @brief    High-level digitalRead service impl. which performs a
+                digitalRead.
+    @returns  pb_ostream_t
+                nanopb output stream object
+*/
+/****************************************************************************/
+//pb_ostream_t Wippersnapper::encodePinEventListMsg() {
+    // 
+//    WS_DEBUG_PRINTLN("Encoding pin event list")
+//}
 
+/****************************************************************************/
+/*!
+    @brief    Encodes signal message into shared buffer.
+    signalPayloadType: 
+        1 = pin_events
+    @returns  True if successful, False otherwise.
+*/
+/****************************************************************************/
+int Wippersnapper::encodeSignalMsg(uint8_t signalPayloadType){
+    bool status;
+    size_t message_length;
+    pb_ostream_t stream;
+
+
+    wippersnapper_signal_v1_CreateSignalRequest msg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+    if (signalPayloadType == 1) {
+        msg.which_payload == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag;
+        // todo: execute the callback to encodepineventlistmsg
+        // todo: pass it the "msg"
+    }
+    else {
+        WS_DEBUG_PRINTLN("ERROR: Signal payload type not found");
+        return -1;
+    }
+
+    stream = pb_ostream_from_buffer(_buffer, bufSize);
+
+    // encode the signal message
+    status = pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &msg);
+    message_length = stream.bytes_written;
+    
+    if (!status)
+    {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message.");
+        //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+        status = -1;
+    }
+
+    return status;
 }
 
 
