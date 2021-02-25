@@ -63,6 +63,11 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
     _topic_signal_device = 0;
     _topic_signal_brkr = 0;
 
+    // disable all timers
+    for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
+        _timersDigital[i].timerInterval = -1;
+    }
+
 }
 
 /**************************************************************************/
@@ -148,7 +153,7 @@ void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
     // Interval is in seconds, cast it to long and convert it to milliseconds
     long interval_ms = (long)interval * 1000;
     // assign it to a timer
-    timerDigitalInput timerPin = {pinName, interval_ms, true};
+    timerDigitalInput timerPin = {pinName, interval_ms};
     _timersDigital[pinName] = timerPin;
 }
 
@@ -162,6 +167,25 @@ void detachDigitalPinTimer(uint8_t pinName) {
     // todo, check which timer the pin is sitting on
     // and detach
 }
+
+/****************************************************************************/
+/*!
+    @brief    High-level digitalRead service impl. which performs a
+                digitalRead.
+    @returns  pinVal
+                Value of pin, either HIGH or LOW
+*/
+/****************************************************************************/
+int digitalReadSvc(uint8_t pinName) {
+    int pinVal = digitalRead(pinName);
+    return pinVal;
+}
+
+// TODO
+// Wippersnapper::encodePinEvent() {
+
+}
+
 
 /****************************************************************************/
 /*!
@@ -621,12 +645,14 @@ ws_status_t Wippersnapper::run() {
 
     // Process digital timers
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
-        if (_timersDigital[i].isEnabled == true) { // validate if timer is enabled
+        if (_timersDigital[i].timerInterval != -1) { // validate if timer is enabled
             // Check last time the timer was updated
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
                 // service the timer
-                WS_DEBUG_PRINTLN("Timer expired on digital pin, servicing!");
-                // todo run subroutines here
+                WS_DEBUG_PRINTLN("Timer executed for digital pin.");
+                // sample the pin
+                int pinVal = digitalReadSvc(_timersDigital[i].pinName);
+                // encode the pin's value
             }
         }
     }
