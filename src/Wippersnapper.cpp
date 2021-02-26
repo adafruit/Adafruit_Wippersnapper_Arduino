@@ -36,7 +36,7 @@ ws_board_status_t Wippersnapper::_boardStatus;
 uint16_t Wippersnapper::bufSize;
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
-timerDigitalInput Wippersnapper::_timersDigital[2];
+timerDigitalInput Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
 /**************************************************************************/
 /*!
     @brief    Instantiates the Wippersnapper client object.
@@ -162,7 +162,7 @@ void digitalWriteSvc(uint8_t pinName, int pinValue) {
 void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
     WS_DEBUG_PRINT("Attaching timer to pin D");WS_DEBUG_PRINTLN(pinName);
     // Interval is in seconds, cast it to long and convert it to milliseconds
-    long interval_ms = (long)interval;
+    long interval_ms = (long)interval * 1000;
     WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
     // assign it to a timer
     timerDigitalInput timerPin = {pinName, interval_ms};
@@ -704,7 +704,7 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 ws_status_t Wippersnapper::run() {
     uint32_t curTime = millis();
 
-    WS_DEBUG_PRINTLN("EXEC: loop'");
+    //WS_DEBUG_PRINTLN("EXEC: loop'");
 
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better
@@ -718,10 +718,9 @@ ws_status_t Wippersnapper::run() {
     wippersnapper_pin_v1_PinEvents pinEventList = wippersnapper_pin_v1_PinEvents_init_zero;
     // TODO: Only check active timers instead of all timers?
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
-        WS_DEBUG_PRINT("Timer on: ");WS_DEBUG_PRINTLN(_timersDigital[i].timerInterval);
-        if (_timersDigital[i].timerInterval > -1) { // validate if timer is enabled
+        if (_timersDigital[i].timerInterval > -1L) { // validate if timer is enabled
             // Check if timer executes on a time period
-            WS_DEBUG_PRINTLN("Checking timer");
+            //WS_DEBUG_PRINTLN("Checking timer");
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
                 // service the timer
                 WS_DEBUG_PRINTLN("Timer executed for digital pin.");
@@ -739,6 +738,8 @@ ws_status_t Wippersnapper::run() {
                     // TODO: Start encoding the pinevent list here.
                     //pinEventList.list.funcs.encode = 
                 }
+                // reset the timer
+                _timersDigital[i].timerIntervalPrv = curTime;
             }
             // Check if timer executes on a state change
             else if (_timersDigital[i].timerInterval == 0) {

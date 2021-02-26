@@ -99,7 +99,7 @@ struct timerDigitalInput {
     int prvPinVal; // Previous pin value
 };
 
-#define MAX_DIGITAL_TIMERS 2
+#define MAX_DIGITAL_TIMERS 5
 
 // Adafruit IO Production SSL Fingerprint
 //#define WS_SSL_FINGERPRINT \
