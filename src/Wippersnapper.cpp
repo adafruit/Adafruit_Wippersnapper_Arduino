@@ -117,12 +117,12 @@ bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t
 /****************************************************************************/
 void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName) {
      if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-        //WS_DEBUG_PRINT("Configured digital output pin on "); WS_DEBUG_PRINTLN(pinName);
+        WS_DEBUG_PRINT("Configured digital output pin on D"); WS_DEBUG_PRINTLN(pinName);
         pinMode(pinName, OUTPUT);
         digitalWrite(pinName, LOW); // initialize LOW
      }
      else if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-        //WS_DEBUG_PRINTLN("Configuring digital input pin on"); WS_DEBUG_PRINTLN(pinName);
+        WS_DEBUG_PRINT("Configuring digital input pin on D"); WS_DEBUG_PRINTLN(pinName);
         pinMode(pinName, INPUT);
      }
      else {
@@ -160,9 +160,10 @@ void digitalWriteSvc(uint8_t pinName, int pinValue) {
 */
 /****************************************************************************/
 void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
-    WS_DEBUG_PRINT("Attaching timer to pin #");
+    WS_DEBUG_PRINT("Attaching timer to pin D");WS_DEBUG_PRINTLN(pinName);
     // Interval is in seconds, cast it to long and convert it to milliseconds
-    long interval_ms = (long)interval * 1000;
+    long interval_ms = (long)interval;
+    WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
     // assign it to a timer
     timerDigitalInput timerPin = {pinName, interval_ms};
     _timersDigital[pinName] = timerPin;
@@ -173,10 +174,10 @@ void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
     @brief    Detaches a timer from a digital pin
 */
 /****************************************************************************/
-void detachDigitalPinTimer(uint8_t pinName) {
-    WS_DEBUG_PRINT("Freeing timer # on pin # ");
-    // todo, check which timer the pin is sitting on
-    // and detach
+void Wippersnapper::detachDigitalPinTimer(uint8_t pinName) {
+    WS_DEBUG_PRINT("Freeing timer on pin D"); WS_DEBUG_PRINTLN(pinName);
+    _timersDigital[pinName].pinName = NULL;
+    _timersDigital[pinName].timerInterval = -1;
 }
 
 /****************************************************************************/
@@ -208,9 +209,9 @@ int digitalReadSvc(uint8_t pinName) {
 
 
 // Adds a pinEvent to pinevents list
-void Wippersnapper::addPinEvent() {
-    WS_DEBUG_PRINT("Adding event to pinevent list...");
-}
+//void Wippersnapper::addPinEvent() {
+//    WS_DEBUG_PRINT("Adding event to pinevent list...");
+//}
 
 // TODO: Create a signal message
 
@@ -271,7 +272,7 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
 
      // Check request type
     if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
-        WS_DEBUG_PRINT("Initializing new pin ");WS_DEBUG_PRINTLN(atoi(pinMsg->pin_name));
+        WS_DEBUG_PRINT("Initializing new pin ");WS_DEBUG_PRINTLN(pinMsg->pin_name);
         is_create = true;
     } else if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
         WS_DEBUG_PRINT("Deleting pin ");WS_DEBUG_PRINTLN(atoi(pinMsg->pin_name));
@@ -689,6 +690,12 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     return true;
 }
 
+//bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
+//    WS_DEBUG_PRINTLN("Adding a pinEvent to pinEventList");
+
+//}
+
+
 /**************************************************************************/
 /*!
     @brief    Processes incoming commands and handles network connection.
@@ -697,17 +704,24 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 ws_status_t Wippersnapper::run() {
     uint32_t curTime = millis();
 
+    WS_DEBUG_PRINTLN("EXEC: loop'");
+
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better
     // Check and handle MQTT connection
     checkMQTTConnection(curTime); // TODO: handle this better
 
+    // Create a new signal message
+    _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
     // Process digital timers
     // todo: move this to header
     wippersnapper_pin_v1_PinEvents pinEventList = wippersnapper_pin_v1_PinEvents_init_zero;
+    // TODO: Only check active timers instead of all timers?
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
+        WS_DEBUG_PRINT("Timer on: ");WS_DEBUG_PRINTLN(_timersDigital[i].timerInterval);
         if (_timersDigital[i].timerInterval > -1) { // validate if timer is enabled
             // Check if timer executes on a time period
+            WS_DEBUG_PRINTLN("Checking timer");
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
                 // service the timer
                 WS_DEBUG_PRINTLN("Timer executed for digital pin.");
@@ -723,6 +737,7 @@ ws_status_t Wippersnapper::run() {
                     sprintf(pinEvent.pin_value, "%d", pinVal);
                     pinEvent.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
                     // TODO: Start encoding the pinevent list here.
+                    //pinEventList.list.funcs.encode = 
                 }
             }
             // Check if timer executes on a state change
@@ -739,6 +754,7 @@ ws_status_t Wippersnapper::run() {
                 }
             }
         }
+
     }
 
     // Process all incoming packets from Wippersnapper MQTT Broker

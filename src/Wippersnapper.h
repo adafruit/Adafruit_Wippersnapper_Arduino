@@ -177,7 +177,7 @@ class Wippersnapper {
 
         // Digital Input
         static void attachDigitalPinTimer(uint8_t pinName, float interval);
-        
+        static void detachDigitalPinTimer(uint8_t pinName);
 
         // Adafruit IO Credentials
         const char *_username; /*!< Adafruit IO Username. */
@@ -239,6 +239,7 @@ class Wippersnapper {
         static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
 
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
+        wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */
 
         // Holds info about all digital input timers
         // TODO: This is currently fixed at "2" pins, we need to
