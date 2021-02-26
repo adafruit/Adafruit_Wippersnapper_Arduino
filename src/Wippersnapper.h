@@ -92,9 +92,12 @@ typedef enum {
 // Holds data about a digital input timer
 // members assigned from a PinConfigureRequest
 struct timerDigitalInput {
-    uint8_t pinName;
+    uint8_t pinName; // Pin name
+    // Interval-based pin timer
     long timerInterval; // timer interval, in millis, -1 if disabled.
     long timerIntervalPrv; // time timer was previously serviced, in millis
+    // State-based pin timer
+    int prvPinVal; // Previous pin value
 };
 
 #define MAX_DIGITAL_TIMERS 2

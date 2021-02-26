@@ -177,22 +177,23 @@ void detachDigitalPinTimer(uint8_t pinName) {
 */
 /****************************************************************************/
 int digitalReadSvc(uint8_t pinName) {
+    // Service using arduino `digitalRead`
     int pinVal = digitalRead(pinName);
     return pinVal;
 }
 
 /****************************************************************************/
 /*!
-    @brief    High-level digitalRead service impl. which performs a
-                digitalRead.
-    @returns  pb_ostream_t
-                nanopb output stream object
+    @brief    Encodes a PinEvents message, provided pinEvents.
 */
 /****************************************************************************/
-//pb_ostream_t Wippersnapper::encodePinEventListMsg() {
-    // 
-//    WS_DEBUG_PRINTLN("Encoding pin event list")
-//}
+/* void Wippersnapper::encodePinEvents {
+    WS_DEBUG_PRINTLN("Encoding PinEvents message...");
+} */
+
+// Thinking:
+// could each timer hold a pinevent message that we can write into?
+// could we just create pinevent fields within the timer instead?
 
 /****************************************************************************/
 /*!
@@ -695,14 +696,27 @@ ws_status_t Wippersnapper::run() {
 
     // Process digital timers
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
-        if (_timersDigital[i].timerInterval != -1) { // validate if timer is enabled
-            // Check last time the timer was updated
+        if (_timersDigital[i].timerInterval > -1) { // validate if timer is enabled
+            // Check if timer executes on a time period
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
                 // service the timer
                 WS_DEBUG_PRINTLN("Timer executed for digital pin.");
                 // sample the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
                 // encode the pin's value
+                // TODO
+            }
+            // Check if timer executes on a state change
+            else if (_timersDigital[i].timerInterval == 0) {
+                // service timer
+                int pinVal = digitalReadSvc(_timersDigital[i].pinName);
+                if (pinVal != digitalReadSvc(_timersDigital[i].pinName)) {
+                    // Encode the pin's new value
+                    // Send the pin's new value
+                    // TODO
+                    // Set state
+                    _timersDigital[i].prvPinVal = pinVal;
+                }
             }
         }
     }
