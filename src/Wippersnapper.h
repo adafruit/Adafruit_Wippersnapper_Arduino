@@ -96,7 +96,6 @@ struct timerDigitalInput {
     // Interval-based pin timer
     long timerInterval; // timer interval, in millis, -1 if disabled.
     long timerIntervalPrv; // time timer was previously serviced, in millis
-    // State-based pin timer
     int prvPinVal; // Previous pin value
 };
 

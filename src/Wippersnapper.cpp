@@ -206,6 +206,14 @@ int digitalReadSvc(uint8_t pinName) {
 // could each timer hold a pinevent message that we can write into?
 // could we just create pinevent fields within the timer instead?
 
+
+// Adds a pinEvent to pinevents list
+void Wippersnapper::addPinEvent() {
+    WS_DEBUG_PRINT("Adding event to pinevent list...");
+}
+
+// TODO: Create a signal message
+
 /****************************************************************************/
 /*!
     @brief    Encodes signal message into shared buffer.
@@ -218,7 +226,6 @@ bool Wippersnapper::encodeSignalMsg(uint8_t signalPayloadType){
     bool status;
     size_t message_length;
     pb_ostream_t stream;
-
 
     wippersnapper_signal_v1_CreateSignalRequest msg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
@@ -696,6 +703,8 @@ ws_status_t Wippersnapper::run() {
     checkMQTTConnection(curTime); // TODO: handle this better
 
     // Process digital timers
+    // todo: move this to header
+    wippersnapper_pin_v1_PinEvents pinEventList = wippersnapper_pin_v1_PinEvents_init_zero;
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
         if (_timersDigital[i].timerInterval > -1) { // validate if timer is enabled
             // Check if timer executes on a time period
@@ -704,14 +713,24 @@ ws_status_t Wippersnapper::run() {
                 WS_DEBUG_PRINTLN("Timer executed for digital pin.");
                 // sample the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
-                // encode the pin's value
-                // TODO
+                // only send on-change
+                if (pinVal != _timersDigital[i].prvPinVal) {
+                    // Create and fill a new pinEvent msg
+                    wippersnapper_pin_v1_PinEvent pinEvent = wippersnapper_pin_v1_PinEvent_init_zero;
+                    // We're using a digital timer here, so append "D" onto the numeric pin name
+                    // TODO: in the future, this can be optimized within PinEvent's struct
+                    sprintf(pinEvent.pin_name , "D%d", _timersDigital[i].pinName);
+                    sprintf(pinEvent.pin_value, "%d", pinVal);
+                    pinEvent.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+                    // TODO: Start encoding the pinevent list here.
+                }
             }
             // Check if timer executes on a state change
             else if (_timersDigital[i].timerInterval == 0) {
-                // service timer
+                // read pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
-                if (pinVal != digitalReadSvc(_timersDigital[i].pinName)) {
+                // only send on-change
+                if (pinVal != _timersDigital[i].prvPinVal) {
                     // Encode the pin's new value
                     // Send the pin's new value
                     // TODO
