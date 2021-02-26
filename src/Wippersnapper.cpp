@@ -143,6 +143,17 @@ void deinitDigitalPin(uint8_t pinName) {
     pinMode(pinName, INPUT); // hi-z
 }
 
+/**************************************************************************/
+/*!
+    @brief  High-level service which outputs to a digital pin.
+*/
+/**************************************************************************/
+void digitalWriteSvc(uint8_t pinName, int pinValue) {
+    WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
+    WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinValue);
+    digitalWrite(pinName, pinValue);
+}
+
 /****************************************************************************/
 /*!
     @brief    Attaches a timer to a digital pin.
@@ -203,7 +214,7 @@ int digitalReadSvc(uint8_t pinName) {
     @returns  True if successful, False otherwise.
 */
 /****************************************************************************/
-int Wippersnapper::encodeSignalMsg(uint8_t signalPayloadType){
+bool Wippersnapper::encodeSignalMsg(uint8_t signalPayloadType){
     bool status;
     size_t message_length;
     pb_ostream_t stream;
@@ -310,16 +321,6 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
     return is_success;
 }
 
-/**************************************************************************/
-/*!
-    @brief  Performs a digitalWrite, provided a pinName and pinValue
-*/
-/**************************************************************************/
-void Wippersnapper::digitalWriteEvent(char *pinName, int pinValue) {
-    WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
-    WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinValue);
-    digitalWrite(atoi(pinName), pinValue);
-}
 
 /**************************************************************************/
 /*!
@@ -339,10 +340,10 @@ bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *
 
     char* pinName = pinEventMsg.pin_name + 1;
     if (pinEventMsg.pin_name[0] == 'D') { // digital pin event
-        digitalWriteEvent(pinName, atoi(pinEventMsg.pin_value));
+        digitalWriteSvc(atoi(pinName), atoi(pinEventMsg.pin_value));
     }
     else if (pinEventMsg.pin_name[0] == 'A') { // analog pin event
-        // TODO: Unimplemented
+        // TODO
         WS_DEBUG_PRINTLN("Analog pin event, Unimplemented!");
     }
     else {

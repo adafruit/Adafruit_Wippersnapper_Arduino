@@ -145,34 +145,40 @@ class Wippersnapper {
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
 
-        void generate_feeds(); // Generate device-specific WS feeds
+        // Generates Wippersnapper MQTT feeds
+        void generate_feeds();
 
+        // Performs board registration FSM
         bool registerBoard(uint8_t retries);
 
+        // run() loop //
         ws_status_t run();
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
+        // Pumps message loop
         bool processSignalMessages(int16_t timeout);
 
-        int encodeSignalMsg(uint8_t signalPayloadType);
-
-        // MQTT topic callbacks
+        // MQTT topic callbacks //
         static void cbSignalTopic(char *data, uint16_t len);
 
-        // Signal message
+        // Signal message // 
+        // Called when a new signal message has been received
         static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
+        // Encodes a signal message
+        bool encodeSignalMsg(uint8_t signalPayloadType);
 
         // Pin configure message
         static bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
-        // Pin Event
+        // Decodes list of pin events
         static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
-        static void digitalWriteEvent(char *pinName, int pinValue);
 
         // Digital Input
         static void attachDigitalPinTimer(uint8_t pinName, float interval);
+        
 
         // Adafruit IO Credentials
         const char *_username; /*!< Adafruit IO Username. */
@@ -192,7 +198,6 @@ class Wippersnapper {
         void _init();
 
     protected:
-
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
