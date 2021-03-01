@@ -164,9 +164,20 @@ void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
     // Interval is in seconds, cast it to long and convert it to milliseconds
     long interval_ms = (long)interval * 1000;
     WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
-    // assign it to a timer
-    timerDigitalInput timerPin = {pinName, interval_ms};
-    _timersDigital[pinName] = timerPin;
+
+    // get free timer pin
+    for (int timerNum = 0; timerNum <= MAX_DIGITAL_TIMERS; timerNum++) {
+        if (_timersDigital[timerNum].timerInterval == -1) {
+            WS_DEBUG_PRINT("Allocating timer #");WS_DEBUG_PRINTLN(timerNum);
+            // create a digital timer object
+            timerDigitalInput timerPin = {pinName, interval_ms};
+            // add new timer to array
+            _timersDigital[timerNum] = timerPin;
+            break;
+        } else if (timerNum == MAX_DIGITAL_TIMERS) {
+            WS_DEBUG_PRINTLN("ERROR: Unable to assign timer, maximum timers allocated");
+        }
+    }
 }
 
 /****************************************************************************/
@@ -723,7 +734,7 @@ ws_status_t Wippersnapper::run() {
             //WS_DEBUG_PRINTLN("Checking timer");
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
                 // service the timer
-                WS_DEBUG_PRINTLN("Timer executed for digital pin.");
+                WS_DEBUG_PRINT("Timer executed on digital pin D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
                 // sample the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
                 // only send on-change
