@@ -165,7 +165,7 @@ void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
     long interval_ms = (long)interval * 1000;
     WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
 
-    // get free timer pin
+    // attach a free timer to the pin
     for (int timerNum = 0; timerNum <= MAX_DIGITAL_TIMERS; timerNum++) {
         if (_timersDigital[timerNum].timerInterval == -1) {
             WS_DEBUG_PRINT("Allocating timer #");WS_DEBUG_PRINTLN(timerNum);
@@ -187,8 +187,13 @@ void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
 /****************************************************************************/
 void Wippersnapper::detachDigitalPinTimer(uint8_t pinName) {
     WS_DEBUG_PRINT("Freeing timer on pin D"); WS_DEBUG_PRINTLN(pinName);
-    _timersDigital[pinName].pinName = NULL;
-    _timersDigital[pinName].timerInterval = -1;
+    // find timer associated with pin
+    for (int i; i <= MAX_DIGITAL_TIMERS; i++) {
+        if(_timersDigital[i].timerInterval == pinName) {
+            _timersDigital[pinName].timerInterval = -1; // reset timer
+            _timersDigital[pinName].prvPinVal = 0; // reset prv. value
+        }
+    }
 }
 
 /****************************************************************************/
