@@ -708,6 +708,31 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 
 bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
     WS_DEBUG_PRINTLN("Adding a pinEvent to pinEventList");
+
+    // maybe create this outside of this?
+    wippersnapper_pin_v1_PinEvent pinEvent = wippersnapper_pin_v1_PinEvent_init_zero;
+
+    // fill pinEvent
+    pinEvent.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+    
+    // Difficult, we need to get the pin list
+    // TODO: Bring these outside, we dont have these values
+    // alt: do a function call from within here to obtain them? Maybe getters to timer obj.?
+    sprintf(pinEvent.pin_name, "D%d", 3);
+    sprintf(pinEvent.pin_name, "%d", 5);
+
+    // Encode the header
+    if (!pb_encode_tag_for_field(stream, field)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode PinEvent header");
+        return false;
+    }
+
+    // Encode the data into the fields
+    if (!pb_encode_submessage(stream, wippersnapper_pin_v1_PinEvent_fields, &pinEvent)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode submessage PinEvent into PinEvent list");
+        return false;
+    }
+
     return true;
 }
 
@@ -727,12 +752,7 @@ ws_status_t Wippersnapper::run() {
     // Check and handle MQTT connection
     checkMQTTConnection(curTime); // TODO: handle this better
 
-    // Create a new signal message
-    _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
     // Process digital timers
-    // todo: move this to header
-    wippersnapper_pin_v1_PinEvents pinEventList = wippersnapper_pin_v1_PinEvents_init_zero;
-    // TODO: Only check active timers instead of all timers?
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
         if (_timersDigital[i].timerInterval > -1L) { // validate if timer is enabled
             // Check if timer executes on a time period
@@ -742,27 +762,29 @@ ws_status_t Wippersnapper::run() {
                 WS_DEBUG_PRINT("Timer executed on digital pin D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
                 // sample the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
-                // only send on-change
-                // TODO: uncomment, testing it without pin changing
-                //if (pinVal != _timersDigital[i].prvPinVal) {
-                    // Create and fill a new pinEvent msg
-                    wippersnapper_pin_v1_PinEvent pinEvent = wippersnapper_pin_v1_PinEvent_init_zero;
-                    // We're using a digital timer here, so append "D" onto the numeric pin name
-                    // TODO: in the future, this can be optimized within PinEvent's struct
-                    sprintf(pinEvent.pin_name , "D%d", _timersDigital[i].pinName);
-                    sprintf(pinEvent.pin_value, "%d", pinVal);
-                    pinEvent.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
-                    // TODO: Start encoding the pinevent list here.
-                    pinEventList.list.funcs.encode = encodePinEventList;
-                    
-                    pb_ostream_t stream = pb_ostream_from_buffer(_buffer, sizeof(_buffer));
 
-                    WS_DEBUG_PRINTLN("Encoding pinevent")
-                    if (!pb_encode(&stream, wippersnapper_pin_v1_PinEvents_fields, &pinEventList)) {
-                        WS_DEBUG_PRINTLN("ERROR: Encoding timer event failed");
-                        WS_DEBUG_PRINTLN(PB_GET_ERROR(&stream));
-                    }
-                //}
+                // Create a new signal message
+                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+                // Set payload tag
+                _outgoingSignalMsg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag;
+                // Set encoder callback func.
+                //_outgoingSignalMsg.payload.pin_events.list.funcs.encode = encodePinEventList;
+
+                pb_ostream_t stream = pb_ostream_from_buffer(_buffer, sizeof(_buffer));
+
+                WS_DEBUG_PRINTLN("Encode Signal");
+                if(!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg)) {
+                    WS_DEBUG_PRINTLN("ERROR: Failed to encode pinEvent");
+                    WS_DEBUG_PRINTLN(PB_GET_ERROR(&stream));
+                    break;
+                }
+
+                WS_DEBUG_PRINTLN("Buffer:");
+                for (int i = 0; i < sizeof(_buffer); i++) {
+                    WS_DEBUG_PRINT(_buffer[i], HEX);
+                }
+                WS_DEBUG_PRINTLN("\n");
+
                 // reset the timer
                 _timersDigital[i].timerIntervalPrv = curTime;
             }
