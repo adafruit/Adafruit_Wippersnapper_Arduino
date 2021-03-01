@@ -706,10 +706,10 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     return true;
 }
 
-//bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-//    WS_DEBUG_PRINTLN("Adding a pinEvent to pinEventList");
-
-//}
+bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
+    WS_DEBUG_PRINTLN("Adding a pinEvent to pinEventList");
+    return true;
+}
 
 
 /**************************************************************************/
@@ -743,7 +743,8 @@ ws_status_t Wippersnapper::run() {
                 // sample the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
                 // only send on-change
-                if (pinVal != _timersDigital[i].prvPinVal) {
+                // TODO: uncomment, testing it without pin changing
+                //if (pinVal != _timersDigital[i].prvPinVal) {
                     // Create and fill a new pinEvent msg
                     wippersnapper_pin_v1_PinEvent pinEvent = wippersnapper_pin_v1_PinEvent_init_zero;
                     // We're using a digital timer here, so append "D" onto the numeric pin name
@@ -752,8 +753,16 @@ ws_status_t Wippersnapper::run() {
                     sprintf(pinEvent.pin_value, "%d", pinVal);
                     pinEvent.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
                     // TODO: Start encoding the pinevent list here.
-                    //pinEventList.list.funcs.encode = 
-                }
+                    pinEventList.list.funcs.encode = encodePinEventList;
+                    
+                    pb_ostream_t stream = pb_ostream_from_buffer(_buffer, sizeof(_buffer));
+
+                    WS_DEBUG_PRINTLN("Encoding pinevent")
+                    if (!pb_encode(&stream, wippersnapper_pin_v1_PinEvents_fields, &pinEventList)) {
+                        WS_DEBUG_PRINTLN("ERROR: Encoding timer event failed");
+                        WS_DEBUG_PRINTLN(PB_GET_ERROR(&stream));
+                    }
+                //}
                 // reset the timer
                 _timersDigital[i].timerIntervalPrv = curTime;
             }
