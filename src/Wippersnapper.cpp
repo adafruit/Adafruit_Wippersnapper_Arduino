@@ -716,20 +716,22 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 
 bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
 
-    wippersnapper_pin_v1_PinEvent pinMsg = wippersnapper_pin_v1_PinEvent_init_zero;
+    if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
+        wippersnapper_pin_v1_PinEvent pinMsg = wippersnapper_pin_v1_PinEvent_init_zero;
 
-    pinMsg.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+        pinMsg.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
 
-    strcpy(pinMsg.pin_name, "D4");
-    strcpy(pinMsg.pin_value, "1");
+        strcpy(pinMsg.pin_name, "D4");
+        strcpy(pinMsg.pin_value, "1");
 
-    // Encode the tag of a field
-    if (!pb_encode_tag_for_field(stream, field))
-        return false;
+        // Encode the tag of a field
+        if (!pb_encode_tag_for_field(stream, field))
+            return false;
 
-     // Encodes data for pinmsg structure
-    if (!pb_encode_submessage(stream, wippersnapper_pin_v1_PinEvent_fields, &pinMsg))
-        return false;
+        //Encodes data for pinmsg structure
+        if (!pb_encode_submessage(stream, wippersnapper_pin_v1_PinEvent_fields, &pinMsg))
+            return false;
+    }
 
     return true;
 }
@@ -766,8 +768,6 @@ ws_status_t Wippersnapper::run() {
 
                 msg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag;
                 msg.cb_payload.funcs.encode = encodePinEventList;
-
-                //msg.payload.pin_events.list.funcs.encode = encodePinEventList;
 
                 stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
