@@ -714,22 +714,31 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     return true;
 }
 
+bool encodePinEvent(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
+    WS_DEBUG_PRINTLN("encoding event");
+    wippersnapper_pin_v1_PinEvent pinMsg = wippersnapper_pin_v1_PinEvent_init_zero;
+    // Fill pinMsg
+    pinMsg.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+    strcpy(pinMsg.pin_name, "D4");
+    strcpy(pinMsg.pin_value, "1");
+
+
+    //Encodes data for pinmsg structure
+    if (!pb_encode_submessage(stream, wippersnapper_pin_v1_PinEvent_fields, &pinMsg))
+        return false;
+}
+
+
 bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-
+    WS_DEBUG_PRINTLN("encoding list");
     if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
-        wippersnapper_pin_v1_PinEvent pinMsg = wippersnapper_pin_v1_PinEvent_init_zero;
 
-        pinMsg.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+        wippersnapper_pin_v1_PinEvents pinEvents = wippersnapper_pin_v1_PinEvents_init_zero;
+        pinEvents.list.funcs.encode = encodePinEvent;
 
-        strcpy(pinMsg.pin_name, "D4");
-        strcpy(pinMsg.pin_value, "1");
 
-        // Encode the tag of a field
-        if (!pb_encode_tag_for_field(stream, field))
-            return false;
-
-        //Encodes data for pinmsg structure
-        if (!pb_encode_submessage(stream, wippersnapper_pin_v1_PinEvent_fields, &pinMsg))
+        // Encode into pinevents
+        if (!pb_encode(stream, wippersnapper_pin_v1_PinEvents_fields, &pinEvents))
             return false;
     }
 
