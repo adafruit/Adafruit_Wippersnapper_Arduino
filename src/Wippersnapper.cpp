@@ -720,10 +720,8 @@ bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * co
 
     pinMsg.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
 
-    // TODO: These should be assigned outside func. scope
-    //sprintf(pinMsg.pin_name, "D3");
-    strcpy(pinMsg.pin_name, "D13");
-    //sprintf(pinMsg.pin_value, "%d", 1);
+    strcpy(pinMsg.pin_name, "D4");
+    strcpy(pinMsg.pin_value, "1");
 
     // Encode the tag of a field
     if (!pb_encode_tag_for_field(stream, field))
@@ -743,9 +741,8 @@ bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * co
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-    uint32_t curTime = millis();
-
     //WS_DEBUG_PRINTLN("EXEC: loop'");
+    uint32_t curTime = millis();
 
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better
@@ -768,8 +765,10 @@ ws_status_t Wippersnapper::run() {
                 uint8_t buffer[256];
 
                 msg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag;
-                // we already know the field tag, dont need to decode the ONEOF
-                msg.payload.pin_events.list.funcs.encode = encodePinEventList;
+                msg.cb_payload.funcs.encode = encodePinEventList;
+
+                //msg.payload.pin_events.list.funcs.encode = encodePinEventList;
+
                 stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
                 if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &msg)) {
