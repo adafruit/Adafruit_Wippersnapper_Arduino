@@ -188,7 +188,7 @@ class Wippersnapper {
         static ws_board_status_t _boardStatus;
 
         // Protobuf helpers
-        bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
+        //bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
         Wippersnapper_Registration *_registerBoard;
 

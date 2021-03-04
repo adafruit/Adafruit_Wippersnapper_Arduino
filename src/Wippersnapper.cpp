@@ -90,7 +90,7 @@ Wippersnapper::~Wippersnapper() {
           array is used as an unique identifier for the message type.
 */
 /**************************************************************************/
-bool Wippersnapper::encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message)
+bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message)
 {
     pb_field_iter_t iter;
 
@@ -715,31 +715,32 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 }
 
 bool encodePinEvent(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-    WS_DEBUG_PRINTLN("encoding event");
+    WS_DEBUG_PRINTLN("encoding pin event");
     wippersnapper_pin_v1_PinEvent pinMsg = wippersnapper_pin_v1_PinEvent_init_zero;
     // Fill pinMsg
     pinMsg.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
     strcpy(pinMsg.pin_name, "D4");
     strcpy(pinMsg.pin_value, "1");
 
+    if (!pb_encode_tag_for_field(stream, field))
+                return false;
 
     //Encodes data for pinmsg structure
-    if (!pb_encode_submessage(stream, wippersnapper_pin_v1_PinEvent_fields, &pinMsg))
+    if (!pb_encode(stream, wippersnapper_pin_v1_PinEvent_fields, &pinMsg))
         return false;
+
+    return true;
 }
 
 
 bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-    WS_DEBUG_PRINTLN("encoding list");
-    if (field->tag == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
+    WS_DEBUG_PRINTLN("encoding pin event list");
+    wippersnapper_pin_v1_PinEvents pinEvents = wippersnapper_pin_v1_PinEvents_init_zero;
+    pinEvents.list.funcs.encode = encodePinEvent;
 
-        wippersnapper_pin_v1_PinEvents pinEvents = wippersnapper_pin_v1_PinEvents_init_zero;
-        pinEvents.list.funcs.encode = encodePinEvent;
-
-
-        // Encode into pinevents
-        if (!pb_encode(stream, wippersnapper_pin_v1_PinEvents_fields, &pinEvents))
-            return false;
+    if (!encode_unionmessage(stream, wippersnapper_pin_v1_PinEvents_fields, &pinEvents)) {
+        WS_DEBUG_PRINTLN("Unable to encode unionmsg.")
+        return false;
     }
 
     return true;
@@ -774,11 +775,10 @@ ws_status_t Wippersnapper::run() {
 
                 pb_ostream_t stream;
                 uint8_t buffer[256];
+                stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
                 msg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag;
                 msg.cb_payload.funcs.encode = encodePinEventList;
-
-                stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
                 if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &msg)) {
                     WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
