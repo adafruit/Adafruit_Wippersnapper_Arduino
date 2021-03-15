@@ -185,6 +185,8 @@ class Wippersnapper {
         static uint16_t bufSize;
         static uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
 
+        uint8_t _buffer_outgoing[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains outgoing payload data */
+
         static ws_board_status_t _boardStatus;
 
         // Protobuf helpers

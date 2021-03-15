@@ -644,48 +644,47 @@ ws_status_t Wippersnapper::run() {
             // Check if timer executes on a time period
             //WS_DEBUG_PRINTLN("Checking timer");
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
-                // service the timer
                 WS_DEBUG_PRINT("Servicing timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
 
                 // read the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
                 // setup CreateSignalRequest message
-                // create new signal message to publish
-                wippersnapper_signal_v1_CreateSignalRequest msg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
                 pb_ostream_t stream;
-                uint8_t buffer[256];
+
                 // TODO: Abstract this into a funct. which fills, returns
-                msg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
+                // zero-out the outgoing message struct
+                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+                _outgoingSignalMsg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
 
                 // fill the pin_event message
-                msg.payload.pin_event.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
-                //strcpy(msg.payload.pin_event.pin_name, _timersDigital[i].pinName);
-                //strcpy(msg.payload.pin_event.pin_value, pinVal);
+                _outgoingSignalMsg.payload.pin_event.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+                sprintf(_outgoingSignalMsg.payload.pin_event.pin_name, "D%d", _timersDigital[i].pinName);
+                sprintf(_outgoingSignalMsg.payload.pin_event.pin_value, "%d", pinVal);
 
                 // Encode signal message
-                stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-                if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &msg)) {
+                stream = pb_ostream_from_buffer(_buffer_outgoing, sizeof(_buffer_outgoing));
+                if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg)) {
                     WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
                 }
 
                 // Obtain size and only write out buffer to end
                 size_t msgSz;
-                pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &msg);
+                pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
 
                 WS_DEBUG_PRINTLN("Buffer:");
                 for (int i = 0; i < msgSz; i++) {
-                    WS_DEBUG_PRINT(buffer[i], HEX);
+                    WS_DEBUG_PRINT(_buffer_outgoing[i], HEX);
                 }
                 WS_DEBUG_PRINTLN("\n");
 
                 WS_DEBUG_PRINTLN("Buffer:");
                 for (int i = 0; i < msgSz; i++) {
-                    WS_DEBUG_PRINT(buffer[i]);
+                    WS_DEBUG_PRINT(_buffer_outgoing[i]);
                 }
                 WS_DEBUG_PRINTLN("\n"); 
 
-                // empty the buffer
-                memset(buffer, 0, sizeof(buffer));
+                // TODO: Publish across topic!
+
 
                 // reset the timer
                 _timersDigital[i].timerIntervalPrv = curTime;
