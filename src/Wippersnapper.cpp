@@ -82,32 +82,6 @@ Wippersnapper::~Wippersnapper() {
     free(_topic_signal_brkr);
 }
 
-/**************************************************************************/
-/*!
-    @brief This function is the core of the createSignalRequest encoding process.
-          It handles the top-level pb_field_t array manually, in order to encode
-          a correct field tag before the message. The pointer to MsgType_fields
-          array is used as an unique identifier for the message type.
-*/
-/**************************************************************************/
-bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message)
-{
-    pb_field_iter_t iter;
-
-    if (!pb_field_iter_begin(&iter, wippersnapper_signal_v1_CreateSignalRequest_fields, message))
-        return false;
-    do
-    {
-        if (iter.submsg_desc == messagetype)
-        {
-            if (!pb_encode_tag_for_field(stream, &iter))
-                return false;
-            return pb_encode_submessage(stream, messagetype, message);
-        }
-    } while (pb_field_iter_next(&iter));
-    return false;
-}
-
 
 /// PIN API ///
 /****************************************************************************/
@@ -208,68 +182,6 @@ int digitalReadSvc(uint8_t pinName) {
     // Service using arduino `digitalRead`
     int pinVal = digitalRead(pinName);
     return pinVal;
-}
-
-/****************************************************************************/
-/*!
-    @brief    Encodes a PinEvents message, provided pinEvents.
-*/
-/****************************************************************************/
-/* void Wippersnapper::encodePinEvents {
-    WS_DEBUG_PRINTLN("Encoding PinEvents message...");
-} */
-
-// Thinking:
-// could each timer hold a pinevent message that we can write into?
-// could we just create pinevent fields within the timer instead?
-
-
-// Adds a pinEvent to pinevents list
-//void Wippersnapper::addPinEvent() {
-//    WS_DEBUG_PRINT("Adding event to pinevent list...");
-//}
-
-// TODO: Create a signal message
-
-/****************************************************************************/
-/*!
-    @brief    Encodes signal message into shared buffer.
-    signalPayloadType: 
-        1 = pin_events
-    @returns  True if successful, False otherwise.
-*/
-/****************************************************************************/
-bool Wippersnapper::encodeSignalMsg(uint8_t signalPayloadType){
-    bool status;
-    size_t message_length;
-    pb_ostream_t stream;
-
-    wippersnapper_signal_v1_CreateSignalRequest msg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-    if (signalPayloadType == 1) {
-        msg.which_payload == wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag;
-        // todo: execute the callback to encodepineventlistmsg
-        // todo: pass it the "msg"
-    }
-    else {
-        WS_DEBUG_PRINTLN("ERROR: Signal payload type not found");
-        return -1;
-    }
-
-    stream = pb_ostream_from_buffer(_buffer, bufSize);
-
-    // encode the signal message
-    status = pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &msg);
-    message_length = stream.bytes_written;
-    
-    if (!status)
-    {
-        WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message.");
-        //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
-        status = -1;
-    }
-
-    return status;
 }
 
 
@@ -692,8 +604,6 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     _mqtt->processPackets(timeout);
 
     if (_buffer[0] != 0) { // check if buffer set by signal topic callback
-
-
         WS_DEBUG_PRINTLN("-> Incoming Payload Data:");
         for (int i = 0; i < sizeof(_buffer); i++) {
             WS_DEBUG_PRINT(_buffer[i]);
@@ -713,39 +623,6 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
 
     return true;
 }
-
-bool encodePinEvent(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-    WS_DEBUG_PRINTLN("encoding pin event");
-    wippersnapper_pin_v1_PinEvent pinMsg = wippersnapper_pin_v1_PinEvent_init_zero;
-    // Fill pinMsg
-    pinMsg.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
-    strcpy(pinMsg.pin_name, "D4");
-    strcpy(pinMsg.pin_value, "1");
-
-    if (!pb_encode_tag_for_field(stream, field))
-                return false;
-
-    //Encodes data for pinmsg structure
-    if (!pb_encode(stream, wippersnapper_pin_v1_PinEvent_fields, &pinMsg))
-        return false;
-
-    return true;
-}
-
-
-bool encodePinEventList(pb_ostream_t *stream, const pb_field_t *field, void * const *arg) {
-    WS_DEBUG_PRINTLN("encoding pin event list");
-    wippersnapper_pin_v1_PinEvents pinEvents = wippersnapper_pin_v1_PinEvents_init_zero;
-    pinEvents.list.funcs.encode = encodePinEvent;
-
-    if (!encode_unionmessage(stream, wippersnapper_pin_v1_PinEvents_fields, &pinEvents)) {
-        WS_DEBUG_PRINTLN("Unable to encode unionmsg.")
-        return false;
-    }
-
-    return true;
-}
-
 
 /**************************************************************************/
 /*!
@@ -768,18 +645,25 @@ ws_status_t Wippersnapper::run() {
             //WS_DEBUG_PRINTLN("Checking timer");
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
                 // service the timer
-                WS_DEBUG_PRINT("Timer executed on digital pin D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
+                WS_DEBUG_PRINT("Servicing timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
 
-                // Create a new signal message
+                // read the pin
+                int pinVal = digitalReadSvc(_timersDigital[i].pinName);
+                // setup CreateSignalRequest message
+                // create new signal message to publish
                 wippersnapper_signal_v1_CreateSignalRequest msg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
                 pb_ostream_t stream;
                 uint8_t buffer[256];
+                // TODO: Abstract this into a funct. which fills, returns
+                msg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
+
+                // fill the pin_event message
+                msg.payload.pin_event.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+                //strcpy(msg.payload.pin_event.pin_name, _timersDigital[i].pinName);
+                //strcpy(msg.payload.pin_event.pin_value, pinVal);
+
+                // Encode signal message
                 stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-
-                msg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag;
-                msg.cb_payload.funcs.encode = encodePinEventList;
-
                 if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &msg)) {
                     WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
                 }
@@ -798,7 +682,7 @@ ws_status_t Wippersnapper::run() {
                 for (int i = 0; i < msgSz; i++) {
                     WS_DEBUG_PRINT(buffer[i]);
                 }
-                WS_DEBUG_PRINTLN("\n");
+                WS_DEBUG_PRINTLN("\n"); 
 
                 // empty the buffer
                 memset(buffer, 0, sizeof(buffer));
