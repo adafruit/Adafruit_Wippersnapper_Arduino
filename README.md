@@ -13,7 +13,6 @@ Prior to installation, make sure you have your Arduino IDE configured for the bo
 
 This library requires the following dependencies to be installed from the Arduino Library Manager:
 * [Adafruit MQTT Library](https://github.com/adafruit/Adafruit_MQTT_Library)
-* [arduino-timer](https://github.com/contrem/arduino-timer)
 
 * Download the [latest .ZIP for this library](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/archive/master.zip)
 * Within the Arduino IDE, select Sketch -> Include Library -> Add .ZIP Library
