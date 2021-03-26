@@ -508,7 +508,7 @@ void Wippersnapper::connect() {
     _mqtt->subscribe(_topic_signal_brkr_sub);
 
     // Publish to outgoing commands channel, server listens to this sub-topic
-    _topic_signal_device_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signal_device);
+    //_topic_signal_device_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signal_device);
 
     // Create a subscription to the description status response topic
     _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
@@ -642,7 +642,6 @@ ws_status_t Wippersnapper::run() {
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
         if (_timersDigital[i].timerInterval > -1L) { // validate if timer is enabled
             // Check if timer executes on a time period
-            //WS_DEBUG_PRINTLN("Checking timer");
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
                 WS_DEBUG_PRINT("Servicing timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
 
@@ -671,20 +670,9 @@ ws_status_t Wippersnapper::run() {
                 size_t msgSz;
                 pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
 
-                WS_DEBUG_PRINTLN("Buffer:");
-                for (int i = 0; i < msgSz; i++) {
-                    WS_DEBUG_PRINT(_buffer_outgoing[i], HEX);
-                }
-                WS_DEBUG_PRINTLN("\n");
-
-                WS_DEBUG_PRINTLN("Buffer:");
-                for (int i = 0; i < msgSz; i++) {
-                    WS_DEBUG_PRINT(_buffer_outgoing[i]);
-                }
-                WS_DEBUG_PRINTLN("\n"); 
-
-                // TODO: Publish across topic!
-
+                // publish event data
+                _mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
+                WS_DEBUG_PRINTLN("Published signal message to broker!");
 
                 // reset the timer
                 _timersDigital[i].timerIntervalPrv = curTime;
@@ -696,11 +684,40 @@ ws_status_t Wippersnapper::run() {
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
                 // only send on-change
                 if (pinVal != _timersDigital[i].prvPinVal) {
-                    // Encode the pin's new value
-                    // Send the pin's new value
-                    // TODO
-                    // Set state
+
+                    WS_DEBUG_PRINT("Servicing timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
+                    // setup CreateSignalRequest message
+                    pb_ostream_t stream;
+
+                    // TODO: Abstract this into a funct. which fills, returns
+                    // zero-out the outgoing message struct
+                    wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+                    _outgoingSignalMsg.which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
+
+                    // fill the pin_event message
+                    _outgoingSignalMsg.payload.pin_event.mode = wippersnapper_pin_v1_Mode_MODE_DIGITAL;
+                    sprintf(_outgoingSignalMsg.payload.pin_event.pin_name, "D%d", _timersDigital[i].pinName);
+                    sprintf(_outgoingSignalMsg.payload.pin_event.pin_value, "%d", pinVal);
+
+                    // Encode signal message
+                    stream = pb_ostream_from_buffer(_buffer_outgoing, sizeof(_buffer_outgoing));
+                    if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg)) {
+                        WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
+                    }
+
+                    // Obtain size and only write out buffer to end
+                    size_t msgSz;
+                    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
+
+                    // publish event data
+                    _mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
+                    WS_DEBUG_PRINTLN("Published signal message to broker!");
+
+                    // set the pin value in the timer object for comparison on next run
                     _timersDigital[i].prvPinVal = pinVal;
+
+                    // reset the timer
+                    _timersDigital[i].timerIntervalPrv = curTime;
                 }
             }
         }
