@@ -106,7 +106,7 @@ void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction
 
 /****************************************************************************/
 /*!
-    @brief    "Releases" a previously configured digital pin
+    @brief    Deinitializes a previously configured digital pin.
 */
 /****************************************************************************/
 void deinitDigitalPin(uint8_t pinName) {
@@ -253,7 +253,8 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
         is_success = false;
     }
 
-    // TODO: Freeup struct members
+    // Freeup struct
+    pinReqMsg = wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
     return is_success;
 }
 
