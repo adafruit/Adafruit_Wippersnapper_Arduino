@@ -623,7 +623,21 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     return true;
 }
 
-bool Wippersnapper::encodePinEvent(uint8_t pinName, int pinVal, wippersnapper_pin_v1_Mode pinMode, wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg) {
+/****************************************************************************/
+/*!
+    @brief    Handles MQTT messages on signal topic until timeout.
+    @param    outgoingSignalMsg
+                Empty signal message struct.
+    @param    pinMode
+                Pin's input type.
+    @param    pinName
+                Name of pin.
+    @param    pinVal
+                Value of pin.
+    @returns  True if pinEvent message encoded successfully, false otherwise.
+*/
+/****************************************************************************/
+bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal) {
     bool is_success = true;
     outgoingSignalMsg->which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
     // fill the pin_event message
@@ -669,7 +683,7 @@ ws_status_t Wippersnapper::run() {
                 wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
                 
                 // Create and encode a pinEvent message
-                if (!encodePinEvent(_timersDigital[i].pinName, pinVal, wippersnapper_pin_v1_Mode_MODE_DIGITAL, &_outgoingSignalMsg)) {
+                if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _timersDigital[i].pinName, pinVal)) {
                     WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
                     break;
                 }
@@ -697,7 +711,7 @@ ws_status_t Wippersnapper::run() {
                     wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
                     // Create and encode a pinEvent message
-                    if (!encodePinEvent(_timersDigital[i].pinName, pinVal, wippersnapper_pin_v1_Mode_MODE_DIGITAL, &_outgoingSignalMsg)) {
+                    if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _timersDigital[i].pinName, pinVal)) {
                         WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
                         break;
                     }
