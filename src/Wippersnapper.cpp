@@ -642,8 +642,8 @@ ws_status_t Wippersnapper::run() {
     for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
         if (_timersDigital[i].timerInterval > -1L) { // validate if timer is enabled
             // Check if timer executes on a time period
-            if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval) {
-                WS_DEBUG_PRINT("Servicing timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
+            if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval && _timersDigital[i].timerInterval != 0L) {
+                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
 
                 // read the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
@@ -669,7 +669,6 @@ ws_status_t Wippersnapper::run() {
                 // Obtain size and only write out buffer to end
                 size_t msgSz;
                 pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
-
                 // publish event data
                 _mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
                 WS_DEBUG_PRINTLN("Published signal message to broker!");
@@ -679,13 +678,13 @@ ws_status_t Wippersnapper::run() {
                 
             }
             // Check if timer executes on a state change
-            else if (_timersDigital[i].timerInterval == 0) {
+            else if (_timersDigital[i].timerInterval == 0L) {
                 // read pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
                 // only send on-change
                 if (pinVal != _timersDigital[i].prvPinVal) {
 
-                    WS_DEBUG_PRINT("Servicing timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
+                    WS_DEBUG_PRINT("Execuiting state-based timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
                     // setup CreateSignalRequest message
                     pb_ostream_t stream;
 
