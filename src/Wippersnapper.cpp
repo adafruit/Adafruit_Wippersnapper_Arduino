@@ -644,7 +644,6 @@ ws_status_t Wippersnapper::run() {
             // Check if timer executes on a time period
             if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval && _timersDigital[i].timerInterval != 0L) {
                 WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
-
                 // read the pin
                 int pinVal = digitalReadSvc(_timersDigital[i].pinName);
                 // setup CreateSignalRequest message
@@ -684,7 +683,7 @@ ws_status_t Wippersnapper::run() {
                 // only send on-change
                 if (pinVal != _timersDigital[i].prvPinVal) {
 
-                    WS_DEBUG_PRINT("Execuiting state-based timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
+                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
                     // setup CreateSignalRequest message
                     pb_ostream_t stream;
 
