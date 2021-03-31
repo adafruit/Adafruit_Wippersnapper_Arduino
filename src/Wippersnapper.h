@@ -89,6 +89,17 @@ typedef enum {
     WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
+// Holds data about a digital input timer
+// members assigned from a PinConfigureRequest
+struct timerDigitalInput {
+    uint8_t pinName; // Pin name
+    long timerInterval; // timer interval, in millis, -1 if disabled.
+    long timerIntervalPrv; // time timer was previously serviced, in millis
+    int prvPinVal; // Previous pin value
+};
+
+#define MAX_DIGITAL_TIMERS 5
+
 // Adafruit IO Production SSL Fingerprint
 //#define WS_SSL_FINGERPRINT \
 //  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF"
@@ -101,6 +112,10 @@ typedef enum {
 /* MQTT Configuration */
 // Keep Alive interval, in ms
 #define WS_KEEPALIVE_INTERVAL 10000
+
+// MAXIMUM MQTT expected payload size, in bytes
+#define WS_MQTT_MAX_PAYLOAD_SIZE 128
+
 
 // forward declaration
 class Wippersnapper_Registration;
@@ -128,43 +143,57 @@ class Wippersnapper {
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
 
-        void generate_feeds(); // Generate device-specific WS feeds
+        // Generates Wippersnapper MQTT feeds
+        void generate_feeds();
 
+        // Performs board registration FSM
         bool registerBoard(uint8_t retries);
 
+        // run() loop //
+        ws_status_t run();
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
-        void ping();
-        ws_status_t run();
+        // Pumps message loop
+        bool processSignalMessages(int16_t timeout);
 
-        // MQTT topic callbacks
+        // MQTT topic callbacks //
         static void cbSignalTopic(char *data, uint16_t len);
-        void cbDescriptionStatus(char *data, uint16_t len);
 
-        // Signal message
+        // Signal message // 
+        // Called when a new signal message has been received
         static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
+        // Encodes a signal message
+        bool encodeSignalMsg(uint8_t signalPayloadType);
+
+        // Encodes a pin event message
+        bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal);
 
         // Pin configure message
         static bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
-        // Pin Event
+        // Decodes list of pin events
         static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
-        static void digitalWriteEvent(char *pinName, int pinValue);
+
+        // Digital Input
+        static void attachDigitalPinTimer(uint8_t pinName, float interval);
+        static void detachDigitalPinTimer(uint8_t pinName);
 
         // Adafruit IO Credentials
         const char *_username; /*!< Adafruit IO Username. */
         const char *_key;      /*!< Adafruit IO Key. */
 
         static uint16_t bufSize;
-        static uint8_t _buffer[128]; /*!< Shared buffer to save callback payload */
-        uint8_t _buffer_state[128]; /*!< Holds previous contents of static _buffer */
+        static uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
+
+        uint8_t _buffer_outgoing[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains outgoing payload data */
 
         static ws_board_status_t _boardStatus;
 
         // Protobuf helpers
-        bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
+        //bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
         Wippersnapper_Registration *_registerBoard;
 
@@ -172,7 +201,6 @@ class Wippersnapper {
         void _init();
 
     protected:
-
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
@@ -211,10 +239,18 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
-        //WSTimer *_wsTimer;
-
         static char _value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
         static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
+
+        wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
+        wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */
+
+        // Holds info about all digital input timers
+        // TODO: This is currently fixed at "2" pins, we need to
+        // transmit the # of pins from the broker during registration
+        // and dynamically create this
+       static timerDigitalInput _timersDigital[MAX_DIGITAL_TIMERS];
+
 };
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H
