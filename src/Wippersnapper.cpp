@@ -37,6 +37,11 @@ uint16_t Wippersnapper::bufSize;
 uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
 timerDigitalInput Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
+
+// Configure status indicator
+#ifdef STATUS_INDICATOR_NEOPIXEL
+    Adafruit_NeoPixel pixels(1, STATUS_INDICATOR_PIN, NEO_GRB + NEO_KHZ800);
+#endif
 /**************************************************************************/
 /*!
     @brief    Instantiates the Wippersnapper client object.
@@ -68,6 +73,10 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
         _timersDigital[i].timerInterval = -1;
     }
 
+    #ifdef STATUS_INDICATOR_NEOPIXEL
+        pixels.begin();
+        pixels.clear();
+    #endif
 }
 
 /**************************************************************************/
@@ -518,11 +527,19 @@ void Wippersnapper::connect() {
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
+    #ifdef STATUS_INDICATOR_NEOPIXEL
+        pixels.setPixelColor(0, pixels.Color(0, 255, 0));
+        pixels.show();
+    #endif
     _connect();
     WS_DEBUG_PRINTLN("WiFi Connected!");
 
     // Wait for connection to broker
     WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
+    #ifdef STATUS_INDICATOR_NEOPIXEL
+        pixels.setPixelColor(0, pixels.Color(255, 0, 255));
+        pixels.show();
+    #endif
     while (status() < WS_CONNECTED) {
         WS_DEBUG_PRINT(".");
         delay(500);
@@ -535,6 +552,14 @@ void Wippersnapper::connect() {
         for(;;);
     }
     WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+
+    #ifdef STATUS_INDICATOR_NEOPIXEL
+        pixels.setPixelColor(0, pixels.Color(0, 0, 255));
+        pixels.show();
+        delay(2000);
+        pixels.clear(); // turn off
+    #endif
+
 
 }
 

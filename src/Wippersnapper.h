@@ -28,13 +28,17 @@
 #include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
 #include <wippersnapper/pin/v1/pin.pb.h>                    // pin.proto
 
-// External libraries
-#include "Adafruit_MQTT.h"
-#include "Arduino.h"
-
-// Internal libraries
+// Internal
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
+
+// External libraries
+#include "Adafruit_MQTT.h" // MQTT Client
+#include "Arduino.h" // Wiring
+
+#ifdef STATUS_INDICATOR_NEOPIXEL
+    #include <Adafruit_NeoPixel.h>
+#endif
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
