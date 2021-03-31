@@ -167,6 +167,9 @@ class Wippersnapper {
         // Encodes a signal message
         bool encodeSignalMsg(uint8_t signalPayloadType);
 
+        // Encodes a pin event message
+        bool encodePinEvent(uint8_t pinName, int pinVal, wippersnapper_pin_v1_Mode pinMode, wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg);
+
         // Pin configure message
         static bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
