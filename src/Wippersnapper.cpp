@@ -71,8 +71,8 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
 
     // Initialize NeoPixel, if the board has one
     #ifdef STATUS_INDICATOR_NEOPIXEL
-        pixels.updateLength(1);
-        pixels.setPin(STATUS_INDICATOR_PIN);
+        pixels.updateLength(STATUS_INDICATOR_NEOPIXEL_LENGTH);
+        pixels.setPin(STATUS_INDICATOR_NEOPIXEL_PIN);
         pixels.begin();
         delay(10);
         pixels.setBrightness(20);
