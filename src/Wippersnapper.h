@@ -198,7 +198,7 @@ class Wippersnapper {
 
         Wippersnapper_Registration *_registerBoard;
 
-        Adafruit_NeoPixel pixels;
+        Adafruit_NeoPixel pixels; /*!< NeoPixel strand */
 
     private:
         void _init();

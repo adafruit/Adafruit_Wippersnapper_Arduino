@@ -70,9 +70,9 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
     }
 
     // Initialize NeoPixel, if the board has one
-    #ifdef STATUS_INDICATOR_NEOPIXEL
-        pixels.updateLength(STATUS_INDICATOR_NEOPIXEL_LENGTH);
-        pixels.setPin(STATUS_INDICATOR_NEOPIXEL_PIN);
+    #ifdef STATUS_NEOPIXEL
+        pixels.updateLength(STATUS_NEOPIXEL_LENGTH);
+        pixels.setPin(STATUS_NEOPIXEL_PIN);
         pixels.begin();
         delay(10);
         pixels.setBrightness(20);
@@ -80,9 +80,11 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
         pixels.show(); // turn off
         delay(10);
         pixels.show(); // turn off
+    // Otherwise, use the LED as status indicator
+    #else
+        pinMode(STATUS_LED_PIN, OUTPUT);
+        digitalWrite(STATUS_LED_PIN, 0);
     #endif
-    // TODO: Ifdef for LED indicator
-
 
 }
 
@@ -535,48 +537,69 @@ void Wippersnapper::connect() {
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
-    #ifdef STATUS_INDICATOR_NEOPIXEL
+    #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(255, 0, 0));
         pixels.show();
+    #else
+        digitalWrite(STATUS_LED_PIN, 1);
     #endif
+
     _connect();
     WS_DEBUG_PRINTLN("WiFi Connected!");
+    #ifdef STATUS_LED
+        digitalWrite(STATUS_LED_PIN, 0);
+    #endif
 
     // Wait for connection to broker
     WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-    #ifdef STATUS_INDICATOR_NEOPIXEL
+    #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(0, 0, 255));
         pixels.show();
+    #else
+        digitalWrite(STATUS_LED_PIN, 1);
     #endif
     while (status() < WS_CONNECTED) {
         WS_DEBUG_PRINT(".");
         delay(500);
     }
     WS_DEBUG_PRINTLN("MQTT Connected!");
+    #ifdef STATUS_LED
+        digitalWrite(STATUS_LED_PIN, 0);
+    #endif
 
     WS_DEBUG_PRINTLN("Registering Board...")
-    #ifdef STATUS_INDICATOR_NEOPIXEL
+    #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(255, 0, 255));
         pixels.show();
+    #else
+        digitalWrite(STATUS_LED_PIN, 1);
     #endif
     if (!registerBoard(10)) {
         WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
         for(;;) {
-        pixels.setPixelColor(0, pixels.Color(255, 0, 255));
-        pixels.show();
-        delay(1000);
-        pixels.setPixelColor(0, pixels.Color(0, 0, 0));
-        pixels.show();
+            pixels.setPixelColor(0, pixels.Color(255, 0, 255));
+            pixels.show();
+            delay(1000);
+            pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+            pixels.show();
         }
     }
     WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
 
-    #ifdef STATUS_INDICATOR_NEOPIXEL
+    #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
         pixels.show();
         delay(500);
         pixels.setPixelColor(0, pixels.Color(0, 0, 0));
         pixels.show();
+    #else
+        digitalWrite(STATUS_LED_PIN, 0);
+        delay(500);
+        digitalWrite(STATUS_LED_PIN, 1);
+        delay(500);
+        digitalWrite(STATUS_LED_PIN, 0);
+        // de-init pin
+        deinitDigitalPin(STATUS_LED_PIN);
     #endif
 
 
