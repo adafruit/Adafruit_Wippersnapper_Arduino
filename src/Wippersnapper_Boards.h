@@ -33,7 +33,7 @@
     // Use TinyUSB - for SAMD/NRF52 Cores ONLY!
     #define USE_TINYUSB
     // Status Indicator
-    #define STATUS_INDICATOR_NEOPIXEL NEOPIXEL
+    #define STATUS_INDICATOR_NEOPIXEL
     #define STATUS_INDICATOR_PIN  40
 #elif defined(ADAFRUIT_METRO_M4_EXPRESS)
     #define USB_VID 0x239A

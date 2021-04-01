@@ -35,10 +35,7 @@
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h" // Wiring
-
-#ifdef STATUS_INDICATOR_NEOPIXEL
-    #include <Adafruit_NeoPixel.h>
-#endif
+#include <Adafruit_NeoPixel.h>
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
@@ -200,6 +197,8 @@ class Wippersnapper {
         //bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
         Wippersnapper_Registration *_registerBoard;
+
+        Adafruit_NeoPixel pixels;
 
     private:
         void _init();

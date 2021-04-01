@@ -69,6 +69,20 @@ Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
         _timersDigital[i].timerInterval = -1;
     }
 
+    // Initialize NeoPixel, if the board has one
+    #ifdef STATUS_INDICATOR_NEOPIXEL
+        pixels.updateLength(1);
+        pixels.setPin(STATUS_INDICATOR_PIN);
+        pixels.begin();
+        delay(10);
+        pixels.setBrightness(20);
+        pixels.fill(0);
+        pixels.show(); // turn off
+        delay(10);
+        pixels.show(); // turn off
+    #endif
+    // TODO: Ifdef for LED indicator
+
 
 }
 
@@ -497,14 +511,6 @@ void Wippersnapper::generate_feeds() {
 /**************************************************************************/
 void Wippersnapper::connect() {
     WS_DEBUG_PRINTLN("connect()");
-
-    // TODO: init elsewhere!
-    #ifdef STATUS_INDICATOR_NEOPIXEL
-        Adafruit_NeoPixel pixels(1, 40, NEO_GRB + NEO_KHZ800);
-        pixels.begin();
-        pixels.setBrightness(10);
-        pixels.clear();
-    #endif
 
     _status = WS_IDLE;
     _boardStatus = WS_BOARD_DEF_IDLE;
