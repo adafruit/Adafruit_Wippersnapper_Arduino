@@ -28,13 +28,14 @@
 #include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
 #include <wippersnapper/pin/v1/pin.pb.h>                    // pin.proto
 
-// External libraries
-#include "Adafruit_MQTT.h"
-#include "Arduino.h"
-
-// Internal libraries
+// Internal
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
+
+// External libraries
+#include "Adafruit_MQTT.h" // MQTT Client
+#include "Arduino.h" // Wiring
+#include <Adafruit_NeoPixel.h>
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
@@ -196,6 +197,8 @@ class Wippersnapper {
         //bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
         Wippersnapper_Registration *_registerBoard;
+
+        Adafruit_NeoPixel pixels; /*!< NeoPixel strand */
 
     private:
         void _init();
