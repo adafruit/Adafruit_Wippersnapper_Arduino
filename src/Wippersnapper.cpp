@@ -398,9 +398,13 @@ void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
                 wippersnapper object
 */
 /**************************************************************************/
-Wippersnapper* object_which_will_handle_signal;
+/* Wippersnapper* object_which_will_handle_signal;
 static void cbDescStatus_Wrapper(char *data, uint16_t len) {
     object_which_will_handle_signal->_registerBoard->decodeRegMsg(data, len);
+} */
+
+void cbDescStatus(char *data, uint16_t len) {
+    WS._registerBoard->decodeRegMsg(data, len);
 }
 
 /**************************************************************************/
@@ -430,7 +434,9 @@ void Wippersnapper::generate_feeds() {
     //self._device_uid = "io-wipper-{}{}".format(self._board.name, str(mac_addr))
 
     // Create MQTT client object
+    WS_DEBUG_PRINTLN("Setting up MQTT client..");
     setupMQTTClient(_device_uid);
+    WS_DEBUG_PRINTLN("SET!");
 
     // Assign board type info
     // TODO: Do we still need this?
@@ -527,7 +533,8 @@ void Wippersnapper::connect() {
     _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
 
     // set callback and subscribe
-    _topic_description_sub->setCallback(cbDescStatus_Wrapper);
+    //_topic_description_sub->setCallback(cbDescStatus_Wrapper);
+    _topic_description_sub->setCallback(cbDescStatus);
     _mqtt->subscribe(_topic_description_sub);
 
     // Connect network interface
@@ -553,10 +560,12 @@ void Wippersnapper::connect() {
     #else
         digitalWrite(STATUS_LED_PIN, 1);
     #endif
+
     while (status() < WS_CONNECTED) {
         WS_DEBUG_PRINT(".");
         delay(500);
     }
+
     WS_DEBUG_PRINTLN("MQTT Connected!");
     #ifdef STATUS_LED
         digitalWrite(STATUS_LED_PIN, 0);
@@ -811,7 +820,7 @@ ws_status_t Wippersnapper::run() {
 bool Wippersnapper::registerBoard(uint8_t retries=10) {
     WS_DEBUG_PRINTLN("registerBoard()");
     // Create new board
-    _registerBoard = new Wippersnapper_Registration(this);
+    _registerBoard = new Wippersnapper_Registration();
     // Run the FSM for the registration process
     return _registerBoard->processRegistration();
 }

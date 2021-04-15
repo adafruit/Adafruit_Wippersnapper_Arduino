@@ -16,14 +16,14 @@
 #ifndef WIPPERSNAPPER_REGISTRATION_H
 #define WIPPERSNAPPER_REGISTRATION_H
 
-#include <Wippersnapper.h>
+#include "Wippersnapper.h"
 
-// forward declaration
+// forward decl.
 class Wippersnapper;
 
 class Wippersnapper_Registration {
     public:
-        Wippersnapper_Registration(Wippersnapper *ws);
+        Wippersnapper_Registration();
         ~Wippersnapper_Registration();
 
         bool processRegistration();
@@ -55,7 +55,8 @@ class Wippersnapper_Registration {
         const char * _machine_name;
         int32_t _uid;
 
-        Wippersnapper *_ws; // instance of Wippersnapper
 };
+
+extern Wippersnapper WS;
 
 #endif // WIPPERSNAPPER_REGISTRATION_H

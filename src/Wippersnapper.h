@@ -118,12 +118,10 @@ struct timerDigitalInput {
 #define WS_MQTT_MAX_PAYLOAD_SIZE 128
 
 
-// forward declaration
 class Wippersnapper_Registration;
 
 class Wippersnapper {
 
-    friend class Wippersnapper_Registration;
 
     public:
         Wippersnapper();
@@ -205,29 +203,33 @@ class Wippersnapper {
 
         uint8_t _uid[6];       /*!< Unique network iface identifier */
 
+        char sUID[9];
+        const char *_boardId;  /*!< Adafruit IO+ board string */
+        Adafruit_MQTT *_mqtt;                         /*!< Reference to Adafruit_MQTT, _mqtt. */
+        char *_topic_description;        /*!< MQTT topic for the device description  */
+
+        // Staging Server
+        const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
+        uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
+
+        // AIO Credentials
+        const char *_username;
+        const char *_key;
 
     private:
         void _init();
 
     protected:
-        // AIO Credentials
-        const char *_username;
-        const char *_key;
 
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
         uint32_t _prv_ping = 0;
 
-        Adafruit_MQTT *_mqtt;                         /*!< Reference to Adafruit_MQTT, _mqtt. */
 
         // PoC Server
         // const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
         // uint16_t _mqtt_port = 18653;                 /*!< MQTT Broker URL */
-
-        // Staging Server
-        const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
-        uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
 
         // Production Server
         // const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
@@ -235,14 +237,12 @@ class Wippersnapper {
 
         // Device information
         const char *_deviceId; /*!< Adafruit IO+ device identifier string */
-        const char *_boardId;  /*!< Adafruit IO+ board string */
         uint16_t _hw_vid;      /*!< USB vendor identifer */
         uint16_t _hw_pid;      /*!< USB product identifier */
         char *_device_uid;     /*!< Unique device identifier  */
-        char sUID[9];
+
 
         // MQTT topics
-        char *_topic_description;        /*!< MQTT topic for the device description  */
         char *_topic_description_status; /*!< MQTT subtopic carrying the description status resp. from the broker */
         char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */

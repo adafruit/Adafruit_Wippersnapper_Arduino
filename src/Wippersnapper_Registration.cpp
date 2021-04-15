@@ -23,8 +23,7 @@
               Reference to Wippersnapper.
 */
 /**************************************************************************/
-Wippersnapper_Registration::Wippersnapper_Registration(Wippersnapper *ws) {
-    _ws = ws;
+Wippersnapper_Registration::Wippersnapper_Registration() {
     //wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
 
 }
@@ -98,8 +97,8 @@ void Wippersnapper_Registration::encodeRegMsg() {
     wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
     
     // Fill message object's fields
-    _machine_name = _ws->_boardId;
-    _uid = atoi(_ws->sUID);
+    _machine_name = WS._boardId;
+    _uid = atoi(WS.sUID);
 
     // Encode fields
     strcpy(_message.machine_name, _machine_name);
@@ -116,6 +115,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
         WS_DEBUG_PRINTLN("ERROR: encoding description message failed!");
         //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
     }
+    WS_DEBUG_PRINTLN("Encoded!");
 }
 
 /************************************************************/
@@ -125,23 +125,26 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-    if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
+    WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
+/*     if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
-        _ws->_boardStatus = WS_BOARD_DEF_SEND_FAILED;
-    }
-    _ws->_boardStatus = WS_BOARD_DEF_SENT;
+        WS._boardStatus = WS_BOARD_DEF_SEND_FAILED;
+    } */
+    WS_DEBUG_PRINTLN("Published!")
+    WS._boardStatus = WS_BOARD_DEF_SENT;
 }
 
+// todo: retry cound should be decld in args.
 bool Wippersnapper_Registration::pollRegMsg() {
     bool is_success = false;
-    // Obtain response from broker
+    // Attempt to obtain response from broker
     uint8_t retryCount = 0;
-    while (_ws->_boardStatus == WS_BOARD_DEF_SENT) {
+    while (WS._boardStatus == WS_BOARD_DEF_SENT) {
         if (retryCount >= 5) {
             WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
             break;
         }
-        _ws->_mqtt->processPackets(500); // process messages
+        WS._mqtt->processPackets(500); // pump MQTT msg loop
         delay(500);
         retryCount++;
     }
@@ -169,16 +172,19 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
     } else {    // set board status
         switch (message.response) {
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-                _ws->_boardStatus = WS_BOARD_DEF_OK;
+                //_ws->_boardStatus = WS_BOARD_DEF_OK;
+                WS._boardStatus = WS_BOARD_DEF_OK;
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
-                _ws->_boardStatus = WS_BOARD_DEF_INVALID;
+                //_ws->_boardStatus = WS_BOARD_DEF_INVALID;
+                WS._boardStatus = WS_BOARD_DEF_INVALID;
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
-                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                //_ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                WS._boardStatus = WS_BOARD_DEF_UNSPECIFIED;
                 break;
             default:
-                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                WS._boardStatus = WS_BOARD_DEF_UNSPECIFIED;
         }
     }
 

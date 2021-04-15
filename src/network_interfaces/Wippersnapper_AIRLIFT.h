@@ -131,7 +131,7 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, \
-                _mqtt_port, clientID, _aio_user, _aio_key);
+                _mqtt_port, clientID, _username, _key);
   }
 
   /********************************************************/
@@ -164,8 +164,6 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
-  const char *_aio_user;
-  const char *_aio_key;
   String _fv = "0.0.0";
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   int _ssPin, _ackPin, _rstPin, _gpio0Pin = -1;
