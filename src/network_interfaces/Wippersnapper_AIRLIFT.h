@@ -60,19 +60,14 @@ public:
             a SPIClass
   */
   /**************************************************************************/
-  Wippersnapper_AIRLIFT(const char *aio_user, const char *aio_key, const char *ssid,
-                        const char *ssidPassword, int ssPin, int ackPin, int rstPin,
-                        int gpio0Pin, SPIClass *wifi): Wippersnapper(aio_user, aio_key) {
-    _wifi = wifi;
-    _ssPin = ssPin;
-    _ackPin = ackPin;
-    _rstPin = rstPin;
-    _gpio0Pin = gpio0Pin;
-    _ssid = ssid;
-    _pass = ssidPassword;
-    _aio_user = aio_user;
-    _aio_key = aio_key;
-    _mqtt_client = new WiFiSSLClient;
+  Wippersnapper_AIRLIFT(): Wippersnapper() {
+    _ssPin = 0;
+    _ackPin = 0;
+    _rstPin = 0;
+    _wifi = 0;
+    _mqtt_client = 0;
+    _ssid = 0;
+    _pass = 0;
     }
 
   /**************************************************************************/
@@ -83,6 +78,23 @@ public:
   ~Wippersnapper_AIRLIFT() {
       if (_mqtt)
         delete _mqtt;
+  }
+
+  void set_ssid_pass(char *ssid, const char *ssidPassword) {
+        _ssid = ssid;
+        _pass = ssidPassword;
+  }
+
+  void set_wifi(SPIClass *wifi) {
+    _wifi = wifi;
+    _mqtt_client = new WiFiSSLClient;
+  }
+
+  void set_airlift_pins(int ssPin, int ackPin, int rstPin, int gpio0Pin) {
+    _ssPin = ssPin;
+    _ackPin = ackPin;
+    _rstPin = rstPin;
+    _gpio0Pin = gpio0Pin;
   }
 
   /********************************************************/
@@ -201,6 +213,7 @@ protected:
     WiFi.disconnect();
     delay(500);
   }
+  
 };
 
 #endif //WIPPERSNAPPER_AIRLIFT_H

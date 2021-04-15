@@ -126,20 +126,25 @@ class Wippersnapper {
     friend class Wippersnapper_Registration;
 
     public:
-        Wippersnapper(const char *aio_username, const char *aio_key);
+        Wippersnapper();
+        //Wippersnapper(const char *aio_username, const char *aio_key);
         virtual ~Wippersnapper();
 
+        void set_user_key(const char *aio_username, const char *aio_key);
+
+        void set_ssid_pass(char *ssid, const char *ssidPassword);
+
         void connect();
-        virtual void _connect() = 0;
+        virtual void _connect();
 
         void disconnect();
-        virtual void _disconnect() = 0;
+        virtual void _disconnect();
 
-        virtual void setUID() = 0;
-        virtual void setupMQTTClient(const char *clientID) = 0;
+        virtual void setUID();
+        virtual void setupMQTTClient(const char *clientID);
 
         const __FlashStringHelper *statusText();
-        virtual ws_status_t networkStatus() = 0;
+        virtual ws_status_t networkStatus();
         ws_status_t status();
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
@@ -182,9 +187,6 @@ class Wippersnapper {
         static void attachDigitalPinTimer(uint8_t pinName, float interval);
         static void detachDigitalPinTimer(uint8_t pinName);
 
-        // Adafruit IO Credentials
-        const char *_username; /*!< Adafruit IO Username. */
-        const char *_key;      /*!< Adafruit IO Key. */
 
         static uint16_t bufSize;
         static uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
@@ -204,6 +206,10 @@ class Wippersnapper {
         void _init();
 
     protected:
+        // AIO Credentials
+        const char *_username;
+        const char *_key;
+
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
@@ -253,7 +259,8 @@ class Wippersnapper {
         // transmit the # of pins from the broker during registration
         // and dynamically create this
        static timerDigitalInput _timersDigital[MAX_DIGITAL_TIMERS];
-
 };
+
+extern Wippersnapper WS;
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

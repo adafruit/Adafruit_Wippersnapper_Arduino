@@ -38,55 +38,24 @@ uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
 timerDigitalInput Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
 
-/**************************************************************************/
-/*!
-    @brief    Instantiates the Wippersnapper client object.
-    @param    aio_username
-              Adafruit IO Username.
-    @param    aio_key
-              Adafruit IO Active Key.
-*/
-/**************************************************************************/
-Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
+Wippersnapper WS;
+
+Wippersnapper::Wippersnapper() {
     _mqtt = 0;     // MQTT Client object
 
-    _username = aio_username;
-    _key = aio_key;
+    // IO creds
+    _username = 0;
+    _key = 0;
 
-    // TODO: Remove!
-    _deviceId = "myDevice"; // Adafruit IO+ device name
-    _hw_vid = 0;       // Hardware's usb vendor id
-    _hw_pid = 0;       // Hardware's usb product id
 
-    // Reserved MQTT Topics //
+    // Reserved MQTT Topics
     _topic_description = 0;
     _topic_description_status = 0;
     _topic_signal_device = 0;
     _topic_signal_brkr = 0;
 
-    // disable all timers
-    for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
-        _timersDigital[i].timerInterval = -1;
-    }
 
-    // Initialize NeoPixel, if the board has one
-    #ifdef STATUS_NEOPIXEL
-        pixels.updateLength(STATUS_NEOPIXEL_LENGTH);
-        pixels.setPin(STATUS_NEOPIXEL_PIN);
-        pixels.begin();
-        delay(10);
-        pixels.setBrightness(20);
-        pixels.fill(0);
-        pixels.show(); // turn off
-        delay(10);
-        pixels.show(); // turn off
-    // Otherwise, use the LED as status indicator
-    #else
-        pinMode(STATUS_LED_PIN, OUTPUT);
-        digitalWrite(STATUS_LED_PIN, 0);
-    #endif
-
-}
+};
 
 /**************************************************************************/
 /*!
@@ -98,6 +67,11 @@ Wippersnapper::~Wippersnapper() {
     free(_topic_description);
     free(_topic_signal_device);
     free(_topic_signal_brkr);
+}
+
+void Wippersnapper::set_user_key(const char *aio_username, const char *aio_key) {
+    _username = aio_username;
+    _key = aio_key;
 }
 
 
