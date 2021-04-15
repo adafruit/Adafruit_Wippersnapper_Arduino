@@ -28,8 +28,7 @@
         #define NINA_GPIO0 6 // Not connected
     #endif
 
-    Wippersnapper_WiFi ws(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS, SPIWIFI_SS,
-                    NINA_ACK, NINA_RESETN, NINA_GPIO0, &SPIWIFI);
+    Wippersnapper_WiFi ws;
 #else
-Wippersnapper_WiFi ws(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
+Wippersnapper_WiFi ws;
 #endif
