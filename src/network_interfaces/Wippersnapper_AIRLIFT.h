@@ -29,6 +29,7 @@
 
 #define NINAFWVER "1.0.0" /*!< min. nina-fw version compatible with this library. */
 
+extern Wippersnapper WS;
 /****************************************************************************/
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
@@ -118,7 +119,7 @@ public:
   /********************************************************/
   void setUID() {
       WiFi.macAddress(mac);
-      memcpy(_uid, mac, sizeof(mac));
+      memcpy(WS._uid, mac, sizeof(mac));
   }
 
   /********************************************************/

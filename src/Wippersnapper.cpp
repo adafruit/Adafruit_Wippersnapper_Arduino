@@ -69,10 +69,31 @@ Wippersnapper::~Wippersnapper() {
     free(_topic_signal_brkr);
 }
 
+void Wippersnapper::_connect() {
+    WS_DEBUG_PRINTLN("conn");
+}
+
+void Wippersnapper::_disconnect() {
+    WS_DEBUG_PRINTLN("_disconnect");
+}
+
+void Wippersnapper::setUID() {
+    WS_DEBUG_PRINTLN("setUID");
+}
+
+void Wippersnapper::setupMQTTClient(char const*) {
+    WS_DEBUG_PRINTLN("setupMQTTClient");
+}
+ws_status_t Wippersnapper::networkStatus() {
+    WS_DEBUG_PRINTLN("networkStatus");
+}
+
+
 void Wippersnapper::set_user_key(const char *aio_username, const char *aio_key) {
     _username = aio_username;
     _key = aio_key;
 }
+
 
 
 /// PIN API ///
