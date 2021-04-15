@@ -100,6 +100,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
     _machine_name = WS._boardId;
     _uid = atoi(WS.sUID);
 
+
     // Encode fields
     strcpy(_message.machine_name, _machine_name);
     _message.mac_addr = _uid;
@@ -125,11 +126,11 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-    WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
-/*     if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1)) {
+    WS_DEBUG_PRINTLN(WS._topic_description);
+    if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
         WS._boardStatus = WS_BOARD_DEF_SEND_FAILED;
-    } */
+    }
     WS_DEBUG_PRINTLN("Published!")
     WS._boardStatus = WS_BOARD_DEF_SENT;
 }

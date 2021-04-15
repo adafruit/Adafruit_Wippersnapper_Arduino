@@ -47,7 +47,6 @@ Wippersnapper::Wippersnapper() {
     _username = 0;
     _key = 0;
 
-
     // Reserved MQTT Topics
     _topic_description = 0;
     _topic_description_status = 0;
@@ -419,24 +418,23 @@ void Wippersnapper::generate_feeds() {
 
     // Move the top 3 bytes from the UID
     for (int i = 5; i > 2; i--) {
-        _uid[6-1-i]  = _uid[i];
+        WS._uid[6-1-i]  = WS._uid[i];
     }
-    
-    snprintf(sUID, sizeof(sUID), "%02d%02d%02d",_uid[0], _uid[1], _uid[2]);
+
+    snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._uid[0], WS._uid[1], WS._uid[2]);
 
     // Assign board type, defined at compile-time
-    _boardId = BOARD_ID;
+    WS._boardId = BOARD_ID;
+
     // Create device UID
-    _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") + strlen(_boardId) + strlen(sUID));
+    _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") + strlen(WS._boardId) + strlen(WS.sUID));
     strcpy(_device_uid, "io-wipper-");
-    strcat(_device_uid, _boardId);
-    strcat(_device_uid, sUID);
-    //self._device_uid = "io-wipper-{}{}".format(self._board.name, str(mac_addr))
+    strcat(_device_uid, WS._boardId);
+    strcat(_device_uid, WS.sUID);
 
     // Create MQTT client object
-    WS_DEBUG_PRINTLN("Setting up MQTT client..");
+    WS_DEBUG_PRINTLN(_device_uid);
     setupMQTTClient(_device_uid);
-    WS_DEBUG_PRINTLN("SET!");
 
     // Assign board type info
     // TODO: Do we still need this?
@@ -444,43 +442,43 @@ void Wippersnapper::generate_feeds() {
     _hw_pid = USB_PID;
 
     // allocate memory for reserved topics
-    _topic_description = (char *)malloc(sizeof(char) * strlen(_username) \
+    WS._topic_description = (char *)malloc(sizeof(char) * strlen(_username) \
     + strlen("/wprsnpr") + strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
     // Check-in status topic
-    _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
+    WS._topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/wprsnpr/") + strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + \
     strlen("status") + strlen("broker") + 1);
 
-    _topic_signal_device = (char *)malloc(sizeof(char) * strlen(_username) + \
+    WS._topic_signal_device = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("device") + 1);
 
-    _topic_signal_brkr = (char *)malloc(sizeof(char) * strlen(_username) + \
+    WS._topic_signal_brkr = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
     // Build description check-in topic
-    if (_topic_description) {
-        strcpy(_topic_description, _username);
-        strcat(_topic_description, "/wprsnpr");
-        strcat(_topic_description, TOPIC_DESCRIPTION);
-        strcat(_topic_description, "status");
+    if (WS._topic_description) {
+        strcpy(WS._topic_description, _username);
+        strcat(WS._topic_description, "/wprsnpr");
+        strcat(WS._topic_description, TOPIC_DESCRIPTION);
+        strcat(WS._topic_description, "status");
     } else { // malloc failed
-        _topic_description  = 0;
+        WS._topic_description  = 0;
     }
 
 
     // build description status topic
-    if (_topic_description_status) {
-        strcpy(_topic_description_status, _username);
-        strcat(_topic_description_status, "/wprsnpr/");
-        strcat(_topic_description_status, _device_uid);
-        strcat(_topic_description_status, TOPIC_DESCRIPTION);
-        strcat(_topic_description_status, "status");
-        strcat(_topic_description_status, "/broker");
+    if (WS._topic_description_status) {
+        strcpy(WS._topic_description_status, _username);
+        strcat(WS._topic_description_status, "/wprsnpr/");
+        strcat(WS._topic_description_status, _device_uid);
+        strcat(WS._topic_description_status, TOPIC_DESCRIPTION);
+        strcat(WS._topic_description_status, "status");
+        strcat(WS._topic_description_status, "/broker");
     } else { // malloc failed
-        _topic_description_status = 0;
+        WS._topic_description_status = 0;
     }
 
     // build incoming signal topic
@@ -518,24 +516,18 @@ void Wippersnapper::connect() {
     _status = WS_IDLE;
     _boardStatus = WS_BOARD_DEF_IDLE;
 
-    WS_DEBUG_PRINTLN("Generating feeds...");
+    // Generate MQTT feeds
     generate_feeds();
 
-    // Subscription to listen to commands from the server
+    // Subscription to listen for commands from the broker
     _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signal_brkr);
+    WS._mqtt->subscribe(_topic_signal_brkr_sub);
     _topic_signal_brkr_sub->setCallback(cbSignalTopic);
-    _mqtt->subscribe(_topic_signal_brkr_sub);
 
-    // Publish to outgoing commands channel, server listens to this sub-topic
-    //_topic_signal_device_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signal_device);
-
-    // Create a subscription to the description status response topic
-    _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
-
-    // set callback and subscribe
-    //_topic_description_sub->setCallback(cbDescStatus_Wrapper);
+    // Create a subscription to listen for registration response from the broker
+    _topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, _topic_description_status);
+    WS._mqtt->subscribe(_topic_description_sub);
     _topic_description_sub->setCallback(cbDescStatus);
-    _mqtt->subscribe(_topic_description_sub);
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
@@ -656,7 +648,7 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
     }
     // Ping if > keepAlive interval
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL)) {
-        _mqtt->ping();
+        WS._mqtt->ping();
         _prv_ping = millis();
     }
 
@@ -671,7 +663,7 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 */
 /**************************************************************************/
 bool Wippersnapper::processSignalMessages(int16_t timeout) {
-    _mqtt->processPackets(timeout);
+    WS._mqtt->processPackets(timeout);
 
     if (_buffer[0] != 0) { // check if buffer set by signal topic callback
         WS_DEBUG_PRINTLN("-> Incoming Payload Data:");
@@ -763,7 +755,7 @@ ws_status_t Wippersnapper::run() {
                 size_t msgSz;
                 pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
                 // publish event data
-                _mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
+                WS._mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
                 WS_DEBUG_PRINTLN("Published signal message to broker!");
 
                 // reset the timer
@@ -866,18 +858,18 @@ ws_status_t Wippersnapper::mqttStatus() {
   // return so we don't hammer IO
   if (_status == WS_CONNECT_FAILED) {
     WS_DEBUG_PRINT("mqttStatus() failed to connect");
-    WS_DEBUG_PRINTLN(_mqtt->connectErrorString(_status));
+    WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
     return _status;
   }
 
-  if (_mqtt->connected())
+  if (WS._mqtt->connected())
     return WS_CONNECTED;
 
   // prevent fast reconnect attempts, except for the first time through
   if (_last_mqtt_connect == 0 ||
       millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL) {
     _last_mqtt_connect = millis();
-    switch (_mqtt->connect(_username, _key)) {
+    switch (WS._mqtt->connect(_username, _key)) {
     case 0:
       return WS_CONNECTED;
     case 1: // invalid mqtt protocol

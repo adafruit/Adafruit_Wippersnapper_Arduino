@@ -130,8 +130,9 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, \
-                _mqtt_port, clientID, _username, _key);
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, \
+                WS._mqtt_port, clientID, WS._username, WS._key); 
+
   }
 
   /********************************************************/
