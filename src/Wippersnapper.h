@@ -166,9 +166,11 @@ class Wippersnapper {
 
         // Signal message // 
         // Called when a new signal message has been received
-        static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        //static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        
         // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
+
         // Encodes a signal message
         bool encodeSignalMsg(uint8_t signalPayloadType);
 
@@ -180,7 +182,7 @@ class Wippersnapper {
         static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
         // Decodes list of pin events
-        static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        //static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
 
         // Digital Input
         static void attachDigitalPinTimer(uint8_t pinName, float interval);

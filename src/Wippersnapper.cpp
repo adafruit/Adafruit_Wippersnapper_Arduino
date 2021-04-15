@@ -95,7 +95,6 @@ void Wippersnapper::set_user_key(const char *aio_username, const char *aio_key) 
 }
 
 
-
 /// PIN API ///
 /****************************************************************************/
 /*!
@@ -275,7 +274,7 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
     @brief  Decodes repeated PinEvents messages.
 */
 /**************************************************************************/
-bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbDecodePinEventMsg");
 
@@ -308,7 +307,7 @@ bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *
                 submessage.
 */
 /**************************************************************************/
-bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbSignalMsg");
 
@@ -333,7 +332,7 @@ bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, v
         // array to store the decoded PinEvents data
         wippersnapper_pin_v1_PinEvents msg = wippersnapper_pin_v1_PinEvents_init_zero;
         // set up callback
-        msg.list.funcs.decode = &Wippersnapper::cbDecodePinEventMsg;
+        msg.list.funcs.decode = cbDecodePinEventMsg;
         msg.list.arg = field->pData;
         // decode each PinEvents sub-message
         if (!pb_decode(stream, wippersnapper_pin_v1_PinEvents_fields, &msg)) {
@@ -365,7 +364,8 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
     /* Set up the payload callback, which will set up the callbacks for
     each oneof payload field once the field tag is known */
-    encodedSignalMsg->cb_payload.funcs.decode = &Wippersnapper::cbSignalMsg;
+    //encodedSignalMsg->cb_payload.funcs.decode = &Wippersnapper::cbSignalMsg;
+    encodedSignalMsg->cb_payload.funcs.decode = cbSignalMsg;
 
     // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
     pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
