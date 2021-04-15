@@ -520,14 +520,14 @@ void Wippersnapper::connect() {
     generate_feeds();
 
     // Subscription to listen for commands from the broker
-    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signal_brkr);
-    WS._mqtt->subscribe(_topic_signal_brkr_sub);
+    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, _topic_signal_brkr);
+    //WS._mqtt->subscribe(_topic_signal_brkr_sub);
     _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
     // Create a subscription to listen for registration response from the broker
-    _topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, _topic_description_status);
-    WS._mqtt->subscribe(_topic_description_sub);
-    _topic_description_sub->setCallback(cbDescStatus);
+    //_topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, _topic_description_status);
+    //WS._mqtt->subscribe(_topic_description_sub);
+    //_topic_description_sub->setCallback(cbDescStatus);
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
