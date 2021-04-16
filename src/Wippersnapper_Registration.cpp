@@ -172,11 +172,14 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
         switch (message.response) {
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
                 WS._boardStatus = WS_BOARD_DEF_OK;
-                // Fetch total GPIO pins
-                WS.total_gpio_pins = message.total_gpio_pins;
-                WS.total_analog_pins = message.total_analog_pins;
-                WS_DEBUG_PRINT("Found "); WS_DEBUG_PRINT(WS.total_gpio_pins); WS_DEBUG_PRINTLN(" GPIO pins");
-                WS_DEBUG_PRINT("Found "); WS_DEBUG_PRINT(WS.total_analog_pins); WS_DEBUG_PRINTLN(" analog pins");
+                // Fetch information about hardware
+                WS.totalDigitalPins = message.total_gpio_pins;
+                WS.totalAnalogPins = message.total_analog_pins;
+                WS.vRef = message.reference_voltage;
+                WS_DEBUG_PRINTLN("Found hardware with:")
+                WS_DEBUG_PRINT("GPIO Pins: "); WS_DEBUG_PRINTLN(WS.totalDigitalPins);
+                WS_DEBUG_PRINT("Analog Pins: "); WS_DEBUG_PRINTLN(WS.totalAnalogPins);
+                WS_DEBUG_PRINT("Reference voltage: "); WS_DEBUG_PRINT(WS.vRef); WS_DEBUG_PRINTLN("v");
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
                 //_ws->_boardStatus = WS_BOARD_DEF_INVALID;

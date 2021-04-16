@@ -211,8 +211,9 @@ class Wippersnapper {
         const char *_username;
         const char *_key;
 
-        int32_t total_gpio_pins; /*!< Total number of hardware's GPIO pins */
-        int32_t total_analog_pins; /*!< Total number of hardware's analog input pins */
+        int32_t totalDigitalPins;   /*!< Total number of hardware's GPIO pins */
+        int32_t totalAnalogPins; /*!< Total number of hardware's analog input pins */
+        float vRef;                /*!< Hardware's default voltage reference */
         digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
 
     private:
