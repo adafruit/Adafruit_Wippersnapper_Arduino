@@ -237,8 +237,6 @@ class Wippersnapper {
 
         // Device information
         const char *_deviceId; /*!< Adafruit IO+ device identifier string */
-        uint16_t _hw_vid;      /*!< USB vendor identifer */
-        uint16_t _hw_pid;      /*!< USB product identifier */
         char *_device_uid;     /*!< Unique device identifier  */
 
 

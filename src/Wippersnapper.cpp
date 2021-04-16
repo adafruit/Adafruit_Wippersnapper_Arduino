@@ -413,52 +413,44 @@ void cbDescStatus(char *data, uint16_t len) {
 /**************************************************************************/
 void Wippersnapper::generate_feeds() {
 
-    // Check and set network iface UID
+    // Set UID in the network iface
     setUID();
-
     // Move the top 3 bytes from the UID
     for (int i = 5; i > 2; i--) {
         WS._uid[6-1-i]  = WS._uid[i];
     }
-
     snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._uid[0], WS._uid[1], WS._uid[2]);
 
-    // Assign board type, defined at compile-time
+    // Set board type and device UID
     WS._boardId = BOARD_ID;
-
-    // Create device UID
     _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") + strlen(WS._boardId) + strlen(WS.sUID));
     strcpy(_device_uid, "io-wipper-");
     strcat(_device_uid, WS._boardId);
     strcat(_device_uid, WS.sUID);
 
     // Create MQTT client object
-    WS_DEBUG_PRINTLN(_device_uid);
     setupMQTTClient(_device_uid);
 
-    // Assign board type info
-    // TODO: Do we still need this?
-    _hw_vid = USB_VID;
-    _hw_pid = USB_PID;
-
-    // allocate memory for reserved topics
+    // Global registration topic
     WS._topic_description = (char *)malloc(sizeof(char) * strlen(_username) \
     + strlen("/wprsnpr") + strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
-    // Check-in status topic
+    // Registration status topic
     WS._topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/wprsnpr/") + strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + \
     strlen("status") + strlen("broker") + 1);
 
+    // Topic for signals from device to broker
     WS._topic_signal_device = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("device") + 1);
 
+    // Topic for signals from broker to device
     WS._topic_signal_brkr = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
-    // Build description check-in topic
+    // Create global registration topic
     if (WS._topic_description) {
         strcpy(WS._topic_description, _username);
         strcat(WS._topic_description, "/wprsnpr");
@@ -468,8 +460,7 @@ void Wippersnapper::generate_feeds() {
         WS._topic_description  = 0;
     }
 
-
-    // build description status topic
+    // Create registration status topic
     if (WS._topic_description_status) {
         strcpy(WS._topic_description_status, _username);
         strcat(WS._topic_description_status, "/wprsnpr/");
@@ -481,7 +472,7 @@ void Wippersnapper::generate_feeds() {
         WS._topic_description_status = 0;
     }
 
-    // build incoming signal topic
+    // Create device-to-broker signal topic
     if (_topic_signal_device) {
         strcpy(_topic_signal_device, _username);
         strcat(_topic_signal_device, "/wprsnpr/");
@@ -492,7 +483,7 @@ void Wippersnapper::generate_feeds() {
         _topic_signal_device = 0;
     }
 
-    // build signals outgoing topic
+    // Create broker-to-device signal topic
     if (_topic_signal_brkr) {
         strcpy(_topic_signal_brkr, _username);
         strcat(_topic_signal_brkr, "/wprsnpr/");
@@ -519,57 +510,33 @@ void Wippersnapper::connect() {
     // Generate MQTT feeds
     generate_feeds();
 
-    // Subscription to listen for commands from the broker
-    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, _topic_signal_brkr);
-    //WS._mqtt->subscribe(_topic_signal_brkr_sub);
+    // Subscribe to signal topic
+    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr);
+    WS._mqtt->subscribe(_topic_signal_brkr_sub);
     _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
-    // Create a subscription to listen for registration response from the broker
-    //_topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, _topic_description_status);
-    //WS._mqtt->subscribe(_topic_description_sub);
-    //_topic_description_sub->setCallback(cbDescStatus);
+    // Subscribe to registration status topic
+    _topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status);
+    WS._mqtt->subscribe(_topic_description_sub);
+    _topic_description_sub->setCallback(cbDescStatus);
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
-    #ifdef STATUS_NEOPIXEL
-        pixels.setPixelColor(0, pixels.Color(255, 0, 0));
-        pixels.show();
-    #else
-        digitalWrite(STATUS_LED_PIN, 1);
-    #endif
 
     _connect();
     WS_DEBUG_PRINTLN("WiFi Connected!");
-    #ifdef STATUS_LED
-        digitalWrite(STATUS_LED_PIN, 0);
-    #endif
 
     // Wait for connection to broker
     WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-    #ifdef STATUS_NEOPIXEL
-        pixels.setPixelColor(0, pixels.Color(0, 0, 255));
-        pixels.show();
-    #else
-        digitalWrite(STATUS_LED_PIN, 1);
-    #endif
 
     while (status() < WS_CONNECTED) {
         WS_DEBUG_PRINT(".");
         delay(500);
     }
 
-    WS_DEBUG_PRINTLN("MQTT Connected!");
-    #ifdef STATUS_LED
-        digitalWrite(STATUS_LED_PIN, 0);
-    #endif
+
 
     WS_DEBUG_PRINTLN("Registering Board...")
-    #ifdef STATUS_NEOPIXEL
-        pixels.setPixelColor(0, pixels.Color(255, 0, 255));
-        pixels.show();
-    #else
-        digitalWrite(STATUS_LED_PIN, 1);
-    #endif
     if (!registerBoard(10)) {
         WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
         for(;;) {
