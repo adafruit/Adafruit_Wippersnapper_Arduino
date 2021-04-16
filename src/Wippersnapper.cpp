@@ -33,8 +33,6 @@
 #include "Wippersnapper.h"
 
 ws_board_status_t Wippersnapper::_boardStatus;
-uint16_t Wippersnapper::bufSize;
-uint8_t Wippersnapper::_buffer[128];
 char Wippersnapper:: _value[45];
 timerDigitalInput Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
 
@@ -204,8 +202,8 @@ int digitalReadSvc(uint8_t pinName) {
               Pointer to a wippersnapper_pin_v1_ConfigurePinRequest message.
 */
 /****************************************************************************/
-bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-    WS_DEBUG_PRINTLN("configPinReq");
+bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+    WS_DEBUG_PRINTLN("configurePinRequest");
     bool is_create = false;
     bool is_delete = false;
 
@@ -226,7 +224,7 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
             // Check if direction requires a new timer
             if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
                 // attach a new timer
-                attachDigitalPinTimer(atoi(pinName), pinMsg->period);
+                //attachDigitalPinTimer(atoi(pinName), pinMsg->period);
             }
         }
         // TODO: else, check for analog pin, setAnalogPinMode() call
@@ -235,7 +233,7 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
     if (is_delete == true) { // delete a prv. initialized pin
         // check if pin has a timer
         if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT)
-            detachDigitalPinTimer(atoi(pinName));
+            //detachDigitalPinTimer(atoi(pinName));
         // deinitialize the digital pin
         deinitDigitalPin(atoi(pinName));
     }
@@ -244,10 +242,10 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
 
 /**************************************************************************/
 /*!
-    @brief  Decodes repeated ConfigurePinRequests messages.
+    @brief  Decodes a repeated ConfigurePinRequests messages.
 */
 /**************************************************************************/
-bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
 
@@ -258,8 +256,8 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
         is_success = false;
     }
 
-    // Configure physical pin
-    if (! configPinReq(&pinReqMsg)){
+    // Pass ConfigurePinRequest message
+    if (! WS.configurePinRequest(&pinReqMsg)){
         WS_DEBUG_PRINTLN("Unable to configure pin");
         is_success = false;
     }
@@ -318,7 +316,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
         // array to store the decoded CreateSignalRequests data
         wippersnapper_pin_v1_ConfigurePinRequests msg = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
         // set up callback
-        msg.list.funcs.decode = &Wippersnapper::cbDecodePinConfigMsg;
+        msg.list.funcs.decode = cbDecodePinConfigMsg;
         msg.list.arg = field->pData;
         // decode each ConfigurePinRequest sub-message
         if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, &msg)) {
@@ -363,13 +361,12 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
     /* Set up the payload callback, which will set up the callbacks for
     each oneof payload field once the field tag is known */
-    //encodedSignalMsg->cb_payload.funcs.decode = &Wippersnapper::cbSignalMsg;
     encodedSignalMsg->cb_payload.funcs.decode = cbSignalMsg;
 
     // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
-    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
+    pb_istream_t stream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
     if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, encodedSignalMsg)) {
-        WS_DEBUG_PRINTLN("L285 ERROR: Could not decode CreateSignalRequest")
+        WS_DEBUG_PRINTLN("ERROR (decodeSignalMsg):, Could not decode CreateSignalRequest")
         is_success = false;
     }
     return is_success;
@@ -377,18 +374,18 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
 /**************************************************************************/
 /*!
-    @brief    Executes when signal topic receives a new message. Fills
+    @brief    Called when signal topic receives a new message. Fills
                 shared buffer with data from payload.
 */
 /**************************************************************************/
-void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("* NEW message on signal topic");
+void cbSignalTopic(char *data, uint16_t len) {
+    WS_DEBUG_PRINTLN("-> Message on Signal Topic");
     WS_DEBUG_PRINT(len);WS_DEBUG_PRINTLN(" bytes.");
-    // zero-out buffer contents
-    memset(_buffer, 0, sizeof(_buffer));
+    // zero-out current buffer
+    memset(WS._buffer, 0, sizeof(WS._buffer));
     // copy data to buffer
-    memcpy(_buffer, data, len);
-    bufSize = len;
+    memcpy(WS._buffer, data, len);
+    WS.bufSize = len;
 }
 
 /**************************************************************************/
@@ -627,12 +624,12 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 bool Wippersnapper::processSignalMessages(int16_t timeout) {
     WS._mqtt->processPackets(timeout);
 
-    if (_buffer[0] != 0) { // check if buffer set by signal topic callback
-        WS_DEBUG_PRINTLN("-> Incoming Payload Data:");
-        for (int i = 0; i < sizeof(_buffer); i++) {
-            WS_DEBUG_PRINT(_buffer[i]);
+    if (WS._buffer[0] != 0) { // check if buffer filled by signal topic callback
+        WS_DEBUG_PRINTLN("->Payload Data:");
+        for (int i = 0; i < sizeof(WS._buffer); i++) {
+            WS_DEBUG_PRINT(WS._buffer[i]);
         }
-        WS_DEBUG_PRINTLN("\n");
+        WS_DEBUG_PRINTLN("");
 
         // Empty struct for storing the signal message
         _incomingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
@@ -642,7 +639,7 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
             WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
             return false;
         }
-        memset(_buffer, 0, sizeof(_buffer));
+        memset(WS._buffer, 0, sizeof(WS._buffer));
     }
 
     return true;
@@ -694,71 +691,6 @@ ws_status_t Wippersnapper::run() {
     checkNetworkConnection(curTime); // TODO: handle this better
     // Check and handle MQTT connection
     checkMQTTConnection(curTime); // TODO: handle this better
-
-    // Process digital timers
-    for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
-        if (_timersDigital[i].timerInterval > -1L) { // validate if timer is enabled
-            // Check if timer executes on a time period
-            if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval && _timersDigital[i].timerInterval != 0L) {
-                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
-                // read the pin
-                int pinVal = digitalReadSvc(_timersDigital[i].pinName);
-
-                // Create new signal message
-                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-                
-                // Create and encode a pinEvent message
-                if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _timersDigital[i].pinName, pinVal)) {
-                    WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
-                    break;
-                }
-                
-                // Obtain size and only write out buffer to end
-                size_t msgSz;
-                pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
-                // publish event data
-                WS._mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
-                WS_DEBUG_PRINTLN("Published signal message to broker!");
-
-                // reset the timer
-                _timersDigital[i].timerIntervalPrv = curTime;
-                
-            }
-            // Check if timer executes on a state change
-            else if (_timersDigital[i].timerInterval == 0L) {
-                // read pin
-                int pinVal = digitalReadSvc(_timersDigital[i].pinName);
-                // only send on-change
-                if (pinVal != _timersDigital[i].prvPinVal) {
-                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
-
-                    // Create new signal message
-                    wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-                    // Create and encode a pinEvent message
-                    if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _timersDigital[i].pinName, pinVal)) {
-                        WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
-                        break;
-                    }
-
-                    // Obtain size and only write out buffer to end
-                    size_t msgSz;
-                    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
-
-                    // publish event data
-                    _mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
-                    WS_DEBUG_PRINTLN("Published signal message to broker!");
-
-                    // set the pin value in the timer object for comparison on next run
-                    _timersDigital[i].prvPinVal = pinVal;
-
-                    // reset the timer
-                    _timersDigital[i].timerIntervalPrv = curTime;
-                }
-            }
-        }
-
-    }
 
     // Process all incoming packets from Wippersnapper MQTT Broker
     processSignalMessages(100);

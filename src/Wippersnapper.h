@@ -160,7 +160,6 @@ class Wippersnapper {
         bool processSignalMessages(int16_t timeout);
 
         // MQTT topic callbacks //
-        static void cbSignalTopic(char *data, uint16_t len);
 
         // Signal message // 
         // Called when a new signal message has been received
@@ -176,8 +175,8 @@ class Wippersnapper {
         bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal);
 
         // Pin configure message
-        static bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
-        static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+        bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
         // Decodes list of pin events
         //static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
@@ -187,15 +186,13 @@ class Wippersnapper {
         static void detachDigitalPinTimer(uint8_t pinName);
 
 
-        static uint16_t bufSize;
-        static uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
-
+        uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
         uint8_t _buffer_outgoing[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains outgoing payload data */
+        uint16_t bufSize; /*!< Length of data inside buffer */
 
         static ws_board_status_t _boardStatus;
 
         // Protobuf helpers
-        //bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
 
         Wippersnapper_Registration *_registerBoard;
 
