@@ -185,26 +185,26 @@ class Wippersnapper {
         uint8_t _buffer_outgoing[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains outgoing payload data */
         uint16_t bufSize; /*!< Length of data inside buffer */
 
-        static ws_board_status_t _boardStatus;
+        ws_board_status_t _boardStatus;
 
-        Wippersnapper_Registration *_registerBoard;
+        Wippersnapper_Registration *_registerBoard; /*!< Instance of registration class */
 
-        Adafruit_NeoPixel pixels; /*!< NeoPixel strand */
+        // TODO: move neopixel into its own class
+        Adafruit_NeoPixel pixels; /*!< NeoPixel */
 
-        uint8_t _uid[6];       /*!< Unique network iface identifier */
-
-        char sUID[9];
-        const char *_boardId;  /*!< Adafruit IO+ board string */
-        Adafruit_MQTT *_mqtt;                         /*!< Reference to Adafruit_MQTT, _mqtt. */
-        char *_topic_description;        /*!< MQTT topic for the device description  */
+        uint8_t _uid[6]; /*!< Unique network iface identifier */
+        char sUID[9]; /*!< Unique network iface identifier */
+        const char *_boardId;       /*!< Adafruit IO+ board string */
+        Adafruit_MQTT *_mqtt;       /*!< Reference to Adafruit_MQTT, _mqtt. */
+        char *_topic_description;   /*!< MQTT topic for the device description  */
 
         // Staging Server
         const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
         uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
 
         // AIO Credentials
-        const char *_username;
-        const char *_key;
+        const char *_username;  /*!< Adafruit IO username */
+        const char *_key;       /*!< Adafruit IO key */
 
         int32_t totalDigitalPins;   /*!< Total number of hardware's GPIO pins */
         int32_t totalAnalogPins; /*!< Total number of hardware's analog input pins */
@@ -215,12 +215,10 @@ class Wippersnapper {
         void _init();
 
     protected:
-
         ws_status_t _status = WS_IDLE; /*!< Adafruit IO connection status */
         uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                                 Adafruit IO, in milliseconds */
         uint32_t _prv_ping = 0;
-
 
         // PoC Server
         // const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
@@ -244,8 +242,6 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
-        static char _value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
-        static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
 
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
         wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */

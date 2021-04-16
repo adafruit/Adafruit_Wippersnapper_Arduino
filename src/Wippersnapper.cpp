@@ -32,9 +32,6 @@
 
 #include "Wippersnapper.h"
 
-ws_board_status_t Wippersnapper::_boardStatus;
-char Wippersnapper:: _value[45];
-
 Wippersnapper WS;
 
 Wippersnapper::Wippersnapper() {
@@ -473,7 +470,7 @@ void Wippersnapper::connect() {
     WS_DEBUG_PRINTLN("connect()");
 
     _status = WS_IDLE;
-    _boardStatus = WS_BOARD_DEF_IDLE;
+    WS._boardStatus = WS_BOARD_DEF_IDLE;
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
@@ -810,7 +807,7 @@ ws_status_t Wippersnapper::status() {
 */
 /**************************************************************************/
 ws_board_status_t Wippersnapper::getBoardStatus() {
-    return _boardStatus;
+    return WS._boardStatus;
 }
 
 /**************************************************************************/
