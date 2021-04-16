@@ -126,15 +126,16 @@ void Wippersnapper_Registration::encodeRegMsg() {
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
     WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
-/*      if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 0)) {
-        WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
-        WS._boardStatus = WS_BOARD_DEF_SEND_FAILED;
-    } */
     WS_DEBUG_PRINTLN("Published!")
     WS._boardStatus = WS_BOARD_DEF_SENT;
 }
 
-// todo: retry count should be decld in args.
+/************************************************************/
+/*!
+    @brief    Polls the broker for a response to a published
+                registration message.
+*/
+/************************************************************/
 bool Wippersnapper_Registration::pollRegMsg() {
     bool is_success = false;
     // Attempt to obtain response from broker

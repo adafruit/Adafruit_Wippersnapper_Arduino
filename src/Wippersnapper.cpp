@@ -65,26 +65,6 @@ Wippersnapper::~Wippersnapper() {
     free(_topic_signal_brkr);
 }
 
-void Wippersnapper::_connect() {
-    WS_DEBUG_PRINTLN("conn");
-}
-
-void Wippersnapper::_disconnect() {
-    WS_DEBUG_PRINTLN("_disconnect");
-}
-
-void Wippersnapper::setUID() {
-    WS_DEBUG_PRINTLN("setUID");
-}
-
-void Wippersnapper::setupMQTTClient(char const*) {
-    WS_DEBUG_PRINTLN("setupMQTTClient");
-}
-ws_status_t Wippersnapper::networkStatus() {
-    WS_DEBUG_PRINTLN("networkStatus");
-}
-
-
 void Wippersnapper::set_user_key(const char *aio_username, const char *aio_key) {
     _username = aio_username;
     _key = aio_key;
@@ -118,7 +98,7 @@ void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction
 */
 /****************************************************************************/
 void deinitDigitalPin(uint8_t pinName) {
-    WS_DEBUG_PRINT("Deinitializing pin ");
+    WS_DEBUG_PRINT("Deinitializing digital input pin ");WS_DEBUG_PRINTLN(pinName);
     char cstr[16];
     itoa(pinName, cstr, 10);
     WS_DEBUG_PRINTLN(cstr);
@@ -158,7 +138,7 @@ void Wippersnapper::initDigitalInputPin(int pinName, float interval) {
 */
 /****************************************************************************/
 void Wippersnapper::deinitDigitalInputPin(uint8_t pinName) {
-    WS_DEBUG_PRINT("Freeing timer on pin D"); WS_DEBUG_PRINTLN(pinName);
+    WS_DEBUG_PRINT("Freeing digital input pin D"); WS_DEBUG_PRINTLN(pinName);
     WS._digital_input_pins[pinName].timerInterval = -1;
 }
 
@@ -280,6 +260,8 @@ bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **a
 
     return is_success;
 }
+
+// Decoding API
 
 /**************************************************************************/
 /*!
@@ -561,6 +543,26 @@ void Wippersnapper::disconnect() {
     _disconnect();
 }
 
+// Concrete class definition for abstract classes
+void Wippersnapper::_connect() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
+void Wippersnapper::_disconnect() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
+void Wippersnapper::setUID() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
+void Wippersnapper::setupMQTTClient(char const*) {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+ws_status_t Wippersnapper::networkStatus() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
 /**************************************************************************/
 /*!
     @brief    Checks and handles network interface connection.
@@ -612,7 +614,7 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     WS._mqtt->processPackets(timeout);
 
     if (WS._buffer[0] != 0) { // check if buffer filled by signal topic callback
-        WS_DEBUG_PRINTLN("->Payload Data:");
+        WS_DEBUG_PRINTLN("-> Payload Data:");
         for (int i = 0; i < sizeof(WS._buffer); i++) {
             WS_DEBUG_PRINT(WS._buffer[i]);
         }
@@ -655,7 +657,7 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
     sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%d", pinVal);
 
     // Encode signal message
-    pb_ostream_t stream = pb_ostream_from_buffer(_buffer_outgoing, sizeof(_buffer_outgoing));
+    pb_ostream_t stream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
     if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, outgoingSignalMsg)) {
         WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
         is_success = false;
@@ -665,7 +667,12 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 
 }
 
-// TODO: Doxygen
+/**************************************************************************/
+/*!
+    @brief    Iterates thru digital inputs, checks if they
+                should send data to the broker.
+*/
+/**************************************************************************/
 void Wippersnapper::processDigitalInputs() {
     uint32_t curTime = millis();
     // Process digital timers
@@ -693,7 +700,7 @@ void Wippersnapper::processDigitalInputs() {
                 pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
                 // publish event data
                 WS_DEBUG_PRINT("Publishing...")
-                WS._mqtt->publish(WS._topic_signal_device, _buffer_outgoing, msgSz, 1);
+                WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
                 WS_DEBUG_PRINTLN("Published!");
 
                 // reset the timer
@@ -745,20 +752,20 @@ void Wippersnapper::processDigitalInputs() {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-    WS_DEBUG_PRINTLN("EXEC: loop'");
     uint32_t curTime = millis();
-
-    // Process all incoming packets from Wippersnapper MQTT Broker
-    processSignalMessages(100);
-
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better
     // Check and handle MQTT connection
     checkMQTTConnection(curTime); // TODO: handle this better
 
     // Process digital inputs
+    // CORE module
     processDigitalInputs();
 
+    // TODO: Process analog inputs
+
+    // Process all incoming packets from Wippersnapper MQTT Broker
+    processSignalMessages(100);
 
     return status();
 }
