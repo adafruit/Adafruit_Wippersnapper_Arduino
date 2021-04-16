@@ -182,8 +182,8 @@ class Wippersnapper {
         //static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
 
         // Digital Input
-        static void attachDigitalPinTimer(uint8_t pinName, float interval);
-        static void detachDigitalPinTimer(uint8_t pinName);
+        static void initDigitalInputPin(int pinName, float interval);
+        static void deinitDigitalInputPin(uint8_t pinName);
 
 
         uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */

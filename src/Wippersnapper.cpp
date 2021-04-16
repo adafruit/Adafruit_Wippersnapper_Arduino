@@ -139,44 +139,28 @@ void digitalWriteSvc(uint8_t pinName, int pinValue) {
 
 /****************************************************************************/
 /*!
-    @brief    Attaches a timer to a digital pin.
+    @brief    Initializes a digital input pin
 */
 /****************************************************************************/
-void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
-    WS_DEBUG_PRINT("Attaching timer to pin D");WS_DEBUG_PRINTLN(pinName);
+void Wippersnapper::initDigitalInputPin(int pinName, float interval) {
+    WS_DEBUG_PRINT("Init. digital input pin D");WS_DEBUG_PRINTLN(pinName);
     // Interval is in seconds, cast it to long and convert it to milliseconds
     long interval_ms = (long)interval * 1000;
     WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
 
-    // attach a free timer to the pin
-    for (int timerNum = 0; timerNum <= MAX_DIGITAL_TIMERS; timerNum++) {
-        if (_timersDigital[timerNum].timerInterval == -1) {
-            WS_DEBUG_PRINT("Allocating timer #");WS_DEBUG_PRINTLN(timerNum);
-            // create a digital timer object
-            digitalInputPin timerPin = {pinName, interval_ms};
-            // add new timer to array
-            _timersDigital[timerNum] = timerPin;
-            break;
-        } else if (timerNum == MAX_DIGITAL_TIMERS) {
-            WS_DEBUG_PRINTLN("ERROR: Unable to assign timer, maximum timers allocated");
-        }
-    }
+    WS._digital_input_pins[pinName].pinName = pinName;
+    WS._digital_input_pins[pinName].timerInterval = interval_ms;
+
 }
 
 /****************************************************************************/
 /*!
-    @brief    Detaches a timer from a digital pin
+    @brief    Deinitializes a digital input pin
 */
 /****************************************************************************/
-void Wippersnapper::detachDigitalPinTimer(uint8_t pinName) {
+void Wippersnapper::deinitDigitalInputPin(uint8_t pinName) {
     WS_DEBUG_PRINT("Freeing timer on pin D"); WS_DEBUG_PRINTLN(pinName);
-    // find timer associated with pin
-    for (int i; i <= MAX_DIGITAL_TIMERS; i++) {
-        if(_timersDigital[i].timerInterval == pinName) {
-            _timersDigital[pinName].timerInterval = -1; // reset timer
-            _timersDigital[pinName].prvPinVal = 0; // reset prv. value
-        }
-    }
+    WS._digital_input_pins[pinName].timerInterval = -1;
 }
 
 /****************************************************************************/
@@ -224,7 +208,7 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
             // Check if direction requires a new timer
             if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
                 // attach a new timer
-                //attachDigitalPinTimer(atoi(pinName), pinMsg->period);
+                initDigitalInputPin(atoi(pinName), pinMsg->period);
             }
         }
         // TODO: else, check for analog pin, setAnalogPinMode() call
@@ -233,7 +217,7 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
     if (is_delete == true) { // delete a prv. initialized pin
         // check if pin has a timer
         if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT)
-            //detachDigitalPinTimer(atoi(pinName));
+            deinitDigitalInputPin(atoi(pinName));
         // deinitialize the digital pin
         deinitDigitalPin(atoi(pinName));
     }
@@ -540,6 +524,11 @@ void Wippersnapper::connect() {
         }
     }
     WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+
+    // Allocate digital input pins
+    // TODO: Move this into a digital class
+    WS._digital_input_pins = new digitalInputPin[WS.totalDigitalPins];
+    WS._digital_input_pins[0].pinName = 5;
 
     #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
