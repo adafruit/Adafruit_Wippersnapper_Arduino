@@ -92,14 +92,13 @@ typedef enum {
 
 // Holds data about a digital input timer
 // members assigned from a PinConfigureRequest
+// TODO: Move out to DigitalGPIO class
 struct digitalInputPin {
     uint8_t pinName; // Pin name
     long timerInterval; // timer interval, in millis, -1 if disabled.
     long timerIntervalPrv; // time timer was previously serviced, in millis
     int prvPinVal; // Previous pin value
 };
-
-#define MAX_DIGITAL_TIMERS 5
 
 // Adafruit IO Production SSL Fingerprint
 //#define WS_SSL_FINGERPRINT \
@@ -161,9 +160,6 @@ class Wippersnapper {
 
         // MQTT topic callbacks //
 
-        // Signal message // 
-        // Called when a new signal message has been received
-        //static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         
         // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
@@ -178,12 +174,11 @@ class Wippersnapper {
         bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
-        // Decodes list of pin events
-        //static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
 
         // Digital Input
-        static void initDigitalInputPin(int pinName, float interval);
-        static void deinitDigitalInputPin(uint8_t pinName);
+        void initDigitalInputPin(int pinName, float interval);
+        void deinitDigitalInputPin(uint8_t pinName);
+        void processDigitalInputs();
 
 
         uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
@@ -255,11 +250,6 @@ class Wippersnapper {
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
         wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */
 
-        // Holds info about all digital input timers
-        // TODO: This is currently fixed at "2" pins, we need to
-        // transmit the # of pins from the broker during registration
-        // and dynamically create this
-       static digitalInputPin _timersDigital[MAX_DIGITAL_TIMERS];
 };
 
 extern Wippersnapper WS;

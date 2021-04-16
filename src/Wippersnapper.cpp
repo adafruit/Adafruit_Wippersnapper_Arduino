@@ -34,7 +34,6 @@
 
 ws_board_status_t Wippersnapper::_boardStatus;
 char Wippersnapper:: _value[45];
-digitalInputPin Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
 
 Wippersnapper WS;
 
@@ -574,19 +573,14 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
             delay(500);
         }
 
-        
-
-/*         if (!sendGetHardwareDescription(10)){
-            // TODO: get error types back from function instead of bool, verify against resp.
-            return status();
-        } */
     }
+    // TODO: Check for status, re-send registration message
     return status();
 }
 
 /**************************************************************************/
 /*!
-    @brief    Handles MQTT broker connection.
+    @brief    Handles MQTT connection.
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
@@ -605,7 +599,7 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 
 /**************************************************************************/
 /*!
-    @brief    Handles MQTT messages on signal topic until timeout.
+    @brief    Processes MQTT messages across signal topic.
     @param    timeout
                 timeout in milliseconds.
 */
@@ -667,6 +661,74 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 
 }
 
+// TODO: Doxygen
+void Wippersnapper::processDigitalInputs() {
+    uint32_t curTime = millis();
+    // Process digital timers
+    for (int i = 0; i < WS.totalDigitalPins; i++) {
+        if (WS._digital_input_pins[i].timerInterval > -1L) { // validate if timer is enabled
+            // Check if timer executes on a time period
+            if (curTime - WS._digital_input_pins[i].timerIntervalPrv > WS._digital_input_pins[i].timerInterval && WS._digital_input_pins[i].timerInterval != 0L) {
+                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(WS._digital_input_pins[i].pinName);
+                // read the pin
+                int pinVal = digitalReadSvc(WS._digital_input_pins[i].pinName);
+
+                // Create new signal message
+                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+                // Create and encode a pinEvent message
+                if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
+                    WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
+                    break;
+                }
+                
+                // Obtain size and only write out buffer to end
+                size_t msgSz;
+                pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
+                // publish event data
+                WS._mqtt->publish(WS._topic_signal_device, _buffer_outgoing, msgSz, 1);
+                WS_DEBUG_PRINTLN("Published signal message to broker!");
+
+                // reset the timer
+                WS._digital_input_pins[i].timerIntervalPrv = curTime;
+                
+            }
+            // Check if timer executes on a state change
+            else if (WS._digital_input_pins[i].timerInterval == 0L) {
+                // read pin
+                int pinVal = digitalReadSvc(WS._digital_input_pins[i].pinName);
+                // only send on-change
+                if (pinVal != WS._digital_input_pins[i].prvPinVal) {
+                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(WS._digital_input_pins[i].pinName);
+
+                    // Create new signal message
+                    wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+                    // Create and encode a pinEvent message
+                    if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
+                        WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
+                        break;
+                    }
+
+                    // Obtain size and only write out buffer to end
+                    size_t msgSz;
+                    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
+
+                    // publish event data
+                    _mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
+                    WS_DEBUG_PRINTLN("Published signal message to broker!");
+
+                    // set the pin value in the timer object for comparison on next run
+                    WS._digital_input_pins[i].prvPinVal = pinVal;
+
+                    // reset the timer
+                    WS._digital_input_pins[i].timerIntervalPrv = curTime;
+                }
+            }
+        }
+    }
+}
+
 /**************************************************************************/
 /*!
     @brief    Processes incoming commands and handles network connection.
@@ -680,6 +742,9 @@ ws_status_t Wippersnapper::run() {
     checkNetworkConnection(curTime); // TODO: handle this better
     // Check and handle MQTT connection
     checkMQTTConnection(curTime); // TODO: handle this better
+
+    // Process digital inputs
+    processDigitalInputs();
 
     // Process all incoming packets from Wippersnapper MQTT Broker
     processSignalMessages(100);
