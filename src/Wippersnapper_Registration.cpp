@@ -127,7 +127,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
     WS_DEBUG_PRINTLN(WS._topic_description);
-    if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1)) {
+     if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
         WS._boardStatus = WS_BOARD_DEF_SEND_FAILED;
     }

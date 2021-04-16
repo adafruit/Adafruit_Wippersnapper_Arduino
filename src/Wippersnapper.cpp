@@ -511,20 +511,21 @@ void Wippersnapper::connect() {
     generate_feeds();
 
     // Subscribe to signal topic
-    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr);
-    WS._mqtt->subscribe(_topic_signal_brkr_sub);
-    _topic_signal_brkr_sub->setCallback(cbSignalTopic);
+    //WS_DEBUG_PRINTLN(WS._topic_signal_brkr);
+    //_topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr);
+    //WS._mqtt->subscribe(_topic_signal_brkr_sub);
+    //_topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
     // Subscribe to registration status topic
+    WS_DEBUG_PRINTLN(WS._topic_description_status);
     _topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status);
     WS._mqtt->subscribe(_topic_description_sub);
     _topic_description_sub->setCallback(cbDescStatus);
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
-
     _connect();
-    WS_DEBUG_PRINTLN("WiFi Connected!");
+    WS_DEBUG_PRINTLN("Connected!");
 
     // Wait for connection to broker
     WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
@@ -533,7 +534,7 @@ void Wippersnapper::connect() {
         WS_DEBUG_PRINT(".");
         delay(500);
     }
-
+    WS_DEBUG_PRINTLN("Connected!");
 
 
     WS_DEBUG_PRINTLN("Registering Board...")
