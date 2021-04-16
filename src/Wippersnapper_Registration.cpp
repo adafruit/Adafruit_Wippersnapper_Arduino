@@ -61,11 +61,11 @@ bool Wippersnapper_Registration::processRegistration() {
 
     switch(_state) {
         case FSMReg::REG_CREATE_ENCODE_MSG:
-            WS_DEBUG_PRINTLN("Encoding registration message");
+            WS_DEBUG_PRINT("Encoding registration message...");
             encodeRegMsg();
             next_state = FSMReg::REG_PUBLISH_MSG;
         case FSMReg::REG_PUBLISH_MSG:
-            WS_DEBUG_PRINTLN("-> Publishing registration message");
+            WS_DEBUG_PRINT("Publishing registration message...");
             publishRegMsg();
             next_state = FSMReg::REG_DECODE_MSG;
         case FSMReg::REG_DECODE_MSG:
@@ -100,7 +100,6 @@ void Wippersnapper_Registration::encodeRegMsg() {
     _machine_name = WS._boardId;
     _uid = atoi(WS.sUID);
 
-
     // Encode fields
     strcpy(_message.machine_name, _machine_name);
     _message.mac_addr = _uid;
@@ -126,7 +125,6 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-    WS_DEBUG_PRINTLN(WS._topic_description);
      if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
         WS._boardStatus = WS_BOARD_DEF_SEND_FAILED;
@@ -135,7 +133,7 @@ void Wippersnapper_Registration::publishRegMsg() {
     WS._boardStatus = WS_BOARD_DEF_SENT;
 }
 
-// todo: retry cound should be decld in args.
+// todo: retry count should be decld in args.
 bool Wippersnapper_Registration::pollRegMsg() {
     bool is_success = false;
     // Attempt to obtain response from broker
@@ -158,7 +156,7 @@ bool Wippersnapper_Registration::pollRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("-> GOT Registration Message");
+    WS_DEBUG_PRINTLN("-> Registration Message");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 

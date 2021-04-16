@@ -147,7 +147,7 @@ class Wippersnapper {
         ws_board_status_t getBoardStatus();
 
         // Generates Wippersnapper MQTT feeds
-        void generate_feeds();
+        void generate_subscribe_feeds();
 
         // Performs board registration FSM
         bool registerBoard(uint8_t retries);
