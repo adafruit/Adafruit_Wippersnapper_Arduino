@@ -125,10 +125,11 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-     if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1)) {
+    WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
+/*      if (WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 0)) {
         WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
         WS._boardStatus = WS_BOARD_DEF_SEND_FAILED;
-    }
+    } */
     WS_DEBUG_PRINTLN("Published!")
     WS._boardStatus = WS_BOARD_DEF_SENT;
 }
@@ -139,12 +140,11 @@ bool Wippersnapper_Registration::pollRegMsg() {
     // Attempt to obtain response from broker
     uint8_t retryCount = 0;
     while (WS._boardStatus == WS_BOARD_DEF_SENT) {
-        if (retryCount >= 5) {
+        if (retryCount >= 10) {
             WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
             break;
         }
         WS._mqtt->processPackets(500); // pump MQTT msg loop
-        delay(500);
         retryCount++;
     }
     return is_success;

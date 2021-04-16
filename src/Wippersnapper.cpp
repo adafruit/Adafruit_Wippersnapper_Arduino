@@ -170,7 +170,7 @@ void Wippersnapper::deinitDigitalInputPin(uint8_t pinName) {
                 Value of pin, either HIGH or LOW
 */
 /****************************************************************************/
-int digitalReadSvc(uint8_t pinName) {
+int digitalReadSvc(int pinName) {
     // Service using arduino `digitalRead`
     int pinVal = digitalRead(pinName);
     return pinVal;
@@ -448,14 +448,14 @@ void Wippersnapper::generate_subscribe_feeds() {
     }
 
     // Create device-to-broker signal topic
-    if (_topic_signal_device) {
-        strcpy(_topic_signal_device, _username);
-        strcat(_topic_signal_device, "/wprsnpr/");
-        strcat(_topic_signal_device, _device_uid);
-        strcat(_topic_signal_device, TOPIC_SIGNALS);
-        strcat(_topic_signal_device, "device");
+    if (WS._topic_signal_device) {
+        strcpy(WS._topic_signal_device, _username);
+        strcat(WS._topic_signal_device, "/wprsnpr/");
+        strcat(WS._topic_signal_device, _device_uid);
+        strcat(WS._topic_signal_device, TOPIC_SIGNALS);
+        strcat(WS._topic_signal_device, "device");
     } else { // malloc failed
-        _topic_signal_device = 0;
+        WS._topic_signal_device = 0;
     }
 
     // Create broker-to-device signal topic
@@ -493,13 +493,14 @@ void Wippersnapper::connect() {
     _status = WS_IDLE;
     _boardStatus = WS_BOARD_DEF_IDLE;
 
-    // Generate and subscribe to MQTT feeds
-    generate_subscribe_feeds();
-
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
     _connect();
     WS_DEBUG_PRINTLN("Connected!");
+
+    // Generate and subscribe to MQTT feeds
+    generate_subscribe_feeds();
+
 
     // Wait for connection to broker
     WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
@@ -527,7 +528,10 @@ void Wippersnapper::connect() {
     // Allocate digital input pins
     // TODO: Move this into a digital class
     WS._digital_input_pins = new digitalInputPin[WS.totalDigitalPins];
-    WS._digital_input_pins[0].pinName = 5;
+    // turn off all digital pins
+    for (int i = 1; i < WS.totalDigitalPins; i++) {
+        WS._digital_input_pins[i].timerInterval = -1;
+    }
 
     #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
@@ -676,18 +680,21 @@ void Wippersnapper::processDigitalInputs() {
                 // Create new signal message
                 wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
+                WS_DEBUG_PRINT("Encoding...")
                 // Create and encode a pinEvent message
                 if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
                     WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
                     break;
                 }
+                WS_DEBUG_PRINTLN("Encoded!")
                 
                 // Obtain size and only write out buffer to end
                 size_t msgSz;
                 pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
                 // publish event data
+                WS_DEBUG_PRINT("Publishing...")
                 WS._mqtt->publish(WS._topic_signal_device, _buffer_outgoing, msgSz, 1);
-                WS_DEBUG_PRINTLN("Published signal message to broker!");
+                WS_DEBUG_PRINTLN("Published!");
 
                 // reset the timer
                 WS._digital_input_pins[i].timerIntervalPrv = curTime;
@@ -704,19 +711,22 @@ void Wippersnapper::processDigitalInputs() {
                     // Create new signal message
                     wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
+                    WS_DEBUG_PRINT("Encoding pinEvent...");
                     // Create and encode a pinEvent message
                     if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
                         WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
                         break;
                     }
+                    WS_DEBUG_PRINTLN("Encoded!");
 
                     // Obtain size and only write out buffer to end
                     size_t msgSz;
                     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
 
                     // publish event data
-                    _mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-                    WS_DEBUG_PRINTLN("Published signal message to broker!");
+                    WS_DEBUG_PRINT("Publishing pinEvent...");
+                    WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
+                    WS_DEBUG_PRINTLN("Published!");
 
                     // set the pin value in the timer object for comparison on next run
                     WS._digital_input_pins[i].prvPinVal = pinVal;
@@ -735,8 +745,11 @@ void Wippersnapper::processDigitalInputs() {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-    //WS_DEBUG_PRINTLN("EXEC: loop'");
+    WS_DEBUG_PRINTLN("EXEC: loop'");
     uint32_t curTime = millis();
+
+    // Process all incoming packets from Wippersnapper MQTT Broker
+    processSignalMessages(100);
 
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better
@@ -746,8 +759,6 @@ ws_status_t Wippersnapper::run() {
     // Process digital inputs
     processDigitalInputs();
 
-    // Process all incoming packets from Wippersnapper MQTT Broker
-    processSignalMessages(100);
 
     return status();
 }
