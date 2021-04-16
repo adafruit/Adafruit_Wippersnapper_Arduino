@@ -92,7 +92,7 @@ typedef enum {
 
 // Holds data about a digital input timer
 // members assigned from a PinConfigureRequest
-struct timerDigitalInput {
+struct digitalInputPin {
     uint8_t pinName; // Pin name
     long timerInterval; // timer interval, in millis, -1 if disabled.
     long timerIntervalPrv; // time timer was previously serviced, in millis
@@ -192,8 +192,6 @@ class Wippersnapper {
 
         static ws_board_status_t _boardStatus;
 
-        // Protobuf helpers
-
         Wippersnapper_Registration *_registerBoard;
 
         Adafruit_NeoPixel pixels; /*!< NeoPixel strand */
@@ -212,6 +210,10 @@ class Wippersnapper {
         // AIO Credentials
         const char *_username;
         const char *_key;
+
+        int32_t total_gpio_pins; /*!< Total number of hardware's GPIO pins */
+        int32_t total_analog_pins; /*!< Total number of hardware's analog input pins */
+        digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
 
     private:
         void _init();
@@ -256,7 +258,7 @@ class Wippersnapper {
         // TODO: This is currently fixed at "2" pins, we need to
         // transmit the # of pins from the broker during registration
         // and dynamically create this
-       static timerDigitalInput _timersDigital[MAX_DIGITAL_TIMERS];
+       static digitalInputPin _timersDigital[MAX_DIGITAL_TIMERS];
 };
 
 extern Wippersnapper WS;

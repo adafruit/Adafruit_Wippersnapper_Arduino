@@ -34,7 +34,7 @@
 
 ws_board_status_t Wippersnapper::_boardStatus;
 char Wippersnapper:: _value[45];
-timerDigitalInput Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
+digitalInputPin Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
 
 Wippersnapper WS;
 
@@ -153,7 +153,7 @@ void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
         if (_timersDigital[timerNum].timerInterval == -1) {
             WS_DEBUG_PRINT("Allocating timer #");WS_DEBUG_PRINTLN(timerNum);
             // create a digital timer object
-            timerDigitalInput timerPin = {pinName, interval_ms};
+            digitalInputPin timerPin = {pinName, interval_ms};
             // add new timer to array
             _timersDigital[timerNum] = timerPin;
             break;

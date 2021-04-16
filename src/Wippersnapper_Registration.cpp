@@ -171,8 +171,12 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
     } else {    // set board status
         switch (message.response) {
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-                //_ws->_boardStatus = WS_BOARD_DEF_OK;
                 WS._boardStatus = WS_BOARD_DEF_OK;
+                // Fetch total GPIO pins
+                WS.total_gpio_pins = message.total_gpio_pins;
+                WS.total_analog_pins = message.total_analog_pins;
+                WS_DEBUG_PRINT("Found "); WS_DEBUG_PRINT(WS.total_gpio_pins); WS_DEBUG_PRINTLN(" GPIO pins");
+                WS_DEBUG_PRINT("Found "); WS_DEBUG_PRINT(WS.total_analog_pins); WS_DEBUG_PRINTLN(" analog pins");
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
                 //_ws->_boardStatus = WS_BOARD_DEF_INVALID;
