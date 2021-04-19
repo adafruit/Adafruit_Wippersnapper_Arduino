@@ -32,9 +32,8 @@
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
 
-// Wippersnapper GPIO Classes
+// Wippersnapper GPIO
 #include "Wippersnapper_DigitalGPIO.h"
-
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -114,7 +113,6 @@ class Wippersnapper {
         virtual ~Wippersnapper();
 
         void set_user_key(const char *aio_username, const char *aio_key);
-
         void set_ssid_pass(char *ssid, const char *ssidPassword);
 
         void connect();
@@ -158,10 +156,6 @@ class Wippersnapper {
         // Pin configure message
         bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
-
-
-        void processDigitalInputs();
-
 
         uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
         uint8_t _buffer_outgoing[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains outgoing payload data */
