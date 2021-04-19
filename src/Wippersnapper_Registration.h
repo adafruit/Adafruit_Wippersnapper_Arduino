@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_Checkin.h
+ * @file Wippersnapper_Registration.h
  *
  * This file provides protocol buffer decoders for the Wippersnapper
  * protocol API.
@@ -47,9 +47,6 @@ class Wippersnapper_Registration {
         bool _status;
 
         pb_ostream_t _msg_stream;
-
-        // struct for description msg.
-        //wippersnapper_description_v1_CreateDescriptionRequest _message;
 
         // Description message contents
         const char * _machine_name;

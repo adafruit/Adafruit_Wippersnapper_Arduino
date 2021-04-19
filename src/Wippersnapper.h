@@ -151,8 +151,6 @@ class Wippersnapper {
         bool processSignalMessages(int16_t timeout);
 
         // MQTT topic callbacks //
-
-        
         // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
 
@@ -201,7 +199,6 @@ class Wippersnapper {
         int32_t totalDigitalPins;   /*!< Total number of hardware's GPIO pins */
         int32_t totalAnalogPins; /*!< Total number of hardware's analog input pins */
         float vRef;                /*!< Hardware's default voltage reference */
-        digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
 
     private:
         void _init();
