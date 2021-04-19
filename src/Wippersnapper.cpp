@@ -92,11 +92,7 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
 
     if (is_create == true) { // initialize a new digital pin
         if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
-            WS._digitalGPIO->initDigitalPin(pinMsg->direction, atoi(pinName));
-            // Digital Input
-            if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-                WS._digitalGPIO->initDigitalInputPin(atoi(pinName), pinMsg->period);
-            }
+            WS._digitalGPIO->initDigitalPin(pinMsg->direction, atoi(pinName), pinMsg->period);
         }
     }
 

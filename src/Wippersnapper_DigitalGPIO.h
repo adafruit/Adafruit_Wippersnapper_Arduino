@@ -21,8 +21,8 @@
 // Holds data about a digital input pin
 struct digitalInputPin {
     uint8_t pinName;       // Pin name
-    long timerInterval;    // Timer interval, in millis, -1 if disabled.
-    long timerIntervalPrv; // When timer was previously serviced, in millis
+    long period;    // Timer interval, in millis, -1 if disabled.
+    long prvPeriod; // When timer was previously serviced, in millis
     int prvPinVal;         // Previous pin value
 };
 
@@ -34,14 +34,12 @@ class Wippersnapper_DigitalGPIO {
         Wippersnapper_DigitalGPIO(int32_t totalDigitalGPIOPins);
         ~Wippersnapper_DigitalGPIO();
 
-        void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName);
+        void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName, float period);
         void deinitDigitalPin(uint8_t pinName);
-        void initDigitalInputPin(int pinName, float interval);
         void deinitDigitalInputPin(uint8_t pinName);
 
         int digitalReadSvc(int pinName);
         void digitalWriteSvc(uint8_t pinName, int pinValue);
-
         void processDigitalInputs();
 
         digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */

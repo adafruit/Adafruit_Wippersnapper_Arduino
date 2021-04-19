@@ -16,11 +16,18 @@
 
 #include "Wippersnapper_DigitalGPIO.h"
 
+/***********************************************************************************/
+/*!
+    @brief  Initializes DigitalGPIO class.
+    @param  totalDigitalGPIOPins
+                Total number of GPIO pins on the hardware.
+*/
+/***********************************************************************************/
 Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(int32_t totalDigitalGPIOPins) {
     _digital_input_pins = new digitalInputPin[totalDigitalGPIOPins];
     // turn sampling off for all digital pins
     for (int i = 1; i < WS.totalDigitalPins; i++) {
-        _digital_input_pins[i].timerInterval = -1;
+        _digital_input_pins[i].period = -1;
     }
 }
 
@@ -33,12 +40,12 @@ Wippersnapper_DigitalGPIO::~Wippersnapper_DigitalGPIO() {
     delete _digital_input_pins;
 }
 
-/****************************************************************************/
+/*******************************************************************************************************************************/
 /*!
     @brief    Configures a digital pin to behave as an input or an output.
 */
-/****************************************************************************/
-void Wippersnapper_DigitalGPIO::initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName) {
+/*******************************************************************************************************************************/
+void Wippersnapper_DigitalGPIO::initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName, float period) {
      if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
         WS_DEBUG_PRINT("Configured digital output pin on D"); WS_DEBUG_PRINTLN(pinName);
         pinMode(pinName, OUTPUT);
@@ -47,25 +54,17 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(wippersnapper_pin_v1_ConfigurePin
      else if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
         WS_DEBUG_PRINT("Configuring digital input pin on D"); WS_DEBUG_PRINTLN(pinName);
         pinMode(pinName, INPUT);
+
+        // Period is in seconds, cast it to long and convert it to milliseconds
+        long periodMs = (long)period * 1000;
+        WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(periodMs);
+
+        _digital_input_pins[pinName].pinName = pinName;
+        _digital_input_pins[pinName].period = periodMs;
      }
      else {
          WS_DEBUG_PRINTLN("ERROR: Invalid digital pin direction!");
      }
-}
-
-/****************************************************************************/
-/*!
-    @brief    Initializes a digital input pin
-*/
-/****************************************************************************/
-void Wippersnapper_DigitalGPIO::initDigitalInputPin(int pinName, float interval) {
-    WS_DEBUG_PRINT("Init. digital input pin D");WS_DEBUG_PRINTLN(pinName);
-    // Interval is in seconds, cast it to long and convert it to milliseconds
-    long interval_ms = (long)interval * 1000;
-    WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
-
-    _digital_input_pins[pinName].pinName = pinName;
-    _digital_input_pins[pinName].timerInterval = interval_ms;
 }
 
 /****************************************************************************/
@@ -88,47 +87,47 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(uint8_t pinName) {
 /****************************************************************************/
 void Wippersnapper_DigitalGPIO::deinitDigitalInputPin(uint8_t pinName) {
     WS_DEBUG_PRINT("Freeing digital input pin D"); WS_DEBUG_PRINTLN(pinName);
-    _digital_input_pins[pinName].timerInterval = -1;
+    _digital_input_pins[pinName].period = -1;
 }
 
-/****************************************************************************/
+/********************************************************************/
 /*!
     @brief    High-level digitalRead service impl. which performs a
                 digitalRead.
     @returns  pinVal
                 Value of pin, either HIGH or LOW
 */
-/****************************************************************************/
+/********************************************************************/
 int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
     // Service using arduino `digitalRead`
     int pinVal = digitalRead(pinName);
     return pinVal;
 }
 
-/**************************************************************************/
+/*******************************************************************************/
 /*!
     @brief  High-level service which outputs to a digital pin.
 */
-/**************************************************************************/
+/*******************************************************************************/
 void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
     WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
     WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinValue);
     digitalWrite(pinName, pinValue);
 }
 
-/**************************************************************************/
+/**********************************************************/
 /*!
     @brief    Iterates thru digital inputs, checks if they
                 should send data to the broker.
 */
-/**************************************************************************/
+/**********************************************************/
 void Wippersnapper_DigitalGPIO::processDigitalInputs() {
     uint32_t curTime = millis();
     // Process digital timers
     for (int i = 0; i < WS.totalDigitalPins; i++) {
-        if (_digital_input_pins[i].timerInterval > -1L) { // validate if timer is enabled
+        if (_digital_input_pins[i].period > -1L) { // validate if timer is enabled
             // Check if timer executes on a time period
-            if (curTime - _digital_input_pins[i].timerIntervalPrv > _digital_input_pins[i].timerInterval && _digital_input_pins[i].timerInterval != 0L) {
+            if (curTime - _digital_input_pins[i].prvPeriod > _digital_input_pins[i].period && _digital_input_pins[i].period != 0L) {
                 WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
                 // read the pin
                 int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
@@ -153,11 +152,10 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
                 WS_DEBUG_PRINTLN("Published!");
 
                 // reset the timer
-                _digital_input_pins[i].timerIntervalPrv = curTime;
-                
+                _digital_input_pins[i].prvPeriod = curTime;
             }
             // Check if timer executes on a state change
-            else if (_digital_input_pins[i].timerInterval == 0L) {
+            else if (_digital_input_pins[i].period == 0L) {
                 // read pin
                 int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
                 // only send on-change
@@ -188,7 +186,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
                     _digital_input_pins[i].prvPinVal = pinVal;
 
                     // reset the timer
-                    _digital_input_pins[i].timerIntervalPrv = curTime;
+                    _digital_input_pins[i].prvPeriod = curTime;
                 }
             }
         }
