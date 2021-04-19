@@ -33,7 +33,7 @@ Wippersnapper_DigitalGPIO::~Wippersnapper_DigitalGPIO() {
     @brief    Configures a digital pin to behave as an input or an output.
 */
 /****************************************************************************/
-void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName) {
+void Wippersnapper_DigitalGPIO::initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName) {
      if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
         WS_DEBUG_PRINT("Configured digital output pin on D"); WS_DEBUG_PRINTLN(pinName);
         pinMode(pinName, OUTPUT);
@@ -59,8 +59,21 @@ void Wippersnapper_DigitalGPIO::initDigitalInputPin(int pinName, float interval)
     long interval_ms = (long)interval * 1000;
     WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
 
-    WS._digital_input_pins[pinName].pinName = pinName;
-    WS._digital_input_pins[pinName].timerInterval = interval_ms;
+    _digital_input_pins[pinName].pinName = pinName;
+    _digital_input_pins[pinName].timerInterval = interval_ms;
+}
+
+/****************************************************************************/
+/*!
+    @brief    Deinitializes a previously configured digital pin.
+*/
+/****************************************************************************/
+void Wippersnapper_DigitalGPIO::deinitDigitalPin(uint8_t pinName) {
+    WS_DEBUG_PRINT("Deinitializing digital input pin ");WS_DEBUG_PRINTLN(pinName);
+    char cstr[16];
+    itoa(pinName, cstr, 10);
+    WS_DEBUG_PRINTLN(cstr);
+    pinMode(pinName, INPUT); // hi-z
 }
 
 /****************************************************************************/
@@ -68,9 +81,9 @@ void Wippersnapper_DigitalGPIO::initDigitalInputPin(int pinName, float interval)
     @brief    Deinitializes a digital input pin
 */
 /****************************************************************************/
-void Wippersnapper::deinitDigitalInputPin(uint8_t pinName) {
+void Wippersnapper_DigitalGPIO::deinitDigitalInputPin(uint8_t pinName) {
     WS_DEBUG_PRINT("Freeing digital input pin D"); WS_DEBUG_PRINTLN(pinName);
-    WS._digital_input_pins[pinName].timerInterval = -1;
+    _digital_input_pins[pinName].timerInterval = -1;
 }
 
 /****************************************************************************/
@@ -81,7 +94,7 @@ void Wippersnapper::deinitDigitalInputPin(uint8_t pinName) {
                 Value of pin, either HIGH or LOW
 */
 /****************************************************************************/
-int digitalReadSvc(int pinName) {
+int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
     // Service using arduino `digitalRead`
     int pinVal = digitalRead(pinName);
     return pinVal;
@@ -92,7 +105,7 @@ int digitalReadSvc(int pinName) {
     @brief  High-level service which outputs to a digital pin.
 */
 /**************************************************************************/
-void digitalWriteSvc(uint8_t pinName, int pinValue) {
+void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
     WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
     WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinValue);
     digitalWrite(pinName, pinValue);

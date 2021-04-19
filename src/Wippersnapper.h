@@ -28,9 +28,13 @@
 #include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
 #include <wippersnapper/pin/v1/pin.pb.h>                    // pin.proto
 
-// Internal
+// Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
+
+// Wippersnapper GPIO Classes
+#include "Wippersnapper_DigitalGPIO.h"
+
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -90,16 +94,6 @@ typedef enum {
     WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-// Holds data about a digital input timer
-// members assigned from a PinConfigureRequest
-// TODO: Move out to DigitalGPIO class
-struct digitalInputPin {
-    uint8_t pinName; // Pin name
-    long timerInterval; // timer interval, in millis, -1 if disabled.
-    long timerIntervalPrv; // time timer was previously serviced, in millis
-    int prvPinVal; // Previous pin value
-};
-
 
 /* MQTT Configuration */
 // Keep Alive interval, in ms
@@ -110,6 +104,7 @@ struct digitalInputPin {
 
 
 class Wippersnapper_Registration;
+class Wippersnapper_DigitalGPIO;
 
 class Wippersnapper {
 
@@ -165,9 +160,6 @@ class Wippersnapper {
         bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
 
-        // Digital Input
-        void initDigitalInputPin(int pinName, float interval);
-        void deinitDigitalInputPin(uint8_t pinName);
         void processDigitalInputs();
 
 
@@ -178,6 +170,7 @@ class Wippersnapper {
         ws_board_status_t _boardStatus;
 
         Wippersnapper_Registration *_registerBoard; /*!< Instance of registration class */
+        Wippersnapper_DigitalGPIO *_digitalGPIO;    /*!< Instance of digital gpio class */
 
         // TODO: move neopixel into its own class
         Adafruit_NeoPixel pixels; /*!< NeoPixel */
