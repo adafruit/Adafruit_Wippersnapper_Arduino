@@ -127,7 +127,7 @@ public:
   /********************************************************/
   /*!
   @brief  Gets the ESP32's unique client identifier.
-  @note   On ESP32, the UID is the MAC address.
+  @note   For the ESP32, the UID is the MAC address.
   */
   /********************************************************/
   void setUID() {

@@ -1,7 +1,8 @@
 /*!
  * @file Wippersnapper_ESP8266.h
  *
- * This is a driver for using an ESP8266 with Wippersnapper.
+ * This is a driver for using the ESP8266's network interface
+ *  with Wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,9 +14,10 @@
  *
  */
 
+#ifndef WIPPERSNAPPER_ESP8266_H
+#define WIPPERSNAPPER_ESP8266_H
 
 #ifdef ESP8266
-
 
 #include  "Wippersnapper.h"
 #include "Adafruit_MQTT.h"
@@ -24,40 +26,40 @@
 #include "ESP8266WiFi.h"
 #include "WiFiClientSecure.h"
 
-/****************************************************************************/
+// Adafruit IO Production SSL Fingerprint
+//#define WS_SSL_FINGERPRINT \
+//  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF"
+
+// Adafruit IO Staging SSL Fingerprint
+// Fingerprint for io.adafruit.us staging server
+#define WS_SSL_FINGERPRINT \
+    "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
+
+extern Wippersnapper WS;
+
+/******************************************************************************/
 /*!
-    @brief  Class for interacting with the Espressif ESP8266.
+    @brief  Class for interacting with the Espressif ESP8266's network interface.
 */
-/****************************************************************************/
+/******************************************************************************/
 class Wippersnapper_ESP8266 : public Wippersnapper {
 
 public:
   /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for ESP8266 devices.
-  @param    aio_user
-            Adafruit IO username.
-  @param    aio_key
-            Adafruit IO+ key.
-  @param    ssid
-            Desired WiFi network SSID.
-  @param    ssidPassword
-            Desired WiFi network password.
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266(const char *aio_user, const char *aio_key, const char *ssid,
-                        const char *ssidPassword): Wippersnapper(aio_user, aio_key) {
-    _ssid = ssid;
-    _pass = ssidPassword;
-    _aio_user = aio_user;
-    _aio_key = aio_key;
+  Wippersnapper_ESP8266(): Wippersnapper() {
+    _ssid = 0;
+    _pass = 0;
     _mqtt_client = new WiFiClientSecure;
     _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
     }
 
   /**************************************************************************/
   /*!
-  @brief  Destructor for the Adafruit IO ESP8266.
+  @brief  Destructor for the ESP8266's network iface.
   */
   /**************************************************************************/
   ~Wippersnapper_ESP8266() {
@@ -67,28 +69,43 @@ public:
         delete _mqtt;
   }
 
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password.
+  @param  ssid
+            Wireless network's SSID.
+  @param  ssidPassword
+            Wireless network's password.
+  */
+  /**********************************************************/
+  void set_ssid_pass(char *ssid, const char *ssidPassword) {
+        _ssid = ssid;
+        _pass = ssidPassword;
+  }
+
   /********************************************************/
   /*!
-  @brief  TODO: Get the ESP8266 MAC address
+  @brief  Gets the ESP8266's unique client identifier.
+  @note   For the ESP8266, the UID is the MAC address.
   */
   /********************************************************/
   void setUID() {
       WiFi.macAddress(mac);
-      memcpy(_uid, mac, sizeof(mac));
+      memcpy(WS._uid, mac, sizeof(mac));
   }
 
-  /********************************************************/
+  /*******************************************************************/
   /*!
   @brief  Sets up an Adafruit_MQTT_Client
   @param  clientID
           MQTT client identifier
   */
-  /********************************************************/
+  /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, \
-                _mqtt_port, clientID, _aio_user, _aio_key);
-  }
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, \
+                WS._mqtt_port, clientID, WS._username, WS._key); 
 
+  }
 
   /********************************************************/
   /*!
@@ -112,18 +129,15 @@ public:
   /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
-  @return "wifi"
+  @return "ESP8266"
   */
   /*******************************************************************/
-  const char *connectionType() { return "wifi"; }
+  const char *connectionType() { return "ESP8266"; }
 
 protected:
   const char *_ssid;
   const char *_pass;
-  const char *_aio_user;
-  const char *_aio_key;
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
   WiFiClientSecure *_mqtt_client;
 
 
@@ -154,4 +168,5 @@ protected:
   }
 };
 
-#endif // ESP8266
+#endif // ESP8266 Arduino
+#endif // WIPPERSNAPPER_ESP8266_H
