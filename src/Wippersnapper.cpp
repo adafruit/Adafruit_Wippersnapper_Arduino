@@ -97,11 +97,7 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
     }
 
     if (is_delete == true) { // delete a prv. initialized pin
-        // check if pin has a timer
-        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT)
-            WS._digitalGPIO->deinitDigitalInputPin(atoi(pinName));
-        // deinitialize the digital pin
-        WS._digitalGPIO->deinitDigitalPin(atoi(pinName));
+        WS._digitalGPIO->deinitDigitalPin(pinMsg->direction, atoi(pinName));
     }
     return true;
 }

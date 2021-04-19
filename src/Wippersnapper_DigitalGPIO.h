@@ -35,8 +35,7 @@ class Wippersnapper_DigitalGPIO {
         ~Wippersnapper_DigitalGPIO();
 
         void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName, float period);
-        void deinitDigitalPin(uint8_t pinName);
-        void deinitDigitalInputPin(uint8_t pinName);
+        void deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName);
 
         int digitalReadSvc(int pinName);
         void digitalWriteSvc(uint8_t pinName, int pinValue);

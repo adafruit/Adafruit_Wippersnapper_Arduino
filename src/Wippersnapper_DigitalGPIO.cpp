@@ -67,27 +67,20 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(wippersnapper_pin_v1_ConfigurePin
      }
 }
 
-/****************************************************************************/
+/********************************************************************************************************************************/
 /*!
     @brief    Deinitializes a previously configured digital pin.
 */
-/****************************************************************************/
-void Wippersnapper_DigitalGPIO::deinitDigitalPin(uint8_t pinName) {
-    WS_DEBUG_PRINT("Deinitializing digital input pin ");WS_DEBUG_PRINTLN(pinName);
+/********************************************************************************************************************************/
+void Wippersnapper_DigitalGPIO::deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName) {
+    WS_DEBUG_PRINT("Deinitializing digital pin ");WS_DEBUG_PRINTLN(pinName);
+    if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+        _digital_input_pins[pinName].period = -1; // stop sampling
+    }
     char cstr[16];
     itoa(pinName, cstr, 10);
     WS_DEBUG_PRINTLN(cstr);
     pinMode(pinName, INPUT); // hi-z
-}
-
-/****************************************************************************/
-/*!
-    @brief    Deinitializes a digital input pin
-*/
-/****************************************************************************/
-void Wippersnapper_DigitalGPIO::deinitDigitalInputPin(uint8_t pinName) {
-    WS_DEBUG_PRINT("Freeing digital input pin D"); WS_DEBUG_PRINTLN(pinName);
-    _digital_input_pins[pinName].period = -1;
 }
 
 /********************************************************************/
@@ -123,12 +116,12 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
 /**********************************************************/
 void Wippersnapper_DigitalGPIO::processDigitalInputs() {
     uint32_t curTime = millis();
-    // Process digital timers
+    // Process digital digital pins
     for (int i = 0; i < WS.totalDigitalPins; i++) {
-        if (_digital_input_pins[i].period > -1L) { // validate if timer is enabled
-            // Check if timer executes on a time period
+        if (_digital_input_pins[i].period > -1L) { // validate if digital pin is enabled
+            // Check if digital pin executes on a time period
             if (curTime - _digital_input_pins[i].prvPeriod > _digital_input_pins[i].period && _digital_input_pins[i].period != 0L) {
-                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
+                WS_DEBUG_PRINT("Executing periodic event on D");WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
                 // read the pin
                 int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
 
@@ -151,16 +144,16 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
                 WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
                 WS_DEBUG_PRINTLN("Published!");
 
-                // reset the timer
+                // reset the digital pin
                 _digital_input_pins[i].prvPeriod = curTime;
             }
-            // Check if timer executes on a state change
+            // Check if digital pin executes on a state change
             else if (_digital_input_pins[i].period == 0L) {
                 // read pin
                 int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
                 // only send on-change
                 if (pinVal != _digital_input_pins[i].prvPinVal) {
-                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
+                    WS_DEBUG_PRINT("Executing state-based event on D");WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
 
                     // Create new signal message
                     wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
@@ -182,10 +175,10 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
                     WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
                     WS_DEBUG_PRINTLN("Published!");
 
-                    // set the pin value in the timer object for comparison on next run
+                    // set the pin value in the digital pin object for comparison on next run
                     _digital_input_pins[i].prvPinVal = pinVal;
 
-                    // reset the timer
+                    // reset the digital pin
                     _digital_input_pins[i].prvPeriod = curTime;
                 }
             }
