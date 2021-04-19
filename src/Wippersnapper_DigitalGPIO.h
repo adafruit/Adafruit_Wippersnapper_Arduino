@@ -42,6 +42,8 @@ class Wippersnapper_DigitalGPIO {
         int digitalReadSvc(int pinName);
         void digitalWriteSvc(uint8_t pinName, int pinValue);
 
+        void processDigitalInputs();
+
         digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
 };
 extern Wippersnapper WS;

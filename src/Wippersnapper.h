@@ -193,6 +193,8 @@ class Wippersnapper {
         int32_t totalAnalogPins; /*!< Total number of hardware's analog input pins */
         float vRef;                /*!< Hardware's default voltage reference */
 
+        char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
+
     private:
         void _init();
 
@@ -218,7 +220,6 @@ class Wippersnapper {
         // MQTT topics
         char *_topic_description_status; /*!< MQTT subtopic carrying the description status resp. from the broker */
         char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
-        char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
         Adafruit_MQTT_Subscribe *_topic_description_sub;
         Adafruit_MQTT_Publish *_topic_signal_device_pub;

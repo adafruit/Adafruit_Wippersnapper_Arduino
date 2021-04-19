@@ -571,85 +571,6 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 
 /**************************************************************************/
 /*!
-    @brief    Iterates thru digital inputs, checks if they
-                should send data to the broker.
-*/
-/**************************************************************************/
-void Wippersnapper::processDigitalInputs() {
-    uint32_t curTime = millis();
-    // Process digital timers
-    for (int i = 0; i < WS.totalDigitalPins; i++) {
-        if (WS._digitalGPIO->_digital_input_pins[i].timerInterval > -1L) { // validate if timer is enabled
-            // Check if timer executes on a time period
-            if (curTime - WS._digitalGPIO->_digital_input_pins[i].timerIntervalPrv > WS._digitalGPIO->_digital_input_pins[i].timerInterval && WS._digitalGPIO->_digital_input_pins[i].timerInterval != 0L) {
-                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(WS._digitalGPIO->_digital_input_pins[i].pinName);
-                // read the pin
-                int pinVal = WS._digitalGPIO->digitalReadSvc(WS._digitalGPIO->_digital_input_pins[i].pinName);
-
-                // Create new signal message
-                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-                WS_DEBUG_PRINT("Encoding...")
-                // Create and encode a pinEvent message
-                if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digitalGPIO->_digital_input_pins[i].pinName, pinVal)) {
-                    WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
-                    break;
-                }
-                WS_DEBUG_PRINTLN("Encoded!")
-                
-                // Obtain size and only write out buffer to end
-                size_t msgSz;
-                pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
-                // publish event data
-                WS_DEBUG_PRINT("Publishing...")
-                WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-                WS_DEBUG_PRINTLN("Published!");
-
-                // reset the timer
-                WS._digitalGPIO->_digital_input_pins[i].timerIntervalPrv = curTime;
-                
-            }
-            // Check if timer executes on a state change
-            else if (WS._digitalGPIO->_digital_input_pins[i].timerInterval == 0L) {
-                // read pin
-                int pinVal = WS._digitalGPIO->digitalReadSvc(WS._digitalGPIO->_digital_input_pins[i].pinName);
-                // only send on-change
-                if (pinVal != WS._digitalGPIO->_digital_input_pins[i].prvPinVal) {
-                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(WS._digitalGPIO->_digital_input_pins[i].pinName);
-
-                    // Create new signal message
-                    wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-                    WS_DEBUG_PRINT("Encoding pinEvent...");
-                    // Create and encode a pinEvent message
-                    if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digitalGPIO->_digital_input_pins[i].pinName, pinVal)) {
-                        WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
-                        break;
-                    }
-                    WS_DEBUG_PRINTLN("Encoded!");
-
-                    // Obtain size and only write out buffer to end
-                    size_t msgSz;
-                    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
-
-                    // publish event data
-                    WS_DEBUG_PRINT("Publishing pinEvent...");
-                    WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-                    WS_DEBUG_PRINTLN("Published!");
-
-                    // set the pin value in the timer object for comparison on next run
-                    WS._digitalGPIO->_digital_input_pins[i].prvPinVal = pinVal;
-
-                    // reset the timer
-                    WS._digitalGPIO->_digital_input_pins[i].timerIntervalPrv = curTime;
-                }
-            }
-        }
-    }
-}
-
-/**************************************************************************/
-/*!
     @brief    Processes incoming commands and handles network connection.
 */
 /**************************************************************************/
@@ -660,9 +581,8 @@ ws_status_t Wippersnapper::run() {
     // Check and handle MQTT connection
     checkMQTTConnection(curTime); // TODO: handle this better
 
-    // Process digital inputs
-    // CORE module
-    processDigitalInputs();
+    // Process digital inputs, digitalGPIO module
+    WS._digitalGPIO->processDigitalInputs();
 
     // TODO: Process analog inputs
 
