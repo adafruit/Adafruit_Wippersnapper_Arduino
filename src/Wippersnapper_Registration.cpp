@@ -173,7 +173,7 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
         switch (message.response) {
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
                 WS._boardStatus = WS_BOARD_DEF_OK;
-                // Fetch information about hardware
+                // Pull out contents of the hardware registration response
                 WS.totalDigitalPins = message.total_gpio_pins;
                 WS.totalAnalogPins = message.total_analog_pins;
                 WS.vRef = message.reference_voltage;
@@ -183,11 +183,9 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
                 WS_DEBUG_PRINT("Reference voltage: "); WS_DEBUG_PRINT(WS.vRef); WS_DEBUG_PRINTLN("v");
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
-                //_ws->_boardStatus = WS_BOARD_DEF_INVALID;
                 WS._boardStatus = WS_BOARD_DEF_INVALID;
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
-                //_ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
                 WS._boardStatus = WS_BOARD_DEF_UNSPECIFIED;
                 break;
             default:

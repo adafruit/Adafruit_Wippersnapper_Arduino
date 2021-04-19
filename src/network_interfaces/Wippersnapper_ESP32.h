@@ -1,7 +1,8 @@
 /*!
  * @file Wippersnapper_ESP32.h
  *
- * This is a driver for using the ESP32 with Adafruit IO Wippersnapper
+ * This is a driver for using the ESP32's network interface
+ * with Adafruit IO Wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -25,6 +26,7 @@
 #include "WiFiClientSecure.h"
 #include <WiFi.h>
 
+extern Wippersnapper WS;
 
 /****************************************************************************/
 /*!
@@ -36,23 +38,12 @@ class Wippersnapper_ESP32 : public Wippersnapper {
 public:
   /**************************************************************************/
   /*!
-  @brief  Initializes the Adafruit IO class for AirLift devices.
-  @param    aio_user
-            Adafruit IO username.
-  @param    aio_key
-            Adafruit IO active key.
-  @param    ssid
-            The WiFi network's SSID.
-  @param    ssidPassword
-            The WiFi network's password.
+  @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
   /**************************************************************************/
-  Wippersnapper_ESP32(const char *aio_user, const char *aio_key, const char *ssid,
-                        const char *ssidPassword): Wippersnapper(aio_user, aio_key) {
-    _ssid = ssid;
-    _pass = ssidPassword;
-    _aio_user = aio_user;
-    _aio_key = aio_key;
+  Wippersnapper_ESP32(): Wippersnapper() {
+    _ssid = 0;
+    _pass = 0;
     _mqtt_client = new WiFiClientSecure;
     }
 
@@ -68,24 +59,39 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Gets the AirLift interface's MAC Address.
+  @brief  Sets the WiFi client's ssid and password.
+  @param  ssid
+            WiFi network's SSID.
+  @param  ssidPassword
+            WiFi network's password.
   */
   /********************************************************/
-  void setUID() {
-      WiFi.macAddress(mac);
-      memcpy(_uid, mac, sizeof(mac));
+  void set_ssid_pass(char *ssid, const char *ssidPassword) {
+        _ssid = ssid;
+        _pass = ssidPassword;
   }
 
   /********************************************************/
   /*!
-  @brief  Sets up an Adafruit_MQTT_Client
+  @brief  Sets the ESP32's unique client identifier
+  @note   On ESP32, the UID is the MAC address.
+  */
+  /********************************************************/
+  void setUID() {
+      WiFi.macAddress(mac);
+      memcpy(WS._uid, mac, sizeof(mac));
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Initializes the MQTT client.
   @param  clientID
           MQTT client identifier
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, \
-                _mqtt_port, clientID, _aio_user, _aio_key);
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, \
+                WS._mqtt_port, clientID, WS._username, WS._key);
   }
 
   /********************************************************/
@@ -118,10 +124,7 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
-  const char *_aio_user;
-  const char *_aio_key;
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
   WiFiClientSecure *_mqtt_client;
 
 
@@ -153,5 +156,5 @@ protected:
   }
 };
 
-#endif // ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32_H
 #endif //Wippersnapper_ESP32_H
