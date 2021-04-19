@@ -2,10 +2,10 @@
  * @file Wippersnapper_AIRLIFT.h
  *
  * This is a driver for using the Adafruit AirLift 
- * ESP32 Co-Processor with Wippersnapper.
+ * ESP32 Co-Processor's network interface with Wippersnapper.
  *
- * The ESP32 uses SPI to communicate. Three lines (CS, ACK, RST) are required
- * to communicate with the ESP32.
+ * The ESP32 AirLift uses SPI to communicate. Three lines (CS, ACK, RST) are required
+ * to communicate with the ESP32 AirLift.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -27,8 +27,9 @@
 #include "SPI.h"
 #include "WiFiNINA.h"
 
-#define NINAFWVER "1.0.0" /*!< min. nina-fw version compatible with this library. */
+#define NINAFWVER "1.6.0" /*!< min. nina-fw version compatible with this library. */
 
+extern Wippersnapper WS;
 /****************************************************************************/
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
@@ -40,39 +41,16 @@ public:
   /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for AirLift devices.
-  @param    aio_user
-            Adafruit IO username.
-  @param    aio_key
-            Adafruit IO active key.
-  @param    ssid
-            The WiFi network's SSID.
-  @param    ssidPassword
-            The WiFi network's password.
-  @param    ssPin
-            The ESP32's S.S. pin.
-  @param    ackPin
-            The ESP32's ACK pin.
-  @param    rstPin
-            The ESP32's RST pin.
-  @param    gpio0Pin
-            The ESP32's gpio0 pin.
-  @param    wifi
-            a SPIClass
   */
   /**************************************************************************/
-  Wippersnapper_AIRLIFT(const char *aio_user, const char *aio_key, const char *ssid,
-                        const char *ssidPassword, int ssPin, int ackPin, int rstPin,
-                        int gpio0Pin, SPIClass *wifi): Wippersnapper(aio_user, aio_key) {
-    _wifi = wifi;
-    _ssPin = ssPin;
-    _ackPin = ackPin;
-    _rstPin = rstPin;
-    _gpio0Pin = gpio0Pin;
-    _ssid = ssid;
-    _pass = ssidPassword;
-    _aio_user = aio_user;
-    _aio_key = aio_key;
-    _mqtt_client = new WiFiSSLClient;
+  Wippersnapper_AIRLIFT(): Wippersnapper() {
+    _ssPin = 0;
+    _ackPin = 0;
+    _rstPin = 0;
+    _wifi = 0;
+    _mqtt_client = 0;
+    _ssid = 0;
+    _pass = 0;
     }
 
   /**************************************************************************/
@@ -83,6 +61,53 @@ public:
   ~Wippersnapper_AIRLIFT() {
       if (_mqtt)
         delete _mqtt;
+  }
+
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password.
+  @param  ssid
+            Wireless network's SSID.
+  @param  ssidPassword
+            Wireless network's password.
+  */
+  /**********************************************************/
+  void set_ssid_pass(char *ssid, const char *ssidPassword) {
+        _ssid = ssid;
+        _pass = ssidPassword;
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Sets the WiFi client.
+  @param  wifi
+          Instance of SPIClass.
+  */
+  /********************************************************/
+  void set_wifi(SPIClass *wifi) {
+    _wifi = wifi;
+    _mqtt_client = new WiFiSSLClient;
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Configures ESP32 "AirLift" pins.
+  @param  ssPin
+            ESP32 S.S. pin.
+  @param  ackPin
+            ESP32 ACK pin.
+  @param  rstPin
+            ESP32 RST pin.
+  @param  gpio0pin
+            ESP32 GPIO0 pin.
+
+  */
+  /********************************************************/
+  void set_airlift_pins(int ssPin, int ackPin, int rstPin, int gpio0Pin) {
+    _ssPin = ssPin;
+    _ackPin = ackPin;
+    _rstPin = rstPin;
+    _gpio0Pin = gpio0Pin;
   }
 
   /********************************************************/
@@ -101,24 +126,26 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Gets the AirLift interface's MAC Address.
+  @brief  Gets the ESP32's unique client identifier.
+  @note   For the ESP32, the UID is the MAC address.
   */
   /********************************************************/
   void setUID() {
       WiFi.macAddress(mac);
-      memcpy(_uid, mac, sizeof(mac));
+      memcpy(WS._uid, mac, sizeof(mac));
   }
 
   /********************************************************/
   /*!
-  @brief  Sets up an Adafruit_MQTT_Client
+  @brief  Initializes the MQTT client.
   @param  clientID
           MQTT client identifier
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    _mqtt = new Adafruit_MQTT_Client(_mqtt_client, _mqtt_broker, \
-                _mqtt_port, clientID, _aio_user, _aio_key);
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, \
+                WS._mqtt_port, clientID, WS._username, WS._key); 
+
   }
 
   /********************************************************/
@@ -151,14 +178,10 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
-  const char *_aio_user;
-  const char *_aio_key;
   String _fv = "0.0.0";
   uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   int _ssPin, _ackPin, _rstPin, _gpio0Pin = -1;
-
   WiFiSSLClient *_mqtt_client;
-
   SPIClass *_wifi;
 
   /**************************************************************************/

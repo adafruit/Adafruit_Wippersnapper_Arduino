@@ -92,23 +92,14 @@ typedef enum {
 
 // Holds data about a digital input timer
 // members assigned from a PinConfigureRequest
-struct timerDigitalInput {
+// TODO: Move out to DigitalGPIO class
+struct digitalInputPin {
     uint8_t pinName; // Pin name
     long timerInterval; // timer interval, in millis, -1 if disabled.
     long timerIntervalPrv; // time timer was previously serviced, in millis
     int prvPinVal; // Previous pin value
 };
 
-#define MAX_DIGITAL_TIMERS 5
-
-// Adafruit IO Production SSL Fingerprint
-//#define WS_SSL_FINGERPRINT \
-//  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF"
-
-// Adafruit IO Staging SSL Fingerprint
-// Fingerprint for io.adafruit.us staging server
-#define WS_SSL_FINGERPRINT \
-    "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
 
 /* MQTT Configuration */
 // Keep Alive interval, in ms
@@ -118,34 +109,36 @@ struct timerDigitalInput {
 #define WS_MQTT_MAX_PAYLOAD_SIZE 128
 
 
-// forward declaration
 class Wippersnapper_Registration;
 
 class Wippersnapper {
 
-    friend class Wippersnapper_Registration;
 
     public:
-        Wippersnapper(const char *aio_username, const char *aio_key);
+        Wippersnapper();
         virtual ~Wippersnapper();
 
+        void set_user_key(const char *aio_username, const char *aio_key);
+
+        void set_ssid_pass(char *ssid, const char *ssidPassword);
+
         void connect();
-        virtual void _connect() = 0;
+        virtual void _connect();
 
         void disconnect();
-        virtual void _disconnect() = 0;
+        virtual void _disconnect();
 
-        virtual void setUID() = 0;
-        virtual void setupMQTTClient(const char *clientID) = 0;
+        virtual void setUID();
+        virtual void setupMQTTClient(const char *clientID);
 
         const __FlashStringHelper *statusText();
-        virtual ws_status_t networkStatus() = 0;
+        virtual ws_status_t networkStatus();
         ws_status_t status();
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
 
         // Generates Wippersnapper MQTT feeds
-        void generate_feeds();
+        void generate_subscribe_feeds();
 
         // Performs board registration FSM
         bool registerBoard(uint8_t retries);
@@ -158,13 +151,11 @@ class Wippersnapper {
         bool processSignalMessages(int16_t timeout);
 
         // MQTT topic callbacks //
-        static void cbSignalTopic(char *data, uint16_t len);
 
-        // Signal message // 
-        // Called when a new signal message has been received
-        static bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        
         // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
+
         // Encodes a signal message
         bool encodeSignalMsg(uint8_t signalPayloadType);
 
@@ -172,33 +163,45 @@ class Wippersnapper {
         bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal);
 
         // Pin configure message
-        static bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
-        static bool configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+        bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
+        bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
-        // Decodes list of pin events
-        static bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
 
         // Digital Input
-        static void attachDigitalPinTimer(uint8_t pinName, float interval);
-        static void detachDigitalPinTimer(uint8_t pinName);
+        void initDigitalInputPin(int pinName, float interval);
+        void deinitDigitalInputPin(uint8_t pinName);
+        void processDigitalInputs();
 
-        // Adafruit IO Credentials
-        const char *_username; /*!< Adafruit IO Username. */
-        const char *_key;      /*!< Adafruit IO Key. */
 
-        static uint16_t bufSize;
-        static uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
-
+        uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
         uint8_t _buffer_outgoing[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains outgoing payload data */
+        uint16_t bufSize; /*!< Length of data inside buffer */
 
-        static ws_board_status_t _boardStatus;
+        ws_board_status_t _boardStatus;
 
-        // Protobuf helpers
-        //bool encode_unionmessage(pb_ostream_t *stream, const pb_msgdesc_t *messagetype, void *message);
+        Wippersnapper_Registration *_registerBoard; /*!< Instance of registration class */
 
-        Wippersnapper_Registration *_registerBoard;
+        // TODO: move neopixel into its own class
+        Adafruit_NeoPixel pixels; /*!< NeoPixel */
 
-        Adafruit_NeoPixel pixels; /*!< NeoPixel strand */
+        uint8_t _uid[6]; /*!< Unique network iface identifier */
+        char sUID[9]; /*!< Unique network iface identifier */
+        const char *_boardId;       /*!< Adafruit IO+ board string */
+        Adafruit_MQTT *_mqtt;       /*!< Reference to Adafruit_MQTT, _mqtt. */
+        char *_topic_description;   /*!< MQTT topic for the device description  */
+
+        // Staging Server
+        const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
+        uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
+
+        // AIO Credentials
+        const char *_username;  /*!< Adafruit IO username */
+        const char *_key;       /*!< Adafruit IO key */
+
+        int32_t totalDigitalPins;   /*!< Total number of hardware's GPIO pins */
+        int32_t totalAnalogPins; /*!< Total number of hardware's analog input pins */
+        float vRef;                /*!< Hardware's default voltage reference */
+        digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
 
     private:
         void _init();
@@ -209,15 +212,9 @@ class Wippersnapper {
                                                 Adafruit IO, in milliseconds */
         uint32_t _prv_ping = 0;
 
-        Adafruit_MQTT *_mqtt;                         /*!< Reference to Adafruit_MQTT, _mqtt. */
-
         // PoC Server
         // const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
         // uint16_t _mqtt_port = 18653;                 /*!< MQTT Broker URL */
-
-        // Staging Server
-        const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
-        uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
 
         // Production Server
         // const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
@@ -225,15 +222,10 @@ class Wippersnapper {
 
         // Device information
         const char *_deviceId; /*!< Adafruit IO+ device identifier string */
-        const char *_boardId;  /*!< Adafruit IO+ board string */
-        uint16_t _hw_vid;      /*!< USB vendor identifer */
-        uint16_t _hw_pid;      /*!< USB product identifier */
-        uint8_t _uid[6];       /*!< Unique network iface identifier */
         char *_device_uid;     /*!< Unique device identifier  */
-        char sUID[9];
+
 
         // MQTT topics
-        char *_topic_description;        /*!< MQTT topic for the device description  */
         char *_topic_description_status; /*!< MQTT subtopic carrying the description status resp. from the broker */
         char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
@@ -242,18 +234,12 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
-        static char _value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
-        static char _prv_value[45]; /*!< Data to send back to Wippersnapper, max. IO data len */
 
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
         wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */
 
-        // Holds info about all digital input timers
-        // TODO: This is currently fixed at "2" pins, we need to
-        // transmit the # of pins from the broker during registration
-        // and dynamically create this
-       static timerDigitalInput _timersDigital[MAX_DIGITAL_TIMERS];
-
 };
+
+extern Wippersnapper WS;
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

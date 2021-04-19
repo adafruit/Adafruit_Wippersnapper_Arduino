@@ -23,8 +23,7 @@
               Reference to Wippersnapper.
 */
 /**************************************************************************/
-Wippersnapper_Registration::Wippersnapper_Registration(Wippersnapper *ws) {
-    _ws = ws;
+Wippersnapper_Registration::Wippersnapper_Registration() {
     //wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
 
 }
@@ -62,11 +61,11 @@ bool Wippersnapper_Registration::processRegistration() {
 
     switch(_state) {
         case FSMReg::REG_CREATE_ENCODE_MSG:
-            WS_DEBUG_PRINTLN("Encoding registration message");
+            WS_DEBUG_PRINT("Encoding registration message...");
             encodeRegMsg();
             next_state = FSMReg::REG_PUBLISH_MSG;
         case FSMReg::REG_PUBLISH_MSG:
-            WS_DEBUG_PRINTLN("-> Publishing registration message");
+            WS_DEBUG_PRINT("Publishing registration message...");
             publishRegMsg();
             next_state = FSMReg::REG_DECODE_MSG;
         case FSMReg::REG_DECODE_MSG:
@@ -98,8 +97,8 @@ void Wippersnapper_Registration::encodeRegMsg() {
     wippersnapper_description_v1_CreateDescriptionRequest _message = wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
     
     // Fill message object's fields
-    _machine_name = _ws->_boardId;
-    _uid = atoi(_ws->sUID);
+    _machine_name = WS._boardId;
+    _uid = atoi(WS.sUID);
 
     // Encode fields
     strcpy(_message.machine_name, _machine_name);
@@ -116,6 +115,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
         WS_DEBUG_PRINTLN("ERROR: encoding description message failed!");
         //printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
     }
+    WS_DEBUG_PRINTLN("Encoded!");
 }
 
 /************************************************************/
@@ -125,24 +125,27 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-    if (!_ws->_mqtt->publish(_ws->_topic_description, _message_buffer, _message_len, 0)) {
-        WS_DEBUG_PRINTLN("Board registration message failed to publish to Wippersnapper.")
-        _ws->_boardStatus = WS_BOARD_DEF_SEND_FAILED;
-    }
-    _ws->_boardStatus = WS_BOARD_DEF_SENT;
+    WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
+    WS_DEBUG_PRINTLN("Published!")
+    WS._boardStatus = WS_BOARD_DEF_SENT;
 }
 
+/************************************************************/
+/*!
+    @brief    Polls the broker for a response to a published
+                registration message.
+*/
+/************************************************************/
 bool Wippersnapper_Registration::pollRegMsg() {
     bool is_success = false;
-    // Obtain response from broker
+    // Attempt to obtain response from broker
     uint8_t retryCount = 0;
-    while (_ws->_boardStatus == WS_BOARD_DEF_SENT) {
-        if (retryCount >= 5) {
+    while (WS._boardStatus == WS_BOARD_DEF_SENT) {
+        if (retryCount >= 10) {
             WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
             break;
         }
-        _ws->_mqtt->processPackets(500); // process messages
-        delay(500);
+        WS._mqtt->processPackets(500); // pump MQTT msg loop
         retryCount++;
     }
     return is_success;
@@ -154,7 +157,7 @@ bool Wippersnapper_Registration::pollRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("-> GOT Registration Message");
+    WS_DEBUG_PRINTLN("-> Registration Message");
     uint8_t buffer[len];
     memcpy(buffer, data, len);
 
@@ -169,16 +172,24 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
     } else {    // set board status
         switch (message.response) {
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-                _ws->_boardStatus = WS_BOARD_DEF_OK;
+                WS._boardStatus = WS_BOARD_DEF_OK;
+                // Pull out contents of the hardware registration response
+                WS.totalDigitalPins = message.total_gpio_pins;
+                WS.totalAnalogPins = message.total_analog_pins;
+                WS.vRef = message.reference_voltage;
+                WS_DEBUG_PRINTLN("Found hardware with:")
+                WS_DEBUG_PRINT("GPIO Pins: "); WS_DEBUG_PRINTLN(WS.totalDigitalPins);
+                WS_DEBUG_PRINT("Analog Pins: "); WS_DEBUG_PRINTLN(WS.totalAnalogPins);
+                WS_DEBUG_PRINT("Reference voltage: "); WS_DEBUG_PRINT(WS.vRef); WS_DEBUG_PRINTLN("v");
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
-                _ws->_boardStatus = WS_BOARD_DEF_INVALID;
+                WS._boardStatus = WS_BOARD_DEF_INVALID;
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
-                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                WS._boardStatus = WS_BOARD_DEF_UNSPECIFIED;
                 break;
             default:
-                _ws->_boardStatus = WS_BOARD_DEF_UNSPECIFIED;
+                WS._boardStatus = WS_BOARD_DEF_UNSPECIFIED;
         }
     }
 

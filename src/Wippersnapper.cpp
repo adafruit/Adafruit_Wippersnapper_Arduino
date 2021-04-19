@@ -32,61 +32,23 @@
 
 #include "Wippersnapper.h"
 
-ws_board_status_t Wippersnapper::_boardStatus;
-uint16_t Wippersnapper::bufSize;
-uint8_t Wippersnapper::_buffer[128];
-char Wippersnapper:: _value[45];
-timerDigitalInput Wippersnapper::_timersDigital[MAX_DIGITAL_TIMERS];
+Wippersnapper WS;
 
-/**************************************************************************/
-/*!
-    @brief    Instantiates the Wippersnapper client object.
-    @param    aio_username
-              Adafruit IO Username.
-    @param    aio_key
-              Adafruit IO Active Key.
-*/
-/**************************************************************************/
-Wippersnapper::Wippersnapper(const char *aio_username, const char *aio_key) {
+Wippersnapper::Wippersnapper() {
     _mqtt = 0;     // MQTT Client object
 
-    _username = aio_username;
-    _key = aio_key;
+    // IO creds
+    _username = 0;
+    _key = 0;
 
-    // TODO: Remove!
-    _deviceId = "myDevice"; // Adafruit IO+ device name
-    _hw_vid = 0;       // Hardware's usb vendor id
-    _hw_pid = 0;       // Hardware's usb product id
-
-    // Reserved MQTT Topics //
+    // Reserved MQTT Topics
     _topic_description = 0;
     _topic_description_status = 0;
     _topic_signal_device = 0;
     _topic_signal_brkr = 0;
 
-    // disable all timers
-    for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
-        _timersDigital[i].timerInterval = -1;
-    }
 
-    // Initialize NeoPixel, if the board has one
-    #ifdef STATUS_NEOPIXEL
-        pixels.updateLength(STATUS_NEOPIXEL_LENGTH);
-        pixels.setPin(STATUS_NEOPIXEL_PIN);
-        pixels.begin();
-        delay(10);
-        pixels.setBrightness(20);
-        pixels.fill(0);
-        pixels.show(); // turn off
-        delay(10);
-        pixels.show(); // turn off
-    // Otherwise, use the LED as status indicator
-    #else
-        pinMode(STATUS_LED_PIN, OUTPUT);
-        digitalWrite(STATUS_LED_PIN, 0);
-    #endif
-
-}
+};
 
 /**************************************************************************/
 /*!
@@ -98,6 +60,11 @@ Wippersnapper::~Wippersnapper() {
     free(_topic_description);
     free(_topic_signal_device);
     free(_topic_signal_brkr);
+}
+
+void Wippersnapper::set_user_key(const char *aio_username, const char *aio_key) {
+    _username = aio_username;
+    _key = aio_key;
 }
 
 
@@ -128,7 +95,7 @@ void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction
 */
 /****************************************************************************/
 void deinitDigitalPin(uint8_t pinName) {
-    WS_DEBUG_PRINT("Deinitializing pin ");
+    WS_DEBUG_PRINT("Deinitializing digital input pin ");WS_DEBUG_PRINTLN(pinName);
     char cstr[16];
     itoa(pinName, cstr, 10);
     WS_DEBUG_PRINTLN(cstr);
@@ -148,44 +115,28 @@ void digitalWriteSvc(uint8_t pinName, int pinValue) {
 
 /****************************************************************************/
 /*!
-    @brief    Attaches a timer to a digital pin.
+    @brief    Initializes a digital input pin
 */
 /****************************************************************************/
-void Wippersnapper::attachDigitalPinTimer(uint8_t pinName, float interval) {
-    WS_DEBUG_PRINT("Attaching timer to pin D");WS_DEBUG_PRINTLN(pinName);
+void Wippersnapper::initDigitalInputPin(int pinName, float interval) {
+    WS_DEBUG_PRINT("Init. digital input pin D");WS_DEBUG_PRINTLN(pinName);
     // Interval is in seconds, cast it to long and convert it to milliseconds
     long interval_ms = (long)interval * 1000;
     WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
 
-    // attach a free timer to the pin
-    for (int timerNum = 0; timerNum <= MAX_DIGITAL_TIMERS; timerNum++) {
-        if (_timersDigital[timerNum].timerInterval == -1) {
-            WS_DEBUG_PRINT("Allocating timer #");WS_DEBUG_PRINTLN(timerNum);
-            // create a digital timer object
-            timerDigitalInput timerPin = {pinName, interval_ms};
-            // add new timer to array
-            _timersDigital[timerNum] = timerPin;
-            break;
-        } else if (timerNum == MAX_DIGITAL_TIMERS) {
-            WS_DEBUG_PRINTLN("ERROR: Unable to assign timer, maximum timers allocated");
-        }
-    }
+    WS._digital_input_pins[pinName].pinName = pinName;
+    WS._digital_input_pins[pinName].timerInterval = interval_ms;
+
 }
 
 /****************************************************************************/
 /*!
-    @brief    Detaches a timer from a digital pin
+    @brief    Deinitializes a digital input pin
 */
 /****************************************************************************/
-void Wippersnapper::detachDigitalPinTimer(uint8_t pinName) {
-    WS_DEBUG_PRINT("Freeing timer on pin D"); WS_DEBUG_PRINTLN(pinName);
-    // find timer associated with pin
-    for (int i; i <= MAX_DIGITAL_TIMERS; i++) {
-        if(_timersDigital[i].timerInterval == pinName) {
-            _timersDigital[pinName].timerInterval = -1; // reset timer
-            _timersDigital[pinName].prvPinVal = 0; // reset prv. value
-        }
-    }
+void Wippersnapper::deinitDigitalInputPin(uint8_t pinName) {
+    WS_DEBUG_PRINT("Freeing digital input pin D"); WS_DEBUG_PRINTLN(pinName);
+    WS._digital_input_pins[pinName].timerInterval = -1;
 }
 
 /****************************************************************************/
@@ -196,7 +147,7 @@ void Wippersnapper::detachDigitalPinTimer(uint8_t pinName) {
                 Value of pin, either HIGH or LOW
 */
 /****************************************************************************/
-int digitalReadSvc(uint8_t pinName) {
+int digitalReadSvc(int pinName) {
     // Service using arduino `digitalRead`
     int pinVal = digitalRead(pinName);
     return pinVal;
@@ -211,8 +162,8 @@ int digitalReadSvc(uint8_t pinName) {
               Pointer to a wippersnapper_pin_v1_ConfigurePinRequest message.
 */
 /****************************************************************************/
-bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-    WS_DEBUG_PRINTLN("configPinReq");
+bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+    WS_DEBUG_PRINTLN("configurePinRequest");
     bool is_create = false;
     bool is_delete = false;
 
@@ -233,7 +184,7 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
             // Check if direction requires a new timer
             if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
                 // attach a new timer
-                attachDigitalPinTimer(atoi(pinName), pinMsg->period);
+                initDigitalInputPin(atoi(pinName), pinMsg->period);
             }
         }
         // TODO: else, check for analog pin, setAnalogPinMode() call
@@ -242,7 +193,7 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
     if (is_delete == true) { // delete a prv. initialized pin
         // check if pin has a timer
         if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT)
-            detachDigitalPinTimer(atoi(pinName));
+            deinitDigitalInputPin(atoi(pinName));
         // deinitialize the digital pin
         deinitDigitalPin(atoi(pinName));
     }
@@ -251,10 +202,10 @@ bool Wippersnapper::configPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMs
 
 /**************************************************************************/
 /*!
-    @brief  Decodes repeated ConfigurePinRequests messages.
+    @brief  Decodes a repeated ConfigurePinRequests messages.
 */
 /**************************************************************************/
-bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
 
@@ -265,8 +216,8 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
         is_success = false;
     }
 
-    // Configure physical pin
-    if (! configPinReq(&pinReqMsg)){
+    // Pass ConfigurePinRequest message
+    if (! WS.configurePinRequest(&pinReqMsg)){
         WS_DEBUG_PRINTLN("Unable to configure pin");
         is_success = false;
     }
@@ -280,7 +231,7 @@ bool Wippersnapper::cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t 
     @brief  Decodes repeated PinEvents messages.
 */
 /**************************************************************************/
-bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbDecodePinEventMsg");
 
@@ -307,13 +258,15 @@ bool Wippersnapper::cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *
     return is_success;
 }
 
+// Decoding API
+
 /**************************************************************************/
 /*!
     @brief      Sets payload callbacks inside the signal message's
                 submessage.
 */
 /**************************************************************************/
-bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     bool is_success = true;
     WS_DEBUG_PRINTLN("cbSignalMsg");
 
@@ -325,7 +278,7 @@ bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, v
         // array to store the decoded CreateSignalRequests data
         wippersnapper_pin_v1_ConfigurePinRequests msg = wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
         // set up callback
-        msg.list.funcs.decode = &Wippersnapper::cbDecodePinConfigMsg;
+        msg.list.funcs.decode = cbDecodePinConfigMsg;
         msg.list.arg = field->pData;
         // decode each ConfigurePinRequest sub-message
         if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields, &msg)) {
@@ -338,7 +291,7 @@ bool Wippersnapper::cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, v
         // array to store the decoded PinEvents data
         wippersnapper_pin_v1_PinEvents msg = wippersnapper_pin_v1_PinEvents_init_zero;
         // set up callback
-        msg.list.funcs.decode = &Wippersnapper::cbDecodePinEventMsg;
+        msg.list.funcs.decode = cbDecodePinEventMsg;
         msg.list.arg = field->pData;
         // decode each PinEvents sub-message
         if (!pb_decode(stream, wippersnapper_pin_v1_PinEvents_fields, &msg)) {
@@ -370,12 +323,12 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
     /* Set up the payload callback, which will set up the callbacks for
     each oneof payload field once the field tag is known */
-    encodedSignalMsg->cb_payload.funcs.decode = &Wippersnapper::cbSignalMsg;
+    encodedSignalMsg->cb_payload.funcs.decode = cbSignalMsg;
 
     // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
-    pb_istream_t stream = pb_istream_from_buffer(_buffer, bufSize);
+    pb_istream_t stream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
     if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, encodedSignalMsg)) {
-        WS_DEBUG_PRINTLN("L285 ERROR: Could not decode CreateSignalRequest")
+        WS_DEBUG_PRINTLN("ERROR (decodeSignalMsg):, Could not decode CreateSignalRequest")
         is_success = false;
     }
     return is_success;
@@ -383,29 +336,28 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 
 /**************************************************************************/
 /*!
-    @brief    Executes when signal topic receives a new message. Fills
+    @brief    Called when signal topic receives a new message. Fills
                 shared buffer with data from payload.
 */
 /**************************************************************************/
-void Wippersnapper::cbSignalTopic(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("* NEW message on signal topic");
+void cbSignalTopic(char *data, uint16_t len) {
+    WS_DEBUG_PRINTLN("-> Message on Signal Topic");
     WS_DEBUG_PRINT(len);WS_DEBUG_PRINTLN(" bytes.");
-    // zero-out buffer contents
-    memset(_buffer, 0, sizeof(_buffer));
+    // zero-out current buffer
+    memset(WS._buffer, 0, sizeof(WS._buffer));
     // copy data to buffer
-    memcpy(_buffer, data, len);
-    bufSize = len;
+    memcpy(WS._buffer, data, len);
+    WS.bufSize = len;
 }
 
 /**************************************************************************/
 /*!
-    @brief    Provides void decodeRegMsg callback with a
-                wippersnapper object
+    @brief    Called when broker responds to a device's publish across
+                the registration topic.
 */
 /**************************************************************************/
-Wippersnapper* object_which_will_handle_signal;
-static void cbDescStatus_Wrapper(char *data, uint16_t len) {
-    object_which_will_handle_signal->_registerBoard->decodeRegMsg(data, len);
+void cbRegistrationStatus(char *data, uint16_t len) {
+    WS._registerBoard->decodeRegMsg(data, len);
 }
 
 /**************************************************************************/
@@ -413,96 +365,99 @@ static void cbDescStatus_Wrapper(char *data, uint16_t len) {
     @brief    Generates Wippersnapper feeds.
 */
 /**************************************************************************/
-void Wippersnapper::generate_feeds() {
+void Wippersnapper::generate_subscribe_feeds() {
 
-    // Check and set network iface UID
+    // Set UID in the network iface
     setUID();
-
     // Move the top 3 bytes from the UID
     for (int i = 5; i > 2; i--) {
-        _uid[6-1-i]  = _uid[i];
+        WS._uid[6-1-i]  = WS._uid[i];
     }
-    
-    snprintf(sUID, sizeof(sUID), "%02d%02d%02d",_uid[0], _uid[1], _uid[2]);
+    snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._uid[0], WS._uid[1], WS._uid[2]);
 
-    // Assign board type, defined at compile-time
-    _boardId = BOARD_ID;
-    // Create device UID
-    _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") + strlen(_boardId) + strlen(sUID));
+    // Set board type and device UID
+    WS._boardId = BOARD_ID;
+    _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") + strlen(WS._boardId) + strlen(WS.sUID));
     strcpy(_device_uid, "io-wipper-");
-    strcat(_device_uid, _boardId);
-    strcat(_device_uid, sUID);
-    //self._device_uid = "io-wipper-{}{}".format(self._board.name, str(mac_addr))
+    strcat(_device_uid, WS._boardId);
+    strcat(_device_uid, WS.sUID);
 
     // Create MQTT client object
     setupMQTTClient(_device_uid);
 
-    // Assign board type info
-    // TODO: Do we still need this?
-    _hw_vid = USB_VID;
-    _hw_pid = USB_PID;
-
-    // allocate memory for reserved topics
-    _topic_description = (char *)malloc(sizeof(char) * strlen(_username) \
+    // Global registration topic
+    WS._topic_description = (char *)malloc(sizeof(char) * strlen(_username) \
     + strlen("/wprsnpr") + strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
-    // Check-in status topic
-    _topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
+    // Registration status topic
+    WS._topic_description_status = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/wprsnpr/") + strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + \
     strlen("status") + strlen("broker") + 1);
 
-    _topic_signal_device = (char *)malloc(sizeof(char) * strlen(_username) + \
+    // Topic for signals from device to broker
+    WS._topic_signal_device = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("device") + 1);
 
-    _topic_signal_brkr = (char *)malloc(sizeof(char) * strlen(_username) + \
+    // Topic for signals from broker to device
+    WS._topic_signal_brkr = (char *)malloc(sizeof(char) * strlen(_username) + \
     + strlen("/") + strlen(_device_uid) +  strlen("/wprsnpr/") + \
     strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
-    // Build description check-in topic
-    if (_topic_description) {
-        strcpy(_topic_description, _username);
-        strcat(_topic_description, "/wprsnpr");
-        strcat(_topic_description, TOPIC_DESCRIPTION);
-        strcat(_topic_description, "status");
+    // Create global registration topic
+    if (WS._topic_description) {
+        strcpy(WS._topic_description, _username);
+        strcat(WS._topic_description, "/wprsnpr");
+        strcat(WS._topic_description, TOPIC_DESCRIPTION);
+        strcat(WS._topic_description, "status");
     } else { // malloc failed
-        _topic_description  = 0;
+        WS._topic_description  = 0;
     }
 
-
-    // build description status topic
-    if (_topic_description_status) {
-        strcpy(_topic_description_status, _username);
-        strcat(_topic_description_status, "/wprsnpr/");
-        strcat(_topic_description_status, _device_uid);
-        strcat(_topic_description_status, TOPIC_DESCRIPTION);
-        strcat(_topic_description_status, "status");
-        strcat(_topic_description_status, "/broker");
+    // Create registration status topic
+    if (WS._topic_description_status) {
+        strcpy(WS._topic_description_status, _username);
+        strcat(WS._topic_description_status, "/wprsnpr/");
+        strcat(WS._topic_description_status, _device_uid);
+        strcat(WS._topic_description_status, TOPIC_DESCRIPTION);
+        strcat(WS._topic_description_status, "status");
+        strcat(WS._topic_description_status, "/broker");
     } else { // malloc failed
-        _topic_description_status = 0;
+        WS._topic_description_status = 0;
     }
 
-    // build incoming signal topic
-    if (_topic_signal_device) {
-        strcpy(_topic_signal_device, _username);
-        strcat(_topic_signal_device, "/wprsnpr/");
-        strcat(_topic_signal_device, _device_uid);
-        strcat(_topic_signal_device, TOPIC_SIGNALS);
-        strcat(_topic_signal_device, "device");
+    // Create device-to-broker signal topic
+    if (WS._topic_signal_device) {
+        strcpy(WS._topic_signal_device, _username);
+        strcat(WS._topic_signal_device, "/wprsnpr/");
+        strcat(WS._topic_signal_device, _device_uid);
+        strcat(WS._topic_signal_device, TOPIC_SIGNALS);
+        strcat(WS._topic_signal_device, "device");
     } else { // malloc failed
-        _topic_signal_device = 0;
+        WS._topic_signal_device = 0;
     }
 
-    // build signals outgoing topic
-    if (_topic_signal_brkr) {
-        strcpy(_topic_signal_brkr, _username);
-        strcat(_topic_signal_brkr, "/wprsnpr/");
-        strcat(_topic_signal_brkr, _device_uid);
-        strcat(_topic_signal_brkr, TOPIC_SIGNALS);
-        strcat(_topic_signal_brkr, "broker");
+    // Create broker-to-device signal topic
+    if (WS._topic_signal_brkr) {
+        strcpy(WS._topic_signal_brkr, _username);
+        strcat(WS._topic_signal_brkr, "/wprsnpr/");
+        strcat(WS._topic_signal_brkr, _device_uid);
+        strcat(WS._topic_signal_brkr, TOPIC_SIGNALS);
+        strcat(WS._topic_signal_brkr, "broker");
     } else { // malloc failed
-        _topic_signal_brkr = 0;
+        WS._topic_signal_brkr = 0;
     }
+
+    // Subscribe to signal topic
+    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr);
+    WS._mqtt->subscribe(_topic_signal_brkr_sub);
+    _topic_signal_brkr_sub->setCallback(cbSignalTopic);
+
+    // Subscribe to registration status topic
+    WS_DEBUG_PRINTLN(WS._topic_description_status);
+    _topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status);
+    WS._mqtt->subscribe(_topic_description_sub);
+    _topic_description_sub->setCallback(cbRegistrationStatus);
 
 }
 
@@ -515,65 +470,28 @@ void Wippersnapper::connect() {
     WS_DEBUG_PRINTLN("connect()");
 
     _status = WS_IDLE;
-    _boardStatus = WS_BOARD_DEF_IDLE;
-
-    WS_DEBUG_PRINTLN("Generating feeds...");
-    generate_feeds();
-
-    // Subscription to listen to commands from the server
-    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_signal_brkr);
-    _topic_signal_brkr_sub->setCallback(cbSignalTopic);
-    _mqtt->subscribe(_topic_signal_brkr_sub);
-
-    // Publish to outgoing commands channel, server listens to this sub-topic
-    //_topic_signal_device_pub = new Adafruit_MQTT_Publish(_mqtt, _topic_signal_device);
-
-    // Create a subscription to the description status response topic
-    _topic_description_sub = new Adafruit_MQTT_Subscribe(_mqtt, _topic_description_status);
-
-    // set callback and subscribe
-    _topic_description_sub->setCallback(cbDescStatus_Wrapper);
-    _mqtt->subscribe(_topic_description_sub);
+    WS._boardStatus = WS_BOARD_DEF_IDLE;
 
     // Connect network interface
     WS_DEBUG_PRINT("Connecting to WiFi...");
-    #ifdef STATUS_NEOPIXEL
-        pixels.setPixelColor(0, pixels.Color(255, 0, 0));
-        pixels.show();
-    #else
-        digitalWrite(STATUS_LED_PIN, 1);
-    #endif
-
     _connect();
-    WS_DEBUG_PRINTLN("WiFi Connected!");
-    #ifdef STATUS_LED
-        digitalWrite(STATUS_LED_PIN, 0);
-    #endif
+    WS_DEBUG_PRINTLN("Connected!");
+
+    // Generate and subscribe to MQTT feeds
+    generate_subscribe_feeds();
+
 
     // Wait for connection to broker
     WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-    #ifdef STATUS_NEOPIXEL
-        pixels.setPixelColor(0, pixels.Color(0, 0, 255));
-        pixels.show();
-    #else
-        digitalWrite(STATUS_LED_PIN, 1);
-    #endif
+
     while (status() < WS_CONNECTED) {
         WS_DEBUG_PRINT(".");
         delay(500);
     }
-    WS_DEBUG_PRINTLN("MQTT Connected!");
-    #ifdef STATUS_LED
-        digitalWrite(STATUS_LED_PIN, 0);
-    #endif
+    WS_DEBUG_PRINTLN("Connected!");
+
 
     WS_DEBUG_PRINTLN("Registering Board...")
-    #ifdef STATUS_NEOPIXEL
-        pixels.setPixelColor(0, pixels.Color(255, 0, 255));
-        pixels.show();
-    #else
-        digitalWrite(STATUS_LED_PIN, 1);
-    #endif
     if (!registerBoard(10)) {
         WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
         for(;;) {
@@ -585,6 +503,14 @@ void Wippersnapper::connect() {
         }
     }
     WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+
+    // Allocate digital input pins
+    // TODO: Move this into a digital class
+    WS._digital_input_pins = new digitalInputPin[WS.totalDigitalPins];
+    // turn off all digital pins
+    for (int i = 1; i < WS.totalDigitalPins; i++) {
+        WS._digital_input_pins[i].timerInterval = -1;
+    }
 
     #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
@@ -614,6 +540,26 @@ void Wippersnapper::disconnect() {
     _disconnect();
 }
 
+// Concrete class definition for abstract classes
+void Wippersnapper::_connect() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
+void Wippersnapper::_disconnect() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
+void Wippersnapper::setUID() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
+void Wippersnapper::setupMQTTClient(char const*) {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+ws_status_t Wippersnapper::networkStatus() {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+}
+
 /**************************************************************************/
 /*!
     @brief    Checks and handles network interface connection.
@@ -630,19 +576,14 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
             delay(500);
         }
 
-        
-
-/*         if (!sendGetHardwareDescription(10)){
-            // TODO: get error types back from function instead of bool, verify against resp.
-            return status();
-        } */
     }
+    // TODO: Check for status, re-send registration message
     return status();
 }
 
 /**************************************************************************/
 /*!
-    @brief    Handles MQTT broker connection.
+    @brief    Handles MQTT connection.
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
@@ -652,7 +593,7 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
     }
     // Ping if > keepAlive interval
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL)) {
-        _mqtt->ping();
+        WS._mqtt->ping();
         _prv_ping = millis();
     }
 
@@ -661,20 +602,20 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 
 /**************************************************************************/
 /*!
-    @brief    Handles MQTT messages on signal topic until timeout.
+    @brief    Processes MQTT messages across signal topic.
     @param    timeout
                 timeout in milliseconds.
 */
 /**************************************************************************/
 bool Wippersnapper::processSignalMessages(int16_t timeout) {
-    _mqtt->processPackets(timeout);
+    WS._mqtt->processPackets(timeout);
 
-    if (_buffer[0] != 0) { // check if buffer set by signal topic callback
-        WS_DEBUG_PRINTLN("-> Incoming Payload Data:");
-        for (int i = 0; i < sizeof(_buffer); i++) {
-            WS_DEBUG_PRINT(_buffer[i]);
+    if (WS._buffer[0] != 0) { // check if buffer filled by signal topic callback
+        WS_DEBUG_PRINTLN("-> Payload Data:");
+        for (int i = 0; i < sizeof(WS._buffer); i++) {
+            WS_DEBUG_PRINT(WS._buffer[i]);
         }
-        WS_DEBUG_PRINTLN("\n");
+        WS_DEBUG_PRINTLN("");
 
         // Empty struct for storing the signal message
         _incomingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
@@ -684,7 +625,7 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
             WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
             return false;
         }
-        memset(_buffer, 0, sizeof(_buffer));
+        memset(WS._buffer, 0, sizeof(WS._buffer));
     }
 
     return true;
@@ -713,7 +654,7 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
     sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%d", pinVal);
 
     // Encode signal message
-    pb_ostream_t stream = pb_ostream_from_buffer(_buffer_outgoing, sizeof(_buffer_outgoing));
+    pb_ostream_t stream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
     if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, outgoingSignalMsg)) {
         WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
         is_success = false;
@@ -725,82 +666,100 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 
 /**************************************************************************/
 /*!
-    @brief    Processes incoming commands and handles network connection.
+    @brief    Iterates thru digital inputs, checks if they
+                should send data to the broker.
 */
 /**************************************************************************/
-ws_status_t Wippersnapper::run() {
-    //WS_DEBUG_PRINTLN("EXEC: loop'");
+void Wippersnapper::processDigitalInputs() {
     uint32_t curTime = millis();
-
-    // Check network connection
-    checkNetworkConnection(curTime); // TODO: handle this better
-    // Check and handle MQTT connection
-    checkMQTTConnection(curTime); // TODO: handle this better
-
     // Process digital timers
-    for (int i = 0; i < MAX_DIGITAL_TIMERS; i++) {
-        if (_timersDigital[i].timerInterval > -1L) { // validate if timer is enabled
+    for (int i = 0; i < WS.totalDigitalPins; i++) {
+        if (WS._digital_input_pins[i].timerInterval > -1L) { // validate if timer is enabled
             // Check if timer executes on a time period
-            if (curTime - _timersDigital[i].timerIntervalPrv > _timersDigital[i].timerInterval && _timersDigital[i].timerInterval != 0L) {
-                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
+            if (curTime - WS._digital_input_pins[i].timerIntervalPrv > WS._digital_input_pins[i].timerInterval && WS._digital_input_pins[i].timerInterval != 0L) {
+                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(WS._digital_input_pins[i].pinName);
                 // read the pin
-                int pinVal = digitalReadSvc(_timersDigital[i].pinName);
+                int pinVal = digitalReadSvc(WS._digital_input_pins[i].pinName);
 
                 // Create new signal message
                 wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-                
+
+                WS_DEBUG_PRINT("Encoding...")
                 // Create and encode a pinEvent message
-                if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _timersDigital[i].pinName, pinVal)) {
+                if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
                     WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
                     break;
                 }
+                WS_DEBUG_PRINTLN("Encoded!")
                 
                 // Obtain size and only write out buffer to end
                 size_t msgSz;
                 pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
                 // publish event data
-                _mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
-                WS_DEBUG_PRINTLN("Published signal message to broker!");
+                WS_DEBUG_PRINT("Publishing...")
+                WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
+                WS_DEBUG_PRINTLN("Published!");
 
                 // reset the timer
-                _timersDigital[i].timerIntervalPrv = curTime;
+                WS._digital_input_pins[i].timerIntervalPrv = curTime;
                 
             }
             // Check if timer executes on a state change
-            else if (_timersDigital[i].timerInterval == 0L) {
+            else if (WS._digital_input_pins[i].timerInterval == 0L) {
                 // read pin
-                int pinVal = digitalReadSvc(_timersDigital[i].pinName);
+                int pinVal = digitalReadSvc(WS._digital_input_pins[i].pinName);
                 // only send on-change
-                if (pinVal != _timersDigital[i].prvPinVal) {
-                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(_timersDigital[i].pinName);
+                if (pinVal != WS._digital_input_pins[i].prvPinVal) {
+                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(WS._digital_input_pins[i].pinName);
 
                     // Create new signal message
                     wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
+                    WS_DEBUG_PRINT("Encoding pinEvent...");
                     // Create and encode a pinEvent message
-                    if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _timersDigital[i].pinName, pinVal)) {
+                    if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
                         WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
                         break;
                     }
+                    WS_DEBUG_PRINTLN("Encoded!");
 
                     // Obtain size and only write out buffer to end
                     size_t msgSz;
                     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
 
                     // publish event data
-                    _mqtt->publish(_topic_signal_device, _buffer_outgoing, msgSz, 1);
-                    WS_DEBUG_PRINTLN("Published signal message to broker!");
+                    WS_DEBUG_PRINT("Publishing pinEvent...");
+                    WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
+                    WS_DEBUG_PRINTLN("Published!");
 
                     // set the pin value in the timer object for comparison on next run
-                    _timersDigital[i].prvPinVal = pinVal;
+                    WS._digital_input_pins[i].prvPinVal = pinVal;
 
                     // reset the timer
-                    _timersDigital[i].timerIntervalPrv = curTime;
+                    WS._digital_input_pins[i].timerIntervalPrv = curTime;
                 }
             }
         }
-
     }
+}
+
+/**************************************************************************/
+/*!
+    @brief    Processes incoming commands and handles network connection.
+*/
+/**************************************************************************/
+ws_status_t Wippersnapper::run() {
+    uint32_t curTime = millis();
+    // Check network connection
+    checkNetworkConnection(curTime); // TODO: handle this better
+    // Check and handle MQTT connection
+    checkMQTTConnection(curTime); // TODO: handle this better
+
+    // Process digital inputs
+    // CORE module
+    processDigitalInputs();
+
+    // TODO: Process analog inputs
 
     // Process all incoming packets from Wippersnapper MQTT Broker
     processSignalMessages(100);
@@ -816,7 +775,7 @@ ws_status_t Wippersnapper::run() {
 bool Wippersnapper::registerBoard(uint8_t retries=10) {
     WS_DEBUG_PRINTLN("registerBoard()");
     // Create new board
-    _registerBoard = new Wippersnapper_Registration(this);
+    _registerBoard = new Wippersnapper_Registration();
     // Run the FSM for the registration process
     return _registerBoard->processRegistration();
 }
@@ -848,7 +807,7 @@ ws_status_t Wippersnapper::status() {
 */
 /**************************************************************************/
 ws_board_status_t Wippersnapper::getBoardStatus() {
-    return _boardStatus;
+    return WS._boardStatus;
 }
 
 /**************************************************************************/
@@ -862,18 +821,18 @@ ws_status_t Wippersnapper::mqttStatus() {
   // return so we don't hammer IO
   if (_status == WS_CONNECT_FAILED) {
     WS_DEBUG_PRINT("mqttStatus() failed to connect");
-    WS_DEBUG_PRINTLN(_mqtt->connectErrorString(_status));
+    WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
     return _status;
   }
 
-  if (_mqtt->connected())
+  if (WS._mqtt->connected())
     return WS_CONNECTED;
 
   // prevent fast reconnect attempts, except for the first time through
   if (_last_mqtt_connect == 0 ||
       millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL) {
     _last_mqtt_connect = millis();
-    switch (_mqtt->connect(_username, _key)) {
+    switch (WS._mqtt->connect(_username, _key)) {
     case 0:
       return WS_CONNECTED;
     case 1: // invalid mqtt protocol
