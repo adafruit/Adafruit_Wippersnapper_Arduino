@@ -19,7 +19,12 @@
 #include "Wippersnapper.h"
 
 // Holds data about an analog input pin
-// TODO
+struct analogInputPin {
+    uint8_t pinName;  // Pin name
+    long period;      // Pin timer interval, in millis, -1 if disabled.
+    long prvPeriod;   // When Pin's timer was previously serviced, in millis
+    float prvPinVal;    // Previous pin value
+};
 
 // forward decl.
 class Wippersnapper;
