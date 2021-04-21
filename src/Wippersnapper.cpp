@@ -562,7 +562,6 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
     }
 
     return is_success;
-
 }
 
 /**************************************************************************/

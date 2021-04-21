@@ -137,6 +137,43 @@ float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
     return pinVoltage;
 }
 
+bool Wippersnapper_AnalogIO::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, uint16_t pinVal) {
+    bool is_success = true;
+    // fill the pin_event message
+    outgoingSignalMsg->which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
+    outgoingSignalMsg->payload.pin_event.mode = wippersnapper_pin_v1_Mode_MODE_ANALOG;
+    sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "D%d", pinName);
+    sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinVal);
+
+    // Encode signal message
+    pb_ostream_t stream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, outgoingSignalMsg)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
+        is_success = false;
+    }
+
+    return is_success;
+}
+
+bool Wippersnapper_AnalogIO::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, float pinVal) {
+    bool is_success = true;
+
+    // fill the pin_event message
+    outgoingSignalMsg->which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
+    outgoingSignalMsg->payload.pin_event.mode = wippersnapper_pin_v1_Mode_MODE_ANALOG;
+    sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
+    sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%f", pinVal);
+
+    // Encode signal message
+    pb_ostream_t stream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields, outgoingSignalMsg)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
+        is_success = false;
+    }
+
+    return is_success;
+}
+
 /**********************************************************/
 /*!
     @brief    Iterates thru analog inputs
@@ -144,12 +181,17 @@ float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
 /**********************************************************/
 void Wippersnapper_AnalogIO::processAnalogInputs() {
     uint32_t curTime = millis();
-    // Process digital digital pins
+    // Process analog input pins
     for (int i = 0; i < _totalAnalogInputPins; i++) {
         if (_analog_input_pins[i].period > -1L) { // validate if pin is enabled for sampling
             // pin executes on-period
             if (curTime - _analog_input_pins[i].prvPeriod > _analog_input_pins[i].period && _analog_input_pins[i].period != 0L) {
                 WS_DEBUG_PRINT("Executing periodic event on A");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+                // Create new signal message
+                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+
+
                 uint16_t pinValue;
                 float pinVoltage;
 
@@ -160,19 +202,23 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
                     pinVoltage = getAnalogPinVoltage(pinValue);
                 }
 
-
-                // Create new signal message
-                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-                WS_DEBUG_PRINT("Encoding...")
-                // Create and encode a pinEvent message
-                // TODO: Possibly move within this function?
-                if (!WS.encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _analog_input_pins[i].pinName, pinValue)) {
-                    WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
-                    break;
+                // encode the signal message
+                if (_analog_input_pins[i].readMode == wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
+                    WS_DEBUG_PRINT("Encoding...")
+                    if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, pinVoltage)) {
+                        WS_DEBUG_PRINTLN("ERROR: Unable to encode pinevent (analog input, voltage");
+                    }
+                    WS_DEBUG_PRINTLN("Encoded!");
                 }
-                WS_DEBUG_PRINTLN("Encoded!")
-                
+                else {
+                    WS_DEBUG_PRINT("Encoding...")
+                    if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, pinValue)) {
+                        WS_DEBUG_PRINTLN("ERROR: Unable to encode pinevent (analog input, value");
+                    }
+                    WS_DEBUG_PRINTLN("Encoded!");
+                }
+
+
                 // Obtain size and only write out buffer to end
                 size_t msgSz;
                 pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);

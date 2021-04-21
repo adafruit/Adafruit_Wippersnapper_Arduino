@@ -45,6 +45,9 @@ class Wippersnapper_AnalogIO {
         uint16_t readAnalogPinRaw(int pin);
         float getAnalogPinVoltage(uint16_t rawValue);
 
+        bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, float pinVal);
+        bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, uint16_t pinVal);
+
 
         analogInputPin* _analog_input_pins; /*!< Array of analog pin objects */
     private:
