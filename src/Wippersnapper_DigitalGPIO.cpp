@@ -20,7 +20,7 @@
 /*!
     @brief  Initializes DigitalGPIO class.
     @param  totalDigitalGPIOPins
-                Total number of GPIO pins on the hardware.
+                Total number of digital gpio input-capable pins to allocate.
 */
 /***********************************************************************************/
 Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(int32_t totalDigitalGPIOPins) {
