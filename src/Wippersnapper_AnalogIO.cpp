@@ -23,8 +23,8 @@
                 Total number of analog input pins to allocate.
 */
 /***********************************************************************************/
-Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins) {
-    // TODO: init analog inputs here
+Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, float vRef) {
+    _vRef = vRef;
 }
 
 /***********************************************************************************/

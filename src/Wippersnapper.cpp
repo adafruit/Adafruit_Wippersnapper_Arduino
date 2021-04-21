@@ -406,8 +406,6 @@ void Wippersnapper::connect() {
     }
     WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
 
-    // Initialize digital gpio class with total # of gpio pins
-    WS._digitalGPIO = new Wippersnapper_DigitalGPIO(WS.totalDigitalPins);
 
     #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));

@@ -23,10 +23,11 @@
                 Total number of digital gpio input-capable pins to allocate.
 */
 /***********************************************************************************/
-Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(int32_t totalDigitalGPIOPins) {
-    _digital_input_pins = new digitalInputPin[totalDigitalGPIOPins];
+Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(int32_t totalDigitalInputPins) {
+    _totalDigitalInputPins = totalDigitalInputPins;
+    _digital_input_pins = new digitalInputPin[_totalDigitalInputPins];
     // turn sampling off for all digital pins
-    for (int i = 1; i < WS.totalDigitalPins; i++) {
+    for (int i = 1; i < _totalDigitalInputPins; i++) {
         _digital_input_pins[i].period = -1;
     }
 }
@@ -117,7 +118,7 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
 void Wippersnapper_DigitalGPIO::processDigitalInputs() {
     uint32_t curTime = millis();
     // Process digital digital pins
-    for (int i = 0; i < WS.totalDigitalPins; i++) {
+    for (int i = 0; i < _totalDigitalInputPins; i++) {
         if (_digital_input_pins[i].period > -1L) { // validate if digital pin is enabled
             // Check if digital pin executes on a time period
             if (curTime - _digital_input_pins[i].prvPeriod > _digital_input_pins[i].period && _digital_input_pins[i].period != 0L) {

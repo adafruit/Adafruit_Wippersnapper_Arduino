@@ -26,11 +26,11 @@ class Wippersnapper;
 
 class Wippersnapper_AnalogIO {
     public:
-        Wippersnapper_AnalogIO(int32_t totalAnalogInputPins);
+        Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, float vref);
         ~Wippersnapper_AnalogIO();
 
-
-        // TODO!
+    private:
+        float _vRef;                   /*!< Hardware's default voltage reference */
 };
 extern Wippersnapper WS;
 

@@ -31,7 +31,7 @@ class Wippersnapper;
 
 class Wippersnapper_DigitalGPIO {
     public:
-        Wippersnapper_DigitalGPIO(int32_t totalDigitalGPIOPins);
+        Wippersnapper_DigitalGPIO(int32_t totalDigitalInputPins);
         ~Wippersnapper_DigitalGPIO();
 
         void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName, float period);
@@ -42,6 +42,8 @@ class Wippersnapper_DigitalGPIO {
         void processDigitalInputs();
 
         digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
+    private:
+        int32_t _totalDigitalInputPins;     /*!< Total number of digital-input capable pins */
 };
 extern Wippersnapper WS;
 
