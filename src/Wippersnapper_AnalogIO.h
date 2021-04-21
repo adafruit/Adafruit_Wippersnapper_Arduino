@@ -21,6 +21,7 @@
 // Holds data about an analog input pin
 struct analogInputPin {
     int pinName;  // Pin name
+    wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode; // Which type of read to perform
     long period;      // Pin timer interval, in millis, -1 if disabled.
     long prvPeriod;   // When Pin's timer was previously serviced, in millis
     float prvPinVal;    // Previous pin value
@@ -35,10 +36,14 @@ class Wippersnapper_AnalogIO {
         ~Wippersnapper_AnalogIO();
 
         void initAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode);
+        void initAnalogInputPin(int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode);
         void deinitAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin);
+        void deinitAnalogInputPinObj(int pin);
 
+        analogInputPin* _analog_input_pins; /*!< Array of analog pin objects */
     private:
         float _vRef;                   /*!< Hardware's default voltage reference */
+        int32_t _totalAnalogInputPins;  /*!< Total number of analog input pins */
 };
 extern Wippersnapper WS;
 

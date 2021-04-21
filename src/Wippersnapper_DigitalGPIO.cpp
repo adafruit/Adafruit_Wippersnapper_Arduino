@@ -27,7 +27,7 @@ Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(int32_t totalDigitalInputPi
     _totalDigitalInputPins = totalDigitalInputPins;
     _digital_input_pins = new digitalInputPin[_totalDigitalInputPins];
     // turn sampling off for all digital pins
-    for (int i = 1; i < _totalDigitalInputPins; i++) {
+    for (int i = 0; i < _totalDigitalInputPins; i++) {
         _digital_input_pins[i].period = -1;
     }
 }
