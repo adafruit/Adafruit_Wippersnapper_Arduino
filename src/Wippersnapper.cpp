@@ -95,10 +95,10 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
     } else if (pinMsg->mode = wippersnapper_pin_v1_Mode_MODE_ANALOG) {
         if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
             // Initialize analog io pin
-            //WS._digitalGPIO->initDigitalPin(pinMsg->direction, atoi(pinName), pinMsg->period);
+            WS._analogIO->initAnalogPin(pinMsg->direction, pin, pinMsg->period, pinMsg->analog_read_mode);
         } else if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
             // Delete analog io pin
-            //WS._digitalGPIO->deinitDigitalPin(pinMsg->direction, atoi(pinName));
+            WS._analogIO->deinitAnalogPin(pinMsg->direction, pin);
         } else {
             WS_DEBUG_PRINTLN("ERROR: Could not decode digital pin request type");
         }
