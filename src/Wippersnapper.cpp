@@ -78,7 +78,7 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
     WS_DEBUG_PRINTLN("configurePinRequest");
 
     bool is_success = true;
-    char* pinName = pinMsg->pin_name;
+    char* pinName = pinMsg->pin_name + 1;
     int pin = atoi(pinName);
 
     // Decode pin mode

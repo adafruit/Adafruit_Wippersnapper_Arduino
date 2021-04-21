@@ -40,6 +40,12 @@ class Wippersnapper_AnalogIO {
         void deinitAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin);
         void deinitAnalogInputPinObj(int pin);
 
+        void processAnalogInputs();
+
+        uint16_t readAnalogPinRaw(int pin);
+        float getAnalogPinVoltage(uint16_t rawValue);
+
+
         analogInputPin* _analog_input_pins; /*!< Array of analog pin objects */
     private:
         float _vRef;                   /*!< Hardware's default voltage reference */

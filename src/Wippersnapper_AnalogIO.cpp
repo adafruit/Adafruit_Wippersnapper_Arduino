@@ -60,7 +60,6 @@ void Wippersnapper_AnalogIO::initAnalogPin(wippersnapper_pin_v1_ConfigurePinRequ
     }
 }
 
-
 /***********************************************************************************/
 /*!
     @brief  Initializes an analog input pin
@@ -69,7 +68,7 @@ void Wippersnapper_AnalogIO::initAnalogPin(wippersnapper_pin_v1_ConfigurePinRequ
 void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
         WS_DEBUG_PRINT("Initialized analog input pin A");WS_DEBUG_PRINTLN(pin);
         // Set pin mode
-        // TODO: Support INPUT_PULLUP
+        // TODO: Support INPUT_PULLUP pull
         pinMode(pin, INPUT);
 
         // Period is in seconds, cast it to long and convert it to milliseconds
@@ -82,6 +81,11 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersna
         _analog_input_pins[pin].readMode = analogReadMode;
 }
 
+/***********************************************************************************/
+/*!
+    @brief  Deinitializes an analog input pin.
+*/
+/***********************************************************************************/
 void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
     _analog_input_pins[pin].pinName = NULL;
     _analog_input_pins[pin].readMode = wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_UNSPECIFIED;
@@ -105,5 +109,118 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(wippersnapper_pin_v1_ConfigurePinRe
     itoa(pin, cstr, 10);
     WS_DEBUG_PRINTLN(cstr);
     pinMode(pin, INPUT); // hi-z
+}
 
+/**********************************************************/
+/*!
+    @brief    Reads the value of an analog pin.
+                Value is always scaled to 16-bit.
+*/
+/**********************************************************/
+uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
+    uint16_t value;
+    value = analogRead(pin);
+    // lshift for 16bit res.
+    value = value << 4;
+    return value;
+}
+
+/**********************************************************/
+/*!
+    @brief    Calculates analog pin's voltage provided
+               a 16-bit ADC value.
+*/
+/**********************************************************/
+float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
+    float pinVoltage;
+    pinVoltage = rawValue * _vRef / 65536;
+    return pinVoltage;
+}
+
+/**********************************************************/
+/*!
+    @brief    Iterates thru analog inputs
+*/
+/**********************************************************/
+void Wippersnapper_AnalogIO::processAnalogInputs() {
+    uint32_t curTime = millis();
+    // Process digital digital pins
+    for (int i = 0; i < _totalAnalogInputPins; i++) {
+        if (_analog_input_pins[i].period > -1L) { // validate if pin is enabled for sampling
+            // pin executes on-period
+            if (curTime - _analog_input_pins[i].prvPeriod > _analog_input_pins[i].period && _analog_input_pins[i].period != 0L) {
+                WS_DEBUG_PRINT("Executing periodic event on A");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+                uint16_t pinValue;
+                float pinVoltage;
+
+                // Perform an analog read
+                pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
+                // Determine if we should convert reading to voltage
+                if (_analog_input_pins[i].readMode == wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
+                    pinVoltage = getAnalogPinVoltage(pinValue);
+                }
+
+
+                // Create new signal message
+                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+                WS_DEBUG_PRINT("Encoding...")
+                // Create and encode a pinEvent message
+                // TODO: Possibly move within this function?
+                if (!WS.encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _analog_input_pins[i].pinName, pinValue)) {
+                    WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
+                    break;
+                }
+                WS_DEBUG_PRINTLN("Encoded!")
+                
+                // Obtain size and only write out buffer to end
+                size_t msgSz;
+                pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
+                // publish event data
+                WS_DEBUG_PRINT("Publishing...")
+                WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
+                WS_DEBUG_PRINTLN("Published!");
+
+                // reset the digital pin
+                _analog_input_pins[i].prvPeriod = curTime;
+            }
+            // pin samples on-change
+            else if (_analog_input_pins[i].period == 0L) {
+                // read pin
+                int pinVal;
+                // TODO: add back
+                // pinVal = digitalReadSvc(_analog_input_pins[i].pinName);
+                // only send on-change
+                if (pinVal != _analog_input_pins[i].prvPinVal) {
+                    WS_DEBUG_PRINT("Executing state-based event on D");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+
+                    // Create new signal message
+                    wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+                    WS_DEBUG_PRINT("Encoding pinEvent...");
+                    // Create and encode a pinEvent message
+                    if (!WS.encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, _analog_input_pins[i].pinName, pinVal)) {
+                        WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
+                        break;
+                    }
+                    WS_DEBUG_PRINTLN("Encoded!");
+
+                    // Obtain size and only write out buffer to end
+                    size_t msgSz;
+                    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
+
+                    // publish event data
+                    WS_DEBUG_PRINT("Publishing pinEvent...");
+                    WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
+                    WS_DEBUG_PRINTLN("Published!");
+
+                    // set the pin value in the digital pin object for comparison on next run
+                    _analog_input_pins[i].prvPinVal = pinVal;
+
+                    // reset the digital pin
+                    _analog_input_pins[i].prvPeriod = curTime;
+                }
+            }
+        }
+    }
 }
