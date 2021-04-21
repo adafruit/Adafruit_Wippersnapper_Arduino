@@ -46,8 +46,6 @@ Wippersnapper::Wippersnapper() {
     _topic_description_status = 0;
     _topic_signal_device = 0;
     _topic_signal_brkr = 0;
-
-
 };
 
 /**************************************************************************/
@@ -67,93 +65,7 @@ void Wippersnapper::set_user_key(const char *aio_username, const char *aio_key) 
     _key = aio_key;
 }
 
-
-/// PIN API ///
-/****************************************************************************/
-/*!
-    @brief    Configures a digital pin to behave as an input or an output.
-*/
-/****************************************************************************/
-void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName) {
-     if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-        WS_DEBUG_PRINT("Configured digital output pin on D"); WS_DEBUG_PRINTLN(pinName);
-        pinMode(pinName, OUTPUT);
-        digitalWrite(pinName, LOW); // initialize LOW
-     }
-     else if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-        WS_DEBUG_PRINT("Configuring digital input pin on D"); WS_DEBUG_PRINTLN(pinName);
-        pinMode(pinName, INPUT);
-     }
-     else {
-         WS_DEBUG_PRINTLN("ERROR: Invalid digital pin direction!");
-     }
-}
-
-/****************************************************************************/
-/*!
-    @brief    Deinitializes a previously configured digital pin.
-*/
-/****************************************************************************/
-void deinitDigitalPin(uint8_t pinName) {
-    WS_DEBUG_PRINT("Deinitializing digital input pin ");WS_DEBUG_PRINTLN(pinName);
-    char cstr[16];
-    itoa(pinName, cstr, 10);
-    WS_DEBUG_PRINTLN(cstr);
-    pinMode(pinName, INPUT); // hi-z
-}
-
-/**************************************************************************/
-/*!
-    @brief  High-level service which outputs to a digital pin.
-*/
-/**************************************************************************/
-void digitalWriteSvc(uint8_t pinName, int pinValue) {
-    WS_DEBUG_PRINT("Digital Pin Event: Set ");WS_DEBUG_PRINT(pinName);
-    WS_DEBUG_PRINT(" to ");WS_DEBUG_PRINTLN(pinValue);
-    digitalWrite(pinName, pinValue);
-}
-
-/****************************************************************************/
-/*!
-    @brief    Initializes a digital input pin
-*/
-/****************************************************************************/
-void Wippersnapper::initDigitalInputPin(int pinName, float interval) {
-    WS_DEBUG_PRINT("Init. digital input pin D");WS_DEBUG_PRINTLN(pinName);
-    // Interval is in seconds, cast it to long and convert it to milliseconds
-    long interval_ms = (long)interval * 1000;
-    WS_DEBUG_PRINT("Interval (ms):"); WS_DEBUG_PRINTLN(interval_ms);
-
-    WS._digital_input_pins[pinName].pinName = pinName;
-    WS._digital_input_pins[pinName].timerInterval = interval_ms;
-
-}
-
-/****************************************************************************/
-/*!
-    @brief    Deinitializes a digital input pin
-*/
-/****************************************************************************/
-void Wippersnapper::deinitDigitalInputPin(uint8_t pinName) {
-    WS_DEBUG_PRINT("Freeing digital input pin D"); WS_DEBUG_PRINTLN(pinName);
-    WS._digital_input_pins[pinName].timerInterval = -1;
-}
-
-/****************************************************************************/
-/*!
-    @brief    High-level digitalRead service impl. which performs a
-                digitalRead.
-    @returns  pinVal
-                Value of pin, either HIGH or LOW
-*/
-/****************************************************************************/
-int digitalReadSvc(int pinName) {
-    // Service using arduino `digitalRead`
-    int pinVal = digitalRead(pinName);
-    return pinVal;
-}
-
-
+// Decoders //
 /****************************************************************************/
 /*!
     @brief    Configures a pin according to a 
@@ -178,24 +90,14 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
 
     char* pinName = pinMsg->pin_name + 1;
 
-    if (is_create == true) { // initialize a new pin
+    if (is_create == true) { // initialize a new digital pin
         if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
-            initDigitalPin(pinMsg->direction, atoi(pinName));
-            // Check if direction requires a new timer
-            if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-                // attach a new timer
-                initDigitalInputPin(atoi(pinName), pinMsg->period);
-            }
+            WS._digitalGPIO->initDigitalPin(pinMsg->direction, atoi(pinName), pinMsg->period);
         }
-        // TODO: else, check for analog pin, setAnalogPinMode() call
     }
 
     if (is_delete == true) { // delete a prv. initialized pin
-        // check if pin has a timer
-        if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT)
-            deinitDigitalInputPin(atoi(pinName));
-        // deinitialize the digital pin
-        deinitDigitalPin(atoi(pinName));
+        WS._digitalGPIO->deinitDigitalPin(pinMsg->direction, atoi(pinName));
     }
     return true;
 }
@@ -244,7 +146,7 @@ bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **a
 
     char* pinName = pinEventMsg.pin_name + 1;
     if (pinEventMsg.pin_name[0] == 'D') { // digital pin event
-        digitalWriteSvc(atoi(pinName), atoi(pinEventMsg.pin_value));
+        WS._digitalGPIO->digitalWriteSvc(atoi(pinName), atoi(pinEventMsg.pin_value));
     }
     else if (pinEventMsg.pin_name[0] == 'A') { // analog pin event
         // TODO
@@ -504,13 +406,8 @@ void Wippersnapper::connect() {
     }
     WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
 
-    // Allocate digital input pins
-    // TODO: Move this into a digital class
-    WS._digital_input_pins = new digitalInputPin[WS.totalDigitalPins];
-    // turn off all digital pins
-    for (int i = 1; i < WS.totalDigitalPins; i++) {
-        WS._digital_input_pins[i].timerInterval = -1;
-    }
+    // Initialize digital gpio class with total # of gpio pins
+    WS._digitalGPIO = new Wippersnapper_DigitalGPIO(WS.totalDigitalPins);
 
     #ifdef STATUS_NEOPIXEL
         pixels.setPixelColor(0, pixels.Color(0, 255, 0));
@@ -525,7 +422,7 @@ void Wippersnapper::connect() {
         delay(500);
         digitalWrite(STATUS_LED_PIN, 0);
         // de-init pin
-        deinitDigitalPin(STATUS_LED_PIN);
+        WS._digitalGPIO->deinitDigitalPin(STATUS_LED_PIN);
     #endif
 
 
@@ -666,85 +563,6 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 
 /**************************************************************************/
 /*!
-    @brief    Iterates thru digital inputs, checks if they
-                should send data to the broker.
-*/
-/**************************************************************************/
-void Wippersnapper::processDigitalInputs() {
-    uint32_t curTime = millis();
-    // Process digital timers
-    for (int i = 0; i < WS.totalDigitalPins; i++) {
-        if (WS._digital_input_pins[i].timerInterval > -1L) { // validate if timer is enabled
-            // Check if timer executes on a time period
-            if (curTime - WS._digital_input_pins[i].timerIntervalPrv > WS._digital_input_pins[i].timerInterval && WS._digital_input_pins[i].timerInterval != 0L) {
-                WS_DEBUG_PRINT("Executing periodic timer on D");WS_DEBUG_PRINTLN(WS._digital_input_pins[i].pinName);
-                // read the pin
-                int pinVal = digitalReadSvc(WS._digital_input_pins[i].pinName);
-
-                // Create new signal message
-                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-                WS_DEBUG_PRINT("Encoding...")
-                // Create and encode a pinEvent message
-                if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
-                    WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
-                    break;
-                }
-                WS_DEBUG_PRINTLN("Encoded!")
-                
-                // Obtain size and only write out buffer to end
-                size_t msgSz;
-                pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
-                // publish event data
-                WS_DEBUG_PRINT("Publishing...")
-                WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-                WS_DEBUG_PRINTLN("Published!");
-
-                // reset the timer
-                WS._digital_input_pins[i].timerIntervalPrv = curTime;
-                
-            }
-            // Check if timer executes on a state change
-            else if (WS._digital_input_pins[i].timerInterval == 0L) {
-                // read pin
-                int pinVal = digitalReadSvc(WS._digital_input_pins[i].pinName);
-                // only send on-change
-                if (pinVal != WS._digital_input_pins[i].prvPinVal) {
-                    WS_DEBUG_PRINT("Executing state-based timer on D");WS_DEBUG_PRINTLN(WS._digital_input_pins[i].pinName);
-
-                    // Create new signal message
-                    wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-                    WS_DEBUG_PRINT("Encoding pinEvent...");
-                    // Create and encode a pinEvent message
-                    if (!encodePinEvent(&_outgoingSignalMsg, wippersnapper_pin_v1_Mode_MODE_DIGITAL, WS._digital_input_pins[i].pinName, pinVal)) {
-                        WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
-                        break;
-                    }
-                    WS_DEBUG_PRINTLN("Encoded!");
-
-                    // Obtain size and only write out buffer to end
-                    size_t msgSz;
-                    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields, &_outgoingSignalMsg);
-
-                    // publish event data
-                    WS_DEBUG_PRINT("Publishing pinEvent...");
-                    WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-                    WS_DEBUG_PRINTLN("Published!");
-
-                    // set the pin value in the timer object for comparison on next run
-                    WS._digital_input_pins[i].prvPinVal = pinVal;
-
-                    // reset the timer
-                    WS._digital_input_pins[i].timerIntervalPrv = curTime;
-                }
-            }
-        }
-    }
-}
-
-/**************************************************************************/
-/*!
     @brief    Processes incoming commands and handles network connection.
 */
 /**************************************************************************/
@@ -755,9 +573,8 @@ ws_status_t Wippersnapper::run() {
     // Check and handle MQTT connection
     checkMQTTConnection(curTime); // TODO: handle this better
 
-    // Process digital inputs
-    // CORE module
-    processDigitalInputs();
+    // Process digital inputs, digitalGPIO module
+    WS._digitalGPIO->processDigitalInputs();
 
     // TODO: Process analog inputs
 

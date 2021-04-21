@@ -28,9 +28,12 @@
 #include <wippersnapper/signal/v1/signal.pb.h>              // signal.proto
 #include <wippersnapper/pin/v1/pin.pb.h>                    // pin.proto
 
-// Internal
+// Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
+
+// Wippersnapper GPIO
+#include "Wippersnapper_DigitalGPIO.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -90,16 +93,6 @@ typedef enum {
     WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-// Holds data about a digital input timer
-// members assigned from a PinConfigureRequest
-// TODO: Move out to DigitalGPIO class
-struct digitalInputPin {
-    uint8_t pinName; // Pin name
-    long timerInterval; // timer interval, in millis, -1 if disabled.
-    long timerIntervalPrv; // time timer was previously serviced, in millis
-    int prvPinVal; // Previous pin value
-};
-
 
 /* MQTT Configuration */
 // Keep Alive interval, in ms
@@ -110,6 +103,7 @@ struct digitalInputPin {
 
 
 class Wippersnapper_Registration;
+class Wippersnapper_DigitalGPIO;
 
 class Wippersnapper {
 
@@ -119,7 +113,6 @@ class Wippersnapper {
         virtual ~Wippersnapper();
 
         void set_user_key(const char *aio_username, const char *aio_key);
-
         void set_ssid_pass(char *ssid, const char *ssidPassword);
 
         void connect();
@@ -151,8 +144,6 @@ class Wippersnapper {
         bool processSignalMessages(int16_t timeout);
 
         // MQTT topic callbacks //
-
-        
         // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
 
@@ -166,13 +157,6 @@ class Wippersnapper {
         bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field, void **arg);
         bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
-
-        // Digital Input
-        void initDigitalInputPin(int pinName, float interval);
-        void deinitDigitalInputPin(uint8_t pinName);
-        void processDigitalInputs();
-
-
         uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback payload */
         uint8_t _buffer_outgoing[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains outgoing payload data */
         uint16_t bufSize; /*!< Length of data inside buffer */
@@ -180,6 +164,7 @@ class Wippersnapper {
         ws_board_status_t _boardStatus;
 
         Wippersnapper_Registration *_registerBoard; /*!< Instance of registration class */
+        Wippersnapper_DigitalGPIO *_digitalGPIO;    /*!< Instance of digital gpio class */
 
         // TODO: move neopixel into its own class
         Adafruit_NeoPixel pixels; /*!< NeoPixel */
@@ -201,7 +186,8 @@ class Wippersnapper {
         int32_t totalDigitalPins;   /*!< Total number of hardware's GPIO pins */
         int32_t totalAnalogPins; /*!< Total number of hardware's analog input pins */
         float vRef;                /*!< Hardware's default voltage reference */
-        digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
+
+        char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
     private:
         void _init();
@@ -228,7 +214,6 @@ class Wippersnapper {
         // MQTT topics
         char *_topic_description_status; /*!< MQTT subtopic carrying the description status resp. from the broker */
         char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
-        char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
         Adafruit_MQTT_Subscribe *_topic_description_sub;
         Adafruit_MQTT_Publish *_topic_signal_device_pub;

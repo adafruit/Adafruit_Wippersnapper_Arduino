@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_Checkin.cpp
+ * @file Wippersnapper_Registration.cpp
  *
  * This file provides an API for registering a
  * device with the Wippersnapper MQTT broker.
