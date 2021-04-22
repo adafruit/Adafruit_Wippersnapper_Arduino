@@ -35,7 +35,7 @@ class Wippersnapper_AnalogIO {
         Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, float vref);
         ~Wippersnapper_AnalogIO();
 
-        void initAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode);
+        void initAnalogPin(int pin);
         void initAnalogInputPin(int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode);
         void deinitAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin);
         void deinitAnalogInputPinObj(int pin);

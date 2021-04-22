@@ -47,22 +47,29 @@ Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
 
 /***********************************************************************************/
 /*!
-    @brief  Initializes an analog pin
+    @brief  Initializes an analog output pin.
+    @param  pin
+                The analog pin to read from.
+    @param  direction 
+                The pin's direction.
+    @param  period
+                Time between measurements, in seconds.
 */
 /***********************************************************************************/
-void Wippersnapper_AnalogIO::initAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
-    if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-        WS_DEBUG_PRINTLN("ERROR: Analog output pin not yet implemented");
-    } else if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-        initAnalogInputPin(pin, period, analogReadMode);
-    } else {
-        WS_DEBUG_PRINTLN("ERROR: Unable to decode analog pin direction");
-    }
+void Wippersnapper_AnalogIO::initAnalogPin(int pin) {
+    WS_DEBUG_PRINTLN("ERROR: Analog output pin not yet implemented");
 }
 
 /***********************************************************************************/
 /*!
     @brief  Initializes an analog input pin
+    @param  pin
+                The analog pin to read from.
+    @param  period
+                Time between measurements, in seconds.
+    @param  analogReadMode
+                The type of measurement to perform. Returns either a raw ADC value
+                    or the pin's voltage (in volts).
 */
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
@@ -84,6 +91,8 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersna
 /***********************************************************************************/
 /*!
     @brief  Deinitializes an analog input pin.
+    @param  pin
+                The analog input pin to deinitialize.
 */
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
@@ -97,17 +106,19 @@ void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
 /***********************************************************************************/
 /*!
     @brief  Deinitializes an analog pin.
+    @param  direction
+                The analog pin's direction.
+    @param  pin
+                The analog pin to deinitialize.
+
 */
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::deinitAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin) {
-    WS_DEBUG_PRINT("Deinitializing analog pin"); WS_DEBUG_PRINTLN(pin);
+    WS_DEBUG_PRINT("Deinitializing analog pin A"); WS_DEBUG_PRINTLN(pin);
     if (direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
         WS_DEBUG_PRINTLN("Deinitialized analog input pin obj.");
        deinitAnalogInputPinObj(pin);
     }
-    char cstr[16];
-    itoa(pin, cstr, 10);
-    WS_DEBUG_PRINTLN(cstr);
     pinMode(pin, INPUT); // hi-z
 }
 
@@ -137,6 +148,19 @@ float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
     return pinVoltage;
 }
 
+/**********************************************************/
+/*!
+    @brief    Encodes an analog input pin event into a
+                signal message.
+    @param    outgoingSignalMsg
+                Pointer to an empty CreateSignalRequest
+                message.
+    @param    pinName
+                Specifies the pin's name.
+    @param    pinVal
+                Pin value.
+*/
+/**********************************************************/
 bool Wippersnapper_AnalogIO::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, uint16_t pinVal) {
     bool is_success = true;
     WS_DEBUG_PRINT("Encoding signal message...");
@@ -157,6 +181,19 @@ bool Wippersnapper_AnalogIO::encodePinEvent(wippersnapper_signal_v1_CreateSignal
     return is_success;
 }
 
+/**********************************************************/
+/*!
+    @brief    Encodes an analog input pin event into a
+                signal message.
+    @param    outgoingSignalMsg
+                Pointer to an empty CreateSignalRequest
+                message.
+    @param    pinName
+                Specifies the pin's name.
+    @param    pinVal
+                Pin voltage, in volts.
+*/
+/**********************************************************/
 bool Wippersnapper_AnalogIO::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, float pinVal) {
     bool is_success = true;
 

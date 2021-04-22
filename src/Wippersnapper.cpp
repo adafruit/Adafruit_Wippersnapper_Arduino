@@ -95,7 +95,15 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
     } else if (pinMsg->mode = wippersnapper_pin_v1_Mode_MODE_ANALOG) {
         if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
             // Initialize analog io pin
-            WS._analogIO->initAnalogPin(pinMsg->direction, pin, pinMsg->period, pinMsg->analog_read_mode);
+            if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
+                WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->analog_read_mode);
+            }
+            else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+                WS._analogIO->initAnalogPin(pin);
+            } else {
+                WS_DEBUG_PRINTLN("ERROR: Unable to decode analog pin direction.")
+                is_success = false;
+            }
         } else if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
             // Delete analog io pin
             WS._analogIO->deinitAnalogPin(pinMsg->direction, pin);
