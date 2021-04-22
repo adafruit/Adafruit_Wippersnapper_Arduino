@@ -72,11 +72,13 @@ void Wippersnapper_AnalogIO::initAnalogPin(int pin) {
                     or the pin's voltage (in volts).
 */
 /***********************************************************************************/
-void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
+void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_Pull pull_mode, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
         WS_DEBUG_PRINT("Initialized analog input pin A");WS_DEBUG_PRINTLN(pin);
-        // Set pin mode
-        // TODO: Support INPUT_PULLUP pull
-        pinMode(pin, INPUT);
+        if (pull_mode == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
+            pinMode(pin, INPUT_PULLUP); // set analog input pull-up
+        } else {
+            pinMode(pin, INPUT); // set analog input
+        }
 
         // Period is in seconds, cast it to long and convert it to milliseconds
         long periodMs = (long)period * 1000;

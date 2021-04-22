@@ -92,11 +92,13 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
         } else {
             WS_DEBUG_PRINTLN("ERROR: Could not decode digital pin request type");
         }
-    } else if (pinMsg->mode = wippersnapper_pin_v1_Mode_MODE_ANALOG) {
+    }
+
+    else if (pinMsg->mode = wippersnapper_pin_v1_Mode_MODE_ANALOG) {
         if (pinMsg->request_type == wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
             // Initialize analog io pin
             if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-                WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->analog_read_mode);
+                WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->pull, pinMsg->analog_read_mode);
             }
             else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
                 WS._analogIO->initAnalogPin(pin);
@@ -166,10 +168,10 @@ bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field, void **a
     }
     else if (pinEventMsg.pin_name[0] == 'A') { // analog pin event
         // TODO
-        WS_DEBUG_PRINTLN("Analog pin event, Unimplemented!");
+        WS_DEBUG_PRINTLN("ERROR: Analog PinEvent unimplemented!");
     }
     else {
-        WS_DEBUG_PRINTLN("Unknown pinEvent:pinName!");
+        WS_DEBUG_PRINTLN("ERROR: Unable to decode pin event name.");
         is_success = false;
     }
 
