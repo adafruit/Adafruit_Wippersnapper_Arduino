@@ -58,6 +58,9 @@ class Wippersnapper_AnalogIO {
     private:
         float _vRef;                    /*!< Hardware's reported voltage reference */
         int32_t _totalAnalogInputPins;  /*!< Total number of analog input pins */
+        float _hysterisis;
+        uint16_t pinValThreshLow;
+        uint16_t pinValThreshHi;
 };
 extern Wippersnapper WS;
 

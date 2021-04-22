@@ -27,6 +27,9 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, flo
     _vRef = vRef;
     _totalAnalogInputPins = totalAnalogInputPins;
 
+    // Default hysterisis of 2%
+    _hysterisis = 0.02;
+
     // allocate analog input pins
     _analog_input_pins = new analogInputPin[_totalAnalogInputPins];
     for (int pin = 0; pin < _totalAnalogInputPins; pin++) {
@@ -268,7 +271,11 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
             else if (_analog_input_pins[i].period == 0L) {
                 // Perform an analog read
                 pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
-                if (pinValue != _analog_input_pins[i].prvPinVal) {
+                // calculate bounds
+                pinValThreshHi = _analog_input_pins[i].prvPinVal + (_analog_input_pins[i].prvPinVal * _hysterisis);
+                pinValThreshLow = _analog_input_pins[i].prvPinVal - (_analog_input_pins[i].prvPinVal * _hysterisis);
+
+                if (pinValue > pinValThreshHi || pinValue < pinValThreshLow) {
                     WS_DEBUG_PRINT("Executing state-based event on A");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
                     // Create new signal message
