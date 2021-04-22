@@ -18,7 +18,7 @@
 
 #include "Wippersnapper.h"
 
-// Holds data about an analog input pin
+/** Data about an analog input pin */
 struct analogInputPin {
     int pinName;  // Pin name
     wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode; // Which type of read to perform
@@ -30,6 +30,12 @@ struct analogInputPin {
 // forward decl.
 class Wippersnapper;
 
+/**************************************************************************/
+/*! 
+    @brief  Class that provides an interface for reading and controlling
+            analog pins. Stores information about analog input pins.
+*/
+/**************************************************************************/
 class Wippersnapper_AnalogIO {
     public:
         Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, float vref);
@@ -40,18 +46,17 @@ class Wippersnapper_AnalogIO {
         void deinitAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin);
         void deinitAnalogInputPinObj(int pin);
 
-        void processAnalogInputs();
-
         uint16_t readAnalogPinRaw(int pin);
         float getAnalogPinVoltage(uint16_t rawValue);
+
+        void processAnalogInputs();
 
         bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, float pinVal);
         bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, uint16_t pinVal);
 
-
         analogInputPin* _analog_input_pins; /*!< Array of analog pin objects */
     private:
-        float _vRef;                   /*!< Hardware's default voltage reference */
+        float _vRef;                    /*!< Hardware's reported voltage reference */
         int32_t _totalAnalogInputPins;  /*!< Total number of analog input pins */
 };
 extern Wippersnapper WS;
