@@ -224,34 +224,30 @@ bool Wippersnapper_AnalogIO::encodePinEvent(wippersnapper_signal_v1_CreateSignal
 */
 /**********************************************************/
 void Wippersnapper_AnalogIO::processAnalogInputs() {
-    uint16_t pinValue;
-    float pinVoltage;
-
-    uint32_t curTime = millis();
-
+    _curTime = millis();
     // Process analog input pins
     for (int i = 0; i < _totalAnalogInputPins; i++) {
         if (_analog_input_pins[i].period > -1L) { // validate if pin is enabled for sampling
             // pin executes on-period
-            if (curTime - _analog_input_pins[i].prvPeriod > _analog_input_pins[i].period && _analog_input_pins[i].period != 0L) {
+            if (_curTime - _analog_input_pins[i].prvPeriod > _analog_input_pins[i].period && _analog_input_pins[i].period != 0L) {
                 WS_DEBUG_PRINT("Executing periodic event on A");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
-                // Create new signal message
-                wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-                // Perform an analog read
-                pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
-                // Determine if we should convert reading to voltage
-                if (_analog_input_pins[i].readMode == wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-                    pinVoltage = getAnalogPinVoltage(pinValue);
-                }
 
-                // encode the signal message
+                // init outgoing signal msg
+                _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+                // Perform an analog read
+                _pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
                 if (_analog_input_pins[i].readMode == wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-                    if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, pinVoltage)) {
+                    // convert value to voltage
+                    _pinVoltage = getAnalogPinVoltage(_pinValue);
+                    // Attempt to encode pin event
+                    if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, _pinVoltage)) {
                         WS_DEBUG_PRINTLN("ERROR: Unable to encode pinevent (analog input, voltage");
                     }
                 }
-                else {
-                    if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, pinValue)) {
+                else { // raw value
+                    // Attempt to encode pin event msg.
+                    if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, _pinValue)) {
                         WS_DEBUG_PRINTLN("ERROR: Unable to encode pinevent (analog input, value");
                     }
                 }
@@ -265,35 +261,33 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
                 WS_DEBUG_PRINTLN("Published!");
 
                 // reset the digital pin
-                _analog_input_pins[i].prvPeriod = curTime;
+                _analog_input_pins[i].prvPeriod = _curTime;
             }
             // pin sample on-change
             else if (_analog_input_pins[i].period == 0L) {
                 // Perform an analog read
-                pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
+                _pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
                 // calculate bounds
-                pinValThreshHi = _analog_input_pins[i].prvPinVal + (_analog_input_pins[i].prvPinVal * _hysterisis);
-                pinValThreshLow = _analog_input_pins[i].prvPinVal - (_analog_input_pins[i].prvPinVal * _hysterisis);
+                _pinValThreshHi = _analog_input_pins[i].prvPinVal + (_analog_input_pins[i].prvPinVal * _hysterisis);
+                _pinValThreshLow = _analog_input_pins[i].prvPinVal - (_analog_input_pins[i].prvPinVal * _hysterisis);
 
-                if (pinValue > pinValThreshHi || pinValue < pinValThreshLow) {
+                if (_pinValue > _pinValThreshHi || _pinValue < _pinValThreshLow) {
                     WS_DEBUG_PRINT("Executing state-based event on A");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
-                    // Create new signal message
-                    wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+                    // init outgoing signal msg
+                    _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
-                    // Determine if we should convert reading to voltage
                     if (_analog_input_pins[i].readMode == wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-                        pinVoltage = getAnalogPinVoltage(pinValue);
-                    }
-
-                    // encode the signal message
-                    if (_analog_input_pins[i].readMode == wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-                        if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, pinVoltage)) {
+                        // convert value to voltage
+                        _pinVoltage = getAnalogPinVoltage(_pinValue);
+                        // Attempt to encode pin event
+                        if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, _pinVoltage)) {
                             WS_DEBUG_PRINTLN("ERROR: Unable to encode pinevent (analog input, voltage");
                         }
                     }
-                    else {
-                        if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, pinValue)) {
+                    else { // raw value
+                        // Attempt to encode pin event msg.
+                        if (!encodePinEvent(&_outgoingSignalMsg, _analog_input_pins[i].pinName, _pinValue)) {
                             WS_DEBUG_PRINTLN("ERROR: Unable to encode pinevent (analog input, value");
                         }
                     }
@@ -307,10 +301,10 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
                     WS_DEBUG_PRINTLN("Published!");
 
                     // set the pin value in the digital pin object for comparison on next run
-                    _analog_input_pins[i].prvPinVal = pinValue;
+                    _analog_input_pins[i].prvPinVal = _pinValue;
 
                     // reset the digital pin
-                    _analog_input_pins[i].prvPeriod = curTime;
+                    _analog_input_pins[i].prvPeriod = _curTime;
                 }
             }
         }

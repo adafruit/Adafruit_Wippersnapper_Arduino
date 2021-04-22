@@ -58,9 +58,16 @@ class Wippersnapper_AnalogIO {
     private:
         float _vRef;                    /*!< Hardware's reported voltage reference */
         int32_t _totalAnalogInputPins;  /*!< Total number of analog input pins */
-        float _hysterisis;
-        uint16_t pinValThreshLow;
-        uint16_t pinValThreshHi;
+
+        float _hysterisis;          /*!< Hysterisis factor. */
+        uint16_t _pinValThreshLow;  /*!< Calculated low threshold. */
+        uint16_t _pinValThreshHi;   /*!< Calculated high threshold. */
+
+        uint16_t _pinValue;  /*!< Pin's raw value from analogRead */
+        float _pinVoltage;  /*!< Pin's calculated voltage, in volts. */
+        uint32_t _curTime;  /*!< Loop timer, in ms. */
+
+        wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Signal message to send to broker on pin event. */
 };
 extern Wippersnapper WS;
 
