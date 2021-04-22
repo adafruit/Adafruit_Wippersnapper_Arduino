@@ -579,7 +579,8 @@ ws_status_t Wippersnapper::run() {
     // Process digital inputs, digitalGPIO module
     WS._digitalGPIO->processDigitalInputs();
 
-    // TODO: Process analog inputs
+    // Process analog inputs
+    WS._analogIO->processAnalogInputs();
 
     // Process all incoming packets from Wippersnapper MQTT Broker
     processSignalMessages(100);

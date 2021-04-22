@@ -89,7 +89,7 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersna
 void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
     _analog_input_pins[pin].pinName = NULL;
     _analog_input_pins[pin].readMode = wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_UNSPECIFIED;
-    _analog_input_pins[pin].period = NULL;
+    _analog_input_pins[pin].period = -1;
     _analog_input_pins[pin].prvPinVal = NULL;
     _analog_input_pins[pin].prvPeriod = NULL;
 }
@@ -143,7 +143,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(wippersnapper_signal_v1_CreateSignal
     // fill the pin_event message
     outgoingSignalMsg->which_payload = wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
     outgoingSignalMsg->payload.pin_event.mode = wippersnapper_pin_v1_Mode_MODE_ANALOG;
-    sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "D%d", pinName);
+    sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
     sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinVal);
 
     // Encode signal message
@@ -195,9 +195,6 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
                 WS_DEBUG_PRINT("Executing periodic event on A");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
                 // Create new signal message
                 wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-                uint16_t pinValue;
-                
                 // Perform an analog read
                 pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
                 // Determine if we should convert reading to voltage
@@ -233,7 +230,7 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
                 // Perform an analog read
                 pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
                 if (pinValue != _analog_input_pins[i].prvPinVal) {
-                    WS_DEBUG_PRINT("Executing state-based event on D");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+                    WS_DEBUG_PRINT("Executing state-based event on A");WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
                     // Create new signal message
                     wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
