@@ -61,7 +61,7 @@ Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
                 Time between measurements, in seconds.
 */
 /***********************************************************************************/
-void Wippersnapper_AnalogIO::initAnalogPin(int pin) {
+void Wippersnapper_AnalogIO::initAnalogOutputPin(int pin) {
     WS_DEBUG_PRINTLN("ERROR: Analog output pin not yet implemented");
 }
 

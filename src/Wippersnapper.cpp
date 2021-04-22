@@ -101,7 +101,7 @@ bool Wippersnapper::configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest
                 WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->pull, pinMsg->analog_read_mode);
             }
             else if (pinMsg->direction == wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-                WS._analogIO->initAnalogPin(pin);
+                WS._analogIO->initAnalogOutputPin(pin);
             } else {
                 WS_DEBUG_PRINTLN("ERROR: Unable to decode analog pin direction.")
                 is_success = false;
