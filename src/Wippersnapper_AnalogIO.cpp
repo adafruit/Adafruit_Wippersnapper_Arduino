@@ -45,6 +45,8 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, flo
 /***********************************************************************************/
 Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
     _vRef = 0.0;
+    _totalAnalogInputPins = 0;
+    _hysterisis = 0;
     delete _analog_input_pins;
 }
 
