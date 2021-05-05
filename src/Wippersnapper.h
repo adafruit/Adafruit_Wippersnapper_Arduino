@@ -34,6 +34,7 @@
 
 // Wippersnapper GPIO
 #include "Wippersnapper_DigitalGPIO.h"
+#include "Wippersnapper_AnalogIO.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -104,10 +105,9 @@ typedef enum {
 
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
+class Wippersnapper_AnalogIO;
 
 class Wippersnapper {
-
-
     public:
         Wippersnapper();
         virtual ~Wippersnapper();
@@ -163,8 +163,9 @@ class Wippersnapper {
 
         ws_board_status_t _boardStatus;
 
-        Wippersnapper_Registration *_registerBoard; /*!< Instance of registration class */
-        Wippersnapper_DigitalGPIO *_digitalGPIO;    /*!< Instance of digital gpio class */
+        Wippersnapper_Registration *_registerBoard;  /*!< Instance of registration class */
+        Wippersnapper_DigitalGPIO *_digitalGPIO;     /*!< Instance of digital gpio class */
+        Wippersnapper_AnalogIO *_analogIO;           /*!< Instance of analog io class */
 
         // TODO: move neopixel into its own class
         Adafruit_NeoPixel pixels; /*!< NeoPixel */
@@ -183,9 +184,7 @@ class Wippersnapper {
         const char *_username;  /*!< Adafruit IO username */
         const char *_key;       /*!< Adafruit IO key */
 
-        int32_t totalDigitalPins;   /*!< Total number of hardware's GPIO pins */
-        int32_t totalAnalogPins; /*!< Total number of hardware's analog input pins */
-        float vRef;                /*!< Hardware's default voltage reference */
+        int32_t totalDigitalPins;     /*!< Total number of digital-input capable pins */
 
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 

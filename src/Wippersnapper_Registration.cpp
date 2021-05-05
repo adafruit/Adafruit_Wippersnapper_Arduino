@@ -173,14 +173,16 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
         switch (message.response) {
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
                 WS._boardStatus = WS_BOARD_DEF_OK;
-                // Pull out contents of the hardware registration response
-                WS.totalDigitalPins = message.total_gpio_pins;
-                WS.totalAnalogPins = message.total_analog_pins;
-                WS.vRef = message.reference_voltage;
                 WS_DEBUG_PRINTLN("Found hardware with:")
-                WS_DEBUG_PRINT("GPIO Pins: "); WS_DEBUG_PRINTLN(WS.totalDigitalPins);
-                WS_DEBUG_PRINT("Analog Pins: "); WS_DEBUG_PRINTLN(WS.totalAnalogPins);
-                WS_DEBUG_PRINT("Reference voltage: "); WS_DEBUG_PRINT(WS.vRef); WS_DEBUG_PRINTLN("v");
+                WS_DEBUG_PRINT("GPIO Pins: "); WS_DEBUG_PRINTLN(message.total_gpio_pins);
+                WS_DEBUG_PRINT("Analog Pins: "); WS_DEBUG_PRINTLN(message.total_analog_pins);
+                WS_DEBUG_PRINT("Reference voltage: "); WS_DEBUG_PRINT(message.reference_voltage); WS_DEBUG_PRINTLN("v");
+
+                // Initialize Digital IO class
+                WS._digitalGPIO = new Wippersnapper_DigitalGPIO(message.total_gpio_pins);
+                // Initialize Analog IO class
+                WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins, message.reference_voltage);
+
                 break;
             case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
                 WS._boardStatus = WS_BOARD_DEF_INVALID;
