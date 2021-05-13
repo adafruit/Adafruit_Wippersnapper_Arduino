@@ -14,7 +14,6 @@
 
 // Uncomment the line below if using an AirLift Co-Processor
 //#define USE_AIRLIFT
-
 #if defined(USE_AIRLIFT) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) ||         \
     defined(ADAFRUIT_PYPORTAL)
 
@@ -27,8 +26,7 @@
         #define NINA_RESETN 5 // Reset pin
         #define NINA_GPIO0 6 // Not connected
     #endif
-
     Wippersnapper_WiFi ws;
 #else
-Wippersnapper_WiFi ws;
+    Wippersnapper_WiFi ws;
 #endif

@@ -438,7 +438,7 @@ void Wippersnapper::connect() {
         delay(500);
         digitalWrite(STATUS_LED_PIN, 0);
         // de-init pin
-        WS._digitalGPIO->deinitDigitalPin(STATUS_LED_PIN);
+        WS._digitalGPIO->deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT, STATUS_LED_PIN);
     #endif
 }
 

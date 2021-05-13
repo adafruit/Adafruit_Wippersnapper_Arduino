@@ -57,8 +57,9 @@
     #define STATUS_LED_PIN  13
 #elif defined(ARDUINO_ARCH_ESP32)
     // Feather Huzzah ESP32
-    #define USB_VID 0xEA60
-    #define USB_PID 0x10C4
+    // defined in esp32 bsp
+    // #define USB_VID 0xEA60
+    //#define USB_PID 0x10C4
     #define BOARD_ID "adafruit-huzzah-32"
     // Status Indicator
     #define STATUS_LED

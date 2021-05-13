@@ -22,8 +22,8 @@ void setup() {
   // while(! Serial);
 
   // set up wifi iface
-  ws.set_wifi(&SPIWIFI);
-  ws.set_airlift_pins(SPIWIFI_SS, NINA_ACK, NINA_RESETN, NINA_GPIO0);
+  //ws.set_wifi(&SPIWIFI);
+  //ws.set_airlift_pins(SPIWIFI_SS, NINA_ACK, NINA_RESETN, NINA_GPIO0);
 
   // set wifi creds
   ws.set_ssid_pass(WIFI_SSID, WIFI_PASS);
