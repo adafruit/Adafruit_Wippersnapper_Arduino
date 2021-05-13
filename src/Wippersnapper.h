@@ -121,7 +121,7 @@ class Wippersnapper {
         void disconnect();
         virtual void _disconnect();
 
-        virtual void setUID();
+        virtual void getUID();
         virtual void setupMQTTClient(const char *clientID);
 
         const __FlashStringHelper *statusText();

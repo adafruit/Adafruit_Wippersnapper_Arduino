@@ -287,16 +287,26 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 /**************************************************************************/
 void Wippersnapper::generate_subscribe_feeds() {
 
-    // Set UID in the network iface
-    setUID();
+    // Get UID from the network iface
+    getUID();
     // Move the top 3 bytes from the UID
     for (int i = 5; i > 2; i--) {
         WS._uid[6-1-i]  = WS._uid[i];
     }
     snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._uid[0], WS._uid[1], WS._uid[2]);
 
-    // Set board type and device UID
-    WS._boardId = BOARD_ID;
+    // Set hardware ID
+    #ifndef USB_PRODUCT
+        // set board ID from _boards.h
+        WS._boardId = BOARD_ID;
+    #else
+        // ESP32-S2 specific board identifier
+        if (strcmp(USB_PRODUCT, "Adafruit Funhouse ESP32-S2") == 0) {
+            WS._boardId = "adafruit-funhouse-esp32s2";
+        }
+    #endif
+
+    // Set client UID
     _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") + strlen(WS._boardId) + strlen(WS.sUID));
     strcpy(_device_uid, "io-wipper-");
     strcat(_device_uid, WS._boardId);
@@ -460,7 +470,7 @@ void Wippersnapper::_disconnect() {
     WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 
-void Wippersnapper::setUID() {
+void Wippersnapper::getUID() {
     WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 
@@ -469,6 +479,7 @@ void Wippersnapper::setupMQTTClient(char const*) {
 }
 ws_status_t Wippersnapper::networkStatus() {
     WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+    // TODO: return
 }
 
 /**************************************************************************/
