@@ -379,13 +379,13 @@ void Wippersnapper::generate_subscribe_feeds() {
     }
 
     // Subscribe to signal topic
-    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr);
+    _topic_signal_brkr_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
     WS._mqtt->subscribe(_topic_signal_brkr_sub);
     _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
     // Subscribe to registration status topic
     WS_DEBUG_PRINTLN(WS._topic_description_status);
-    _topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status);
+    _topic_description_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
     WS._mqtt->subscribe(_topic_description_sub);
     _topic_description_sub->setCallback(cbRegistrationStatus);
 
@@ -591,6 +591,7 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
+    WS_DEBUG_PRINTLN("exec::run()");
     uint32_t curTime = millis();
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better
@@ -604,7 +605,7 @@ ws_status_t Wippersnapper::run() {
     WS._analogIO->processAnalogInputs();
 
     // Process all incoming packets from Wippersnapper MQTT Broker
-    processSignalMessages(100);
+    processSignalMessages(10);
 
     return status();
 }

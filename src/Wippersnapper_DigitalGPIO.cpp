@@ -80,7 +80,6 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(wippersnapper_pin_v1_ConfigureP
     }
     char cstr[16];
     itoa(pinName, cstr, 10);
-    WS_DEBUG_PRINTLN(cstr);
     pinMode(pinName, INPUT); // hi-z
 }
 
