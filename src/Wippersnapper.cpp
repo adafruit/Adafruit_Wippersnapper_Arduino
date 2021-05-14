@@ -46,6 +46,8 @@ Wippersnapper::Wippersnapper() {
     _topic_description_status = 0;
     _topic_signal_device = 0;
     _topic_signal_brkr = 0;
+
+    empty_buffer = true;
 };
 
 /**************************************************************************/
@@ -268,6 +270,8 @@ void cbSignalTopic(char *data, uint16_t len) {
     // copy data to buffer
     memcpy(WS._buffer, data, len);
     WS.bufSize = len;
+
+    WS.empty_buffer = false;
 }
 
 /**************************************************************************/
@@ -532,7 +536,7 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 bool Wippersnapper::processSignalMessages(int16_t timeout) {
     WS._mqtt->processPackets(timeout);
 
-    if (WS._buffer[0] != 0) { // check if buffer filled by signal topic callback
+    if (WS.empty_buffer == false) { // check if buffer contains data from cb_signal
         WS_DEBUG_PRINTLN("-> Payload Data:");
         for (int i = 0; i < sizeof(WS._buffer); i++) {
             WS_DEBUG_PRINT(WS._buffer[i]);
@@ -549,6 +553,8 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
         }
         memset(WS._buffer, 0, sizeof(WS._buffer));
     }
+
+    WS.empty_buffer = true;
 
     return true;
 }
@@ -591,7 +597,7 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-    //WS_DEBUG_PRINTLN("exec::run()");
+    WS_DEBUG_PRINTLN("exec::run()");
     uint32_t curTime = millis();
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better

@@ -188,6 +188,8 @@ class Wippersnapper {
 
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
+        bool empty_buffer; 
+
     private:
         void _init();
 
