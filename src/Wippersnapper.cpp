@@ -591,7 +591,7 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-    WS_DEBUG_PRINTLN("exec::run()");
+    //WS_DEBUG_PRINTLN("exec::run()");
     uint32_t curTime = millis();
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better

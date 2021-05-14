@@ -140,14 +140,17 @@ bool Wippersnapper_Registration::pollRegMsg() {
     bool is_success = false;
     // Attempt to obtain response from broker
     uint8_t retryCount = 0;
-    while (WS._boardStatus == WS_BOARD_DEF_SENT) {
-        if (retryCount >= 10) {
-            WS_DEBUG_PRINTLN("Exceeded retries, failing out...");
+
+    while (retryCount <= 3) {
+        //WS._mqtt->processPackets(50); // pump MQTT msg loop
+        if (WS._boardStatus == WS_BOARD_DEF_OK) {
+            WS_DEBUG_PRINTLN("OK!!");
+            is_success = true;
             break;
         }
-        WS._mqtt->processPackets(500); // pump MQTT msg loop
         retryCount++;
     }
+
     return is_success;
 }
 
