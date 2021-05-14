@@ -69,9 +69,9 @@ bool Wippersnapper_Registration::processRegistration() {
             publishRegMsg();
             next_state = FSMReg::REG_DECODE_MSG;
         case FSMReg::REG_DECODE_MSG:
-            if (!pollRegMsg()) {
-                next_state = FSMReg::REG_CREATE_ENCODE_MSG;
-            } else {
+            if (!pollRegMsg()) { // fail out
+                break;
+            } else { // GOT registration msg, decode it
                 next_state = FSMReg::REG_DECODED_MSG;
             }
         case FSMReg::REG_DECODED_MSG:
@@ -141,10 +141,10 @@ bool Wippersnapper_Registration::pollRegMsg() {
     // Attempt to obtain response from broker
     uint8_t retryCount = 0;
 
+    // pump msg loop to obtain global boardstatus (from cb)
     while (retryCount <= 3) {
-        //WS._mqtt->processPackets(50); // pump MQTT msg loop
+        WS._mqtt->processPackets(50);
         if (WS._boardStatus == WS_BOARD_DEF_OK) {
-            WS_DEBUG_PRINTLN("OK!!");
             is_success = true;
             break;
         }
