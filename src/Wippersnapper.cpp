@@ -534,7 +534,10 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 */
 /**************************************************************************/
 bool Wippersnapper::processSignalMessages(int16_t timeout) {
-    WS._mqtt->processPackets(timeout);
+    WS_DEBUG_PRINT("::processPackets()");
+    WS_DEBUG_PRINTLN(WS.empty_buffer);
+
+    WS._mqtt->processPackets(1);
 
     if (WS.empty_buffer == false) { // check if buffer contains data from cb_signal
         WS_DEBUG_PRINTLN("-> Payload Data:");
