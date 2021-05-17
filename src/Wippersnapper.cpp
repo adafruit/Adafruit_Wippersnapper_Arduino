@@ -47,7 +47,6 @@ Wippersnapper::Wippersnapper() {
     _topic_signal_device = 0;
     _topic_signal_brkr = 0;
 
-    empty_buffer = true;
 };
 
 /**************************************************************************/
@@ -271,19 +270,13 @@ void cbSignalTopic(char *data, uint16_t len) {
     memcpy(WS._buffer, data, len);
     WS.bufSize = len;
 
-    WS.empty_buffer = false;
-
-
     // Empty struct for storing the signal message
     WS._incomingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
     // Attempt to decode a signal message
     if (! WS.decodeSignalMsg(&WS._incomingSignalMsg)) {
         WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
-        //return false;
     }
-    //memset(WS._buffer, 0, sizeof(WS._buffer));
-
 
 }
 
@@ -539,42 +532,6 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
     return status();
 }
 
-/**************************************************************************/
-/*!
-    @brief    Processes MQTT messages across signal topic.
-    @param    timeout
-                timeout in milliseconds.
-*/
-/**************************************************************************/
-bool Wippersnapper::processSignalMessages(int16_t timeout) {
-    WS_DEBUG_PRINT("::processPackets()");
-    WS_DEBUG_PRINTLN(WS.empty_buffer);
-
-    WS._mqtt->processPackets(10);
-
-/*     if (WS.empty_buffer == false) { // check if buffer contains data from cb_signal
-        WS_DEBUG_PRINTLN("-> Payload Data:");
-        for (int i = 0; i < sizeof(WS._buffer); i++) {
-            WS_DEBUG_PRINT(WS._buffer[i]);
-        }
-        WS_DEBUG_PRINTLN("");
-
-        // Empty struct for storing the signal message
-        _incomingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-        // Attempt to decode a signal message
-        if (! decodeSignalMsg(&_incomingSignalMsg)) {
-            WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
-            return false;
-        }
-        memset(WS._buffer, 0, sizeof(WS._buffer));
-    }
-
-    WS.empty_buffer = true;
- */
-    return true;
-}
-
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -615,7 +572,7 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 ws_status_t Wippersnapper::run() {
     WS_DEBUG_PRINTLN("exec::run()");
     // Process all incoming packets from Wippersnapper MQTT Broker
-    processSignalMessages(500);
+    WS._mqtt->processPackets(10);
 
     uint32_t curTime = millis();
     

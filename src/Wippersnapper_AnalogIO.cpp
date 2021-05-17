@@ -103,11 +103,11 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(int pin, float period, wippersna
 */
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
-    _analog_input_pins[pin].pinName = NULL;
+    _analog_input_pins[pin].pinName = 1;
     _analog_input_pins[pin].readMode = wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_UNSPECIFIED;
-    _analog_input_pins[pin].period = -1;
-    _analog_input_pins[pin].prvPinVal = NULL;
-    _analog_input_pins[pin].prvPeriod = NULL;
+    _analog_input_pins[pin].period = -1L;
+    _analog_input_pins[pin].prvPinVal = 0.0;
+    _analog_input_pins[pin].prvPeriod = 0L;
 }
 
 /***********************************************************************************/

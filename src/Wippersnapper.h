@@ -140,8 +140,6 @@ class Wippersnapper {
         ws_status_t run();
         ws_status_t checkNetworkConnection(uint32_t timeStart);
         ws_status_t checkMQTTConnection(uint32_t timeStart);
-        // Pumps message loop
-        bool processSignalMessages(int16_t timeout);
 
         // MQTT topic callbacks //
         // Decodes a signal message
@@ -188,8 +186,6 @@ class Wippersnapper {
 
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
-        bool empty_buffer; 
-        
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
 
     private:
