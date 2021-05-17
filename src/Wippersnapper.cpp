@@ -327,16 +327,8 @@ void Wippersnapper::generate_subscribe_feeds() {
   snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._uid[0], WS._uid[1],
            WS._uid[2]);
 
-// Set hardware ID
-#ifndef USB_PRODUCT
-  // set board ID from _boards.h
+  // Get board ID from _Boards.h
   WS._boardId = BOARD_ID;
-#else
-  // ESP32-S2 specific board identifier
-  if (strcmp(USB_PRODUCT, "Adafruit Funhouse ESP32-S2") == 0) {
-    WS._boardId = "adafruit-funhouse-esp32s2";
-  }
-#endif
 
   // Set client UID
   _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +

@@ -55,6 +55,11 @@
     // Status Indicator
     #define STATUS_LED
     #define STATUS_LED_PIN  13
+#elif defined(ARDUINO_FUNHOUSE_ESP32S2)
+        #define BOARD_ID "adafruit-funhouse-esp32s2"
+        // TODO: replace status LED with dotstar!
+        #define STATUS_LED
+        #define STATUS_LED_PIN  LED_BUILTIN
 #elif defined(ARDUINO_ARCH_ESP32)
         #define BOARD_ID "esp32"
         // TODO: replace status LED with dotstar!
