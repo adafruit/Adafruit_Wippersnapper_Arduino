@@ -189,6 +189,8 @@ class Wippersnapper {
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
         bool empty_buffer; 
+        
+        wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
 
     private:
         void _init();
@@ -221,7 +223,7 @@ class Wippersnapper {
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
 
-        wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
+        
         wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */
 
 };

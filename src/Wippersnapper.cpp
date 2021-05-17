@@ -263,7 +263,7 @@ bool Wippersnapper::decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest 
 */
 /**************************************************************************/
 void cbSignalTopic(char *data, uint16_t len) {
-    WS_DEBUG_PRINTLN("-> Message on Signal Topic");
+    WS_DEBUG_PRINTLN("cbSignalTopic: New Msg on Signal Topic");
     WS_DEBUG_PRINT(len);WS_DEBUG_PRINTLN(" bytes.");
     // zero-out current buffer
     memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -272,6 +272,19 @@ void cbSignalTopic(char *data, uint16_t len) {
     WS.bufSize = len;
 
     WS.empty_buffer = false;
+
+
+    // Empty struct for storing the signal message
+    WS._incomingSignalMsg = wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+    // Attempt to decode a signal message
+    if (! WS.decodeSignalMsg(&WS._incomingSignalMsg)) {
+        WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
+        //return false;
+    }
+    //memset(WS._buffer, 0, sizeof(WS._buffer));
+
+
 }
 
 /**************************************************************************/
@@ -537,9 +550,9 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     WS_DEBUG_PRINT("::processPackets()");
     WS_DEBUG_PRINTLN(WS.empty_buffer);
 
-    WS._mqtt->processPackets(1);
+    WS._mqtt->processPackets(10);
 
-    if (WS.empty_buffer == false) { // check if buffer contains data from cb_signal
+/*     if (WS.empty_buffer == false) { // check if buffer contains data from cb_signal
         WS_DEBUG_PRINTLN("-> Payload Data:");
         for (int i = 0; i < sizeof(WS._buffer); i++) {
             WS_DEBUG_PRINT(WS._buffer[i]);
@@ -558,7 +571,7 @@ bool Wippersnapper::processSignalMessages(int16_t timeout) {
     }
 
     WS.empty_buffer = true;
-
+ */
     return true;
 }
 
@@ -601,7 +614,11 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
     WS_DEBUG_PRINTLN("exec::run()");
+    // Process all incoming packets from Wippersnapper MQTT Broker
+    processSignalMessages(500);
+
     uint32_t curTime = millis();
+    
     // Check network connection
     checkNetworkConnection(curTime); // TODO: handle this better
     // Check and handle MQTT connection
@@ -613,8 +630,7 @@ ws_status_t Wippersnapper::run() {
     // Process analog inputs
     WS._analogIO->processAnalogInputs();
 
-    // Process all incoming packets from Wippersnapper MQTT Broker
-    processSignalMessages(10);
+
 
     return status();
 }

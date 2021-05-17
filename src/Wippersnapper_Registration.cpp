@@ -143,7 +143,7 @@ bool Wippersnapper_Registration::pollRegMsg() {
 
     // pump msg loop to obtain global boardstatus (from cb)
     while (retryCount <= 3) {
-        WS._mqtt->processPackets(50);
+        WS._mqtt->processPackets(10);
         if (WS._boardStatus == WS_BOARD_DEF_OK) {
             is_success = true;
             break;
