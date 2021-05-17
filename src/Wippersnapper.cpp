@@ -497,19 +497,18 @@ ws_status_t Wippersnapper::networkStatus() {
     @brief    Checks and handles network interface connection.
 */
 /**************************************************************************/
-ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
+ws_status_t Wippersnapper::checkNetworkConnection() {
     if (status() < WS_NET_CONNECTED) {
-        WS_DEBUG_PRINTLN("connection failed, reconnecting...");
+        WS_DEBUG_PRINTLN("WiFi connection failed out, reconnecting...");
         unsigned long startRetry = millis();
+        connect();
         while (status() < WS_CONNECTED) { // return an error on timeout
-            if (millis() - startRetry > 5000) {
+            if (millis() - startRetry > 60000) {
                 return status();
             }
             delay(500);
         }
-
     }
-    // TODO: Check for status, re-send registration message
     return status();
 }
 
@@ -519,17 +518,27 @@ ws_status_t Wippersnapper::checkNetworkConnection(uint32_t timeStart) {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
-    // Check network connection
-    if (mqttStatus() != WS_CONNECTED) {
-        return status();
+    // loop until we have a connection
+    // mqttStatus() will try to reconnect before returning
+    while (mqttStatus() != WS_CONNECTED &&
+            millis() - timeStart < 60000) {
     }
-    // Ping if > keepAlive interval
+    if (mqttStatus() != WS_CONNECTED) {
+        WS_DEBUG_PRINTLN("ERROR: Disconnected from MQTT!");
+    }
+    return status();
+}
+
+/**************************************************************************/
+/*!
+    @brief    Pings MQTT broker within the keepalive interval time.
+*/
+/**************************************************************************/
+void Wippersnapper::ping() {
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL)) {
         WS._mqtt->ping();
         _prv_ping = millis();
     }
-
-    return status();
 }
 
 /****************************************************************************/
@@ -570,16 +579,16 @@ bool Wippersnapper::encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-    WS_DEBUG_PRINTLN("exec::run()");
+    //WS_DEBUG_PRINTLN("exec::run()");
+    uint32_t curTime = millis();
+
     // Process all incoming packets from Wippersnapper MQTT Broker
     WS._mqtt->processPackets(10);
 
-    uint32_t curTime = millis();
-    
-    // Check network connection
-    checkNetworkConnection(curTime); // TODO: handle this better
-    // Check and handle MQTT connection
-    checkMQTTConnection(curTime); // TODO: handle this better
+    // handle network connection
+    checkNetworkConnection();
+    // handle MQTT connection
+    checkMQTTConnection(curTime);
 
     // Process digital inputs, digitalGPIO module
     WS._digitalGPIO->processDigitalInputs();
@@ -587,7 +596,8 @@ ws_status_t Wippersnapper::run() {
     // Process analog inputs
     WS._analogIO->processAnalogInputs();
 
-
+    // Ping within KAT
+    ping();
 
     return status();
 }
