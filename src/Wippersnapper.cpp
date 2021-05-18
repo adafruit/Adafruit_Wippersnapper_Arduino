@@ -47,8 +47,11 @@ Wippersnapper::Wippersnapper() {
   _topic_description_status = 0;
   _topic_signal_device = 0;
   _topic_signal_brkr = 0;
+  _err_topic = 0;
+  _throttle_topic = 0;
   _err_sub = 0;
   _throttle_sub = 0;
+  
 };
 
 /**************************************************************************/
@@ -315,13 +318,47 @@ void cbRegistrationStatus(char *data, uint16_t len) {
   WS._registerBoard->decodeRegMsg(data, len);
 }
 
+
+/**************************************************************************/
+/*!
+    @brief    Builds MQTT topics for handling errors returned from the
+                Adafruit IO broker.
+*/
+/**************************************************************************/
+bool Wippersnapper::buildErrorTopics() {
+  bool is_success = true;
+  // dynamically allocate memory for err topic
+  _err_topic = (char *)malloc(sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_ERRORS) + 1));
+
+  if (_err_topic) { // build error topic
+    strcpy(_err_topic, _username);
+    strcat(_err_topic, TOPIC_IO_ERRORS);
+  } else { // malloc failed
+    _err_topic = 0;
+    is_success = false;
+  }
+
+  // dynamically allocate memory for throttle topic
+  _throttle_topic = (char *)malloc(
+      sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_THROTTLE) + 1));
+
+  if (_throttle_topic) { // build throttle topic
+    strcpy(_throttle_topic, _username);
+    strcat(_throttle_topic, TOPIC_IO_THROTTLE);
+  } else { // malloc failed
+    _throttle_topic = 0;
+    is_success = false;
+  }
+  return is_success;
+}
+
 /**************************************************************************/
 /*!
     @brief    Generates Wippersnapper feeds.
 */
 /**************************************************************************/
-void Wippersnapper::generate_subscribe_feeds() {
-
+bool Wippersnapper::buildWSTopics() {
+  bool is_success = true;
   // Get UID from the network iface
   getUID();
   // Move the top 3 bytes from the UID
@@ -373,6 +410,7 @@ void Wippersnapper::generate_subscribe_feeds() {
     strcat(WS._topic_description, "status");
   } else { // malloc failed
     WS._topic_description = 0;
+    is_success = false;
   }
 
   // Create registration status topic
@@ -385,6 +423,7 @@ void Wippersnapper::generate_subscribe_feeds() {
     strcat(WS._topic_description_status, "/broker");
   } else { // malloc failed
     WS._topic_description_status = 0;
+    is_success = false;
   }
 
   // Create device-to-broker signal topic
@@ -396,6 +435,7 @@ void Wippersnapper::generate_subscribe_feeds() {
     strcat(WS._topic_signal_device, "device");
   } else { // malloc failed
     WS._topic_signal_device = 0;
+    is_success = false;
   }
 
   // Create broker-to-device signal topic
@@ -407,6 +447,7 @@ void Wippersnapper::generate_subscribe_feeds() {
     strcat(WS._topic_signal_brkr, "broker");
   } else { // malloc failed
     WS._topic_signal_brkr = 0;
+    is_success = false;
   }
 
   // Subscribe to signal topic
@@ -421,6 +462,8 @@ void Wippersnapper::generate_subscribe_feeds() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
   WS._mqtt->subscribe(_topic_description_sub);
   _topic_description_sub->setCallback(cbRegistrationStatus);
+
+  return is_success;
 }
 
 /**************************************************************************/
@@ -439,8 +482,25 @@ void Wippersnapper::connect() {
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
 
-  // Generate and subscribe to MQTT feeds
-  generate_subscribe_feeds();
+  // Attempt to build error topics
+  if !(buildWSTopics()) {
+    WS_DEBUG_PRINTLN("Unable to allocate memory for Wippersnapper topics.")
+    _disconnect();
+    for (;;) {
+      delay(1000);
+    }
+  }
+
+  // Attempt to build error topics
+  if !(buildErrorTopics()) {
+    WS_DEBUG_PRINTLN("Unable to allocate memory for error topics.")
+    _disconnect();
+    for (;;) {
+      delay(1000);
+    }
+  }
+
+  // Subscribe to all topics
 
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");

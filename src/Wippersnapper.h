@@ -41,6 +41,10 @@
 #include "Arduino.h" // Wiring
 #include <Adafruit_NeoPixel.h>
 
+// Reserved Adafruit IO MQTT topics
+#define TOPIC_IO_THROTTLE "/throttle"  ///< Adafruit IO Throttle MQTT Topic
+#define TOPIC_IO_ERRORS "/errors"      ///< Adafruit IO Error MQTT Topic
+
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
 #define TOPIC_DESCRIPTION   "/info/"      ///< Device description topic
@@ -130,8 +134,9 @@ class Wippersnapper {
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
 
+        bool buildErrorTopics();
         // Generates Wippersnapper MQTT feeds
-        void generate_subscribe_feeds();
+        bool buildWSTopics();
 
         // Performs board registration FSM
         bool registerBoard(uint8_t retries);
@@ -219,7 +224,9 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
-        Adafruit_MQTT_Subscribe *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
+        char *_err_topic;                       /*!< Adafruit IO MQTT error message topic. */
+        char *_throttle_topic;                  /*!< Adafruit IO MQTT throttle message topic. */
+        Adafruit_MQTT_Subscribe *_err_sub;      /*!< Subscription to Adafruit IO Error topic. */
         Adafruit_MQTT_Subscribe *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
 
         
