@@ -520,14 +520,12 @@ void Wippersnapper::connect() {
       delay(1000);
     }
   }
-  // Subscribe to Wippersnapper topics
-  // TODO: implement here!
   // Subscribe to error topics
   subscribeErrorTopics();
 
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-
+  WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
   while (status() < WS_CONNECTED) {
     WS_DEBUG_PRINT(".");
     delay(500);
@@ -691,6 +689,7 @@ ws_status_t Wippersnapper::run() {
   // handle network connection
   checkNetworkConnection();
   // handle MQTT connection
+  WS_DEBUG_PRINTLN(mqttStatus());
   checkMQTTConnection(curTime);
 
   // Process all incoming packets from Wippersnapper MQTT Broker
@@ -764,6 +763,7 @@ ws_status_t Wippersnapper::mqttStatus() {
     return _status;
   }
 
+  // Is this actually working?
   if (WS._mqtt->connected())
     return WS_CONNECTED;
 
