@@ -135,6 +135,7 @@ class Wippersnapper {
         ws_board_status_t getBoardStatus();
 
         bool buildErrorTopics();
+        void subscribeErrorTopics();
         // Generates Wippersnapper MQTT feeds
         bool buildWSTopics();
 

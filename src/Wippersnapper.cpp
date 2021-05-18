@@ -328,28 +328,43 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 bool Wippersnapper::buildErrorTopics() {
   bool is_success = true;
   // dynamically allocate memory for err topic
-  _err_topic = (char *)malloc(sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_ERRORS) + 1));
+  WS._err_topic = (char *)malloc(sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_ERRORS) + 1));
 
-  if (_err_topic) { // build error topic
-    strcpy(_err_topic, _username);
-    strcat(_err_topic, TOPIC_IO_ERRORS);
+  if (WS._err_topic) { // build error topic
+    strcpy(WS._err_topic, _username);
+    strcat(WS._err_topic, TOPIC_IO_ERRORS);
   } else { // malloc failed
-    _err_topic = 0;
+    WS._err_topic = 0;
     is_success = false;
   }
 
   // dynamically allocate memory for throttle topic
-  _throttle_topic = (char *)malloc(
+  WS._throttle_topic = (char *)malloc(
       sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_THROTTLE) + 1));
 
-  if (_throttle_topic) { // build throttle topic
-    strcpy(_throttle_topic, _username);
-    strcat(_throttle_topic, TOPIC_IO_THROTTLE);
+  if (WS._throttle_topic) { // build throttle topic
+    strcpy(WS._throttle_topic, _username);
+    strcat(WS._throttle_topic, TOPIC_IO_THROTTLE);
   } else { // malloc failed
-    _throttle_topic = 0;
+    WS._throttle_topic = 0;
     is_success = false;
   }
   return is_success;
+}
+
+void Wippersnapper::subscribeErrorTopics() {
+  // Subscribe to error topic
+  _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
+  WS._mqtt->subscribe(_err_sub);
+  // TODO: add a callback here
+  //_topic_signal_brkr_sub->setCallback(cbSignalTopic);
+
+  // Subscribe to throttle topic
+  _throttle_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._throttle_topic);
+  WS._mqtt->subscribe(_throttle_sub);
+  // TODO: add a callback here
+  //_topic_signal_brkr_sub->setCallback(cbSignalTopic);
+
 }
 
 /**************************************************************************/
@@ -483,7 +498,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Connected!");
 
   // Attempt to build error topics
-  if !(buildWSTopics()) {
+  if (!buildWSTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for Wippersnapper topics.")
     _disconnect();
     for (;;) {
@@ -492,15 +507,17 @@ void Wippersnapper::connect() {
   }
 
   // Attempt to build error topics
-  if !(buildErrorTopics()) {
+  if (!buildErrorTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for error topics.")
     _disconnect();
     for (;;) {
       delay(1000);
     }
   }
-
-  // Subscribe to all topics
+  // Subscribe to Wippersnapper topics
+  // TODO: implement here!
+  // Subscribe to error topics
+  subscribeErrorTopics();
 
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
