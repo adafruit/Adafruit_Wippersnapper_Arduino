@@ -318,6 +318,15 @@ void cbRegistrationStatus(char *data, uint16_t len) {
   WS._registerBoard->decodeRegMsg(data, len);
 }
 
+void cbErrorTopic(char *errorData, uint16_t len) {
+  WS_DEBUG_PRINT("IO ERROR: ");
+  WS_DEBUG_PRINTLN(errorData);
+}
+
+void cbThrottleTopic(char *throttleData, uint16_t len) {
+  WS_DEBUG_PRINT("IO Throttle Error: ");
+  WS_DEBUG_PRINTLN(throttleData);
+}
 
 /**************************************************************************/
 /*!
@@ -356,15 +365,12 @@ void Wippersnapper::subscribeErrorTopics() {
   // Subscribe to error topic
   _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
   WS._mqtt->subscribe(_err_sub);
-  // TODO: add a callback here
-  //_topic_signal_brkr_sub->setCallback(cbSignalTopic);
+  _err_sub->setCallback(cbErrorTopic);
 
   // Subscribe to throttle topic
   _throttle_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._throttle_topic);
   WS._mqtt->subscribe(_throttle_sub);
-  // TODO: add a callback here
-  //_topic_signal_brkr_sub->setCallback(cbSignalTopic);
-
+  _err_sub->setCallback(cbThrottleTopic);
 }
 
 /**************************************************************************/
