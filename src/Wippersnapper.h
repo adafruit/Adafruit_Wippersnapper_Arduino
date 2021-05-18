@@ -219,6 +219,8 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
+        Adafruit_MQTT_Subscribe *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
+        Adafruit_MQTT_Subscribe *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
 
         
         wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */

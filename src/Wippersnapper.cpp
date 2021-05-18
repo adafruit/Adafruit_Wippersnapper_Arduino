@@ -47,6 +47,8 @@ Wippersnapper::Wippersnapper() {
   _topic_description_status = 0;
   _topic_signal_device = 0;
   _topic_signal_brkr = 0;
+  _err_sub = 0;
+  _throttle_sub = 0;
 };
 
 /**************************************************************************/
@@ -55,10 +57,12 @@ Wippersnapper::Wippersnapper() {
 */
 /**************************************************************************/
 Wippersnapper::~Wippersnapper() {
-  // re-allocate topics
+  // free topics
   free(_topic_description);
   free(_topic_signal_device);
   free(_topic_signal_brkr);
+  free(_err_sub);
+  free(_throttle_sub);
 }
 
 void Wippersnapper::set_user_key(const char *aio_username,
