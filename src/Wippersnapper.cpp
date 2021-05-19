@@ -375,7 +375,7 @@ void Wippersnapper::subscribeErrorTopics() {
   // Subscribe to throttle topic
   _throttle_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._throttle_topic);
   WS._mqtt->subscribe(_throttle_sub);
-  _err_sub->setCallback(cbThrottleTopic);
+  _throttle_sub->setCallback(cbThrottleTopic);
 }
 
 /**************************************************************************/
