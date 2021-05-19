@@ -361,6 +361,11 @@ bool Wippersnapper::buildErrorTopics() {
   return is_success;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Subscribes to user-specific Adafruit IO MQTT topics
+*/
+/**************************************************************************/
 void Wippersnapper::subscribeErrorTopics() {
   // Subscribe to error topic
   _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
@@ -375,7 +380,7 @@ void Wippersnapper::subscribeErrorTopics() {
 
 /**************************************************************************/
 /*!
-    @brief    Generates Wippersnapper feeds.
+    @brief    Generates device-specific Wippersnapper control topics.
 */
 /**************************************************************************/
 bool Wippersnapper::buildWSTopics() {
@@ -489,6 +494,26 @@ bool Wippersnapper::buildWSTopics() {
 
 /**************************************************************************/
 /*!
+    @brief    Subscribes to device-specific MQTT control topics.
+*/
+/**************************************************************************/
+void Wippersnapper::subscribeWSTopics() {
+  // Subscribe to signal topic
+  _topic_signal_brkr_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_brkr_sub);
+  _topic_signal_brkr_sub->setCallback(cbSignalTopic);
+
+  // Subscribe to registration status topic
+  WS_DEBUG_PRINTLN(WS._topic_description_status);
+  _topic_description_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
+  WS._mqtt->subscribe(_topic_description_sub);
+  _topic_description_sub->setCallback(cbRegistrationStatus);
+}
+
+/**************************************************************************/
+/*!
     @brief    Connects to Adafruit IO+ Wippersnapper broker.
 */
 /**************************************************************************/
@@ -503,7 +528,7 @@ void Wippersnapper::connect() {
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
 
-  // Attempt to build error topics
+  // Attempt to build Wippersnapper MQTT topics
   if (!buildWSTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for Wippersnapper topics.")
     _disconnect();
@@ -512,7 +537,10 @@ void Wippersnapper::connect() {
     }
   }
 
-  // Attempt to build error topics
+  // Subscribe to wippersnapper topics
+  subscribeWSTopics();
+
+  // Attempt to build error MQTT topics
   if (!buildErrorTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for error topics.")
     _disconnect();

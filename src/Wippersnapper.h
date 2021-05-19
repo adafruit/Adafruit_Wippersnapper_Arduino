@@ -106,7 +106,6 @@ typedef enum {
 // MAXIMUM MQTT expected payload size, in bytes
 #define WS_MQTT_MAX_PAYLOAD_SIZE 128
 
-
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
@@ -134,10 +133,10 @@ class Wippersnapper {
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
 
+        bool buildWSTopics();
+        void subscribeWSTopics();
         bool buildErrorTopics();
         void subscribeErrorTopics();
-        // Generates Wippersnapper MQTT feeds
-        bool buildWSTopics();
 
         // Performs board registration FSM
         bool registerBoard(uint8_t retries);
