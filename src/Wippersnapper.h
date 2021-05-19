@@ -194,6 +194,8 @@ class Wippersnapper {
 
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
 
+        bool isThrottled = false;
+
     private:
         void _init();
 

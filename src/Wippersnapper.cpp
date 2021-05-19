@@ -329,6 +329,7 @@ void cbErrorTopic(char *errorData, uint16_t len) {
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLN(throttleData);
+  WS.isThrottled = true; // set global throttle flag
 }
 
 /**************************************************************************/
@@ -702,24 +703,40 @@ bool Wippersnapper::encodePinEvent(
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
   // WS_DEBUG_PRINTLN("exec::run()");
-  //uint32_t curTime = millis();
+  uint32_t curTime = millis();
 
   // handle network connection
-  //checkNetworkConnection();
+  checkNetworkConnection();
   // handle MQTT connection
-  //checkMQTTConnection(curTime);
+  checkMQTTConnection(curTime);
 
-  // Process all incoming packets from Wippersnapper MQTT Broker
-  WS._mqtt->processPackets(10);
 
-  // Process digital inputs, digitalGPIO module
-  WS._digitalGPIO->processDigitalInputs();
-
-  // Process analog inputs
-  WS._analogIO->processAnalogInputs();
-
-  // Ping within KAT
-  //ping();
+  if (!WS.isThrottled) {
+    // Process incoming messages, C2D
+    WS._mqtt->processPackets(10);
+    // Process digital inputs, D2C
+    WS._digitalGPIO->processDigitalInputs();
+    // Process analog inputs, D2C
+    WS._analogIO->processAnalogInputs();
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Account is throttled, backing off..");
+    int retries = 0;
+    while (WS.isThrottled) { // exponential backoff until we can publish again
+      WS_DEBUG_PRINTLN("Attempting to publish to signal topic..")
+      if (!WS._mqtt->publish(_topic_signal_device, "\0")) {
+        WS_DEBUG_PRINTLN("Unable to publish, delaying...")
+        retries++;
+        // delay
+        //float delayTime = pow(2.0, retries) * 100.0;
+        //WS_DEBUG_PRINT("delaying for: "); WS_DEBUG_PRINTLN(delayTime);
+        //delay(pow(2,retries) * 100);
+        //delay((int)delayTime);
+      } else {
+        WS_DEBUG_PRINTLN("throttled released");
+        WS.isThrottled = false;
+      }
+    }
+  }
 
   return status();
 }
