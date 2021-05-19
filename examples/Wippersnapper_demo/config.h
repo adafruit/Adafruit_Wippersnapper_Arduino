@@ -1,17 +1,17 @@
-/************************ Adafruit IO Config *******************************/
-
+/************************ Adafruit IO Configuration *******************************/
 // visit io.adafruit.com if you need to create an account,
 // or if you need your Adafruit IO key.
 #define IO_USERNAME "YOUR_USERNAME"
 #define IO_KEY "YOUR_KEY"
 
-/******************************* WIFI **************************************/
+/**************************** WiFi Configuration ***********************************/
 #include "Wippersnapper_Networking.h"
 
-/*** Network Configuration ***/
+/*** WiFi Network Configuration ***/
 #define WIFI_SSID "YOUR_SSID"
 #define WIFI_PASS "YOUR_SSID_PASSWORD"
 
+/*** Hardware Network Configuration ***/
 // Uncomment the line below if using an AirLift Co-Processor
 //#define USE_AIRLIFT
 #if defined(USE_AIRLIFT) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) ||         \
