@@ -321,6 +321,9 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 void cbErrorTopic(char *errorData, uint16_t len) {
   WS_DEBUG_PRINT("IO ERROR: ");
   WS_DEBUG_PRINTLN(errorData);
+
+  WS_DEBUG_PRINTLN("Disconnecting device from Adafruit IO...");
+  WS._disconnect();
 }
 
 void cbThrottleTopic(char *throttleData, uint16_t len) {
@@ -475,19 +478,6 @@ bool Wippersnapper::buildWSTopics() {
     WS._topic_signal_brkr = 0;
     is_success = false;
   }
-
-  // Subscribe to signal topic
-  _topic_signal_brkr_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_brkr_sub);
-  _topic_signal_brkr_sub->setCallback(cbSignalTopic);
-
-  // Subscribe to registration status topic
-  WS_DEBUG_PRINTLN(WS._topic_description_status);
-  _topic_description_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
-  WS._mqtt->subscribe(_topic_description_sub);
-  _topic_description_sub->setCallback(cbRegistrationStatus);
 
   return is_success;
 }
@@ -712,16 +702,15 @@ bool Wippersnapper::encodePinEvent(
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
   // WS_DEBUG_PRINTLN("exec::run()");
-  uint32_t curTime = millis();
+  //uint32_t curTime = millis();
 
   // handle network connection
-  checkNetworkConnection();
+  //checkNetworkConnection();
   // handle MQTT connection
-  WS_DEBUG_PRINTLN(mqttStatus());
-  checkMQTTConnection(curTime);
+  //checkMQTTConnection(curTime);
 
   // Process all incoming packets from Wippersnapper MQTT Broker
-  WS._mqtt->processPackets(100);
+  WS._mqtt->processPackets(10);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
@@ -730,7 +719,7 @@ ws_status_t Wippersnapper::run() {
   WS._analogIO->processAnalogInputs();
 
   // Ping within KAT
-  ping();
+  //ping();
 
   return status();
 }
