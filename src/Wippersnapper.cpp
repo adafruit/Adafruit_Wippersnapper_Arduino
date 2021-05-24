@@ -724,8 +724,6 @@ ws_status_t Wippersnapper::run() {
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
 
-  ping();
-
   return status();
 }
 
@@ -785,9 +783,14 @@ ws_status_t Wippersnapper::mqttStatus() {
     return _status;
   }
 
-  // Is this actually working?
-  if (WS._mqtt->connected())
-    return WS_CONNECTED;
+  if (WS._mqtt->connected()) {
+      // ping within keepalive to keep connection open
+      if (millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL) {
+          ping();
+          _last_mqtt_connect = millis();
+      }
+      return WS_CONNECTED;
+  }
 
   // prevent fast reconnect attempts, except for the first time through
   if (_last_mqtt_connect == 0 ||
