@@ -157,9 +157,6 @@ class Wippersnapper {
         // Decodes a signal message
         bool decodeSignalMsg(wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
 
-        // Encodes a signal message
-        bool encodeSignalMsg(uint8_t signalPayloadType);
-
         // Encodes a pin event message
         bool encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal);
 

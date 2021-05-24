@@ -148,11 +148,12 @@ bool Wippersnapper::configurePinRequest(
   return is_success;
 }
 
-/**************************************************************************/
+/*****************************************************************************/
 /*!
-    @brief  Decodes a repeated ConfigurePinRequests messages.
+    @brief    Decodes a repeated ConfigurePinRequests messages.
+    @returns  True if pin configuration decoded successfully, False otherwise.
 */
-/**************************************************************************/
+/*****************************************************************************/
 bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
                           void **arg) {
   bool is_success = true;
@@ -344,6 +345,8 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 /*!
     @brief    Builds MQTT topics for handling errors returned from the
                 Adafruit IO broker.
+    @returns  True if memory for error topics allocated successfully,
+                False otherwise.
 */
 /**************************************************************************/
 bool Wippersnapper::buildErrorTopics() {
@@ -393,6 +396,8 @@ void Wippersnapper::subscribeErrorTopics() {
 /**************************************************************************/
 /*!
     @brief    Generates device-specific Wippersnapper control topics.
+    @returns  True if memory for control topics allocated successfully,
+                False otherwise.
 */
 /**************************************************************************/
 bool Wippersnapper::buildWSTopics() {
@@ -641,6 +646,7 @@ void Wippersnapper::setupMQTTClient(const char *clientID) {
 /****************************************************************************/
 /*!
     @brief    Returns the network's connection status
+    @returns  Network status as ws_status_t.
 */
 /****************************************************************************/
 ws_status_t Wippersnapper::networkStatus() {
@@ -663,6 +669,7 @@ void Wippersnapper::set_ssid_pass(char *ssid, const char *ssidPassword) {
 /**************************************************************************/
 /*!
     @brief    Checks and handles network interface connection.
+    @returns  Network status as ws_status_t.
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkNetworkConnection() {
@@ -683,6 +690,7 @@ ws_status_t Wippersnapper::checkNetworkConnection() {
 /**************************************************************************/
 /*!
     @brief    Handles MQTT connection.
+    @returns  Network status, as ws_status_t.
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
@@ -750,6 +758,7 @@ bool Wippersnapper::encodePinEvent(
 /**************************************************************************/
 /*!
     @brief    Processes incoming commands and handles network connection.
+    @returns  Network status, as ws_status_t.
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
@@ -778,6 +787,8 @@ ws_status_t Wippersnapper::run() {
 /**************************************************************************/
 /*!
     @brief    Sends board description message to Wippersnapper
+    @param    retries
+              Amount of times to retry registration process.
 */
 /**************************************************************************/
 bool Wippersnapper::registerBoard(uint8_t retries = 10) {
