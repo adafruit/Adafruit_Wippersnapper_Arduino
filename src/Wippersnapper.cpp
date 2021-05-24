@@ -783,7 +783,6 @@ ws_status_t Wippersnapper::mqttStatus() {
   if (WS._mqtt->connected()) {
       // ping within keepalive to keep connection open
       if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
-          WS_DEBUG_PRINTLN("PING");
           ping();
           _prv_ping = millis();
       }

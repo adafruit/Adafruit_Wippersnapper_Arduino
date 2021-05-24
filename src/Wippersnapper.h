@@ -102,9 +102,9 @@ typedef enum {
 
 /* MQTT Configuration */
 // Session keepalive interval time, in seconds
-#define WS_KEEPALIVE_INTERVAL    3
+#define WS_KEEPALIVE_INTERVAL    2
 // Session keepalive interval time, in milliseconds
-#define WS_KEEPALIVE_INTERVAL_MS 3000
+#define WS_KEEPALIVE_INTERVAL_MS 2000
 
 // MAXIMUM MQTT expected payload size, in bytes
 #define WS_MQTT_MAX_PAYLOAD_SIZE 128
