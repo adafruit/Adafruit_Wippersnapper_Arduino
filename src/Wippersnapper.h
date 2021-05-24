@@ -123,7 +123,7 @@ public:
   virtual ~Wippersnapper();
 
   void set_user_key(const char *aio_username, const char *aio_key);
-  virtual void set_ssid_pass(char *ssid, const char *ssidPassword);
+  virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
 
   void connect();
   virtual void _connect();

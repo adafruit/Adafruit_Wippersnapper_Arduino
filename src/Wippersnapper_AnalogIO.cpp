@@ -61,7 +61,9 @@ Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
 */
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::initAnalogOutputPin(int pin) {
-  WS_DEBUG_PRINTLN("ERROR: Analog output pin not yet implemented");
+  WS_DEBUG_PRINT("ERROR: Analog output on pin ");
+  WS_DEBUG_PRINT(pin);
+  WS_DEBUG_PRINTLN("not implemented yet.");
 }
 
 /***********************************************************************************/

@@ -73,7 +73,7 @@ public:
             Wireless network's password.
   */
   /**********************************************************/
-  void set_ssid_pass(char *ssid, const char *ssidPassword) {
+  void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
     _pass = ssidPassword;
   }

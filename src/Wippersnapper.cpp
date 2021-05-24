@@ -116,7 +116,7 @@ bool Wippersnapper::configurePinRequest(
     }
   }
 
-  else if (pinMsg->mode = wippersnapper_pin_v1_Mode_MODE_ANALOG) {
+  else if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_ANALOG) {
     if (pinMsg->request_type ==
         wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
       // Initialize analog io pin
@@ -670,6 +670,7 @@ void Wippersnapper::setupMQTTClient(const char *clientID) {
 /****************************************************************************/
 ws_status_t Wippersnapper::networkStatus() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  return WS_IDLE;
 }
 
 /****************************************************************************/
@@ -681,7 +682,7 @@ ws_status_t Wippersnapper::networkStatus() {
               Your wireless network's password.
 */
 /****************************************************************************/
-void Wippersnapper::set_ssid_pass(char *ssid, const char *ssidPassword) {
+void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 

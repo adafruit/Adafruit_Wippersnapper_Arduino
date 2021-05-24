@@ -26,10 +26,6 @@
 #include "WiFiClientSecure.h"
 #include "Wippersnapper.h"
 
-// Adafruit IO Production SSL Fingerprint
-//#define WS_SSL_FINGERPRINT \
-//  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF"
-
 // Adafruit IO Staging SSL Fingerprint
 // Fingerprint for io.adafruit.us staging server
 #define WS_SSL_FINGERPRINT                                                     \
@@ -79,7 +75,7 @@ public:
             Wireless network's password.
   */
   /**********************************************************/
-  void set_ssid_pass(char *ssid, const char *ssidPassword) {
+  void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
     _pass = ssidPassword;
   }
