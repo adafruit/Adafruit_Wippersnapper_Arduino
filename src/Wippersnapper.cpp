@@ -652,14 +652,11 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
 
 /**************************************************************************/
 /*!
-    @brief    Pings MQTT broker within the keepalive interval time.
+    @brief    Pings MQTT broker.
 */
 /**************************************************************************/
 void Wippersnapper::ping() {
-  if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL)) {
-    WS._mqtt->ping();
-    _prv_ping = millis();
-  }
+  WS._mqtt->ping();
 }
 
 /****************************************************************************/
@@ -705,7 +702,7 @@ bool Wippersnapper::encodePinEvent(
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-  // WS_DEBUG_PRINTLN("exec::run()");
+  //WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
   // Process all incoming packets from Wippersnapper MQTT Broker
@@ -785,16 +782,17 @@ ws_status_t Wippersnapper::mqttStatus() {
 
   if (WS._mqtt->connected()) {
       // ping within keepalive to keep connection open
-      if (millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL) {
+      if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
+          WS_DEBUG_PRINTLN("PING");
           ping();
-          _last_mqtt_connect = millis();
+          _prv_ping = millis();
       }
       return WS_CONNECTED;
   }
 
   // prevent fast reconnect attempts, except for the first time through
   if (_last_mqtt_connect == 0 ||
-      millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL) {
+      millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL_MS) {
     _last_mqtt_connect = millis();
     switch (WS._mqtt->connect(_username, _key)) {
     case 0:
