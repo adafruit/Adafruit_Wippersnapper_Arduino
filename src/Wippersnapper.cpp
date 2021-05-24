@@ -724,6 +724,8 @@ ws_status_t Wippersnapper::run() {
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
 
+  ping();
+
   return status();
 }
 
