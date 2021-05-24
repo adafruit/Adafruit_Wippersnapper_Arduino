@@ -166,7 +166,7 @@ public:
                  int pinVal);
 
   // Pin configure message
-  //bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
+  // bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
   //                          void **arg);
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
@@ -177,7 +177,7 @@ public:
                                                      outgoing payload data */
   uint16_t bufSize; /*!< Length of data inside buffer */
 
-  ws_board_status_t _boardStatus;  ///< Hardware's registration status
+  ws_board_status_t _boardStatus; ///< Hardware's registration status
 
   Wippersnapper_Registration
       *_registerBoard;                     ///< Instance of registration class
@@ -235,9 +235,12 @@ protected:
                                       status resp. from the broker */
   char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
 
-  Adafruit_MQTT_Subscribe *_topic_description_sub;  /*!< Subscription for registration topic. */
-  Adafruit_MQTT_Publish *_topic_signal_device_pub;  /*!< Subscription for D2C signal topic. */
-  Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;  /*!< Subscription for C2D signal topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_description_sub; /*!< Subscription for registration topic. */
+  Adafruit_MQTT_Publish
+      *_topic_signal_device_pub; /*!< Subscription for D2C signal topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
 
   char *_err_topic;      /*!< Adafruit IO MQTT error message topic. */
   char *_throttle_topic; /*!< Adafruit IO MQTT throttle message topic. */
