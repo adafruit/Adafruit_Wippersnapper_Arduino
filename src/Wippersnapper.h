@@ -41,6 +41,10 @@
 #include "Arduino.h" // Wiring
 #include <Adafruit_NeoPixel.h>
 
+// Reserved Adafruit IO MQTT topics
+#define TOPIC_IO_THROTTLE "/throttle"  ///< Adafruit IO Throttle MQTT Topic
+#define TOPIC_IO_ERRORS "/errors"      ///< Adafruit IO Error MQTT Topic
+
 // Reserved Wippersnapper topics
 #define TOPIC_WS            "/wprsnpr/"   ///< Global /wprsnpr/ topic
 #define TOPIC_DESCRIPTION   "/info/"      ///< Device description topic
@@ -81,7 +85,8 @@ typedef enum {
   WS_CONNECTED_INSECURE = 22,      // Insecurely (non-SSL) connected to network
   WS_FINGERPRINT_UNSUPPORTED = 23, // Unsupported WS_SSL_FINGERPRINT
   WS_FINGERPRINT_VALID = 24,       // Valid WS_SSL_FINGERPRINT
-  WS_BOARD_DESC_INVALID = 25       // Unable to send board description
+  WS_BOARD_DESC_INVALID = 25,       // Unable to send board description
+  WS_BOARD_RESYNC_FAILED = 26       // Board sync failure
 } ws_status_t;
 
 // Wippersnapper board definition status
@@ -96,12 +101,11 @@ typedef enum {
 
 
 /* MQTT Configuration */
-// Keep Alive interval, in ms
-#define WS_KEEPALIVE_INTERVAL 10000
+// Session keepalive interval time, in seconds
+#define WS_KEEPALIVE_INTERVAL 5
 
 // MAXIMUM MQTT expected payload size, in bytes
 #define WS_MQTT_MAX_PAYLOAD_SIZE 128
-
 
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
@@ -121,7 +125,7 @@ class Wippersnapper {
         void disconnect();
         virtual void _disconnect();
 
-        virtual void setUID();
+        virtual void getUID();
         virtual void setupMQTTClient(const char *clientID);
 
         const __FlashStringHelper *statusText();
@@ -130,18 +134,19 @@ class Wippersnapper {
         ws_status_t mqttStatus();
         ws_board_status_t getBoardStatus();
 
-        // Generates Wippersnapper MQTT feeds
-        void generate_subscribe_feeds();
+        bool buildWSTopics();
+        void subscribeWSTopics();
+        bool buildErrorTopics();
+        void subscribeErrorTopics();
 
         // Performs board registration FSM
         bool registerBoard(uint8_t retries);
 
         // run() loop //
         ws_status_t run();
-        ws_status_t checkNetworkConnection(uint32_t timeStart);
+        ws_status_t checkNetworkConnection();
         ws_status_t checkMQTTConnection(uint32_t timeStart);
-        // Pumps message loop
-        bool processSignalMessages(int16_t timeout);
+        void ping();
 
         // MQTT topic callbacks //
         // Decodes a signal message
@@ -188,6 +193,8 @@ class Wippersnapper {
 
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
+        wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
+
     private:
         void _init();
 
@@ -218,8 +225,12 @@ class Wippersnapper {
         Adafruit_MQTT_Publish *_topic_signal_device_pub;
         Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub;
 
+        char *_err_topic;                       /*!< Adafruit IO MQTT error message topic. */
+        char *_throttle_topic;                  /*!< Adafruit IO MQTT throttle message topic. */
+        Adafruit_MQTT_Subscribe *_err_sub;      /*!< Subscription to Adafruit IO Error topic. */
+        Adafruit_MQTT_Subscribe *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
 
-        wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
+        
         wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg; /*!< Outgoing signal message from device */
 
 };

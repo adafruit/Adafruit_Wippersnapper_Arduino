@@ -55,14 +55,16 @@
     // Status Indicator
     #define STATUS_LED
     #define STATUS_LED_PIN  13
+#elif defined(ARDUINO_FUNHOUSE_ESP32S2)
+        #define BOARD_ID "adafruit-funhouse-esp32s2"
+        // TODO: replace status LED with dotstar!
+        #define STATUS_LED
+        #define STATUS_LED_PIN  LED_BUILTIN
 #elif defined(ARDUINO_ARCH_ESP32)
-    // Feather Huzzah ESP32
-    #define USB_VID 0xEA60
-    #define USB_PID 0x10C4
-    #define BOARD_ID "adafruit-huzzah-32"
-    // Status Indicator
-    #define STATUS_LED
-    #define STATUS_LED_PIN  40
+        #define BOARD_ID "esp32"
+        // TODO: replace status LED with dotstar!
+        #define STATUS_LED
+        #define STATUS_LED_PIN  LED_BUILTIN
 #else
   #warning "Board not identified within Wippersnapper_Boards.h!"
 #endif
