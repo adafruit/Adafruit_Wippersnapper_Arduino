@@ -71,9 +71,6 @@ void Wippersnapper_AnalogIO::initAnalogOutputPin(int pin) {
               The analog pin to read from.
     @param  period
               Time between measurements, in seconds.
-    @param  analogReadMode
-              The type of measurement to perform. Returns either a raw ADC
-   value or the pin's voltage (in volts).
    @param  pullMode
             The pin's pull value.
     @param analogReadMode
@@ -173,19 +170,21 @@ float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
   return pinVoltage;
 }
 
-/**********************************************************/
+/******************************************************************/
 /*!
     @brief    Encodes an analog input pin event into a
                 signal message.
     @param    outgoingSignalMsg
-                Pointer to an empty CreateSignalRequest
-                message.
+              Pointer to an empty CreateSignalRequest
+              message.
     @param    pinName
-                Specifies the pin's name.
+              Specifies the pin's name.
     @param    pinVal
-                Pin value.
+              Pin value.
+    @returns  True if successfully encoded a PinEvent signal
+                message, False otherwise.
 */
-/**********************************************************/
+/******************************************************************/
 bool Wippersnapper_AnalogIO::encodePinEvent(
     wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
     uint8_t pinName, uint16_t pinVal) {
@@ -212,7 +211,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   return is_success;
 }
 
-/**********************************************************/
+/************************************************************/
 /*!
     @brief    Encodes an analog input pin event into a
                 signal message.
@@ -223,8 +222,9 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
                 Specifies the pin's name.
     @param    pinVal
                 Pin voltage, in volts.
+    @returns  True if encoded successfully, False otherwise.
 */
-/**********************************************************/
+/************************************************************/
 bool Wippersnapper_AnalogIO::encodePinEvent(
     wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
     uint8_t pinName, float pinVal) {

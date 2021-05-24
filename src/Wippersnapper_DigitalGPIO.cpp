@@ -19,7 +19,7 @@
 /***********************************************************************************/
 /*!
     @brief  Initializes DigitalGPIO class.
-    @param  totalDigitalGPIOPins
+    @param  totalDigitalInputPins
                 Total number of digital gpio input-capable pins to allocate.
 */
 /***********************************************************************************/
@@ -44,7 +44,13 @@ Wippersnapper_DigitalGPIO::~Wippersnapper_DigitalGPIO() {
 
 /*******************************************************************************************************************************/
 /*!
-    @brief    Configures a digital pin to behave as an input or an output.
+    @brief  Configures a digital pin to behave as an input or an output.
+    @param  direction
+            The pin's direction.
+    @param  pinName
+            The pin's name.
+    @param  period
+            The pin's period, in seconds.
 */
 /*******************************************************************************************************************************/
 void Wippersnapper_DigitalGPIO::initDigitalPin(
@@ -78,6 +84,10 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 /********************************************************************************************************************************/
 /*!
     @brief    Deinitializes a previously configured digital pin.
+    @param    direction
+              The pin's direction.
+    @param    pinName
+              The pin's name.
 */
 /********************************************************************************************************************************/
 void Wippersnapper_DigitalGPIO::deinitDigitalPin(
@@ -98,8 +108,9 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 /*!
     @brief    High-level digitalRead service impl. which performs a
                 digitalRead.
-    @returns  pinVal
-                Value of pin, either HIGH or LOW
+    @param    pinName
+                The pin's name
+    @returns  The pin's value.
 */
 /********************************************************************/
 int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
@@ -110,7 +121,11 @@ int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
 
 /*******************************************************************************/
 /*!
-    @brief  High-level service which outputs to a digital pin.
+    @brief  Writes a value to a pin.
+    @param  pinName
+                The pin's name.
+    @param  pinValue
+                The pin's value.
 */
 /*******************************************************************************/
 void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
