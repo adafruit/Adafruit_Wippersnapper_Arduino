@@ -51,7 +51,6 @@ Wippersnapper::Wippersnapper() {
   _throttle_topic = 0;
   _err_sub = 0;
   _throttle_sub = 0;
-  
 };
 
 /**************************************************************************/
@@ -352,7 +351,8 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 bool Wippersnapper::buildErrorTopics() {
   bool is_success = true;
   // dynamically allocate memory for err topic
-  WS._err_topic = (char *)malloc(sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_ERRORS) + 1));
+  WS._err_topic = (char *)malloc(
+      sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_ERRORS) + 1));
 
   if (WS._err_topic) { // build error topic
     strcpy(WS._err_topic, _username);
@@ -663,7 +663,7 @@ ws_status_t Wippersnapper::networkStatus() {
 */
 /****************************************************************************/
 void Wippersnapper::set_ssid_pass(char *ssid, const char *ssidPassword) {
-    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 
 /**************************************************************************/
@@ -714,9 +714,7 @@ ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
     @brief    Pings MQTT broker.
 */
 /**************************************************************************/
-void Wippersnapper::ping() {
-  WS._mqtt->ping();
-}
+void Wippersnapper::ping() { WS._mqtt->ping(); }
 
 /****************************************************************************/
 /*!
@@ -762,7 +760,7 @@ bool Wippersnapper::encodePinEvent(
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-  //WS_DEBUG_PRINTLN("exec::run()");
+  // WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
   // Process all incoming packets from Wippersnapper MQTT Broker
@@ -843,12 +841,12 @@ ws_status_t Wippersnapper::mqttStatus() {
   }
 
   if (WS._mqtt->connected()) {
-      // ping within keepalive to keep connection open
-      if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
-          ping();
-          _prv_ping = millis();
-      }
-      return WS_CONNECTED;
+    // ping within keepalive to keep connection open
+    if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
+      ping();
+      _prv_ping = millis();
+    }
+    return WS_CONNECTED;
   }
 
   // prevent fast reconnect attempts, except for the first time through
