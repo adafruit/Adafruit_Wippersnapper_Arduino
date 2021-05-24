@@ -89,7 +89,7 @@ typedef enum {
   WS_BOARD_RESYNC_FAILED = 26       // Board sync failure
 } ws_status_t;
 
-// Wippersnapper board definition status
+/** Defines the Wippersnapper client's hardware registration status */
 typedef enum {
     WS_BOARD_DEF_IDLE,
     WS_BOARD_DEF_SEND_FAILED,
@@ -122,7 +122,7 @@ class Wippersnapper {
         virtual ~Wippersnapper();
 
         void set_user_key(const char *aio_username, const char *aio_key);
-        void set_ssid_pass(char *ssid, const char *ssidPassword);
+        virtual void set_ssid_pass(char *ssid, const char *ssidPassword);
 
         void connect();
         virtual void _connect();
@@ -130,7 +130,7 @@ class Wippersnapper {
         void disconnect();
         virtual void _disconnect();
 
-        virtual void getUID();
+        virtual void setUID();
         virtual void setupMQTTClient(const char *clientID);
 
         const __FlashStringHelper *statusText();
@@ -240,6 +240,6 @@ class Wippersnapper {
 
 };
 
-extern Wippersnapper WS;
+extern Wippersnapper WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

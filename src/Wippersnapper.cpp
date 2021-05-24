@@ -68,6 +68,15 @@ Wippersnapper::~Wippersnapper() {
   free(_throttle_sub);
 }
 
+/****************************************************************************/
+/*!
+    @brief    Configures the device's Adafruit IO credentials.
+    @param    aio_username
+              Your Adafruit IO username.
+    @param    aio_key
+              Your Adafruit IO active key.
+*/
+/****************************************************************************/
 void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
   _username = aio_username;
@@ -389,7 +398,7 @@ void Wippersnapper::subscribeErrorTopics() {
 bool Wippersnapper::buildWSTopics() {
   bool is_success = true;
   // Get UID from the network iface
-  getUID();
+  setUID();
   // Move the top 3 bytes from the UID
   for (int i = 5; i > 2; i--) {
     WS._uid[6 - 1 - i] = WS._uid[i];
@@ -589,24 +598,66 @@ void Wippersnapper::connect() {
 void Wippersnapper::disconnect() { _disconnect(); }
 
 // Concrete class definition for abstract classes
+
+/****************************************************************************/
+/*!
+    @brief    Connects to wireless network.
+*/
+/****************************************************************************/
 void Wippersnapper::_connect() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 
+/****************************************************************************/
+/*!
+    @brief    Disconnect Wippersnapper MQTT session and network.
+*/
+/****************************************************************************/
 void Wippersnapper::_disconnect() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 
-void Wippersnapper::getUID() {
+/****************************************************************************/
+/*!
+    @brief    Sets the network interface's unique identifer, typically the
+              MAC address.
+*/
+/****************************************************************************/
+void Wippersnapper::setUID() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 
-void Wippersnapper::setupMQTTClient(char const *) {
+/****************************************************************************/
+/*!
+    @brief    Sets up the MQTT client session.
+    @param    clientID
+              A unique client identifier string.
+*/
+/****************************************************************************/
+void Wippersnapper::setupMQTTClient(const char *clientID) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
+
+/****************************************************************************/
+/*!
+    @brief    Returns the network's connection status
+*/
+/****************************************************************************/
 ws_status_t Wippersnapper::networkStatus() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
-  // TODO: return
+}
+
+/****************************************************************************/
+/*!
+    @brief    Sets the device's wireless network credentials.
+    @param    ssid
+              Your wireless network's SSID
+    @param    ssidPassword
+              Your wireless network's password.
+*/
+/****************************************************************************/
+void Wippersnapper::set_ssid_pass(char *ssid, const char *ssidPassword) {
+    WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
 }
 
 /**************************************************************************/

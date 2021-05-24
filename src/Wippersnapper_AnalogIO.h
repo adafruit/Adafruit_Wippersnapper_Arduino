@@ -20,11 +20,11 @@
 
 /** Data about an analog input pin */
 struct analogInputPin {
-    int pinName;  // Pin name
-    wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode; // Which type of read to perform
-    long period;      // Pin timer interval, in millis, -1 if disabled.
-    long prvPeriod;   // When Pin's timer was previously serviced, in millis
-    float prvPinVal;    // Previous pin value
+    int pinName;  ///< Pin name
+    wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode; ///< Which type of read to perform
+    long period;       ///< Pin timer interval, in millis, -1 if disabled.
+    long prvPeriod;    ///< When Pin's timer was previously serviced, in millis
+    float prvPinVal;   ///< Previous pin value
 };
 
 // forward decl.

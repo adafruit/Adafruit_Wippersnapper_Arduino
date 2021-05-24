@@ -20,10 +20,10 @@
 
 /** Holds data about a digital input pin */
 struct digitalInputPin {
-    uint8_t pinName;       // Pin name
-    long period;    // Timer interval, in millis, -1 if disabled.
-    long prvPeriod; // When timer was previously serviced, in millis
-    int prvPinVal;         // Previous pin value
+    uint8_t pinName;  ///< Pin name
+    long period;      ///< Timer interval, in millis, -1 if disabled.
+    long prvPeriod;   ///< When timer was previously serviced, in millis
+    int prvPinVal;    ///< Previous pin value
 };
 
 // forward decl.

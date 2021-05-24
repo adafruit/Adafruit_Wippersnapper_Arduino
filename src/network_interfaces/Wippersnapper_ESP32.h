@@ -77,7 +77,7 @@ public:
   @note   On ESP32, the UID is the MAC address.
   */
   /********************************************************/
-  void getUID() {
+  void setUID() {
       WiFi.macAddress(mac);
       memcpy(WS._uid, mac, sizeof(mac));
   }
