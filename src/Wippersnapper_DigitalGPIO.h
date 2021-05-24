@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_Checkin.h
+ * @file Wippersnapper_DigitalGPIO.h
  *
  * This file provides digital GPIO control and access.
  *
@@ -18,7 +18,7 @@
 
 #include "Wippersnapper.h"
 
-// Holds data about a digital input pin
+/** Holds data about a digital input pin */
 struct digitalInputPin {
     uint8_t pinName;       // Pin name
     long period;    // Timer interval, in millis, -1 if disabled.
@@ -29,6 +29,12 @@ struct digitalInputPin {
 // forward decl.
 class Wippersnapper;
 
+/**************************************************************************/
+/*! 
+    @brief  Class that provides functions for reading and interacting with
+            digital inputs and outputs.
+*/
+/**************************************************************************/
 class Wippersnapper_DigitalGPIO {
     public:
         Wippersnapper_DigitalGPIO(int32_t totalDigitalInputPins);

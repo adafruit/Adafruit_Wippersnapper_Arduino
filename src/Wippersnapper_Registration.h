@@ -1,9 +1,6 @@
 /*!
  * @file Wippersnapper_Registration.h
  *
- * This file provides protocol buffer decoders for the Wippersnapper
- * protocol API.
- *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
@@ -21,6 +18,12 @@
 // forward decl.
 class Wippersnapper;
 
+/**************************************************************************/
+/*! 
+    @brief  Class that negotiates the device's registration process with
+            the Adafruit IO MQTT broker.
+*/
+/**************************************************************************/
 class Wippersnapper_Registration {
     public:
         Wippersnapper_Registration();

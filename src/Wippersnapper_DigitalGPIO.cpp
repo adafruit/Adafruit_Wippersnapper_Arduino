@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_Checkin.cpp
+ * @file Wippersnapper_DigitalGPIO.cpp
  *
  * This file provides an API for interacting with
  * a board's digital GPIO pins.

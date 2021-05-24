@@ -50,7 +50,7 @@
 #define TOPIC_DESCRIPTION   "/info/"      ///< Device description topic
 #define TOPIC_SIGNALS       "/signals/"   ///< Device signals topic
 
-#define WS_DEBUG
+#define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
 
 // Define actual debug output functions when necessary.
@@ -66,7 +66,7 @@
   {} ///< Prints line from debug output.
 #endif
 
-// Adafruit IO Status States
+/** Defines the Adafruit IO connection status */
 typedef enum {
   WS_IDLE = 0,               // Waiting for connection establishement
   WS_NET_DISCONNECTED = 1,   // Network disconnected
@@ -101,18 +101,21 @@ typedef enum {
 
 
 /* MQTT Configuration */
-// Session keepalive interval time, in seconds
-#define WS_KEEPALIVE_INTERVAL    2
-// Session keepalive interval time, in milliseconds
-#define WS_KEEPALIVE_INTERVAL_MS 2000
+#define WS_KEEPALIVE_INTERVAL    2 ///< Session keepalive interval time, in seconds
+#define WS_KEEPALIVE_INTERVAL_MS 2000 ///< Session keepalive interval time, in milliseconds
 
-// MAXIMUM MQTT expected payload size, in bytes
-#define WS_MQTT_MAX_PAYLOAD_SIZE 128
+#define WS_MQTT_MAX_PAYLOAD_SIZE 128 ///< MAXIMUM expected payload size, in bytes
 
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 
+/**************************************************************************/
+/*! 
+    @brief  Class that provides storage and functions for the Adafruit IO
+            Wippersnapper interface.
+*/
+/**************************************************************************/
 class Wippersnapper {
     public:
         Wippersnapper();
