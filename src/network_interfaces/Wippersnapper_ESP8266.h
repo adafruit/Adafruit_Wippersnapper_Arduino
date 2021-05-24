@@ -19,12 +19,12 @@
 
 #ifdef ESP8266
 
-#include  "Wippersnapper.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "ESP8266WiFi.h"
 #include "WiFiClientSecure.h"
+#include "Wippersnapper.h"
 
 // Adafruit IO Production SSL Fingerprint
 //#define WS_SSL_FINGERPRINT \
@@ -32,14 +32,15 @@
 
 // Adafruit IO Staging SSL Fingerprint
 // Fingerprint for io.adafruit.us staging server
-#define WS_SSL_FINGERPRINT \
-    "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
+#define WS_SSL_FINGERPRINT                                                     \
+  "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
 
 extern Wippersnapper WS;
 
 /******************************************************************************/
 /*!
-    @brief  Class for interacting with the Espressif ESP8266's network interface.
+    @brief  Class for interacting with the Espressif ESP8266's network
+   interface.
 */
 /******************************************************************************/
 class Wippersnapper_ESP8266 : public Wippersnapper {
@@ -50,12 +51,12 @@ public:
   @brief  Initializes the Adafruit IO class for ESP8266 devices.
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266(): Wippersnapper() {
+  Wippersnapper_ESP8266() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
     _mqtt_client = new WiFiClientSecure;
     _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
-    }
+  }
 
   /**************************************************************************/
   /*!
@@ -63,10 +64,10 @@ public:
   */
   /**************************************************************************/
   ~Wippersnapper_ESP8266() {
-      if (_mqtt_client)
-        delete _mqtt_client;
-      if (_mqtt)
-        delete _mqtt;
+    if (_mqtt_client)
+      delete _mqtt_client;
+    if (_mqtt)
+      delete _mqtt;
   }
 
   /**********************************************************/
@@ -79,8 +80,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(char *ssid, const char *ssidPassword) {
-        _ssid = ssid;
-        _pass = ssidPassword;
+    _ssid = ssid;
+    _pass = ssidPassword;
   }
 
   /********************************************************/
@@ -90,8 +91,8 @@ public:
   */
   /********************************************************/
   void setUID() {
-      WiFi.macAddress(mac);
-      memcpy(WS._uid, mac, sizeof(mac));
+    WiFi.macAddress(mac);
+    memcpy(WS._uid, mac, sizeof(mac));
   }
 
   /*******************************************************************/
@@ -102,9 +103,9 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, \
-                WS._mqtt_port, clientID, WS._username, WS._key); 
-
+    WS._mqtt =
+        new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, WS._mqtt_port,
+                                 clientID, WS._username, WS._key);
   }
 
   /********************************************************/
@@ -137,9 +138,8 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
-  uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   WiFiClientSecure *_mqtt_client;
-
 
   /**************************************************************************/
   /*!
@@ -148,12 +148,12 @@ protected:
   /**************************************************************************/
   void _connect() {
     if (strlen(_ssid) == 0) {
-        _status = WS_SSID_INVALID;
+      _status = WS_SSID_INVALID;
     } else {
-        delay(1000);
-        WiFi.begin(_ssid, _pass);
-        delay(2000);
-        _status = WS_NET_DISCONNECTED;
+      delay(1000);
+      WiFi.begin(_ssid, _pass);
+      delay(2000);
+      _status = WS_NET_DISCONNECTED;
     }
   }
 

@@ -1,11 +1,11 @@
 /*!
  * @file Wippersnapper_AIRLIFT.h
  *
- * This is a driver for using the Adafruit AirLift 
+ * This is a driver for using the Adafruit AirLift
  * ESP32 Co-Processor's network interface with Wippersnapper.
  *
- * The ESP32 AirLift uses SPI to communicate. Three lines (CS, ACK, RST) are required
- * to communicate with the ESP32 AirLift.
+ * The ESP32 AirLift uses SPI to communicate. Three lines (CS, ACK, RST) are
+ * required to communicate with the ESP32 AirLift.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -20,14 +20,15 @@
 #ifndef WIPPERSNAPPER_AIRLIFT_H
 #define WIPPERSNAPPER_AIRLIFT_H
 
-#include "Wippersnapper.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "SPI.h"
 #include "WiFiNINA.h"
+#include "Wippersnapper.h"
 
-#define NINAFWVER "1.6.0" /*!< min. nina-fw version compatible with this library. */
+#define NINAFWVER                                                              \
+  "1.6.0" /*!< min. nina-fw version compatible with this library. */
 
 extern Wippersnapper WS;
 /****************************************************************************/
@@ -43,7 +44,7 @@ public:
   @brief  Initializes the Adafruit IO class for AirLift devices.
   */
   /**************************************************************************/
-  Wippersnapper_AIRLIFT(): Wippersnapper() {
+  Wippersnapper_AIRLIFT() : Wippersnapper() {
     _ssPin = 0;
     _ackPin = 0;
     _rstPin = 0;
@@ -51,7 +52,7 @@ public:
     _mqtt_client = 0;
     _ssid = 0;
     _pass = 0;
-    }
+  }
 
   /**************************************************************************/
   /*!
@@ -59,8 +60,8 @@ public:
   */
   /**************************************************************************/
   ~Wippersnapper_AIRLIFT() {
-      if (_mqtt)
-        delete _mqtt;
+    if (_mqtt)
+      delete _mqtt;
   }
 
   /**********************************************************/
@@ -73,8 +74,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(char *ssid, const char *ssidPassword) {
-        _ssid = ssid;
-        _pass = ssidPassword;
+    _ssid = ssid;
+    _pass = ssidPassword;
   }
 
   /********************************************************/
@@ -120,7 +121,8 @@ public:
   void firmwareCheck() {
     _fv = WiFi.firmwareVersion();
     if (_fv < NINAFWVER) {
-        WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the latest version.");
+      WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
+                       "latest version.");
     }
   }
 
@@ -131,8 +133,8 @@ public:
   */
   /********************************************************/
   void setUID() {
-      WiFi.macAddress(mac);
-      memcpy(WS._uid, mac, sizeof(mac));
+    WiFi.macAddress(mac);
+    memcpy(WS._uid, mac, sizeof(mac));
   }
 
   /********************************************************/
@@ -143,9 +145,9 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, \
-                WS._mqtt_port, clientID, WS._username, WS._key); 
-
+    WS._mqtt =
+        new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, WS._mqtt_port,
+                                 clientID, WS._username, WS._key);
   }
 
   /********************************************************/
@@ -179,7 +181,7 @@ protected:
   const char *_ssid;
   const char *_pass;
   String _fv = "0.0.0";
-  uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   int _ssPin, _ackPin, _rstPin, _gpio0Pin = -1;
   WiFiSSLClient *_mqtt_client;
   SPIClass *_wifi;
@@ -226,4 +228,4 @@ protected:
   }
 };
 
-#endif //WIPPERSNAPPER_AIRLIFT_H
+#endif // WIPPERSNAPPER_AIRLIFT_H
