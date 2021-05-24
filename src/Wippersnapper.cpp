@@ -329,7 +329,6 @@ void cbErrorTopic(char *errorData, uint16_t len) {
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLN(throttleData);
-  WS.isThrottled = true; // set global throttle flag
 }
 
 /**************************************************************************/
@@ -496,7 +495,6 @@ void Wippersnapper::subscribeWSTopics() {
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
   // Subscribe to registration status topic
-  WS_DEBUG_PRINTLN(WS._topic_description_status);
   _topic_description_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
   WS._mqtt->subscribe(_topic_description_sub);
@@ -637,6 +635,11 @@ ws_status_t Wippersnapper::checkNetworkConnection() {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
+  // Return quickly
+  if (mqttStatus() == WS_CONNECTED) {
+    return status();
+  }
+
   // loop until we have a connection
   // mqttStatus() will try to reconnect before returning
   while (mqttStatus() != WS_CONNECTED && millis() - timeStart < 60000) {
@@ -705,38 +708,21 @@ ws_status_t Wippersnapper::run() {
   // WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
+  // Process all incoming packets from Wippersnapper MQTT Broker
+  // TODO: This should be moved below network handling, but network handling is
+  // taking too much time so it is getting missed, dropping packets as a result.
+  WS._mqtt->processPackets(10);
+
   // handle network connection
   checkNetworkConnection();
   // handle MQTT connection
   checkMQTTConnection(curTime);
 
+  // Process digital inputs, digitalGPIO module
+  WS._digitalGPIO->processDigitalInputs();
 
-  if (!WS.isThrottled) {
-    // Process incoming messages, C2D
-    WS._mqtt->processPackets(10);
-    // Process digital inputs, D2C
-    WS._digitalGPIO->processDigitalInputs();
-    // Process analog inputs, D2C
-    WS._analogIO->processAnalogInputs();
-  } else {
-    WS_DEBUG_PRINTLN("ERROR: Account is throttled, backing off..");
-    int retries = 0;
-    while (WS.isThrottled) { // exponential backoff until we can publish again
-      WS_DEBUG_PRINTLN("Attempting to publish to signal topic..")
-      if (!WS._mqtt->publish(_topic_signal_device, "\0")) {
-        WS_DEBUG_PRINTLN("Unable to publish, delaying...")
-        retries++;
-        // delay
-        //float delayTime = pow(2.0, retries) * 100.0;
-        //WS_DEBUG_PRINT("delaying for: "); WS_DEBUG_PRINTLN(delayTime);
-        //delay(pow(2,retries) * 100);
-        //delay((int)delayTime);
-      } else {
-        WS_DEBUG_PRINTLN("throttled released");
-        WS.isThrottled = false;
-      }
-    }
-  }
+  // Process analog inputs
+  WS._analogIO->processAnalogInputs();
 
   return status();
 }
@@ -807,7 +793,13 @@ ws_status_t Wippersnapper::mqttStatus() {
     _last_mqtt_connect = millis();
     switch (WS._mqtt->connect(_username, _key)) {
     case 0:
-      return WS_CONNECTED;
+      // Connected, re-send registration packet
+      if (!registerBoard(10)) {
+        WS_DEBUG_PRINTLN("Unable to re-send sync registration to broker.");
+        return WS_CONNECTED;
+      } else {
+        return WS_BOARD_RESYNC_FAILED;
+      }
     case 1: // invalid mqtt protocol
     case 2: // client id rejected
     case 4: // malformed user/pass

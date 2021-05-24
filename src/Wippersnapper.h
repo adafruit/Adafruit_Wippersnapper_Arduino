@@ -85,7 +85,8 @@ typedef enum {
   WS_CONNECTED_INSECURE = 22,      // Insecurely (non-SSL) connected to network
   WS_FINGERPRINT_UNSUPPORTED = 23, // Unsupported WS_SSL_FINGERPRINT
   WS_FINGERPRINT_VALID = 24,       // Valid WS_SSL_FINGERPRINT
-  WS_BOARD_DESC_INVALID = 25       // Unable to send board description
+  WS_BOARD_DESC_INVALID = 25,       // Unable to send board description
+  WS_BOARD_RESYNC_FAILED = 26       // Board sync failure
 } ws_status_t;
 
 // Wippersnapper board definition status
@@ -193,8 +194,6 @@ class Wippersnapper {
         char *_topic_signal_device;      /*!< Device->Wprsnpr messages */
 
         wippersnapper_signal_v1_CreateSignalRequest _incomingSignalMsg; /*!< Incoming signal message from broker */
-
-        bool isThrottled = false;
 
     private:
         void _init();
