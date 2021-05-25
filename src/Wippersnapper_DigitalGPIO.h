@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_Checkin.h
+ * @file Wippersnapper_DigitalGPIO.h
  *
  * This file provides digital GPIO control and access.
  *
@@ -18,32 +18,43 @@
 
 #include "Wippersnapper.h"
 
-// Holds data about a digital input pin
+/** Holds data about a digital input pin */
 struct digitalInputPin {
-    uint8_t pinName;       // Pin name
-    long period;    // Timer interval, in millis, -1 if disabled.
-    long prvPeriod; // When timer was previously serviced, in millis
-    int prvPinVal;         // Previous pin value
+  uint8_t pinName; ///< Pin name
+  long period;     ///< Timer interval, in millis, -1 if disabled.
+  long prvPeriod;  ///< When timer was previously serviced, in millis
+  int prvPinVal;   ///< Previous pin value
 };
 
 // forward decl.
 class Wippersnapper;
 
+/**************************************************************************/
+/*!
+    @brief  Class that provides functions for reading and interacting with
+            digital inputs and outputs.
+*/
+/**************************************************************************/
 class Wippersnapper_DigitalGPIO {
-    public:
-        Wippersnapper_DigitalGPIO(int32_t totalDigitalInputPins);
-        ~Wippersnapper_DigitalGPIO();
+public:
+  Wippersnapper_DigitalGPIO(int32_t totalDigitalInputPins);
+  ~Wippersnapper_DigitalGPIO();
 
-        void initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName, float period);
-        void deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, uint8_t pinName);
+  void
+  initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
+                 uint8_t pinName, float period);
+  void
+  deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
+                   uint8_t pinName);
 
-        int digitalReadSvc(int pinName);
-        void digitalWriteSvc(uint8_t pinName, int pinValue);
-        void processDigitalInputs();
+  int digitalReadSvc(int pinName);
+  void digitalWriteSvc(uint8_t pinName, int pinValue);
+  void processDigitalInputs();
 
-        digitalInputPin* _digital_input_pins; /*!< Array of gpio pin objects */
-    private:
-        int32_t _totalDigitalInputPins;     /*!< Total number of digital-input capable pins */
+  digitalInputPin *_digital_input_pins; /*!< Array of gpio pin objects */
+private:
+  int32_t
+      _totalDigitalInputPins; /*!< Total number of digital-input capable pins */
 };
 extern Wippersnapper WS;
 

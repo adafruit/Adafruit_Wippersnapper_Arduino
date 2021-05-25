@@ -137,6 +137,8 @@ void Wippersnapper_Registration::publishRegMsg() {
 /*!
     @brief    Polls the broker for a response to a published
                 registration message.
+    @returns  True if board definition received by broker
+                successfully, False otherwise.
 */
 /************************************************************/
 bool Wippersnapper_Registration::pollRegMsg() {
@@ -160,6 +162,10 @@ bool Wippersnapper_Registration::pollRegMsg() {
 /************************************************************/
 /*!
     @brief    Decodes registration message from broker.
+    @param    data
+                The registration protobuf msg data.
+    @param    len
+                The length of the protobuf msg data.
 */
 /************************************************************/
 void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {

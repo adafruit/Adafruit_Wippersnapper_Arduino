@@ -1,9 +1,6 @@
 /*!
  * @file Wippersnapper_Registration.h
  *
- * This file provides protocol buffer decoders for the Wippersnapper
- * protocol API.
- *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
@@ -21,37 +18,41 @@
 // forward decl.
 class Wippersnapper;
 
+/**************************************************************************/
+/*!
+    @brief  Class that negotiates the device's registration process with
+            the Adafruit IO MQTT broker.
+*/
+/**************************************************************************/
 class Wippersnapper_Registration {
-    public:
-        Wippersnapper_Registration();
-        ~Wippersnapper_Registration();
+public:
+  Wippersnapper_Registration();
+  ~Wippersnapper_Registration();
 
-        bool processRegistration();
-        void encodeRegMsg();
-        void publishRegMsg();
-        bool pollRegMsg();
-        void decodeRegMsg(char *data, uint16_t len);
+  bool processRegistration();
+  void encodeRegMsg();
+  void publishRegMsg();
+  bool pollRegMsg();
+  void decodeRegMsg(char *data, uint16_t len);
 
-    private:
+private:
+  enum class FSMReg {
+    REG_CREATE_ENCODE_MSG,
+    REG_PUBLISH_MSG,
+    REG_DECODE_MSG,
+    REG_DECODED_MSG,
+  };
+  FSMReg _state = FSMReg::REG_CREATE_ENCODE_MSG;
 
-        enum class FSMReg {
-            REG_CREATE_ENCODE_MSG,
-            REG_PUBLISH_MSG,
-            REG_DECODE_MSG,
-            REG_DECODED_MSG,
-        };
-        FSMReg _state = FSMReg::REG_CREATE_ENCODE_MSG;
+  uint8_t _message_buffer[128];
+  size_t _message_len;
+  bool _status;
 
-        uint8_t _message_buffer[128];
-        size_t _message_len;
-        bool _status;
+  pb_ostream_t _msg_stream;
 
-        pb_ostream_t _msg_stream;
-
-        // Description message contents
-        const char * _machine_name;
-        int32_t _uid;
-
+  // Description message contents
+  const char *_machine_name;
+  int32_t _uid;
 };
 
 extern Wippersnapper WS;

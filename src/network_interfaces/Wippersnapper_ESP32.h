@@ -19,11 +19,11 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 
-#include "Wippersnapper.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "WiFiClientSecure.h"
+#include "Wippersnapper.h"
 #include <WiFi.h>
 
 extern Wippersnapper WS;
@@ -41,11 +41,11 @@ public:
   @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
   /**************************************************************************/
-  Wippersnapper_ESP32(): Wippersnapper() {
+  Wippersnapper_ESP32() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
     _mqtt_client = new WiFiClientSecure;
-    }
+  }
 
   /**************************************************************************/
   /*!
@@ -53,8 +53,8 @@ public:
   */
   /**************************************************************************/
   ~Wippersnapper_ESP32() {
-      if (_mqtt_client)
-        delete _mqtt_client;
+    if (_mqtt_client)
+      delete _mqtt_client;
   }
 
   /********************************************************/
@@ -66,9 +66,9 @@ public:
             WiFi network's password.
   */
   /********************************************************/
-  void set_ssid_pass(char *ssid, const char *ssidPassword) {
-        _ssid = ssid;
-        _pass = ssidPassword;
+  void set_ssid_pass(const char *ssid, const char *ssidPassword) {
+    _ssid = ssid;
+    _pass = ssidPassword;
   }
 
   /********************************************************/
@@ -77,9 +77,9 @@ public:
   @note   On ESP32, the UID is the MAC address.
   */
   /********************************************************/
-  void getUID() {
-      WiFi.macAddress(mac);
-      memcpy(WS._uid, mac, sizeof(mac));
+  void setUID() {
+    WiFi.macAddress(mac);
+    memcpy(WS._uid, mac, sizeof(mac));
   }
 
   /********************************************************/
@@ -90,8 +90,9 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, \
-                WS._mqtt_port, clientID, WS._username, WS._key);
+    WS._mqtt =
+        new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, WS._mqtt_port,
+                                 clientID, WS._username, WS._key);
   }
 
   /********************************************************/
@@ -124,9 +125,8 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
-  uint8_t mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   WiFiClientSecure *_mqtt_client;
-
 
   // io.adafruit.US staging, root CA
   const char *_aio_root_ca =
@@ -157,7 +157,6 @@ protected:
       "UdHkhVNcsAKX1H7GNNLOEADksd86wuoXvg==\n"
       "-----END CERTIFICATE-----\n";
 
-
   /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
@@ -165,13 +164,13 @@ protected:
   /**************************************************************************/
   void _connect() {
     if (strlen(_ssid) == 0) {
-        _status = WS_SSID_INVALID;
+      _status = WS_SSID_INVALID;
     } else {
-        _disconnect();
-        delay(100);
-        WiFi.begin(_ssid, _pass);
-        delay(100);
-        _status = WS_NET_DISCONNECTED;
+      _disconnect();
+      delay(100);
+      WiFi.begin(_ssid, _pass);
+      delay(100);
+      _status = WS_NET_DISCONNECTED;
     }
     _mqtt_client->setCACert(_aio_root_ca);
   }
@@ -188,4 +187,4 @@ protected:
 };
 
 #endif // ARDUINO_ARCH_ESP32_H
-#endif //Wippersnapper_ESP32_H
+#endif // Wippersnapper_ESP32_H
