@@ -80,6 +80,8 @@ void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
   _username = aio_username;
   _key = aio_key;
+  WS._username = aio_username;
+  WS._key = aio_key;
 }
 
 // Decoders //
@@ -355,13 +357,49 @@ void cbErrorTopic(char *errorData, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
 
-  // attempt to reconnect to MQTT broker
-  // TODO: we should create another method instead of MQTTStatus...
-  WS_DEBUG_PRINTLN("Reconnecting to MQTT...");
-  while (WS.mqttStatus() != WS_CONNECTED) {
-    WS_DEBUG_PRINTLN(".");
+  bool notConnected = true;
+  while (notConnected) {
+    WS_DEBUG_PRINTLN("Retrying connection...");
+    // attempt reconnection, save return code (rc)
+    int8_t rc = WS._mqtt->connect(WS._username, WS._key);
+    WS_DEBUG_PRINT("Connection RC: ");WS_DEBUG_PRINTLN(rc);
+    switch(rc) { // TODO: make these all enums
+      case 0: // connected
+        WS_DEBUG_PRINTLN("RC OK!");
+        notConnected = false;
+        break;
+      case 1: // invalid mqtt protocol
+        break;
+      case 2: // client id rejected
+        break;
+      case 4: // malformed user/pass
+        break;
+      case 5: // unauthorized
+        break;
+      case 3: // mqtt service unavailable
+        break;
+      case 6: // throttled
+        WS_DEBUG_PRINTLN("ERROR: Throttled");
+        break;
+      case 7: // banned
+        WS_DEBUG_PRINTLN("ERROR: Temporarily banned");
+        break;
+      default:
+        break;
+    }
+    if (notConnected) {
+      // todo: exp backoff
+      WS_DEBUG_PRINTLN("Not connected, delaying 60sec...");
+      delay(60000);
+    } else {
+      WS_DEBUG_PRINTLN("Connected to MQTT broker!")
+      // reset backoff param and retries
+    }
   }
+  // todo: validate that it re-sends subscription info
+  // todo: re-register hardware with broker
 }
+
 
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
