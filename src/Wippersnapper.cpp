@@ -350,8 +350,17 @@ void cbErrorTopic(char *errorData, uint16_t len) {
   WS_DEBUG_PRINT("IO ERROR: ");
   WS_DEBUG_PRINTLN(errorData);
 
-  WS_DEBUG_PRINTLN("Disconnecting device from Adafruit IO...");
-  WS._disconnect();
+  WS_DEBUG_PRINT("Disconnecting from MQTT..");
+  if (!WS._mqtt->disconnect()) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
+  }
+
+  // attempt to reconnect to MQTT broker
+  // TODO: we should create another method instead of MQTTStatus...
+  WS_DEBUG_PRINTLN("Reconnecting to MQTT...");
+  while (WS.mqttStatus() != WS_CONNECTED) {
+    WS_DEBUG_PRINTLN(".");
+  }
 }
 
 void cbThrottleTopic(char *throttleData, uint16_t len) {
@@ -546,7 +555,7 @@ void Wippersnapper::connect() {
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   // Connect network interface
-  WS_DEBUG_PRINT("Connecting to WiFi...");
+  WS_DEBUG_PRINTLN("Connecting to WiFi...");
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
 
@@ -573,45 +582,28 @@ void Wippersnapper::connect() {
   // Subscribe to error topics
   subscribeErrorTopics();
 
+  // MQTT setup
+  WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-  WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+  
   while (status() < WS_CONNECTED) {
     WS_DEBUG_PRINT(".");
     delay(500);
   }
-  WS_DEBUG_PRINTLN("Connected!");
+  WS_DEBUG_PRINTLN("MQTT Connection Established!");
 
+  // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering Board...")
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
     for (;;) {
-      pixels.setPixelColor(0, pixels.Color(255, 0, 255));
-      pixels.show();
       delay(1000);
-      pixels.setPixelColor(0, pixels.Color(0, 0, 0));
-      pixels.show();
     }
   }
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
 
-#ifdef STATUS_NEOPIXEL
-  pixels.setPixelColor(0, pixels.Color(0, 255, 0));
-  pixels.show();
-  delay(500);
-  pixels.setPixelColor(0, pixels.Color(0, 0, 0));
-  pixels.show();
-#else
-  digitalWrite(STATUS_LED_PIN, 0);
-  delay(500);
-  digitalWrite(STATUS_LED_PIN, 1);
-  delay(500);
-  digitalWrite(STATUS_LED_PIN, 0);
-  // de-init pin
-  WS._digitalGPIO->deinitDigitalPin(
-      wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT,
-      STATUS_LED_PIN);
-#endif
 }
 
 /**************************************************************************/
