@@ -358,43 +358,50 @@ void retryMQTTConnection() {
 
   int retries = 0;
   // maximum backoff time, in millis
-  long maxBackoff = 60000;
+  double maxBackoff = 60000;
   double backoff;
   // randomized jitter to prevent collisions during exp. backoff
   long jitter;
 
-
   bool notConnected = true;
-  while (notConnected) {
+  while (notConnected == true) {
     WS_DEBUG_PRINTLN("Retrying connection...");
     // attempt reconnection, save return code (rc)
     int8_t rc = WS._mqtt->connect(WS._username, WS._key);
     WS_DEBUG_PRINT("Connect RC: ");
     WS_DEBUG_PRINTLN(rc);
-    switch (rc) { // TODO: make these all enums
-    case 0:       // connected
-      WS_DEBUG_PRINTLN("RC OK!");
+
+    if (WS._mqtt->connected()) {
+      WS_DEBUG_PRINTLN("connected OK")
       notConnected = false;
       break;
-    case 1: // invalid mqtt protocol
+    }
+
+    // TODO: make these all enums
+    switch (rc) {
+    case WS_MQTT_CONNECTED:
+      WS_DEBUG_PRINTLN("Connect RC OK!");
+      notConnected = false;
+      break;
+    case WS_MQTT_INVALID_PROTOCOL:
       WS_DEBUG_PRINTLN("Invalid MQTT protocol");
       break;
-    case 2: // client id rejected
+    case WS_MQTT_INVALID_CID:
       WS_DEBUG_PRINTLN("client ID rejected");
       break;
-    case 4: // malformed user/pass
-      WS_DEBUG_PRINTLN("malformed user/pass");
-      break;
-    case 5: // unauthorized
-      WS_DEBUG_PRINTLN("unauthorized");
-      break;
-    case 3: // mqtt service unavailable
+    case WS_MQTT_SERVICE_UNAVALIABLE:
       WS_DEBUG_PRINTLN("MQTT service unavailable");
       break;
-    case 6: // throttled
+    case WS_MQTT_INVALID_USER_PASS:
+      WS_DEBUG_PRINTLN("malformed user/pass");
+      break;
+    case WS_MQTT_UNAUTHORIZED:
+      WS_DEBUG_PRINTLN("unauthorized");
+      break;
+    case WS_MQTT_THROTTLED:
       WS_DEBUG_PRINTLN("ERROR: Throttled");
       break;
-    case 7: // banned
+    case WS_MQTT_BANNED:
       WS_DEBUG_PRINTLN("ERROR: Temporarily banned");
       break;
     default:
@@ -402,17 +409,19 @@ void retryMQTTConnection() {
     }
     retries++;
     if (notConnected) {
-      // todo: exp backoff
       WS_DEBUG_PRINTLN("Not connected, delaying...");
       // calculate jitter value btween 0ms and 500ms
       jitter = random(0, 500);
+      // calculate exponential backoff w/jitter
       backoff = (pow(2, retries) * 1000) + jitter;
-      WS_DEBUG_PRINT("Calculated backoff: ");
-      WS_DEBUG_PRINT(backoff);
+      backoff = min(backoff, maxBackoff);
+      WS_DEBUG_PRINTLN(backoff);
+      // delay for backoff millis
       delay(backoff);
     } else {
       WS_DEBUG_PRINTLN("Connected to MQTT broker!")
       // reset backoff param and retries
+      backoff = 0;
     }
   }
 }
@@ -454,7 +463,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 
 /**************************************************************************/
 /*!
-    @brief    Builds MQTT topics for handling errors returned from the
+    @brief    Builds MQTT tox pics for handling errors returned from the
                 Adafruit IO broker.
     @returns  True if memory for error topics allocated successfully,
                 False otherwise.
@@ -978,47 +987,4 @@ ws_status_t Wippersnapper::mqttStatus() {
     }
   }
   return WS_DISCONNECTED;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Provide status explanation strings.
-    @return   A pointer to the status string, _status. _status is the BC status
-   value
-*/
-/**************************************************************************/
-const __FlashStringHelper *Wippersnapper::statusText() {
-  switch (_status) {
-  // CONNECTING
-  case WS_IDLE:
-    return F("Idle. Waiting for connect to be called...");
-  case WS_NET_DISCONNECTED:
-    return F("Network disconnected.");
-  case WS_DISCONNECTED:
-    return F("Disconnected from Wippersnapper.");
-  // FAILURE
-  case WS_NET_CONNECT_FAILED:
-    return F("Network connection failed.");
-  case WS_CONNECT_FAILED:
-    return F("Wippersnapper connection failed.");
-  case WS_FINGERPRINT_INVALID:
-    return F("Wippersnapper SSL fingerprint verification failed.");
-  case WS_AUTH_FAILED:
-    return F("Wippersnapper authentication failed.");
-  // SUCCESS
-  case WS_NET_CONNECTED:
-    return F("Network connected.");
-  case WS_CONNECTED:
-    return F("Wippersnapper connected.");
-  case WS_CONNECTED_INSECURE:
-    return F("Wippersnapper connected. **THIS CONNECTION IS INSECURE** SSL/TLS "
-             "not supported for this platform.");
-  case WS_FINGERPRINT_UNSUPPORTED:
-    return F("Wippersnapper connected over SSL/TLS. Fingerprint verification "
-             "unsupported.");
-  case WS_FINGERPRINT_VALID:
-    return F("Wippersnapper connected over SSL/TLS. Fingerprint valid.");
-  default:
-    return F("Unknown status code");
-  }
 }
