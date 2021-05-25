@@ -362,21 +362,26 @@ void cbErrorTopic(char *errorData, uint16_t len) {
     WS_DEBUG_PRINTLN("Retrying connection...");
     // attempt reconnection, save return code (rc)
     int8_t rc = WS._mqtt->connect(WS._username, WS._key);
-    WS_DEBUG_PRINT("Connection RC: ");WS_DEBUG_PRINTLN(rc);
+    WS_DEBUG_PRINT("Connect RC: ");WS_DEBUG_PRINTLN(rc);
     switch(rc) { // TODO: make these all enums
       case 0: // connected
         WS_DEBUG_PRINTLN("RC OK!");
         notConnected = false;
         break;
       case 1: // invalid mqtt protocol
+        WS_DEBUG_PRINTLN("Invalid MQTT protocol");
         break;
       case 2: // client id rejected
+        WS_DEBUG_PRINTLN("client ID rejected");
         break;
       case 4: // malformed user/pass
+        WS_DEBUG_PRINTLN("malformed user/pass");
         break;
       case 5: // unauthorized
+        WS_DEBUG_PRINTLN("unauthorized");
         break;
       case 3: // mqtt service unavailable
+        WS_DEBUG_PRINTLN("MQTT service unavailable");
         break;
       case 6: // throttled
         WS_DEBUG_PRINTLN("ERROR: Throttled");
@@ -396,6 +401,7 @@ void cbErrorTopic(char *errorData, uint16_t len) {
       // reset backoff param and retries
     }
   }
+  WS_DEBUG_PRINTLN("re-registering hardware with broker");
   // todo: validate that it re-sends subscription info
   // todo: re-register hardware with broker
 }
@@ -926,7 +932,7 @@ ws_status_t Wippersnapper::mqttStatus() {
             // permitted
             // delay to prevent fast reconnects and fast returns (backward
             // compatibility)
-      delay(WS_KEEPALIVE_INTERVAL);
+      delay(60000);
       return WS_DISCONNECTED;
     default:
       return WS_DISCONNECTED;
