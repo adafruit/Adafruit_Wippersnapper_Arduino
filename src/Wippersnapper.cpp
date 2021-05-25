@@ -355,6 +355,15 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 */
 /**************************************************************************/
 void retryMQTTConnection() {
+
+  int retries = 0;
+  // maximum backoff time, in millis
+  long maxBackoff = 60000;
+  double backoff;
+  // randomized jitter to prevent collisions during exp. backoff
+  long jitter;
+
+
   bool notConnected = true;
   while (notConnected) {
     WS_DEBUG_PRINTLN("Retrying connection...");
@@ -391,10 +400,16 @@ void retryMQTTConnection() {
     default:
       break;
     }
+    retries++;
     if (notConnected) {
       // todo: exp backoff
-      WS_DEBUG_PRINTLN("Not connected, delaying 60sec...");
-      delay(60000);
+      WS_DEBUG_PRINTLN("Not connected, delaying...");
+      // calculate jitter value btween 0ms and 500ms
+      jitter = random(0, 500);
+      backoff = (pow(2, retries) * 1000) + jitter;
+      WS_DEBUG_PRINT("Calculated backoff: ");
+      WS_DEBUG_PRINT(backoff);
+      delay(backoff);
     } else {
       WS_DEBUG_PRINTLN("Connected to MQTT broker!")
       // reset backoff param and retries
@@ -423,13 +438,7 @@ void cbErrorTopic(char *errorData, uint16_t len) {
 
   // Register hardware with Wippersnapper, resync
   WS_DEBUG_PRINTLN("Registering Board...")
-  if (!registerBoard(10)) {
-    WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
-    for (;;) {
-      delay(1000);
-    }
-  }
-  WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+  // TODO!
 }
 
 /**************************************************************************/
