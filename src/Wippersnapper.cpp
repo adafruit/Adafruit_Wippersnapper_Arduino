@@ -348,49 +348,48 @@ void cbRegistrationStatus(char *data, uint16_t len) {
   WS._registerBoard->decodeRegMsg(data, len);
 }
 
-void cbErrorTopic(char *errorData, uint16_t len) {
-  WS_DEBUG_PRINT("IO ERROR: ");
-  WS_DEBUG_PRINTLN(errorData);
-
-  WS_DEBUG_PRINT("Disconnecting from MQTT..");
-  if (!WS._mqtt->disconnect()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
-  }
-
+/**************************************************************************/
+/*!
+    @brief    Attempts to re-connect to the MQTT broker, retries with
+                an exponential backoff interval.
+*/
+/**************************************************************************/
+void retryMQTTConnection() {
   bool notConnected = true;
   while (notConnected) {
     WS_DEBUG_PRINTLN("Retrying connection...");
     // attempt reconnection, save return code (rc)
     int8_t rc = WS._mqtt->connect(WS._username, WS._key);
-    WS_DEBUG_PRINT("Connect RC: ");WS_DEBUG_PRINTLN(rc);
-    switch(rc) { // TODO: make these all enums
-      case 0: // connected
-        WS_DEBUG_PRINTLN("RC OK!");
-        notConnected = false;
-        break;
-      case 1: // invalid mqtt protocol
-        WS_DEBUG_PRINTLN("Invalid MQTT protocol");
-        break;
-      case 2: // client id rejected
-        WS_DEBUG_PRINTLN("client ID rejected");
-        break;
-      case 4: // malformed user/pass
-        WS_DEBUG_PRINTLN("malformed user/pass");
-        break;
-      case 5: // unauthorized
-        WS_DEBUG_PRINTLN("unauthorized");
-        break;
-      case 3: // mqtt service unavailable
-        WS_DEBUG_PRINTLN("MQTT service unavailable");
-        break;
-      case 6: // throttled
-        WS_DEBUG_PRINTLN("ERROR: Throttled");
-        break;
-      case 7: // banned
-        WS_DEBUG_PRINTLN("ERROR: Temporarily banned");
-        break;
-      default:
-        break;
+    WS_DEBUG_PRINT("Connect RC: ");
+    WS_DEBUG_PRINTLN(rc);
+    switch (rc) { // TODO: make these all enums
+    case 0:       // connected
+      WS_DEBUG_PRINTLN("RC OK!");
+      notConnected = false;
+      break;
+    case 1: // invalid mqtt protocol
+      WS_DEBUG_PRINTLN("Invalid MQTT protocol");
+      break;
+    case 2: // client id rejected
+      WS_DEBUG_PRINTLN("client ID rejected");
+      break;
+    case 4: // malformed user/pass
+      WS_DEBUG_PRINTLN("malformed user/pass");
+      break;
+    case 5: // unauthorized
+      WS_DEBUG_PRINTLN("unauthorized");
+      break;
+    case 3: // mqtt service unavailable
+      WS_DEBUG_PRINTLN("MQTT service unavailable");
+      break;
+    case 6: // throttled
+      WS_DEBUG_PRINTLN("ERROR: Throttled");
+      break;
+    case 7: // banned
+      WS_DEBUG_PRINTLN("ERROR: Temporarily banned");
+      break;
+    default:
+      break;
     }
     if (notConnected) {
       // todo: exp backoff
@@ -401,12 +400,44 @@ void cbErrorTopic(char *errorData, uint16_t len) {
       // reset backoff param and retries
     }
   }
-  WS_DEBUG_PRINTLN("re-registering hardware with broker");
-  // todo: validate that it re-sends subscription info
-  // todo: re-register hardware with broker
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when client receives a message published across the
+                Adafruit IO MQTT /error special topic.
+*/
+/**************************************************************************/
+void cbErrorTopic(char *errorData, uint16_t len) {
+  WS_DEBUG_PRINT("IO ERROR: ");
+  WS_DEBUG_PRINTLN(errorData);
 
+  // Disconnect client from broker
+  WS_DEBUG_PRINT("Disconnecting from MQTT..");
+  if (!WS._mqtt->disconnect()) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
+  }
+
+  // attempt to re-establish a MQTT connection
+  retryMQTTConnection();
+
+  // Register hardware with Wippersnapper, resync
+  WS_DEBUG_PRINTLN("Registering Board...")
+  if (!registerBoard(10)) {
+    WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+    for (;;) {
+      delay(1000);
+    }
+  }
+  WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+}
+
+/**************************************************************************/
+/*!
+    @brief    Called when client receives a message published across the
+                Adafruit IO MQTT /throttle special topic.
+*/
+/**************************************************************************/
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLN(throttleData);
@@ -631,7 +662,7 @@ void Wippersnapper::connect() {
 
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-  
+
   while (status() < WS_CONNECTED) {
     WS_DEBUG_PRINT(".");
     delay(500);
@@ -647,7 +678,6 @@ void Wippersnapper::connect() {
     }
   }
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
-
 }
 
 /**************************************************************************/
