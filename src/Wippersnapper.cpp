@@ -351,34 +351,29 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 /**************************************************************************/
 /*!
     @brief    Attempts to re-connect to the MQTT broker, retries with
-                an exponential backoff interval.
+                an exponential backoff + jitter interval.
 */
 /**************************************************************************/
 void retryMQTTConnection() {
+  // MQTT broker's connack return code
+  int8_t rc;
+  // amount of times we've attempted to re-connect to IO's MQTT broker
   int retries = 0;
   // maximum backoff time, in millis
   double maxBackoff = 60000;
+  // current backoff time, in millis
   double backoff;
-  // randomized jitter to prevent collisions during exp. backoff
+  // randomized jitter to prevent multi-client collisions
   long jitter;
 
   bool notConnected = true;
   while (notConnected == true) {
     WS_DEBUG_PRINTLN("Retrying connection...");
     // attempt reconnection, save return code (rc)
-    int8_t rc = WS._mqtt->connect(WS._username, WS._key);
-    WS_DEBUG_PRINT("Connect RC: ");
-    WS_DEBUG_PRINTLN(rc);
-
-    if (WS._mqtt->connected()) {
-      WS_DEBUG_PRINTLN("connected OK")
-      notConnected = false;
-      break;
-    }
-
+    rc = WS._mqtt->connect(WS._username, WS._key);
     switch (rc) {
     case WS_MQTT_CONNECTED:
-      WS_DEBUG_PRINTLN("Connect RC OK!");
+      WS_DEBUG_PRINTLN("Re-connected to IO MQTT!");
       notConnected = false;
       break;
     case WS_MQTT_INVALID_PROTOCOL:
@@ -408,12 +403,14 @@ void retryMQTTConnection() {
     retries++;
     if (notConnected) {
       WS_DEBUG_PRINTLN("Not connected, delaying...");
-      // calculate jitter value btween 0ms and 100ms
+      // calculate a jitter value btween 0ms and 100ms
       jitter = random(0, 100);
       // calculate exponential backoff w/jitter
       backoff = (pow(2, retries) * 1000) + jitter;
       backoff = min(backoff, maxBackoff);
-      WS_DEBUG_PRINTLN(backoff);
+      WS_DEBUG_PRINT("Delaying for ");
+      WS_DEBUG_PRINT(backoff);
+      WS_DEBUG_PRINTLN("ms...");
       // delay for backoff millis
       delay(backoff);
     } else {
@@ -431,15 +428,14 @@ void retryMQTTConnection() {
 */
 /**************************************************************************/
 void cbErrorTopic(char *errorData, uint16_t len) {
-  WS_DEBUG_PRINT("IO ERROR: ");
+  WS_DEBUG_PRINT("IO Ban Error: ");
   WS_DEBUG_PRINTLN(errorData);
-
   // Disconnect client from broker
   WS_DEBUG_PRINT("Disconnecting from MQTT..");
   if (!WS._mqtt->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
-  // attempt to re-establish the MQTT connection
+  // attempt to re-establish a MQTT connection
   retryMQTTConnection();
 }
 
@@ -464,7 +460,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   double throttleTimes = WS.throttleTime / WS_KEEPALIVE_INTERVAL_MS;
   // round to nearest millis to prevent delaying for less time than req'd.
   throttleTimes = ceil(throttleTimes);
-  for (int i = 0; i < throttleTimes; i++) {
+  for (int i = 0; i < (int)throttleTimes; i++) {
     WS_DEBUG_PRINTLN("Delaying...")
     delay(WS_KEEPALIVE_INTERVAL_MS);
     WS._mqtt->ping(); // keep the connection active
