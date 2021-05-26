@@ -355,7 +355,6 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 */
 /**************************************************************************/
 void retryMQTTConnection() {
-
   int retries = 0;
   // maximum backoff time, in millis
   double maxBackoff = 60000;
@@ -377,7 +376,6 @@ void retryMQTTConnection() {
       break;
     }
 
-    // TODO: make these all enums
     switch (rc) {
     case WS_MQTT_CONNECTED:
       WS_DEBUG_PRINTLN("Connect RC OK!");
@@ -410,8 +408,8 @@ void retryMQTTConnection() {
     retries++;
     if (notConnected) {
       WS_DEBUG_PRINTLN("Not connected, delaying...");
-      // calculate jitter value btween 0ms and 500ms
-      jitter = random(0, 500);
+      // calculate jitter value btween 0ms and 100ms
+      jitter = random(0, 100);
       // calculate exponential backoff w/jitter
       backoff = (pow(2, retries) * 1000) + jitter;
       backoff = min(backoff, maxBackoff);
@@ -441,24 +439,36 @@ void cbErrorTopic(char *errorData, uint16_t len) {
   if (!WS._mqtt->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
-
-  // attempt to re-establish a MQTT connection
+  // attempt to re-establish the MQTT connection
   retryMQTTConnection();
-
-  // Register hardware with Wippersnapper, resync
-  WS_DEBUG_PRINTLN("Registering Board...")
-  // TODO!
 }
 
 /**************************************************************************/
 /*!
     @brief    Called when client receives a message published across the
-                Adafruit IO MQTT /throttle special topic.
+                Adafruit IO MQTT /throttle special topic. Delays until
+                throttle is released.
 */
 /**************************************************************************/
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLN(throttleData);
+  // Parse out # of seconds from throttle error message
+  WS.throttleMessage = strtok(throttleData, ",");
+  WS.throttleMessage = strtok(NULL, " ");
+  // Convert to millis for delay
+  WS.throttleTime = atoi(WS.throttleMessage) * 1000;
+  WS_DEBUG_PRINT("Delaying for: ");
+  WS_DEBUG_PRINTLN(WS.throttleTime);
+  // Calculate amount of times to delay WS_KEEPALIVE_INTERVAL_MS
+  double throttleTimes = WS.throttleTime / WS_KEEPALIVE_INTERVAL_MS;
+  // round to nearest millis to prevent delaying for less time than req'd.
+  throttleTimes = ceil(throttleTimes);
+  for (int i = 0; i < throttleTimes; i++) {
+    WS_DEBUG_PRINTLN("Delaying...")
+    delay(WS_KEEPALIVE_INTERVAL_MS);
+    WS._mqtt->ping(); // keep the connection active
+  }
 }
 
 /**************************************************************************/

@@ -220,6 +220,10 @@ public:
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
+  char *throttleMessage; /*!< Pointer to throttle message data. */
+  int throttleTime;      /*!< Total amount of time to throttle the device, in
+                            milliseconds. */
+
 private:
   void _init();
 
