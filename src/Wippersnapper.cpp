@@ -80,6 +80,8 @@ void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
   _username = aio_username;
   _key = aio_key;
+  WS._username = aio_username;
+  WS._key = aio_key;
 }
 
 // Decoders //
@@ -346,17 +348,123 @@ void cbRegistrationStatus(char *data, uint16_t len) {
   WS._registerBoard->decodeRegMsg(data, len);
 }
 
-void cbErrorTopic(char *errorData, uint16_t len) {
-  WS_DEBUG_PRINT("IO ERROR: ");
-  WS_DEBUG_PRINTLN(errorData);
+/**************************************************************************/
+/*!
+    @brief    Attempts to re-connect to the MQTT broker, retries with
+                an exponential backoff + jitter interval.
+*/
+/**************************************************************************/
+void retryMQTTConnection() {
+  // MQTT broker's connack return code
+  int8_t rc;
+  // amount of times we've attempted to re-connect to IO's MQTT broker
+  int retries = 0;
+  // maximum backoff time, in millis
+  double maxBackoff = 60000;
+  // current backoff time, in millis
+  double backoff;
+  // randomized jitter to prevent multi-client collisions
+  long jitter;
 
-  WS_DEBUG_PRINTLN("Disconnecting device from Adafruit IO...");
-  WS._disconnect();
+  bool notConnected = true;
+  while (notConnected == true) {
+    WS_DEBUG_PRINTLN("Retrying connection...");
+    // attempt reconnection, save return code (rc)
+    rc = WS._mqtt->connect(WS._username, WS._key);
+    switch (rc) {
+    case WS_MQTT_CONNECTED:
+      WS_DEBUG_PRINTLN("Re-connected to IO MQTT!");
+      notConnected = false;
+      break;
+    case WS_MQTT_INVALID_PROTOCOL:
+      WS_DEBUG_PRINTLN("Invalid MQTT protocol");
+      break;
+    case WS_MQTT_INVALID_CID:
+      WS_DEBUG_PRINTLN("client ID rejected");
+      break;
+    case WS_MQTT_SERVICE_UNAVALIABLE:
+      WS_DEBUG_PRINTLN("MQTT service unavailable");
+      break;
+    case WS_MQTT_INVALID_USER_PASS:
+      WS_DEBUG_PRINTLN("malformed user/pass");
+      break;
+    case WS_MQTT_UNAUTHORIZED:
+      WS_DEBUG_PRINTLN("unauthorized");
+      break;
+    case WS_MQTT_THROTTLED:
+      WS_DEBUG_PRINTLN("ERROR: Throttled");
+      break;
+    case WS_MQTT_BANNED:
+      WS_DEBUG_PRINTLN("ERROR: Temporarily banned");
+      break;
+    default:
+      break;
+    }
+    retries++;
+    if (notConnected) {
+      WS_DEBUG_PRINTLN("Not connected, delaying...");
+      // calculate a jitter value btween 0ms and 100ms
+      jitter = random(0, 100);
+      // calculate exponential backoff w/jitter
+      backoff = (pow(2, retries) * 1000) + jitter;
+      backoff = min(backoff, maxBackoff);
+      WS_DEBUG_PRINT("Delaying for ");
+      WS_DEBUG_PRINT(backoff);
+      WS_DEBUG_PRINTLN("ms...");
+      // delay for backoff millis
+      delay(backoff);
+    } else {
+      WS_DEBUG_PRINTLN("Connected to MQTT broker!")
+      // reset backoff param and retries
+      backoff = 0;
+    }
+  }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when client receives a message published across the
+                Adafruit IO MQTT /error special topic.
+*/
+/**************************************************************************/
+void cbErrorTopic(char *errorData, uint16_t len) {
+  WS_DEBUG_PRINT("IO Ban Error: ");
+  WS_DEBUG_PRINTLN(errorData);
+  // Disconnect client from broker
+  WS_DEBUG_PRINT("Disconnecting from MQTT..");
+  if (!WS._mqtt->disconnect()) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
+  }
+  // attempt to re-establish a MQTT connection
+  retryMQTTConnection();
+}
+
+/**************************************************************************/
+/*!
+    @brief    Called when client receives a message published across the
+                Adafruit IO MQTT /throttle special topic. Delays until
+                throttle is released.
+*/
+/**************************************************************************/
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLN(throttleData);
+  // Parse out # of seconds from throttle error message
+  WS.throttleMessage = strtok(throttleData, ",");
+  WS.throttleMessage = strtok(NULL, " ");
+  // Convert to millis for delay
+  WS.throttleTime = atoi(WS.throttleMessage) * 1000;
+  WS_DEBUG_PRINT("Delaying for: ");
+  WS_DEBUG_PRINTLN(WS.throttleTime);
+  // Calculate amount of times to delay WS_KEEPALIVE_INTERVAL_MS
+  double throttleTimes = WS.throttleTime / WS_KEEPALIVE_INTERVAL_MS;
+  // round to nearest millis to prevent delaying for less time than req'd.
+  throttleTimes = ceil(throttleTimes);
+  for (int i = 0; i < (int)throttleTimes; i++) {
+    WS_DEBUG_PRINTLN("Delaying...")
+    delay(WS_KEEPALIVE_INTERVAL_MS);
+    WS._mqtt->ping(); // keep the connection active
+  }
 }
 
 /**************************************************************************/
@@ -546,7 +654,7 @@ void Wippersnapper::connect() {
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   // Connect network interface
-  WS_DEBUG_PRINT("Connecting to WiFi...");
+  WS_DEBUG_PRINTLN("Connecting to WiFi...");
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
 
@@ -573,45 +681,27 @@ void Wippersnapper::connect() {
   // Subscribe to error topics
   subscribeErrorTopics();
 
+  // MQTT setup
+  WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-  WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+
   while (status() < WS_CONNECTED) {
     WS_DEBUG_PRINT(".");
     delay(500);
   }
-  WS_DEBUG_PRINTLN("Connected!");
+  WS_DEBUG_PRINTLN("MQTT Connection Established!");
 
+  // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering Board...")
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
     for (;;) {
-      pixels.setPixelColor(0, pixels.Color(255, 0, 255));
-      pixels.show();
       delay(1000);
-      pixels.setPixelColor(0, pixels.Color(0, 0, 0));
-      pixels.show();
     }
   }
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
-
-#ifdef STATUS_NEOPIXEL
-  pixels.setPixelColor(0, pixels.Color(0, 255, 0));
-  pixels.show();
-  delay(500);
-  pixels.setPixelColor(0, pixels.Color(0, 0, 0));
-  pixels.show();
-#else
-  digitalWrite(STATUS_LED_PIN, 0);
-  delay(500);
-  digitalWrite(STATUS_LED_PIN, 1);
-  delay(500);
-  digitalWrite(STATUS_LED_PIN, 0);
-  // de-init pin
-  WS._digitalGPIO->deinitDigitalPin(
-      wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT,
-      STATUS_LED_PIN);
-#endif
 }
 
 /**************************************************************************/
@@ -896,54 +986,11 @@ ws_status_t Wippersnapper::mqttStatus() {
             // permitted
             // delay to prevent fast reconnects and fast returns (backward
             // compatibility)
-      delay(WS_KEEPALIVE_INTERVAL);
+      delay(60000);
       return WS_DISCONNECTED;
     default:
       return WS_DISCONNECTED;
     }
   }
   return WS_DISCONNECTED;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Provide status explanation strings.
-    @return   A pointer to the status string, _status. _status is the BC status
-   value
-*/
-/**************************************************************************/
-const __FlashStringHelper *Wippersnapper::statusText() {
-  switch (_status) {
-  // CONNECTING
-  case WS_IDLE:
-    return F("Idle. Waiting for connect to be called...");
-  case WS_NET_DISCONNECTED:
-    return F("Network disconnected.");
-  case WS_DISCONNECTED:
-    return F("Disconnected from Wippersnapper.");
-  // FAILURE
-  case WS_NET_CONNECT_FAILED:
-    return F("Network connection failed.");
-  case WS_CONNECT_FAILED:
-    return F("Wippersnapper connection failed.");
-  case WS_FINGERPRINT_INVALID:
-    return F("Wippersnapper SSL fingerprint verification failed.");
-  case WS_AUTH_FAILED:
-    return F("Wippersnapper authentication failed.");
-  // SUCCESS
-  case WS_NET_CONNECTED:
-    return F("Network connected.");
-  case WS_CONNECTED:
-    return F("Wippersnapper connected.");
-  case WS_CONNECTED_INSECURE:
-    return F("Wippersnapper connected. **THIS CONNECTION IS INSECURE** SSL/TLS "
-             "not supported for this platform.");
-  case WS_FINGERPRINT_UNSUPPORTED:
-    return F("Wippersnapper connected over SSL/TLS. Fingerprint verification "
-             "unsupported.");
-  case WS_FINGERPRINT_VALID:
-    return F("Wippersnapper connected over SSL/TLS. Fingerprint valid.");
-  default:
-    return F("Unknown status code");
-  }
 }

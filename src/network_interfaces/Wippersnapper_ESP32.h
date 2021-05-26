@@ -169,9 +169,14 @@ protected:
       _disconnect();
       delay(100);
       WiFi.begin(_ssid, _pass);
-      delay(100);
       _status = WS_NET_DISCONNECTED;
     }
+
+    // wait until connection is established
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(100);
+    }
+
     _mqtt_client->setCACert(_aio_root_ca);
   }
 

@@ -89,6 +89,18 @@ typedef enum {
   WS_BOARD_RESYNC_FAILED = 26      // Board sync failure
 } ws_status_t;
 
+/** Defines the Adafruit IO MQTT broker's connection return codes */
+typedef enum {
+  WS_MQTT_CONNECTED = 0,           // Connected
+  WS_MQTT_INVALID_PROTOCOL = 1,    // Invalid mqtt protocol
+  WS_MQTT_INVALID_CID = 2,         // Client id rejected
+  WS_MQTT_SERVICE_UNAVALIABLE = 3, // Malformed user/pass
+  WS_MQTT_INVALID_USER_PASS = 4,   // Unauthorized access to resource
+  WS_MQTT_UNAUTHORIZED = 5,        // MQTT service unavailable
+  WS_MQTT_THROTTLED = 6,           // Account throttled
+  WS_MQTT_BANNED = 7               // Account banned
+} ws_mqtt_status_t;
+
 /** Defines the Wippersnapper client's hardware registration status */
 typedef enum {
   WS_BOARD_DEF_IDLE,
@@ -207,6 +219,10 @@ public:
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
+
+  char *throttleMessage; /*!< Pointer to throttle message data. */
+  int throttleTime;      /*!< Total amount of time to throttle the device, in
+                            milliseconds. */
 
 private:
   void _init();
