@@ -469,7 +469,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 
 /**************************************************************************/
 /*!
-    @brief    Builds MQTT tox pics for handling errors returned from the
+    @brief    Builds MQTT topics for handling errors returned from the
                 Adafruit IO broker.
     @returns  True if memory for error topics allocated successfully,
                 False otherwise.
