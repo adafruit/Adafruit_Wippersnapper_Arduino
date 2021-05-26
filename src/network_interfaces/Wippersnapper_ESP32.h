@@ -173,8 +173,8 @@ protected:
     }
 
     // wait until connection is established
-    while (WiFi.status()!= WL_CONNECTED) {
-        delay(100);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(100);
     }
 
     _mqtt_client->setCACert(_aio_root_ca);
