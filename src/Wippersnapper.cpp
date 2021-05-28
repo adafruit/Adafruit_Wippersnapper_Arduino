@@ -36,7 +36,8 @@
 Wippersnapper WS;
 
 Wippersnapper::Wippersnapper() {
-  _mqtt = 0; // MQTT Client object
+  Wippersnapper_FS fileSystem; // TODO: break this out elsewhere?
+  _mqtt = 0;                   // MQTT Client object
 
   // IO creds
   _username = 0;
