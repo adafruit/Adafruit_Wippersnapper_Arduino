@@ -650,6 +650,9 @@ void Wippersnapper::subscribeWSTopics() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
+  // get Filesystem if USE_TINYUSB defined
+  // Wippersnapper_FS::init()
+
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 

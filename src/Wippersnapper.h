@@ -41,6 +41,16 @@
 #include "Arduino.h"       // Wiring
 #include <Adafruit_NeoPixel.h>
 
+// tinyusb and spiflash for USB MSC
+#ifdef USE_TINYUSB
+#include "Adafruit_SPIFlash.h"
+#include "Adafruit_TinyUSB.h"
+#include "SdFat.h"
+#include "Wippersnapper_FS.h"
+#include <ArduinoJson.h>
+#include <SPI.h>
+#endif
+
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
 #define TOPIC_IO_ERRORS "/errors"     ///< Adafruit IO Error MQTT Topic
@@ -122,6 +132,9 @@ typedef enum {
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
+#ifdef TINYUSB
+class Wippersnapper_FS;
+#endif
 
 /**************************************************************************/
 /*!
