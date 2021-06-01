@@ -63,7 +63,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   usb_msc.begin();
 
-  // re-attach the usb device 
+  // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
   delay(1000);
@@ -79,9 +79,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 /************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {}
 
-uint32_t Wippersnapper_FS::getFlashID() {
-    return flash.getJEDECID();
-}
+uint32_t Wippersnapper_FS::getFlashID() { return flash.getJEDECID(); }
 
 bool Wippersnapper_FS::parseConfig() { return true; }
 

@@ -36,7 +36,7 @@
 Wippersnapper WS;
 
 Wippersnapper::Wippersnapper() {
-  _mqtt = 0;                   // MQTT Client object
+  _mqtt = 0; // MQTT Client object
 
   // IO creds
   _username = 0;
@@ -51,7 +51,6 @@ Wippersnapper::Wippersnapper() {
   _throttle_topic = 0;
   _err_sub = 0;
   _throttle_sub = 0;
-
 };
 
 /**************************************************************************/
@@ -651,9 +650,9 @@ void Wippersnapper::subscribeWSTopics() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
-  #ifdef USE_TINYUSB
-    Wippersnapper_FS fileSystem;
-  #endif
+#ifdef USE_TINYUSB
+  Wippersnapper_FS fileSystem;
+#endif
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
