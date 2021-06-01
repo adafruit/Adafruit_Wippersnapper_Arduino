@@ -68,12 +68,12 @@ Wippersnapper::~Wippersnapper() {
 }
 
 void Wippersnapper::startProvisioning() {
-    // native usb provisioning flow
-    #ifdef USE_TINYUSB
-        _fileSystem = new Wippersnapper_FS();
-    #endif
-    // TODO - implement wifi-AP provisioning for hardware
-    // without native usb
+// native usb provisioning flow
+#ifdef USE_TINYUSB
+  _fileSystem = new Wippersnapper_FS();
+#endif
+  // TODO - implement wifi-AP provisioning for hardware
+  // without native usb
 }
 
 /****************************************************************************/
