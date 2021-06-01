@@ -100,8 +100,20 @@ void Wippersnapper::validateProvisioningSecrets() {
 #endif
 }
 
+/****************************************************************************/
+/*!
+    @brief    Parses and stores data from the secrets.json file or a captive
+                provisioning portal.
+    @returns  True if secrets are parsed and set stored successfully,
+                False otherwise.
+*/
+/****************************************************************************/
 bool Wippersnapper::parseProvisioningSecrets() {
-  return _fileSystem->parseSecrets();
+    #ifdef USE_TINYUSB
+        return _fileSystem->parseSecrets();
+    #else
+        #warning "ERROR: Current usage of provisioning requires TinyUSB.";
+    #endif
 }
 
 /****************************************************************************/
@@ -119,8 +131,9 @@ void Wippersnapper::set_user_key(const char *aio_username,
 
   _username = aio_username;
   _key = aio_key;
-  WS._username = aio_username;
-  WS._key = aio_key;
+  // TODO: Use these, if already set in provisioning - dont set.
+  //WS._username = aio_username;
+  //WS._key = aio_key;
 }
 
 // Decoders //
@@ -518,10 +531,10 @@ bool Wippersnapper::buildErrorTopics() {
   bool is_success = true;
   // dynamically allocate memory for err topic
   WS._err_topic = (char *)malloc(
-      sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_ERRORS) + 1));
+      sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
 
   if (WS._err_topic) { // build error topic
-    strcpy(WS._err_topic, _username);
+    strcpy(WS._err_topic, WS._username);
     strcat(WS._err_topic, TOPIC_IO_ERRORS);
   } else { // malloc failed
     WS._err_topic = 0;
@@ -530,10 +543,10 @@ bool Wippersnapper::buildErrorTopics() {
 
   // dynamically allocate memory for throttle topic
   WS._throttle_topic = (char *)malloc(
-      sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_THROTTLE) + 1));
+      sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
 
   if (WS._throttle_topic) { // build throttle topic
-    strcpy(WS._throttle_topic, _username);
+    strcpy(WS._throttle_topic, WS._username);
     strcat(WS._throttle_topic, TOPIC_IO_THROTTLE);
   } else { // malloc failed
     WS._throttle_topic = 0;
@@ -592,28 +605,28 @@ bool Wippersnapper::buildWSTopics() {
 
   // Global registration topic
   WS._topic_description =
-      (char *)malloc(sizeof(char) * strlen(_username) + strlen("/wprsnpr") +
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
                      strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
   // Registration status topic
   WS._topic_description_status =
-      (char *)malloc(sizeof(char) * strlen(_username) + +strlen("/wprsnpr/") +
+      (char *)malloc(sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) +
                      strlen("status") + strlen("broker") + 1);
 
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(
-      sizeof(char) * strlen(_username) + +strlen("/") + strlen(_device_uid) +
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
 
   // Topic for signals from broker to device
   WS._topic_signal_brkr = (char *)malloc(
-      sizeof(char) * strlen(_username) + +strlen("/") + strlen(_device_uid) +
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
   // Create global registration topic
   if (WS._topic_description) {
-    strcpy(WS._topic_description, _username);
+    strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
     strcat(WS._topic_description, TOPIC_DESCRIPTION);
     strcat(WS._topic_description, "status");
@@ -624,7 +637,7 @@ bool Wippersnapper::buildWSTopics() {
 
   // Create registration status topic
   if (WS._topic_description_status) {
-    strcpy(WS._topic_description_status, _username);
+    strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
     strcat(WS._topic_description_status, _device_uid);
     strcat(WS._topic_description_status, TOPIC_DESCRIPTION);
@@ -637,7 +650,7 @@ bool Wippersnapper::buildWSTopics() {
 
   // Create device-to-broker signal topic
   if (WS._topic_signal_device) {
-    strcpy(WS._topic_signal_device, _username);
+    strcpy(WS._topic_signal_device, WS._username);
     strcat(WS._topic_signal_device, "/wprsnpr/");
     strcat(WS._topic_signal_device, _device_uid);
     strcat(WS._topic_signal_device, TOPIC_SIGNALS);
@@ -649,7 +662,7 @@ bool Wippersnapper::buildWSTopics() {
 
   // Create broker-to-device signal topic
   if (WS._topic_signal_brkr) {
-    strcpy(WS._topic_signal_brkr, _username);
+    strcpy(WS._topic_signal_brkr, WS._username);
     strcat(WS._topic_signal_brkr, "/wprsnpr/");
     strcat(WS._topic_signal_brkr, _device_uid);
     strcat(WS._topic_signal_brkr, TOPIC_SIGNALS);
@@ -1005,7 +1018,7 @@ ws_status_t Wippersnapper::mqttStatus() {
   if (_last_mqtt_connect == 0 ||
       millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL_MS) {
     _last_mqtt_connect = millis();
-    switch (WS._mqtt->connect(_username, _key)) {
+    switch (WS._mqtt->connect(WS._username, _key)) {
     case 0:
       // Connected, re-send registration packet
       if (!registerBoard(10)) {

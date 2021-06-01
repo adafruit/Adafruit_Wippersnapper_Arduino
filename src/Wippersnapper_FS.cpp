@@ -142,10 +142,13 @@ bool Wippersnapper_FS::parseSecrets() {
     return false;
   }
 
-  WS_DEBUG_PRINT("Found AIO USER: ");
-  WS_DEBUG_PRINTLN(io_key);
-  WS_DEBUG_PRINT("Found AIO Key: ");
-  WS_DEBUG_PRINTLN(io_key);
+  WS_DEBUG_PRINT("Found AIO USER: "); WS_DEBUG_PRINTLN(io_username);
+  WS_DEBUG_PRINT("Found AIO Key: "); WS_DEBUG_PRINTLN(io_key);
+
+  // Set AIO username
+  WS._username = io_username;
+  // Set AIO key
+  WS._key = io_key;
 
   // clear the document and release all memory from the memory pool
   doc.clear();
