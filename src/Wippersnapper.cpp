@@ -67,6 +67,15 @@ Wippersnapper::~Wippersnapper() {
   free(_throttle_sub);
 }
 
+void Wippersnapper::startProvisioning() {
+    // native usb provisioning flow
+    #ifdef USE_TINYUSB
+        _fileSystem = new Wippersnapper_FS();
+    #endif
+    // TODO - implement wifi-AP provisioning for hardware
+    // without native usb
+}
+
 /****************************************************************************/
 /*!
     @brief    Configures the device's Adafruit IO credentials.
@@ -649,10 +658,6 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
-
-#ifdef USE_TINYUSB
-  Wippersnapper_FS fileSystem;
-#endif
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;

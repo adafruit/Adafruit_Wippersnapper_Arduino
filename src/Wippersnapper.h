@@ -46,9 +46,9 @@
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
-#include "Wippersnapper_FS.h"
 #include <ArduinoJson.h>
 #include <SPI.h>
+#include "Wippersnapper_FS.h"
 #endif
 
 // Reserved Adafruit IO MQTT topics
@@ -132,9 +132,7 @@ typedef enum {
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
-#ifdef TINYUSB
 class Wippersnapper_FS;
-#endif
 
 /**************************************************************************/
 /*!
@@ -147,6 +145,7 @@ public:
   Wippersnapper();
   virtual ~Wippersnapper();
 
+  void startProvisioning();
   void set_user_key(const char *aio_username, const char *aio_key);
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
 
@@ -208,6 +207,8 @@ public:
       *_registerBoard;                     ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
+
+  Wippersnapper_FS *_fileSystem;
 
   // TODO: move neopixel into its own class
   Adafruit_NeoPixel pixels; /*!< NeoPixel */

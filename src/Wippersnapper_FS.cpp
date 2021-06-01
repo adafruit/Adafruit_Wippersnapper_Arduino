@@ -66,7 +66,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
-  delay(1000);
+  delay(500);
 
   // Init file system on the flash
   wipperQSPIFS.begin(&flash);
