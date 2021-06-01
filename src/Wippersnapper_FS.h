@@ -37,6 +37,7 @@ public:
 
   bool _mountFlashFS(); // mounts SPIFlash FS
   bool parseConfig();
+  uint32_t getFlashID();
 
   const char *configNetworkSSID;
   const char *configNetworkPassword;
@@ -55,7 +56,7 @@ public:
   StaticJsonDocument<256> doc;
 
 private:
-  void _beginMSC(); // begins TinyUSB MSC filesystem
+
 };
 
 extern Wippersnapper WS;

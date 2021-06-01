@@ -40,6 +40,11 @@ FatFileSystem wipperQSPIFS;
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
+  // detach the USB during initialization
+  USBDevice.detach();
+  // wait for detach
+  delay(50);
+
   flash.begin();
 
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
@@ -58,6 +63,11 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   usb_msc.begin();
 
+  // re-attach the usb device 
+  USBDevice.attach();
+  // wait for enumeration
+  delay(1000);
+
   // Init file system on the flash
   wipperQSPIFS.begin(&flash);
 }
@@ -69,46 +79,11 @@ Wippersnapper_FS::Wippersnapper_FS() {
 /************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {}
 
+uint32_t Wippersnapper_FS::getFlashID() {
+    return flash.getJEDECID();
+}
+
 bool Wippersnapper_FS::parseConfig() { return true; }
-
-bool Wippersnapper_FS::_mountFlashFS() {
-  // Initialize flash library and check its chip ID.
-  if (!flash.begin()) {
-    WS_DEBUG_PRINTLN("Error, failed to initialize flash chip!");
-    return false;
-  }
-  WS_DEBUG_PRINT("Flash chip JEDEC ID: 0x");
-  WS_DEBUG_PRINTLN(flash.getJEDECID(), HEX);
-
-  // Call begin to mount the filesystem.  Check that it returns true
-  // to make sure the filesystem was mounted.
-  if (!wipperQSPIFS.begin(&flash)) {
-    WS_DEBUG_PRINTLN("Error, failed to mount newly formatted filesystem!");
-    WS_DEBUG_PRINTLN(
-        "Was the flash chip formatted with the SdFat_format example?");
-    return false;
-  }
-  WS_DEBUG_PRINTLN("Mounted filesystem!");
-  return true;
-}
-
-void Wippersnapper_FS::_beginMSC() {
-  // Set disk vendor id, product id and revision with string up to 8, 16, 4
-  // characters respectively
-  usb_msc.setID("Adafruit", "External Flash", "1.0");
-
-  // Set callbacks
-  usb_msc.setReadWriteCallback(qspi_msc_read_cb, qspi_msc_write_cb,
-                               qspi_msc_flush_cb);
-
-  // Set disk size, block size should be 512 regardless of spi flash page size
-  usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
-
-  // Set Lun ready (RAM disk is always ready)
-  usb_msc.setUnitReady(true);
-
-  usb_msc.begin();
-}
 
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and
