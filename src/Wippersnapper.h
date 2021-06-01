@@ -147,7 +147,7 @@ public:
 
   void startProvisioning();
   void validateProvisioningSecrets();
-  void parseProvisioningSecrets();
+  bool parseProvisioningSecrets();
 
   // TODO: these may get removed in favor of the funcs. above
   void set_user_key(const char *aio_username, const char *aio_key);

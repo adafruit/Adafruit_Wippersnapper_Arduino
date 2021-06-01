@@ -100,9 +100,8 @@ void Wippersnapper::validateProvisioningSecrets() {
   #endif
 }
 
-void Wippersnapper::parseProvisioningSecrets() {
-  // to start, pull out the AIO username and key and set
-  
+bool Wippersnapper::parseProvisioningSecrets() {
+  return _fileSystem->parseSecrets();
 }
 
 /****************************************************************************/

@@ -82,7 +82,7 @@ Wippersnapper_FS::~Wippersnapper_FS() {}
 uint32_t Wippersnapper_FS::getFlashID() { return flash.getJEDECID(); }
 
 bool Wippersnapper_FS::configFileExists() {
-  secretsFile = wipperQSPIFS.open("/wippersnapper.json");
+  secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
       WS_DEBUG_PRINTLN("Secrets file does not exist on flash.");
       secretsFile.close();
@@ -108,9 +108,48 @@ void Wippersnapper_FS::createConfigFileSkel() {
 }
 
 bool Wippersnapper_FS::parseSecrets() {
-    
-    
-    return true;
+  // open file for parsing
+  secretsFile = wipperQSPIFS.open("/secrets.json");
+  if (!secretsFile) {
+      WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
+      return false;
+  }
+
+  // check if we can deserialize the secrets.json file
+  DeserializationError err = deserializeJson(doc, secretsFile);
+  if (err) {
+    WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
+    WS_DEBUG_PRINTLN(err.c_str());
+    return false;
+  }
+
+
+  // Get io username
+  const char* io_username = doc["io_username"];
+  // error check against default values [ArduinoJSON, 3.3.3]
+  if (io_username == nullptr) {
+      WS_DEBUG_PRINTLN("ERROR: invalid io_username in JSON document!");
+      return false;
+  }
+
+  // Get io key
+  const char* io_key = doc["io_key"];
+  // error check against default values [ArduinoJSON, 3.3.3]
+  if (io_key == nullptr) {
+      WS_DEBUG_PRINTLN("ERROR: invalid io_key in JSON document!");
+      return false;
+  }
+
+  WS_DEBUG_PRINT("Found AIO USER: "); WS_DEBUG_PRINTLN(io_key);
+  WS_DEBUG_PRINT("Found AIO Key: "); WS_DEBUG_PRINTLN(io_key);
+
+  // clear the document and release all memory from the memory pool
+  doc.clear();
+
+  // close the tempFile
+  secretsFile.close();
+
+  return true;
 }
 
 // Callback invoked when received READ10 command.
