@@ -36,7 +36,7 @@ public:
   ~Wippersnapper_FS();
 
   bool _mountFlashFS(); // mounts SPIFlash FS
-  bool parseConfig();
+  bool parseSecrets();
   uint32_t getFlashID();
   bool configFileExists();
   void createConfigFileSkel();

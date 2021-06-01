@@ -107,7 +107,11 @@ void Wippersnapper_FS::createConfigFileSkel() {
     Serial.println("Created secrets.json file on flash");
 }
 
-bool Wippersnapper_FS::parseConfig() { return true; }
+bool Wippersnapper_FS::parseSecrets() {
+    
+    
+    return true;
+}
 
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and

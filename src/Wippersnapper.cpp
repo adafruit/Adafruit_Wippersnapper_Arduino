@@ -67,15 +67,28 @@ Wippersnapper::~Wippersnapper() {
   free(_throttle_sub);
 }
 
+/****************************************************************************/
+/*!
+    @brief    Initializes provisioning, either the native USB FS or WiFi
+              AP-based captive portal.
+/****************************************************************************/
 void Wippersnapper::startProvisioning() {
   // native usb provisioning flow
   #ifdef USE_TINYUSB
-    // initalize the filesystem
+    // Initialize the QSPI flash FS
     _fileSystem = new Wippersnapper_FS();
+  #else
+    #warning "ERROR: Current usage of provisioning requires TinyUSB.";
   #endif
 }
 
-void Wippersnapper::parseProvisioning() {
+/****************************************************************************/
+/*!
+    @brief    Validates if file system contains secret credentials for
+              Adafruit IO and wireless network.
+*/
+/****************************************************************************/
+void Wippersnapper::validateProvisioningSecrets() {
   #ifdef USE_TINYUSB
   // check for secrets.json, create if doesn't exist
   if (!_fileSystem->configFileExists()) {
@@ -83,8 +96,13 @@ void Wippersnapper::parseProvisioning() {
       _fileSystem->createConfigFileSkel();
   }
   #else
-    #warning "ERROR: Usage of provisioning requires native usb.";
+    #warning "ERROR: Current usage of provisioning requires TinyUSB.";
   #endif
+}
+
+void Wippersnapper::parseProvisioningSecrets() {
+  // to start, pull out the AIO username and key and set
+  
 }
 
 /****************************************************************************/

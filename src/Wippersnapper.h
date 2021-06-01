@@ -146,7 +146,10 @@ public:
   virtual ~Wippersnapper();
 
   void startProvisioning();
-  void parseProvisioning();
+  void validateProvisioningSecrets();
+  void parseProvisioningSecrets();
+
+  // TODO: these may get removed in favor of the funcs. above
   void set_user_key(const char *aio_username, const char *aio_key);
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
 
