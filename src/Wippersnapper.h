@@ -46,9 +46,9 @@
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
+#include "Wippersnapper_FS.h"
 #include <ArduinoJson.h>
 #include <SPI.h>
-#include "Wippersnapper_FS.h"
 #endif
 
 // Reserved Adafruit IO MQTT topics
@@ -148,7 +148,6 @@ public:
   void startProvisioning();
   void validateProvisioningSecrets();
   bool parseProvisioningSecrets();
-
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();

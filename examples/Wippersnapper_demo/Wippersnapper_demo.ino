@@ -15,22 +15,33 @@
 
 void setup() {
 
-  wipper.startProvisioning();
-  
+  #ifdef USE_TINYUSB
+    wipper.startProvisioning();
+  #endif
+
   Serial.begin(115200);
   while (!Serial) delay(10);
-  
-  // set up wifi iface
+
+  #ifdef USE_TINYUSB
+    // Use native usb provisioning
+    // Validate
+    wipper.validateProvisioningSecrets();
+    // Set credentials and setup from secrets.json file
+    wipper.parseProvisioningSecrets();
+    // Set Adafruit IO credentials
+    wipper.set_user_key();
+    // Set WiFi Credentials
+    wipper.set_ssid_pass(WIFI_SSID, WIFI_PASS);
+  #else
+    // non-native USB workflow
+    wipper.set_user_key(IO_USERNAME, IO_KEY);
+    wipper.set_ssid_pass(WIFI_SSID, WIFI_PASS);
+  #endif
+
+  // TODO - this should be handled by the secrets.json as well!
+  // Configure WiFi network iface (AirLift only)
   wipper.set_wifi(&SPIWIFI);
   wipper.set_airlift_pins(SPIWIFI_SS, NINA_ACK, NINA_RESETN, NINA_GPIO0);
-
-  // set wifi creds
-  // TODO: this should be handled elsewhere
-  wipper.set_ssid_pass(WIFI_SSID, WIFI_PASS);
-
-  // set up AIO creds
-  // TODO: this should be handled elsewhere
-  wipper.set_user_key(IO_USERNAME, IO_KEY);
 
   Serial.println("Connecting to Wippersnapper");
   wipper.connect();

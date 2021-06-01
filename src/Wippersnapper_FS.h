@@ -57,7 +57,6 @@ public:
   StaticJsonDocument<256> doc;
 
 private:
-
 };
 
 extern Wippersnapper WS;

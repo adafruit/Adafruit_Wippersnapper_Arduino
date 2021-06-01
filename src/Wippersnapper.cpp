@@ -109,11 +109,11 @@ void Wippersnapper::validateProvisioningSecrets() {
 */
 /****************************************************************************/
 bool Wippersnapper::parseProvisioningSecrets() {
-    #ifdef USE_TINYUSB
-        return _fileSystem->parseSecrets();
-    #else
-        #warning "ERROR: Current usage of provisioning requires TinyUSB.";
-    #endif
+#ifdef USE_TINYUSB
+  return _fileSystem->parseSecrets();
+#else
+#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#endif
 }
 
 /****************************************************************************/
@@ -135,22 +135,33 @@ void Wippersnapper::set_user_key(const char *aio_username,
   WS._key = aio_key;
 }
 
+/****************************************************************************/
+/*!
+    @brief    Configures the device's Adafruit IO credentials from the
+                secrets.json file.
+*/
+/****************************************************************************/
 void Wippersnapper::set_user_key() {
-    if (_fileSystem->io_username != NULL) {
-        WS._username = _fileSystem->io_username;
-    } else {
-        WS_DEBUG_PRINTLN("ERROR: Adafruit IO username not set correctly.");
-        while (1) yield();
-    }
+#ifdef USE_TINYUSB
+  if (_fileSystem->io_username != NULL) {
+    WS._username = _fileSystem->io_username;
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Adafruit IO username not set correctly.");
+    while (1)
+      yield();
+  }
 
-    if (_fileSystem->io_key != NULL) {
-        WS._key = _fileSystem->io_key;
-    } else {
-        WS_DEBUG_PRINTLN("ERROR: Adafruit IO key not set correctly.");
-        while (1) yield();
-    }
-    WS_DEBUG_PRINTLN(WS._username);
-    WS_DEBUG_PRINTLN(WS._key);
+  if (_fileSystem->io_key != NULL) {
+    WS._key = _fileSystem->io_key;
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Adafruit IO key not set correctly.");
+    while (1)
+      yield();
+  }
+#else
+#warning                                                                       \
+    "Native USB unimplemented, call set_user_key with your AIO username and key instead."
+#endif
 }
 
 // Decoders //
@@ -626,10 +637,10 @@ bool Wippersnapper::buildWSTopics() {
                      strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
   // Registration status topic
-  WS._topic_description_status =
-      (char *)malloc(sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) +
-                     strlen("status") + strlen("broker") + 1);
+  WS._topic_description_status = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
+      strlen("broker") + 1);
 
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(

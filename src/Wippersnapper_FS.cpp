@@ -147,9 +147,11 @@ bool Wippersnapper_FS::parseSecrets() {
   network_ssid = doc["network_ssid"];
   // First, let's check if SSID exists
   if (network_ssid == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: Wireless network credentials not set in secrets.json, please set them and reboot the device.");
+    WS_DEBUG_PRINTLN("ERROR: Wireless network credentials not set in "
+                     "secrets.json, please set them and reboot the device.");
     // Can't use Wireless network, loop and yield.
-    while (1) yield();
+    while (1)
+      yield();
   }
 
   network_password = doc["network_password"];

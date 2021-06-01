@@ -74,6 +74,9 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
+    //_ssid = WS._fileSystem->network_ssid;
+    //_pass = WS._fileSystem->network_password;
+
     _ssid = ssid;
     _pass = ssidPassword;
   }
@@ -192,6 +195,8 @@ protected:
   */
   /**************************************************************************/
   void _connect() {
+    WS_DEBUG_PRINTLN(_ssid);
+    WS_DEBUG_PRINTLN(_pass);
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
