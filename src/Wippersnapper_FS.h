@@ -38,14 +38,15 @@ public:
   bool _mountFlashFS(); // mounts SPIFlash FS
   bool parseConfig();
   uint32_t getFlashID();
+  bool configFileExists();
+  void createConfigFileSkel();
 
   const char *configNetworkSSID;
   const char *configNetworkPassword;
   const char *configIOUsername;
   const char *configIOKey;
 
-  // File containing the wippersnapper configuration
-  FatFile configFile;
+  File secretsFile;
 
   // USB Mass Storage object
   Adafruit_USBD_MSC usb_msc;

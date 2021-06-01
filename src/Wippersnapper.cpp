@@ -68,12 +68,23 @@ Wippersnapper::~Wippersnapper() {
 }
 
 void Wippersnapper::startProvisioning() {
-// native usb provisioning flow
-#ifdef USE_TINYUSB
-  _fileSystem = new Wippersnapper_FS();
-#endif
-  // TODO - implement wifi-AP provisioning for hardware
-  // without native usb
+  // native usb provisioning flow
+  #ifdef USE_TINYUSB
+    // initalize the filesystem
+    _fileSystem = new Wippersnapper_FS();
+  #endif
+}
+
+void Wippersnapper::parseProvisioning() {
+  #ifdef USE_TINYUSB
+  // check for secrets.json, create if doesn't exist
+  if (!_fileSystem->configFileExists()) {
+      // create config file on filesystem
+      _fileSystem->createConfigFileSkel();
+  }
+  #else
+    #warning "ERROR: Usage of provisioning requires native usb.";
+  #endif
 }
 
 /****************************************************************************/
@@ -87,6 +98,8 @@ void Wippersnapper::startProvisioning() {
 /****************************************************************************/
 void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
+  // Attempt to read from native USB JSON if exists
+
   _username = aio_username;
   _key = aio_key;
   WS._username = aio_username;

@@ -81,6 +81,32 @@ Wippersnapper_FS::~Wippersnapper_FS() {}
 
 uint32_t Wippersnapper_FS::getFlashID() { return flash.getJEDECID(); }
 
+bool Wippersnapper_FS::configFileExists() {
+  secretsFile = wipperQSPIFS.open("/wippersnapper.json");
+  if (!secretsFile) {
+      WS_DEBUG_PRINTLN("Secrets file does not exist on flash.");
+      secretsFile.close();
+      return false;
+  }
+  WS_DEBUG_PRINTLN("Found secrets file!");
+  secretsFile.close();
+  return true;
+}
+
+void Wippersnapper_FS::createConfigFileSkel() {
+    // open for writing, should create a new file if one doesnt exist
+    secretsFile = wipperQSPIFS.open("/secrets.json", FILE_WRITE);
+    if (!secretsFile) {
+      Serial.println("ERROR: Could not create secrets.json on QSPI flash...");
+      while(1) yield();
+    }
+    // write json string to file
+    secretsFile.print("{\"network_ssid\":\"YOUR_WIFI_SSID_HERE\",\"network_password\":\"YOUR_WIFI_PASS_HERE\",\"io_username\":\"YOUR_IO_USERNAME_HERE\",\"io_key\":\"YOUR_IO_KEY_HERE\"}");
+    // done writing, close file
+    secretsFile.close();
+    Serial.println("Created secrets.json file on flash");
+}
+
 bool Wippersnapper_FS::parseConfig() { return true; }
 
 // Callback invoked when received READ10 command.
