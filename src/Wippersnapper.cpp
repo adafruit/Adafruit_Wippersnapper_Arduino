@@ -73,13 +73,13 @@ Wippersnapper::~Wippersnapper() {
               AP-based captive portal.
 /****************************************************************************/
 void Wippersnapper::startProvisioning() {
-  // native usb provisioning flow
-  #ifdef USE_TINYUSB
-    // Initialize the QSPI flash FS
-    _fileSystem = new Wippersnapper_FS();
-  #else
-    #warning "ERROR: Current usage of provisioning requires TinyUSB.";
-  #endif
+// native usb provisioning flow
+#ifdef USE_TINYUSB
+  // Initialize the QSPI flash FS
+  _fileSystem = new Wippersnapper_FS();
+#else
+#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#endif
 }
 
 /****************************************************************************/
@@ -89,15 +89,15 @@ void Wippersnapper::startProvisioning() {
 */
 /****************************************************************************/
 void Wippersnapper::validateProvisioningSecrets() {
-  #ifdef USE_TINYUSB
+#ifdef USE_TINYUSB
   // check for secrets.json, create if doesn't exist
   if (!_fileSystem->configFileExists()) {
-      // create config file on filesystem
-      _fileSystem->createConfigFileSkel();
+    // create config file on filesystem
+    _fileSystem->createConfigFileSkel();
   }
-  #else
-    #warning "ERROR: Current usage of provisioning requires TinyUSB.";
-  #endif
+#else
+#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#endif
 }
 
 bool Wippersnapper::parseProvisioningSecrets() {

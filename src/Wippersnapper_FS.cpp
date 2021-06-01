@@ -84,9 +84,9 @@ uint32_t Wippersnapper_FS::getFlashID() { return flash.getJEDECID(); }
 bool Wippersnapper_FS::configFileExists() {
   secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
-      WS_DEBUG_PRINTLN("Secrets file does not exist on flash.");
-      secretsFile.close();
-      return false;
+    WS_DEBUG_PRINTLN("Secrets file does not exist on flash.");
+    secretsFile.close();
+    return false;
   }
   WS_DEBUG_PRINTLN("Found secrets file!");
   secretsFile.close();
@@ -94,25 +94,28 @@ bool Wippersnapper_FS::configFileExists() {
 }
 
 void Wippersnapper_FS::createConfigFileSkel() {
-    // open for writing, should create a new file if one doesnt exist
-    secretsFile = wipperQSPIFS.open("/secrets.json", FILE_WRITE);
-    if (!secretsFile) {
-      Serial.println("ERROR: Could not create secrets.json on QSPI flash...");
-      while(1) yield();
-    }
-    // write json string to file
-    secretsFile.print("{\"network_ssid\":\"YOUR_WIFI_SSID_HERE\",\"network_password\":\"YOUR_WIFI_PASS_HERE\",\"io_username\":\"YOUR_IO_USERNAME_HERE\",\"io_key\":\"YOUR_IO_KEY_HERE\"}");
-    // done writing, close file
-    secretsFile.close();
-    Serial.println("Created secrets.json file on flash");
+  // open for writing, should create a new file if one doesnt exist
+  secretsFile = wipperQSPIFS.open("/secrets.json", FILE_WRITE);
+  if (!secretsFile) {
+    Serial.println("ERROR: Could not create secrets.json on QSPI flash...");
+    while (1)
+      yield();
+  }
+  // write json string to file
+  secretsFile.print("{\"network_ssid\":\"YOUR_WIFI_SSID_HERE\",\"network_"
+                    "password\":\"YOUR_WIFI_PASS_HERE\",\"io_username\":\"YOUR_"
+                    "IO_USERNAME_HERE\",\"io_key\":\"YOUR_IO_KEY_HERE\"}");
+  // done writing, close file
+  secretsFile.close();
+  Serial.println("Created secrets.json file on flash");
 }
 
 bool Wippersnapper_FS::parseSecrets() {
   // open file for parsing
   secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
-      WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
-      return false;
+    WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
+    return false;
   }
 
   // check if we can deserialize the secrets.json file
@@ -123,25 +126,26 @@ bool Wippersnapper_FS::parseSecrets() {
     return false;
   }
 
-
   // Get io username
-  const char* io_username = doc["io_username"];
+  const char *io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
-      WS_DEBUG_PRINTLN("ERROR: invalid io_username in JSON document!");
-      return false;
+    WS_DEBUG_PRINTLN("ERROR: invalid io_username in JSON document!");
+    return false;
   }
 
   // Get io key
-  const char* io_key = doc["io_key"];
+  const char *io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
-      WS_DEBUG_PRINTLN("ERROR: invalid io_key in JSON document!");
-      return false;
+    WS_DEBUG_PRINTLN("ERROR: invalid io_key in JSON document!");
+    return false;
   }
 
-  WS_DEBUG_PRINT("Found AIO USER: "); WS_DEBUG_PRINTLN(io_key);
-  WS_DEBUG_PRINT("Found AIO Key: "); WS_DEBUG_PRINTLN(io_key);
+  WS_DEBUG_PRINT("Found AIO USER: ");
+  WS_DEBUG_PRINTLN(io_key);
+  WS_DEBUG_PRINT("Found AIO Key: ");
+  WS_DEBUG_PRINTLN(io_key);
 
   // clear the document and release all memory from the memory pool
   doc.clear();
