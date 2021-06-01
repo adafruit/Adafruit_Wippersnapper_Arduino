@@ -119,6 +119,8 @@ bool Wippersnapper::parseProvisioningSecrets() {
 /****************************************************************************/
 /*!
     @brief    Configures the device's Adafruit IO credentials.
+    @Note     This method should be used only if provisioning is not
+                avaliable.
     @param    aio_username
               Your Adafruit IO username.
     @param    aio_key
@@ -127,13 +129,28 @@ bool Wippersnapper::parseProvisioningSecrets() {
 /****************************************************************************/
 void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
-  // Attempt to read from native USB JSON if exists
-
   _username = aio_username;
   _key = aio_key;
-  // TODO: Use these, if already set in provisioning - dont set.
-  //WS._username = aio_username;
-  //WS._key = aio_key;
+  WS._username = aio_username;
+  WS._key = aio_key;
+}
+
+void Wippersnapper::set_user_key() {
+    if (_fileSystem->io_username != NULL) {
+        WS._username = _fileSystem->io_username;
+    } else {
+        WS_DEBUG_PRINTLN("ERROR: Adafruit IO username not set correctly.");
+        while (1) yield();
+    }
+
+    if (_fileSystem->io_key != NULL) {
+        WS._key = _fileSystem->io_key;
+    } else {
+        WS_DEBUG_PRINTLN("ERROR: Adafruit IO key not set correctly.");
+        while (1) yield();
+    }
+    WS_DEBUG_PRINTLN(WS._username);
+    WS_DEBUG_PRINTLN(WS._key);
 }
 
 // Decoders //
@@ -1018,7 +1035,7 @@ ws_status_t Wippersnapper::mqttStatus() {
   if (_last_mqtt_connect == 0 ||
       millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL_MS) {
     _last_mqtt_connect = millis();
-    switch (WS._mqtt->connect(WS._username, _key)) {
+    switch (WS._mqtt->connect(WS._username, WS._key)) {
     case 0:
       // Connected, re-send registration packet
       if (!registerBoard(10)) {

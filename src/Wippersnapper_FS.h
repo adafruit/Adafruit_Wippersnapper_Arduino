@@ -41,10 +41,10 @@ public:
   bool configFileExists();
   void createConfigFileSkel();
 
-  const char *configNetworkSSID;
-  const char *configNetworkPassword;
-  const char *configIOUsername;
-  const char *configIOKey;
+  const char *io_username = NULL;
+  const char *io_key = NULL;
+  const char *network_ssid = NULL;
+  const char *network_password = NULL;
 
   File secretsFile;
 
@@ -57,6 +57,7 @@ public:
   StaticJsonDocument<256> doc;
 
 private:
+
 };
 
 extern Wippersnapper WS;

@@ -149,8 +149,10 @@ public:
   void validateProvisioningSecrets();
   bool parseProvisioningSecrets();
 
-  // TODO: these may get removed in favor of the funcs. above
+
   void set_user_key(const char *aio_username, const char *aio_key);
+  void set_user_key();
+
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
 
   void connect();

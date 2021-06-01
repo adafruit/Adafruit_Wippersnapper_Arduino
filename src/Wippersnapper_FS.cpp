@@ -127,28 +127,43 @@ bool Wippersnapper_FS::parseSecrets() {
   }
 
   // Get io username
-  const char *io_username = doc["io_username"];
+  io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: invalid io_username in JSON document!");
+    WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     return false;
   }
 
   // Get io key
-  const char *io_key = doc["io_key"];
+  io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: invalid io_key in JSON document!");
+    WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     return false;
   }
 
-  WS_DEBUG_PRINT("Found AIO USER: "); WS_DEBUG_PRINTLN(io_username);
-  WS_DEBUG_PRINT("Found AIO Key: "); WS_DEBUG_PRINTLN(io_key);
+  WS_DEBUG_PRINTLN("Attempting to parse WiFi credentials...");
 
-  // Set AIO username
-  WS._username = io_username;
-  // Set AIO key
-  WS._key = io_key;
+  network_ssid = doc["network_ssid"];
+  // First, let's check if SSID exists
+  if (network_ssid == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: Wireless network credentials not set in secrets.json, please set them and reboot the device.");
+    // Can't use Wireless network, loop and yield.
+    while (1) yield();
+  }
+
+  network_password = doc["network_password"];
+  // error check against default values [ArduinoJSON, 3.3.3]
+  if (network_password == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: invalid network_password value in secrets.json!");
+    return false;
+  }
+
+  WS_DEBUG_PRINTLN("SECRETS from config.json: ");
+  WS_DEBUG_PRINTLN(io_username);
+  WS_DEBUG_PRINTLN(io_key);
+  WS_DEBUG_PRINTLN(network_ssid);
+  WS_DEBUG_PRINTLN(network_password);
 
   // clear the document and release all memory from the memory pool
   doc.clear();
