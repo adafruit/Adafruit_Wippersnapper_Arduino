@@ -130,6 +130,9 @@ void Wippersnapper_FS::createConfigFileSkel() {
       yield();
   }
   WS_DEBUG_PRINTLN("Successfully added secrets.json to WIPPER volume!");
+  WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for changes to take effect.");
+  while (1) yield();
+
 }
 
 /**************************************************************************/

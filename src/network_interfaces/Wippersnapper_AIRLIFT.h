@@ -205,8 +205,6 @@ protected:
   */
   /**************************************************************************/
   void _connect() {
-    WS_DEBUG_PRINTLN(_ssid);
-    WS_DEBUG_PRINTLN(_pass);
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
