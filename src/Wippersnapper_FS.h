@@ -40,10 +40,11 @@ public:
   bool configFileExists();
   void createConfigFileSkel();
 
+  // Adafruit IO Configuration
   const char *io_username = NULL;
   const char *io_key = NULL;
-  const char *network_ssid = NULL;
-  const char *network_password = NULL;
+
+  bool setNetwork;
 
   File secretsFile;  // File object to hold the contents of secrets.json
 
@@ -51,8 +52,10 @@ public:
   Adafruit_USBD_MSC usb_msc;
 
   // Holds JSON configuration file
-  // Calculated min. capacity is 192 bytes
-  StaticJsonDocument<256> doc;
+  // NOTE: calculated capacity with
+  // maximum length of usernames/passwords/tokens
+  // is 382 bytes, rounded to nearest power of 2.
+  StaticJsonDocument<512> doc;
 
 private:
 };

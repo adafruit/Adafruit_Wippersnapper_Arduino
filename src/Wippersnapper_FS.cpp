@@ -78,8 +78,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
 Wippersnapper_FS::~Wippersnapper_FS() {
   io_username = NULL;
   io_key = NULL;
-  network_ssid = NULL;
-  network_password = NULL;
 }
 
 /**************************************************************************/
@@ -129,6 +127,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS::parseSecrets() {
+  setNetwork = false;
   // open file for parsing
   secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
@@ -160,29 +159,39 @@ bool Wippersnapper_FS::parseSecrets() {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("Attempting to parse WiFi credentials...");
+  WS_DEBUG_PRINTLN("Attempting to find network interface...");
+  // next, we detect the network interface from the `secrets.json`
 
-  network_ssid = doc["network_ssid"];
-  // First, let's check if SSID exists
-  if (network_ssid == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: Wireless network credentials not set in "
-                     "secrets.json, please set them and reboot the device.");
-    // Can't use Wireless network, loop and yield.
+  // Check if type is WiFi (AirLift)
+  const char* network_type_wifi_airlift_network_ssid = doc["network_type_wifi_airlift"]["network_ssid"];
+  if (network_type_wifi_airlift_network_ssid == nullptr) {
+    WS_DEBUG_PRINTLN("Network interface is not airlift type, checking next type...");
+  } else {
+    WS_DEBUG_PRINTLN("Network Interface Found: AirLift ESP32 Co-Processor");
+    WS_DEBUG_PRINTLN("Setting network:");
+    // Parse network password
+    const char* network_type_wifi_airlift_network_password = doc["network_type_wifi_airlift"]["network_password"];
+    // validation
+    if (network_type_wifi_airlift_network_password == nullptr) {
+        WS_DEBUG_PRINTLN("ERROR: invalid network_type_wifi_airlift_network_password value in secrets.json!");
+        return false;
+    }
+    // Set WiFi configuration with parsed values
+    WS._network_ssid = network_type_wifi_airlift_network_ssid;
+    WS._network_pass = network_type_wifi_airlift_network_password;
+    setNetwork = true;
+  }
+
+  // TODO: We may want to implement network_type_wifi_native (ESP32-S2) here
+  // TODO: We may want to implement network_type_ethernet (Ethernet FeatherWing) here
+
+  // Was a network_type specified in the configuration file?
+  if (!setNetwork) {
+    WS_DEBUG_PRINTLN("Network interface not found in secrets.json file.");
+    // we didn't set the network iface up, yield forever.
     while (1)
       yield();
   }
-
-  network_password = doc["network_password"];
-  // error check against default values [ArduinoJSON, 3.3.3]
-  if (network_password == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: invalid network_password value in secrets.json!");
-    return false;
-  }
-
-  // Set WS object's network ssid/pass so it can be accessed
-  // network interfaces (airlift, etc.) which implement set_ssid_pass()
-  WS._network_ssid = network_ssid;
-  WS._network_pass = network_password;
 
   // clear the document and release all memory from the memory pool
   doc.clear();
