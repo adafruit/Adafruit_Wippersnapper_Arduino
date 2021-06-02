@@ -7,14 +7,14 @@
 // Brent Rubell for Adafruit Industries, 2020
 //
 // All text above must be included in any redistribution.
+#include "Wippersnapper_Networking.h"
+Wippersnapper_WiFi wipper;
 
-
-#include "config.h"
-
+// Enable debug output for beta builds
 #define WS_DEBUG
 
 void setup() {
-
+  // Provisioning must occur prior to serial init.
   #ifdef USE_TINYUSB
     wipper.startProvisioning();
   #endif
@@ -23,25 +23,20 @@ void setup() {
   while (!Serial) delay(10);
 
   #ifdef USE_TINYUSB
-    // Use native usb provisioning
-    // Validate
+    // Validate secrets file exists
     wipper.validateProvisioningSecrets();
-    // Set credentials and setup from secrets.json file
+    // Parse out secrets file
     wipper.parseProvisioningSecrets();
     // Set Adafruit IO credentials
     wipper.set_user_key();
-    // Set WiFi Credentials
-    wipper.set_ssid_pass(WIFI_SSID, WIFI_PASS);
-  #else
-    // non-native USB workflow
-    wipper.set_user_key(IO_USERNAME, IO_KEY);
-    wipper.set_ssid_pass(WIFI_SSID, WIFI_PASS);
+    // Set WiFi credentials
+    wipper.set_ssid_pass();
+  #else // non-native USB workflow
+    // Set Adafruit IO Key
+    wipper.set_user_key("YOUR_IO_USERNAME", "YOUR_IO_KEY");
+    // Set WiFi credentials
+    wipper.set_ssid_pass("YOUR_WIFI_SSID", YOUR_WIFI_PASS");
   #endif
-
-  // TODO - this should be handled by the secrets.json as well!
-  // Configure WiFi network iface (AirLift only)
-  wipper.set_wifi(&SPIWIFI);
-  wipper.set_airlift_pins(SPIWIFI_SS, NINA_ACK, NINA_RESETN, NINA_GPIO0);
 
   Serial.println("Connecting to Wippersnapper");
   wipper.connect();
