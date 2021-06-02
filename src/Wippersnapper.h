@@ -46,9 +46,9 @@
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
+#include "Wippersnapper_FS.h"
 #include <ArduinoJson.h>
 #include <SPI.h>
-#include "Wippersnapper_FS.h"
 #endif
 
 // Reserved Adafruit IO MQTT topics
@@ -213,8 +213,7 @@ public:
       *_registerBoard;                     ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
-
-  Wippersnapper_FS *_fileSystem;
+  Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
 
   // TODO: move neopixel into its own class
   Adafruit_NeoPixel pixels; /*!< NeoPixel */
@@ -229,9 +228,13 @@ public:
   const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
 
-  // AIO Credentials
+  // AIO credentials
   const char *_username; /*!< Adafruit IO username */
   const char *_key;      /*!< Adafruit IO key */
+
+  // WiFi credentials
+  const char *_network_ssid; /*!< WiFi network SSID */
+  const char *_network_pass; /*!< WiFi network password*/
 
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
@@ -243,9 +246,6 @@ public:
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
-
-  const char *_network_ssid;
-  const char *_network_pass;
 
 private:
   void _init();

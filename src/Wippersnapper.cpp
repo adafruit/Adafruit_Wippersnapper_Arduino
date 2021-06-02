@@ -144,7 +144,8 @@ void Wippersnapper::set_user_key() {
   if (_fileSystem->io_username != NULL) {
     WS._username = _fileSystem->io_username;
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Adafruit IO username not set correctly in secrets.json.");
+    WS_DEBUG_PRINTLN(
+        "ERROR: Adafruit IO username not set correctly in secrets.json.");
     while (1)
       yield();
   }
@@ -152,7 +153,8 @@ void Wippersnapper::set_user_key() {
   if (_fileSystem->io_key != NULL) {
     WS._key = _fileSystem->io_key;
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Adafruit IO key not set correctly in secrets.json.");
+    WS_DEBUG_PRINTLN(
+        "ERROR: Adafruit IO key not set correctly in secrets.json.");
     while (1)
       yield();
   }
@@ -853,7 +855,6 @@ ws_status_t Wippersnapper::networkStatus() {
 void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
-
 
 /****************************************************************************/
 /*!

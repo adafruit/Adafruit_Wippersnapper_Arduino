@@ -27,10 +27,9 @@ Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
 #else
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
-// Flash object
-Adafruit_SPIFlash flash(&flashTransport);
-// QSPI FATFS object
-FatFileSystem wipperQSPIFS;
+
+Adafruit_SPIFlash flash(&flashTransport); ///< QSPI flash object
+FatFileSystem wipperQSPIFS;               ///< QSPI FatFS object
 
 /**************************************************************************/
 /*!
@@ -130,9 +129,10 @@ void Wippersnapper_FS::createConfigFileSkel() {
       yield();
   }
   WS_DEBUG_PRINTLN("Successfully added secrets.json to WIPPER volume!");
-  WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for changes to take effect.");
-  while (1) yield();
-
+  WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
+                   "changes to take effect.");
+  while (1)
+    yield();
 }
 
 /**************************************************************************/
@@ -226,8 +226,12 @@ bool Wippersnapper_FS::parseSecrets() {
 /*!
     @brief    Callback invoked when received READ10 command. Copies disk's
               data up to buffer.
+    @param    lba
+                Logical address of first block to read.
+    @param    buffer
+                Desired buffer to read from.
     @param    bufsize
-                Desired size of buffer to copy.
+                Desired size of buffer to read.
     @returns  Number of written bytes (must be multiple of block size)
 */
 /**************************************************************************/
@@ -242,8 +246,12 @@ int32_t qspi_msc_read_cb(uint32_t lba, void *buffer, uint32_t bufsize) {
 /*!
     @brief    Callback invoked when received WRITE command. Process data
               in buffer to disk's storage.
+    @param    lba
+                Logical address of first block to write.
+    @param    buffer
+                Desired buffer to write to.
     @param    bufsize
-                Desired size of buffer to copy.
+                Desired size of buffer to write.
     @returns  Number of written bytes (must be multiple of block size)
 */
 /**************************************************************************/

@@ -20,7 +20,11 @@
 #define FILE_TEMPLATE_AIRLIFT                                                  \
   "{\"io_username\":\"YOUR_IO_USERNAME_HERE\",\"io_key\":\"YOUR_IO_KEY_"       \
   "HERE\",\"network_type_wifi_airlift\":{\"network_ssid\":\"YOUR_WIFI_SSID_"   \
-  "HERE\",\"network_password\":\"YOUR_WIFI_PASS_HERE\"}}"
+  "HERE\",\"network_password\":\"YOUR_WIFI_PASS_HERE\"}}" ///< JSON string for
+                                                          ///< airlift-specific
+                                                          ///< configuration
+                                                          ///< file
+
 // forward decl.
 class Wippersnapper;
 
@@ -45,20 +49,18 @@ public:
   void createConfigFileSkel();
 
   // Adafruit IO Configuration
-  const char *io_username = NULL;
-  const char *io_key = NULL;
-  bool setNetwork;
+  const char *io_username =
+      NULL;                  /*!< Adafruit IO username, from config json. */
+  const char *io_key = NULL; /*!< Adafruit IO password, from config json. */
+  bool setNetwork; /*!< True if a network interface type was set up, False
+                      otherwise. */
 
-  // USB Mass Storage object
-  Adafruit_USBD_MSC usb_msc;
+  Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 
-  // Holds JSON configuration file
-  // NOTE: calculated capacity with
-  // maximum length of usernames/passwords/tokens
+  // NOTE: calculated capacity with maximum
+  // length of usernames/passwords/tokens
   // is 382 bytes, rounded to nearest power of 2.
-  StaticJsonDocument<512> doc;
-
-private:
+  StaticJsonDocument<512> doc; /*!< Json configuration file */
 };
 
 extern Wippersnapper WS;
