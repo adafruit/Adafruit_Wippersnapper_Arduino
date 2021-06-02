@@ -1,7 +1,7 @@
 /*!
  * @file Wippersnapper_FS.h
  *
- * Wippersnapper TinyUSB filesystem
+ * Wippersnapper filesystem
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -20,6 +20,7 @@
 // forward decl.
 class Wippersnapper;
 
+// global TinyUSB callbacks
 int32_t qspi_msc_write_cb(uint32_t lba, uint8_t *buffer, uint32_t bufsize);
 int32_t qspi_msc_read_cb(uint32_t lba, void *buffer, uint32_t bufsize);
 void qspi_msc_flush_cb(void);
@@ -35,9 +36,7 @@ public:
   Wippersnapper_FS();
   ~Wippersnapper_FS();
 
-  bool _mountFlashFS(); // mounts SPIFlash FS
   bool parseSecrets();
-  uint32_t getFlashID();
   bool configFileExists();
   void createConfigFileSkel();
 
@@ -46,14 +45,13 @@ public:
   const char *network_ssid = NULL;
   const char *network_password = NULL;
 
-  File secretsFile;
+  File secretsFile;  // File object to hold the contents of secrets.json
 
   // USB Mass Storage object
   Adafruit_USBD_MSC usb_msc;
 
   // Holds JSON configuration file
-  // NOTE: min. capacity is 192bytes, bumped to 256bytes for longer SSIDs
-  // or IO keys
+  // Calculated min. capacity is 192 bytes
   StaticJsonDocument<256> doc;
 
 private:

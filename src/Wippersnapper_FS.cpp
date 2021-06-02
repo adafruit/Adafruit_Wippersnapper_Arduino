@@ -1,7 +1,7 @@
 /*!
  * @file Wippersnapper_FS.cpp
  *
- * Wippersnapper TinyUSB filesystem
+ * Wippersnapper Filesystem
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -34,9 +34,7 @@ FatFileSystem wipperQSPIFS;
 
 /**************************************************************************/
 /*!
-    @brief    Creates a new instance of a Filesystem object.
-    @param    *ws
-              Reference to Wippersnapper.
+    @brief    Initializes USB-MSC and the QSPI flash filesystem.
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
@@ -77,10 +75,19 @@ Wippersnapper_FS::Wippersnapper_FS() {
     @brief    Filesystem destructor
 */
 /************************************************************/
-Wippersnapper_FS::~Wippersnapper_FS() {}
+Wippersnapper_FS::~Wippersnapper_FS() {
+  io_username = NULL;
+  io_key = NULL;
+  network_ssid = NULL;
+  network_password = NULL;
+}
 
-uint32_t Wippersnapper_FS::getFlashID() { return flash.getJEDECID(); }
-
+/**************************************************************************/
+/*!
+    @brief    Checks if secrets.json file exists on the flash filesystem.
+    @returns  True if secrets.json file exists, False otherwise.
+*/
+/**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
   secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
@@ -93,6 +100,11 @@ bool Wippersnapper_FS::configFileExists() {
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Creates a skeleton secret.json file on the filesystem.
+*/
+/**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
   // open for writing, should create a new file if one doesnt exist
   secretsFile = wipperQSPIFS.open("/secrets.json", FILE_WRITE);
@@ -110,6 +122,12 @@ void Wippersnapper_FS::createConfigFileSkel() {
   Serial.println("Created secrets.json file on flash");
 }
 
+/**************************************************************************/
+/*!
+    @brief    Parses a secrets.json file on the flash filesystem.
+    @return   True if parsed successfully, False otherwise.
+*/
+/**************************************************************************/
 bool Wippersnapper_FS::parseSecrets() {
   // open file for parsing
   secretsFile = wipperQSPIFS.open("/secrets.json");
@@ -161,11 +179,10 @@ bool Wippersnapper_FS::parseSecrets() {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("SECRETS from config.json: ");
-  WS_DEBUG_PRINTLN(io_username);
-  WS_DEBUG_PRINTLN(io_key);
-  WS_DEBUG_PRINTLN(network_ssid);
-  WS_DEBUG_PRINTLN(network_password);
+  // Set WS object's network ssid/pass so it can be accessed
+  // network interfaces (airlift, etc.) which implement set_ssid_pass()
+  WS._network_ssid = network_ssid;
+  WS._network_pass = network_password;
 
   // clear the document and release all memory from the memory pool
   doc.clear();
@@ -176,9 +193,15 @@ bool Wippersnapper_FS::parseSecrets() {
   return true;
 }
 
-// Callback invoked when received READ10 command.
-// Copy disk's data to buffer (up to bufsize) and
-// return number of copied bytes (must be multiple of block size)
+/**************************************************************************/
+/*!
+    @brief    Callback invoked when received READ10 command. Copies disk's
+              data up to buffer.
+    @param    bufsize
+                Desired size of buffer to copy.
+    @returns  Number of written bytes (must be multiple of block size)
+*/
+/**************************************************************************/
 int32_t qspi_msc_read_cb(uint32_t lba, void *buffer, uint32_t bufsize) {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it,
@@ -186,9 +209,15 @@ int32_t qspi_msc_read_cb(uint32_t lba, void *buffer, uint32_t bufsize) {
   return flash.readBlocks(lba, (uint8_t *)buffer, bufsize / 512) ? bufsize : -1;
 }
 
-// Callback invoked when received WRITE10 command.
-// Process data in buffer to disk's storage and
-// return number of written bytes (must be multiple of block size)
+/**************************************************************************/
+/*!
+    @brief    Callback invoked when received WRITE command. Process data
+              in buffer to disk's storage.
+    @param    bufsize
+                Desired size of buffer to copy.
+    @returns  Number of written bytes (must be multiple of block size)
+*/
+/**************************************************************************/
 int32_t qspi_msc_write_cb(uint32_t lba, uint8_t *buffer, uint32_t bufsize) {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it,
@@ -196,8 +225,12 @@ int32_t qspi_msc_write_cb(uint32_t lba, uint8_t *buffer, uint32_t bufsize) {
   return flash.writeBlocks(lba, buffer, bufsize / 512) ? bufsize : -1;
 }
 
-// Callback invoked when WRITE10 command is completed (status received and
-// accepted by host). used to flush any pending cache.
+/***************************************************************************/
+/*!
+    @brief  Callback invoked when WRITE10 command is completed (status
+            received and accepted by host). Used to flush any pending cache.
+*/
+/***************************************************************************/
 void qspi_msc_flush_cb(void) {
   // sync w/flash
   flash.syncBlocks();

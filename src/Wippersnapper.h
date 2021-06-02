@@ -46,9 +46,9 @@
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
-#include "Wippersnapper_FS.h"
 #include <ArduinoJson.h>
 #include <SPI.h>
+#include "Wippersnapper_FS.h"
 #endif
 
 // Reserved Adafruit IO MQTT topics
@@ -153,6 +153,7 @@ public:
   void set_user_key();
 
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
+  virtual void set_ssid_pass();
 
   void connect();
   virtual void _connect();
@@ -242,6 +243,9 @@ public:
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
+
+  const char *_network_ssid;
+  const char *_network_pass;
 
 private:
   void _init();

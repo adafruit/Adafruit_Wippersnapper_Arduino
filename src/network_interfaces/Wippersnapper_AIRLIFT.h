@@ -74,11 +74,19 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    //_ssid = WS._fileSystem->network_ssid;
-    //_pass = WS._fileSystem->network_password;
-
     _ssid = ssid;
     _pass = ssidPassword;
+  }
+
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password from the
+            secrets.json provisioning file.
+  */
+  /**********************************************************/
+  void set_ssid_pass() {
+    _ssid = WS._network_ssid;
+    _pass = WS._network_pass;
   }
 
   /********************************************************/

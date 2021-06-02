@@ -129,8 +129,6 @@ bool Wippersnapper::parseProvisioningSecrets() {
 /****************************************************************************/
 void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
-  _username = aio_username;
-  _key = aio_key;
   WS._username = aio_username;
   WS._key = aio_key;
 }
@@ -146,7 +144,7 @@ void Wippersnapper::set_user_key() {
   if (_fileSystem->io_username != NULL) {
     WS._username = _fileSystem->io_username;
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Adafruit IO username not set correctly.");
+    WS_DEBUG_PRINTLN("ERROR: Adafruit IO username not set correctly in secrets.json.");
     while (1)
       yield();
   }
@@ -154,7 +152,7 @@ void Wippersnapper::set_user_key() {
   if (_fileSystem->io_key != NULL) {
     WS._key = _fileSystem->io_key;
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Adafruit IO key not set correctly.");
+    WS_DEBUG_PRINTLN("ERROR: Adafruit IO key not set correctly in secrets.json.");
     while (1)
       yield();
   }
@@ -799,7 +797,7 @@ void Wippersnapper::disconnect() { _disconnect(); }
 */
 /****************************************************************************/
 void Wippersnapper::_connect() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -808,7 +806,7 @@ void Wippersnapper::_connect() {
 */
 /****************************************************************************/
 void Wippersnapper::_disconnect() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -818,7 +816,7 @@ void Wippersnapper::_disconnect() {
 */
 /****************************************************************************/
 void Wippersnapper::setUID() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -829,7 +827,7 @@ void Wippersnapper::setUID() {
 */
 /****************************************************************************/
 void Wippersnapper::setupMQTTClient(const char *clientID) {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -839,7 +837,7 @@ void Wippersnapper::setupMQTTClient(const char *clientID) {
 */
 /****************************************************************************/
 ws_status_t Wippersnapper::networkStatus() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
 }
 
@@ -853,7 +851,18 @@ ws_status_t Wippersnapper::networkStatus() {
 */
 /****************************************************************************/
 void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+
+/****************************************************************************/
+/*!
+    @brief    Sets the device's wireless network credentials from the
+              secrets.json configuration file.
+*/
+/****************************************************************************/
+void Wippersnapper::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /**************************************************************************/
