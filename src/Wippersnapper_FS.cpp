@@ -87,9 +87,9 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
-  secretsFile = wipperQSPIFS.open("/secrets.json");
+  File secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
-    WS_DEBUG_PRINTLN("Secrets file does not exist on flash.");
+    WS_DEBUG_PRINTLN("ERROR: Secrets file does not exist on flash.");
     secretsFile.close();
     return false;
   }
@@ -104,20 +104,32 @@ bool Wippersnapper_FS::configFileExists() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
+  // validate if configuration json file exists on FS
+  WS_DEBUG_PRINTLN("Attempting to create secrets file...");
   // open for writing, should create a new file if one doesnt exist
-  secretsFile = wipperQSPIFS.open("/secrets.json", FILE_WRITE);
-  if (!secretsFile) {
+  File secretsFile = wipperQSPIFS.open("/secrets.json", FILE_WRITE);
+  if (secretsFile) {
+    // Detect which configuration file template via board type //
+    // Hardware with built-in AirLift
+    if (USB_VID == 0x239A && (USB_PID == 0x8036 || USB_PID == 0x8038)) {
+      // Write airlift's secrets.json template to file.
+      secretsFile.println(FILE_TEMPLATE_AIRLIFT);
+      // done writing, close it
+      secretsFile.close();
+    } else {
+      Serial.println(
+          "ERROR: Your hardware does not support native USB provisioning");
+      secretsFile.close();
+      while (1)
+        yield();
+    }
+  } else {
     Serial.println("ERROR: Could not create secrets.json on QSPI flash...");
+    secretsFile.close();
     while (1)
       yield();
   }
-  // write json string to file
-  secretsFile.print("{\"network_ssid\":\"YOUR_WIFI_SSID_HERE\",\"network_"
-                    "password\":\"YOUR_WIFI_PASS_HERE\",\"io_username\":\"YOUR_"
-                    "IO_USERNAME_HERE\",\"io_key\":\"YOUR_IO_KEY_HERE\"}");
-  // done writing, close file
-  secretsFile.close();
-  Serial.println("Created secrets.json file on flash");
+  WS_DEBUG_PRINTLN("Successfully added secrets.json to WIPPER volume!");
 }
 
 /**************************************************************************/
@@ -129,7 +141,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
 bool Wippersnapper_FS::parseSecrets() {
   setNetwork = false;
   // open file for parsing
-  secretsFile = wipperQSPIFS.open("/secrets.json");
+  File secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
     return false;
@@ -159,22 +171,26 @@ bool Wippersnapper_FS::parseSecrets() {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("Attempting to find network interface...");
   // next, we detect the network interface from the `secrets.json`
-
+  WS_DEBUG_PRINTLN("Attempting to find network interface...");
   // Check if type is WiFi (AirLift)
-  const char* network_type_wifi_airlift_network_ssid = doc["network_type_wifi_airlift"]["network_ssid"];
+  const char *network_type_wifi_airlift_network_ssid =
+      doc["network_type_wifi_airlift"]["network_ssid"];
   if (network_type_wifi_airlift_network_ssid == nullptr) {
-    WS_DEBUG_PRINTLN("Network interface is not airlift type, checking next type...");
+    WS_DEBUG_PRINTLN(
+        "Network interface is not airlift type, checking next type...");
   } else {
     WS_DEBUG_PRINTLN("Network Interface Found: AirLift ESP32 Co-Processor");
     WS_DEBUG_PRINTLN("Setting network:");
     // Parse network password
-    const char* network_type_wifi_airlift_network_password = doc["network_type_wifi_airlift"]["network_password"];
+    const char *network_type_wifi_airlift_network_password =
+        doc["network_type_wifi_airlift"]["network_password"];
     // validation
     if (network_type_wifi_airlift_network_password == nullptr) {
-        WS_DEBUG_PRINTLN("ERROR: invalid network_type_wifi_airlift_network_password value in secrets.json!");
-        return false;
+      WS_DEBUG_PRINTLN(
+          "ERROR: invalid network_type_wifi_airlift_network_password value in "
+          "secrets.json!");
+      return false;
     }
     // Set WiFi configuration with parsed values
     WS._network_ssid = network_type_wifi_airlift_network_ssid;
@@ -183,7 +199,8 @@ bool Wippersnapper_FS::parseSecrets() {
   }
 
   // TODO: We may want to implement network_type_wifi_native (ESP32-S2) here
-  // TODO: We may want to implement network_type_ethernet (Ethernet FeatherWing) here
+  // TODO: We may want to implement network_type_ethernet (Ethernet FeatherWing)
+  // here
 
   // Was a network_type specified in the configuration file?
   if (!setNetwork) {

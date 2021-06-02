@@ -17,6 +17,10 @@
 
 #include "Wippersnapper.h"
 
+#define FILE_TEMPLATE_AIRLIFT                                                  \
+  "{\"io_username\":\"YOUR_IO_USERNAME_HERE\",\"io_key\":\"YOUR_IO_KEY_"       \
+  "HERE\",\"network_type_wifi_airlift\":{\"network_ssid\":\"YOUR_WIFI_SSID_"   \
+  "HERE\",\"network_password\":\"YOUR_WIFI_PASS_HERE\"}}"
 // forward decl.
 class Wippersnapper;
 
@@ -43,10 +47,7 @@ public:
   // Adafruit IO Configuration
   const char *io_username = NULL;
   const char *io_key = NULL;
-
   bool setNetwork;
-
-  File secretsFile;  // File object to hold the contents of secrets.json
 
   // USB Mass Storage object
   Adafruit_USBD_MSC usb_msc;
