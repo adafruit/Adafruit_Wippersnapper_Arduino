@@ -1,12 +1,18 @@
-// Adafruit IO Wippersnapper
+// Adafruit IO Wippersnapper Beta
+//
+//
+// NOTE: This software is a BETA release and in active development.
+// Please report bugs or errors to https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/issues
+//
 //
 // Adafruit invests time and resources providing this open source code.
 // Please support Adafruit and open source hardware by purchasing
 // products from Adafruit!
 //
-// Brent Rubell for Adafruit Industries, 2020
+// Brent Rubell for Adafruit Industries, 2021
 //
 // All text above must be included in any redistribution.
+
 #include "Wippersnapper_Networking.h"
 Wippersnapper_WiFi wipper;
 
@@ -35,7 +41,7 @@ void setup() {
     // Set Adafruit IO Key
     wipper.set_user_key("YOUR_IO_USERNAME", "YOUR_IO_KEY");
     // Set WiFi credentials
-    wipper.set_ssid_pass("YOUR_WIFI_SSID", YOUR_WIFI_PASS");
+    wipper.set_ssid_pass("YOUR_WIFI_SSID", "YOUR_WIFI_PASS");
   #endif
 
   Serial.println("Connecting to Wippersnapper");
