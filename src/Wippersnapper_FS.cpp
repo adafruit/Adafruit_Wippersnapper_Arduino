@@ -116,14 +116,14 @@ void Wippersnapper_FS::createConfigFileSkel() {
       // done writing, close it
       secretsFile.close();
     } else {
-      Serial.println(
+      WS_DEBUG_PRINTLN(
           "ERROR: Your hardware does not support native USB provisioning");
       secretsFile.close();
       while (1)
         yield();
     }
   } else {
-    Serial.println("ERROR: Could not create secrets.json on QSPI flash...");
+    WS_DEBUG_PRINTLN("ERROR: Could not create secrets.json on QSPI flash...");
     secretsFile.close();
     while (1)
       yield();
@@ -205,10 +205,10 @@ bool Wippersnapper_FS::parseSecrets() {
   // TODO: We may want to implement network_type_ethernet (Ethernet FeatherWing)
   // here
 
-  // Was a network_type specified in the configuration file?
+  // Was a network_type detected in the configuration file?
   if (!setNetwork) {
-    WS_DEBUG_PRINTLN("Network interface not found in secrets.json file.");
-    // we didn't set the network iface up, yield forever.
+    WS_DEBUG_PRINTLN(
+        "ERROR: Network interface not detected in secrets.json file.");
     while (1)
       yield();
   }
