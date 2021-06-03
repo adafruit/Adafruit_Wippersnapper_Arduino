@@ -965,15 +965,13 @@ ws_status_t Wippersnapper::run() {
   // WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
-  // Process all incoming packets from Wippersnapper MQTT Broker
-  // TODO: This should be moved below network handling, but network handling is
-  // taking too much time so it is getting missed, dropping packets as a result.
-  WS._mqtt->processPackets(10);
-
-  // handle network connection
+  // Handle network connection
   checkNetworkConnection();
-  // handle MQTT connection
+  // Handle MQTT connection
   checkMQTTConnection(curTime);
+
+  // Process all incoming packets from Wippersnapper MQTT Broker
+  WS._mqtt->processPackets(10);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
@@ -1058,13 +1056,7 @@ ws_status_t Wippersnapper::mqttStatus() {
     _last_mqtt_connect = millis();
     switch (WS._mqtt->connect(WS._username, WS._key)) {
     case 0:
-      // Connected, re-send registration packet
-      if (!registerBoard(10)) {
-        WS_DEBUG_PRINTLN("Unable to re-send sync registration to broker.");
-        return WS_CONNECTED;
-      } else {
-        return WS_BOARD_RESYNC_FAILED;
-      }
+      return WS_CONNECTED;
     case 1: // invalid mqtt protocol
     case 2: // client id rejected
     case 4: // malformed user/pass
