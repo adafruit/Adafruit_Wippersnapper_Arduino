@@ -71,6 +71,7 @@ Wippersnapper::~Wippersnapper() {
 /*!
     @brief    Initializes provisioning, either the native USB FS or WiFi
               AP-based captive portal.
+*/
 /****************************************************************************/
 void Wippersnapper::startProvisioning() {
 // native usb provisioning flow
