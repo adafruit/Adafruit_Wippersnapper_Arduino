@@ -57,22 +57,21 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
 /************************************************************/
 bool Wippersnapper_Registration::processRegistration() {
   bool is_registered = false;
-  FSMReg next_state = _state;
 
   switch (_state) {
   case FSMReg::REG_CREATE_ENCODE_MSG:
     WS_DEBUG_PRINT("Encoding registration message...");
     encodeRegMsg();
-    next_state = FSMReg::REG_PUBLISH_MSG;
+    _state = FSMReg::REG_PUBLISH_MSG;
   case FSMReg::REG_PUBLISH_MSG:
     WS_DEBUG_PRINT("Publishing registration message...");
     publishRegMsg();
-    next_state = FSMReg::REG_DECODE_MSG;
+    _state = FSMReg::REG_DECODE_MSG;
   case FSMReg::REG_DECODE_MSG:
     if (!pollRegMsg()) { // fail out
       break;
     } else { // GOT registration msg, decode it
-      next_state = FSMReg::REG_DECODED_MSG;
+      _state = FSMReg::REG_DECODED_MSG;
     }
   case FSMReg::REG_DECODED_MSG:
     is_registered = true; // if successful
