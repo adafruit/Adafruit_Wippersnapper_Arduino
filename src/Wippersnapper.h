@@ -164,7 +164,6 @@ public:
   virtual void setUID();
   virtual void setupMQTTClient(const char *clientID);
 
-  const __FlashStringHelper *statusText();
   virtual ws_status_t networkStatus();
   ws_status_t status();
   ws_status_t mqttStatus();

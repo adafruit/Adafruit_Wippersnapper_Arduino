@@ -119,9 +119,8 @@ bool Wippersnapper::parseProvisioningSecrets() {
 
 /****************************************************************************/
 /*!
-    @brief    Configures the device's Adafruit IO credentials.
-    @Note     This method should be used only if provisioning is not
-                avaliable.
+    @brief    Configures the device's Adafruit IO credentials. This method
+              should be used only if provisioning is not avaliable.
     @param    aio_username
               Your Adafruit IO username.
     @param    aio_key
