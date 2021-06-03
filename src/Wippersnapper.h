@@ -46,9 +46,10 @@
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
-#include "Wippersnapper_FS.h"
 #include <ArduinoJson.h>
 #include <SPI.h>
+#include "Wippersnapper_FS.h"
+
 #endif
 
 // Reserved Adafruit IO MQTT topics
