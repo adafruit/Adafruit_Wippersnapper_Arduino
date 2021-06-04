@@ -110,11 +110,13 @@ void Wippersnapper::validateProvisioningSecrets() {
 */
 /****************************************************************************/
 bool Wippersnapper::parseProvisioningSecrets() {
+bool is_successful = false;
 #ifdef USE_TINYUSB
-  return _fileSystem->parseSecrets();
+  is_successful = _fileSystem->parseSecrets();
 #else
 #warning "ERROR: Current usage of provisioning requires TinyUSB.";
 #endif
+return is_successful;
 }
 
 /****************************************************************************/
