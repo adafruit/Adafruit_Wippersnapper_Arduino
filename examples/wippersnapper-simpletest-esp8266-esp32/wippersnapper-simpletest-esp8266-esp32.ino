@@ -1,5 +1,6 @@
 // Adafruit IO Wippersnapper Beta
 //
+// This example is for devices incompatible with TinyUSB, such as the ESP32 and ESP8266
 //
 // NOTE: This software is a BETA release and in active development.
 // Please report bugs or errors to https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/issues
@@ -20,20 +21,17 @@ Wippersnapper_WiFi wipper;
 #define WS_DEBUG
 
 void setup() {
-  // Provisioning must occur prior to serial init.
-  wipper.startProvisioning();
-
   Serial.begin(115200);
-  while (!Serial) delay(10);
 
-  // Validate secrets file exists
-  wipper.validateProvisioningSecrets();
-  // Parse out secrets file
-  wipper.parseProvisioningSecrets();
-  // Set Adafruit IO credentials
-  wipper.set_user_key();
+  // Start the serial connection
+  Serial.begin(115200);
+  // while(! Serial);
+
+  // Set Adafruit IO Key
+  wipper.set_user_key("YOUR_AIO_USERNAME", "YOUR_AIO_PASSWORD");
   // Set WiFi credentials
-  wipper.set_ssid_pass();
+  wipper.set_ssid_pass("YOUR_WIFI_USERNAME", "YOUR_WIFI_PASSWORD");
+
 
   Serial.println("Connecting to Wippersnapper");
   wipper.connect();

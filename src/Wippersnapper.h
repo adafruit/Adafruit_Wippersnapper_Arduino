@@ -40,6 +40,16 @@
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
 #include <Adafruit_NeoPixel.h>
+#include <ArduinoJson.h>
+#include <SPI.h>
+
+// tinyusb and spiflash for USB MSC
+#ifdef USE_TINYUSB
+#include "Adafruit_SPIFlash.h"
+#include "Adafruit_TinyUSB.h"
+#include "SdFat.h"
+#include "Wippersnapper_FS.h"
+#endif
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -122,6 +132,7 @@ typedef enum {
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
+class Wippersnapper_FS;
 
 /**************************************************************************/
 /*!
@@ -134,8 +145,15 @@ public:
   Wippersnapper();
   virtual ~Wippersnapper();
 
+  void startProvisioning();
+  void validateProvisioningSecrets();
+  bool parseProvisioningSecrets();
+
   void set_user_key(const char *aio_username, const char *aio_key);
+  void set_user_key();
+
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
+  virtual void set_ssid_pass();
 
   void connect();
   virtual void _connect();
@@ -146,7 +164,6 @@ public:
   virtual void setUID();
   virtual void setupMQTTClient(const char *clientID);
 
-  const __FlashStringHelper *statusText();
   virtual ws_status_t networkStatus();
   ws_status_t status();
   ws_status_t mqttStatus();
@@ -195,6 +212,7 @@ public:
       *_registerBoard;                     ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
+  Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
 
   // TODO: move neopixel into its own class
   Adafruit_NeoPixel pixels; /*!< NeoPixel */
@@ -209,9 +227,13 @@ public:
   const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
 
-  // AIO Credentials
+  // AIO credentials
   const char *_username; /*!< Adafruit IO username */
   const char *_key;      /*!< Adafruit IO key */
+
+  // WiFi credentials
+  const char *_network_ssid; /*!< WiFi network SSID */
+  const char *_network_pass; /*!< WiFi network password*/
 
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
