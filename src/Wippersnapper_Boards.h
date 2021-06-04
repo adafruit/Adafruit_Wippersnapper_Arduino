@@ -1,8 +1,7 @@
 /*!
  * @file Wippersnapper_Boards.h
  *
- * This file determines board type and includes network
- * interface code.
+ * This file determines hardware/board type at compile-time.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -43,7 +42,6 @@
 #define USB_VID 0xEA60
 #define USB_PID 0x10C4
 #define BOARD_ID "adafruit-huzzah-8266"
-// Status Indicator
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #elif defined(ARDUINO_FUNHOUSE_ESP32S2)

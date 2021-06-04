@@ -149,6 +149,8 @@ public:
   void validateProvisioningSecrets();
   bool parseProvisioningSecrets();
 
+  bool initStatusLED();
+
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
 
