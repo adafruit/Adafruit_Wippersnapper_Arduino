@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-
+#if defined(USE_TINYUSB)
 #include "Wippersnapper_FS.h"
 
 // On-board external flash (QSPI or SPI) macros should already
@@ -274,3 +274,5 @@ void qspi_msc_flush_cb(void) {
   // clear file system's cache to force refresh
   wipperQSPIFS.cacheClear();
 }
+
+#endif
