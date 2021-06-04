@@ -40,14 +40,14 @@
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
 #include <Adafruit_NeoPixel.h>
+#include <ArduinoJson.h>
+#include <SPI.h>
 
 // tinyusb and spiflash for USB MSC
 #ifdef USE_TINYUSB
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
-#include <ArduinoJson.h>
-#include <SPI.h>
 #include "Wippersnapper_FS.h"
 #endif
 
