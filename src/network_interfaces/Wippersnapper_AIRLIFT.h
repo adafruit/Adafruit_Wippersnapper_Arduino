@@ -30,6 +30,8 @@
 #define NINAFWVER                                                              \
   "1.6.0" /*!< min. nina-fw version compatible with this library. */
 
+#define SPIWIFI SPI
+
 extern Wippersnapper WS;
 /****************************************************************************/
 /*!
@@ -45,13 +47,13 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_AIRLIFT() : Wippersnapper() {
-    _ssPin = 0;
-    _ackPin = 0;
-    _rstPin = 0;
-    _wifi = 0;
-    _mqtt_client = 0;
+    _ssPin = 10;
+    _ackPin = 7;
+    _rstPin = 5;
+    _wifi = &SPIWIFI;
     _ssid = 0;
     _pass = 0;
+    _mqtt_client = new WiFiSSLClient;
   }
 
   /**************************************************************************/
@@ -76,6 +78,17 @@ public:
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
     _pass = ssidPassword;
+  }
+
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password from the
+            secrets.json provisioning file.
+  */
+  /**********************************************************/
+  void set_ssid_pass() {
+    _ssid = WS._network_ssid;
+    _pass = WS._network_pass;
   }
 
   /********************************************************/

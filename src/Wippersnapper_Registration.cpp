@@ -57,29 +57,35 @@ Wippersnapper_Registration::~Wippersnapper_Registration() {
 /************************************************************/
 bool Wippersnapper_Registration::processRegistration() {
   bool is_registered = false;
-  FSMReg next_state = _state;
 
-  switch (_state) {
-  case FSMReg::REG_CREATE_ENCODE_MSG:
-    WS_DEBUG_PRINT("Encoding registration message...");
-    encodeRegMsg();
-    next_state = FSMReg::REG_PUBLISH_MSG;
-  case FSMReg::REG_PUBLISH_MSG:
-    WS_DEBUG_PRINT("Publishing registration message...");
-    publishRegMsg();
-    next_state = FSMReg::REG_DECODE_MSG;
-  case FSMReg::REG_DECODE_MSG:
-    if (!pollRegMsg()) { // fail out
+  while (!is_registered) {
+    switch (_state) {
+    case FSMReg::REG_CREATE_ENCODE_MSG:
+      WS_DEBUG_PRINT("Encoding registration message...");
+      encodeRegMsg();
+      _state = FSMReg::REG_PUBLISH_MSG;
       break;
-    } else { // GOT registration msg, decode it
-      next_state = FSMReg::REG_DECODED_MSG;
+    case FSMReg::REG_PUBLISH_MSG:
+      WS_DEBUG_PRINT("Publishing registration message...");
+      publishRegMsg();
+      _state = FSMReg::REG_DECODE_MSG;
+      break;
+    case FSMReg::REG_DECODE_MSG:
+      if (!pollRegMsg()) {
+        // back to publishing state
+        _state = FSMReg::REG_PUBLISH_MSG;
+        break;
+      }
+      _state = FSMReg::REG_DECODED_MSG;
+      break;
+    case FSMReg::REG_DECODED_MSG:
+      is_registered = true; // if successful
+      break;
+    default:
+      break;
     }
-  case FSMReg::REG_DECODED_MSG:
-    is_registered = true; // if successful
-    break;
-  default:
-    break;
   }
+
   return is_registered;
 }
 

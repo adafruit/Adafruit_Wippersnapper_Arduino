@@ -69,7 +69,60 @@ Wippersnapper::~Wippersnapper() {
 
 /****************************************************************************/
 /*!
-    @brief    Configures the device's Adafruit IO credentials.
+    @brief    Initializes provisioning, either the native USB FS or WiFi
+              AP-based captive portal.
+*/
+/****************************************************************************/
+void Wippersnapper::startProvisioning() {
+// native usb provisioning flow
+#ifdef USE_TINYUSB
+  // Initialize the QSPI flash FS
+  _fileSystem = new Wippersnapper_FS();
+#else
+#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#endif
+}
+
+/****************************************************************************/
+/*!
+    @brief    Validates if file system contains secret credentials for
+              Adafruit IO and wireless network.
+*/
+/****************************************************************************/
+void Wippersnapper::validateProvisioningSecrets() {
+#ifdef USE_TINYUSB
+  // check for secrets.json, create if doesn't exist
+  if (!_fileSystem->configFileExists()) {
+    // create config file on filesystem
+    _fileSystem->createConfigFileSkel();
+  }
+#else
+#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#endif
+}
+
+/****************************************************************************/
+/*!
+    @brief    Parses and stores data from the secrets.json file or a captive
+                provisioning portal.
+    @returns  True if secrets are parsed and set stored successfully,
+                False otherwise.
+*/
+/****************************************************************************/
+bool Wippersnapper::parseProvisioningSecrets() {
+  bool is_successful = false;
+#ifdef USE_TINYUSB
+  is_successful = _fileSystem->parseSecrets();
+#else
+#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#endif
+  return is_successful;
+}
+
+/****************************************************************************/
+/*!
+    @brief    Configures the device's Adafruit IO credentials. This method
+              should be used only if provisioning is not avaliable.
     @param    aio_username
               Your Adafruit IO username.
     @param    aio_key
@@ -78,10 +131,39 @@ Wippersnapper::~Wippersnapper() {
 /****************************************************************************/
 void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
-  _username = aio_username;
-  _key = aio_key;
   WS._username = aio_username;
   WS._key = aio_key;
+}
+
+/****************************************************************************/
+/*!
+    @brief    Configures the device's Adafruit IO credentials from the
+                secrets.json file.
+*/
+/****************************************************************************/
+void Wippersnapper::set_user_key() {
+#ifdef USE_TINYUSB
+  if (_fileSystem->io_username != NULL) {
+    WS._username = _fileSystem->io_username;
+  } else {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Adafruit IO username not set correctly in secrets.json.");
+    while (1)
+      yield();
+  }
+
+  if (_fileSystem->io_key != NULL) {
+    WS._key = _fileSystem->io_key;
+  } else {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Adafruit IO key not set correctly in secrets.json.");
+    while (1)
+      yield();
+  }
+#else
+#warning                                                                       \
+    "Native USB unimplemented, call set_user_key with your AIO username and key instead."
+#endif
 }
 
 // Decoders //
@@ -479,10 +561,10 @@ bool Wippersnapper::buildErrorTopics() {
   bool is_success = true;
   // dynamically allocate memory for err topic
   WS._err_topic = (char *)malloc(
-      sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_ERRORS) + 1));
+      sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
 
   if (WS._err_topic) { // build error topic
-    strcpy(WS._err_topic, _username);
+    strcpy(WS._err_topic, WS._username);
     strcat(WS._err_topic, TOPIC_IO_ERRORS);
   } else { // malloc failed
     WS._err_topic = 0;
@@ -491,10 +573,10 @@ bool Wippersnapper::buildErrorTopics() {
 
   // dynamically allocate memory for throttle topic
   WS._throttle_topic = (char *)malloc(
-      sizeof(char) * (strlen(_username) + strlen(TOPIC_IO_THROTTLE) + 1));
+      sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
 
   if (WS._throttle_topic) { // build throttle topic
-    strcpy(WS._throttle_topic, _username);
+    strcpy(WS._throttle_topic, WS._username);
     strcat(WS._throttle_topic, TOPIC_IO_THROTTLE);
   } else { // malloc failed
     WS._throttle_topic = 0;
@@ -553,28 +635,28 @@ bool Wippersnapper::buildWSTopics() {
 
   // Global registration topic
   WS._topic_description =
-      (char *)malloc(sizeof(char) * strlen(_username) + strlen("/wprsnpr") +
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
                      strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
 
   // Registration status topic
-  WS._topic_description_status =
-      (char *)malloc(sizeof(char) * strlen(_username) + +strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) +
-                     strlen("status") + strlen("broker") + 1);
+  WS._topic_description_status = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
+      strlen("broker") + 1);
 
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(
-      sizeof(char) * strlen(_username) + +strlen("/") + strlen(_device_uid) +
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
 
   // Topic for signals from broker to device
   WS._topic_signal_brkr = (char *)malloc(
-      sizeof(char) * strlen(_username) + +strlen("/") + strlen(_device_uid) +
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
   // Create global registration topic
   if (WS._topic_description) {
-    strcpy(WS._topic_description, _username);
+    strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
     strcat(WS._topic_description, TOPIC_DESCRIPTION);
     strcat(WS._topic_description, "status");
@@ -585,7 +667,7 @@ bool Wippersnapper::buildWSTopics() {
 
   // Create registration status topic
   if (WS._topic_description_status) {
-    strcpy(WS._topic_description_status, _username);
+    strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
     strcat(WS._topic_description_status, _device_uid);
     strcat(WS._topic_description_status, TOPIC_DESCRIPTION);
@@ -598,7 +680,7 @@ bool Wippersnapper::buildWSTopics() {
 
   // Create device-to-broker signal topic
   if (WS._topic_signal_device) {
-    strcpy(WS._topic_signal_device, _username);
+    strcpy(WS._topic_signal_device, WS._username);
     strcat(WS._topic_signal_device, "/wprsnpr/");
     strcat(WS._topic_signal_device, _device_uid);
     strcat(WS._topic_signal_device, TOPIC_SIGNALS);
@@ -610,7 +692,7 @@ bool Wippersnapper::buildWSTopics() {
 
   // Create broker-to-device signal topic
   if (WS._topic_signal_brkr) {
-    strcpy(WS._topic_signal_brkr, _username);
+    strcpy(WS._topic_signal_brkr, WS._username);
     strcat(WS._topic_signal_brkr, "/wprsnpr/");
     strcat(WS._topic_signal_brkr, _device_uid);
     strcat(WS._topic_signal_brkr, TOPIC_SIGNALS);
@@ -719,7 +801,7 @@ void Wippersnapper::disconnect() { _disconnect(); }
 */
 /****************************************************************************/
 void Wippersnapper::_connect() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -728,7 +810,7 @@ void Wippersnapper::_connect() {
 */
 /****************************************************************************/
 void Wippersnapper::_disconnect() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -738,7 +820,7 @@ void Wippersnapper::_disconnect() {
 */
 /****************************************************************************/
 void Wippersnapper::setUID() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -749,7 +831,7 @@ void Wippersnapper::setUID() {
 */
 /****************************************************************************/
 void Wippersnapper::setupMQTTClient(const char *clientID) {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /****************************************************************************/
@@ -759,7 +841,7 @@ void Wippersnapper::setupMQTTClient(const char *clientID) {
 */
 /****************************************************************************/
 ws_status_t Wippersnapper::networkStatus() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
 }
 
@@ -773,7 +855,17 @@ ws_status_t Wippersnapper::networkStatus() {
 */
 /****************************************************************************/
 void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface");
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Sets the device's wireless network credentials from the
+              secrets.json configuration file.
+*/
+/****************************************************************************/
+void Wippersnapper::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
 /**************************************************************************/
@@ -875,15 +967,13 @@ ws_status_t Wippersnapper::run() {
   // WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
-  // Process all incoming packets from Wippersnapper MQTT Broker
-  // TODO: This should be moved below network handling, but network handling is
-  // taking too much time so it is getting missed, dropping packets as a result.
-  WS._mqtt->processPackets(10);
-
-  // handle network connection
+  // Handle network connection
   checkNetworkConnection();
-  // handle MQTT connection
+  // Handle MQTT connection
   checkMQTTConnection(curTime);
+
+  // Process all incoming packets from Wippersnapper MQTT Broker
+  WS._mqtt->processPackets(10);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
@@ -966,15 +1056,9 @@ ws_status_t Wippersnapper::mqttStatus() {
   if (_last_mqtt_connect == 0 ||
       millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL_MS) {
     _last_mqtt_connect = millis();
-    switch (WS._mqtt->connect(_username, _key)) {
+    switch (WS._mqtt->connect(WS._username, WS._key)) {
     case 0:
-      // Connected, re-send registration packet
-      if (!registerBoard(10)) {
-        WS_DEBUG_PRINTLN("Unable to re-send sync registration to broker.");
-        return WS_CONNECTED;
-      } else {
-        return WS_BOARD_RESYNC_FAILED;
-      }
+      return WS_CONNECTED;
     case 1: // invalid mqtt protocol
     case 2: // client id rejected
     case 4: // malformed user/pass
