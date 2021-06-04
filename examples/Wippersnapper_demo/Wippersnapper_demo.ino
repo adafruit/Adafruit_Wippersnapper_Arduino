@@ -21,28 +21,19 @@ Wippersnapper_WiFi wipper;
 
 void setup() {
   // Provisioning must occur prior to serial init.
-  #ifdef USE_TINYUSB
-    wipper.startProvisioning();
-  #endif
+  wipper.startProvisioning();
 
   Serial.begin(115200);
   while (!Serial) delay(10);
 
-  #ifdef USE_TINYUSB
-    // Validate secrets file exists
-    wipper.validateProvisioningSecrets();
-    // Parse out secrets file
-    wipper.parseProvisioningSecrets();
-    // Set Adafruit IO credentials
-    wipper.set_user_key();
-    // Set WiFi credentials
-    wipper.set_ssid_pass();
-  #else // non-native USB workflow
-    // Set Adafruit IO Key
-    wipper.set_user_key("YOUR_IO_USERNAME", "YOUR_IO_KEY");
-    // Set WiFi credentials
-    wipper.set_ssid_pass("YOUR_WIFI_SSID", "YOUR_WIFI_PASS");
-  #endif
+  // Validate secrets file exists
+  wipper.validateProvisioningSecrets();
+  // Parse out secrets file
+  wipper.parseProvisioningSecrets();
+  // Set Adafruit IO credentials
+  wipper.set_user_key();
+  // Set WiFi credentials
+  wipper.set_ssid_pass();
 
   Serial.println("Connecting to Wippersnapper");
   wipper.connect();
