@@ -40,9 +40,10 @@
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
-#include <Adafruit_NeoPixel.h>
-#include <ArduinoJson.h>
 #include <SPI.h>
+#include <Adafruit_NeoPixel.h>
+#include <Adafruit_DotStar.h>
+#include <ArduinoJson.h>
 
 // tinyusb and spiflash for USB MSC
 #ifdef USE_TINYUSB

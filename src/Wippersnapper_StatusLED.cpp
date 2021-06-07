@@ -18,6 +18,10 @@
   Adafruit_NeoPixel statusPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 #endif
 
+#ifdef USE_STATUS_DOTSTAR
+  Adafruit_Dotstar statusPixelDotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN);
+#endif
+
 /****************************************************************************/
 /*!
     @brief    Initializes board-specific status LED.
@@ -31,9 +35,16 @@ void Wippersnapper::statusLEDInit() {
 
     #ifdef USE_STATUS_NEOPIXEL
       statusPixel.begin();
-      statusPixel.clear();
       statusPixel.setBrightness(50);
+      statusPixel.clear();
       statusPixel.show();
+    #endif
+
+    #ifdef USE_STATUS_DOTSTAR
+      statusPixelDotStar.begin();
+      statusPixelDotStar.setBrightness(50);
+      statusPixelDotStar.clear();
+      statusPixelDotStar.show();
     #endif
 }
 
@@ -54,7 +65,10 @@ void Wippersnapper::statusLEDDeinit() {
     // release for use
     // delete statusPixel;
   #endif
+
+  // TODO: USE_STATUS_DOTSTAR
 }
+
 
 /****************************************************************************/
 /*!
@@ -74,4 +88,17 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
     }
     statusPixel.show();
   #endif
+
+  #ifdef USE_STATUS_DOTSTAR
+    uint8_t red = (color >> 16) & 0xff;   // red
+    uint8_t green = (color >> 8) & 0xff;  // green
+    uint8_t blue = color & 0xff;          // blue
+    // flood all pixels
+    for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
+        statusPixelDotStar.setPixelColor(i, red, green, blue);
+    }
+    statusPixelDotStar.show();
+  #endif
+
+  // TODO: Handle non-color LED
 }
