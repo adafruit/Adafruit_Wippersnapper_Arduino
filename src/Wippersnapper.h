@@ -40,10 +40,10 @@
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
-#include <SPI.h>
-#include <Adafruit_NeoPixel.h>
 #include <Adafruit_DotStar.h>
+#include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
+#include <SPI.h>
 
 // tinyusb and spiflash for USB MSC
 #ifdef USE_TINYUSB
@@ -219,7 +219,6 @@ public:
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
-
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
   char sUID[9];             /*!< Unique network iface identifier */

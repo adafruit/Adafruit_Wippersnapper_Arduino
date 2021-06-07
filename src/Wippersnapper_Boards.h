@@ -29,11 +29,9 @@
 #define USB_PID 0x8038
 #define BOARD_ID "adafruit-metro-m4-airliftlite"
 #define USE_TINYUSB
-#define USE_STATUS_LED
-#define STATUS_LED_PIN 13
-//#define USE_STATUS_NEOPIXEL
-//#define STATUS_NEOPIXEL_PIN 40
-//#define STATUS_NEOPIXEL_NUM 1
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN 40
+#define STATUS_NEOPIXEL_NUM 1
 #elif defined(ADAFRUIT_METRO_M4_EXPRESS)
 #define USB_VID 0x239A
 #define USB_PID 0x8021
@@ -55,7 +53,7 @@
 #define BOARD_ID "esp32"
 #define USE_STATUS_DOTSTAR
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA
-#define STATUS_DOTSTAR_PIN_CLK  PIN_DOTSTAR_CLK
+#define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLK
 #define STATUS_DOTSTAR_NUM 5
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
