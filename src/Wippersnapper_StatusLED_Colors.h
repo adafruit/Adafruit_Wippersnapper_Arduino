@@ -22,12 +22,12 @@
 #define BLUE 0x0000FF   ///< Blue (as a uint32)
 
 // colors for each status state
-#define LED_HW_INIT PINK           ///< Initialization state
-#define LED_NET_CONNECT CYAN       ///< Network connection state
-#define LED_IO_CONNECT BLUE        ///< MQTT broker connection state
-#define LED_IO_REGISTER_HW YELLOW  ///< Hardware registration state
-#define LED_CONNECTED GREEN        ///< Successful registration state
-#define LED_ERROR RED              ///< Error state
+#define LED_HW_INIT PINK          ///< Initialization state
+#define LED_NET_CONNECT CYAN      ///< Network connection state
+#define LED_IO_CONNECT BLUE       ///< MQTT broker connection state
+#define LED_IO_REGISTER_HW YELLOW ///< Hardware registration state
+#define LED_CONNECTED GREEN       ///< Successful registration state
+#define LED_ERROR RED             ///< Error state
 
 /** Defines the Wippersnapper status LED states */
 typedef enum { WS_LED_STATUS_CONNECTED, WS_LED_STATUS_ERROR } ws_led_status_t;
