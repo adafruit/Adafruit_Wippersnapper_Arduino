@@ -13,3 +13,4 @@
 #define LED_IO_CONNECT      BLUE
 #define LED_IO_REGISTER_HW  CYAN
 #define LED_CONNECTED       GREEN
+#define LED_ERROR           RED

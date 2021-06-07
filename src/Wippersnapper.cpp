@@ -750,6 +750,7 @@ void Wippersnapper::connect() {
   if (!buildWSTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for Wippersnapper topics.")
     _disconnect();
+    setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
     }
@@ -762,6 +763,7 @@ void Wippersnapper::connect() {
   if (!buildErrorTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for error topics.")
     _disconnect();
+    setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
     }
@@ -785,6 +787,7 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+    setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
     }
@@ -1048,6 +1051,7 @@ ws_status_t Wippersnapper::mqttStatus() {
   if (_status == WS_CONNECT_FAILED) {
     WS_DEBUG_PRINT("mqttStatus() failed to connect");
     WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
+    setStatusLEDColor(LED_ERROR);
     return _status;
   }
 
@@ -1069,15 +1073,21 @@ ws_status_t Wippersnapper::mqttStatus() {
       return WS_CONNECTED;
     case 1: // invalid mqtt protocol
     case 2: // client id rejected
+        setStatusLEDColor(LED_ERROR);
     case 4: // malformed user/pass
+        setStatusLEDColor(LED_ERROR);
     case 5: // unauthorized
-      return WS_CONNECT_FAILED;
+        setStatusLEDColor(LED_ERROR);
+        return WS_CONNECT_FAILED;
     case 3: // mqtt service unavailable
+        setStatusLEDColor(LED_ERROR);
     case 6: // throttled
+        setStatusLEDColor(LED_ERROR);
     case 7: // banned -> all MQTT bans are temporary, so eventual retry is
             // permitted
             // delay to prevent fast reconnects and fast returns (backward
             // compatibility)
+      setStatusLEDColor(LED_ERROR);
       delay(60000);
       return WS_DISCONNECTED;
     default:
