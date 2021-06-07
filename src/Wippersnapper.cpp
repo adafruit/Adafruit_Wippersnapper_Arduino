@@ -23,7 +23,7 @@
  *
  * @section author Author
  *
- * Written by Brent Rubell for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
  *
  * @section license License
  *

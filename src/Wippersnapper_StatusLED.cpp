@@ -2,13 +2,13 @@
  * @file Wippersnapper_StatusLED.cpp
  *
  * Interfaces for the Wippersnapper status indicator LED/NeoPixel/Dotstar/RGB LED.
- *
+ * 
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Written by Brent Rubell for Adafruit Industries.
- *
+ * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * 
  * BSD license, all text here must be included in any redistribution.
  *
  */
@@ -30,7 +30,7 @@
 void Wippersnapper::statusLEDInit() {
     #ifdef USE_STATUS_LED
       pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
-      digitalWrite(STATUS_LED_PIN, 1); // Turn OFF LED
+      digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
     #endif
 
     #ifdef USE_STATUS_NEOPIXEL
@@ -70,7 +70,7 @@ void Wippersnapper::statusLEDDeinit() {
 
   #ifdef USE_STATUS_LED
     digitalWrite(STATUS_LED_PIN, 0); // turn off
-    pinMode(pin, INPUT);             // "release" for use by setting to input (hi-z)
+    pinMode(STATUS_LED_PIN, INPUT);             // "release" for use by setting to input (hi-z)
   #endif
 }
 
@@ -82,11 +82,15 @@ void Wippersnapper::statusLEDDeinit() {
 */
 /****************************************************************************/
 void Wippersnapper::setStatusLEDColor(uint32_t color) {
-   #ifdef USE_STATUS_NEOPIXEL
+    // unpack color into (r, g, b)
+   #ifdef USE_STATUS_NEOPIXEL || USE_STATUS_DOTSTAR
     uint8_t red = (color >> 16) & 0xff;   // red
     uint8_t green = (color >> 8) & 0xff;  // green
     uint8_t blue = color & 0xff;          // blue
-    // flood all pixels
+  #endif
+
+  #ifdef USE_STATUS_NEOPIXEL
+    // flood all neopixels
     for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
         statusPixel->setPixelColor(i, red, green, blue);
     }
@@ -94,10 +98,7 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
   #endif
 
   #ifdef USE_STATUS_DOTSTAR
-    uint8_t red = (color >> 16) & 0xff;   // red
-    uint8_t green = (color >> 8) & 0xff;  // green
-    uint8_t blue = color & 0xff;          // blue
-    // flood all pixels
+    // flood all dotstar pixels
     for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
         statusPixelDotStar.setPixelColor(i, red, green, blue);
     }
@@ -105,7 +106,8 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
   #endif
 
   #ifdef USE_STATUS_LED
-    digitalWrite(STATUS_LED_PIN, color & 0);
+    // via https://github.com/adafruit/circuitpython/blob/main/supervisor/shared/status_leds.c
+    digitalWrite(STATUS_LED_PIN, color > 0);
   #endif
 }
 
@@ -134,9 +136,9 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
 
     while (blinkNum > 0) {
         setStatusLEDColor(ledBlinkColor);
-        delay(200);
+        delay(250);
         setStatusLEDColor(BLACK);
-        delay(200);
+        delay(250);
         blinkNum--;
     }
 }

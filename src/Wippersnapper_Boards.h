@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Written by Brent Rubell for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -29,9 +29,11 @@
 #define USB_PID 0x8038
 #define BOARD_ID "adafruit-metro-m4-airliftlite"
 #define USE_TINYUSB
-#define USE_STATUS_NEOPIXEL
-#define STATUS_NEOPIXEL_PIN 40
-#define STATUS_NEOPIXEL_NUM 1
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 13
+//#define USE_STATUS_NEOPIXEL
+//#define STATUS_NEOPIXEL_PIN 40
+//#define STATUS_NEOPIXEL_NUM 1
 #elif defined(ADAFRUIT_METRO_M4_EXPRESS)
 #define USB_VID 0x239A
 #define USB_PID 0x8021
