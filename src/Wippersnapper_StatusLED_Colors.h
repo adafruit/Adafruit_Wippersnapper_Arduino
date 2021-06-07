@@ -27,3 +27,9 @@
 #define LED_IO_REGISTER_HW  YELLOW
 #define LED_CONNECTED       GREEN
 #define LED_ERROR           RED
+
+/** Defines the Wippersnapper status LED states */
+typedef enum {
+  WS_LED_STATUS_CONNECTED,
+  WS_LED_STATUS_ERROR
+} ws_led_status_t;

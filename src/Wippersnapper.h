@@ -155,6 +155,7 @@ public:
   void statusLEDInit();
   void statusLEDDeinit();
   void setStatusLEDColor(uint32_t color);
+  void statusLEDBlink(ws_led_status_t statusState);
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
@@ -202,8 +203,6 @@ public:
                  int pinVal);
 
   // Pin configure message
-  // bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
-  //                          void **arg);
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback

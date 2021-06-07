@@ -54,11 +54,6 @@ void Wippersnapper::statusLEDInit() {
 */
 /****************************************************************************/
 void Wippersnapper::statusLEDDeinit() {
-  #ifdef USE_STATUS_LED
-    digitalWrite(STATUS_LED_PIN, 0); // turn off
-    pinMode(pin, INPUT); // "release" by setting to input (hi-z)
-  #endif
-
   #ifdef USE_STATUS_NEOPIXEL
     setStatusLEDColor(BLACK);
     statusPixel.clear();
@@ -68,9 +63,20 @@ void Wippersnapper::statusLEDDeinit() {
     // delete statusPixel;
   #endif
 
-  // TODO: USE_STATUS_DOTSTAR
-}
+  #ifdef USE_STATUS_DOTSTAR
+    setStatusLEDColor(BLACK);
+    statusPixelDotStar.clear();
+    statusPixelDotStar.show(); // turn off
+    // TODO!
+    // release for use by...
+    // delete statusPixel;
+  #endif
 
+  #ifdef USE_STATUS_LED
+    digitalWrite(STATUS_LED_PIN, 0); // turn off
+    pinMode(pin, INPUT); // "release" by setting to input (hi-z)
+  #endif
+}
 
 /****************************************************************************/
 /*!
@@ -102,5 +108,39 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
     statusPixelDotStar.show();
   #endif
 
-  // TODO: Handle non-color LED
+  #ifdef USE_STATUS_LED
+    digitalWrite(STATUS_LED_PIN, color & 0);
+  #endif
+}
+
+/****************************************************************************/
+/*!
+    @brief    Blinks a status LED a specific color depending on
+              the hardware's state.
+    @param    statusState
+              Hardware's status state.
+*/
+/****************************************************************************/
+void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
+    int blinkNum = 0;
+    uint32_t ledColor;
+    switch(statusState) {
+        case WS_LED_STATUS_CONNECTED:
+            blinkNum = 3;
+            ledColor = LED_CONNECTED;
+            break;
+        case WS_LED_STATUS_ERROR:
+            blinkNum = 2;
+            ledColor = LED_ERROR;
+        default:
+            break;
+    }
+
+    while (blinkNum > 0) {
+        setStatusLEDColor(ledColor);
+        delay(200);
+        setStatusLEDColor(BLACK);
+        delay(200);
+        blinkNum--;
+    }
 }
