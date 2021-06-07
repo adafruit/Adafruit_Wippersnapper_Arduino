@@ -794,7 +794,15 @@ void Wippersnapper::connect() {
   }
 
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+  // TODO: setStatusLEDAnimation(LED_ANIMATION_HW_CONNECTED)
   setStatusLEDColor(LED_CONNECTED);
+  delay(500);
+  setStatusLEDColor(BLACK);
+  delay(500);
+  setStatusLEDColor(LED_CONNECTED);
+  delay(500);
+  
+  statusLEDDeinit();
 }
 
 /**************************************************************************/

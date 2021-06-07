@@ -1,4 +1,17 @@
-// Colors for use by Wippersnapper_StatusLED
+/*!
+ * @file Wippersnapper_StatusLED_Colors.h
+ *
+ * This file contains colors and states for a wippersnapper device's status signal LED
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Written by Brent Rubell for Adafruit Industries.
+ *
+ * BSD license, all text here must be included in any redistribution.
+ *
+ */
 #define RED     0xFF0000
 #define CYAN    0x00FFFF
 #define YELLOW  0xFFFF00
@@ -7,10 +20,10 @@
 #define PINK    0xFF00FF
 #define BLUE    0x0000FF
 
-// Wippersnapper Connection States
+// colors for each status state
 #define LED_HW_INIT         PINK
-#define LED_NET_CONNECT     YELLOW
+#define LED_NET_CONNECT     CYAN
 #define LED_IO_CONNECT      BLUE
-#define LED_IO_REGISTER_HW  CYAN
+#define LED_IO_REGISTER_HW  YELLOW
 #define LED_CONNECTED       GREEN
 #define LED_ERROR           RED

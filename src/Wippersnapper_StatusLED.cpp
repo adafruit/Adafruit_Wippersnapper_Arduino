@@ -60,9 +60,11 @@ void Wippersnapper::statusLEDDeinit() {
   #endif
 
   #ifdef USE_STATUS_NEOPIXEL
+    setStatusLEDColor(BLACK);
     statusPixel.clear();
     statusPixel.show(); // turn off
-    // release for use
+    // TODO!
+    // release for use by...
     // delete statusPixel;
   #endif
 
