@@ -15,11 +15,11 @@
 #include "Wippersnapper.h"
 
 #ifdef USE_STATUS_NEOPIXEL
-  Adafruit_NeoPixel statusPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+  Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  Adafruit_DotStar statusPixelDotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
+  Adafruit_DotStar *statusPixelDotStar = new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
 #endif
 
 /****************************************************************************/
@@ -34,47 +34,43 @@ void Wippersnapper::statusLEDInit() {
     #endif
 
     #ifdef USE_STATUS_NEOPIXEL
-      statusPixel.begin();
-      statusPixel.setBrightness(50);
-      statusPixel.clear();
-      statusPixel.show();
+      statusPixel->begin();
+      statusPixel->setBrightness(50);
+      statusPixel->clear();
+      statusPixel->show();
     #endif
 
     #ifdef USE_STATUS_DOTSTAR
-      statusPixelDotStar.begin();
-      statusPixelDotStar.setBrightness(50);
-      statusPixelDotStar.clear();
-      statusPixelDotStar.show();
+      statusPixelDotStar->begin();
+      statusPixelDotStar->setBrightness(50);
+      statusPixelDotStar->clear();
+      statusPixelDotStar->show();
     #endif
 }
 
 /****************************************************************************/
 /*!
-    @brief    De-initializes board-specific status LED.
+    @brief    De-initializes status LED. If using a NeoPixel or DotStar,
+              the object is de-allocated and data/clk pins are
+              set back to INPUT.
 */
 /****************************************************************************/
 void Wippersnapper::statusLEDDeinit() {
   #ifdef USE_STATUS_NEOPIXEL
-    setStatusLEDColor(BLACK);
-    statusPixel.clear();
-    statusPixel.show(); // turn off
-    // TODO!
-    // release for use by...
-    // delete statusPixel;
+    statusPixel->clear();
+    statusPixel->show(); // turn off
+    delete statusPixel;
   #endif
 
   #ifdef USE_STATUS_DOTSTAR
-    setStatusLEDColor(BLACK);
-    statusPixelDotStar.clear();
-    statusPixelDotStar.show(); // turn off
-    // TODO!
-    // release for use by...
-    // delete statusPixel;
+    statusPixelDotStar->clear();
+    statusPixelDotStar->show(); // turn off
+    delete statusPixelDotStar
   #endif
 
   #ifdef USE_STATUS_LED
     digitalWrite(STATUS_LED_PIN, 0); // turn off
-    pinMode(pin, INPUT); // "release" by setting to input (hi-z)
+    pinMode(pin, INPUT);             // "release" for use by setting to input (hi-z)
   #endif
 }
 
@@ -92,9 +88,9 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
     uint8_t blue = color & 0xff;          // blue
     // flood all pixels
     for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
-        statusPixel.setPixelColor(i, red, green, blue);
+        statusPixel->setPixelColor(i, red, green, blue);
     }
-    statusPixel.show();
+    statusPixel->show();
   #endif
 
   #ifdef USE_STATUS_DOTSTAR
@@ -123,21 +119,21 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 /****************************************************************************/
 void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
     int blinkNum = 0;
-    uint32_t ledColor;
+    uint32_t ledBlinkColor;
     switch(statusState) {
         case WS_LED_STATUS_CONNECTED:
             blinkNum = 3;
-            ledColor = LED_CONNECTED;
+            ledBlinkColor = LED_CONNECTED;
             break;
         case WS_LED_STATUS_ERROR:
             blinkNum = 2;
-            ledColor = LED_ERROR;
+            ledBlinkColor = LED_ERROR;
         default:
             break;
     }
 
     while (blinkNum > 0) {
-        setStatusLEDColor(ledColor);
+        setStatusLEDColor(ledBlinkColor);
         delay(200);
         setStatusLEDColor(BLACK);
         delay(200);
