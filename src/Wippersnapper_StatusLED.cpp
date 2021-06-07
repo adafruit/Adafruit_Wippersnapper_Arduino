@@ -19,7 +19,7 @@
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  Adafruit_Dotstar statusPixelDotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN);
+  Adafruit_DotStar statusPixelDotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
 #endif
 
 /****************************************************************************/
