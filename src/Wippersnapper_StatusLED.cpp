@@ -18,11 +18,15 @@
   Adafruit_NeoPixel statusPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 #endif
 
+/****************************************************************************/
+/*!
+    @brief    Initializes board-specific status LED.
+*/
+/****************************************************************************/
 void Wippersnapper::statusLEDInit() {
     #ifdef USE_STATUS_LED
       pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
       digitalWrite(STATUS_LED_PIN, 1); // Turn OFF LED
-      WS_DEBUG_PRINTLN("Status LED Initialized!");
     #endif
 
     #ifdef USE_STATUS_NEOPIXEL
@@ -30,10 +34,14 @@ void Wippersnapper::statusLEDInit() {
       statusPixel.clear();
       statusPixel.setBrightness(50);
       statusPixel.show();
-      WS_DEBUG_PRINTLN("Status NeoPixel Initialized!");
     #endif
 }
 
+/****************************************************************************/
+/*!
+    @brief    De-initializes board-specific status LED.
+*/
+/****************************************************************************/
 void Wippersnapper::statusLEDDeinit() {
   #ifdef USE_STATUS_LED
     digitalWrite(STATUS_LED_PIN, 0); // turn off
@@ -48,12 +56,18 @@ void Wippersnapper::statusLEDDeinit() {
   #endif
 }
 
+/****************************************************************************/
+/*!
+    @brief    Sets a status RGB LED's color
+    @param    color
+              Desired RGB color.
+*/
+/****************************************************************************/
 void Wippersnapper::setStatusLEDColor(uint32_t color) {
-    // TODO: Control brightness as well.
    #ifdef USE_STATUS_NEOPIXEL
-    uint8_t red = (color >> 16);   // red
-    uint8_t green = (color >> 8);  // green
-    uint8_t blue = color;          // blue
+    uint8_t red = (color >> 16) & 0xff;   // red
+    uint8_t green = (color >> 8) & 0xff;  // green
+    uint8_t blue = color & 0xff;          // blue
     // flood all pixels
     for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
         statusPixel.setPixelColor(i, red, green, blue);
