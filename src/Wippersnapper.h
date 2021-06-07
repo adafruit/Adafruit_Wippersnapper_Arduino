@@ -31,6 +31,7 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
+#include "Wippersnapper_StatusLED_Colors.h"
 
 // Wippersnapper GPIO
 #include "Wippersnapper_AnalogIO.h"
@@ -149,7 +150,10 @@ public:
   void validateProvisioningSecrets();
   bool parseProvisioningSecrets();
 
-  bool initStatusLED();
+  // Status LED
+  void statusLEDInit();
+  void statusLEDDeinit();
+  void setStatusLEDColor(uint32_t color);
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
@@ -216,8 +220,6 @@ public:
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
 
-  // TODO: move neopixel into its own class
-  Adafruit_NeoPixel pixels; /*!< NeoPixel */
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
   char sUID[9];             /*!< Unique network iface identifier */

@@ -731,20 +731,22 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
-  
-  if (!initStatusLED()) {
-      WS_DEBUG_PRINTLN("ERROR: Status LED not initialized.");
-  }
+
+  statusLEDInit();
+  setStatusLEDColor(LED_HW_INIT);
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   // Connect network interface
   WS_DEBUG_PRINTLN("Connecting to WiFi...");
+  setStatusLEDColor(LED_NET_CONNECT);
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
 
-  // Attempt to build Wippersnapper MQTT topics
+  // setup MQTT client
+  setStatusLEDColor(LED_IO_CONNECT);
+  // attempt to build Wippersnapper MQTT topics
   if (!buildWSTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for Wippersnapper topics.")
     _disconnect();
@@ -772,7 +774,6 @@ void Wippersnapper::connect() {
 
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-
   while (status() < WS_CONNECTED) {
     WS_DEBUG_PRINT(".");
     delay(500);
@@ -781,13 +782,16 @@ void Wippersnapper::connect() {
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering Board...")
+  setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
     for (;;) {
       delay(1000);
     }
   }
+
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+  setStatusLEDColor(LED_CONNECTED);
 }
 
 /**************************************************************************/
