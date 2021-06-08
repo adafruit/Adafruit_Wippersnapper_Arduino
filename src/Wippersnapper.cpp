@@ -1057,17 +1057,17 @@ ws_status_t Wippersnapper::mqttStatus() {
   }
 
   if (WS._mqtt->connected()) {
-    if (millis() > (_prvKATBlink + 120000)) {
-        WS_DEBUG_PRINTLN("\n\n\nBLINK!!!");
-        statusLEDInit();
-        statusLEDBlink(WS_LED_STATUS_CONNECTED);
-        statusLEDDeinit();
-        _prvKATBlink = millis();
-    }
     // ping within keepalive to keep connection open
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
       ping();
       _prv_ping = millis();
+    }
+    // blink within KAT*60 millis
+    if (millis() > (_prvKATBlink + WS_KEEPALIVE_INTERVAL_MS*60)) {
+        statusLEDInit();
+        statusLEDBlink(WS_LED_STATUS_KAT);
+        statusLEDDeinit();
+        _prvKATBlink = millis();
     }
     return WS_CONNECTED;
   }
