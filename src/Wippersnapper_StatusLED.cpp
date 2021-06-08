@@ -44,7 +44,6 @@ bool Wippersnapper::statusLEDInit() {
     usingStatusNeoPixel = true;
     is_success = true;
   }
-
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
@@ -70,24 +69,19 @@ return is_success;
 
 /****************************************************************************/
 /*!
-    @brief    De-initializes status LED. If using a NeoPixel or DotStar,
-              the object is de-allocated and data/clk pins are
-              set back to INPUT. The usingStatus(LED/Neopixel/Dotstar)
-              flag is also reset (should be checked in main code).
+    @brief    De-initializes status LED. The usingStatus flag is also reset.
 */
 /****************************************************************************/
 void Wippersnapper::statusLEDDeinit() {
 #ifdef USE_STATUS_NEOPIXEL
   statusPixel->clear();
   statusPixel->show(); // turn off
-  delete statusPixel;
   usingStatusNeoPixel = false;
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
   statusPixelDotStar->clear();
   statusPixelDotStar->show(); // turn off
-  delete statusPixelDotStar;
   usingStatusDotStar = false;
 #endif
 
@@ -148,13 +142,17 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
   int blinkNum = 0;
   uint32_t ledBlinkColor;
   switch (statusState) {
-  case WS_LED_STATUS_CONNECTED:
-    blinkNum = 3;
+  case WS_LED_STATUS_KAT:
+    blinkNum = 1;
     ledBlinkColor = LED_CONNECTED;
     break;
   case WS_LED_STATUS_ERROR:
     blinkNum = 2;
     ledBlinkColor = LED_ERROR;
+  case WS_LED_STATUS_CONNECTED:
+    blinkNum = 3;
+    ledBlinkColor = LED_CONNECTED;
+    break;
   default:
     break;
   }

@@ -30,4 +30,4 @@
 #define LED_ERROR RED             ///< Error state
 
 /** Defines the Wippersnapper status LED states */
-typedef enum { WS_LED_STATUS_CONNECTED, WS_LED_STATUS_ERROR } ws_led_status_t;
+typedef enum { WS_LED_STATUS_CONNECTED, WS_LED_STATUS_KAT, WS_LED_STATUS_ERROR } ws_led_status_t;

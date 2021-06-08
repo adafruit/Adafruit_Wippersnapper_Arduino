@@ -263,6 +263,8 @@ protected:
                                           Adafruit IO, in milliseconds. */
   uint32_t _prv_ping = 0; /*!< Previous time when client pinged Adafruit IO's
                              MQTT broker, in milliseconds. */
+  uint32_t _prvKATBlink = 0; /*!< Previous time when client pinged Adafruit IO's
+                             MQTT broker, in milliseconds. */
 
   // PoC Server
   // const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
