@@ -49,12 +49,14 @@
 #define STATUS_LED_PIN 13
 #elif defined(ARDUINO_FUNHOUSE_ESP32S2)
 #define BOARD_ID "adafruit-funhouse-esp32s2"
-#elif defined(ARDUINO_ARCH_ESP32)
-#define BOARD_ID "esp32"
 #define USE_STATUS_DOTSTAR
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA
-#define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLK
+#define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK
 #define STATUS_DOTSTAR_NUM 5
+#elif defined(ARDUINO_ARCH_ESP32)
+#define BOARD_ID "esp32"
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 13
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

@@ -156,6 +156,9 @@ public:
   void statusLEDDeinit();
   void setStatusLEDColor(uint32_t color);
   void statusLEDBlink(ws_led_status_t statusState);
+  bool usingStatusNeoPixel = false; // True if status LED is using the status neopixel
+  bool usingStatusDotStar = false; // True if status LED is using the status dotstar
+  bool usingStatusLED = false; // True if status LED is using the built-in LED
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
