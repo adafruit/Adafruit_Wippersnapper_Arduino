@@ -29,6 +29,10 @@
 #define LED_CONNECTED GREEN       ///< Successful registration state
 #define LED_ERROR RED             ///< Error state
 
+#define STATUS_LED_KAT_BLINK_TIME                                              \
+  120000 ///< How often to blink the status LED while run() executes, if not
+         ///< in-use
+
 /** Defines the Wippersnapper status LED states */
 typedef enum {
   WS_LED_STATUS_CONNECTED,

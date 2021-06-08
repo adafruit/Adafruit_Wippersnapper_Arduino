@@ -26,6 +26,7 @@ Adafruit_DotStar *statusPixelDotStar =
                          STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
 #endif
 
+extern Wippersnapper WS;
 /****************************************************************************/
 /*!
     @brief    Initializes board-specific status LED.
@@ -37,7 +38,7 @@ bool Wippersnapper::statusLEDInit() {
   bool is_success = false;
 
 #ifdef USE_STATUS_NEOPIXEL
-  if (!usingStatusNeoPixel) {
+  if (usingStatusNeoPixel == false) {
     statusPixel->begin();
     statusPixel->show(); // turn all pixels off
     statusPixel->setBrightness(20);
@@ -47,7 +48,7 @@ bool Wippersnapper::statusLEDInit() {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  if (!usingStatusDotStar) {
+  if (usingStatusDotStar == false) {
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn all pixels off
     statusPixelDotStar->setBrightness(20);
@@ -57,10 +58,10 @@ bool Wippersnapper::statusLEDInit() {
 #endif
 
 #ifdef USE_STATUS_LED
-  if (!usingStatusLED) {
+  if (!WS.usingStatusLED) {
     pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
     digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
-    usingStatusLED = true;
+    WS.usingStatusLED = true;        // set global pin "lock" flag
     is_success = true;
   }
 #endif
@@ -88,8 +89,8 @@ void Wippersnapper::statusLEDDeinit() {
 #ifdef USE_STATUS_LED
   digitalWrite(STATUS_LED_PIN, 0); // turn off
   pinMode(STATUS_LED_PIN,
-          INPUT); // "release" for use by setting to input (hi-z)
-  usingStatusLED = false;
+          INPUT);            // "release" for use by setting to input (hi-z)
+  WS.usingStatusLED = false; // release global pin lock flag
 #endif
 }
 

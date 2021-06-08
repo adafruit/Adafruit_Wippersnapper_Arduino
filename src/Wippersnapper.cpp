@@ -1062,11 +1062,14 @@ ws_status_t Wippersnapper::mqttStatus() {
       ping();
       _prv_ping = millis();
     }
-    // blink within KAT*60 millis
-    if (millis() > (_prvKATBlink + WS_KEEPALIVE_INTERVAL_MS * 60)) {
-      statusLEDInit();
-      statusLEDBlink(WS_LED_STATUS_KAT);
-      statusLEDDeinit();
+    // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
+    if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
+      if (!statusLEDInit()) {
+        WS_DEBUG_PRINTLN("Can not blink, status-LED in use");
+      } else {
+        statusLEDBlink(WS_LED_STATUS_KAT);
+        statusLEDDeinit();
+      }
       _prvKATBlink = millis();
     }
     return WS_CONNECTED;
