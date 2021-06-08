@@ -1063,11 +1063,11 @@ ws_status_t Wippersnapper::mqttStatus() {
       _prv_ping = millis();
     }
     // blink within KAT*60 millis
-    if (millis() > (_prvKATBlink + WS_KEEPALIVE_INTERVAL_MS*60)) {
-        statusLEDInit();
-        statusLEDBlink(WS_LED_STATUS_KAT);
-        statusLEDDeinit();
-        _prvKATBlink = millis();
+    if (millis() > (_prvKATBlink + WS_KEEPALIVE_INTERVAL_MS * 60)) {
+      statusLEDInit();
+      statusLEDBlink(WS_LED_STATUS_KAT);
+      statusLEDDeinit();
+      _prvKATBlink = millis();
     }
     return WS_CONNECTED;
   }

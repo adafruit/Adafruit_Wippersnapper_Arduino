@@ -261,8 +261,8 @@ protected:
   ws_status_t _status = WS_IDLE;   /*!< Adafruit IO connection status */
   uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
-  uint32_t _prv_ping = 0; /*!< Previous time when client pinged Adafruit IO's
-                             MQTT broker, in milliseconds. */
+  uint32_t _prv_ping = 0;    /*!< Previous time when client pinged Adafruit IO's
+                                MQTT broker, in milliseconds. */
   uint32_t _prvKATBlink = 0; /*!< Previous time when client pinged Adafruit IO's
                              MQTT broker, in milliseconds. */
 

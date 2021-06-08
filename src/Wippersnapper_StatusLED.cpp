@@ -64,7 +64,7 @@ bool Wippersnapper::statusLEDInit() {
     is_success = true;
   }
 #endif
-return is_success;
+  return is_success;
 }
 
 /****************************************************************************/
