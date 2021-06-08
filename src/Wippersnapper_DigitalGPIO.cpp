@@ -58,6 +58,11 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     uint8_t pinName, float period) {
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+    #ifdef STATUS_LED_PIN
+        if (pinName == STATUS_LED_PIN) {
+            usingStatusLED = true;
+        }
+    #endif
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
     pinMode(pinName, OUTPUT);

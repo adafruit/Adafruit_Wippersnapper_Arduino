@@ -29,28 +29,43 @@ Adafruit_DotStar *statusPixelDotStar =
 /****************************************************************************/
 /*!
     @brief    Initializes board-specific status LED.
+    @returns  True if initialized, False if status LED hardware is already
+                in-use.
 */
 /****************************************************************************/
-void Wippersnapper::statusLEDInit() {
+bool Wippersnapper::statusLEDInit() {
+  bool is_success = false;
+
 #ifdef USE_STATUS_NEOPIXEL
-  statusPixel->begin();
-  statusPixel->show(); // turn all pixels off
-  statusPixel->setBrightness(20);
-  usingStatusNeoPixel = true;
+  if (!usingStatusNeoPixel) {
+    statusPixel->begin();
+    statusPixel->show(); // turn all pixels off
+    statusPixel->setBrightness(20);
+    usingStatusNeoPixel = true;
+    is_success = true;
+  }
+
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  statusPixelDotStar->begin();
-  statusPixelDotStar->show(); // turn all pixels off
-  statusPixelDotStar->setBrightness(20);
-  usingStatusDotStar = true;
+  if (!usingStatusDotStar) {
+    statusPixelDotStar->begin();
+    statusPixelDotStar->show(); // turn all pixels off
+    statusPixelDotStar->setBrightness(20);
+    usingStatusDotStar = true;
+    is_success = true;
+  }
 #endif
 
 #ifdef USE_STATUS_LED
-  pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
-  digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
-  usingStatusLED = true;
+  if (!usingStatusLED) {
+    pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
+    digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
+    usingStatusLED = true;
+    is_success = true;
+  }
 #endif
+return is_success;
 }
 
 /****************************************************************************/

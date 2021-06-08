@@ -152,7 +152,7 @@ public:
   bool parseProvisioningSecrets();
 
   // Status LED
-  void statusLEDInit();
+  bool statusLEDInit();
   void statusLEDDeinit();
   void setStatusLEDColor(uint32_t color);
   void statusLEDBlink(ws_led_status_t statusState);
