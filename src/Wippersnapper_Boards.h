@@ -29,11 +29,9 @@
 #define USB_PID 0x8038
 #define BOARD_ID "adafruit-metro-m4-airliftlite"
 #define USE_TINYUSB
-//#define USE_STATUS_NEOPIXEL
-//#define STATUS_NEOPIXEL_PIN 40
-//#define STATUS_NEOPIXEL_NUM 1
-#define USE_STATUS_LED
-#define STATUS_LED_PIN 13
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN 40
+#define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_ARCH_ESP8266)
 // Feather Huzzah ESP8266, CP2104 USB/UART Bridge Controller
 #define USB_VID 0xEA60
