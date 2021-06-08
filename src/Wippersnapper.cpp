@@ -23,7 +23,7 @@
  *
  * @section author Author
  *
- * Written by Brent Rubell for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
  *
  * @section license License
  *
@@ -732,18 +732,25 @@ void Wippersnapper::subscribeWSTopics() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
+  statusLEDInit();
+  setStatusLEDColor(LED_HW_INIT);
+
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   // Connect network interface
   WS_DEBUG_PRINTLN("Connecting to WiFi...");
+  setStatusLEDColor(LED_NET_CONNECT);
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
 
-  // Attempt to build Wippersnapper MQTT topics
+  // setup MQTT client
+  setStatusLEDColor(LED_IO_CONNECT);
+  // attempt to build Wippersnapper MQTT topics
   if (!buildWSTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for Wippersnapper topics.")
     _disconnect();
+    setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
     }
@@ -756,6 +763,7 @@ void Wippersnapper::connect() {
   if (!buildErrorTopics()) {
     WS_DEBUG_PRINTLN("Unable to allocate memory for error topics.")
     _disconnect();
+    setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
     }
@@ -768,7 +776,6 @@ void Wippersnapper::connect() {
 
   // Wait for connection to broker
   WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-
   while (status() < WS_CONNECTED) {
     WS_DEBUG_PRINT(".");
     delay(500);
@@ -777,13 +784,18 @@ void Wippersnapper::connect() {
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering Board...")
+  setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+    setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
     }
   }
+
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+  statusLEDBlink(WS_LED_STATUS_CONNECTED);
+  statusLEDDeinit();
 }
 
 /**************************************************************************/
@@ -1040,6 +1052,7 @@ ws_status_t Wippersnapper::mqttStatus() {
   if (_status == WS_CONNECT_FAILED) {
     WS_DEBUG_PRINT("mqttStatus() failed to connect");
     WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
+    setStatusLEDColor(LED_ERROR);
     return _status;
   }
 
@@ -1048,6 +1061,16 @@ ws_status_t Wippersnapper::mqttStatus() {
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
       ping();
       _prv_ping = millis();
+    }
+    // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
+    if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
+      if (!statusLEDInit()) {
+        WS_DEBUG_PRINTLN("Can not blink, status-LED in use");
+      } else {
+        statusLEDBlink(WS_LED_STATUS_KAT);
+        statusLEDDeinit();
+      }
+      _prvKATBlink = millis();
     }
     return WS_CONNECTED;
   }

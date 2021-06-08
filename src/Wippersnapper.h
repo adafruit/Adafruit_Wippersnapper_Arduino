@@ -9,7 +9,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Written by Brent Rubell for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -31,6 +31,7 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
+#include "Wippersnapper_StatusLED_Colors.h"
 
 // Wippersnapper GPIO
 #include "Wippersnapper_AnalogIO.h"
@@ -39,6 +40,7 @@
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
+#include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
@@ -149,6 +151,17 @@ public:
   void validateProvisioningSecrets();
   bool parseProvisioningSecrets();
 
+  // Status LED
+  bool statusLEDInit();
+  void statusLEDDeinit();
+  void setStatusLEDColor(uint32_t color);
+  void statusLEDBlink(ws_led_status_t statusState);
+  bool usingStatusNeoPixel =
+      false; // True if status LED is using the status neopixel
+  bool usingStatusDotStar =
+      false;                   // True if status LED is using the status dotstar
+  bool usingStatusLED = false; // True if status LED is using the built-in LED
+
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
 
@@ -195,8 +208,6 @@ public:
                  int pinVal);
 
   // Pin configure message
-  // bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
-  //                          void **arg);
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
@@ -213,9 +224,6 @@ public:
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
-
-  // TODO: move neopixel into its own class
-  Adafruit_NeoPixel pixels; /*!< NeoPixel */
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
   char sUID[9];             /*!< Unique network iface identifier */
@@ -253,7 +261,9 @@ protected:
   ws_status_t _status = WS_IDLE;   /*!< Adafruit IO connection status */
   uint32_t _last_mqtt_connect = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
-  uint32_t _prv_ping = 0; /*!< Previous time when client pinged Adafruit IO's
+  uint32_t _prv_ping = 0;    /*!< Previous time when client pinged Adafruit IO's
+                                MQTT broker, in milliseconds. */
+  uint32_t _prvKATBlink = 0; /*!< Previous time when client pinged Adafruit IO's
                              MQTT broker, in milliseconds. */
 
   // PoC Server

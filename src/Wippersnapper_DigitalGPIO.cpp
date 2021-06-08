@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Written by Brent Rubell for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -58,6 +58,12 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     uint8_t pinName, float period) {
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+#ifdef STATUS_LED_PIN
+    // guard status LED pin, dont signal with it
+    if (pinName == STATUS_LED_PIN) {
+      WS.usingStatusLED = true;
+    }
+#endif
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
     pinMode(pinName, OUTPUT);
@@ -102,6 +108,13 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   char cstr[16];
   itoa(pinName, cstr, 10);
   pinMode(pinName, INPUT); // hi-z
+
+#ifdef STATUS_LED_PIN
+                           // release status LED pin back for signaling
+  if (pinName == STATUS_LED_PIN) {
+    WS.usingStatusLED = false;
+  }
+#endif
 }
 
 /********************************************************************/
