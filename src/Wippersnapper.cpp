@@ -1084,21 +1084,15 @@ ws_status_t Wippersnapper::mqttStatus() {
       return WS_CONNECTED;
     case 1: // invalid mqtt protocol
     case 2: // client id rejected
-      setStatusLEDColor(LED_ERROR);
     case 4: // malformed user/pass
-      setStatusLEDColor(LED_ERROR);
     case 5: // unauthorized
-      setStatusLEDColor(LED_ERROR);
       return WS_CONNECT_FAILED;
     case 3: // mqtt service unavailable
-      setStatusLEDColor(LED_ERROR);
     case 6: // throttled
-      setStatusLEDColor(LED_ERROR);
     case 7: // banned -> all MQTT bans are temporary, so eventual retry is
             // permitted
             // delay to prevent fast reconnects and fast returns (backward
             // compatibility)
-      setStatusLEDColor(LED_ERROR);
       delay(60000);
       return WS_DISCONNECTED;
     default:
