@@ -16,7 +16,7 @@
 #define RED 0xFF0000    ///< Red (as a uint32)
 #define CYAN 0x00FFFF   ///< Cyan (as a uint32)
 #define YELLOW 0xFFFF00 ///< Yellow (as a uint32)
-#define GREEN 0x00FF00  ///< Green (as a uint32)
+#define GREEN 0x00A300  ///< Green (as a uint32)
 #define BLACK 0x000000  ///< Black (as a uint32)
 #define PINK 0xFF00FF   ///< Pink (as a uint32)
 #define BLUE 0x0000FF   ///< Blue (as a uint32)

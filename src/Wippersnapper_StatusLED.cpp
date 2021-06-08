@@ -92,14 +92,10 @@ void Wippersnapper::statusLEDDeinit() {
 */
 /****************************************************************************/
 void Wippersnapper::setStatusLEDColor(uint32_t color) {
-  // unpack color into (r, g, b)
-#if defined(USE_STATUS_NEOPIXEL) || defined(USE_STATUS_DOTSTAR)
+#ifdef USE_STATUS_NEOPIXEL
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
-#endif
-
-#ifdef USE_STATUS_NEOPIXEL
   // flood all neopixels
   for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
     statusPixel->setPixelColor(i, red, green, blue);
@@ -108,9 +104,12 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
+  uint8_t red = (color >> 16) & 0xff;  // red
+  uint8_t green = (color >> 8) & 0xff; // green
+  uint8_t blue = color & 0xff;         // blue
   // flood all dotstar pixels
   for (int i = 0; i < STATUS_DOTSTAR_NUM; i++) {
-    statusPixelDotStar->setPixelColor(i,  red, green, blue);
+    statusPixelDotStar->setPixelColor(i,  green, red, blue);
   }
   statusPixelDotStar->show();
 #endif
