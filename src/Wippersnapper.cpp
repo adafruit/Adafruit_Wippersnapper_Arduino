@@ -100,7 +100,7 @@ void Wippersnapper::validateProvisioningSecrets() {
     WS_DEBUG_PRINTLN(
         "ERROR: NVS partition or credentials not found - was NVS flashed?");
     while (1)
-        yield();
+      yield();
   }
 #endif
 }
@@ -164,9 +164,6 @@ void Wippersnapper::set_user_key() {
     while (1)
       yield();
   }
-#else
-#warning                                                                       \
-    "Native USB unimplemented, call set_user_key with your AIO username and key instead."
 #endif
 }
 

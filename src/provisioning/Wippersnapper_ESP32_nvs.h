@@ -1,8 +1,7 @@
 /*!
- * @file Wippersnapper_StatusLED.cpp
+ * @file Wippersnapper_ESP32_nvs.h
  *
- * Interfaces for the Wippersnapper status indicator LED/NeoPixel/Dotstar/RGB
- * LED.
+ * Provisioning helper for the ESP32's non-volatile-storage (NVS)
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -26,10 +25,9 @@ public:
   ~Wippersnapper_ESP32_nvs();
 
   bool validateNVS();
-  //void setNVS();
+  // void setNVS();
 
-  const char *io_username = NULL;
-  const char *io_key = NULL;
+
   Preferences nvs;
 };
 

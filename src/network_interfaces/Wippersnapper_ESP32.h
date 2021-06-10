@@ -70,6 +70,17 @@ public:
     _pass = ssidPassword;
   }
 
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password from the
+            secrets.json provisioning file.
+  */
+  /**********************************************************/
+  void set_ssid_pass() {
+    _ssid = WS._network_ssid;
+    _pass = WS._network_pass;
+  }
+
   /********************************************************/
   /*!
   @brief  Sets the ESP32's unique client identifier
@@ -120,17 +131,6 @@ public:
   */
   /*******************************************************************/
   const char *connectionType() { return "ESP32"; }
-
-/*   void set_ssid_pass() {
-    _ssid = preferences.getString("wsNetSSID", "");
-    _pass = preferences.getString("wsNetPass", "");
-  }
-
-  void set_user_key(){
-    WS._username = preferences.getString("wsAIOUser", "");
-    WS._key = preferences.getString("wsAIOKey", "");
-  }
- */
 
 protected:
   const char *_ssid;

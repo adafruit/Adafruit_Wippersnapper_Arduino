@@ -47,11 +47,11 @@
 
 // tinyusb and spiflash for USB MSC
 #ifdef USE_TINYUSB
-#include "Wippersnapper_FS.h"
+#include "provisioning/Wippersnapper_FS.h"
 #endif
 
 #ifdef USE_NVS
-#include "Wippersnapper_ESP32_nvs.h"
+#include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
 // Reserved Adafruit IO MQTT topics
