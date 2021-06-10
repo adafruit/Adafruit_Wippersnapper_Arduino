@@ -69,17 +69,16 @@ Wippersnapper::~Wippersnapper() {
 
 /****************************************************************************/
 /*!
-    @brief    Initializes provisioning, either the native USB FS or WiFi
-              AP-based captive portal.
+    @brief    Initializes provisioning, either the native USB FS or
+              NVS (ESP32)
 */
 /****************************************************************************/
 void Wippersnapper::startProvisioning() {
-// native usb provisioning flow
 #ifdef USE_TINYUSB
-  // Initialize the QSPI flash FS
-  _fileSystem = new Wippersnapper_FS();
-#else
-#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+  // Filesystem-based provisioning flow
+  _fileSystem = new Wippersnapper_FS(); // Initialize the QSPI flash FS
+#elif defined(USE_NVS)
+  _nvs = new Wippersnapper_ESP32_nvs();
 #endif
 }
 
@@ -96,8 +95,11 @@ void Wippersnapper::validateProvisioningSecrets() {
     // create config file on filesystem
     _fileSystem->createConfigFileSkel();
   }
-#else
-#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#elif defined(USE_NVS)
+  if (!_nvs->validateNVS()) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: NVS partition or credentials not found - was NVS flashed?");
+  }
 #endif
 }
 

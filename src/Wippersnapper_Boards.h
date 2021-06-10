@@ -49,6 +49,7 @@
 #define BOARD_ID "esp32"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
+#define USE_NVS
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

@@ -15,6 +15,9 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
+#include "Adafruit_SPIFlash.h"
+#include "Adafruit_TinyUSB.h"
+#include "SdFat.h"
 #include "Wippersnapper.h"
 
 #define FILE_TEMPLATE_AIRLIFT                                                  \

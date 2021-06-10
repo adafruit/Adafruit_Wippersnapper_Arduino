@@ -18,16 +18,13 @@
 #define Wippersnapper_ESP32_H
 
 #ifdef ARDUINO_ARCH_ESP32
+#include "Wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "WiFiClientSecure.h"
-#include "Wippersnapper.h"
 #include <WiFi.h>
-#include <Preferences.h>
-
-Preferences preferences;
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -124,33 +121,58 @@ public:
   /*******************************************************************/
   const char *connectionType() { return "ESP32"; }
 
-  bool checkNVSNamespace() {
-      // validate namespace exists
-      if (!preferences.begin("wsNamespace", false) {
-          return false;
-      }
-      return true;
-  }
+  /*******************************************************************/
+  /*!
+  @brief  Initializes ESP32's non-volatile-storage (nvs)
+  */
+  /*******************************************************************/
+/*   bool initNVS() {
+    // init. nvs w/namespace entry to prevent collisions, read-ONLY
+    if (!preferences.begin("wsNamespace", false)) {
+        return false;
+    }
+    return true;
+  } */
 
-  bool setSSIDPass() {
-    // attempt to read ssid and password from esp32's nvs
+  /*******************************************************************/
+  /*!
+  @brief  De-initializes ESP32's non-volatile-storage.
+  */
+  /*******************************************************************/
+/*   void deinitNVS() {
+    preferences.end();
+  } */
+
+  /*******************************************************************/
+  /*!
+  @brief  Validates Wippersnapper configuration keys exist on nvs
+  @return True if configuration keys exist on NVS, False otherwise.
+  */
+  /*******************************************************************/
+/*   bool validateNVSContents() {
+    // TODO: convert these to const char., save for reuse
+    // so we dont re-access
+    String ssid = preferences.getString("wsNetSSID", "");
+    String ssidPass = preferences.getString("wsNetPass", "");
+    String aioUser = preferences.getString("wsAIOUser", "");
+    String aioPass = preferences.getString("wsAIOKey", "");
+    if (ssid == "" || ssidPass == "" || \
+        aioUser == "" || aioPass == "") {
+            return false;
+    }
+    return true;
+  } */
+
+/*   void set_ssid_pass() {
     _ssid = preferences.getString("wsNetSSID", "");
     _pass = preferences.getString("wsNetPass", "");
-    if (_ssid == "" || _pass == "") {
-        return false;
-    }
-    return true;
   }
 
-  bool set_user_key(){
+  void set_user_key(){
     WS._username = preferences.getString("wsAIOUser", "");
     WS._key = preferences.getString("wsAIOKey", "");
-    if (WS._username == "" || WS._key == "") {
-        return false;
-    }
-    return true;
   }
-
+ */
 
 protected:
   const char *_ssid;
