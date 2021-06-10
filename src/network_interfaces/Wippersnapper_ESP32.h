@@ -25,7 +25,9 @@
 #include "WiFiClientSecure.h"
 #include "Wippersnapper.h"
 #include <WiFi.h>
+#include <Preferences.h>
 
+Preferences preferences;
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -121,6 +123,34 @@ public:
   */
   /*******************************************************************/
   const char *connectionType() { return "ESP32"; }
+
+  bool checkNVSNamespace() {
+      // validate namespace exists
+      if (!preferences.begin("wsNamespace", false) {
+          return false;
+      }
+      return true;
+  }
+
+  bool setSSIDPass() {
+    // attempt to read ssid and password from esp32's nvs
+    _ssid = preferences.getString("wsNetSSID", "");
+    _pass = preferences.getString("wsNetPass", "");
+    if (_ssid == "" || _pass == "") {
+        return false;
+    }
+    return true;
+  }
+
+  bool set_user_key(){
+    WS._username = preferences.getString("wsAIOUser", "");
+    WS._key = preferences.getString("wsAIOKey", "");
+    if (WS._username == "" || WS._key == "") {
+        return false;
+    }
+    return true;
+  }
+
 
 protected:
   const char *_ssid;
