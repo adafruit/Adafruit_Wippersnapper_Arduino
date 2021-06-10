@@ -18,22 +18,25 @@
 
 // ctor
 Wippersnapper_ESP32_nvs::Wippersnapper_ESP32_nvs() {
-  if (!nvs.begin("wsNamespace", false)) {
-    isValidNamespace = false;
-  }
-  isValidNamespace = true;
+  // init. nvs, read-only
+  nvs.begin("wsNamespace", false);
 }
 
 // dtor
 Wippersnapper_ESP32_nvs::~Wippersnapper_ESP32_nvs() { nvs.end(); }
 
 bool Wippersnapper_ESP32_nvs::validateNVS() {
-  // we couldn't fully perform the namespace check
-  // since serial wasn't init'd yet, perform it here
-  if (!isValidNamespace) {
-    return false;
-  }
-  return true;
+    // TODO: convert these to char., save for reuse
+    // so we dont need to re-access
+    String ssid = nvs.getString("wsNetSSID", "");
+    String ssidPass = nvs.getString("wsNetPass", "");
+    String aioUser = nvs.getString("wsAIOUser", "");
+    String aioPass = nvs.getString("wsAIOKey", "");
+    if (ssid == "" || ssidPass == "" || \
+        aioUser == "" || aioPass == "") {
+            return false;
+    }
+    return true;
 }
 
 //#endif // USE_NVS

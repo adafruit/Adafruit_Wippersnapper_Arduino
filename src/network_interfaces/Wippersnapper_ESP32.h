@@ -121,48 +121,6 @@ public:
   /*******************************************************************/
   const char *connectionType() { return "ESP32"; }
 
-  /*******************************************************************/
-  /*!
-  @brief  Initializes ESP32's non-volatile-storage (nvs)
-  */
-  /*******************************************************************/
-/*   bool initNVS() {
-    // init. nvs w/namespace entry to prevent collisions, read-ONLY
-    if (!preferences.begin("wsNamespace", false)) {
-        return false;
-    }
-    return true;
-  } */
-
-  /*******************************************************************/
-  /*!
-  @brief  De-initializes ESP32's non-volatile-storage.
-  */
-  /*******************************************************************/
-/*   void deinitNVS() {
-    preferences.end();
-  } */
-
-  /*******************************************************************/
-  /*!
-  @brief  Validates Wippersnapper configuration keys exist on nvs
-  @return True if configuration keys exist on NVS, False otherwise.
-  */
-  /*******************************************************************/
-/*   bool validateNVSContents() {
-    // TODO: convert these to const char., save for reuse
-    // so we dont re-access
-    String ssid = preferences.getString("wsNetSSID", "");
-    String ssidPass = preferences.getString("wsNetPass", "");
-    String aioUser = preferences.getString("wsAIOUser", "");
-    String aioPass = preferences.getString("wsAIOKey", "");
-    if (ssid == "" || ssidPass == "" || \
-        aioUser == "" || aioPass == "") {
-            return false;
-    }
-    return true;
-  } */
-
 /*   void set_ssid_pass() {
     _ssid = preferences.getString("wsNetSSID", "");
     _pass = preferences.getString("wsNetPass", "");

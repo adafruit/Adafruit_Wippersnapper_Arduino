@@ -99,6 +99,8 @@ void Wippersnapper::validateProvisioningSecrets() {
   if (!_nvs->validateNVS()) {
     WS_DEBUG_PRINTLN(
         "ERROR: NVS partition or credentials not found - was NVS flashed?");
+    while (1)
+        yield();
   }
 #endif
 }

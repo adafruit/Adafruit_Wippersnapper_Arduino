@@ -30,7 +30,6 @@ public:
 
   const char *io_username = NULL;
   const char *io_key = NULL;
-  bool isValidNamespace = false;
   Preferences nvs;
 };
 
