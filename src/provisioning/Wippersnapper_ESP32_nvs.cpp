@@ -41,10 +41,7 @@ bool Wippersnapper_ESP32_nvs::setNVSConfig() {
   WS._network_pass = _ssidPass.c_str();
   WS._username = _aioUser.c_str();
   WS._key = _aioPass.c_str();
-  WS_DEBUG_PRINT("SSID: ");WS_DEBUG_PRINTLN(WS._network_ssid);
-  WS_DEBUG_PRINT("SSIDPASS: ");WS_DEBUG_PRINTLN(WS._network_pass);
-  WS_DEBUG_PRINT("WS._username: ");WS_DEBUG_PRINTLN(WS._username);
-  WS_DEBUG_PRINT("WS._key: ");WS_DEBUG_PRINTLN(WS._key);
+  return true;
 }
 
 //#endif // USE_NVS

@@ -73,7 +73,7 @@ public:
   /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password from the
-            secrets.json provisioning file.
+            esp32's nvs.
   */
   /**********************************************************/
   void set_ssid_pass() {
