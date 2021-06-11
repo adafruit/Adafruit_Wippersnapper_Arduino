@@ -1,7 +1,0 @@
-# Wippersnapper ESP32 Non-Volatile Storage (NVM) Partition Template,,,
-key,type,encoding,value
-wsNamespace,namespace,,
-wsNetSSID,data,string,YOURSSID
-wsNetPass,data,string,YOURSSIDPASS
-wsAIOUser,data,string,YOURAIOUSER
-wsAIOKey,data,string,YOURAIOPASS

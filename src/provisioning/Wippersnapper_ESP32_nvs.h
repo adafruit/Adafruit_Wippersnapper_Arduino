@@ -12,8 +12,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WIPPERSNAPPER_ESP32_NVS_H
-#define WIPPERSNAPPER_ESP32_NVS_H
+#ifndef WIPPERSNAPPER_ESP32_nvs_H
+#define WIPPERSNAPPER_ESP32_nvs_H
 
 #include "Wippersnapper.h"
 #include <Preferences.h>

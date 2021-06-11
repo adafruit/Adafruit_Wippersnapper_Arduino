@@ -50,7 +50,7 @@
 #include "provisioning/Wippersnapper_FS.h"
 #endif
 
-#ifdef USE_NVS
+#ifdef ARDUINO_ARCH_ESP32
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 

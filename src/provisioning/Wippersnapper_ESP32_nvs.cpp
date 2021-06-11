@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-//#if defined(USE_NVS)
+#if defined(ARDUINO_ARCH_ESP32)
 #include "Wippersnapper_ESP32_nvs.h"
 
 /****************************************************************************/
@@ -66,4 +66,4 @@ bool Wippersnapper_ESP32_nvs::setNVSConfig() {
   return true;
 }
 
-//#endif // USE_NVS
+#endif // ARDUINO_ARCH_ESP32
