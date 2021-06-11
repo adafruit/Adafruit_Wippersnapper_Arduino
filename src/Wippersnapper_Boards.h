@@ -46,7 +46,7 @@
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK
 #define STATUS_DOTSTAR_NUM 5
 #elif defined(ARDUINO_ARCH_ESP32)
-#define BOARD_ID "esp32"
+#define BOARD_ID "adafruit-huzzah-32"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #define USE_NVS
