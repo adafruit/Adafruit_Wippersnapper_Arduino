@@ -43,4 +43,4 @@ private:
 };
 
 extern Wippersnapper WS; ///< Provides access to ESP32's Non-Volatile Storage
-#endif // WIPPERSNAPPER_ESP32_NVS_H
+#endif                   // WIPPERSNAPPER_ESP32_NVS_H
