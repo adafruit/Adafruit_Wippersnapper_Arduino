@@ -15,15 +15,31 @@
 //#if defined(USE_NVS)
 #include "Wippersnapper_ESP32_nvs.h"
 
-// ctor
+/****************************************************************************/
+/*!
+    @brief    Initializes the ESP32's non-volatile-storage (nvs) at an
+                "wsNamespace" namespace location.
+*/
+/****************************************************************************/
 Wippersnapper_ESP32_nvs::Wippersnapper_ESP32_nvs() {
   // init. nvs, read-only
   nvs.begin("wsNamespace", false);
 }
 
-// dtor
+/****************************************************************************/
+/*!
+    @brief    De-initializes the ESP32's non-volatile-storage (nvs).
+*/
+/****************************************************************************/
 Wippersnapper_ESP32_nvs::~Wippersnapper_ESP32_nvs() { nvs.end(); }
 
+/****************************************************************************/
+/*!
+    @brief    Reads and validates credentials from nvs' "wsNamespace"
+                namespace.
+    @returns  True if credentials were found, False otherwise.
+*/
+/****************************************************************************/
 bool Wippersnapper_ESP32_nvs::validateNVSConfig() {
   _ssid = nvs.getString("wsNetSSID", "");
   _ssidPass = nvs.getString("wsNetPass", "");
@@ -36,6 +52,12 @@ bool Wippersnapper_ESP32_nvs::validateNVSConfig() {
   return true;
 }
 
+/****************************************************************************/
+/*!
+    @brief    Sets Wippersnapper configuration using nvs configuration
+    @returns  True if credentials set successfully, False otherwise.
+*/
+/****************************************************************************/
 bool Wippersnapper_ESP32_nvs::setNVSConfig() {
   WS._network_ssid = _ssid.c_str();
   WS._network_pass = _ssidPass.c_str();

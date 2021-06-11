@@ -19,6 +19,12 @@
 #include <Preferences.h>
 
 class Wippersnapper;
+/**************************************************************************/
+/*!
+    @brief  Class that provides access to the ESP32's non-volatile-storage
+              provisioning workflow.
+*/
+/**************************************************************************/
 class Wippersnapper_ESP32_nvs {
 public:
   Wippersnapper_ESP32_nvs();
@@ -27,7 +33,7 @@ public:
   bool validateNVSConfig();
   bool setNVSConfig();
 
-  Preferences nvs;
+  Preferences nvs; ///< Provides access to ESP32's Non-Volatile Storage
 
 private:
   String _ssid;
@@ -36,5 +42,5 @@ private:
   String _aioPass;
 };
 
-extern Wippersnapper WS;
+extern Wippersnapper WS; ///< Provides access to ESP32's Non-Volatile Storage
 #endif // WIPPERSNAPPER_ESP32_NVS_H
