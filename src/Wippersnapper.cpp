@@ -96,7 +96,7 @@ void Wippersnapper::validateProvisioningSecrets() {
     _fileSystem->createConfigFileSkel();
   }
 #elif defined(USE_NVS)
-  if (!_nvs->validateNVS()) {
+  if (!_nvs->validateNVSConfig()) {
     WS_DEBUG_PRINTLN(
         "ERROR: NVS partition or credentials not found - was NVS flashed?");
     while (1)
@@ -117,8 +117,8 @@ bool Wippersnapper::parseProvisioningSecrets() {
   bool is_successful = false;
 #ifdef USE_TINYUSB
   is_successful = _fileSystem->parseSecrets();
-#else
-#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#elif defined(USE_NVS)
+  is_successful = _nvs->setNVSConfig();
 #endif
   return is_successful;
 }

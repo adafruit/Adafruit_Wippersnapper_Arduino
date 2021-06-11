@@ -24,21 +24,27 @@ Wippersnapper_ESP32_nvs::Wippersnapper_ESP32_nvs() {
 // dtor
 Wippersnapper_ESP32_nvs::~Wippersnapper_ESP32_nvs() { nvs.end(); }
 
-bool Wippersnapper_ESP32_nvs::validateNVS() {
-
-  String ssid = nvs.getString("wsNetSSID", "");
-  String ssidPass = nvs.getString("wsNetPass", "");
-  String aioUser = nvs.getString("wsAIOUser", "");
-  String aioPass = nvs.getString("wsAIOKey", "");
-  if (ssid == "" || ssidPass == "" || aioUser == "" || aioPass == "") {
+bool Wippersnapper_ESP32_nvs::validateNVSConfig() {
+  _ssid = nvs.getString("wsNetSSID", "");
+  _ssidPass = nvs.getString("wsNetPass", "");
+  _aioUser = nvs.getString("wsAIOUser", "");
+  _aioPass = nvs.getString("wsAIOKey", "");
+  // validate config properly set in partition
+  if (_ssid == "" || _ssidPass == "" || _aioUser == "" || _aioPass == "") {
     return false;
   }
-  // set credentials from NVS
-  WS._network_ssid = ssid.c_str();
-  WS._network_pass = ssidPass.c_str();
-  WS._username = aioUser.c_str();
-  WS._key = aioPass.c_str();
   return true;
+}
+
+bool Wippersnapper_ESP32_nvs::setNVSConfig() {
+  WS._network_ssid = _ssid.c_str();
+  WS._network_pass = _ssidPass.c_str();
+  WS._username = _aioUser.c_str();
+  WS._key = _aioPass.c_str();
+  WS_DEBUG_PRINT("SSID: ");WS_DEBUG_PRINTLN(WS._network_ssid);
+  WS_DEBUG_PRINT("SSIDPASS: ");WS_DEBUG_PRINTLN(WS._network_pass);
+  WS_DEBUG_PRINT("WS._username: ");WS_DEBUG_PRINTLN(WS._username);
+  WS_DEBUG_PRINT("WS._key: ");WS_DEBUG_PRINTLN(WS._key);
 }
 
 //#endif // USE_NVS

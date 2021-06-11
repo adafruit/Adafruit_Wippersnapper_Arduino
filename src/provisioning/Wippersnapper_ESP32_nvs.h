@@ -24,11 +24,16 @@ public:
   Wippersnapper_ESP32_nvs();
   ~Wippersnapper_ESP32_nvs();
 
-  bool validateNVS();
-  // void setNVS();
-
+  bool validateNVSConfig();
+  bool setNVSConfig();
 
   Preferences nvs;
+
+private:
+  String _ssid;
+  String _ssidPass;
+  String _aioUser;
+  String _aioPass;
 };
 
 extern Wippersnapper WS;
