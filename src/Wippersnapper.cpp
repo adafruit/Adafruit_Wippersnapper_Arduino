@@ -117,10 +117,10 @@ bool Wippersnapper::parseProvisioningSecrets() {
   bool is_successful = false;
 #if defined(USE_TINYUSB)
   is_successful = _fileSystem->parseSecrets();
-  //delete _fileSystem;
+  // delete _fileSystem;
 #elif defined(USE_NVS)
   is_successful = _nvs->setNVSConfig();
-  //delete _nvs;
+  // delete _nvs;
 #endif
   return is_successful;
 }
@@ -167,7 +167,7 @@ void Wippersnapper::set_user_key() {
       yield();
   }
 #endif
-// NOTE: for NVS, credentials already set in setNVSConfig
+  // NOTE: for NVS, credentials already set in setNVSConfig
 }
 
 // Decoders //

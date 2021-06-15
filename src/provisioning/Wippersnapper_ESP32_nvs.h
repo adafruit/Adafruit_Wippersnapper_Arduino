@@ -15,8 +15,8 @@
 #ifndef WIPPERSNAPPER_ESP32_nvs_H
 #define WIPPERSNAPPER_ESP32_nvs_H
 
-#include <Preferences.h>
 #include "Wippersnapper.h"
+#include <Preferences.h>
 
 class Wippersnapper;
 /**************************************************************************/
@@ -43,4 +43,4 @@ private:
 };
 
 extern Wippersnapper WS;
-#endif                   // WIPPERSNAPPER_ESP32_NVS_H
+#endif // WIPPERSNAPPER_ESP32_NVS_H
