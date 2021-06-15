@@ -800,6 +800,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
+
+  // Attempt to process initial sync packets from broker
+  WS._mqtt->processPackets(100);
 }
 
 /**************************************************************************/
@@ -989,7 +992,7 @@ ws_status_t Wippersnapper::run() {
   checkMQTTConnection(curTime);
 
   // Process all incoming packets from Wippersnapper MQTT Broker
-  WS._mqtt->processPackets(10);
+  WS._mqtt->processPackets(100);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();

@@ -18,7 +18,6 @@
 #include <Preferences.h>
 #include "Wippersnapper.h"
 
-
 class Wippersnapper;
 /**************************************************************************/
 /*!
