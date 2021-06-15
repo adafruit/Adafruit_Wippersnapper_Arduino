@@ -130,7 +130,7 @@ typedef enum {
   2000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  128 ///< MAXIMUM expected payload size, in bytes
+  256 ///< MAXIMUM expected payload size, in bytes
 
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;

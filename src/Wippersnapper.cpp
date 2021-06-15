@@ -802,7 +802,7 @@ void Wippersnapper::connect() {
   statusLEDDeinit();
 
   // Attempt to process initial sync packets from broker
-  WS._mqtt->processPackets(100);
+  WS._mqtt->processPackets(500);
 }
 
 /**************************************************************************/
