@@ -74,7 +74,7 @@ Wippersnapper::~Wippersnapper() {
 */
 /****************************************************************************/
 void Wippersnapper::startProvisioning() {
-#if defined(USE_TINYUSB)
+#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
   // Filesystem-based provisioning flow
   _fileSystem = new Wippersnapper_FS(); // Initialize the QSPI flash FS
 #elif defined(USE_NVS)
@@ -89,7 +89,7 @@ void Wippersnapper::startProvisioning() {
 */
 /****************************************************************************/
 void Wippersnapper::validateProvisioningSecrets() {
-#if defined(USE_TINYUSB)
+#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
   // check for secrets.json, create if doesn't exist
   if (!_fileSystem->configFileExists()) {
     // create config file on filesystem
@@ -115,7 +115,7 @@ void Wippersnapper::validateProvisioningSecrets() {
 /****************************************************************************/
 bool Wippersnapper::parseProvisioningSecrets() {
   bool is_successful = false;
-#if defined(USE_TINYUSB)
+#if defined(USE_TINYUSB)|| defined(USE_FLASH_FS)
   is_successful = _fileSystem->parseSecrets();
   // delete _fileSystem;
 #elif defined(USE_NVS)
@@ -148,7 +148,7 @@ void Wippersnapper::set_user_key(const char *aio_username,
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
-#if defined(USE_TINYUSB)
+#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
   if (_fileSystem->io_username != NULL) {
     WS._username = _fileSystem->io_username;
   } else {

@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(USE_TINYUSB)
+#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
 #include "Wippersnapper_FS.h"
 
 // On-board external flash (QSPI or SPI) macros should already
@@ -25,9 +25,9 @@ Adafruit_FlashTransport_QSPI flashTransport;
 Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
                                            EXTERNAL_FLASH_USE_SPI);
 #elif CONFIG_IDF_TARGET_ESP32S2
-  // ESP32-S2 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  Adafruit_FlashTransport_ESP32 flashTransport;
+// ESP32-S2 use same flash device that store code.
+// Therefore there is no need to specify the SPI and SS
+Adafruit_FlashTransport_ESP32 flashTransport;
 #else
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
@@ -35,19 +35,26 @@ Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
 Adafruit_SPIFlash flash(&flashTransport); ///< QSPI flash object
 FatFileSystem wipperQSPIFS;               ///< QSPI FatFS object
 
+#ifdef USE_TINYUSB
+Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
+#endif                     // USE_TINYUSB
+
 /**************************************************************************/
 /*!
     @brief    Initializes USB-MSC and the QSPI flash filesystem.
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
+#ifdef USE_TINYUSB
   // detach the USB during initialization
   USBDevice.detach();
   // wait for detach
   delay(50);
+#endif // USE_TINYUSB
 
   flash.begin();
 
+#ifdef USE_TINYUSB
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
   usb_msc.setID("Adafruit", "External Flash", "1.0");
@@ -68,6 +75,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   USBDevice.attach();
   // wait for enumeration
   delay(500);
+#endif // USE_TINYUSB
 
   // Init file system on the flash
   wipperQSPIFS.begin(&flash);
