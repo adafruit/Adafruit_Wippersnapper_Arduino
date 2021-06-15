@@ -32,23 +32,23 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 40
 #define STATUS_NEOPIXEL_NUM 1
-#elif defined(ARDUINO_ARCH_ESP8266)
-// Feather Huzzah ESP8266, CP2104 USB/UART Bridge Controller
-#define USB_VID 0xEA60
-#define USB_PID 0x10C4
-#define BOARD_ID "adafruit-huzzah-8266"
-#define USE_STATUS_LED
-#define STATUS_LED_PIN 13
 #elif defined(ARDUINO_FUNHOUSE_ESP32S2)
 #define BOARD_ID "adafruit-funhouse-esp32s2"
 #define USE_STATUS_DOTSTAR
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK
 #define STATUS_DOTSTAR_NUM 5
-#elif defined(ARDUINO_ARCH_ESP32)
-#define BOARD_ID "esp32"
+#elif defined(ARDUINO_ARCH_ESP8266)
+#define USB_VID 0xEA60
+#define USB_PID 0x10C4
+#define BOARD_ID "adafruit-huzzah-8266"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
+#elif defined(ARDUINO_FEATHER_ESP32)
+#define BOARD_ID "adafruit-huzzah-32"
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 13
+#define USE_NVS
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

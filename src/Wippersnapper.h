@@ -47,10 +47,11 @@
 
 // tinyusb and spiflash for USB MSC
 #ifdef USE_TINYUSB
-#include "Adafruit_SPIFlash.h"
-#include "Adafruit_TinyUSB.h"
-#include "SdFat.h"
-#include "Wippersnapper_FS.h"
+#include "provisioning/Wippersnapper_FS.h"
+#endif
+
+#ifdef USE_NVS
+#include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
 // Reserved Adafruit IO MQTT topics
@@ -129,12 +130,13 @@ typedef enum {
   2000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  128 ///< MAXIMUM expected payload size, in bytes
+  256 ///< MAXIMUM expected payload size, in bytes
 
 class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
+class Wippersnapper_ESP32_nvs;
 
 /**************************************************************************/
 /*!
@@ -224,6 +226,7 @@ public:
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
+  Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
   char sUID[9];             /*!< Unique network iface identifier */

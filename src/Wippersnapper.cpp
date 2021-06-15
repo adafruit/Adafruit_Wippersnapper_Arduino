@@ -69,17 +69,16 @@ Wippersnapper::~Wippersnapper() {
 
 /****************************************************************************/
 /*!
-    @brief    Initializes provisioning, either the native USB FS or WiFi
-              AP-based captive portal.
+    @brief    Initializes provisioning, either the native USB FS or
+              NVS (ESP32)
 */
 /****************************************************************************/
 void Wippersnapper::startProvisioning() {
-// native usb provisioning flow
-#ifdef USE_TINYUSB
-  // Initialize the QSPI flash FS
-  _fileSystem = new Wippersnapper_FS();
-#else
-#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#if defined(USE_TINYUSB)
+  // Filesystem-based provisioning flow
+  _fileSystem = new Wippersnapper_FS(); // Initialize the QSPI flash FS
+#elif defined(USE_NVS)
+  _nvs = new Wippersnapper_ESP32_nvs();
 #endif
 }
 
@@ -90,14 +89,19 @@ void Wippersnapper::startProvisioning() {
 */
 /****************************************************************************/
 void Wippersnapper::validateProvisioningSecrets() {
-#ifdef USE_TINYUSB
+#if defined(USE_TINYUSB)
   // check for secrets.json, create if doesn't exist
   if (!_fileSystem->configFileExists()) {
     // create config file on filesystem
     _fileSystem->createConfigFileSkel();
   }
-#else
-#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+#elif defined(USE_NVS)
+  if (!_nvs->validateNVSConfig()) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: NVS partition or credentials not found - was NVS flashed?");
+    while (1)
+      yield();
+  }
 #endif
 }
 
@@ -111,10 +115,12 @@ void Wippersnapper::validateProvisioningSecrets() {
 /****************************************************************************/
 bool Wippersnapper::parseProvisioningSecrets() {
   bool is_successful = false;
-#ifdef USE_TINYUSB
+#if defined(USE_TINYUSB)
   is_successful = _fileSystem->parseSecrets();
-#else
-#warning "ERROR: Current usage of provisioning requires TinyUSB.";
+  // delete _fileSystem;
+#elif defined(USE_NVS)
+  is_successful = _nvs->setNVSConfig();
+  // delete _nvs;
 #endif
   return is_successful;
 }
@@ -142,7 +148,7 @@ void Wippersnapper::set_user_key(const char *aio_username,
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
-#ifdef USE_TINYUSB
+#if defined(USE_TINYUSB)
   if (_fileSystem->io_username != NULL) {
     WS._username = _fileSystem->io_username;
   } else {
@@ -160,10 +166,8 @@ void Wippersnapper::set_user_key() {
     while (1)
       yield();
   }
-#else
-#warning                                                                       \
-    "Native USB unimplemented, call set_user_key with your AIO username and key instead."
 #endif
+  // NOTE: for NVS, credentials already set in setNVSConfig
 }
 
 // Decoders //
@@ -796,6 +800,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
+
+  // Attempt to process initial sync packets from broker
+  WS._mqtt->processPackets(500);
 }
 
 /**************************************************************************/
@@ -985,7 +992,7 @@ ws_status_t Wippersnapper::run() {
   checkMQTTConnection(curTime);
 
   // Process all incoming packets from Wippersnapper MQTT Broker
-  WS._mqtt->processPackets(10);
+  WS._mqtt->processPackets(100);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();

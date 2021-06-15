@@ -18,14 +18,13 @@
 #define Wippersnapper_ESP32_H
 
 #ifdef ARDUINO_ARCH_ESP32
+#include "Wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "WiFiClientSecure.h"
-#include "Wippersnapper.h"
 #include <WiFi.h>
-
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -69,6 +68,17 @@ public:
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
     _pass = ssidPassword;
+  }
+
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password from the
+            esp32's nvs.
+  */
+  /**********************************************************/
+  void set_ssid_pass() {
+    _ssid = WS._network_ssid;
+    _pass = WS._network_pass;
   }
 
   /********************************************************/

@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -15,6 +15,9 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
+#include "Adafruit_SPIFlash.h"
+#include "Adafruit_TinyUSB.h"
+#include "SdFat.h"
 #include "Wippersnapper.h"
 
 #define FILE_TEMPLATE_AIRLIFT                                                  \
@@ -64,5 +67,4 @@ public:
 };
 
 extern Wippersnapper WS;
-
 #endif // WIPPERSNAPPER_FS_H
