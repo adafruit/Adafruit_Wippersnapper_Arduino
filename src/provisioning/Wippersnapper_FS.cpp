@@ -24,6 +24,10 @@ Adafruit_FlashTransport_QSPI flashTransport;
 #elif defined(EXTERNAL_FLASH_USE_SPI)
 Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
                                            EXTERNAL_FLASH_USE_SPI);
+#elif CONFIG_IDF_TARGET_ESP32S2
+  // ESP32-S2 use same flash device that store code.
+  // Therefore there is no need to specify the SPI and SS
+  Adafruit_FlashTransport_ESP32 flashTransport;
 #else
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
