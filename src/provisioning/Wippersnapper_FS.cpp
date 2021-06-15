@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
+#if defined(USE_TINYUSB) || defined(ARDUINO_FUNHOUSE_ESP32S2)
 #include "Wippersnapper_FS.h"
 
 // On-board external flash (QSPI or SPI) macros should already
@@ -25,7 +25,7 @@ Adafruit_FlashTransport_QSPI flashTransport;
 Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
                                            EXTERNAL_FLASH_USE_SPI);
 #elif CONFIG_IDF_TARGET_ESP32S2
-// ESP32-S2 use same flash device that store code.
+// ESP32-S2 uses same flash device that stores code.
 // Therefore there is no need to specify the SPI and SS
 Adafruit_FlashTransport_ESP32 flashTransport;
 #else
@@ -127,7 +127,11 @@ void Wippersnapper_FS::createConfigFileSkel() {
       secretsFile.println(FILE_TEMPLATE_AIRLIFT);
       // done writing, close it
       secretsFile.close();
-    } else {
+    }
+    else if (USB_VID == 0x239A && (USB_PID == 0x80F9) {
+        // TODO: Write native secrets.json template out to file!
+    }
+    else {
       WS_DEBUG_PRINTLN(
           "ERROR: Your hardware does not support native USB provisioning");
       secretsFile.close();
