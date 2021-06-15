@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -67,5 +67,4 @@ public:
 };
 
 extern Wippersnapper WS;
-
 #endif // WIPPERSNAPPER_FS_H

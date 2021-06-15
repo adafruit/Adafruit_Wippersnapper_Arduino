@@ -15,8 +15,9 @@
 #ifndef WIPPERSNAPPER_ESP32_nvs_H
 #define WIPPERSNAPPER_ESP32_nvs_H
 
-#include "Wippersnapper.h"
 #include <Preferences.h>
+#include "Wippersnapper.h"
+
 
 class Wippersnapper;
 /**************************************************************************/
@@ -42,5 +43,5 @@ private:
   String _aioPass;
 };
 
-extern Wippersnapper WS; ///< Provides access to ESP32's Non-Volatile Storage
+extern Wippersnapper WS;
 #endif                   // WIPPERSNAPPER_ESP32_NVS_H
