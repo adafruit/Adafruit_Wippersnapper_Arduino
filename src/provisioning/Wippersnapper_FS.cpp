@@ -139,10 +139,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
       // done writing, close it
       secretsFile.close();
     }
-    else if (USB_VID == 0x239A && (USB_PID == 0x80F9) {
-      // NOTE: We'll eventually want to write native secrets.json template out
-      // to a file, when TinyUSB works with ESP32-S2 do nothing for now
-    }
+    // NOTE: We'll eventually want to create the FILE_TEMPLATE_NATIVE_WIFI here
   } else {
     WS_DEBUG_PRINTLN(
         "ERROR: Could not create secrets.json on QSPI flash filesystem.");
@@ -225,7 +222,7 @@ bool Wippersnapper_FS::parseSecrets() {
 
   // Check if type is WiFi (Native - ESP32-S2, ESP32)
   const char *network_type_wifi_native_network_ssid =
-      doc["network_type_wifi_airlift"]["network_ssid"];
+      doc["network_type_wifi_native"]["network_ssid"];
   if (network_type_wifi_native_network_ssid == nullptr) {
     WS_DEBUG_PRINTLN(
         "Network interface is not native WiFi, checking next type...");
@@ -234,7 +231,7 @@ bool Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINTLN("Setting network:");
     // Parse network password
     const char *network_type_wifi_native_network_password =
-        doc["network_type_wifi_airlift"]["network_password"];
+        doc["network_type_wifi_native"]["network_password"];
     // validation
     if (network_type_wifi_native_network_password == nullptr) {
       WS_DEBUG_PRINTLN(
