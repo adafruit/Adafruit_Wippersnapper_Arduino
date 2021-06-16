@@ -76,9 +76,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // wait for enumeration
   delay(500);
 #endif // USE_TINYUSB
-
-  // Init file system on the flash
-  wipperQSPIFS.begin(&flash);
 }
 
 /************************************************************/
@@ -98,13 +95,22 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
+  // Init file system on the flash
+  if (!wipperQSPIFS.begin(&flash)) {
+      WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
+      if (USB_VID == 0x239A && USB_PID == 0x80F9) { // ESP32-S2 hardware ONLY, temporary fix 'til TinyUSB works with ESP32-S2
+          WS_DEBUG_PRINTLN("Was CircuitPython loaded on the ESP32-S2 board first to create the filesystem?");
+      }
+      while (1);
+  }
+
   File secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
-    WS_DEBUG_PRINTLN("ERROR: Secrets file does not exist on flash.");
+    WS_DEBUG_PRINTLN("ERROR: secrets.json file does not exist on flash filesystem.");
     secretsFile.close();
     return false;
   }
-  WS_DEBUG_PRINTLN("Found secrets file!");
+  WS_DEBUG_PRINTLN("Found secrets.json file!");
   secretsFile.close();
   return true;
 }
@@ -129,17 +135,12 @@ void Wippersnapper_FS::createConfigFileSkel() {
       secretsFile.close();
     }
     else if (USB_VID == 0x239A && (USB_PID == 0x80F9) {
-        // TODO: Write native secrets.json template out to file!
-    }
-    else {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Your hardware does not support native USB provisioning");
-      secretsFile.close();
-      while (1)
-        yield();
+        // NOTE: We'll eventually want to write native secrets.json template out to a file,
+        // when TinyUSB works with ESP32-S2
+        // do nothing for now
     }
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Could not create secrets.json on QSPI flash...");
+    WS_DEBUG_PRINTLN("ERROR: Could not create secrets.json on QSPI flash filesystem.");
     secretsFile.close();
     while (1)
       yield();
@@ -217,9 +218,30 @@ bool Wippersnapper_FS::parseSecrets() {
     setNetwork = true;
   }
 
-  // TODO: We may want to implement network_type_wifi_native (ESP32-S2) here
-  // TODO: We may want to implement network_type_ethernet (Ethernet FeatherWing)
-  // here
+  // Check if type is WiFi (Native - ESP32-S2, ESP32)
+  const char *network_type_wifi_native_network_ssid =
+      doc["network_type_wifi_airlift"]["network_ssid"];
+  if (network_type_wifi_native_network_ssid == nullptr) {
+    WS_DEBUG_PRINTLN(
+        "Network interface is not native WiFi, checking next type...");
+  } else {
+    WS_DEBUG_PRINTLN("Network Interface Found: Native WiFi (ESP32S2, ESP32)");
+    WS_DEBUG_PRINTLN("Setting network:");
+    // Parse network password
+    const char *network_type_wifi_native_network_password =
+        doc["network_type_wifi_airlift"]["network_password"];
+    // validation
+    if (network_type_wifi_native_network_password == nullptr) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: invalid network_type_wifi_native_network_password value in "
+          "secrets.json!");
+      return false;
+    }
+    // Set WiFi configuration with parsed values
+    WS._network_ssid = network_type_wifi_native_network_ssid;
+    WS._network_pass = network_type_wifi_native_network_password;
+    setNetwork = true;
+  }
 
   // Was a network_type detected in the configuration file?
   if (!setNetwork) {
