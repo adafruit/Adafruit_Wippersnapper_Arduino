@@ -97,16 +97,21 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 bool Wippersnapper_FS::configFileExists() {
   // Init file system on the flash
   if (!wipperQSPIFS.begin(&flash)) {
-      WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
-      if (USB_VID == 0x239A && USB_PID == 0x80F9) { // ESP32-S2 hardware ONLY, temporary fix 'til TinyUSB works with ESP32-S2
-          WS_DEBUG_PRINTLN("Was CircuitPython loaded on the ESP32-S2 board first to create the filesystem?");
-      }
-      while (1);
+    WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
+    if (USB_VID == 0x239A &&
+        USB_PID == 0x80F9) { // ESP32-S2 hardware ONLY, temporary fix 'til
+                             // TinyUSB works with ESP32-S2
+      WS_DEBUG_PRINTLN("Was CircuitPython loaded on the ESP32-S2 board first "
+                       "to create the filesystem?");
+    }
+    while (1)
+      ;
   }
 
   File secretsFile = wipperQSPIFS.open("/secrets.json");
   if (!secretsFile) {
-    WS_DEBUG_PRINTLN("ERROR: secrets.json file does not exist on flash filesystem.");
+    WS_DEBUG_PRINTLN(
+        "ERROR: secrets.json file does not exist on flash filesystem.");
     secretsFile.close();
     return false;
   }
@@ -135,12 +140,12 @@ void Wippersnapper_FS::createConfigFileSkel() {
       secretsFile.close();
     }
     else if (USB_VID == 0x239A && (USB_PID == 0x80F9) {
-        // NOTE: We'll eventually want to write native secrets.json template out to a file,
-        // when TinyUSB works with ESP32-S2
-        // do nothing for now
+      // NOTE: We'll eventually want to write native secrets.json template out
+      // to a file, when TinyUSB works with ESP32-S2 do nothing for now
     }
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Could not create secrets.json on QSPI flash filesystem.");
+    WS_DEBUG_PRINTLN(
+        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     secretsFile.close();
     while (1)
       yield();
