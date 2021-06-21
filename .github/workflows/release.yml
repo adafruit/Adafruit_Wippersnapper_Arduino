@@ -1,8 +1,10 @@
 name: GitHub Actions for Wippersnapper Release Build System
 
-on:
-  release:
-    types: [published]
+on: [push]
+
+#on:
+#  release:
+#    types: [published]
 
 jobs:
   build:
@@ -36,12 +38,13 @@ jobs:
       run: python3 ci/build_platform.py --export-binary ${{ matrix.arduino-platform }}
 
     # clone Microsoft UF2
-    -name: clone uf2 tools
+    - name: clone uf2 tools
       run: |
         git clone https://github.com/microsoft/uf2.git
-        export UF2CONV_SCRIPT=uf2/utils/uf2conv.py
-    
-    # try to run microsoft uf2
-    -name: build a uf2
+        export UF2CONV=uf2/utils/uf2conv.py
+
+    # check uf2 build dir.
+    - name: check uf2 build dir
       run: |
         echo "ls /home/runner/work/Adafruit_Wippersnapper_Arduino/Adafruit_Wippersnapper_Arduino/examples/build"
+
