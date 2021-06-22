@@ -82,12 +82,12 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 
     // attempt to allocate a pinName within _digital_input_pins[]
     for (int i = 0; i < _totalDigitalInputPins; i++) {
-        if (_digital_input_pins[i].period == -1L) {
-            WS_DEBUG_PRINTLN("ALLOCATING");
-            _digital_input_pins[i].pinName = pinName;
-            _digital_input_pins[i].period = periodMs;
-            break;
-        }
+      if (_digital_input_pins[i].period == -1L) {
+        WS_DEBUG_PRINTLN("ALLOCATING");
+        _digital_input_pins[i].pinName = pinName;
+        _digital_input_pins[i].period = periodMs;
+        break;
+      }
     }
 
   } else {
@@ -113,10 +113,10 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     // de-allocate the pin within digital_input_pins[]
     for (int i = 0; i < _totalDigitalInputPins; i++) {
-        if (_digital_input_pins[i].pinName == pinName) {
-            _digital_input_pins[i].period = -1;
-            break;
-        }
+      if (_digital_input_pins[i].pinName == pinName) {
+        _digital_input_pins[i].period = -1;
+        break;
+      }
     }
   }
   char cstr[16];
@@ -211,8 +211,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
 
         // reset the digital pin
         _digital_input_pins[i].prvPeriod = curTime;
-      }
-      else if (_digital_input_pins[i].period == 0L) {
+      } else if (_digital_input_pins[i].period == 0L) {
         // read pin
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
         // only send on-change

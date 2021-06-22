@@ -998,7 +998,7 @@ ws_status_t Wippersnapper::run() {
   WS._digitalGPIO->processDigitalInputs();
 
   // Process analog inputs
-  //WS._analogIO->processAnalogInputs();
+  // WS._analogIO->processAnalogInputs();
 
   return status();
 }
