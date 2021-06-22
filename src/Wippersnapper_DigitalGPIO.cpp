@@ -83,7 +83,6 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     // attempt to allocate a pinName within _digital_input_pins[]
     for (int i = 0; i < _totalDigitalInputPins; i++) {
       if (_digital_input_pins[i].period == -1L) {
-        WS_DEBUG_PRINTLN("ALLOCATING");
         _digital_input_pins[i].pinName = pinName;
         _digital_input_pins[i].period = periodMs;
         break;
