@@ -100,8 +100,8 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].period == -1L) {
       _analog_input_pins[i].pinName = pin;
-      _analog_input_pins[pin].period = periodMs;
-      _analog_input_pins[pin].readMode = analogReadMode;
+      _analog_input_pins[i].period = periodMs;
+      _analog_input_pins[i].readMode = analogReadMode;
       break;
     }
   }
