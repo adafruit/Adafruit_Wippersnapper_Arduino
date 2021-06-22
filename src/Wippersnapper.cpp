@@ -115,7 +115,7 @@ void Wippersnapper::validateProvisioningSecrets() {
 /****************************************************************************/
 bool Wippersnapper::parseProvisioningSecrets() {
   bool is_successful = false;
-#if defined(USE_TINYUSB)|| defined(USE_FLASH_FS)
+#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
   is_successful = _fileSystem->parseSecrets();
   // delete _fileSystem;
 #elif defined(USE_NVS)
