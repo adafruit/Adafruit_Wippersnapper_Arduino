@@ -27,7 +27,7 @@ Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(
     int32_t totalDigitalInputPins) {
   _totalDigitalInputPins = totalDigitalInputPins;
   _digital_input_pins = new digitalInputPin[_totalDigitalInputPins];
-  // turn sampling off for all digital pins
+  // turn input sampling off for all digital pins
   for (int i = 0; i < _totalDigitalInputPins; i++) {
     _digital_input_pins[i].period = -1;
   }
@@ -111,18 +111,13 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   WS_DEBUG_PRINTLN(pinName);
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-
-    // de-allocate a pin within digital_input_pins[]
+    // de-allocate the pin within digital_input_pins[]
     for (int i = 0; i < _totalDigitalInputPins; i++) {
-        // TODO: Check pin's name
-        if (_digital_input_pins[i].period == -1L) {
-            _digital_input_pins[i].pinName = pinName;
-            _digital_input_pins[i].period = periodMs;
+        if (_digital_input_pins[i].pinName == pinName) {
+            _digital_input_pins[i].period = -1;
             break;
         }
     }
-
-    _digital_input_pins[pinName].period = -1; // stop sampling
   }
   char cstr[16];
   itoa(pinName, cstr, 10);
@@ -178,17 +173,6 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
   uint32_t curTime = millis();
   // Process digital digital pins
   for (int i = 0; i < _totalDigitalInputPins; i++) {
-
-/*     // Check if digital pin executes on a state change
-    WS_DEBUG_PRINT("_digital_input_pins[#]: ");
-    WS_DEBUG_PRINTLN(i);
-
-    WS_DEBUG_PRINT("Pin#: ");
-    WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
-
-    WS_DEBUG_PRINT("Period: ");
-    WS_DEBUG_PRINTLN(_digital_input_pins[i].period);
-     */
     if (_digital_input_pins[i].period >
         -1L) { // validate if digital pin is enabled
       // Check if digital pin executes on a time period
@@ -230,9 +214,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
       }
       else if (_digital_input_pins[i].period == 0L) {
         // read pin
-        WS_DEBUG_PRINT("Reading Pin: ");
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
-        WS_DEBUG_PRINT(pinVal);
         // only send on-change
         if (pinVal != _digital_input_pins[i].prvPinVal) {
           WS_DEBUG_PRINT("Executing state-based event on D");
