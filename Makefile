@@ -25,9 +25,9 @@ samd51-metro-airlift:
 
 clean-samd51-metro-airlift:
 			rm -r build/samd51-metro-airlift/
-			rm -r examples/Wippersnapper_demo/build/*/*
-
 
 .PHONY: clean
 clean:
-			rm -r examples/Wippersnapper_demo/build/*/*
+			rm -r build/*
+			rm -r examples/Wippersnapper_demo/build/*
+			rm -r examples/wippersnapper-simpletest-esp8266/build/*
