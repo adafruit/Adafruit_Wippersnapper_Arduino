@@ -46,7 +46,7 @@
 #include <SPI.h>
 
 // tinyusb and spiflash for USB MSC
-#ifdef USE_TINYUSB
+#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
 #include "provisioning/Wippersnapper_FS.h"
 #endif
 

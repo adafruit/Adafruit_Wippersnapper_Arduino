@@ -15,8 +15,10 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#include "Adafruit_SPIFlash.h"
+#ifdef USE_TINYUSB
 #include "Adafruit_TinyUSB.h"
+#endif // USE_TINYUSB
+#include "Adafruit_SPIFlash.h"
 #include "SdFat.h"
 #include "Wippersnapper.h"
 
@@ -57,8 +59,6 @@ public:
   const char *io_key = NULL; /*!< Adafruit IO password, from config json. */
   bool setNetwork; /*!< True if a network interface type was set up, False
                       otherwise. */
-
-  Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 
   // NOTE: calculated capacity with maximum
   // length of usernames/passwords/tokens
