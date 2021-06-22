@@ -27,7 +27,7 @@ Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(
     int32_t totalDigitalInputPins) {
   _totalDigitalInputPins = totalDigitalInputPins;
   _digital_input_pins = new digitalInputPin[_totalDigitalInputPins];
-  // turn sampling off for all digital pins
+  // turn input sampling off for all digital pins
   for (int i = 0; i < _totalDigitalInputPins; i++) {
     _digital_input_pins[i].period = -1;
   }
@@ -80,8 +80,15 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     WS_DEBUG_PRINT("Interval (ms):");
     WS_DEBUG_PRINTLN(periodMs);
 
-    _digital_input_pins[pinName].pinName = pinName;
-    _digital_input_pins[pinName].period = periodMs;
+    // attempt to allocate a pinName within _digital_input_pins[]
+    for (int i = 0; i < _totalDigitalInputPins; i++) {
+      if (_digital_input_pins[i].period == -1L) {
+        _digital_input_pins[i].pinName = pinName;
+        _digital_input_pins[i].period = periodMs;
+        break;
+      }
+    }
+
   } else {
     WS_DEBUG_PRINTLN("ERROR: Invalid digital pin direction!");
   }
@@ -103,7 +110,13 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   WS_DEBUG_PRINTLN(pinName);
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-    _digital_input_pins[pinName].period = -1; // stop sampling
+    // de-allocate the pin within digital_input_pins[]
+    for (int i = 0; i < _totalDigitalInputPins; i++) {
+      if (_digital_input_pins[i].pinName == pinName) {
+        _digital_input_pins[i].period = -1;
+        break;
+      }
+    }
   }
   char cstr[16];
   itoa(pinName, cstr, 10);
@@ -197,9 +210,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
 
         // reset the digital pin
         _digital_input_pins[i].prvPeriod = curTime;
-      }
-      // Check if digital pin executes on a state change
-      else if (_digital_input_pins[i].period == 0L) {
+      } else if (_digital_input_pins[i].period == 0L) {
         // read pin
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
         // only send on-change

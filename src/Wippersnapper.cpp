@@ -992,7 +992,7 @@ ws_status_t Wippersnapper::run() {
   checkMQTTConnection(curTime);
 
   // Process all incoming packets from Wippersnapper MQTT Broker
-  WS._mqtt->processPackets(100);
+  WS._mqtt->processPackets(10);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();

@@ -96,10 +96,15 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
   WS_DEBUG_PRINT("Interval (ms):");
   WS_DEBUG_PRINTLN(periodMs);
 
-  // Configure analog pin object
-  _analog_input_pins[pin].pinName = pin;
-  _analog_input_pins[pin].period = periodMs;
-  _analog_input_pins[pin].readMode = analogReadMode;
+  // attempt to allocate pin within _analog_input_pins[]
+  for (int i = 0; i < _totalAnalogInputPins; i++) {
+    if (_analog_input_pins[i].period == -1L) {
+      _analog_input_pins[i].pinName = pin;
+      _analog_input_pins[i].period = periodMs;
+      _analog_input_pins[i].readMode = analogReadMode;
+      break;
+    }
+  }
 }
 
 /***********************************************************************************/
@@ -110,12 +115,15 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
 */
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
-  _analog_input_pins[pin].pinName = 1;
-  _analog_input_pins[pin].readMode =
-      wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_UNSPECIFIED;
-  _analog_input_pins[pin].period = -1L;
-  _analog_input_pins[pin].prvPinVal = 0.0;
-  _analog_input_pins[pin].prvPeriod = 0L;
+  // de-allocate the pin within digital_input_pins[]
+  for (int i = 0; i < _totalAnalogInputPins; i++) {
+    if (_analog_input_pins[i].pinName == pin) {
+      _analog_input_pins[i].period = -1;
+      _analog_input_pins[i].prvPinVal = 0.0;
+      _analog_input_pins[i].prvPeriod = 0L;
+      break;
+    }
+  }
 }
 
 /***********************************************************************************/
