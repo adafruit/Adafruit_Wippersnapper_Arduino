@@ -23,12 +23,16 @@
 #include "Wippersnapper.h"
 
 #define FILE_TEMPLATE_AIRLIFT                                                  \
-  "{\"io_username\":\"YOUR_IO_USERNAME_HERE\",\"io_key\":\"YOUR_IO_KEY_"       \
-  "HERE\",\"network_type_wifi_airlift\":{\"network_ssid\":\"YOUR_WIFI_SSID_"   \
-  "HERE\",\"network_password\":\"YOUR_WIFI_PASS_HERE\"}}" ///< JSON string for
-                                                          ///< airlift-specific
-                                                          ///< configuration
-                                                          ///< file
+  "{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_key\":\"YOUR_IO_"   \
+  "KEY_"                                                                       \
+  "HERE\",\n\t\"network_type_wifi_airlift\":{\n\t\t\"network_ssid\":\"YOUR_"   \
+  "WIFI_SSID_"                                                                 \
+  "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}" ///< JSON
+                                                                      ///< string
+                                                                      ///< for
+///< airlift-specific
+///< configuration
+///< file
 
 // forward decl.
 class Wippersnapper;
