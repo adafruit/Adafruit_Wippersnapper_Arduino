@@ -234,7 +234,6 @@ public:
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
 
-  // Staging Server
   const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;                   /*!< MQTT Broker URL */
 
