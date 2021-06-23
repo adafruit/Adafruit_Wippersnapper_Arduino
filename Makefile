@@ -8,10 +8,11 @@ PROJECT_VER_MINOR := 1
 PROJECT_VER_PATCH := 0
 
 BOARD_PYPORTAL := samd51-pyportal
+BOARD_METRO_AIRLIFT := samd51-metro-airlift
 
-# NOTE: path to "ci-arduino/build_platform.py" must be set prior to running
+# NOTE: path to "ci-arduino/build_platform.py" must be set on system prior to running
 
-# Path to uf2conv, be sure to init submodule prior to running!
+# Path to uf2conv utility, be sure to run `init submodule` prior to running this script!
 UF2CONV = tools/uf2/utils/uf2conv.py
 
 # SAMD51 - base address and familyID
@@ -22,18 +23,23 @@ UF2_FAMILY_SAMD51 := 0x55114460
 UF2_BASE_ESP32S2   := 0x00
 UF2_FAMILY_ESP32S2 := 0xbfdd4eee
 
+samd51: samd51-metro-airlift samd51-pyportal
+
+clean-samd51: clean-samd51-metro-airlift clean-samd51-pyportal 
+
 samd51-metro-airlift:
-			mkdir -p build/samd51-metro-airlift/
+			mkdir -p build/$(BOARD_METRO_AIRLIFT)/
 			python3 $(BUILD_PLATFORM) metro_m4_airliftlite_tinyusb --export-binaries
-			python3 $(UF2CONV) examples/Wippersnapper_demo/build/adafruit.samd.adafruit_metro_m4_airliftlite/Wippersnapper_demo.ino.bin --base $(UF2_BASE_SAMD51) --family $(UF2_FAMILY_SAMD51) -o build/samd51-metro-airlift/$(PROJECT_NAME)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH).uf2
+			python3 $(UF2CONV) examples/Wippersnapper_demo/build/adafruit.samd.adafruit_metro_m4_airliftlite/Wippersnapper_demo.ino.bin --base $(UF2_BASE_SAMD51) --family $(UF2_FAMILY_SAMD51) -o build/samd51-metro-airlift/$(PROJECT_NAME)-$(BOARD_METRO_AIRLIFT)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH).uf2
 
 samd51-pyportal:
-			mkdir -p build/$(BOARD_PYPORTAL))/
+			mkdir -p build/$(BOARD_PYPORTAL)/
 			python3 $(BUILD_PLATFORM) pyportal_tinyusb --export-binaries
 			python3 $(UF2CONV) examples/Wippersnapper_demo/build/adafruit.samd.adafruit_pyportal_m4/Wippersnapper_demo.ino.bin --base $(UF2_BASE_SAMD51) --family $(UF2_FAMILY_SAMD51) -o build/samd51-pyportal/$(PROJECT_NAME)-$(BOARD_PYPORTAL)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH).uf2
 
 clean-samd51-metro-airlift:
-			rm -r build/samd51-metro-airlift/
+			rm -r build/$(BOARD_METRO_AIRLIFT)/
+			rm -r examples/Wippersnapper_demo/build/adafruit.samd.adafruit_metro_m4_airliftlite
 
 clean-samd51-pyportal:
 			rm -r build/$(BOARD_PYPORTAL)/
