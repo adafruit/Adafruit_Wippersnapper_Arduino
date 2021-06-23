@@ -235,8 +235,8 @@ public:
   char *_topic_description; /*!< MQTT topic for the device description  */
 
   // Staging Server
-  const char *_mqtt_broker = "io.adafruit.us"; /*!< MQTT Broker URL */
-  uint16_t _mqtt_port = 8883;                  /*!< MQTT Broker URL */
+  const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
+  uint16_t _mqtt_port = 8883;                   /*!< MQTT Broker URL */
 
   // AIO credentials
   const char *_username; /*!< Adafruit IO username */
@@ -268,14 +268,6 @@ protected:
                                 MQTT broker, in milliseconds. */
   uint32_t _prvKATBlink = 0; /*!< Previous time when client pinged Adafruit IO's
                              MQTT broker, in milliseconds. */
-
-  // PoC Server
-  // const char *_mqtt_broker = "2.tcp.ngrok.io"; /*!< MQTT Broker URL */
-  // uint16_t _mqtt_port = 18653;                 /*!< MQTT Broker URL */
-
-  // Production Server
-  // const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
-  // uint16_t _mqtt_port = 8883;                   /*!< MQTT Broker URL */
 
   // Device information
   const char *_deviceId; /*!< Adafruit IO+ device identifier string */
