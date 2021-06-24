@@ -7,8 +7,9 @@ PROJECT_VER_MAJOR := 0
 PROJECT_VER_MINOR := 1
 PROJECT_VER_PATCH := 0
 
-BOARD_PYPORTAL := samd51-pyportal
+BOARD_PYPORTAL 		:= samd51-pyportal
 BOARD_METRO_AIRLIFT := samd51-metro-airlift
+BOARD_FUNHOUSE 		:= esp32s2-funhouse
 
 # NOTE: path to "ci-arduino/build_platform.py" must be set on system prior to running
 
@@ -20,8 +21,17 @@ UF2_BASE_SAMD51   := 0x4000
 UF2_FAMILY_SAMD51 := 0x55114460
 
 # ESP32-S2 - base address and familyID
-UF2_BASE_ESP32S2   := 0x00
+UF2_BASE_ESP32S2   := 0x0000
 UF2_FAMILY_ESP32S2 := 0xbfdd4eee
+
+esp32s2-funhouse:
+			mkdir -p build/$(BOARD_FUNHOUSE)/
+			arduino-cli compile --fqbn esp32:esp32:adafruit_funhouse_esp32s2 -e  examples/Wippersnapper_demo/Wippersnapper_demo.ino
+			python3 $(UF2CONV) examples/Wippersnapper_demo/build/esp32.esp32.adafruit_funhouse_esp32s2/Wippersnapper_demo.ino.bin -f $(UF2_FAMILY_ESP32S2) -b $(UF2_BASE_ESP32S2) -c -o build/$(esp32s2-funhouse)/$(PROJECT_NAME)-$(BOARD_FUNHOUSE)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH).uf2
+
+clean-esp32s2-funhouse:
+			rm -r build/$(BOARD_FUNHOUSE)/
+			rm -r examples/Wippersnapper_demo/build/esp32.esp32.adafruit_funhouse_esp32s2
 
 samd51: samd51-metro-airlift samd51-pyportal
 
