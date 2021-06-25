@@ -24,7 +24,7 @@ void setup() {
   wipper.startProvisioning();
 
   Serial.begin(115200);
-  while (!Serial) delay(10);
+  //while (!Serial) delay(10);
 
   // Validate secrets file exists
   wipper.validateProvisioningSecrets();
