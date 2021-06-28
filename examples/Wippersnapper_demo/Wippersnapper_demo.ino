@@ -1,4 +1,4 @@
-// Adafruit IO Wippersnapper Beta
+// Adafruit IO WipperSnapper Beta
 //
 //
 // NOTE: This software is a BETA release and in active development.
@@ -35,9 +35,9 @@ void setup() {
   // Set WiFi credentials
   wipper.set_ssid_pass();
 
-  Serial.println("Connecting to Wippersnapper");
+  Serial.println("Connecting to WipperSnapper");
   wipper.connect();
-  Serial.print("Connected to Wippersnapper!");
+  Serial.print("Connected to WipperSnapper!");
 
 }
 

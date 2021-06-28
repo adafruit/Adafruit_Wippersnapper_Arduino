@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve Wippersnapper Arduino
+about: Create a report to help us improve WipperSnapper Arduino
 title: ''
 labels: ''
 assignees: ''

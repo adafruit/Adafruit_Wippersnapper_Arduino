@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Wippersnapper Arduino
+about: Suggest an idea for WipperSnapper Arduino
 title: ''
 labels: ''
 assignees: ''
