@@ -26,7 +26,7 @@ UF2_FAMILY_ESP32S2 := 0xbfdd4eee
 
 esp32s2-funhouse:
 			mkdir -p build/$(BOARD_FUNHOUSE)/
-			arduino-cli compile --fqbn esp32:esp32:adafruit_funhouse_esp32s2 -e  examples/Wippersnapper_demo/Wippersnapper_demo.ino
+			arduino-cli compile --fqbn esp32:esp32:adafruit_funhouse_esp32s2:SerialMode=cdc,PSRAM=enabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none,USBStack=tinyusb -e  examples/Wippersnapper_demo/Wippersnapper_demo.ino
 			python3 $(UF2CONV) examples/Wippersnapper_demo/build/esp32.esp32.adafruit_funhouse_esp32s2/Wippersnapper_demo.ino.bin -f $(UF2_FAMILY_ESP32S2) -b $(UF2_BASE_ESP32S2) -o build/esp32s2-funhouse/$(PROJECT_NAME)-$(BOARD_FUNHOUSE)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH).uf2
 
 clean-esp32s2-funhouse:
