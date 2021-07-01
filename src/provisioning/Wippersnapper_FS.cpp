@@ -154,12 +154,6 @@ bool Wippersnapper_FS::configFileExists() {
   // Init file system on the flash
   if (!wipperFatFs.begin(&flash)) {
     WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
-    if (USB_VID == 0x239A &&
-        USB_PID == 0x80F9) { // ESP32-S2 hardware ONLY, temporary fix 'til
-                             // TinyUSB works with ESP32-S2
-      WS_DEBUG_PRINTLN("Was CircuitPython loaded on the ESP32-S2 board first "
-                       "to create the filesystem?");
-    }
     while (1)
       ;
   }
@@ -182,6 +176,18 @@ bool Wippersnapper_FS::configFileExists() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
+  // write to wipper_boot_out.txt
+  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  if (bootFile) {
+    bootFile.print("Adafruit WipperSnapper ");
+    bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR); bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_MINOR); bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_PATCH); bootFile.print("-");
+    bootFile.print(WIPPERSNAPPER_SEMVER_BUILD); bootFile.print(".");
+    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+    bootFile.close();
+  }
+
   // validate if configuration json file exists on FS
   WS_DEBUG_PRINTLN("Attempting to create secrets file...");
   // open for writing, should create a new file if one doesnt exist
@@ -206,9 +212,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
       yield();
   }
 
-  // TODO: Write out the "WIPPERSNAPPER_SEMVER_MINOR" to "boot_out.txt"
-
-  WS_DEBUG_PRINTLN("Successfully added secrets.json to WIPPER volume!");
+  WS_DEBUG_PRINTLN("Successfully added secrets.json and wipper_boot_out.txt to WIPPER volume!");
   WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
                    "changes to take effect.");
   WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
