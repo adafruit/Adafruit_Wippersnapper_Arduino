@@ -74,28 +74,49 @@ bool setVolumeLabel() {
 Wippersnapper_FS::Wippersnapper_FS() {
 
   // attempt to initialize flash library
+  WS.setStatusLEDColor(RED);
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
     while(1);
   }
 
-  // attempt to mount flash filesystem
+    // TESTING ONLY: nuke existing filesystem 
+    // attempt to create the filesystem
+    WS.setStatusLEDColor(YELLOW);
+    if (!makeFilesystem()) {
+      WS.setStatusLEDColor(YELLOW);
+      while(1);
+    }
+    WS.setStatusLEDColor(PINK);
+    // attempt to set the volume label
+    if (!setVolumeLabel()) {
+      WS.setStatusLEDColor(PINK);
+      while(1);
+    }
+    // sync all data to flash
+    flash.syncBlocks();
+    WS.statusLEDBlink(WS_LED_STATUS_CONNECTED);
+
+/*   // attempt to mount flash filesystem
   if (!wipperFatFs.begin(&flash)) {
     // filesystem does not exist on flash!
     // attempt to create the filesystem
+    WS.setStatusLEDColor(YELLOW);
     if (!makeFilesystem) {
       WS.setStatusLEDColor(YELLOW);
       while(1);
     }
+    WS.setStatusLEDColor(PINK);
     // attempt to set the volume label
     if (!setVolumeLabel) {
       WS.setStatusLEDColor(PINK);
+      while(1);
     }
     // sync all data to flash
     flash.syncBlocks();
     WS.setStatusLEDColor(GREEN);
     delay(5000);
-  }
+  } */
 
   // initialize USB-MSC device and flash
   #ifdef USE_TINYUSB
