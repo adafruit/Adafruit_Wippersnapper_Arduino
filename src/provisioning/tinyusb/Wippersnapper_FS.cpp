@@ -33,11 +33,11 @@ Adafruit_FlashTransport_ESP32 flashTransport;
 #endif
 
 Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
-FatFileSystem wipperFatFs;               ///< FatFS object
+FatFileSystem wipperFatFs;                ///< FatFS object
 
 Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 
-FATFS elmchamFatfs; ///< Elm Cham's fatfs object
+FATFS elmchamFatfs;    ///< Elm Cham's fatfs object
 uint8_t workbuf[4096]; ///< Working buffer for f_fdisk function.
 
 bool makeFilesystem() {
@@ -73,7 +73,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
-    while(1);
+    while (1)
+      ;
   }
 
   // attempt to init flash object
@@ -81,12 +82,14 @@ Wippersnapper_FS::Wippersnapper_FS() {
     // flash did NOT init, create a new FatFs
     if (!makeFilesystem()) {
       WS.setStatusLEDColor(RED);
-      while(1);
+      while (1)
+        ;
     }
     // attempt to set the volume label
     if (!setVolumeLabel()) {
       WS.setStatusLEDColor(RED);
-      while(1);
+      while (1)
+        ;
     }
     // sync all data to flash
     flash.syncBlocks();
@@ -106,7 +109,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   usb_msc.setID("Adafruit", "External Flash", "1.0");
   // Set callback
   usb_msc.setReadWriteCallback(qspi_msc_read_cb, qspi_msc_write_cb,
-                              qspi_msc_flush_cb);
+                               qspi_msc_flush_cb);
 
   // Set disk size, block size should be 512 regardless of spi flash page size
   usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
@@ -167,11 +170,16 @@ void Wippersnapper_FS::createConfigFileSkel() {
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
     bootFile.print("Adafruit WipperSnapper ");
-    bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR); bootFile.print(".");
-    bootFile.print(WIPPERSNAPPER_SEMVER_MINOR); bootFile.print(".");
-    bootFile.print(WIPPERSNAPPER_SEMVER_PATCH); bootFile.print("-");
-    bootFile.print(WIPPERSNAPPER_SEMVER_BUILD); bootFile.print(".");
-    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER); bootFile.close();
+    bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR);
+    bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_MINOR);
+    bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
+    bootFile.print("-");
+    bootFile.print(WIPPERSNAPPER_SEMVER_BUILD);
+    bootFile.print(".");
+    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+    bootFile.close();
   }
 
   // validate if configuration json file exists on FS
@@ -198,7 +206,8 @@ void Wippersnapper_FS::createConfigFileSkel() {
       yield();
   }
 
-  WS_DEBUG_PRINTLN("Successfully added secrets.json and wipper_boot_out.txt to WIPPER volume!");
+  WS_DEBUG_PRINTLN("Successfully added secrets.json and wipper_boot_out.txt to "
+                   "WIPPER volume!");
   WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
                    "changes to take effect.");
   WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
@@ -367,78 +376,66 @@ void qspi_msc_flush_cb(void) {
   wipperFatFs.cacheClear();
 }
 
-
 //--------------------------------------------------------------------+
 // fatfs diskio
 //--------------------------------------------------------------------+
-extern "C"
-{
+extern "C" {
 
-DSTATUS disk_status ( BYTE pdrv )
-{
-  (void) pdrv;
-	return 0;
+DSTATUS disk_status(BYTE pdrv) {
+  (void)pdrv;
+  return 0;
 }
 
-DSTATUS disk_initialize ( BYTE pdrv )
-{
-  (void) pdrv;
-	return 0;
+DSTATUS disk_initialize(BYTE pdrv) {
+  (void)pdrv;
+  return 0;
 }
 
-DRESULT disk_read (
-	BYTE pdrv,		/* Physical drive nmuber to identify the drive */
-	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Start sector in LBA */
-	UINT count		/* Number of sectors to read */
-)
-{
-  (void) pdrv;
-	return flash.readBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
+DRESULT disk_read(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
+                  BYTE *buff, /* Data buffer to store read data */
+                  DWORD sector, /* Start sector in LBA */
+                  UINT count    /* Number of sectors to read */
+) {
+  (void)pdrv;
+  return flash.readBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
-DRESULT disk_write (
-	BYTE pdrv,			/* Physical drive nmuber to identify the drive */
-	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Start sector in LBA */
-	UINT count			/* Number of sectors to write */
-)
-{
-  (void) pdrv;
+DRESULT disk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
+                   const BYTE *buff, /* Data to be written */
+                   DWORD sector,     /* Start sector in LBA */
+                   UINT count        /* Number of sectors to write */
+) {
+  (void)pdrv;
   return flash.writeBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
-DRESULT disk_ioctl (
-	BYTE pdrv,		/* Physical drive nmuber (0..) */
-	BYTE cmd,		/* Control code */
-	void *buff		/* Buffer to send/receive control data */
-)
-{
-  (void) pdrv;
+DRESULT disk_ioctl(BYTE pdrv, /* Physical drive nmuber (0..) */
+                   BYTE cmd,  /* Control code */
+                   void *buff /* Buffer to send/receive control data */
+) {
+  (void)pdrv;
 
-  switch ( cmd )
-  {
-    case CTRL_SYNC:
-      flash.syncBlocks();
-      return RES_OK;
+  switch (cmd) {
+  case CTRL_SYNC:
+    flash.syncBlocks();
+    return RES_OK;
 
-    case GET_SECTOR_COUNT:
-      *((DWORD*) buff) = flash.size()/512;
-      return RES_OK;
+  case GET_SECTOR_COUNT:
+    *((DWORD *)buff) = flash.size() / 512;
+    return RES_OK;
 
-    case GET_SECTOR_SIZE:
-      *((WORD*) buff) = 512;
-      return RES_OK;
+  case GET_SECTOR_SIZE:
+    *((WORD *)buff) = 512;
+    return RES_OK;
 
-    case GET_BLOCK_SIZE:
-      *((DWORD*) buff) = 8;    // erase block size in units of sector size
-      return RES_OK;
+  case GET_BLOCK_SIZE:
+    *((DWORD *)buff) = 8; // erase block size in units of sector size
+    return RES_OK;
 
-    default:
-      return RES_PARERR;
+  default:
+    return RES_PARERR;
   }
 }
-
 }
 
 #endif // USE_TINYUSB
