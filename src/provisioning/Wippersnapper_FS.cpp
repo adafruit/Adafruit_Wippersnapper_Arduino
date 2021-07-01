@@ -80,8 +80,9 @@ Wippersnapper_FS::Wippersnapper_FS() {
     while(1);
   }
 
-    // TESTING ONLY: nuke existing filesystem 
-    // attempt to create the filesystem
+  // attempt to initialize flash object
+  if (!wipperFatFs.begin(&flash)) {
+    // flash did NOT init, create the FS
     WS.setStatusLEDColor(YELLOW);
     if (!makeFilesystem()) {
       WS.setStatusLEDColor(YELLOW);
@@ -96,27 +97,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
     // sync all data to flash
     flash.syncBlocks();
     WS.statusLEDBlink(WS_LED_STATUS_CONNECTED);
+  }
 
-/*   // attempt to mount flash filesystem
-  if (!wipperFatFs.begin(&flash)) {
-    // filesystem does not exist on flash!
-    // attempt to create the filesystem
-    WS.setStatusLEDColor(YELLOW);
-    if (!makeFilesystem) {
-      WS.setStatusLEDColor(YELLOW);
-      while(1);
-    }
-    WS.setStatusLEDColor(PINK);
-    // attempt to set the volume label
-    if (!setVolumeLabel) {
-      WS.setStatusLEDColor(PINK);
-      while(1);
-    }
-    // sync all data to flash
-    flash.syncBlocks();
-    WS.setStatusLEDColor(GREEN);
-    delay(5000);
-  } */
 
   // initialize USB-MSC device and flash
   #ifdef USE_TINYUSB
@@ -229,6 +211,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
   WS_DEBUG_PRINTLN("Successfully added secrets.json to WIPPER volume!");
   WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
                    "changes to take effect.");
+  WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
   while (1)
     yield();
 }
