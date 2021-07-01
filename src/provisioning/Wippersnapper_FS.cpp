@@ -134,12 +134,14 @@ void Wippersnapper_FS::createConfigFileSkel() {
     // Detect which configuration file template via board type //
     // Hardware with built-in AirLift
     if (USB_VID == 0x239A && (USB_PID == 0x8036 || USB_PID == 0x8038)) {
-      // Write airlift's secrets.json template to file.
+      // Write airlift secrets.json to fs
       secretsFile.println(FILE_TEMPLATE_AIRLIFT);
-      // done writing, close it
+      secretsFile.close();
+    } else if (USB_VID == 0x239A && USB_PID == 0x80F9) {
+      // Write esp32-s2 secrets.json to fs
+      secretsFile.println(FILE_TEMPLATE_WIFI_ESP32S2);
       secretsFile.close();
     }
-    // NOTE: We'll eventually want to create the FILE_TEMPLATE_NATIVE_WIFI here
   } else {
     WS_DEBUG_PRINTLN(
         "ERROR: Could not create secrets.json on QSPI flash filesystem.");

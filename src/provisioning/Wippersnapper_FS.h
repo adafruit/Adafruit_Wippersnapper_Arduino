@@ -34,6 +34,18 @@
 ///< configuration
 ///< file
 
+#define FILE_TEMPLATE_WIFI_ESP32S2                                             \
+  "{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_key\":\"YOUR_IO_"   \
+  "KEY_"                                                                       \
+  "HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_ssid\":\"YOUR_"    \
+  "WIFI_SSID_"                                                                 \
+  "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}" ///< JSON
+                                                                      ///< string
+                                                                      ///< for
+///< esp32s2-specific
+///< configuration
+///< file
+
 // forward decl.
 class Wippersnapper;
 
