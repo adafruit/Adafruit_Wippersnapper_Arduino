@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(USE_TINYUSB) || defined(ARDUINO_FUNHOUSE_ESP32S2)
+#if defined(USE_TINYUSB)
 #include "Wippersnapper_FS.h"
 
 // On-board external flash (QSPI or SPI) macros should already
@@ -35,9 +35,7 @@ Adafruit_FlashTransport_ESP32 flashTransport;
 Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
 FatFileSystem wipperFatFs;               ///< FatFS object
 
-#ifdef USE_TINYUSB
 Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
-#endif                     // USE_TINYUSB
 
 FATFS elmchamFatfs; ///< Elm Cham's fatfs object
 uint8_t workbuf[4096]; ///< Working buffer for f_fdisk function.
@@ -73,16 +71,16 @@ bool setVolumeLabel() {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
 
-  // attempt to initialize flash library
+  // attempt to init flash library
   WS.setStatusLEDColor(RED);
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
     while(1);
   }
 
-  // attempt to initialize flash object
+  // attempt to init flash object
   if (!wipperFatFs.begin(&flash)) {
-    // flash did NOT init, create the FS
+    // flash did NOT init, create a new FatFs
     WS.setStatusLEDColor(YELLOW);
     if (!makeFilesystem()) {
       WS.setStatusLEDColor(YELLOW);
@@ -99,39 +97,33 @@ Wippersnapper_FS::Wippersnapper_FS() {
     WS.statusLEDBlink(WS_LED_STATUS_CONNECTED);
   }
 
-
   // initialize USB-MSC device and flash
-  #ifdef USE_TINYUSB
-    // detach the USB during initialization
-    USBDevice.detach();
-    // wait for detach
-    delay(50);
-  #endif // USE_TINYUSB
+  // detach the USB during initialization
+  USBDevice.detach();
+  // wait for detach
+  delay(500);
 
+  // init flash fs
   flash.begin();
 
-  #ifdef USE_TINYUSB
-    // Set disk vendor id, product id and revision with string up to 8, 16, 4
-    // characters respectively
-    usb_msc.setID("Adafruit", "External Flash", "1.0");
+  // Set disk vendor id, product id and revision with string up to 8, 16, 4
+  // characters respectively
+  usb_msc.setID("Adafruit", "External Flash", "1.0");
+  // Set callback
+  usb_msc.setReadWriteCallback(qspi_msc_read_cb, qspi_msc_write_cb,
+                              qspi_msc_flush_cb);
 
-    // Set callback
-    usb_msc.setReadWriteCallback(qspi_msc_read_cb, qspi_msc_write_cb,
-                                qspi_msc_flush_cb);
+  // Set disk size, block size should be 512 regardless of spi flash page size
+  usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
+  // MSC is ready for read/write
+  usb_msc.setUnitReady(true);
+  // init MSC
+  usb_msc.begin();
 
-    // Set disk size, block size should be 512 regardless of spi flash page size
-    usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
-
-    // MSC is ready for read/write
-    usb_msc.setUnitReady(true);
-
-    usb_msc.begin();
-
-    // re-attach the usb device
-    USBDevice.attach();
-    // wait for enumeration
-    delay(500);
-  #endif // USE_TINYUSB
+  // re-attach the usb device
+  USBDevice.attach();
+  // wait for enumeration
+  delay(500);
 }
 
 /************************************************************/
@@ -184,8 +176,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
     bootFile.print(WIPPERSNAPPER_SEMVER_MINOR); bootFile.print(".");
     bootFile.print(WIPPERSNAPPER_SEMVER_PATCH); bootFile.print("-");
     bootFile.print(WIPPERSNAPPER_SEMVER_BUILD); bootFile.print(".");
-    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
-    bootFile.close();
+    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER); bootFile.close();
   }
 
   // validate if configuration json file exists on FS

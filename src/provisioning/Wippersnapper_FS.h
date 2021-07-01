@@ -15,9 +15,7 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#ifdef USE_TINYUSB
 #include "Adafruit_TinyUSB.h"
-#endif // USE_TINYUSB
 #include "Adafruit_SPIFlash.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting

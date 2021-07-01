@@ -45,8 +45,7 @@
 #include <ArduinoJson.h>
 #include <SPI.h>
 
-// tinyusb and spiflash for USB MSC
-#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
+#ifdef USE_TINYUSB
 #include "provisioning/Wippersnapper_FS.h"
 #endif
 
