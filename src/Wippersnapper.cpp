@@ -74,6 +74,7 @@ Wippersnapper::~Wippersnapper() {
 */
 /****************************************************************************/
 void Wippersnapper::startProvisioning() {
+  statusLEDInit();
 #if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
   // Filesystem-based provisioning flow
   _fileSystem = new Wippersnapper_FS(); // Initialize the QSPI flash FS
@@ -736,8 +737,8 @@ void Wippersnapper::subscribeWSTopics() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
-  statusLEDInit();
-  setStatusLEDColor(LED_HW_INIT);
+  /*   statusLEDInit();
+    setStatusLEDColor(LED_HW_INIT); */
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;

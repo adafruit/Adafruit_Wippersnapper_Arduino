@@ -41,7 +41,7 @@ bool Wippersnapper::statusLEDInit() {
   if (usingStatusNeoPixel == false) {
     statusPixel->begin();
     statusPixel->show(); // turn all pixels off
-    statusPixel->setBrightness(20);
+    statusPixel->setBrightness(10);
     usingStatusNeoPixel = true;
     is_success = true;
   }
@@ -51,7 +51,7 @@ bool Wippersnapper::statusLEDInit() {
   if (usingStatusDotStar == false) {
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn all pixels off
-    statusPixelDotStar->setBrightness(20);
+    statusPixelDotStar->setBrightness(10);
     usingStatusDotStar = true;
     is_success = true;
   }

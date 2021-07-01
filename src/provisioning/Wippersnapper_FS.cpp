@@ -45,6 +45,17 @@ Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
+
+  // WS.setStatusLEDColor(LED_ERROR);
+
+  // TODO: Init flash library
+
+  // TODO: Attempt to mount FS
+
+  // IF NOT MOUNTED: format
+
+  // IF mounted, perform steps below
+
 #ifdef USE_TINYUSB
   // detach the USB during initialization
   USBDevice.detach();
@@ -149,6 +160,9 @@ void Wippersnapper_FS::createConfigFileSkel() {
     while (1)
       yield();
   }
+
+  // TODO: Write out the "WIPPERSNAPPER_SEMVER_MINOR" to "boot_out.txt"
+
   WS_DEBUG_PRINTLN("Successfully added secrets.json to WIPPER volume!");
   WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
                    "changes to take effect.");
