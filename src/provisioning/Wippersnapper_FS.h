@@ -20,6 +20,10 @@
 #endif // USE_TINYUSB
 #include "Adafruit_SPIFlash.h"
 #include "SdFat.h"
+// using f_mkfs() for formatting
+#include "ff.h"
+#include "diskio.h"
+
 #include "Wippersnapper.h"
 
 #define FILE_TEMPLATE_AIRLIFT                                                  \
@@ -46,6 +50,7 @@
 ///< configuration
 ///< file
 
+#define VOLUME_LABEL "WIPPER" ///< FatFs volume label
 // forward decl.
 class Wippersnapper;
 
