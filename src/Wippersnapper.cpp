@@ -74,7 +74,8 @@ Wippersnapper::~Wippersnapper() {
 */
 /****************************************************************************/
 void Wippersnapper::startProvisioning() {
-#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
+  statusLEDInit();
+#ifdef USE_TINYUSB
   // Filesystem-based provisioning flow
   _fileSystem = new Wippersnapper_FS(); // Initialize the QSPI flash FS
 #elif defined(USE_NVS)
@@ -89,7 +90,7 @@ void Wippersnapper::startProvisioning() {
 */
 /****************************************************************************/
 void Wippersnapper::validateProvisioningSecrets() {
-#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
+#ifdef USE_TINYUSB
   // check for secrets.json, create if doesn't exist
   if (!_fileSystem->configFileExists()) {
     // create config file on filesystem
@@ -115,7 +116,7 @@ void Wippersnapper::validateProvisioningSecrets() {
 /****************************************************************************/
 bool Wippersnapper::parseProvisioningSecrets() {
   bool is_successful = false;
-#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
+#ifdef USE_TINYUSB
   is_successful = _fileSystem->parseSecrets();
   // delete _fileSystem;
 #elif defined(USE_NVS)
@@ -148,7 +149,7 @@ void Wippersnapper::set_user_key(const char *aio_username,
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
-#if defined(USE_TINYUSB) || defined(USE_FLASH_FS)
+#ifdef USE_TINYUSB
   if (_fileSystem->io_username != NULL) {
     WS._username = _fileSystem->io_username;
   } else {
@@ -736,8 +737,8 @@ void Wippersnapper::subscribeWSTopics() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
-  statusLEDInit();
-  setStatusLEDColor(LED_HW_INIT);
+  /*   statusLEDInit();
+    setStatusLEDColor(LED_HW_INIT); */
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;

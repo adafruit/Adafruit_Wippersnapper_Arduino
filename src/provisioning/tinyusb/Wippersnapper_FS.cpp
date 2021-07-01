@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(USE_TINYUSB) || defined(ARDUINO_FUNHOUSE_ESP32S2)
+#if defined(USE_TINYUSB)
 #include "Wippersnapper_FS.h"
 
 // On-board external flash (QSPI or SPI) macros should already
@@ -32,12 +32,37 @@ Adafruit_FlashTransport_ESP32 flashTransport;
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
 
-Adafruit_SPIFlash flash(&flashTransport); ///< QSPI flash object
-FatFileSystem wipperQSPIFS;               ///< QSPI FatFS object
+Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
+FatFileSystem wipperFatFs;                ///< FatFS object
 
-#ifdef USE_TINYUSB
 Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
-#endif                     // USE_TINYUSB
+
+FATFS elmchamFatfs;    ///< Elm Cham's fatfs object
+uint8_t workbuf[4096]; ///< Working buffer for f_fdisk function.
+
+bool makeFilesystem() {
+  FRESULT r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf, sizeof(workbuf));
+  if (r != FR_OK) {
+    return false;
+  }
+  return true;
+}
+
+bool setVolumeLabel() {
+  // mount to set disk label
+  FRESULT r = f_mount(&elmchamFatfs, "0:", 1);
+  if (r != FR_OK) {
+    return false;
+  }
+  // set label
+  r = f_setlabel(VOLUME_LABEL);
+  if (r != FR_OK) {
+    return false;
+  }
+  // unmount the fs
+  f_unmount("0:");
+  return true;
+}
 
 /**************************************************************************/
 /*!
@@ -45,37 +70,58 @@ Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
-#ifdef USE_TINYUSB
+
+  if (!flash.begin()) {
+    WS.setStatusLEDColor(RED);
+    while (1)
+      ;
+  }
+
+  // attempt to init flash object
+  if (!wipperFatFs.begin(&flash)) {
+    // flash did NOT init, create a new FatFs
+    if (!makeFilesystem()) {
+      WS.setStatusLEDColor(RED);
+      while (1)
+        ;
+    }
+    // attempt to set the volume label
+    if (!setVolumeLabel()) {
+      WS.setStatusLEDColor(RED);
+      while (1)
+        ;
+    }
+    // sync all data to flash
+    flash.syncBlocks();
+  }
+
+  // initialize USB-MSC device and flash
   // detach the USB during initialization
   USBDevice.detach();
   // wait for detach
-  delay(50);
-#endif // USE_TINYUSB
+  delay(500);
 
+  // init flash fs
   flash.begin();
 
-#ifdef USE_TINYUSB
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
   usb_msc.setID("Adafruit", "External Flash", "1.0");
-
   // Set callback
   usb_msc.setReadWriteCallback(qspi_msc_read_cb, qspi_msc_write_cb,
                                qspi_msc_flush_cb);
 
   // Set disk size, block size should be 512 regardless of spi flash page size
   usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
-
   // MSC is ready for read/write
   usb_msc.setUnitReady(true);
-
+  // init MSC
   usb_msc.begin();
 
   // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
   delay(500);
-#endif // USE_TINYUSB
 }
 
 /************************************************************/
@@ -96,19 +142,13 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
   // Init file system on the flash
-  if (!wipperQSPIFS.begin(&flash)) {
+  if (!wipperFatFs.begin(&flash)) {
     WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
-    if (USB_VID == 0x239A &&
-        USB_PID == 0x80F9) { // ESP32-S2 hardware ONLY, temporary fix 'til
-                             // TinyUSB works with ESP32-S2
-      WS_DEBUG_PRINTLN("Was CircuitPython loaded on the ESP32-S2 board first "
-                       "to create the filesystem?");
-    }
     while (1)
       ;
   }
 
-  File secretsFile = wipperQSPIFS.open("/secrets.json");
+  File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN(
         "ERROR: secrets.json file does not exist on flash filesystem.");
@@ -126,20 +166,38 @@ bool Wippersnapper_FS::configFileExists() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
+  // write to wipper_boot_out.txt
+  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  if (bootFile) {
+    bootFile.print("Adafruit WipperSnapper ");
+    bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR);
+    bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_MINOR);
+    bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
+    bootFile.print("-");
+    bootFile.print(WIPPERSNAPPER_SEMVER_BUILD);
+    bootFile.print(".");
+    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+    bootFile.close();
+  }
+
   // validate if configuration json file exists on FS
   WS_DEBUG_PRINTLN("Attempting to create secrets file...");
   // open for writing, should create a new file if one doesnt exist
-  File secretsFile = wipperQSPIFS.open("/secrets.json", FILE_WRITE);
+  File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (secretsFile) {
     // Detect which configuration file template via board type //
     // Hardware with built-in AirLift
     if (USB_VID == 0x239A && (USB_PID == 0x8036 || USB_PID == 0x8038)) {
-      // Write airlift's secrets.json template to file.
+      // Write airlift secrets.json to fs
       secretsFile.println(FILE_TEMPLATE_AIRLIFT);
-      // done writing, close it
+      secretsFile.close();
+    } else if (USB_VID == 0x239A && USB_PID == 0x80F9) {
+      // Write esp32-s2 secrets.json to fs
+      secretsFile.println(FILE_TEMPLATE_WIFI_ESP32S2);
       secretsFile.close();
     }
-    // NOTE: We'll eventually want to create the FILE_TEMPLATE_NATIVE_WIFI here
   } else {
     WS_DEBUG_PRINTLN(
         "ERROR: Could not create secrets.json on QSPI flash filesystem.");
@@ -147,9 +205,12 @@ void Wippersnapper_FS::createConfigFileSkel() {
     while (1)
       yield();
   }
-  WS_DEBUG_PRINTLN("Successfully added secrets.json to WIPPER volume!");
+
+  WS_DEBUG_PRINTLN("Successfully added secrets.json and wipper_boot_out.txt to "
+                   "WIPPER volume!");
   WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
                    "changes to take effect.");
+  WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
   while (1)
     yield();
 }
@@ -163,7 +224,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
 bool Wippersnapper_FS::parseSecrets() {
   setNetwork = false;
   // open file for parsing
-  File secretsFile = wipperQSPIFS.open("/secrets.json");
+  File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
     return false;
@@ -312,7 +373,69 @@ void qspi_msc_flush_cb(void) {
   // sync w/flash
   flash.syncBlocks();
   // clear file system's cache to force refresh
-  wipperQSPIFS.cacheClear();
+  wipperFatFs.cacheClear();
+}
+
+//--------------------------------------------------------------------+
+// fatfs diskio
+//--------------------------------------------------------------------+
+extern "C" {
+
+DSTATUS disk_status(BYTE pdrv) {
+  (void)pdrv;
+  return 0;
+}
+
+DSTATUS disk_initialize(BYTE pdrv) {
+  (void)pdrv;
+  return 0;
+}
+
+DRESULT disk_read(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
+                  BYTE *buff, /* Data buffer to store read data */
+                  DWORD sector, /* Start sector in LBA */
+                  UINT count    /* Number of sectors to read */
+) {
+  (void)pdrv;
+  return flash.readBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
+}
+
+DRESULT disk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
+                   const BYTE *buff, /* Data to be written */
+                   DWORD sector,     /* Start sector in LBA */
+                   UINT count        /* Number of sectors to write */
+) {
+  (void)pdrv;
+  return flash.writeBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
+}
+
+DRESULT disk_ioctl(BYTE pdrv, /* Physical drive nmuber (0..) */
+                   BYTE cmd,  /* Control code */
+                   void *buff /* Buffer to send/receive control data */
+) {
+  (void)pdrv;
+
+  switch (cmd) {
+  case CTRL_SYNC:
+    flash.syncBlocks();
+    return RES_OK;
+
+  case GET_SECTOR_COUNT:
+    *((DWORD *)buff) = flash.size() / 512;
+    return RES_OK;
+
+  case GET_SECTOR_SIZE:
+    *((WORD *)buff) = 512;
+    return RES_OK;
+
+  case GET_BLOCK_SIZE:
+    *((DWORD *)buff) = 8; // erase block size in units of sector size
+    return RES_OK;
+
+  default:
+    return RES_PARERR;
+  }
+}
 }
 
 #endif // USE_TINYUSB

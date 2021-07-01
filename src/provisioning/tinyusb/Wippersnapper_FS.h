@@ -15,11 +15,13 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#ifdef USE_TINYUSB
 #include "Adafruit_TinyUSB.h"
-#endif // USE_TINYUSB
 #include "Adafruit_SPIFlash.h"
 #include "SdFat.h"
+// using f_mkfs() for formatting
+#include "fatfs/ff.h"
+#include "fatfs/diskio.h"
+
 #include "Wippersnapper.h"
 
 #define FILE_TEMPLATE_AIRLIFT                                                  \
@@ -34,6 +36,19 @@
 ///< configuration
 ///< file
 
+#define FILE_TEMPLATE_WIFI_ESP32S2                                             \
+  "{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_key\":\"YOUR_IO_"   \
+  "KEY_"                                                                       \
+  "HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_ssid\":\"YOUR_"    \
+  "WIFI_SSID_"                                                                 \
+  "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}" ///< JSON
+                                                                      ///< string
+                                                                      ///< for
+///< esp32s2-specific
+///< configuration
+///< file
+
+#define VOLUME_LABEL "WIPPER" ///< FatFs volume label
 // forward decl.
 class Wippersnapper;
 

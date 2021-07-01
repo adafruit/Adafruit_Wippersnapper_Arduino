@@ -35,6 +35,7 @@
 
 /** Defines the Wippersnapper status LED states */
 typedef enum {
+  WS_LED_STATUS_FS_WRITE,
   WS_LED_STATUS_CONNECTED,
   WS_LED_STATUS_KAT,
   WS_LED_STATUS_ERROR
