@@ -46,7 +46,7 @@
 #include <SPI.h>
 
 #ifdef USE_TINYUSB
-#include "provisioning/Wippersnapper_FS.h"
+#include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
 
 #ifdef USE_NVS
@@ -57,7 +57,7 @@
 #define WIPPERSNAPPER_SEMVER_MINOR      0      ///< Library SemVer Minor
 #define WIPPERSNAPPER_SEMVER_PATCH      0      ///< Library SemVer Patch
 #define WIPPERSNAPPER_SEMVER_BUILD      "BETA" ///< Library SemVer Build Name
-#define WIPPERSNAPPER_SEMVER_BUILD_VER  1 ///< Library SemVer Build Name
+#define WIPPERSNAPPER_SEMVER_BUILD_VER  1      ///< Library SemVer Build Name
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic

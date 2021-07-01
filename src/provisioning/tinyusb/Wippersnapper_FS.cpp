@@ -71,8 +71,6 @@ bool setVolumeLabel() {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
 
-  // attempt to init flash library
-  WS.setStatusLEDColor(RED);
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
     while(1);
@@ -81,20 +79,17 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // attempt to init flash object
   if (!wipperFatFs.begin(&flash)) {
     // flash did NOT init, create a new FatFs
-    WS.setStatusLEDColor(YELLOW);
     if (!makeFilesystem()) {
-      WS.setStatusLEDColor(YELLOW);
+      WS.setStatusLEDColor(RED);
       while(1);
     }
-    WS.setStatusLEDColor(PINK);
     // attempt to set the volume label
     if (!setVolumeLabel()) {
-      WS.setStatusLEDColor(PINK);
+      WS.setStatusLEDColor(RED);
       while(1);
     }
     // sync all data to flash
     flash.syncBlocks();
-    WS.statusLEDBlink(WS_LED_STATUS_CONNECTED);
   }
 
   // initialize USB-MSC device and flash

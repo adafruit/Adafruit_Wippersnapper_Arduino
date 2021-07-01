@@ -19,8 +19,8 @@
 #include "Adafruit_SPIFlash.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "ff.h"
-#include "diskio.h"
+#include "fatfs/ff.h"
+#include "fatfs/diskio.h"
 
 #include "Wippersnapper.h"
 
