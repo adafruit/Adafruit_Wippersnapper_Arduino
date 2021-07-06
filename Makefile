@@ -13,6 +13,7 @@ BOARD_PYPORTAL 		:= samd51-pyportal
 BOARD_METRO_AIRLIFT := samd51-metro-airlift
 BOARD_FUNHOUSE 		:= esp32s2-funhouse
 BOARD_METRO_S2		:= esp32s2-metro
+BOARD_MAGTAG_S2		:= esp32s2-magtag
 
 # NOTE: path to "ci-arduino/build_platform.py" must be set on system prior to running
 
@@ -31,13 +32,22 @@ all: esp32s2 samd51
 clean-all: clean-esp32s2 clean-samd51
 
 ## ESP32-S2 ##
-esp32s2: esp32s2-funhouse esp32s2-metro
-clean-esp32s2: clean-esp32s2-funhouse clean-esp32s2-metro
+esp32s2: esp32s2-funhouse esp32s2-metro esp32s2-magtag
+clean-esp32s2: clean-esp32s2-funhouse clean-esp32s2-metro clean-esp32s2-magtag
+
+esp32s2-magtag:
+			mkdir -p build/$(BOARD_MAGTAG_S2)/
+			arduino-cli compile --fqbn esp32:esp32:adafruit_magtag29_esp32s2:SerialMode=cdc,PSRAM=enabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none,USBStack=tinyusb -e  examples/Wippersnapper_demo/Wippersnapper_demo.ino
+			python3 $(UF2CONV) examples/Wippersnapper_demo/build/esp32.esp32.adafruit_magtag29_esp32s2/Wippersnapper_demo.ino.bin -f $(UF2_FAMILY_ESP32S2) -b $(UF2_BASE_ESP32S2) -o build/esp32s2-magtag/$(PROJECT_NAME)-$(BOARD_MAGTAG_S2)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH)-$(PROJECT_VER_BUILD)-$(PROJECT_VER_BUILD_NUM).uf2
+
+clean-esp32s2-magtag:
+			rm -r build/$(BOARD_MAGTAG_S2)/
+			rm -r examples/Wippersnapper_demo/build/esp32.esp32.adafruit_magtag29_esp32s2
 
 esp32s2-metro:
 			mkdir -p build/$(BOARD_METRO_S2)/
 			arduino-cli compile --fqbn esp32:esp32:adafruit_metro_esp32s2:SerialMode=cdc,PSRAM=enabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none,USBStack=tinyusb -e  examples/Wippersnapper_demo/Wippersnapper_demo.ino
-			python3 $(UF2CONV) examples/Wippersnapper_demo/build/esp32.esp32.adafruit_metro_esp32s2/Wippersnapper_demo.ino.bin -f $(UF2_FAMILY_ESP32S2) -b $(UF2_BASE_ESP32S2) -o build/esp32s2-funhouse/$(PROJECT_NAME)-$(BOARD_METRO_S2)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH)-$(PROJECT_VER_BUILD)-$(PROJECT_VER_BUILD_NUM).uf2
+			python3 $(UF2CONV) examples/Wippersnapper_demo/build/esp32.esp32.adafruit_metro_esp32s2/Wippersnapper_demo.ino.bin -f $(UF2_FAMILY_ESP32S2) -b $(UF2_BASE_ESP32S2) -o build/esp32s2-metro/$(PROJECT_NAME)-$(BOARD_METRO_S2)-$(PROJECT_VER_MAJOR)-$(PROJECT_VER_MINOR)-$(PROJECT_VER_PATCH)-$(PROJECT_VER_BUILD)-$(PROJECT_VER_BUILD_NUM).uf2
 
 clean-esp32s2-metro:
 			rm -r build/$(BOARD_METRO_S2)/
