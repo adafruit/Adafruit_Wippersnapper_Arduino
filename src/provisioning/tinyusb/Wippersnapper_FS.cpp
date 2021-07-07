@@ -179,6 +179,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
     bootFile.print(WIPPERSNAPPER_SEMVER_BUILD);
     bootFile.print(".");
     bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+    bootFile.flush();
     bootFile.close();
   }
 
@@ -192,10 +193,12 @@ void Wippersnapper_FS::createConfigFileSkel() {
     if (USB_VID == 0x239A && (USB_PID == 0x8036 || USB_PID == 0x8038)) {
       // Write airlift secrets.json to fs
       secretsFile.println(FILE_TEMPLATE_AIRLIFT);
+      secretsFile.flush();
       secretsFile.close();
     } else if (USB_VID == 0x239A && (USB_PID == 0x80F9 || USB_PID == 0x80DF)) {
       // Write esp32-s2 secrets.json to fs
       secretsFile.println(FILE_TEMPLATE_WIFI_ESP32S2);
+      secretsFile.flush();
       secretsFile.close();
     }
   } else {
