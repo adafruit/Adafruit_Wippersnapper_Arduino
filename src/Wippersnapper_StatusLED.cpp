@@ -37,40 +37,40 @@ extern Wippersnapper WS;
 bool Wippersnapper::statusLEDInit() {
   bool is_success = false;
 
-  #ifdef USE_STATUS_NEOPIXEL
-    if (usingStatusNeoPixel == false) {
-      statusPixel->begin();
-      statusPixel->show(); // turn all pixels off
-      statusPixel->setBrightness(10);
-      usingStatusNeoPixel = true;
-      is_success = true;
-    }
-  #endif
+#ifdef USE_STATUS_NEOPIXEL
+  if (usingStatusNeoPixel == false) {
+    statusPixel->begin();
+    statusPixel->show(); // turn all pixels off
+    statusPixel->setBrightness(10);
+    usingStatusNeoPixel = true;
+    is_success = true;
+  }
+#endif
 
-  // some hardware requires the NEOPIXEL_POWER pin to be enabled.
-  #ifdef NEEDS_STATUS_NEOPIXEL_POWER
-    pinMode(NEOPIXEL_POWER, OUTPUT);
-    digitalWrite(NEOPIXEL_POWER, LOW);
-  #endif
+// some hardware requires the NEOPIXEL_POWER pin to be enabled.
+#ifdef NEEDS_STATUS_NEOPIXEL_POWER
+  pinMode(NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_POWER, LOW);
+#endif
 
-  #ifdef USE_STATUS_DOTSTAR
-    if (usingStatusDotStar == false) {
-      statusPixelDotStar->begin();
-      statusPixelDotStar->show(); // turn all pixels off
-      statusPixelDotStar->setBrightness(10);
-      usingStatusDotStar = true;
-      is_success = true;
-    }
-  #endif
+#ifdef USE_STATUS_DOTSTAR
+  if (usingStatusDotStar == false) {
+    statusPixelDotStar->begin();
+    statusPixelDotStar->show(); // turn all pixels off
+    statusPixelDotStar->setBrightness(10);
+    usingStatusDotStar = true;
+    is_success = true;
+  }
+#endif
 
-  #ifdef USE_STATUS_LED
-    if (!WS.usingStatusLED) {
-      pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
-      digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
-      WS.usingStatusLED = true;        // set global pin "lock" flag
-      is_success = true;
-    }
-  #endif
+#ifdef USE_STATUS_LED
+  if (!WS.usingStatusLED) {
+    pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
+    digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
+    WS.usingStatusLED = true;        // set global pin "lock" flag
+    is_success = true;
+  }
+#endif
   return is_success;
 }
 
