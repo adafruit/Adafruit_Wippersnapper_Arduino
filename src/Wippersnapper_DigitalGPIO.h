@@ -42,7 +42,8 @@ public:
 
   void
   initDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
-                 uint8_t pinName, float period);
+                 uint8_t pinName, float period,
+                 wippersnapper_pin_v1_ConfigurePinRequest_Pull pull);
   void
   deinitDigitalPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
                    uint8_t pinName);

@@ -47,6 +47,12 @@ bool Wippersnapper::statusLEDInit() {
   }
 #endif
 
+// some hardware requires the NEOPIXEL_POWER pin to be enabled.
+#ifdef NEEDS_STATUS_NEOPIXEL_POWER
+  pinMode(NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_POWER, LOW);
+#endif
+
 #ifdef USE_STATUS_DOTSTAR
   if (usingStatusDotStar == false) {
     statusPixelDotStar->begin();
