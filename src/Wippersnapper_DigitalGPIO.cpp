@@ -55,7 +55,8 @@ Wippersnapper_DigitalGPIO::~Wippersnapper_DigitalGPIO() {
 /*******************************************************************************************************************************/
 void Wippersnapper_DigitalGPIO::initDigitalPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
-    uint8_t pinName, float period) {
+    uint8_t pinName, float period,
+    wippersnapper_pin_v1_ConfigurePinRequest_Pull pull) {
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
 #ifdef STATUS_LED_PIN
@@ -72,8 +73,14 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
       direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     WS_DEBUG_PRINT("Configuring digital input pin on D");
-    WS_DEBUG_PRINTLN(pinName);
-    pinMode(pinName, INPUT);
+    WS_DEBUG_PRINT(pinName);
+    if (pull == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
+      WS_DEBUG_PRINTLN("with internal pull-up enabled");
+      pinMode(pinName, INPUT_PULLUP);
+    } else {
+      pinMode(pinName, INPUT);
+      WS_DEBUG_PRINT("\n");
+    }
 
     // Period is in seconds, cast it to long and convert it to milliseconds
     long periodMs = (long)period * 1000;

@@ -194,7 +194,8 @@ bool Wippersnapper::configurePinRequest(
     if (pinMsg->request_type ==
         wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
       // Initialize GPIO pin
-      WS._digitalGPIO->initDigitalPin(pinMsg->direction, pin, pinMsg->period);
+      WS._digitalGPIO->initDigitalPin(pinMsg->direction, pin, pinMsg->period,
+                                      pinMsg->pull);
     } else if (
         pinMsg->request_type ==
         wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
