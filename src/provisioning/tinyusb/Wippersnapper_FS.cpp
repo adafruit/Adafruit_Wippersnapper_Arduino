@@ -179,6 +179,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
     bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
     bootFile.print(".");
     bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+    bootFile.println("---DEBUG OUTPUT---");
     bootFile.flush();
     bootFile.close();
   }
@@ -213,6 +214,12 @@ void Wippersnapper_FS::createConfigFileSkel() {
                    "WIPPER volume!");
   WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
                    "changes to take effect.");
+  // Log to wipper_boot_out.txt
+  writeErrorToBootOut("Successfully added secrets.json and wipper_boot_out.txt "
+                      "to WIPPER volume!");
+  writeErrorToBootOut("Please edit the secrets.json and reboot your device for "
+                      "changes to take effect.");
+
   WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
   while (1)
     yield();
@@ -324,6 +331,24 @@ bool Wippersnapper_FS::parseSecrets() {
   secretsFile.close();
 
   return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Appends message string to wipper_boot_out.txt file.
+    @param    str
+                PROGMEM string.
+
+*/
+/**************************************************************************/
+void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
+  // Append error output to FS
+  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  if (bootFile) {
+    bootFile.println(str);
+    bootFile.flush();
+    bootFile.close();
+  }
 }
 
 /**************************************************************************/
