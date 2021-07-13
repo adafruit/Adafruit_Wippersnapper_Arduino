@@ -45,6 +45,15 @@
 #include <ArduinoJson.h>
 #include <SPI.h>
 
+// Uncomment for staging builds
+// #define USE_STAGING
+
+#ifdef USE_STAGING
+#define IO_MQTT_SERVER "io.adafruit.us"
+#else
+#define IO_MQTT_SERVER "io.adafruit.com"
+#endif
+
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
@@ -53,11 +62,14 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-#define WIPPERSNAPPER_SEMVER_MAJOR 1      ///< Library SemVer Major
-#define WIPPERSNAPPER_SEMVER_MINOR 0      ///< Library SemVer Minor
-#define WIPPERSNAPPER_SEMVER_PATCH 0      ///< Library SemVer Patch
-#define WIPPERSNAPPER_SEMVER_BUILD "BETA" ///< Library SemVer Build Name
-#define WIPPERSNAPPER_SEMVER_BUILD_VER 1  ///< Library SemVer Build Name
+// Semver
+#define WIPPERSNAPPER_SEMVER_MAJOR 1 ///< Library version Major
+#define WIPPERSNAPPER_SEMVER_MINOR 0 ///< Library version Minor
+#define WIPPERSNAPPER_SEMVER_PATCH 0 ///< Library version Patch
+#define WIPPERSNAPPER_SEMVER_PRE_RELEASE                                       \
+  "beta" ///< Library version pre-release label
+#define WIPPERSNAPPER_SEMVER_BUILD_VER                                         \
+  2 ///< Library version pre-release build number
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -226,8 +238,8 @@ public:
 
   ws_board_status_t _boardStatus; ///< Hardware's registration status
 
-  Wippersnapper_Registration
-      *_registerBoard;                     ///< Instance of registration class
+  Wippersnapper_Registration *_registerBoard =
+      NULL;                                ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
@@ -239,8 +251,8 @@ public:
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
 
-  const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
-  uint16_t _mqtt_port = 8883;                   /*!< MQTT Broker URL */
+  const char *_mqtt_broker = IO_MQTT_SERVER; /*!< MQTT Broker URL */
+  uint16_t _mqtt_port = 8883;                /*!< MQTT Broker URL */
 
   // AIO credentials
   const char *_username; /*!< Adafruit IO username */
