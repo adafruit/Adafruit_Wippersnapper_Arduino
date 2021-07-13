@@ -53,11 +53,12 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-#define WIPPERSNAPPER_SEMVER_MAJOR 1      ///< Library SemVer Major
-#define WIPPERSNAPPER_SEMVER_MINOR 0      ///< Library SemVer Minor
-#define WIPPERSNAPPER_SEMVER_PATCH 0      ///< Library SemVer Patch
-#define WIPPERSNAPPER_SEMVER_BUILD "BETA" ///< Library SemVer Build Name
-#define WIPPERSNAPPER_SEMVER_BUILD_VER 1  ///< Library SemVer Build Name
+// Semver
+#define WIPPERSNAPPER_SEMVER_MAJOR       1      ///< Library version Major
+#define WIPPERSNAPPER_SEMVER_MINOR       0      ///< Library version Minor
+#define WIPPERSNAPPER_SEMVER_PATCH       0      ///< Library version Patch
+#define WIPPERSNAPPER_SEMVER_PRE_RELEASE "BETA" ///< Library version pre-release label
+#define WIPPERSNAPPER_SEMVER_BUILD_VER   2      ///< Library version pre-release build number
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -227,7 +228,7 @@ public:
   ws_board_status_t _boardStatus; ///< Hardware's registration status
 
   Wippersnapper_Registration
-      *_registerBoard;                     ///< Instance of registration class
+      *_registerBoard = NULL;                     ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class

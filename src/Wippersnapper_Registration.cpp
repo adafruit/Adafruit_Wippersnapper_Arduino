@@ -102,18 +102,25 @@ void Wippersnapper_Registration::encodeRegMsg() {
   wippersnapper_description_v1_CreateDescriptionRequest _message =
       wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
 
-  // Fill message object's fields
+  // Set UID
   _machine_name = WS._boardId;
   _uid = atoi(WS.sUID);
-
-  // Encode fields
+  // Set machine_name
   strcpy(_message.machine_name, _machine_name);
   _message.mac_addr = _uid;
+  // Set version
+  wippersnapper_description_v1_CreateDescriptionRequest_Version _version = wippersnapper_description_v1_CreateDescriptionRequest_Version_init_zero;
+  _version.ver_major = WIPPERSNAPPER_SEMVER_MAJOR;
+  _version.ver_minor = WIPPERSNAPPER_SEMVER_MINOR;
+  _version.ver_patch = WIPPERSNAPPER_SEMVER_PATCH;
+  //strcpy(_version.ver_pre_release, WIPPERSNAPPER_SEMVER_PRE_RELEASE);
+  _version.ver_build = WIPPERSNAPPER_SEMVER_BUILD_VER;
+  _message.version = _version;
 
+  // encode message
   pb_ostream_t _msg_stream =
       pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
-  // encode message
   _status = pb_encode(
       &_msg_stream,
       wippersnapper_description_v1_CreateDescriptionRequest_fields, &_message);
@@ -193,7 +200,6 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
   } else { // set board status
     switch (message.response) {
     case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-      WS._boardStatus = WS_BOARD_DEF_OK;
       WS_DEBUG_PRINTLN("Found hardware with:")
       WS_DEBUG_PRINT("GPIO Pins: ");
       WS_DEBUG_PRINTLN(message.total_gpio_pins);
@@ -202,13 +208,12 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
       WS_DEBUG_PRINT("Reference voltage: ");
       WS_DEBUG_PRINT(message.reference_voltage);
       WS_DEBUG_PRINTLN("v");
-
       // Initialize Digital IO class
       WS._digitalGPIO = new Wippersnapper_DigitalGPIO(message.total_gpio_pins);
       // Initialize Analog IO class
       WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins,
                                                 message.reference_voltage);
-
+      WS._boardStatus = WS_BOARD_DEF_OK;
       break;
     case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
       WS._boardStatus = WS_BOARD_DEF_INVALID;

@@ -1014,11 +1014,13 @@ ws_status_t Wippersnapper::run() {
 */
 /**************************************************************************/
 bool Wippersnapper::registerBoard(uint8_t retries = 10) {
+  bool is_success = false;
   WS_DEBUG_PRINTLN("registerBoard()");
   // Create new board
   _registerBoard = new Wippersnapper_Registration();
   // Run the FSM for the registration process
-  return _registerBoard->processRegistration();
+  is_success = _registerBoard->processRegistration();
+  return is_success;
 }
 
 /**************************************************************************/

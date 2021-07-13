@@ -176,7 +176,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
     bootFile.print(".");
     bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
     bootFile.print("-");
-    bootFile.print(WIPPERSNAPPER_SEMVER_BUILD);
+    bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
     bootFile.print(".");
     bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
     bootFile.flush();
