@@ -45,6 +45,15 @@
 #include <ArduinoJson.h>
 #include <SPI.h>
 
+// Uncomment for staging builds
+#define USE_STAGING
+
+#ifdef USE_STAGING
+    #define IO_MQTT_SERVER "io.adafruit.us"
+#else
+    #define IO_MQTT_SERVER "io.adafruit.com"
+#endif
+
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
