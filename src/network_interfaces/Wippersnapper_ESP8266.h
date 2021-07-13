@@ -27,16 +27,16 @@
 #include "Wippersnapper.h"
 
 #ifdef USE_STAGING
-    // Adafruit IO Staging SSL Fingerprint
-    // Fingerprint for io.adafruit.us staging server
-    #define WS_SSL_FINGERPRINT                                                     \
-    "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
+// Adafruit IO Staging SSL Fingerprint
+// Fingerprint for io.adafruit.us staging server
+#define WS_SSL_FINGERPRINT                                                     \
+  "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
 #else
-    #define WS_SSL_FINGERPRINT                                                     \
-    "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF" ///< Latest
-                                                                    ///< Adafruit IO
-                                                                    ///< SSL
-                                                                    ///< Fingerprint
+#define WS_SSL_FINGERPRINT                                                     \
+  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF" ///< Latest
+                                                                ///< Adafruit IO
+                                                                ///< SSL
+                                                                ///< Fingerprint
 #endif
 
 extern Wippersnapper WS;

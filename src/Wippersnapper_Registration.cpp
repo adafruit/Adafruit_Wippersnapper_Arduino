@@ -109,7 +109,8 @@ void Wippersnapper_Registration::encodeRegMsg() {
   strcpy(_message.machine_name, _machine_name);
   _message.mac_addr = _uid;
   // Set version
-  wippersnapper_description_v1_CreateDescriptionRequest_Version _version = wippersnapper_description_v1_CreateDescriptionRequest_Version_init_zero;
+  wippersnapper_description_v1_CreateDescriptionRequest_Version _version =
+      wippersnapper_description_v1_CreateDescriptionRequest_Version_init_zero;
   _message.ver_major = WIPPERSNAPPER_SEMVER_MAJOR;
   _message.ver_minor = WIPPERSNAPPER_SEMVER_MINOR;
   _message.ver_patch = WIPPERSNAPPER_SEMVER_PATCH;
