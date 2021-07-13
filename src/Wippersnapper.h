@@ -66,7 +66,7 @@
 #define WIPPERSNAPPER_SEMVER_MAJOR       1      ///< Library version Major
 #define WIPPERSNAPPER_SEMVER_MINOR       0      ///< Library version Minor
 #define WIPPERSNAPPER_SEMVER_PATCH       0      ///< Library version Patch
-#define WIPPERSNAPPER_SEMVER_PRE_RELEASE "BETA" ///< Library version pre-release label
+#define WIPPERSNAPPER_SEMVER_PRE_RELEASE "beta" ///< Library version pre-release label
 #define WIPPERSNAPPER_SEMVER_BUILD_VER   2      ///< Library version pre-release build number
 
 // Reserved Adafruit IO MQTT topics
@@ -249,7 +249,7 @@ public:
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
 
-  const char *_mqtt_broker = "io.adafruit.com"; /*!< MQTT Broker URL */
+  const char *_mqtt_broker = IO_MQTT_SERVER; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;                   /*!< MQTT Broker URL */
 
   // AIO credentials
