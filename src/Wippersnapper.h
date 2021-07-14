@@ -69,7 +69,7 @@
 #define WIPPERSNAPPER_SEMVER_PRE_RELEASE                                       \
   "beta" ///< Library version pre-release label
 #define WIPPERSNAPPER_SEMVER_BUILD_VER                                         \
-  3 ///< Library version pre-release build number
+  2 ///< Library version pre-release build number
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
