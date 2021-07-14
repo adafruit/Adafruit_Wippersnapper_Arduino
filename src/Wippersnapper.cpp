@@ -67,64 +67,27 @@ Wippersnapper::~Wippersnapper() {
   free(_throttle_sub);
 }
 
-/****************************************************************************/
-/*!
-    @brief    Initializes provisioning, either the native USB FS or
-              NVS (ESP32)
-*/
-/****************************************************************************/
-void Wippersnapper::startProvisioning() {
+void Wippersnapper::provision() {
+  // init. LED for status signaling
   statusLEDInit();
-#ifdef USE_TINYUSB
-  // Init filesystem
-  _fileSystem = new Wippersnapper_FS();
-#elif defined(USE_NVS)
-  _nvs = new Wippersnapper_ESP32_nvs();
-#endif
-}
-
-/****************************************************************************/
-/*!
-    @brief    Validates if file system contains secret credentials for
-              Adafruit IO and wireless network.
-*/
-/****************************************************************************/
-void Wippersnapper::validateProvisioningSecrets() {
-#ifdef USE_TINYUSB
-  // is secrets.json on fs?
-  WS_DEBUG("handled elsewhere...");
-/*   if (!_fileSystem->configFileExists()) {
-    // create a fresh secrets.json file
-    _fileSystem->createConfigFileSkel();
-  } */
-#elif defined(USE_NVS)
-  if (!_nvs->validateNVSConfig()) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: NVS partition or credentials not found - was NVS flashed?");
-    while (1)
-      yield();
-  }
-#endif
-}
-
-/****************************************************************************/
-/*!
-    @brief    Parses and stores data from the secrets.json file or a captive
-                provisioning portal.
-    @returns  True if secrets are parsed and set stored successfully,
-                False otherwise.
-*/
-/****************************************************************************/
-bool Wippersnapper::parseProvisioningSecrets() {
-  bool is_successful = false;
-#ifdef USE_TINYUSB
-  is_successful = _fileSystem->parseSecrets();
-  // delete _fileSystem;
-#elif defined(USE_NVS)
-  is_successful = _nvs->setNVSConfig();
-  // delete _nvs;
-#endif
-  return is_successful;
+  #ifdef USE_TINYUSB
+    // init new filesystem
+    _fileSystem = new Wippersnapper_FS();
+    // parse out secrets.json
+    _fileSystem->parseSecrets();
+  #elif defined(USE_NVS)
+    // init esp32 nvs partition namespace
+    _nvs = new Wippersnapper_ESP32_nvs();
+    // validate esp32 has been programmed with credentials
+    if (!_nvs->validateNVSConfig()) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: NVS partition or credentials not found - was NVS flashed?");
+      while (1)
+        yield();
+    }
+    // pull values out of NVS configuration
+    _nvs->setNVSConfig();
+  #endif
 }
 
 /****************************************************************************/
@@ -150,11 +113,11 @@ void Wippersnapper::set_user_key(const char *aio_username,
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
-// NOTE: for NVS, credentials should already be set within setNVSConfig
-#ifdef USE_TINYUSB
-  WS._username = _fileSystem->io_username;
-  WS._key = _fileSystem->io_key;
-#endif
+  // NOTE: for NVS, credentials should already be set within setNVSConfig
+  #ifdef USE_TINYUSB
+    WS._username = _fileSystem->io_username;
+    WS._key = _fileSystem->io_key;
+  #endif
 }
 
 // Decoders //

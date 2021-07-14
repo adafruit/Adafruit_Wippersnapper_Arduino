@@ -236,12 +236,8 @@ void Wippersnapper_FS::createConfigFileSkel() {
   }
 
   // Log to wipper_boot_out.txt
-  writeErrorToBootOut("Successfully added secrets.json and wipper_boot_out.txt "
-                      "to WIPPER volume!");
-  writeErrorToBootOut("Please edit the secrets.json and reboot your device for "
-                      "changes to take effect.");
-
-  WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+  writeErrorToBootOut("* Successfully added secrets.json and wipper_boot_out.txt "
+                      "to drive!");
 }
 
 /**************************************************************************/
@@ -280,10 +276,10 @@ bool Wippersnapper_FS::parseSecrets() {
     return false;
   }
 
-  // check if username is from template (not entered)
+  // check if username is from templated json
   if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
-    writeErrorToBootOut("Default username found in secrets.json, please edit "
-                        "the secrets.json file and reset the board");
+    writeErrorToBootOut("* ERROR: Default username found in secrets.json, please edit "
+                        "the secrets.json file and reset the board for the changes to take effect");
     WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
     while (1)
       yield();

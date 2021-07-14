@@ -166,9 +166,7 @@ public:
   Wippersnapper();
   virtual ~Wippersnapper();
 
-  void startProvisioning();
-  void validateProvisioningSecrets();
-  bool parseProvisioningSecrets();
+  void provision();
 
   // Status LED
   bool statusLEDInit();
