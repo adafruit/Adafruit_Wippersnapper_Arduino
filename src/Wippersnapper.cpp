@@ -78,8 +78,6 @@ void Wippersnapper::startProvisioning() {
 #ifdef USE_TINYUSB
   // Init filesystem
   _fileSystem = new Wippersnapper_FS();
-  // Create or overwrite `wippersnapper_boot_out.txt`
-  _fileSystem->writeBootOutFile();
 #elif defined(USE_NVS)
   _nvs = new Wippersnapper_ESP32_nvs();
 #endif
@@ -94,10 +92,11 @@ void Wippersnapper::startProvisioning() {
 void Wippersnapper::validateProvisioningSecrets() {
 #ifdef USE_TINYUSB
   // is secrets.json on fs?
-  if (!_fileSystem->configFileExists()) {
+  WS_DEBUG("handled elsewhere...");
+/*   if (!_fileSystem->configFileExists()) {
     // create a fresh secrets.json file
     _fileSystem->createConfigFileSkel();
-  }
+  } */
 #elif defined(USE_NVS)
   if (!_nvs->validateNVSConfig()) {
     WS_DEBUG_PRINTLN(

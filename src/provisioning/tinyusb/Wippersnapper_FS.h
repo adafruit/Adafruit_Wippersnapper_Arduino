@@ -71,7 +71,7 @@ public:
   bool parseSecrets();
   bool configFileExists();
   void createConfigFileSkel();
-  void writeBootOutFile();
+  bool createBootFile();
   void writeErrorToBootOut(PGM_P str);
 
   // Adafruit IO Configuration

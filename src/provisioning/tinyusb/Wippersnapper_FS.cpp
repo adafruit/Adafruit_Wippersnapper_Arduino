@@ -71,13 +71,14 @@ bool setVolumeLabel() {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
 
+  // attempt to init flash library
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
     while (1)
       ;
   }
 
-  // attempt to init flash object
+  // attempt to init filesystem if it doesn't exist
   if (!wipperFatFs.begin(&flash)) {
     // flash did NOT init, create a new FatFs
     if (!makeFilesystem()) {
@@ -118,6 +119,33 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // init MSC
   usb_msc.begin();
 
+  // Does a circuitpython boot file exist?
+  //erase the default cpy fs while we're disconnected
+  if (wipperFatFs.exists("/boot_out.txt")) {
+    wipperFatFs.remove("/boot_out.txt");
+    wipperFatFs.remove("/code.py");
+    File libDir = wipperFatFs.open("/lib");
+    if (libDir.isDirectory()) {
+      libDir.rmRfStar();
+    }
+  }
+  // overwrite previous boot_out file on each boot
+  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
+    wipperFatFs.remove("/wipper_boot_out.txt");
+  }
+  // create wippersnapper_boot_out.txt file
+  if (!createBootFile()) {
+      WS.setStatusLEDColor(RED);
+      while (1)
+        ;
+  }
+
+  // check for secrets.json on fs
+  if (!configFileExists()) {
+    // create secrets.json on fs
+    createConfigFileSkel();
+  }
+
   // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
@@ -141,15 +169,6 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
-  // Initialize fatFS
-  if (!wipperFatFs.begin(&flash)) {
-    WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
-    while (1)
-      ;
-  }
-
-  // Was CircuitPython previously installed?
-
   // Does secrets.json file exist?
   if (!wipperFatFs.exists("/secrets.json")) {
     return false;
@@ -162,26 +181,28 @@ bool Wippersnapper_FS::configFileExists() {
     @brief    Creates or overwrites `wipper_boot_out.txt` file to FS.
 */
 /**************************************************************************/
-void Wippersnapper_FS::writeBootOutFile() {
-  // overwrite previous file on each boot
-  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
-    wipperFatFs.remove("/wipper_boot_out.txt");
-  }
-
+bool Wippersnapper_FS::createBootFile() {
+  bool is_success = false;
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
-  bootFile.print("Adafruit WipperSnapper ");
-  bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR);
-  bootFile.print(".");
-  bootFile.print(WIPPERSNAPPER_SEMVER_MINOR);
-  bootFile.print(".");
-  bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
-  bootFile.print("-");
-  bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
-  bootFile.print(".");
-  bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
-  bootFile.println("---DEBUG OUTPUT---");
-  bootFile.flush();
-  bootFile.close();
+  if (bootFile) {
+    bootFile.print("Adafruit WipperSnapper ");
+    bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR);
+    bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_MINOR);
+    bootFile.print(".");
+    bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
+    bootFile.print("-");
+    bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
+    bootFile.print(".");
+    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+    bootFile.println("---DEBUG OUTPUT---");
+    bootFile.flush();
+    bootFile.close();
+    is_success = true;
+  } else {
+    bootFile.close();
+  }
+  return is_success;
 }
 
 /**************************************************************************/
@@ -190,8 +211,6 @@ void Wippersnapper_FS::writeBootOutFile() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
-  // validate if configuration json file exists on FS
-  WS_DEBUG_PRINTLN("Attempting to create secrets file...");
   // open for writing, should create a new file if one doesnt exist
   File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (secretsFile) {
@@ -210,18 +229,12 @@ void Wippersnapper_FS::createConfigFileSkel() {
     }
   } else {
     secretsFile.close();
-    WS_DEBUG_PRINTLN(
-        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     writeErrorToBootOut(
         "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     while (1)
       yield();
   }
 
-  WS_DEBUG_PRINTLN("Successfully added secrets.json and wipper_boot_out.txt to "
-                   "WIPPER volume!");
-  WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
-                   "changes to take effect.");
   // Log to wipper_boot_out.txt
   writeErrorToBootOut("Successfully added secrets.json and wipper_boot_out.txt "
                       "to WIPPER volume!");
@@ -229,8 +242,6 @@ void Wippersnapper_FS::createConfigFileSkel() {
                       "changes to take effect.");
 
   WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-  while (1)
-    yield();
 }
 
 /**************************************************************************/
@@ -397,6 +408,8 @@ void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
     bootFile.println(str);
     bootFile.flush();
     bootFile.close();
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
   }
 }
 
