@@ -141,31 +141,28 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
-  // Init file system on the flash
+  // Initialize fatFS
   if (!wipperFatFs.begin(&flash)) {
     WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
     while (1)
       ;
   }
 
-  File secretsFile = wipperFatFs.open("/secrets.json");
-  if (!secretsFile) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: secrets.json file does not exist on flash filesystem.");
-    secretsFile.close();
+  // Was CircuitPython previously installed?
+
+  // Does secrets.json file exist?
+  if (wipperFatFs.exists("secrets.json")) {
     return false;
   }
-  WS_DEBUG_PRINTLN("Found secrets.json file!");
-  secretsFile.close();
   return true;
 }
 
 /**************************************************************************/
 /*!
-    @brief    Creates a skeleton secret.json file on the filesystem.
+    @brief    Creates or overwrites `wipper_boot_out.txt` file to FS.
 */
 /**************************************************************************/
-void Wippersnapper_FS::createConfigFileSkel() {
+void Wippersnapper_FS::writeBootOutFile() {
   // write to wipper_boot_out.txt
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
@@ -183,7 +180,14 @@ void Wippersnapper_FS::createConfigFileSkel() {
     bootFile.flush();
     bootFile.close();
   }
+}
 
+/**************************************************************************/
+/*!
+    @brief    Creates a skeleton secret.json file on the filesystem.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::createConfigFileSkel() {
   // validate if configuration json file exists on FS
   WS_DEBUG_PRINTLN("Attempting to create secrets file...");
   // open for writing, should create a new file if one doesnt exist
@@ -203,9 +207,9 @@ void Wippersnapper_FS::createConfigFileSkel() {
       secretsFile.close();
     }
   } else {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     secretsFile.close();
+    WS_DEBUG_PRINTLN("ERROR: Could not create secrets.json on QSPI flash filesystem.");
+    writeErrorToBootOut("ERROR: Could not create secrets.json on QSPI flash filesystem.");
     while (1)
       yield();
   }
@@ -237,6 +241,7 @@ bool Wippersnapper_FS::parseSecrets() {
   File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
+    writeErrorToBootOut("ERROR: Could not open secrets.json file for reading!");
     return false;
   }
 
@@ -245,6 +250,9 @@ bool Wippersnapper_FS::parseSecrets() {
   if (err) {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
+
+    writeErrorToBootOut("ERROR: deserializeJson() failed with code");
+    writeErrorToBootOut(err.c_str());
     return false;
   }
 
@@ -253,6 +261,7 @@ bool Wippersnapper_FS::parseSecrets() {
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
+    writeErrorToBootOut("ERROR: invalid io_username value in secrets.json!");
     return false;
   }
 
@@ -261,6 +270,7 @@ bool Wippersnapper_FS::parseSecrets() {
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
+    writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
     return false;
   }
 
@@ -282,6 +292,8 @@ bool Wippersnapper_FS::parseSecrets() {
     if (network_type_wifi_airlift_network_password == nullptr) {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
+          "secrets.json!");
+      writeErrorToBootOut("ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
       return false;
     }
@@ -308,6 +320,8 @@ bool Wippersnapper_FS::parseSecrets() {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
+      writeErrorToBootOut("ERROR: invalid network_type_wifi_native_network_password value in "
+          "secrets.json!");
       return false;
     }
     // Set WiFi configuration with parsed values
@@ -320,6 +334,7 @@ bool Wippersnapper_FS::parseSecrets() {
   if (!setNetwork) {
     WS_DEBUG_PRINTLN(
         "ERROR: Network interface not detected in secrets.json file.");
+    writeErrorToBootOut("ERROR: Network interface not detected in secrets.json file.");
     while (1)
       yield();
   }

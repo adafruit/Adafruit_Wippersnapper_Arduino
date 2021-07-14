@@ -76,8 +76,10 @@ Wippersnapper::~Wippersnapper() {
 void Wippersnapper::startProvisioning() {
   statusLEDInit();
 #ifdef USE_TINYUSB
-  // Filesystem-based provisioning flow
-  _fileSystem = new Wippersnapper_FS(); // Initialize the QSPI flash FS
+  // Init filesystem
+  _fileSystem = new Wippersnapper_FS();
+  // Create or overwrite `wippersnapper_boot_out.txt`
+  _fileSystem->writeBootOutFile();
 #elif defined(USE_NVS)
   _nvs = new Wippersnapper_ESP32_nvs();
 #endif
@@ -754,7 +756,8 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_IO_CONNECT);
   // attempt to build Wippersnapper MQTT topics
   if (!buildWSTopics()) {
-    WS_DEBUG_PRINTLN("Unable to allocate memory for Wippersnapper topics.")
+    WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for Wippersnapper topics.")
+    WS._fileSystem->writeErrorToBootOut("ERROR: Unable to allocate memory for Wippersnapper topics.");
     _disconnect();
     setStatusLEDColor(LED_ERROR);
     for (;;) {
@@ -767,7 +770,8 @@ void Wippersnapper::connect() {
 
   // Attempt to build error MQTT topics
   if (!buildErrorTopics()) {
-    WS_DEBUG_PRINTLN("Unable to allocate memory for error topics.")
+    WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for error topics.")
+    WS._fileSystem->writeErrorToBootOut("ERROR: Unable to allocate memory for error topics.");
     _disconnect();
     setStatusLEDColor(LED_ERROR);
     for (;;) {
@@ -793,6 +797,7 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+    WS._fileSystem->writeErrorToBootOut("Unable to register board with Wippersnapper.");
     setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
@@ -1062,6 +1067,7 @@ ws_status_t Wippersnapper::mqttStatus() {
   // return so we don't hammer IO
   if (_status == WS_CONNECT_FAILED) {
     WS_DEBUG_PRINT("mqttStatus() failed to connect");
+    WS._fileSystem->writeErrorToBootOut("ERROR: Failed to connect to WipperSnapper, retrying...");
     WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
     setStatusLEDColor(LED_ERROR);
     return _status;

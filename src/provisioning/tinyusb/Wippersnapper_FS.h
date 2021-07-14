@@ -15,12 +15,12 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
+#include "Adafruit_SPIFlash.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/diskio.h"
 #include "fatfs/ff.h"
+#include "fatfs/diskio.h"
 
 #include "Wippersnapper.h"
 
@@ -71,6 +71,7 @@ public:
   bool parseSecrets();
   bool configFileExists();
   void createConfigFileSkel();
+  void writeBootOutFile();
   void writeErrorToBootOut(PGM_P str);
 
   // Adafruit IO Configuration
