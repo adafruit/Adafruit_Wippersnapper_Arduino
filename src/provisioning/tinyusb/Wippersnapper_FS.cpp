@@ -272,7 +272,7 @@ bool Wippersnapper_FS::parseSecrets() {
   // check if username is from template (not entered)
   if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
     writeErrorToBootOut("Default username found in secrets.json, please edit "
-                        "this file and reset the board");
+                        "the secrets.json file and reset the board");
     WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
     while (1)
       yield();
@@ -312,10 +312,9 @@ bool Wippersnapper_FS::parseSecrets() {
       return false;
     }
     // check if SSID is from template (not entered)
-    if (strcmp(network_type_wifi_airlift_network_ssid, "YOUR_WIFI_SSID_HERE") !=
-        0) {
+    if (doc["network_type_wifi_airlift"]["network_password"] == "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
-                          "this file and reset the board");
+                          "the secrets.json file and reset the board");
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
       while (1)
         yield();
@@ -350,10 +349,9 @@ bool Wippersnapper_FS::parseSecrets() {
       return false;
     }
     // check if SSID is from template (not entered)
-    if (strcmp(network_type_wifi_native_network_ssid, "YOUR_WIFI_SSID_HERE") !=
-        0) {
+    if (doc["network_type_wifi_native"]["network_password"] == "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
-                          "this file and reset the board");
+                          "the secrets.json file and reset the board");
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
       while (1)
         yield();
