@@ -705,8 +705,10 @@ void Wippersnapper::connect() {
   if (!buildWSTopics()) {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to allocate memory for Wippersnapper topics.")
+#ifdef USE_TINYUSB
     WS._fileSystem->writeErrorToBootOut(
         "ERROR: Unable to allocate memory for Wippersnapper topics.");
+#endif
     _disconnect();
     setStatusLEDColor(LED_ERROR);
     for (;;) {
@@ -720,8 +722,10 @@ void Wippersnapper::connect() {
   // Attempt to build error MQTT topics
   if (!buildErrorTopics()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for error topics.")
+#ifdef USE_TINYUSB
     WS._fileSystem->writeErrorToBootOut(
         "ERROR: Unable to allocate memory for error topics.");
+#endif
     _disconnect();
     setStatusLEDColor(LED_ERROR);
     for (;;) {
@@ -747,8 +751,10 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+#ifdef USE_TINYUSB
     WS._fileSystem->writeErrorToBootOut(
         "Unable to register board with Wippersnapper.");
+#endif
     setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
@@ -1018,8 +1024,10 @@ ws_status_t Wippersnapper::mqttStatus() {
   // return so we don't hammer IO
   if (_status == WS_CONNECT_FAILED) {
     WS_DEBUG_PRINT("mqttStatus() failed to connect");
+#ifdef USE_TINYUSB
     WS._fileSystem->writeErrorToBootOut(
         "ERROR: Failed to connect to WipperSnapper, retrying...");
+#endif
     WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
     setStatusLEDColor(LED_ERROR);
     return _status;
