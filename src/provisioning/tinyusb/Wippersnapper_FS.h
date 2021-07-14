@@ -71,6 +71,8 @@ public:
   bool parseSecrets();
   bool configFileExists();
   void createConfigFileSkel();
+  bool createBootFile();
+  void writeErrorToBootOut(PGM_P str);
 
   // Adafruit IO Configuration
   const char *io_username =

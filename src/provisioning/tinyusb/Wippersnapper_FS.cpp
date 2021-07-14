@@ -71,13 +71,14 @@ bool setVolumeLabel() {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
 
+  // attempt to init flash library
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
     while (1)
       ;
   }
 
-  // attempt to init flash object
+  // attempt to init filesystem if it doesn't exist
   if (!wipperFatFs.begin(&flash)) {
     // flash did NOT init, create a new FatFs
     if (!makeFilesystem()) {
@@ -118,6 +119,33 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // init MSC
   usb_msc.begin();
 
+  // Does a circuitpython boot file exist?
+  // erase the default cpy fs while we're disconnected
+  if (wipperFatFs.exists("/boot_out.txt")) {
+    wipperFatFs.remove("/boot_out.txt");
+    wipperFatFs.remove("/code.py");
+    File libDir = wipperFatFs.open("/lib");
+    if (libDir.isDirectory()) {
+      libDir.rmRfStar();
+    }
+  }
+  // overwrite previous boot_out file on each boot
+  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
+    wipperFatFs.remove("/wipper_boot_out.txt");
+  }
+  // create wippersnapper_boot_out.txt file
+  if (!createBootFile()) {
+    WS.setStatusLEDColor(RED);
+    while (1)
+      ;
+  }
+
+  // check for secrets.json on fs
+  if (!configFileExists()) {
+    // create secrets.json on fs
+    createConfigFileSkel();
+  }
+
   // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
@@ -141,32 +169,20 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
-  // Init file system on the flash
-  if (!wipperFatFs.begin(&flash)) {
-    WS_DEBUG_PRINTLN("Failed to mount flash filesystem!");
-    while (1)
-      ;
-  }
-
-  File secretsFile = wipperFatFs.open("/secrets.json");
-  if (!secretsFile) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: secrets.json file does not exist on flash filesystem.");
-    secretsFile.close();
+  // Does secrets.json file exist?
+  if (!wipperFatFs.exists("/secrets.json")) {
     return false;
   }
-  WS_DEBUG_PRINTLN("Found secrets.json file!");
-  secretsFile.close();
   return true;
 }
 
 /**************************************************************************/
 /*!
-    @brief    Creates a skeleton secret.json file on the filesystem.
+    @brief    Creates or overwrites `wipper_boot_out.txt` file to FS.
 */
 /**************************************************************************/
-void Wippersnapper_FS::createConfigFileSkel() {
-  // write to wipper_boot_out.txt
+bool Wippersnapper_FS::createBootFile() {
+  bool is_success = false;
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
     bootFile.print("Adafruit WipperSnapper ");
@@ -179,12 +195,22 @@ void Wippersnapper_FS::createConfigFileSkel() {
     bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
     bootFile.print(".");
     bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+    bootFile.println("---DEBUG OUTPUT---");
     bootFile.flush();
     bootFile.close();
+    is_success = true;
+  } else {
+    bootFile.close();
   }
+  return is_success;
+}
 
-  // validate if configuration json file exists on FS
-  WS_DEBUG_PRINTLN("Attempting to create secrets file...");
+/**************************************************************************/
+/*!
+    @brief    Creates a skeleton secret.json file on the filesystem.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::createConfigFileSkel() {
   // open for writing, should create a new file if one doesnt exist
   File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (secretsFile) {
@@ -202,20 +228,17 @@ void Wippersnapper_FS::createConfigFileSkel() {
       secretsFile.close();
     }
   } else {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     secretsFile.close();
+    writeErrorToBootOut(
+        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     while (1)
       yield();
   }
 
-  WS_DEBUG_PRINTLN("Successfully added secrets.json and wipper_boot_out.txt to "
-                   "WIPPER volume!");
-  WS_DEBUG_PRINTLN("Please edit the secrets.json and reboot your device for "
-                   "changes to take effect.");
-  WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-  while (1)
-    yield();
+  // Log to wipper_boot_out.txt
+  writeErrorToBootOut(
+      "* Successfully added secrets.json and wipper_boot_out.txt "
+      "to drive!");
 }
 
 /**************************************************************************/
@@ -230,6 +253,7 @@ bool Wippersnapper_FS::parseSecrets() {
   File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
+    writeErrorToBootOut("ERROR: Could not open secrets.json file for reading!");
     return false;
   }
 
@@ -238,6 +262,9 @@ bool Wippersnapper_FS::parseSecrets() {
   if (err) {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
+
+    writeErrorToBootOut("ERROR: deserializeJson() failed with code");
+    writeErrorToBootOut(err.c_str());
     return false;
   }
 
@@ -246,7 +273,19 @@ bool Wippersnapper_FS::parseSecrets() {
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
+    writeErrorToBootOut("ERROR: invalid io_username value in secrets.json!");
     return false;
+  }
+
+  // check if username is from templated json
+  if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
+    writeErrorToBootOut(
+        "* ERROR: Default username found in secrets.json, please edit "
+        "the secrets.json file and reset the board for the changes to take "
+        "effect");
+    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    while (1)
+      yield();
   }
 
   // Get io key
@@ -254,6 +293,7 @@ bool Wippersnapper_FS::parseSecrets() {
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
+    writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
     return false;
   }
 
@@ -276,8 +316,21 @@ bool Wippersnapper_FS::parseSecrets() {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
+      writeErrorToBootOut(
+          "ERROR: invalid network_type_wifi_airlift_network_password value in "
+          "secrets.json!");
       return false;
     }
+    // check if SSID is from template (not entered)
+    if (doc["network_type_wifi_airlift"]["network_password"] ==
+        "YOUR_WIFI_SSID_HERE") {
+      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
+                          "the secrets.json file and reset the board");
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      while (1)
+        yield();
+    }
+
     // Set WiFi configuration with parsed values
     WS._network_ssid = network_type_wifi_airlift_network_ssid;
     WS._network_pass = network_type_wifi_airlift_network_password;
@@ -301,8 +354,21 @@ bool Wippersnapper_FS::parseSecrets() {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
+      writeErrorToBootOut(
+          "ERROR: invalid network_type_wifi_native_network_password value in "
+          "secrets.json!");
       return false;
     }
+    // check if SSID is from template (not entered)
+    if (doc["network_type_wifi_native"]["network_password"] ==
+        "YOUR_WIFI_SSID_HERE") {
+      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
+                          "the secrets.json file and reset the board");
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      while (1)
+        yield();
+    }
+
     // Set WiFi configuration with parsed values
     WS._network_ssid = network_type_wifi_native_network_ssid;
     WS._network_pass = network_type_wifi_native_network_password;
@@ -312,6 +378,8 @@ bool Wippersnapper_FS::parseSecrets() {
   // Was a network_type detected in the configuration file?
   if (!setNetwork) {
     WS_DEBUG_PRINTLN(
+        "ERROR: Network interface not detected in secrets.json file.");
+    writeErrorToBootOut(
         "ERROR: Network interface not detected in secrets.json file.");
     while (1)
       yield();
@@ -324,6 +392,26 @@ bool Wippersnapper_FS::parseSecrets() {
   secretsFile.close();
 
   return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Appends message string to wipper_boot_out.txt file.
+    @param    str
+                PROGMEM string.
+
+*/
+/**************************************************************************/
+void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
+  // Append error output to FS
+  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  if (bootFile) {
+    bootFile.println(str);
+    bootFile.flush();
+    bootFile.close();
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
+  }
 }
 
 /**************************************************************************/

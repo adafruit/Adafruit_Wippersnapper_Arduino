@@ -21,15 +21,11 @@ Wippersnapper_WiFi wipper;
 
 void setup() {
   // Provisioning must occur prior to serial init.
-  wipper.startProvisioning();
+  wipper.provision();
 
   Serial.begin(115200);
   //while (!Serial) delay(10);
 
-  // Validate secrets file exists
-  wipper.validateProvisioningSecrets();
-  // Parse out secrets file
-  wipper.parseProvisioningSecrets();
   // Set Adafruit IO credentials
   wipper.set_user_key();
   // Set WiFi credentials
