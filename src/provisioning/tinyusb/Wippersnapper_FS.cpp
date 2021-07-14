@@ -120,7 +120,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   usb_msc.begin();
 
   // Does a circuitpython boot file exist?
-  //erase the default cpy fs while we're disconnected
+  // erase the default cpy fs while we're disconnected
   if (wipperFatFs.exists("/boot_out.txt")) {
     wipperFatFs.remove("/boot_out.txt");
     wipperFatFs.remove("/code.py");
@@ -135,9 +135,9 @@ Wippersnapper_FS::Wippersnapper_FS() {
   }
   // create wippersnapper_boot_out.txt file
   if (!createBootFile()) {
-      WS.setStatusLEDColor(RED);
-      while (1)
-        ;
+    WS.setStatusLEDColor(RED);
+    while (1)
+      ;
   }
 
   // check for secrets.json on fs
@@ -236,8 +236,9 @@ void Wippersnapper_FS::createConfigFileSkel() {
   }
 
   // Log to wipper_boot_out.txt
-  writeErrorToBootOut("* Successfully added secrets.json and wipper_boot_out.txt "
-                      "to drive!");
+  writeErrorToBootOut(
+      "* Successfully added secrets.json and wipper_boot_out.txt "
+      "to drive!");
 }
 
 /**************************************************************************/
@@ -278,8 +279,10 @@ bool Wippersnapper_FS::parseSecrets() {
 
   // check if username is from templated json
   if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
-    writeErrorToBootOut("* ERROR: Default username found in secrets.json, please edit "
-                        "the secrets.json file and reset the board for the changes to take effect");
+    writeErrorToBootOut(
+        "* ERROR: Default username found in secrets.json, please edit "
+        "the secrets.json file and reset the board for the changes to take "
+        "effect");
     WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
     while (1)
       yield();
@@ -319,7 +322,8 @@ bool Wippersnapper_FS::parseSecrets() {
       return false;
     }
     // check if SSID is from template (not entered)
-    if (doc["network_type_wifi_airlift"]["network_password"] == "YOUR_WIFI_SSID_HERE") {
+    if (doc["network_type_wifi_airlift"]["network_password"] ==
+        "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
@@ -356,7 +360,8 @@ bool Wippersnapper_FS::parseSecrets() {
       return false;
     }
     // check if SSID is from template (not entered)
-    if (doc["network_type_wifi_native"]["network_password"] == "YOUR_WIFI_SSID_HERE") {
+    if (doc["network_type_wifi_native"]["network_password"] ==
+        "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
