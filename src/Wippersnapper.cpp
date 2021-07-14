@@ -93,9 +93,9 @@ void Wippersnapper::startProvisioning() {
 /****************************************************************************/
 void Wippersnapper::validateProvisioningSecrets() {
 #ifdef USE_TINYUSB
-  // check for secrets.json, create if doesn't exist
+  // is secrets.json on fs?
   if (!_fileSystem->configFileExists()) {
-    // create config file on filesystem
+    // create a fresh secrets.json file
     _fileSystem->createConfigFileSkel();
   }
 #elif defined(USE_NVS)
@@ -151,26 +151,11 @@ void Wippersnapper::set_user_key(const char *aio_username,
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
+// NOTE: for NVS, credentials should already be set within setNVSConfig
 #ifdef USE_TINYUSB
-  if (_fileSystem->io_username != NULL) {
-    WS._username = _fileSystem->io_username;
-  } else {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Adafruit IO username not set correctly in secrets.json.");
-    while (1)
-      yield();
-  }
-
-  if (_fileSystem->io_key != NULL) {
-    WS._key = _fileSystem->io_key;
-  } else {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Adafruit IO key not set correctly in secrets.json.");
-    while (1)
-      yield();
-  }
+  WS._username = _fileSystem->io_username;
+  WS._key = _fileSystem->io_key;
 #endif
-  // NOTE: for NVS, credentials already set in setNVSConfig
 }
 
 // Decoders //
@@ -756,8 +741,10 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_IO_CONNECT);
   // attempt to build Wippersnapper MQTT topics
   if (!buildWSTopics()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for Wippersnapper topics.")
-    WS._fileSystem->writeErrorToBootOut("ERROR: Unable to allocate memory for Wippersnapper topics.");
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to allocate memory for Wippersnapper topics.")
+    WS._fileSystem->writeErrorToBootOut(
+        "ERROR: Unable to allocate memory for Wippersnapper topics.");
     _disconnect();
     setStatusLEDColor(LED_ERROR);
     for (;;) {
@@ -771,7 +758,8 @@ void Wippersnapper::connect() {
   // Attempt to build error MQTT topics
   if (!buildErrorTopics()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for error topics.")
-    WS._fileSystem->writeErrorToBootOut("ERROR: Unable to allocate memory for error topics.");
+    WS._fileSystem->writeErrorToBootOut(
+        "ERROR: Unable to allocate memory for error topics.");
     _disconnect();
     setStatusLEDColor(LED_ERROR);
     for (;;) {
@@ -797,7 +785,8 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard(10)) {
     WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
-    WS._fileSystem->writeErrorToBootOut("Unable to register board with Wippersnapper.");
+    WS._fileSystem->writeErrorToBootOut(
+        "Unable to register board with Wippersnapper.");
     setStatusLEDColor(LED_ERROR);
     for (;;) {
       delay(1000);
@@ -1067,7 +1056,8 @@ ws_status_t Wippersnapper::mqttStatus() {
   // return so we don't hammer IO
   if (_status == WS_CONNECT_FAILED) {
     WS_DEBUG_PRINT("mqttStatus() failed to connect");
-    WS._fileSystem->writeErrorToBootOut("ERROR: Failed to connect to WipperSnapper, retrying...");
+    WS._fileSystem->writeErrorToBootOut(
+        "ERROR: Failed to connect to WipperSnapper, retrying...");
     WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
     setStatusLEDColor(LED_ERROR);
     return _status;

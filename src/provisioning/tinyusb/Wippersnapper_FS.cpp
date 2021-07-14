@@ -210,8 +210,10 @@ void Wippersnapper_FS::createConfigFileSkel() {
     }
   } else {
     secretsFile.close();
-    WS_DEBUG_PRINTLN("ERROR: Could not create secrets.json on QSPI flash filesystem.");
-    writeErrorToBootOut("ERROR: Could not create secrets.json on QSPI flash filesystem.");
+    WS_DEBUG_PRINTLN(
+        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
+    writeErrorToBootOut(
+        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     while (1)
       yield();
   }
@@ -267,6 +269,15 @@ bool Wippersnapper_FS::parseSecrets() {
     return false;
   }
 
+  // check if username is from template (not entered)
+  if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
+    writeErrorToBootOut("Default username found in secrets.json, please edit "
+                        "this file and reset the board");
+    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    while (1)
+      yield();
+  }
+
   // Get io key
   io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
@@ -295,10 +306,21 @@ bool Wippersnapper_FS::parseSecrets() {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
-      writeErrorToBootOut("ERROR: invalid network_type_wifi_airlift_network_password value in "
+      writeErrorToBootOut(
+          "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
       return false;
     }
+    // check if SSID is from template (not entered)
+    if (strcmp(network_type_wifi_airlift_network_ssid, "YOUR_WIFI_SSID_HERE") !=
+        0) {
+      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
+                          "this file and reset the board");
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      while (1)
+        yield();
+    }
+
     // Set WiFi configuration with parsed values
     WS._network_ssid = network_type_wifi_airlift_network_ssid;
     WS._network_pass = network_type_wifi_airlift_network_password;
@@ -322,10 +344,21 @@ bool Wippersnapper_FS::parseSecrets() {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
-      writeErrorToBootOut("ERROR: invalid network_type_wifi_native_network_password value in "
+      writeErrorToBootOut(
+          "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
       return false;
     }
+    // check if SSID is from template (not entered)
+    if (strcmp(network_type_wifi_native_network_ssid, "YOUR_WIFI_SSID_HERE") !=
+        0) {
+      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
+                          "this file and reset the board");
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      while (1)
+        yield();
+    }
+
     // Set WiFi configuration with parsed values
     WS._network_ssid = network_type_wifi_native_network_ssid;
     WS._network_pass = network_type_wifi_native_network_password;
@@ -336,7 +369,8 @@ bool Wippersnapper_FS::parseSecrets() {
   if (!setNetwork) {
     WS_DEBUG_PRINTLN(
         "ERROR: Network interface not detected in secrets.json file.");
-    writeErrorToBootOut("ERROR: Network interface not detected in secrets.json file.");
+    writeErrorToBootOut(
+        "ERROR: Network interface not detected in secrets.json file.");
     while (1)
       yield();
   }
