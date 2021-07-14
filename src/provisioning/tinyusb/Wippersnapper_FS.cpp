@@ -151,7 +151,7 @@ bool Wippersnapper_FS::configFileExists() {
   // Was CircuitPython previously installed?
 
   // Does secrets.json file exist?
-  if (wipperFatFs.exists("secrets.json")) {
+  if (!wipperFatFs.exists("/secrets.json")) {
     return false;
   }
   return true;
@@ -163,23 +163,25 @@ bool Wippersnapper_FS::configFileExists() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::writeBootOutFile() {
-  // write to wipper_boot_out.txt
-  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
-  if (bootFile) {
-    bootFile.print("Adafruit WipperSnapper ");
-    bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR);
-    bootFile.print(".");
-    bootFile.print(WIPPERSNAPPER_SEMVER_MINOR);
-    bootFile.print(".");
-    bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
-    bootFile.print("-");
-    bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
-    bootFile.print(".");
-    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
-    bootFile.println("---DEBUG OUTPUT---");
-    bootFile.flush();
-    bootFile.close();
+  // overwrite previous file on each boot
+  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
+    wipperFatFs.remove("/wipper_boot_out.txt");
   }
+
+  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  bootFile.print("Adafruit WipperSnapper ");
+  bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR);
+  bootFile.print(".");
+  bootFile.print(WIPPERSNAPPER_SEMVER_MINOR);
+  bootFile.print(".");
+  bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
+  bootFile.print("-");
+  bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
+  bootFile.print(".");
+  bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
+  bootFile.println("---DEBUG OUTPUT---");
+  bootFile.flush();
+  bootFile.close();
 }
 
 /**************************************************************************/
