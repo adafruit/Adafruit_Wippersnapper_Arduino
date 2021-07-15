@@ -101,7 +101,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
   // Create message object
   wippersnapper_description_v1_CreateDescriptionRequest _message =
       wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
-
+  // Fill registration message //
   // Set UID
   _machine_name = WS._boardId;
   _uid = atoi(WS.sUID);
@@ -109,13 +109,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
   strcpy(_message.machine_name, _machine_name);
   _message.mac_addr = _uid;
   // Set version
-  wippersnapper_description_v1_CreateDescriptionRequest_Version _version =
-      wippersnapper_description_v1_CreateDescriptionRequest_Version_init_zero;
-  _message.ver_major = WIPPERSNAPPER_SEMVER_MAJOR;
-  _message.ver_minor = WIPPERSNAPPER_SEMVER_MINOR;
-  _message.ver_patch = WIPPERSNAPPER_SEMVER_PATCH;
-  strcpy(_message.ver_pre_release, WIPPERSNAPPER_SEMVER_PRE_RELEASE);
-  _message.ver_build = WIPPERSNAPPER_SEMVER_BUILD_VER;
+  strcpy(_message.str_version, WS_VERSION);
 
   // encode message
   pb_ostream_t _msg_stream =
