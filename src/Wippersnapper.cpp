@@ -120,6 +120,31 @@ void Wippersnapper::set_user_key() {
 #endif
 }
 
+/**************************************************************************/
+/*!
+    @brief    Prints a message buffer to the serial output
+    @param    Buffer
+              Desired message to print.
+      @pram   bufLen
+              Length of buffer to print.
+*/
+/**************************************************************************/
+void printMsgBuffer(char *buffer, uint16_t bufLen) {
+  WS_DEBUG_PRINTLN("Buffer Contents:");
+  WS_DEBUG_PRINT('\t');
+  for (uint16_t i = 0; i < bufLen; i++) {
+    WS_DEBUG_PRINT(" ");
+    WS_DEBUG_PRINT(F(" [0x"));
+    WS_DEBUG_PRINT(buffer[i], HEX);
+    WS_DEBUG_PRINT("], ");
+    if (i % 8 == 7) {
+      WS_DEBUG_PRINT("\n\t");
+    }
+  }
+  WS_DEBUG_PRINT("Buffer Length: ") WS_DEBUG_PRINTLN(bufLen);
+  WS_DEBUG_PRINTLN("");
+}
+
 // Decoders //
 /****************************************************************************/
 /*!
@@ -358,6 +383,7 @@ bool Wippersnapper::decodeSignalMsg(
 /**************************************************************************/
 void cbSignalTopic(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("cbSignalTopic: New Msg on Signal Topic");
+  printMsgBuffer(data, len);
   WS_DEBUG_PRINT(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
@@ -373,6 +399,18 @@ void cbSignalTopic(char *data, uint16_t len) {
   if (!WS.decodeSignalMsg(&WS._incomingSignalMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
   }
+}
+
+/**************************************************************************/
+/*!
+    @brief    Called when i2c signal sub-topic receives a new message.
+              Fills a shared buffer with data from payload.
+*/
+/**************************************************************************/
+void cbSignalI2CTopic(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* New Msg on Signal-I2C: ");
+  printMsgBuffer(data, len);
+
 }
 
 /**************************************************************************/
@@ -709,6 +747,11 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_brkr_sub);
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
+
+  // Subscribe to signal's I2C sub-topic
+  _topic_signal_i2c_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_i2c_sub);
+  _topic_signal_i2c_sub->setCallback(cbSignalI2CTopic);
 
   // Subscribe to registration status topic
   _topic_description_sub =

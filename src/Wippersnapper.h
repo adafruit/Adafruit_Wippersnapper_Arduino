@@ -297,6 +297,9 @@ protected:
       *_topic_signal_device_pub; /*!< Subscription for D2C signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_i2c_sub;   /*!< Subscribes to signal's I2C topic. */
+
 
   char *_err_topic;      /*!< Adafruit IO MQTT error message topic. */
   char *_throttle_topic; /*!< Adafruit IO MQTT throttle message topic. */
