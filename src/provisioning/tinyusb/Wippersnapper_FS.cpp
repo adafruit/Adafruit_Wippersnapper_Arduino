@@ -185,17 +185,7 @@ bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
-    bootFile.print("Adafruit WipperSnapper ");
-    bootFile.print(WIPPERSNAPPER_SEMVER_MAJOR);
-    bootFile.print(".");
-    bootFile.print(WIPPERSNAPPER_SEMVER_MINOR);
-    bootFile.print(".");
-    bootFile.print(WIPPERSNAPPER_SEMVER_PATCH);
-    bootFile.print("-");
-    bootFile.print(WIPPERSNAPPER_SEMVER_PRE_RELEASE);
-    bootFile.print(".");
-    bootFile.println(WIPPERSNAPPER_SEMVER_BUILD_VER);
-    bootFile.println("---DEBUG OUTPUT---");
+    bootFile.println(WS_VERSION);
     bootFile.flush();
     bootFile.close();
     is_success = true;

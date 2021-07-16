@@ -62,14 +62,8 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-// Semver
-#define WIPPERSNAPPER_SEMVER_MAJOR 1 ///< Library version Major
-#define WIPPERSNAPPER_SEMVER_MINOR 0 ///< Library version Minor
-#define WIPPERSNAPPER_SEMVER_PATCH 0 ///< Library version Patch
-#define WIPPERSNAPPER_SEMVER_PRE_RELEASE                                       \
-  "beta" ///< Library version pre-release label
-#define WIPPERSNAPPER_SEMVER_BUILD_VER                                         \
-  2 ///< Library version pre-release build number
+// Library version (semver-formatted)
+#define WS_VERSION "1.0.0-beta+3"
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
