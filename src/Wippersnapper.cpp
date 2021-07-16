@@ -70,6 +70,7 @@ Wippersnapper::~Wippersnapper() {
 void Wippersnapper::provision() {
   // init. LED for status signaling
   statusLEDInit();
+  setStatusLEDColor(LED_HW_INIT);
 #ifdef USE_TINYUSB
   // init new filesystem
   _fileSystem = new Wippersnapper_FS();
@@ -320,7 +321,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // decode each ConfigurePinRequest sub-message
     if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields,
                    &msg)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
+      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
       is_success = false;
     }
   } else if (field->tag ==
@@ -382,10 +383,8 @@ bool Wippersnapper::decodeSignalMsg(
 */
 /**************************************************************************/
 void cbSignalTopic(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("cbSignalTopic: New Msg on Signal Topic");
+  WS_DEBUG_PRINTLN("* New Msg on Signal");
   printMsgBuffer(data, len);
-  WS_DEBUG_PRINT(len);
-  WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
   // copy data to buffer
@@ -407,10 +406,17 @@ void cbSignalTopic(char *data, uint16_t len) {
               Fills a shared buffer with data from payload.
 */
 /**************************************************************************/
-void cbSignalI2CTopic(char *data, uint16_t len) {
+void cbSignalI2CReq(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* New Msg on Signal-I2C: ");
   printMsgBuffer(data, len);
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy data to buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
 
+  // Empty struct for storing the I2C request  message
+  // TODO: Decoding cbs here or pass into i2c functions
 }
 
 /**************************************************************************/
@@ -751,7 +757,7 @@ void Wippersnapper::subscribeWSTopics() {
   // Subscribe to signal's I2C sub-topic
   _topic_signal_i2c_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
-  _topic_signal_i2c_sub->setCallback(cbSignalI2CTopic);
+  _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
   // Subscribe to registration status topic
   _topic_description_sub =
@@ -767,9 +773,6 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
-
-  /*   statusLEDInit();
-    setStatusLEDColor(LED_HW_INIT); */
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
