@@ -609,6 +609,18 @@ bool Wippersnapper::buildWSTopics() {
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
+  // Topic for i2c signals from device to broker
+  WS._topic_signal_i2c_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+      strlen(TOPIC_I2C) + 1);
+
+  // Topic for i2c signals from broker to device
+  WS._topic_signal_i2c_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+      strlen(TOPIC_I2C) + 1);
+
   // Create global registration topic
   if (WS._topic_description) {
     strcpy(WS._topic_description, WS._username);
@@ -654,6 +666,32 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_brkr, "broker");
   } else { // malloc failed
     WS._topic_signal_brkr = 0;
+    is_success = false;
+  }
+
+  // Create device-to-broker i2c signal topic
+  if (WS._topic_signal_i2c_brkr) {
+    strcpy(WS._topic_signal_i2c_brkr, WS._username);
+    strcat(WS._topic_signal_i2c_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_i2c_brkr, _device_uid);
+    strcat(WS._topic_signal_i2c_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_i2c_brkr, "broker");
+    strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
+  } else { // malloc failed
+    WS._topic_signal_i2c_brkr = 0;
+    is_success = false;
+  }
+
+  // Create broker-to-device i2c signal topic
+  if (WS._topic_signal_i2c_device) {
+    strcpy(WS._topic_signal_i2c_brkr, WS._username);
+    strcat(WS._topic_signal_i2c_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_i2c_brkr, _device_uid);
+    strcat(WS._topic_signal_i2c_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_i2c_brkr, "device");
+    strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
+  } else { // malloc failed
+    WS._topic_signal_i2c_brkr = 0;
     is_success = false;
   }
 

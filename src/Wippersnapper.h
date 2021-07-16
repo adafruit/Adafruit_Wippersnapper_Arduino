@@ -70,9 +70,10 @@
 #define TOPIC_IO_ERRORS "/errors"     ///< Adafruit IO Error MQTT Topic
 
 // Reserved Wippersnapper topics
-#define TOPIC_WS "/wprsnpr/"       ///< Global /wprsnpr/ topic
-#define TOPIC_DESCRIPTION "/info/" ///< Device description topic
-#define TOPIC_SIGNALS "/signals/"  ///< Device signals topic
+#define TOPIC_WS "/wprsnpr/"       ///< WipperSnapper topic
+#define TOPIC_DESCRIPTION "/info/" ///< Registration sub-topic
+#define TOPIC_SIGNALS "/signals/"  ///< Signals sub-topic
+#define TOPIC_I2C "/i2c/"          ///< I2C sub-topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -285,6 +286,10 @@ protected:
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
   char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
+  char *_topic_signal_i2c_brkr;   /*!< Topic carries messages from a device to a
+                                     broker. */
+  char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
+                                     device. */
 
   Adafruit_MQTT_Subscribe
       *_topic_description_sub; /*!< Subscription for registration topic. */
