@@ -17,19 +17,23 @@
 #define WIPPERSNAPPER_I2C_H
 
 #include "Wippersnapper.h"
+#include <Wire.h>
 
 // forward decl.
 class Wippersnapper;
 
 class WipperSnapper_I2C() {
     public:
-        WipperSnapper_I2C(uint32_t frequency);
+        WipperSnapper_I2C(uint32_t frequency, int32_t sdaPin, int32_t sclPin, int32_t busId);
         ~WipperSnapper_I2C();
         bool scanForAddress(uint32_t address);
         bool setFrequency(uint32_t frequency);
 
     private:
-        //TwoWire *_i2c = NULL; /*!< Default Arduino I2C bus */
+        TwoWire *_i2cOne;
+        TwoWire *_i2cTwo;
+        bool isInitI2COne; // True if I2C w/busId 1 already initialized
+        bool isInitI2CTwo; // True if I2C w/busId 2 already initialized
 
 };
 extern Wippersnapper WS;
