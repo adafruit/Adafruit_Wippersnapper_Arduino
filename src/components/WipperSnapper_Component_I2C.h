@@ -22,20 +22,15 @@
 // forward decl.
 class Wippersnapper;
 
-class WipperSnapper_Component_I2C() {
+class WipperSnapper_Component_I2C {
     public:
-        WipperSnapper_Component_I2C();
+        WipperSnapper_Component_I2C(int32_t sdaPin, int32_t sclPin, int32_t portNum=0, uint32_t frequency=100000);
         ~WipperSnapper_Component_I2C();
-        void initI2C(uint32_t frequency, int32_t sdaPin, int32_t sclPin, int32_t busId);
         bool scanForAddress(uint32_t address);
-        bool setFrequency(uint32_t frequency, int32_t busId);
 
     private:
-        TwoWire *_i2c0;
-        TwoWire *_i2c1;
-        bool _isInitBus0;
-        bool _isInitBus1;
-
+        TwoWire *_i2c = NULL;
+        bool _isInit;
 };
 extern Wippersnapper WS;
 

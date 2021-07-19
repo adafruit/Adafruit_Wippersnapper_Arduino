@@ -37,6 +37,9 @@
 #include "Wippersnapper_AnalogIO.h"
 #include "Wippersnapper_DigitalGPIO.h"
 
+// WipperSnapper I2C Component
+#include "components/WipperSnapper_Component_I2C.h"
+
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
@@ -149,6 +152,7 @@ class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class Wippersnapper_ESP32_nvs;
+class WipperSnapper_Component_I2C;
 
 /**************************************************************************/
 /*!
@@ -237,6 +241,10 @@ public:
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
   Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
+
+  // I2C WIP - dirty!
+  WipperSnapper_Component_I2C *_i2cPort0 = NULL;
+  WipperSnapper_Component_I2C *_i2cPort1 = NULL;
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
   char sUID[9];             /*!< Unique network iface identifier */

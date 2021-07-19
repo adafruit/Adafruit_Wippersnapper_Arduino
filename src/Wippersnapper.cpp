@@ -1042,6 +1042,10 @@ ws_status_t Wippersnapper::run() {
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
 
+  // TODO: Implement correct I2C when we have topic added
+  // for now, this is mocking the initialization assuming we got a message
+  _i2cPort0 = new WipperSnapper_Component_I2C(34, 33);
+
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
 
