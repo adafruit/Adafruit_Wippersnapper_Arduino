@@ -755,7 +755,8 @@ void Wippersnapper::subscribeWSTopics() {
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
   // Subscribe to signal's I2C sub-topic
-  _topic_signal_i2c_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
+  _topic_signal_i2c_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
@@ -1044,7 +1045,11 @@ ws_status_t Wippersnapper::run() {
 
   // TODO: Implement correct I2C when we have topic added
   // for now, this is mocking the initialization assuming we got a message
+
+  // New I2CInitRequest w/pins 34&33 (default esp32s2 funhouse)
   _i2cPort0 = new WipperSnapper_Component_I2C(34, 33);
+  // add new port to vector of i2c components
+  i2cComponents.push_back(_i2cPort0);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();

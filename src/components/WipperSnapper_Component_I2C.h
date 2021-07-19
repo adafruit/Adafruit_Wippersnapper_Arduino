@@ -23,15 +23,18 @@
 class Wippersnapper;
 
 class WipperSnapper_Component_I2C {
-    public:
-        WipperSnapper_Component_I2C(int32_t sdaPin, int32_t sclPin, int32_t portNum=0, uint32_t frequency=100000);
-        ~WipperSnapper_Component_I2C();
-        bool scanForAddress(uint32_t address);
+public:
+  WipperSnapper_Component_I2C(int32_t sdaPin, int32_t sclPin,
+                              int32_t portNum = 0, uint32_t frequency = 100000);
+  ~WipperSnapper_Component_I2C();
+  bool scanForAddress(uint32_t address);
 
-    private:
-        TwoWire *_i2c = NULL;
-        bool _isInit;
+  int32_t _portNum;
+  bool _isInit;
+
+private:
+  TwoWire *_i2c = NULL;
 };
 extern Wippersnapper WS;
 
-#endif //WipperSnapper_Component_I2C_H
+#endif // WipperSnapper_Component_I2C_H

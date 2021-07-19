@@ -18,6 +18,8 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
+#include <vector>
+
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_decode.h>
@@ -243,6 +245,7 @@ public:
   Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
 
   // I2C WIP - dirty!
+  std::vector<WipperSnapper_Component_I2C *> i2cComponents;
   WipperSnapper_Component_I2C *_i2cPort0 = NULL;
   WipperSnapper_Component_I2C *_i2cPort1 = NULL;
 
@@ -306,8 +309,7 @@ protected:
   Adafruit_MQTT_Subscribe
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_signal_i2c_sub;   /*!< Subscribes to signal's I2C topic. */
-
+      *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
 
   char *_err_topic;      /*!< Adafruit IO MQTT error message topic. */
   char *_throttle_topic; /*!< Adafruit IO MQTT throttle message topic. */
