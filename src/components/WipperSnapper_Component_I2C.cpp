@@ -39,7 +39,7 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(int32_t sdaPin,
 }
 
 WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
-  _portNum = NULL;
+  _portNum = 100; // Invalid = 100
   _isInit = false;
 }
 
