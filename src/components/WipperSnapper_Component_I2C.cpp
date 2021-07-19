@@ -18,7 +18,7 @@
 
 WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(int32_t sdaPin, int32_t sclPin, int32_t portNum, uint32_t frequency) {
     // initialize using portNum
-    _i2c = new TwoWire(int32_t portNum);
+    _i2c = new TwoWire(portNum);
 
     // validate if pins are pulled HI
     if (digitalRead(sdaPin) == LOW) {
@@ -28,8 +28,8 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(int32_t sdaPin, int32_t
         pinMode(sclPin, INPUT_PULLUP);
     }
     // begin i2c
-    _i2c.begin(sdaPin, sclPin);
-    _i2c.setClock(frequency);
+    _i2c->begin(sdaPin, sclPin);
+    _i2c->setClock(frequency);
     _isInit = true;
     yield();
 }
