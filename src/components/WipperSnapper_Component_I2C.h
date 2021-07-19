@@ -31,8 +31,10 @@ class WipperSnapper_Component_I2C() {
         bool setFrequency(uint32_t frequency, int32_t busId);
 
     private:
-        TwoWire *_i2c;
-        bool _i2cInitialized;
+        TwoWire *_i2c0;
+        TwoWire *_i2c1;
+        bool _isInitBus0;
+        bool _isInitBus1;
 
 };
 extern Wippersnapper WS;

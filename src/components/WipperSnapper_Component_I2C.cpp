@@ -16,16 +16,22 @@
 
 #include "WipperSnapper_Component_I2C.h"
 
-WipperSnapper_Component_I2C::WipperSnapper_Component_I2C() {
-    _i2c= &Wire;
-    // TODO: allow 2nd bus to be used for ESP32
+WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(int32_t busId) {
+    if (_isInitBus0 == false) {
+        _i2c0 = new TwoWire(busId);
+        _isInitBus0 = true;
+    }
+    if (_isInitBus1 == false) {
+        _i2c1 = new TwoWire(busId);
+        _isInitBus1 = true;
+    }
 }
 
 ~WipperSnapper_Component_I2C::WipperSnapper_Component_I2C() {
     // todo - DTOR!
 }
 
-bool WipperSnapper_Component_I2C::initI2C(uint32_t frequency, int32_t sdaPin, int32_t sclPin, int32_t busId) {
+bool WipperSnapper_Component_I2C::initI2C(uint32_t frequency, int32_t sdaPin, int32_t sclPin) {
     // validate if pins are pulled HI
     if (digitalRead(sdaPin) == LOW) {
         pinMode(sdaPin, INPUT_PULLUP);
