@@ -18,8 +18,8 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
-#include <vector>
 #include <queue>
+#include <vector>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
@@ -151,10 +151,10 @@ typedef enum {
 } ws_board_status_t;
 
 // WIP - event-driven loop handler for i2c
-enum wsEvent
-{ 
-    wsEventSetupI2C,
-    wsEventScanI2C,
+enum wsEvent {
+  wsEventDecodeSignalMsgI2C,
+  wsEventSetupI2C,
+  wsEventScanI2C,
 };
 
 /* MQTT Configuration */
@@ -245,7 +245,7 @@ public:
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
   // I2C
-  bool addNewI2CComponent(int32_t sdaPin, int32_t sclPin, int32_t portNum = 0,
+  void addNewI2CComponent(int32_t sdaPin, int32_t sclPin, int32_t portNum = 0,
                           uint32_t frequency = 100000U);
   std::deque<wsEvent> wsEvents; // global accessed by the object.
 
@@ -296,7 +296,6 @@ public:
 
   // i2c signal msg
   wippersnapper_signal_v1_I2CRequest msgSignalI2C;
-
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in

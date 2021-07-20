@@ -415,18 +415,30 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
-  // Clear existing incoming I2C signal message
-  WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
+  // Clear (zero-out) existing incoming I2C signal message
+  // TODO: uncomment this?
+  // WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
 
-  // Set event to setupI2C, front since its a setup event
-  WS.wsEvents.push_front()
+  // Set event to decode the I2C signal, push_front because decoder requires
+  // buffer contents
+  WS.wsEvents.push_front(wsEventDecodeSignalMsgI2C);
+}
 
-  // Detect tag?
-  // Empty struct for storing the I2C request  message
-  // DEPENDING on tag, alloc
-  // Note: setup events get pushed to the front of the deque
-  WS.wsEvents.push_front(wsEventSetupI2C);
+void cbSignalI2C() {
+  // detec ttype
+}
 
+void setupDecodeSignalMsgI2C() {
+  /*
+  WS.msgSignalI2C.cb_payload.funcs.decode = cbSignalI2C;
+
+  // Decode the I2C Signal Message
+  pb_istream_t stream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&stream, wippersnapper_signal_v1_I2CRequest_fields,
+                 WS.msgSignalI2C)) {
+    WS_DEBUG_PRINTLN(
+        "ERROR (decodeSignalMsg):, Could not decode CreateSignalRequest")
+  } */
 }
 
 /**************************************************************************/
@@ -1057,7 +1069,15 @@ ws_status_t Wippersnapper::run() {
   // for now, this is mocking the initialization assuming we got a message
 
   // Message: New I2CInitRequest w/pins 34&33 (default esp32s2 funhouse)
-  //addNewI2CComponent(34, 33);
+  // addNewI2CComponent(34, 33);
+
+  // Event processing loop
+  switch (wsEvents.front()) {
+  case wsEventDecodeSignalMsgI2C:
+    // Priority - HIGH
+    setupDecodeSignalMsgI2C();
+    break;
+  }
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
@@ -1068,7 +1088,7 @@ ws_status_t Wippersnapper::run() {
   return status();
 }
 
-bool Wippersnapper::addNewI2CComponent(int32_t sdaPin, int32_t sclPin,
+void Wippersnapper::addNewI2CComponent(int32_t sdaPin, int32_t sclPin,
                                        int32_t portNum, uint32_t frequency) {
   if (_i2cPort0 != NULL && portNum == 0) {
     _i2cPort0 = new WipperSnapper_Component_I2C(sdaPin, sclPin, portNum);
