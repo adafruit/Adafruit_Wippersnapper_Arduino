@@ -150,7 +150,7 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-// WIP - event-driven loop for i2c
+// WIP - event-driven loop handler for i2c
 enum wsEvent
 { 
     wsEventSetupI2C,
@@ -293,6 +293,10 @@ public:
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
+
+  // i2c signal msg
+  wippersnapper_signal_v1_I2CRequest msgSignalI2C;
+
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in

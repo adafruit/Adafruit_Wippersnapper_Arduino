@@ -415,6 +415,12 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
+  // Clear existing incoming I2C signal message
+  WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
+
+  // Set event to setupI2C, front since its a setup event
+  WS.wsEvents.push_front()
+
   // Detect tag?
   // Empty struct for storing the I2C request  message
   // DEPENDING on tag, alloc
