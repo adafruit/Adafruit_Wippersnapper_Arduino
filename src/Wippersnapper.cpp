@@ -415,8 +415,12 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
+  // Detect tag?
   // Empty struct for storing the I2C request  message
-  // TODO: Decoding cbs here or pass into i2c functions
+  // DEPENDING on tag, alloc
+  // Note: setup events get pushed to the front of the deque
+  WS.wsEvents.push_front(wsEventSetupI2C);
+
 }
 
 /**************************************************************************/
@@ -1047,7 +1051,7 @@ ws_status_t Wippersnapper::run() {
   // for now, this is mocking the initialization assuming we got a message
 
   // Message: New I2CInitRequest w/pins 34&33 (default esp32s2 funhouse)
-  addNewI2CComponent(34, 33);
+  //addNewI2CComponent(34, 33);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();

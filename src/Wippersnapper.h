@@ -19,6 +19,7 @@
 #define WIPPERSNAPPER_H
 
 #include <vector>
+#include <queue>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
@@ -149,6 +150,13 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
+// WIP - event-driven loop for i2c
+enum wsEvent
+{ 
+    wsEventSetupI2C,
+    wsEventScanI2C,
+};
+
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
@@ -239,6 +247,7 @@ public:
   // I2C
   bool addNewI2CComponent(int32_t sdaPin, int32_t sclPin, int32_t portNum = 0,
                           uint32_t frequency = 100000U);
+  std::deque<wsEvent> wsEvents; // global accessed by the object.
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
