@@ -1046,10 +1046,8 @@ ws_status_t Wippersnapper::run() {
   // TODO: Implement correct I2C when we have topic added
   // for now, this is mocking the initialization assuming we got a message
 
-  // New I2CInitRequest w/pins 34&33 (default esp32s2 funhouse)
-  _i2cPort0 = new WipperSnapper_Component_I2C(34, 33);
-  // add new port to vector of i2c components
-  i2cComponents.push_back(_i2cPort0);
+  // Message: New I2CInitRequest w/pins 34&33 (default esp32s2 funhouse)
+  addNewI2CComponent(34, 33);
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
@@ -1058,6 +1056,19 @@ ws_status_t Wippersnapper::run() {
   WS._analogIO->processAnalogInputs();
 
   return status();
+}
+
+bool Wippersnapper::addNewI2CComponent(int32_t sdaPin, int32_t sclPin,
+                                       int32_t portNum, uint32_t frequency) {
+  if (_i2cPort0 != NULL && portNum == 0) {
+    _i2cPort0 = new WipperSnapper_Component_I2C(sdaPin, sclPin, portNum);
+    i2cComponents.push_back(_i2cPort0);
+  } else if (_i2cPort1 != NULL && portNum == 1) {
+    _i2cPort1 = new WipperSnapper_Component_I2C(sdaPin, sclPin, portNum);
+    i2cComponents.push_back(_i2cPort1);
+  } else {
+    WS_DEBUG_PRINTLN("Unable to allocate new I2C Component")
+  }
 }
 
 /**************************************************************************/

@@ -47,11 +47,10 @@
 #include "Arduino.h"       // Wiring
 
 #if defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || ADAFRUIT_PYPORTAL
-  #include <Adafruit_SleepyDog.h>
+#include <Adafruit_SleepyDog.h>
 #else // ESP32/ESP32-S2
-  #include <esp_task_wdt.h>
+#include <esp_task_wdt.h>
 #endif
-
 
 // Note: These might be better off in their respective wrappers
 #include <Adafruit_DotStar.h>
@@ -236,6 +235,10 @@ public:
 
   // Pin configure message
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+
+  // I2C
+  bool addNewI2CComponent(int32_t sdaPin, int32_t sclPin, int32_t portNum = 0,
+                          uint32_t frequency = 100000U);
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
