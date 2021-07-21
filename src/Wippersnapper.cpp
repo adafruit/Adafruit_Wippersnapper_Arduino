@@ -415,30 +415,24 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
-  // Clear (zero-out) existing incoming I2C signal message
-  // TODO: uncomment this?
-  // WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
-
-  // Set event to decode the I2C signal, push_front because decoder requires
-  // buffer contents
+  // Set next event to decode the I2C signal
   WS.wsEvents.push_front(wsEventDecodeSignalMsgI2C);
 }
 
+// TODO: Do these need to be void we can access the buffer from WS._ anyways?
 void cbSignalI2C() {
-  // detec ttype
+  // detect field/type
 }
 
-void setupDecodeSignalMsgI2C() {
-  /*
-  WS.msgSignalI2C.cb_payload.funcs.decode = cbSignalI2C;
+void Wippersnapper::setupDecodeSignalMsgI2C() {
+  // Zero-out existing I2C incoming signal msg.
+  msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
+  // Decode buffer into msgSignalI2C
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields, &msgSignalI2C))
+      WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 
-  // Decode the I2C Signal Message
-  pb_istream_t stream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&stream, wippersnapper_signal_v1_I2CRequest_fields,
-                 WS.msgSignalI2C)) {
-    WS_DEBUG_PRINTLN(
-        "ERROR (decodeSignalMsg):, Could not decode CreateSignalRequest")
-  } */
+  // Query which payload?
 }
 
 /**************************************************************************/

@@ -247,7 +247,12 @@ public:
   // I2C
   void addNewI2CComponent(int32_t sdaPin, int32_t sclPin, int32_t portNum = 0,
                           uint32_t frequency = 100000U);
+  
+  void setupDecodeSignalMsgI2C();
+
+  // Event-loop
   std::deque<wsEvent> wsEvents; // global accessed by the object.
+  
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
