@@ -29,7 +29,10 @@ Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(
   _digital_input_pins = new digitalInputPin[_totalDigitalInputPins];
   // turn input sampling off for all digital pins
   for (int i = 0; i < _totalDigitalInputPins; i++) {
+    _digital_input_pins[i].pinName = -1;
     _digital_input_pins[i].period = -1;
+    _digital_input_pins[i].prvPeriod = 0L;
+    _digital_input_pins[i].prvPinVal = 0;
   }
 }
 
@@ -120,7 +123,10 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
     // de-allocate the pin within digital_input_pins[]
     for (int i = 0; i < _totalDigitalInputPins; i++) {
       if (_digital_input_pins[i].pinName == pinName) {
+        _digital_input_pins[i].pinName = -1;
         _digital_input_pins[i].period = -1;
+        _digital_input_pins[i].prvPeriod = 0L;
+        _digital_input_pins[i].prvPinVal = 0;
         break;
       }
     }

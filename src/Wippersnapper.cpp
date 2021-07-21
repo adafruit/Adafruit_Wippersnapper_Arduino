@@ -438,13 +438,13 @@ void Wippersnapper::decodeMsgSignalI2C() {
   // NOTE: Two event types? Hardware events and Message events?
   // Order of processing: poll-> Message (decode, get to the last step) -> hardware event
   // Set hardware event based on payload type
-  if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CInitRequest) {
+/*   if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CInitRequest) {
     // Call something which will the I2C bus here? Add an i2c component as well?
     WS_DEBUG_PRINTLN("Found: I2C Init Request Msg");
   } else if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CScanRequest) {
     // init the I2C scan here?
     WS_DEBUG_PRINTLN("Found: I2C Scan Request Msg");
-  }
+  } */
 
 }
 
