@@ -150,13 +150,6 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-// WIP - event-driven loop handler for i2c
-// Events for decoding incoming messages
-enum wsEventDecodeMsg {
-  wsEventDecodeMsgSignal,
-  wsEventDecodeMsgSignalI2C,
-};
-
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
@@ -250,10 +243,6 @@ public:
 
   // Decoder for i2c signal incoming
   void decodeMsgSignalI2C();
-
-  // Event-loop
-  std::deque<wsEventDecodeMsg> wsEventDecodeMsgs; // global accessed by the object.
-  
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */

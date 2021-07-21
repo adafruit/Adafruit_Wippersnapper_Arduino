@@ -415,8 +415,40 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
-  // Set next event to decode the I2C signal
-  WS.wsEventDecodeMsgs.push_front(wsEventDecodeMsgSignalI2C);
+  // Zero-out existing I2C signal msg.
+  msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
+
+  /* Set up the payload callback, which will set up the callbacks for
+  each oneof payload field once the field tag is known */
+  msgSignalI2C->cb_payload.funcs.decode = cbI2CMsgFields;
+
+  // Decode buffer into msgSignalI2C
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
+                 &msgSignalI2C))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+}
+
+bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  bool is_success = true;
+  WS_DEBUG_PRINTLN(cbI2CMsgFields);
+  pb_size_t arr_sz = field->array_size;
+  WS_DEBUG_PRINT("Sub-messages found: ");
+  WS_DEBUG_PRINTLN(arr_sz);
+
+  if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag) {
+    WS_DEBUG_PRINTLN("I2C Init Request Found!");
+    // TODO:
+    // Create I2C request message
+    // Decode I2C request message into struct.
+    // Pass I2C request message struct. to I2C component init
+  } else if (field->tag ==
+             wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
+    WS_DEBUG_PRINTLN("I2C Scan Request Found!");
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unknown i2c msg tag");
+  }
+  return is_success;
 }
 
 /**************************************************************************/
@@ -430,22 +462,22 @@ void Wippersnapper::decodeMsgSignalI2C() {
   msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
   // Decode buffer into msgSignalI2C
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields, &msgSignalI2C))
-      WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
+                 &msgSignalI2C))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
   // Query the payload type
   WS_DEBUG_PRINT("I2C Payload Type: ");
   WS_DEBUG_PRINTLN(msgSignalI2C.which_payload);
   // NOTE: Two event types? Hardware events and Message events?
-  // Order of processing: poll-> Message (decode, get to the last step) -> hardware event
-  // Set hardware event based on payload type
-/*   if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CInitRequest) {
-    // Call something which will the I2C bus here? Add an i2c component as well?
-    WS_DEBUG_PRINTLN("Found: I2C Init Request Msg");
-  } else if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CScanRequest) {
-    // init the I2C scan here?
-    WS_DEBUG_PRINTLN("Found: I2C Scan Request Msg");
-  } */
-
+  // Order of processing: poll-> Message (decode, get to the last step) ->
+  // hardware event Set hardware event based on payload type
+  /*   if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CInitRequest) {
+      // Call something which will the I2C bus here? Add an i2c component as
+    well? WS_DEBUG_PRINTLN("Found: I2C Init Request Msg"); } else if
+    (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CScanRequest) {
+      // init the I2C scan here?
+      WS_DEBUG_PRINTLN("Found: I2C Scan Request Msg");
+    } */
 }
 
 /**************************************************************************/
@@ -1072,22 +1104,7 @@ ws_status_t Wippersnapper::run() {
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
 
-  // TODO: Implement correct I2C when we have topic added
-  // for now, this is mocking the initialization assuming we got a message
-
-  // Message: New I2CInitRequest w/pins 34&33 (default esp32s2 funhouse)
-  // addNewI2CComponent(34, 33);
-
-  // Message event processing loop
-  switch (wsEventDecodeMsgs.front()) {
-  case wsEventDecodeMsgSignalI2C:
-    // Priority - HIGH
-    decodeMsgSignalI2C();
-    break;
-  }
-
-  // Hardware event processing loop
-
+  // TODO: Loop thru components
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
 
