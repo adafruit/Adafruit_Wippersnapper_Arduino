@@ -416,23 +416,36 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   WS.bufSize = len;
 
   // Set next event to decode the I2C signal
-  WS.wsEvents.push_front(wsEventDecodeSignalMsgI2C);
+  WS.wsEventDecodeMsgs.push_front(wsEventDecodeMsgSignalI2C);
 }
 
-// TODO: Do these need to be void we can access the buffer from WS._ anyways?
-void cbSignalI2C() {
-  // detect field/type
-}
-
-void Wippersnapper::setupDecodeSignalMsgI2C() {
+/**************************************************************************/
+/*!
+    @brief    Called when i2c signal sub-topic receives a new message.
+              Fills a shared buffer with data from payload.
+*/
+/**************************************************************************/
+void Wippersnapper::decodeMsgSignalI2C() {
   // Zero-out existing I2C incoming signal msg.
   msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
   // Decode buffer into msgSignalI2C
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
   if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields, &msgSignalI2C))
       WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+  // Query the payload type
+  WS_DEBUG_PRINT("I2C Payload Type: ");
+  WS_DEBUG_PRINTLN(msgSignalI2C.which_payload);
+  // NOTE: Two event types? Hardware events and Message events?
+  // Order of processing: poll-> Message (decode, get to the last step) -> hardware event
+  // Set hardware event based on payload type
+  if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CInitRequest) {
+    // Call something which will the I2C bus here? Add an i2c component as well?
+    WS_DEBUG_PRINTLN("Found: I2C Init Request Msg");
+  } else if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CScanRequest) {
+    // init the I2C scan here?
+    WS_DEBUG_PRINTLN("Found: I2C Scan Request Msg");
+  }
 
-  // Query which payload?
 }
 
 /**************************************************************************/
@@ -1065,13 +1078,15 @@ ws_status_t Wippersnapper::run() {
   // Message: New I2CInitRequest w/pins 34&33 (default esp32s2 funhouse)
   // addNewI2CComponent(34, 33);
 
-  // Event processing loop
-  switch (wsEvents.front()) {
-  case wsEventDecodeSignalMsgI2C:
+  // Message event processing loop
+  switch (wsEventDecodeMsgs.front()) {
+  case wsEventDecodeMsgSignalI2C:
     // Priority - HIGH
-    setupDecodeSignalMsgI2C();
+    decodeMsgSignalI2C();
     break;
   }
+
+  // Hardware event processing loop
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
