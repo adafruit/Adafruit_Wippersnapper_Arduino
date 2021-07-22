@@ -284,12 +284,17 @@ public:
 
   char *_topic_signal_device; /*!< Device->Wprsnpr messages */
 
+  char *_topic_signal_i2c_brkr; /*!< Topic carries messages from a device to a
+                                   broker. */
+
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
   // i2c signal msg
-  wippersnapper_signal_v1_I2CRequest msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
-  wippersnapper_i2c_v1_I2CInitRequest msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
+  wippersnapper_signal_v1_I2CRequest msgSignalI2C =
+      wippersnapper_signal_v1_I2CRequest_init_zero;
+  wippersnapper_i2c_v1_I2CInitRequest msgI2cInitRequest =
+      wippersnapper_i2c_v1_I2CInitRequest_init_zero;
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -315,8 +320,6 @@ protected:
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
   char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
-  char *_topic_signal_i2c_brkr;   /*!< Topic carries messages from a device to a
-                                     broker. */
   char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
                                      device. */
 

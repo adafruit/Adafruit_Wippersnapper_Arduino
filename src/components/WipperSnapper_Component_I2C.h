@@ -24,7 +24,8 @@ class Wippersnapper;
 
 class WipperSnapper_Component_I2C {
 public:
-  WipperSnapper_Component_I2C(wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
+  WipperSnapper_Component_I2C(
+      wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
   ~WipperSnapper_Component_I2C();
   bool scanForAddress(uint32_t address);
 

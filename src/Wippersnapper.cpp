@@ -411,20 +411,48 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // Decode i2c request message into struct
     if (!pb_decode(stream, wippersnapper_i2c_v1_I2CInitRequest_fields,
                    &WS.msgI2cInitRequest)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode wippersnapper_i2c_v1_I2CInitRequest");
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_i2c_v1_I2CInitRequest");
       is_success = false;
     }
-    // Finally, create an I2C object using the message as a constructor?
+    // Create an I2C object using the message as a constructor?
     if (WS._i2cPort0 != NULL) {
       WS._i2cPort0 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
       WS.i2cComponents.push_back(WS._i2cPort0);
+      // did we init. the port successfully?
+      is_success = WS._i2cPort0->_isInit;
     } else if (WS._i2cPort1 != NULL) {
       WS._i2cPort1 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
+      // did we init. the port successfully?
+      is_success = WS._i2cPort1->_isInit;
       WS.i2cComponents.push_back(WS._i2cPort1);
     } else {
       WS_DEBUG_PRINTLN("ERROR: Both I2C ports are in-use");
       is_success = false;
     }
+    // Create I2C init. response
+    wippersnapper_signal_v1_I2CResponse msgi2cResponse =
+        wippersnapper_signal_v1_I2CResponse_init_zero;
+    msgi2cResponse.which_payload =
+        wippersnapper_signal_v1_I2CResponse_resp_i2c_init_tag;
+    msgi2cResponse.payload.resp_i2c_init.is_initialized = is_success;
+    // TODO: Zero-out the outgoing buffer here
+    // Encode I2C init. response
+    pb_ostream_t stream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                 sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&stream, wippersnapper_signal_v1_I2CResponse_fields,
+                   &msgi2cResponse)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode i2cresponse message");
+      is_success = false;
+    }
+    // Obtain size and only write out buffer to end
+    size_t msgSz = pb_get_encoded_size(
+        &msgSz, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse);
+    // publish event data
+    WS_DEBUG_PRINT("Publishing I2C init response...")
+    WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
+    WS_DEBUG_PRINTLN("Published!");
+
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
@@ -433,7 +461,6 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   }
   return is_success;
 }
-
 
 /**************************************************************************/
 /*!
@@ -1086,7 +1113,7 @@ ws_status_t Wippersnapper::run() {
   checkMQTTConnection(curTime);
 
   // Poll for packets from broker queue, return immediately
-  if(!WS._mqtt->processPacketsUntilCallback(100)) {
+  if (!WS._mqtt->processPacketsUntilCallback(100)) {
     WS_DEBUG_PRINTLN("No packets found!");
   }
 
