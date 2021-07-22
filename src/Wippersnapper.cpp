@@ -466,6 +466,9 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     }
     // TODO: Check which port and select the correct object out of the i2c component vector
     WS_DEBUG_PRINT("Port"); WS_DEBUG_PRINTLN(msgScanReq.i2c_port_number);
+    // Scan all requested addresses on i2cportX and ret. address found, -1 otherwise.
+    uint16_t addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
+    // Create address found response
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
   }

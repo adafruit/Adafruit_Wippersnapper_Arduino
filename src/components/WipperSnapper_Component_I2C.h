@@ -27,11 +27,10 @@ public:
   WipperSnapper_Component_I2C(
       wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
   ~WipperSnapper_Component_I2C();
-  bool scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq);
+  uint16_t scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq);
 
   int32_t _portNum;
   bool _isInit;
-
 private:
   TwoWire *_i2c = NULL;
 };

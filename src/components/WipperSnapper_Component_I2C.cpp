@@ -47,9 +47,9 @@ WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
   _isInit = false;
 }
 
-bool WipperSnapper_Component_I2C::scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq) {
+uint16_t WipperSnapper_Component_I2C::scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq) {
   // decode stream into i2c request
-  bool is_detected = false;
+  uint16_t addrFound = -1;
   uint16_t scanAddr;
   WS_DEBUG_PRINT("EXEC: I2C Scan, Port ("); WS_DEBUG_PRINT(_portNum); WS_DEBUG_PRINTLN(")");
   for (int i = 0; i < msgScanReq.address_count; i++) {
@@ -59,13 +59,11 @@ bool WipperSnapper_Component_I2C::scanAddresses(wippersnapper_i2c_v1_I2CScanRequ
     if (_i2c->endTransmission() == 0) {
         // found it!
         WS_DEBUG_PRINTLN("I2C device detected!");
-        is_detected = true;
+        addrFound = scanAddr;
         break;
     } else {
         WS_DEBUG_PRINTLN("I2C device not detected!");
     }
   }
-  // TODO
-  // encode response and publish to broker
-  return is_detected;
+  return addrFound;
 }
