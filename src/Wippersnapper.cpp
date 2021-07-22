@@ -1101,8 +1101,10 @@ ws_status_t Wippersnapper::run() {
   // Handle MQTT connection
   checkMQTTConnection(curTime);
 
-  // Process all incoming packets from Wippersnapper MQTT Broker
-  WS._mqtt->processPackets(10);
+  // Poll for packets from broker queue, return immediately
+  if(!WS._mqtt->processPacketsUntilCallback(100)) {
+    WS_DEBUG_PRINTLN("No packets found!");
+  }
 
   // TODO: Loop thru components
   // Process digital inputs, digitalGPIO module
