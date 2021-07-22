@@ -411,8 +411,24 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS_DEBUG_PRINTLN("I2C Init Request Found!");
     // TODO:
     // Create I2C request message
+    WS.msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
     // Decode I2C request message into struct.
     // Pass I2C request message struct. to I2C component init
+
+
+    // array to store the decoded CreateSignalRequests data
+    wippersnapper_pin_v1_ConfigurePinRequests msg =
+        wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
+    // set up callback
+    msg.list.funcs.decode = cbDecodePinConfigMsg;
+    msg.list.arg = field->pData;
+    // decode each ConfigurePinRequest sub-message
+    if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields,
+                   &msg)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
+      is_success = false;
+    }
+
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
