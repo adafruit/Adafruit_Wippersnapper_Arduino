@@ -431,12 +431,14 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       is_success = false;
     }
     // Create I2C init. response
+    // TODO: We should make this a funcn.
     wippersnapper_signal_v1_I2CResponse msgi2cResponse =
         wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CResponse_resp_i2c_init_tag;
     msgi2cResponse.payload.resp_i2c_init.is_initialized = is_success;
-    // TODO: Zero-out the outgoing buffer here
+    // Zero-out buffer before writing
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     // Encode I2C init. response
     pb_ostream_t stream = pb_ostream_from_buffer(WS._buffer_outgoing,
                                                  sizeof(WS._buffer_outgoing));
@@ -452,7 +454,6 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS_DEBUG_PRINT("Publishing I2C init response...")
     WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
     WS_DEBUG_PRINTLN("Published!");
-
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
