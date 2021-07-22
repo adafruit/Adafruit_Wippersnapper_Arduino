@@ -400,38 +400,9 @@ void cbSignalTopic(char *data, uint16_t len) {
   }
 }
 
-/**************************************************************************/
-/*!
-    @brief    Called when i2c signal sub-topic receives a new message.
-              Fills a shared buffer with data from payload.
-*/
-/**************************************************************************/
-void cbSignalI2CReq(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("* New Msg on Signal-I2C: ");
-  printMsgBuffer(data, len);
-  // zero-out current buffer
-  memset(WS._buffer, 0, sizeof(WS._buffer));
-  // copy data to buffer
-  memcpy(WS._buffer, data, len);
-  WS.bufSize = len;
-
-  // Zero-out existing I2C signal msg.
-  msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
-
-  /* Set up the payload callback, which will set up the callbacks for
-  each oneof payload field once the field tag is known */
-  msgSignalI2C->cb_payload.funcs.decode = cbI2CMsgFields;
-
-  // Decode buffer into msgSignalI2C
-  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
-                 &msgSignalI2C))
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
-}
-
 bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   bool is_success = true;
-  WS_DEBUG_PRINTLN(cbI2CMsgFields);
+  WS_DEBUG_PRINTLN("cbI2CMsgFields");
   pb_size_t arr_sz = field->array_size;
   WS_DEBUG_PRINT("Sub-messages found: ");
   WS_DEBUG_PRINTLN(arr_sz);
@@ -450,6 +421,37 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   }
   return is_success;
 }
+
+/**************************************************************************/
+/*!
+    @brief    Called when i2c signal sub-topic receives a new message.
+              Fills a shared buffer with data from payload.
+*/
+/**************************************************************************/
+void cbSignalI2CReq(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* New Msg on Signal-I2C: ");
+  printMsgBuffer(data, len);
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy data to buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Zero-out existing I2C signal msg.
+  WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
+
+  /* Set up the payload callback, which will set up the callbacks for
+  each oneof payload field once the field tag is known */
+  WS.msgSignalI2C.cb_payload.funcs.decode = cbI2CMsgFields;
+
+  // Decode buffer into msgSignalI2C
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
+                 &WS.msgSignalI2C))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+}
+
+
 
 /**************************************************************************/
 /*!
