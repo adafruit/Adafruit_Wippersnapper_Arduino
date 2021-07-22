@@ -240,9 +240,12 @@ public:
   // I2C
   void addNewI2CComponent(int32_t sdaPin, int32_t sclPin, int32_t portNum = 0,
                           uint32_t frequency = 100000U);
-
   // Decoder for i2c signal incoming
   void decodeMsgSignalI2C();
+  // I2C WIP - dirty!
+  std::vector<WipperSnapper_Component_I2C *> i2cComponents;
+  WipperSnapper_Component_I2C *_i2cPort0 = NULL;
+  WipperSnapper_Component_I2C *_i2cPort1 = NULL;
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
@@ -259,11 +262,6 @@ public:
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
   Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
-
-  // I2C WIP - dirty!
-  std::vector<WipperSnapper_Component_I2C *> i2cComponents;
-  WipperSnapper_Component_I2C *_i2cPort0 = NULL;
-  WipperSnapper_Component_I2C *_i2cPort1 = NULL;
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
   char sUID[9];             /*!< Unique network iface identifier */

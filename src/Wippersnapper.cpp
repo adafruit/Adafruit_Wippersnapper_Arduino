@@ -403,32 +403,28 @@ void cbSignalTopic(char *data, uint16_t len) {
 bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbI2CMsgFields");
-  pb_size_t arr_sz = field->array_size;
-  WS_DEBUG_PRINT("Sub-messages found: ");
-  WS_DEBUG_PRINTLN(arr_sz);
 
   if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag) {
     WS_DEBUG_PRINTLN("I2C Init Request Found!");
-    // TODO:
     // Create I2C request message
     WS.msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
-    // Decode I2C request message into struct.
-    // Pass I2C request message struct. to I2C component init
-
-
-    // array to store the decoded CreateSignalRequests data
-    wippersnapper_pin_v1_ConfigurePinRequests msg =
-        wippersnapper_pin_v1_ConfigurePinRequests_init_zero;
-    // set up callback
-    msg.list.funcs.decode = cbDecodePinConfigMsg;
-    msg.list.arg = field->pData;
-    // decode each ConfigurePinRequest sub-message
-    if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields,
-                   &msg)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
+    // Decode i2c request message into struct
+    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CInitRequest_fields,
+                   &WS.msgI2cInitRequest)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode wippersnapper_i2c_v1_I2CInitRequest");
       is_success = false;
     }
-
+    // Finally, create an I2C object using the message as a constructor?
+    if (WS._i2cPort0 != NULL) {
+      WS._i2cPort0 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
+      WS.i2cComponents.push_back(WS._i2cPort0);
+    } else if (WS._i2cPort1 != NULL) {
+      WS._i2cPort1 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
+      WS.i2cComponents.push_back(WS._i2cPort1);
+    } else {
+      WS_DEBUG_PRINTLN("ERROR: Both I2C ports are in-use");
+      is_success = false;
+    }
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
@@ -437,6 +433,7 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   }
   return is_success;
 }
+
 
 /**************************************************************************/
 /*!
@@ -465,37 +462,6 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
                  &WS.msgSignalI2C))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
-}
-
-
-
-/**************************************************************************/
-/*!
-    @brief    Called when i2c signal sub-topic receives a new message.
-              Fills a shared buffer with data from payload.
-*/
-/**************************************************************************/
-void Wippersnapper::decodeMsgSignalI2C() {
-  // Zero-out existing I2C incoming signal msg.
-  msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
-  // Decode buffer into msgSignalI2C
-  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
-                 &msgSignalI2C))
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
-  // Query the payload type
-  WS_DEBUG_PRINT("I2C Payload Type: ");
-  WS_DEBUG_PRINTLN(msgSignalI2C.which_payload);
-  // NOTE: Two event types? Hardware events and Message events?
-  // Order of processing: poll-> Message (decode, get to the last step) ->
-  // hardware event Set hardware event based on payload type
-  /*   if (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CInitRequest) {
-      // Call something which will the I2C bus here? Add an i2c component as
-    well? WS_DEBUG_PRINTLN("Found: I2C Init Request Msg"); } else if
-    (msgSignalI2C.which_payload == wippersnapper_i2c_v1_I2CScanRequest) {
-      // init the I2C scan here?
-      WS_DEBUG_PRINTLN("Found: I2C Scan Request Msg");
-    } */
 }
 
 /**************************************************************************/
@@ -1132,19 +1098,6 @@ ws_status_t Wippersnapper::run() {
   WS._analogIO->processAnalogInputs();
 
   return status();
-}
-
-void Wippersnapper::addNewI2CComponent(int32_t sdaPin, int32_t sclPin,
-                                       int32_t portNum, uint32_t frequency) {
-  if (_i2cPort0 != NULL && portNum == 0) {
-    _i2cPort0 = new WipperSnapper_Component_I2C(sdaPin, sclPin, portNum);
-    i2cComponents.push_back(_i2cPort0);
-  } else if (_i2cPort1 != NULL && portNum == 1) {
-    _i2cPort1 = new WipperSnapper_Component_I2C(sdaPin, sclPin, portNum);
-    i2cComponents.push_back(_i2cPort1);
-  } else {
-    WS_DEBUG_PRINTLN("Unable to allocate new I2C Component")
-  }
 }
 
 /**************************************************************************/

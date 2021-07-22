@@ -16,24 +16,22 @@
 
 #include "WipperSnapper_Component_I2C.h"
 
-WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(int32_t sdaPin,
-                                                         int32_t sclPin,
-                                                         int32_t portNum,
-                                                         uint32_t frequency) {
+WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest) {
+  WS_DEBUG_PRINTLN("NEW WipperSnapper_Component_I2C");
   // initialize using portNum
-  _i2c = new TwoWire(portNum);
-
-  // validate if pins are pulled HI
-  if (digitalRead(sdaPin) == LOW) {
-    pinMode(sdaPin, INPUT_PULLUP);
+  _i2c = new TwoWire(msgInitRequest->i2c_port_number);
+  // validate if SDA & SCL has pullup
+  if (digitalRead(msgInitRequest->i2c_pin_sda) == LOW) {
+    pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
   }
-  if (digitalRead(sclPin) == LOW) {
-    pinMode(sclPin, INPUT_PULLUP);
+  if (digitalRead(msgInitRequest->i2c_pin_scl) == LOW) {
+    pinMode(msgInitRequest->i2c_pin_scl, INPUT_PULLUP);
   }
-  // begin i2c
-  _i2c->begin(sdaPin, sclPin);
-  _i2c->setClock(frequency);
-  _portNum = portNum;
+  // set up i2c
+  _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
+  _i2c->setClock(msgInitRequest->i2c_frequency);
+  // set i2c obj. properties
+  _portNum = msgInitRequest->i2c_port_number;
   _isInit = true;
   yield();
 }
