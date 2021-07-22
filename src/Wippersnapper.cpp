@@ -457,8 +457,17 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
+    wippersnapper_i2c_v1_I2CScanRequest msgScanReq = wippersnapper_i2c_v1_I2CScanRequest_init_zero;
+    // Decode i2c scan request message into struct
+    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CScanRequest_fields, &msgScanReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_i2c_v1_I2CScanRequest");
+      is_success = false;
+    }
+    // TODO: Check which port and select the correct object out of the i2c component vector
+    WS_DEBUG_PRINT("Port"); WS_DEBUG_PRINTLN(msgScanReq.i2c_port_number);
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Unknown i2c msg tag");
+    WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
   }
   return is_success;
 }

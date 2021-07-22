@@ -47,20 +47,25 @@ WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
   _isInit = false;
 }
 
-bool WipperSnapper_Component_I2C::scanForAddress(uint32_t address) {
+bool WipperSnapper_Component_I2C::scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq) {
+  // decode stream into i2c request
   bool is_detected = false;
+  uint16_t scanAddr;
   WS_DEBUG_PRINT("EXEC: I2C Scan, Port ("); WS_DEBUG_PRINT(_portNum); WS_DEBUG_PRINTLN(")");
-  // do i2c scan
-  // A basic scanner, see if it ACK's
-  // TODO: Remove address, use request protobuf struct. typedef
-  _wire->beginTransmission(address);
-  if (_wire->endTransmission() == 0) {
-    WS_DEBUG_PRINTLN("I2C device detected!");
-    is_detected = true;
-  } else {
-    WS_DEBUG_PRINTLN("I2C device not detected!");
+  for (int i = 0; i < msgScanReq.address_count; i++) {
+    scanAddr = msgScanReq.address[i];
+    WS_DEBUG_PRINT("Scanning address "); WS_DEBUG_PRINTLN(scanAddr);
+    _i2c->beginTransmission(scanAddr);
+    if (_i2c->endTransmission() == 0) {
+        // found it!
+        WS_DEBUG_PRINTLN("I2C device detected!");
+        is_detected = true;
+        break;
+    } else {
+        WS_DEBUG_PRINTLN("I2C device not detected!");
+    }
   }
   // TODO
   // encode response and publish to broker
-  return is_success;
+  return is_detected;
 }
