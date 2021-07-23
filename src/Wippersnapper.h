@@ -46,7 +46,7 @@
 #include <SPI.h>
 
 // Uncomment for staging builds
-// #define USE_STAGING
+// define USE_STAGING
 
 #ifdef USE_STAGING
 #define IO_MQTT_SERVER "io.adafruit.us"
@@ -63,7 +63,7 @@
 #endif
 
 // Library version (semver-formatted)
-#define WS_VERSION "1.0.0-beta+3"
+#define WS_VERSION "1.0.0-beta.3"
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
