@@ -18,7 +18,7 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
-#include <queue>
+// Cpp STD
 #include <vector>
 
 // Nanopb dependencies

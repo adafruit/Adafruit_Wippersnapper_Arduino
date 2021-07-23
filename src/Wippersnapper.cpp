@@ -512,8 +512,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field, voi
     uint16_t addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
     // Create response
     msgi2cResponse.which_payload =
-        wippersnapper_i2c_v1_I2CScanResponse_which_address_found_tag;
-    msgi2cResponse.payload.resp_i2c_scan.which_address_found =
+        wippersnapper_i2c_v1_I2CScanResponse_address_found_tag;
+    msgi2cResponse.payload.resp_i2c_scan.address_found =
         (uint32_t)addressFound;
     if (!encodeSignalI2CResponse(&msgi2cResponse)) {
       is_success = false;
