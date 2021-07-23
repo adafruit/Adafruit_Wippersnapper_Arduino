@@ -400,10 +400,20 @@ void cbSignalTopic(char *data, uint16_t len) {
   }
 }
 
+void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
+                      &msgi2cResponse);
+  // Publish i2c response message to broker
+  WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
+}
+
 bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbI2CMsgFields");
-
+  // alloc. response we'll need
+  wippersnapper_signal_v1_I2CResponse msgi2cResponse =
+      wippersnapper_signal_v1_I2CResponse_init_zero;
   if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag) {
     WS_DEBUG_PRINTLN("I2C Init Request Found!");
     // Create I2C request message
@@ -432,8 +442,6 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     }
     // Create I2C init. response
     // TODO: We should make this a funcn.
-    wippersnapper_signal_v1_I2CResponse msgi2cResponse =
-        wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CResponse_resp_i2c_init_tag;
     msgi2cResponse.payload.resp_i2c_init.is_initialized = is_success;
@@ -447,13 +455,6 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode i2cresponse message");
       is_success = false;
     }
-    // Obtain size and only write out buffer to end
-    size_t msgSz = pb_get_encoded_size(
-        &msgSz, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse);
-    // publish event data
-    WS_DEBUG_PRINT("Publishing I2C init response...")
-    WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
-    WS_DEBUG_PRINTLN("Published!");
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
@@ -474,8 +475,6 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // otherwise.
     uint16_t addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
     // Create response
-    wippersnapper_signal_v1_I2CResponse msgi2cResponse =
-        wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =
         wippersnapper_i2c_v1_I2CScanResponse_which_address_found_tag;
     msgi2cResponse.payload.resp_i2c_scan.which_address_found =
@@ -490,17 +489,13 @@ bool cbI2CMsgFields(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode i2cresponse message");
       is_success = false;
     }
-    // Obtain size and only write out buffer to end
-    size_t msgSz = pb_get_encoded_size(
-        &msgSz, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse);
-    // publish event data
-    WS_DEBUG_PRINT("Publishing I2C scan response...")
-    WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
-    WS_DEBUG_PRINTLN("Published!");
-
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
   }
+  // Publish i2c scan response back to broker
+  WS_DEBUG_PRINT("Publishing I2C scan response...")
+  publishI2CResponse(&msgi2cResponse);
+  WS_DEBUG_PRINTLN("Published!");
   return is_success;
 }
 
