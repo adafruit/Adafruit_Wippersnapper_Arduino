@@ -67,6 +67,11 @@ Wippersnapper::~Wippersnapper() {
   free(_throttle_sub);
 }
 
+/**************************************************************************/
+/*!
+    @brief    Performs the filesystem-backed provisioning workflow
+*/
+/**************************************************************************/
 void Wippersnapper::provision() {
   // init. LED for status signaling
   statusLEDInit();
@@ -408,7 +413,8 @@ void cbSignalTopic(char *data, uint16_t len) {
               I2CResponse signal message to publish
 */
 /************************************************************************************/
-void publishSignalI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
+void publishSignalI2CResponse(
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   size_t msgSz;
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       &msgi2cResponse);
@@ -418,22 +424,23 @@ void publishSignalI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cRespons
 
 /************************************************************************************/
 /*!
-    @brief    Encodes an I2C signal response message. Assumes the fields and type
-              have already been filled out in another function.
+    @brief    Encodes an I2C signal response message. Assumes the fields and
+   type have already been filled out in another function.
     @param    msgi2cResponse
               I2CResponse signal message to encode.
     @returns  True if message is successfully encoded, False otherwise.
 */
 /************************************************************************************/
-bool encodeSignalI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
+bool encodeSignalI2CResponse(
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   bool is_success = true;
   // Zero-out buffer before writing
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
   // Encode I2C response
-  pb_ostream_t stream = pb_ostream_from_buffer(WS._buffer_outgoing,
-                                                sizeof(WS._buffer_outgoing));
+  pb_ostream_t stream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
   if (!pb_encode(&stream, wippersnapper_signal_v1_I2CResponse_fields,
-                  &msgi2cResponse)) {
+                 &msgi2cResponse)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode i2cresponse message");
     is_success = false;
   }
@@ -453,7 +460,8 @@ bool encodeSignalI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse
               Optional arguments from decoder calling function.
 */
 /******************************************************************************************/
-bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
+                              void **arg) {
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbDecodeSignalRequestI2C");
   // alloc. response we'll need
@@ -513,16 +521,26 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field, voi
     // Create response
     msgi2cResponse.which_payload =
         wippersnapper_i2c_v1_I2CScanResponse_address_found_tag;
-    msgi2cResponse.payload.resp_i2c_scan.address_found =
-        (uint32_t)addressFound;
+    msgi2cResponse.payload.resp_i2c_scan.address_found = (uint32_t)addressFound;
     if (!encodeSignalI2CResponse(&msgi2cResponse)) {
       is_success = false;
       return is_success;
     }
+  } else if (field->tag = wippersnapper_signal_v1_I2CRequest_req_aht_init_tag) {
+    WS_DEBUG_PRINTLN("AHTX Init Request Found!");
+    // TODO: allow this to be implemented on multiple ports, but for now use
+    // port0 Initialize I2C device WS._i2cPort0->attachI2CDevice(address)
+    // Configure sensors
+    // WS._i2cPort0->enableSensor(temperature);
+    // WS._i2cPort0->enableSensor(humidity);
+    // Configure send interval
+    // WS._i2cPort0->sendInterval(period);
+    // Publish back response
+    // TODO
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
-      is_success = false;
-      return is_success;
+    is_success = false;
+    return is_success;
   }
   // Publish i2c scan response back to broker
   WS_DEBUG_PRINT("Publishing I2C scan response...")

@@ -63,9 +63,9 @@
 // define USE_STAGING
 
 #ifdef USE_STAGING
-#define IO_MQTT_SERVER "io.adafruit.us"
+#define IO_MQTT_SERVER "io.adafruit.us" ///< Staging (development) mqtt server
 #else
-#define IO_MQTT_SERVER "io.adafruit.com"
+#define IO_MQTT_SERVER "io.adafruit.com" ///< Production mqtt server
 #endif
 
 #ifdef USE_TINYUSB
@@ -76,8 +76,7 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-// Library version (semver-formatted)
-#define WS_VERSION "1.0.0-beta.3"
+#define WS_VERSION "1.0.0-beta.3" ///< Library version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -184,10 +183,10 @@ public:
   void setStatusLEDColor(uint32_t color);
   void statusLEDBlink(ws_led_status_t statusState);
   bool usingStatusNeoPixel =
-      false; // True if status LED is using the status neopixel
+      false; ///< True if status LED is using the status neopixel
   bool usingStatusDotStar =
-      false;                   // True if status LED is using the status dotstar
-  bool usingStatusLED = false; // True if status LED is using the built-in LED
+      false; ///< True if status LED is using the status dotstar
+  bool usingStatusLED = false; ///< True if status LED is using the built-in LED
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
@@ -238,14 +237,12 @@ public:
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
   // I2C
-  void addNewI2CComponent(int32_t sdaPin, int32_t sclPin, int32_t portNum = 0,
-                          uint32_t frequency = 100000U);
-  // Decoder for i2c signal incoming
-  void decodeMsgSignalI2C();
-  // I2C WIP - dirty!
-  std::vector<WipperSnapper_Component_I2C *> i2cComponents;
-  WipperSnapper_Component_I2C *_i2cPort0 = NULL;
-  WipperSnapper_Component_I2C *_i2cPort1 = NULL;
+  std::vector<WipperSnapper_Component_I2C *>
+      i2cComponents; ///< Vector containing all I2C components
+  WipperSnapper_Component_I2C *_i2cPort0 =
+      NULL; ///< WipperSnapper I2C Component for I2C port #0
+  WipperSnapper_Component_I2C *_i2cPort1 =
+      NULL; ///< WipperSnapper I2C Component for I2C port #1
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
@@ -292,9 +289,11 @@ public:
 
   // i2c signal msg
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
-      wippersnapper_signal_v1_I2CRequest_init_zero;
+      wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
+                                                    ///< message
   wippersnapper_i2c_v1_I2CInitRequest msgI2cInitRequest =
-      wippersnapper_i2c_v1_I2CInitRequest_init_zero;
+      wippersnapper_i2c_v1_I2CInitRequest_init_zero; ///< I2C initialization
+                                                     ///< request message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
