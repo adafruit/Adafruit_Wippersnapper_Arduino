@@ -419,7 +419,7 @@ void publishSignalI2CResponse(
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       &msgi2cResponse);
   // Publish i2c response message to broker
-  WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
+  //WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
 }
 
 /************************************************************************************/
@@ -898,7 +898,7 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_brkr, _device_uid);
     strcat(WS._topic_signal_i2c_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_i2c_brkr, "broker");
-    strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
+    strcat(WS._topic_signal_i2c_brkr, "/i2c");
   } else { // malloc failed
     WS._topic_signal_i2c_brkr = 0;
     is_success = false;
@@ -906,14 +906,14 @@ bool Wippersnapper::buildWSTopics() {
 
   // Create broker-to-device i2c signal topic
   if (WS._topic_signal_i2c_device) {
-    strcpy(WS._topic_signal_i2c_brkr, WS._username);
-    strcat(WS._topic_signal_i2c_brkr, TOPIC_WS);
-    strcat(WS._topic_signal_i2c_brkr, _device_uid);
-    strcat(WS._topic_signal_i2c_brkr, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_i2c_brkr, "device");
-    strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
+    strcpy(WS._topic_signal_i2c_device, WS._username);
+    strcat(WS._topic_signal_i2c_device, TOPIC_WS);
+    strcat(WS._topic_signal_i2c_device, _device_uid);
+    strcat(WS._topic_signal_i2c_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_i2c_device, "device");
+    strcat(WS._topic_signal_i2c_device, TOPIC_I2C);
   } else { // malloc failed
-    WS._topic_signal_i2c_brkr = 0;
+    WS._topic_signal_i2c_device = 0;
     is_success = false;
   }
 
@@ -1219,9 +1219,7 @@ ws_status_t Wippersnapper::run() {
   checkMQTTConnection(curTime);
 
   // Poll for packets from broker queue, return immediately
-  if (!WS._mqtt->processPacketsUntilCallback(100)) {
-    WS_DEBUG_PRINTLN("No packets found!");
-  }
+  WS._mqtt->processPacketsUntilCallback(100);
 
   // TODO: Loop thru components
   // Process digital inputs, digitalGPIO module

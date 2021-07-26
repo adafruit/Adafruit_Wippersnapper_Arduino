@@ -28,6 +28,8 @@ class I2C_Driver_AHTX0 : public I2C_Driver {
         // Sensor-specific, TODO
     private:
         Adafruit_AHTX0 *_ahtx0 = NULL;
+        Adafruit_Sensor *_ahtx0_humidity = NULL;
+        Adafruit_Sensor *_ahtx0_temperature = NULL;
 };
 extern Wippersnapper WS;
 

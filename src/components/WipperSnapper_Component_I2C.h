@@ -32,7 +32,6 @@ public:
 
   int32_t _portNum;
   bool _isInit;
-
 private:
   TwoWire *_i2c = NULL;
 };
