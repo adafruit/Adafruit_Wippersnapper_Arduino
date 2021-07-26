@@ -298,7 +298,8 @@ public:
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
-
+  char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
+                                     device. */
 private:
   void _init();
 
@@ -319,8 +320,6 @@ protected:
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
   char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
-  char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
-                                     device. */
 
   Adafruit_MQTT_Subscribe
       *_topic_description_sub; /*!< Subscription for registration topic. */

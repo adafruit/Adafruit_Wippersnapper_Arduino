@@ -419,7 +419,7 @@ void publishSignalI2CResponse(
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       &msgi2cResponse);
   // Publish i2c response message to broker
-  //WS._mqtt->publish(WS._topic_signal_i2c_brkr, WS._buffer_outgoing, msgSz, 1);
+  WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
 }
 
 /************************************************************************************/
@@ -480,12 +480,12 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       return is_success;
     }
     // Create an I2C object using the message as a constructor?
-    if (WS._i2cPort0 != NULL) {
+    if (WS._i2cPort0 == NULL) {
       WS._i2cPort0 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
       WS.i2cComponents.push_back(WS._i2cPort0);
       // did we init. the port successfully?
       is_success = WS._i2cPort0->_isInit;
-    } else if (WS._i2cPort1 != NULL) {
+    } else if (WS._i2cPort1 == NULL) {
       WS._i2cPort1 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
       // did we init. the port successfully?
       is_success = WS._i2cPort1->_isInit;
@@ -526,23 +526,23 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       is_success = false;
       return is_success;
     }
-  } else if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
+  } else if (field->tag ==
+             wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
     WS_DEBUG_PRINTLN("AHTX Init Request Found!");
     // Decode stream into an I2CDeviceInitRequest
     // Create I2C request message
-    wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest = wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero;
+    wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
+        wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero;
     // Decode stream into struct, msgI2CDeviceInitRequest
     if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
                    &msgI2CDeviceInitRequest)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode I2CDeviceInitRequest message.");
+      WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequest message.");
       is_success = false;
       return is_success;
     }
     // Attach device to I2C port
     // TODO: allow this to be implemented with multiple ports
     WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
-
 
     // TODO
     // Configure sensors
@@ -558,7 +558,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     return is_success;
   }
   // Publish i2c scan response back to broker
-  WS_DEBUG_PRINT("Publishing I2C scan response...")
+  WS_DEBUG_PRINT("Publishing I2C response...")
   publishSignalI2CResponse(&msgi2cResponse);
   WS_DEBUG_PRINTLN("Published!");
   return is_success;
@@ -841,7 +841,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
-      strlen(TOPIC_I2C) + 1);
+      strlen("/i2c") + 1);
 
   // Create global registration topic
   if (WS._topic_description) {
@@ -911,7 +911,7 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_device, _device_uid);
     strcat(WS._topic_signal_i2c_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_i2c_device, "device");
-    strcat(WS._topic_signal_i2c_device, TOPIC_I2C);
+    strcat(WS._topic_signal_i2c_device, "/i2c");
   } else { // malloc failed
     WS._topic_signal_i2c_device = 0;
     is_success = false;
