@@ -99,18 +99,17 @@ uint16_t WipperSnapper_Component_I2C::scanAddresses(
 
 bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
   bool attachSuccess = false;
-
   // Determine which sensor-specific callback to utilize
   if (msgDeviceInitReq->has_aht_init) {
       WS_DEBUG_PRINTLN("Initializing AHTx sensor!");
       // Call AHTX init
       // and  pass it wippersnapper_i2c_v1_AHTInitRequest
+      // or not...
       // TODO!
-      attachSuccess = true;
-  } else if (msgDeviceInitReq->has_dps310_init) {
-      WS_DEBUG_PRINTLN("Initializing DPS310 sensor!");
-      // Call DPS310 init
-      // TODO!
+      // Unpack address
+      // Pass to new driver: _i2c object, address
+      // Detect
+      // Init
       attachSuccess = true;
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
