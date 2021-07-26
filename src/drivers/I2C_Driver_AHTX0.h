@@ -12,8 +12,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef I2C_Driver_H
-#define I2C_Driver_H
+#ifndef I2C_Driver_AHTX0_H
+#define I2C_Driver_AHTX0_H
 #include "Wippersnapper.h"
 #include "I2C_Driver.h"
 #include <Adafruit_AHTX0.h>
@@ -23,11 +23,12 @@ class Wippersnapper;
 
 class I2C_Driver_AHTX0 : public I2C_Driver {
     public:
-        //I2C_Driver_AHTX0(WipperSnapper_Component_I2C *i2cComponent, uint16_t i2cAddress);
-        bool init() override;
+        // Generic overrides
+        bool initDriver() override;
+        // Sensor-specific, TODO
     private:
         Adafruit_AHTX0 *_ahtx0 = NULL;
 };
 extern Wippersnapper WS;
 
-#endif // I2C_Driver_H
+#endif // I2C_Driver_AHTX0_H

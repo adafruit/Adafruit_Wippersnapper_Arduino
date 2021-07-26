@@ -12,9 +12,11 @@
  *
  */
 #include "I2C_Driver.h"
+#include "I2C_Driver_AHTX0.h"
 
-bool I2C_Driver_AHTX0::init() override {
+
+bool I2C_Driver_AHTX0::initDriver() {
     WS_DEBUG_PRINTLN("Initialize AHTX0 sensor");
-    _ahtx0 = new Adafruit_AHTX0(this->_i2cAddress);
+    //_ahtx0 = new Adafruit_AHTX0(this->_i2cAddress);
     return true;
 }

@@ -24,7 +24,7 @@ class Wippersnapper;
 class I2C_Driver {
     public:
         I2C_Driver(WipperSnapper_Component_I2C *i2cComponent, uint16_t i2cAddress);
-        virtual bool init();
+        virtual bool initDriver();
     private:
         WipperSnapper_Component_I2C *_i2cComponent = NULL;
         uint16_t _i2cAddress;

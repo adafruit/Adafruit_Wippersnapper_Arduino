@@ -18,7 +18,7 @@ I2C_Driver::I2C_Driver(WipperSnapper_Component_I2C *i2cComponent, uint16_t i2cAd
     _i2cAddress = i2cAddress;
 }
 
-bool I2C_Driver::init() {
+bool I2C_Driver::initDriver() {
     // Base implementation of I2C device driver init func.
     return true;
 }
