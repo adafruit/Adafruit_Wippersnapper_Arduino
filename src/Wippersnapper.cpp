@@ -526,10 +526,25 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       is_success = false;
       return is_success;
     }
-  } else if (field->tag = wippersnapper_signal_v1_I2CRequest_req_aht_init_tag) {
+  } else if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
     WS_DEBUG_PRINTLN("AHTX Init Request Found!");
-    // TODO: allow this to be implemented on multiple ports, but for now use
-    // port0 Initialize I2C device WS._i2cPort0->attachI2CDevice(address)
+    // Decode stream into an I2CDeviceInitRequest
+    // Create I2C request message
+    wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest = wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero;
+    // Decode stream into struct, msgI2CDeviceInitRequest
+    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
+                   &msgI2CDeviceInitRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode I2CDeviceInitRequest message.");
+      is_success = false;
+      return is_success;
+    }
+    // Attach device to I2C port
+    // TODO: allow this to be implemented with multiple ports
+    WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
+
+
+    // TODO
     // Configure sensors
     // WS._i2cPort0->enableSensor(temperature);
     // WS._i2cPort0->enableSensor(humidity);

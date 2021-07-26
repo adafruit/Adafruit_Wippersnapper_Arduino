@@ -96,15 +96,25 @@ uint16_t WipperSnapper_Component_I2C::scanAddresses(
   return addrFound;
 }
 
-/*****************************************************************************************************/
-/*!
-    @brief    Destructor for a WipperSnapper I2C component.
-    @param    msgScanReq
-              A decoded I2C scan request message.
-    @returns  The address which an I2C device is located, -1 otherwise.
-*/
-/*****************************************************************************************************/
-bool WipperSnapper_Component_I2C::attachI2CDevice(uint32_t deviceAddress) {
+
+bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
   bool attachSuccess = false;
+
+  // Determine which sensor-specific callback to utilize
+  if (msgDeviceInitReq->has_aht_init) {
+      WS_DEBUG_PRINTLN("Initializing AHTx sensor!");
+      // Call AHTX init
+      // and  pass it wippersnapper_i2c_v1_AHTInitRequest
+      // TODO!
+      attachSuccess = true;
+  } else if (msgDeviceInitReq->has_dps310_init) {
+      WS_DEBUG_PRINTLN("Initializing DPS310 sensor!");
+      // Call DPS310 init
+      // TODO!
+      attachSuccess = true;
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Sensor not found")
+  }
+
   return attachSuccess;
 }

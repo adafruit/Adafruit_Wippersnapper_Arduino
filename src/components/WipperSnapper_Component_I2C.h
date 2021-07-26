@@ -28,7 +28,7 @@ public:
       wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
   ~WipperSnapper_Component_I2C();
   uint16_t scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq);
-  bool attachI2CDevice(uint32_t deviceAddress);
+  bool attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
 
   int32_t _portNum;
   bool _isInit;
