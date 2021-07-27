@@ -17,7 +17,6 @@ I2C_Driver::I2C_Driver(uint16_t deviceAddress) {
     // Base implementation
 }
 
-bool I2C_Driver::initDriver() {
-    // Base implementation of I2C device driver init func.
-    return true;
+I2C_Driver::~I2C_Driver() {
+    // Base implementation
 }

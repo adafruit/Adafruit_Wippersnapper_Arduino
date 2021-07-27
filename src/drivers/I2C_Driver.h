@@ -16,17 +16,11 @@
 #define I2C_Driver_H
 
 #include "Wippersnapper.h"
-#include "components/WipperSnapper_Component_I2C.h"
-
-class Wippersnapper;
 
 class I2C_Driver {
     public:
         I2C_Driver(uint16_t deviceAddress);
-        virtual bool initDriver();
-        uint16_t address;
-
+        ~I2C_Driver();
 };
-extern Wippersnapper WS;
 
 #endif // I2C_Driver_H
