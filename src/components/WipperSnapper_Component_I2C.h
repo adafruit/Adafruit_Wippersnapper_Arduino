@@ -23,6 +23,7 @@
 
 // forward decl.
 class Wippersnapper;
+class I2C_Driver;
 
 class WipperSnapper_Component_I2C {
 public:
@@ -35,6 +36,8 @@ public:
 
   int32_t _portNum;
   bool _isInit;
+  // I2C_Driver
+  std::vector<I2C_Driver *> activeDrivers;
 
 private:
   TwoWire *_i2c = NULL;
