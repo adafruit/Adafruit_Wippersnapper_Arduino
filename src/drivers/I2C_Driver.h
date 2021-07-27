@@ -19,8 +19,10 @@
 
 class I2C_Driver {
     public:
-        I2C_Driver(uint16_t deviceAddress);
+        I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
         ~I2C_Driver();
+
+        TwoWire *i2c = NULL;
 };
 
 #endif // I2C_Driver_H

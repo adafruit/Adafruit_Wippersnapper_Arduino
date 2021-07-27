@@ -13,8 +13,10 @@
  */
 #include "I2C_Driver.h"
 
-I2C_Driver::I2C_Driver(uint16_t deviceAddress) {
+I2C_Driver::I2C_Driver(uint16_t deviceAddress, TwoWire *i2c) {
     // Base implementation
+    WS_DEBUG_PRINTLN("I2CDriver Initialized!");
+    WS_DEBUG_PRINT("I2CDriver Device Addr: ");WS_DEBUG_PRINTLN(deviceAddress);
 }
 
 I2C_Driver::~I2C_Driver() {
