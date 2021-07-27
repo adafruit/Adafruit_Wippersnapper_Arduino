@@ -102,6 +102,7 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
   // Determine which sensor-specific callback to utilize
   if (msgDeviceInitReq->has_aht_init) {
       WS_DEBUG_PRINTLN("Initializing AHTx sensor!");
+      //sensorDriver = new I2C_Driver(this, msgDeviceInitReq->aht_init.address);
       //aht = new I2C_Driver_AHTX0(this, msgDeviceInitReq->aht_init.address);
       //aht.initDriver();
       // Call AHTX init

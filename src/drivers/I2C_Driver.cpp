@@ -13,9 +13,8 @@
  */
 #include "I2C_Driver.h"
 
-I2C_Driver::I2C_Driver(WipperSnapper_Component_I2C *i2c, uint16_t deviceAddress) {
-    i2cComponent = i2c;
-    i2cAddress = (uint16_t) deviceAddress;
+I2C_Driver::I2C_Driver(uint16_t deviceAddress) {
+    // Base implementation
 }
 
 bool I2C_Driver::initDriver() {

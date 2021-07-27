@@ -19,7 +19,7 @@
 #include "Wippersnapper.h"
 #include <Wire.h>
 
-#include "drivers/I2C_Driver_AHTX0.h"
+// #include "drivers/I2C_Driver.h"
 
 // forward decl.
 class Wippersnapper;
@@ -38,7 +38,6 @@ public:
 
 private:
   TwoWire *_i2c = NULL;
-  // List of sensors
 };
 extern Wippersnapper WS;
 
