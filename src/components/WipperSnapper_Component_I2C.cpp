@@ -103,19 +103,16 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
   if (msgDeviceInitReq->has_aht_init) {
       WS_DEBUG_PRINTLN("Initializing AHTx sensor!");
       uint16_t addr = (uint16_t) msgDeviceInitReq->aht_init.address;
+      // Allocate space for driver
       I2C_Driver * p1 = new I2C_Driver(addr, this->_i2c);
+      // Attempt to initialize the sensor
+      if (!p1->initSensor()) {
+          attachSuccess = false;
+      }
+      // Set sensor properties
+      p1->enableSensorTemperature();
+      p1->enableSensorHumidity();
 
-      //sensorDriver = new I2C_Driver(this, msgDeviceInitReq->aht_init.address);
-      //aht = new I2C_Driver_AHTX0(this, msgDeviceInitReq->aht_init.address);
-      //aht.initDriver();
-      // Call AHTX init
-      // and  pass it wippersnapper_i2c_v1_AHTInitRequest
-      // or not...
-      // TODO!
-      // Unpack address
-      // Pass to new driver: _i2c object, address
-      // Detect
-      // Init
       attachSuccess = true;
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")

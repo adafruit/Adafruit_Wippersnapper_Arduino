@@ -16,13 +16,27 @@
 #define I2C_Driver_H
 
 #include "Wippersnapper.h"
+#include <Adafruit_AHTX0.h>
 
 class I2C_Driver {
     public:
         I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
         ~I2C_Driver();
+        // GENERIC, virtual
+        bool initSensor();
+        void setPeriod(float periodMs);
+        // AHT-Specific functions
+        void enableSensorTemperature();
+        void enableSensorHumidity();
 
-        TwoWire *i2c = NULL;
+        TwoWire *_i2c = NULL;
+        Adafruit_AHTX0 *_ahtx0 = NULL;
+    private:
+        // Generic
+        float _pollPeriod;
+        // AHT-Specific
+        Adafruit_Sensor *_aht_temperature = NULL;
+        Adafruit_Sensor *_aht_humidity = NULL;
 };
 
 #endif // I2C_Driver_H
