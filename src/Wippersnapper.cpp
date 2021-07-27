@@ -422,32 +422,6 @@ void publishSignalI2CResponse(
   WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
 }
 
-/************************************************************************************/
-/*!
-    @brief    Encodes an I2C signal response message. Assumes the fields and
-   type have already been filled out in another function.
-    @param    msgi2cResponse
-              I2CResponse signal message to encode.
-    @returns  True if message is successfully encoded, False otherwise.
-*/
-/************************************************************************************/
-bool encodeSignalI2CResponse(
-    wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
-  bool is_success = true;
-  // Zero-out buffer before writing
-  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-
-  // Encode I2C response
-  pb_ostream_t stream =
-      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&stream, wippersnapper_signal_v1_I2CResponse_fields,
-                 &msgi2cResponse)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode i2cresponse message");
-    is_success = false;
-  }
-  return is_success;
-}
-
 /******************************************************************************************/
 /*!
     @brief    Decodes an I2C signal request message and executes the
