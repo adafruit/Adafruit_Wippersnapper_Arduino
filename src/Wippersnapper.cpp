@@ -436,6 +436,7 @@ bool encodeSignalI2CResponse(
   bool is_success = true;
   // Zero-out buffer before writing
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+
   // Encode I2C response
   pb_ostream_t stream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
@@ -494,10 +495,19 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINTLN("ERROR: Both I2C ports are in-use");
       is_success = false;
     }
-    if (!encodeSignalI2CResponse(&msgi2cResponse)) {
-      is_success = false;
-      return is_success;
+    // Create i2c init response
+    msgi2cResponse.which_payload = wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag;
+    msgi2cResponse.payload.resp_i2c_init.is_initialized = true;
+    // Encode message
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream  = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
+        is_success = false;
     }
+    size_t msgSz;
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse);
+    WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
@@ -557,10 +567,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     is_success = false;
     return is_success;
   }
-  // Publish i2c scan response back to broker
-  WS_DEBUG_PRINT("Publishing I2C response...")
-  publishSignalI2CResponse(&msgi2cResponse);
-  WS_DEBUG_PRINTLN("Published!");
+
   return is_success;
 }
 
