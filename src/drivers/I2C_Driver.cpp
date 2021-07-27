@@ -1,6 +1,7 @@
 /*!
  * @file I2C_Driver.cpp
  *
+ * Base class for a generic I2C sensor device driver.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,6 +14,7 @@
  */
 #include "I2C_Driver.h"
 
+// Generic
 I2C_Driver::I2C_Driver(uint16_t deviceAddress, TwoWire *i2c) {
     // Base implementation
     WS_DEBUG_PRINTLN("I2CDriver Initialized!");
@@ -21,10 +23,17 @@ I2C_Driver::I2C_Driver(uint16_t deviceAddress, TwoWire *i2c) {
     _pollPeriod = 0.0;
 }
 
+// Generic
 I2C_Driver::~I2C_Driver() {
     // Base implementation
 }
 
+// Generic
+void I2C_Driver::setPeriod(float periodMs) {
+  _pollPeriod = periodMs;
+}
+
+// Specific, virtual
 bool I2C_Driver::initSensor() {
   bool is_success = true; 
   _ahtx0 = new Adafruit_AHTX0();
@@ -36,15 +45,16 @@ bool I2C_Driver::initSensor() {
   return is_success;
 }
 
-void I2C_Driver::setPeriod(float periodMs) {
-  _pollPeriod = periodMs;
+// Specific, virtual
+void I2C_Driver::pollSensor() {
+  // TODO - Validate sensors and poll them
 }
 
 // AHT-Specific
 void I2C_Driver::enableSensorTemperature() {
-  _aht_temperature = _ahtx0->getTemperatureSensor();
+  _ahtTemperature = _ahtx0->getTemperatureSensor();
 }
 
 void I2C_Driver::enableSensorHumidity() {
-  _aht_temperature = _ahtx0->getHumiditySensor();
+  _ahtHumidity = _ahtx0->getHumiditySensor();
 }

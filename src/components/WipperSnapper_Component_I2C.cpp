@@ -103,16 +103,16 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
   if (msgDeviceInitReq->has_aht_init) {
       WS_DEBUG_PRINTLN("Initializing AHTx sensor!");
       uint16_t addr = (uint16_t) msgDeviceInitReq->aht_init.address;
-      // Allocate space for driver
+      // Allocate space for I2C_Driver
       I2C_Driver * p1 = new I2C_Driver(addr, this->_i2c);
-      // Attempt to initialize the sensor
+      // Attempt to initialize the sensor driver
       if (!p1->initSensor()) {
           attachSuccess = false;
       }
-      // Set sensor properties
+      // Set sensor driver properties
       p1->enableSensorTemperature();
       p1->enableSensorHumidity();
-      // Push to vector containing sensors?
+      // Push to vector containing sensor drivers
       activeDrivers.push_back(p1);
       attachSuccess = true;
   } else {
@@ -120,3 +120,6 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
   }
   return attachSuccess;
 }
+
+// TODO!
+// Poll attached i2c sensor devices for new values here

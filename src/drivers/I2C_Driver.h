@@ -1,7 +1,7 @@
 /*!
  * @file I2C_driver.h
  *
- * Generic I2C device driver
+ * Base class for a generic I2C sensor device driver.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -22,21 +22,24 @@ class I2C_Driver {
     public:
         I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
         ~I2C_Driver();
-        // GENERIC, virtual
-        bool initSensor();
+        // GENERIC, shared
         void setPeriod(float periodMs);
-        // AHT-Specific functions
+        // AHT-Specific functions, virtual
+        bool initSensor();
+        void pollSensor();
         void enableSensorTemperature();
         void enableSensorHumidity();
 
+        // Generic
         TwoWire *_i2c = NULL;
+        // Specific (can be private maybe?)
         Adafruit_AHTX0 *_ahtx0 = NULL;
     private:
         // Generic
         float _pollPeriod;
-        // AHT-Specific
-        Adafruit_Sensor *_aht_temperature = NULL;
-        Adafruit_Sensor *_aht_humidity = NULL;
+        // AHT-Specific sensor properties
+        Adafruit_Sensor *_ahtTemperature = NULL;
+        Adafruit_Sensor *_ahtHumidity = NULL;
 };
 
 #endif // I2C_Driver_H
