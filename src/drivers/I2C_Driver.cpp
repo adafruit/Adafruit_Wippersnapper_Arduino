@@ -53,8 +53,10 @@ void I2C_Driver::pollSensor() {
 // AHT-Specific
 void I2C_Driver::enableSensorTemperature() {
   _ahtTemperature = _ahtx0->getTemperatureSensor();
+  WS_DEBUG_PRINTLN("Enabled AHTX0 temperature sensor");
 }
 
 void I2C_Driver::enableSensorHumidity() {
   _ahtHumidity = _ahtx0->getHumiditySensor();
+  WS_DEBUG_PRINTLN("Enabled AHTX0 humidity sensor");
 }

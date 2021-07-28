@@ -1029,9 +1029,6 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
-
-  // Attempt to process initial sync packets from broker
-  WS._mqtt->processPackets(500);
 }
 
 /**************************************************************************/
