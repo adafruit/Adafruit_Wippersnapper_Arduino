@@ -33,30 +33,12 @@ void I2C_Driver::setPeriod(float periodMs) {
   _pollPeriod = periodMs;
 }
 
-// Specific, virtual
 bool I2C_Driver::initSensor() {
-  bool is_success = true; 
-  _ahtx0 = new Adafruit_AHTX0();
-  if (!_ahtx0->begin(_i2c)) {
-      WS_DEBUG_PRINTLN("Error: AHTx0 not initialized");
-      is_success = false;
-  };
-  WS_DEBUG_PRINTLN("AHT initialized successfully!");
-  return is_success;
+    // base calls/*  */
+    return true;
 }
 
 // Specific, virtual
 void I2C_Driver::pollSensor() {
   // TODO - Validate sensors and poll them
-}
-
-// AHT-Specific
-void I2C_Driver::enableSensorTemperature() {
-  _ahtTemperature = _ahtx0->getTemperatureSensor();
-  WS_DEBUG_PRINTLN("Enabled AHTX0 temperature sensor");
-}
-
-void I2C_Driver::enableSensorHumidity() {
-  _ahtHumidity = _ahtx0->getHumiditySensor();
-  WS_DEBUG_PRINTLN("Enabled AHTX0 humidity sensor");
 }

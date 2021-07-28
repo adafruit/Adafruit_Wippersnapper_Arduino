@@ -109,9 +109,6 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
       if (!p1->initSensor()) {
           attachSuccess = false;
       }
-      // Set sensor driver properties
-      p1->enableSensorTemperature();
-      p1->enableSensorHumidity();
       // Push to vector containing sensor drivers
       activeDrivers.push_back(p1);
       attachSuccess = true;
