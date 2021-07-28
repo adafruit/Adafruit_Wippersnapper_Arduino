@@ -29,9 +29,6 @@ bool I2C_Driver_AHTX0::initSensor() {
       WS_DEBUG_PRINTLN("Error: AHTx0 not initialized");
       is_success = false;
   };
-  // TODO: Enable temp and humid too
-  // enableSensorTemperature();
-  //enableSensorHumidity();
   WS_DEBUG_PRINTLN("AHT initialized successfully!");
   return is_success;
 }
