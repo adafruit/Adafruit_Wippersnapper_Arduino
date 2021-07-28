@@ -97,12 +97,22 @@ uint16_t WipperSnapper_Component_I2C::scanAddresses(
 }
 
 
+/*******************************************************************************/
+/*!
+    @brief    Initializes I2C device driver and attaches its object to the "bus"
+    @param    msgDeviceInitReq
+              A decoded I2CDevice initialization request message.
+    @returns True if I2C device is initialized and attached, False otherwise.
+*/
+/*******************************************************************************/
 bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
   bool attachSuccess = false;
   // Determine which sensor-specific callback to utilize
   if (msgDeviceInitReq->has_aht_init) {
       WS_DEBUG_PRINTLN("Initializing AHTx sensor!");
       uint16_t addr = (uint16_t) msgDeviceInitReq->aht_init.address;
+      // TODO: Allocate I2C Driver AHT!!
+
       // Allocate space for I2C_Driver
       I2C_Driver * p1 = new I2C_Driver(addr, this->_i2c);
       // Attempt to initialize the sensor driver

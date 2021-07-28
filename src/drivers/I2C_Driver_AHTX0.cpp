@@ -14,22 +14,14 @@
  */
 #include "I2C_Driver_AHTX0.h"
 
-/* // Generic
-I2C_Driver_AHTX0::I2C_Driver_AHTX0(uint16_t deviceAddress, TwoWire *i2c) {
-    // Base implementation
-    WS_DEBUG_PRINTLN("I2CDriver Initialized!");
-    WS_DEBUG_PRINT("I2CDriver Device Addr: ");WS_DEBUG_PRINTLN(deviceAddress);
-    _i2c = i2c;
-    _pollPeriod = 0.0;
-}
 
-// Generic
-I2C_Driver_AHTX0::~I2C_Driver_AHTX0() {
-    // Base implementation
-}
- */
-
-// Specific, virtual
+/*************************************************/
+/*!
+    @brief  Initializes an AHTX0 sensor.
+    @return True if AHTX0 device driver initialized
+            successfully, False otherwise.
+*/
+/*************************************************/
 bool I2C_Driver_AHTX0::initSensor() {
   bool is_success = true; 
   _ahtx0 = new Adafruit_AHTX0();
@@ -44,17 +36,30 @@ bool I2C_Driver_AHTX0::initSensor() {
   return is_success;
 }
 
-// Specific, virtual
+/*************************************************/
+/*!
+    @brief  Polls the AHTX0 for new data.
+*/
+/*************************************************/
 void I2C_Driver_AHTX0::pollSensor() {
   // TODO - Validate sensors and poll them
 }
 
-// AHT-Specific
+/**************************************************/
+/*!
+    @brief  Enables the AHTX0's temperature sensor.
+*/
+/**************************************************/
 void I2C_Driver_AHTX0::enableSensorTemperature() {
   _ahtTemperature = _ahtx0->getTemperatureSensor();
   WS_DEBUG_PRINTLN("Enabled AHTX0 temperature sensor");
 }
 
+/**************************************************/
+/*!
+    @brief  Enables the AHTX0's humidity sensor.
+*/
+/**************************************************/
 void I2C_Driver_AHTX0::enableSensorHumidity() {
   _ahtHumidity = _ahtx0->getHumiditySensor();
   WS_DEBUG_PRINTLN("Enabled AHTX0 humidity sensor");

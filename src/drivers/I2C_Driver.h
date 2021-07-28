@@ -22,8 +22,7 @@ class I2C_Driver {
         // GENERIC, shared
         I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
         ~I2C_Driver();
-        void setPeriod(float periodMs);
-        // AHT-Specific functions, virtual
+        void setPeriod(float period);
         virtual bool initSensor();
         virtual void pollSensor();
         // Generic
