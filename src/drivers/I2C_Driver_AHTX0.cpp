@@ -39,7 +39,8 @@ bool I2C_Driver_AHTX0::initSensor() {
 */
 /*************************************************/
 void I2C_Driver_AHTX0::pollSensor() {
-  // TODO - Validate sensors and poll them
+  // TODO - poll them
+  WS_DEBUG_PRINTLN("I2C_Driver_AHTX0::pollSensor");
 }
 
 /**************************************************/
@@ -49,6 +50,7 @@ void I2C_Driver_AHTX0::pollSensor() {
 /**************************************************/
 void I2C_Driver_AHTX0::enableSensorTemperature() {
   _ahtTemperature = _ahtx0->getTemperatureSensor();
+  _ahtTemperature->printSensorDetails();
   WS_DEBUG_PRINTLN("Enabled AHTX0 temperature sensor");
 }
 
@@ -59,5 +61,6 @@ void I2C_Driver_AHTX0::enableSensorTemperature() {
 /**************************************************/
 void I2C_Driver_AHTX0::enableSensorHumidity() {
   _ahtHumidity = _ahtx0->getHumiditySensor();
+  _ahtHumidity->printSensorDetails();
   WS_DEBUG_PRINTLN("Enabled AHTX0 humidity sensor");
 }

@@ -21,11 +21,6 @@
 
 class I2C_Driver_AHTX0 : public I2C_Driver {
     public:
-        //I2C_Driver_AHTX0(uint16_t deviceAddress, TwoWire *i2c);
-        //~I2C_Driver_AHTX0();
-        using I2C_Driver::I2C_Driver;
-        // GENERIC, shared
-//        void setPeriod(float periodMs);
         bool initSensor() override;
         void pollSensor() override;
         // AHT-specific

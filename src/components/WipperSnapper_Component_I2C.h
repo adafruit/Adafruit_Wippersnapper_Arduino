@@ -20,7 +20,6 @@
 #include <Wire.h>
 
 #include "drivers/I2C_Driver.h"
-#include "drivers/I2C_Driver_AHTX0.h"
 
 // forward decl.
 class Wippersnapper;
