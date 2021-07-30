@@ -537,13 +537,35 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       return is_success;
     }
     // Attach device to I2C port
+    bool deviceInitSuccess = false;
     if (msgI2CDeviceInitRequest.i2c_port_number == 0) {
-      WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
+      deviceInitSuccess = WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
     } else if (msgI2CDeviceInitRequest.i2c_port_number == 1) {
-        WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
+        deviceInitSuccess =WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
     }
-    // TODO: Response back to broker!
-    // NOT currently implemented in protobuf, waiting for generic response
+    // Create response
+    msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+    msgi2cResponse.which_payload = wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
+    msgi2cResponse.payload.resp_i2c_device_init.is_success = deviceInitSuccess;
+    // Encode message
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                  sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
+                   &msgi2cResponse)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
+      is_success = false;
+    }
+    size_t msgSz;
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
+                        &msgi2cResponse);
+    // Publish
+    WS_DEBUG_PRINT("Publishing i2c response...");
+    WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz,
+                      1);
+    WS_DEBUG_PRINTLN("Published!");
+
+
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     is_success = false;
