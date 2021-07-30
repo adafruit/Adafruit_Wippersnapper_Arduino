@@ -50,11 +50,6 @@
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
 
-#if defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || ADAFRUIT_PYPORTAL
-#include <Adafruit_SleepyDog.h>
-#else // ESP32/ESP32-S2
-#include <esp_task_wdt.h>
-#endif
 
 // Note: These might be better off in their respective wrappers
 #include <Adafruit_DotStar.h>

@@ -25,9 +25,6 @@ public:
   I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
   ~I2C_Driver();
   void setPeriod(float period);
-  // TODO
-  virtual bool initSensor();
-  virtual void pollSensor();
 
   // AHTX0-specific
   bool initAHTX0();

@@ -48,30 +48,6 @@ I2C_Driver::~I2C_Driver() {
 /*******************************************/
 void I2C_Driver::setPeriod(float period) { _pollPeriod = period; }
 
-/*************************************************/
-/*!
-    @brief  Initializes an I2C driver. Must
-    be implemented in an I2C_Driver_x class.
-    @return True if I2C device driver initialized
-            successfully, False otherwise.
-*/
-/*************************************************/
-bool I2C_Driver::initSensor() {
-  WS_DEBUG("I2C_Driver initSensor()");
-  return true;
-}
-
-/*************************************************/
-/*!
-    @brief  Polls an I2C driver for new sensor
-            messages. Must be implemented in an
-            I2C_Driver_x class.
-    @return True if I2C device driver initialized
-            successfully, False otherwise.
-*/
-/*************************************************/
-void I2C_Driver::pollSensor() { WS_DEBUG("I2C_Driver PollSensor()"); }
-
 /* Sensor-Specific Funcs */
 
 // AHTX0 Sensor //

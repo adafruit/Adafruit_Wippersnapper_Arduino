@@ -26,19 +26,18 @@ class Wippersnapper;
 class I2C_Driver;
 
 class WipperSnapper_Component_I2C {
-public:
-  WipperSnapper_Component_I2C(
-      wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
-  ~WipperSnapper_Component_I2C();
-  uint16_t scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq);
-  bool
-  attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
-
-  int32_t _portNum;
-  bool _isInit;
-  // I2C_Driver
-  std::vector<I2C_Driver *> activeDrivers;
-  TwoWire *_i2c = NULL;
+  public:
+    WipperSnapper_Component_I2C(
+        wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
+    ~WipperSnapper_Component_I2C();
+    uint16_t scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq);
+    bool
+    attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
+    bool _isInit;
+  private:
+    int32_t _portNum;
+    TwoWire *_i2c = NULL;
+    std::vector<I2C_Driver *> activeDrivers;
 };
 extern Wippersnapper WS;
 
