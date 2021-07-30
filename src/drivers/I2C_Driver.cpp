@@ -24,10 +24,8 @@
 */
 /*******************************************************************************/
 I2C_Driver::I2C_Driver(uint16_t deviceAddress, TwoWire *i2c) {
-    WS_DEBUG_PRINTLN("* New I2CDriver!");
-    WS_DEBUG_PRINT("* I2CDriver Device Addr: ");WS_DEBUG_PRINTLN(deviceAddress);
-    _i2c = i2c;
-    _pollPeriod = 0.0;
+  _i2c = i2c;
+  _pollPeriod = 0.0;
 }
 
 /*************************************/
@@ -36,8 +34,8 @@ I2C_Driver::I2C_Driver(uint16_t deviceAddress, TwoWire *i2c) {
 */
 /*************************************/
 I2C_Driver::~I2C_Driver() {
-    _i2c = NULL;
-    _pollPeriod = 0.0;
+  _i2c = NULL;
+  _pollPeriod = 0.0;
 }
 
 /*******************************************/
@@ -46,9 +44,7 @@ I2C_Driver::~I2C_Driver() {
                 polling period, in seconds.
 */
 /*******************************************/
-void I2C_Driver::setPeriod(float period) {
-  _pollPeriod = period;
-}
+void I2C_Driver::setPeriod(float period) { _pollPeriod = period; }
 
 /*************************************************/
 /*!
@@ -59,8 +55,8 @@ void I2C_Driver::setPeriod(float period) {
 */
 /*************************************************/
 bool I2C_Driver::initSensor() {
-    WS_DEBUG("I2C_Driver initSensor()");
-    return true;
+  WS_DEBUG("I2C_Driver initSensor()");
+  return true;
 }
 
 /*************************************************/
@@ -72,18 +68,18 @@ bool I2C_Driver::initSensor() {
             successfully, False otherwise.
 */
 /*************************************************/
-void I2C_Driver::pollSensor() {
-  WS_DEBUG("I2C_Driver PollSensor()");
-}
+void I2C_Driver::pollSensor() { WS_DEBUG("I2C_Driver PollSensor()"); }
 
-// Sensor-Specific, AHTX0
+/* Sensor-Specific Funcs */
+
+// AHTX0 Sensor //
 bool I2C_Driver::initAHTX0() {
   WS_DEBUG_PRINTLN("I2C_Driver::initAHTX0");
-  bool is_success = true; 
+  bool is_success = true;
   _ahtx0 = new Adafruit_AHTX0();
   if (!_ahtx0->begin(_i2c)) {
-      WS_DEBUG_PRINTLN("Error: AHTx0 not initialized");
-      is_success = false;
+    WS_DEBUG_PRINTLN("Error: AHTx0 not initialized");
+    is_success = false;
   };
   WS_DEBUG_PRINTLN("AHT initialized successfully!");
   return is_success;
@@ -92,5 +88,9 @@ bool I2C_Driver::initAHTX0() {
 void I2C_Driver::enableAHTX0Temperature() {
   _ahtTemperature = _ahtx0->getTemperatureSensor();
   _ahtTemperature->printSensorDetails();
-  WS_DEBUG_PRINTLN("Enabled AHTX0 temperature sensor");
+}
+
+void I2C_Driver::enableAHTX0Humidity() {
+  _ahtHumidity = _ahtx0->getHumiditySensor();
+  _ahtHumidity->printSensorDetails();
 }

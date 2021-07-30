@@ -109,30 +109,33 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
   bool attachSuccess = false;
   // Determine which sensor-specific callback to utilize
   if (msgDeviceInitReq->has_aht_init) {
-      WS_DEBUG_PRINTLN("Initializing AHTx sensor!");
       uint16_t addr = (uint16_t) msgDeviceInitReq->aht_init.address;
+      WS_DEBUG_PRINTLN("Requesting to initialize AHTx sensor");
+      WS_DEBUG_PRINT("\tSensor Addr: ");WS_DEBUG_PRINTLN(addr);
+      WS_DEBUG_PRINT("\tTemperature sensor enabled? ");WS_DEBUG_PRINTLN(msgDeviceInitReq->aht_init.enable_temperature);
+      WS_DEBUG_PRINT("\tHumidity sensor enabled? ");WS_DEBUG_PRINTLN(msgDeviceInitReq->aht_init.enable_humidity);
+
       // TODO: Create I2C Driver using the an AHT driver sub-class!
-       I2C_Driver * p1 = new I2C_Driver(addr, this->_i2c);
+       I2C_Driver * aht = new I2C_Driver(addr, this->_i2c);
       // Attempt to initialize the sensor driver
-      if (!p1->initAHTX0()) {
+      if (!aht->initAHTX0()) {
           attachSuccess = false;
           return attachSuccess;
       }
       // Initialize device-specific sensors
       if (msgDeviceInitReq->aht_init.enable_temperature == true) {
-          WS_DEBUG_PRINT("Enabled: AHTX0 temperature sensor");
-          void enableAHTX0Temperature();
+          aht->enableAHTX0Temperature();
       }
       if (msgDeviceInitReq->aht_init.enable_humidity == true) {
-          WS_DEBUG_PRINT("Enabled: AHTX0 humidity sensor");
-          // TODO, AHTX object.enable here!
+          aht->enableAHTX0Humidity();
       }
       // NOTE: This is generic
       // Push to vector containing sensor drivers
-      activeDrivers.push_back(p1);
+      activeDrivers.push_back(aht);
       attachSuccess = true; 
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
+  WS_DEBUG_PRINTLN("Successfully initialized AHTX0 sensor!");
   return attachSuccess;
 }

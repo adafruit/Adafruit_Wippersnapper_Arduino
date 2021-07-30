@@ -20,25 +20,25 @@
 #include <Adafruit_AHTX0.h>
 
 class I2C_Driver {
-    public:
-        // GENERIC, shared
-        I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
-        ~I2C_Driver();
-        void setPeriod(float period);
-        virtual bool initSensor();
-        virtual void pollSensor();
+public:
+  // GENERIC, shared
+  I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
+  ~I2C_Driver();
+  void setPeriod(float period);
+  virtual bool initSensor();
+  virtual void pollSensor();
 
-        bool initAHTX0();
-        void enableAHTX0Temperature();
-        // Generic
-        TwoWire *_i2c = NULL;
+  // AHTX0-specific
+  bool initAHTX0();
+  void enableAHTX0Temperature();
+  void enableAHTX0Humidity();
+  Adafruit_AHTX0 *_ahtx0 = NULL;
+  Adafruit_Sensor *_ahtTemperature = NULL;
+  Adafruit_Sensor *_ahtHumidity = NULL;
 
-        Adafruit_AHTX0 *_ahtx0 = NULL;
-        Adafruit_Sensor *_ahtTemperature = NULL;
-
-    private:
-        // Generic
-        float _pollPeriod;
+private:
+  float _pollPeriod;
+  TwoWire *_i2c = NULL;
 };
 
 #endif // I2C_Driver_H
