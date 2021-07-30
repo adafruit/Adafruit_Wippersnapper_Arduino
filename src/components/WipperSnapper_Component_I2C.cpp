@@ -115,9 +115,6 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
       // Create new AHTX0 i2c sensor driver
       //I2C_Driver_AHTX0 * aht = new I2C_Driver_AHTX0(addr, this->_i2c);
 
-      
-
-
 /*       I2C_Driver * p1 = new I2C_Driver(addr, this->_i2c);
       // Attempt to initialize the sensor driver
       if (!p1->initSensor()) {

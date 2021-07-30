@@ -42,6 +42,9 @@
 
 // WipperSnapper I2C Component
 #include "components/WipperSnapper_Component_I2C.h"
+// TODO - break this out
+// I2C Sensor Drivers
+#include "drivers/I2C_Driver_AHTX0.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
