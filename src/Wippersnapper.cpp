@@ -508,7 +508,15 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN(msgScanReq.i2c_port_number);
     // Scan all requested addresses on i2cportX and ret. address found, -1
     // otherwise.
-    uint16_t addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
+    uint16_t addressFound;
+    if (msgScanReq.i2c_port_number == 0) {
+      addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
+    } else if (msgScanReq.i2c_port_number == 1) {
+      addressFound = WS._i2cPort1->scanAddresses(msgScanReq);
+    } else {
+      WS_DEBUG_PRINTLN("ERROR:: I2C Scan: Invalid port number");
+      return false;
+    }
     // Create response
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =
@@ -546,9 +554,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       return is_success;
     }
     // Attach device to I2C port
-    // TODO: allow this to be implemented with multiple ports
+    // TODO: We should check port # here, not currently implemented in protobuf,
+    // PR in
     WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
     // TODO: Response back to broker!
+    // NOT currently implemented in protobuf, waiting for generic response
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     is_success = false;
