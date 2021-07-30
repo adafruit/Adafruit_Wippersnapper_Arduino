@@ -25,6 +25,7 @@ public:
   I2C_Driver(uint16_t deviceAddress, TwoWire *i2c);
   ~I2C_Driver();
   void setPeriod(float period);
+  // TODO
   virtual bool initSensor();
   virtual void pollSensor();
 
@@ -32,13 +33,16 @@ public:
   bool initAHTX0();
   void enableAHTX0Temperature();
   void enableAHTX0Humidity();
+
+private:
+  // General device driver properties
+  int16_t _deviceAddr;
+  float _pollPeriod;
+  TwoWire *_i2c = NULL;
+  // ATHX0
   Adafruit_AHTX0 *_ahtx0 = NULL;
   Adafruit_Sensor *_ahtTemperature = NULL;
   Adafruit_Sensor *_ahtHumidity = NULL;
-
-private:
-  float _pollPeriod;
-  TwoWire *_i2c = NULL;
 };
 
 #endif // I2C_Driver_H

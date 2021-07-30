@@ -108,6 +108,8 @@ uint16_t WipperSnapper_Component_I2C::scanAddresses(
 bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
   bool attachSuccess = false;
   // Determine which sensor-specific callback to utilize
+
+  // AHTX0 Sensor
   if (msgDeviceInitReq->has_aht_init) {
       uint16_t addr = (uint16_t) msgDeviceInitReq->aht_init.address;
       WS_DEBUG_PRINTLN("Requesting to initialize AHTx sensor");
@@ -118,7 +120,7 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
       // TODO: Create I2C Driver using the an AHT driver sub-class!
        I2C_Driver * aht = new I2C_Driver(addr, this->_i2c);
       // Attempt to initialize the sensor driver
-      if (!aht->initAHTX0()) {
+      if (aht->initAHTX0()) {
           attachSuccess = false;
           return attachSuccess;
       }
@@ -129,8 +131,7 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDevice
       if (msgDeviceInitReq->aht_init.enable_humidity == true) {
           aht->enableAHTX0Humidity();
       }
-      // NOTE: This is generic
-      // Push to vector containing sensor drivers
+      // Push to vector for sensor drivers
       activeDrivers.push_back(aht);
       attachSuccess = true; 
   } else {

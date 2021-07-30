@@ -454,13 +454,13 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       is_success = false;
       return is_success;
     }
-    // Create an I2C object using the message as a constructor?
-    if (WS._i2cPort0 == NULL) {
+    // Create an I2C object using the message as a constructor
+    if (WS.msgI2cInitRequest.i2c_port_number == 0) {
       WS._i2cPort0 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
       WS.i2cComponents.push_back(WS._i2cPort0);
       // did we init. the port successfully?
       is_success = WS._i2cPort0->_isInit;
-    } else if (WS._i2cPort1 == NULL) {
+    } else if (WS.msgI2cInitRequest.i2c_port_number == 1) {
       WS._i2cPort1 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
       // did we init. the port successfully?
       is_success = WS._i2cPort1->_isInit;
@@ -548,15 +548,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Attach device to I2C port
     // TODO: allow this to be implemented with multiple ports
     WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
-
-    // TODO
-    // Configure sensors
-    // WS._i2cPort0->enableSensor(temperature);
-    // WS._i2cPort0->enableSensor(humidity);
-    // Configure send interval
-    // WS._i2cPort0->sendInterval(period);
-    // Publish back response
-    // TODO
+    // TODO: Response back to broker!
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     is_success = false;

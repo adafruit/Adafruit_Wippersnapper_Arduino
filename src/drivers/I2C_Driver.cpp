@@ -25,6 +25,7 @@
 /*******************************************************************************/
 I2C_Driver::I2C_Driver(uint16_t deviceAddress, TwoWire *i2c) {
   _i2c = i2c;
+  _deviceAddr = deviceAddress;
   _pollPeriod = 0.0;
 }
 
@@ -35,6 +36,7 @@ I2C_Driver::I2C_Driver(uint16_t deviceAddress, TwoWire *i2c) {
 /*************************************/
 I2C_Driver::~I2C_Driver() {
   _i2c = NULL;
+  _deviceAddr = 0;
   _pollPeriod = 0.0;
 }
 
@@ -73,6 +75,14 @@ void I2C_Driver::pollSensor() { WS_DEBUG("I2C_Driver PollSensor()"); }
 /* Sensor-Specific Funcs */
 
 // AHTX0 Sensor //
+/*************************************************/
+/*!
+    @brief  Initializes an AHTX0 temperature +
+            humidity sensor.
+    @return True if AHTX0 sensor initialized
+            successfully, False otherwise.
+*/
+/*************************************************/
 bool I2C_Driver::initAHTX0() {
   WS_DEBUG_PRINTLN("I2C_Driver::initAHTX0");
   bool is_success = true;
@@ -85,12 +95,22 @@ bool I2C_Driver::initAHTX0() {
   return is_success;
 }
 
+/***************************************************/
+/*!
+    @brief  Enables the AHTX0's temperature sensor.
+*/
+/***************************************************/
 void I2C_Driver::enableAHTX0Temperature() {
   _ahtTemperature = _ahtx0->getTemperatureSensor();
-  _ahtTemperature->printSensorDetails();
+  //_ahtTemperature->printSensorDetails();
 }
 
+/***************************************************/
+/*!
+    @brief  Enables the AHTX0's humidity sensor.
+*/
+/***************************************************/
 void I2C_Driver::enableAHTX0Humidity() {
   _ahtHumidity = _ahtx0->getHumiditySensor();
-  _ahtHumidity->printSensorDetails();
+  //_ahtHumidity->printSensorDetails();
 }
