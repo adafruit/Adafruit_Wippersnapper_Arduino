@@ -75,3 +75,22 @@ bool I2C_Driver::initSensor() {
 void I2C_Driver::pollSensor() {
   WS_DEBUG("I2C_Driver PollSensor()");
 }
+
+// Sensor-Specific, AHTX0
+bool I2C_Driver::initAHTX0() {
+  WS_DEBUG_PRINTLN("I2C_Driver::initAHTX0");
+  bool is_success = true; 
+  _ahtx0 = new Adafruit_AHTX0();
+  if (!_ahtx0->begin(_i2c)) {
+      WS_DEBUG_PRINTLN("Error: AHTx0 not initialized");
+      is_success = false;
+  };
+  WS_DEBUG_PRINTLN("AHT initialized successfully!");
+  return is_success;
+}
+
+void I2C_Driver::enableAHTX0Temperature() {
+  _ahtTemperature = _ahtx0->getTemperatureSensor();
+  _ahtTemperature->printSensorDetails();
+  WS_DEBUG_PRINTLN("Enabled AHTX0 temperature sensor");
+}

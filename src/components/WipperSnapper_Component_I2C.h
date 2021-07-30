@@ -38,8 +38,6 @@ public:
   bool _isInit;
   // I2C_Driver
   std::vector<I2C_Driver *> activeDrivers;
-
-private:
   TwoWire *_i2c = NULL;
 };
 extern Wippersnapper WS;
