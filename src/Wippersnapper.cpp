@@ -405,23 +405,6 @@ void cbSignalTopic(char *data, uint16_t len) {
   }
 }
 
-/************************************************************************************/
-/*!
-    @brief    Publishes an I2C signal response message to the broker's
-              I2C signal MQTT topic.
-    @param    msgi2cResponse
-              I2CResponse signal message to publish
-*/
-/************************************************************************************/
-void publishSignalI2CResponse(
-    wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
-  size_t msgSz;
-  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
-                      &msgi2cResponse);
-  // Publish i2c response message to broker
-  WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
-}
-
 /******************************************************************************************/
 /*!
     @brief    Decodes an I2C signal request message and executes the
@@ -554,9 +537,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       return is_success;
     }
     // Attach device to I2C port
-    // TODO: We should check port # here, not currently implemented in protobuf,
-    // PR in
-    WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
+    if (msgI2CDeviceInitRequest.i2c_port_number == 0) {
+      WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
+    } else if (msgI2CDeviceInitRequest.i2c_port_number == 1) {
+        WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
+    }
     // TODO: Response back to broker!
     // NOT currently implemented in protobuf, waiting for generic response
   } else {
