@@ -24,7 +24,7 @@
 */
 /***************************************************************************************************************/
 WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
-  wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest) {
+    wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest) {
   WS_DEBUG_PRINTLN("EXEC: New I2C Port ");
   WS_DEBUG_PRINT("\tPort #: ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_port_number);
@@ -35,10 +35,10 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-  // initialize TwoWire w/ desired portNum if ESP32-S2
-  #if defined(ARDUINO_FEATHER_ESP32)
-    _i2c = new TwoWire(msgInitRequest->i2c_port_number);
-  #endif
+// initialize TwoWire w/ desired portNum if ESP32-S2
+#if defined(ARDUINO_FEATHER_ESP32)
+  _i2c = new TwoWire(msgInitRequest->i2c_port_number);
+#endif
   // validate if SDA & SCL has pullup
   if (digitalRead(msgInitRequest->i2c_pin_sda) == LOW) {
     pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
@@ -70,9 +70,7 @@ WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
     @brief    Returns if port is already initialized.
 */
 /*****************************************************/
-bool WipperSnapper_Component_I2C::isInitialized() {
-    return _isInit;
-}
+bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
 
 /************************************************************************/
 /*!
@@ -84,7 +82,8 @@ bool WipperSnapper_Component_I2C::isInitialized() {
 /************************************************************************/
 uint16_t WipperSnapper_Component_I2C::scanAddresses(
     wippersnapper_i2c_v1_I2CScanRequest msgScanReq) {
-  WS_DEBUG_PRINT("EXEC: I2C Scan on port "); WS_DEBUG_PRINTLN(_portNum);
+  WS_DEBUG_PRINT("EXEC: I2C Scan on port ");
+  WS_DEBUG_PRINTLN(_portNum);
   // decode stream into i2c request
   uint16_t addrFound = -1;
   uint16_t scanAddr;
@@ -105,7 +104,6 @@ uint16_t WipperSnapper_Component_I2C::scanAddresses(
   return addrFound;
 }
 
-
 /*******************************************************************************/
 /*!
     @brief    Initializes I2C device driver and attaches its object to the "bus"
@@ -114,35 +112,39 @@ uint16_t WipperSnapper_Component_I2C::scanAddresses(
     @returns True if I2C device is initialized and attached, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_Component_I2C::attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
+bool WipperSnapper_Component_I2C::attachI2CDevice(
+    wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
   bool attachSuccess = false;
   // Determine which sensor-specific callback to utilize
 
   // AHTX0 Sensor
   if (msgDeviceInitReq->has_aht_init) {
-      uint16_t addr = (uint16_t) msgDeviceInitReq->aht_init.address;
-      WS_DEBUG_PRINTLN("Requesting to initialize AHTx sensor");
-      WS_DEBUG_PRINT("\tSensor Addr: ");WS_DEBUG_PRINTLN(addr, HEX);
-      WS_DEBUG_PRINT("\tTemperature sensor enabled? ");WS_DEBUG_PRINTLN(msgDeviceInitReq->aht_init.enable_temperature);
-      WS_DEBUG_PRINT("\tHumidity sensor enabled? ");WS_DEBUG_PRINTLN(msgDeviceInitReq->aht_init.enable_humidity);
+    uint16_t addr = (uint16_t)msgDeviceInitReq->aht_init.address;
+    WS_DEBUG_PRINTLN("Requesting to initialize AHTx sensor");
+    WS_DEBUG_PRINT("\tSensor Addr: ");
+    WS_DEBUG_PRINTLN(addr, HEX);
+    WS_DEBUG_PRINT("\tTemperature sensor enabled? ");
+    WS_DEBUG_PRINTLN(msgDeviceInitReq->aht_init.enable_temperature);
+    WS_DEBUG_PRINT("\tHumidity sensor enabled? ");
+    WS_DEBUG_PRINTLN(msgDeviceInitReq->aht_init.enable_humidity);
 
-      // TODO: Create I2C Driver using the an AHT driver sub-class!
-       I2C_Driver * aht = new I2C_Driver(addr, this->_i2c);
-      // Attempt to initialize the sensor driver
-      if (!aht->initAHTX0()) {
-          attachSuccess = false;
-          return attachSuccess;
-      }
-      // Initialize device-specific sensors
-      if (msgDeviceInitReq->aht_init.enable_temperature == true) {
-          aht->enableAHTX0Temperature();
-      }
-      if (msgDeviceInitReq->aht_init.enable_humidity == true) {
-          aht->enableAHTX0Humidity();
-      }
-      // Push to vector for sensor drivers
-      activeDrivers.push_back(aht);
-      attachSuccess = true; 
+    // TODO: Create I2C Driver using the an AHT driver sub-class!
+    I2C_Driver *aht = new I2C_Driver(addr, this->_i2c);
+    // Attempt to initialize the sensor driver
+    if (!aht->initAHTX0()) {
+      attachSuccess = false;
+      return attachSuccess;
+    }
+    // Initialize device-specific sensors
+    if (msgDeviceInitReq->aht_init.enable_temperature == true) {
+      aht->enableAHTX0Temperature();
+    }
+    if (msgDeviceInitReq->aht_init.enable_humidity == true) {
+      aht->enableAHTX0Humidity();
+    }
+    // Push to vector for sensor drivers
+    activeDrivers.push_back(aht);
+    attachSuccess = true;
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
