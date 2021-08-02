@@ -285,9 +285,6 @@ public:
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
-  wippersnapper_i2c_v1_I2CInitRequest msgI2cInitRequest =
-      wippersnapper_i2c_v1_I2CInitRequest_init_zero; ///< I2C initialization
-                                                     ///< request message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in

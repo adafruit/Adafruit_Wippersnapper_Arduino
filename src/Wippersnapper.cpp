@@ -444,23 +444,24 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       wippersnapper_signal_v1_I2CResponse_init_zero;
   if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag) {
     WS_DEBUG_PRINTLN("I2C Init Request Found!");
+    wippersnapper_i2c_v1_I2CInitRequest msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
     // Create I2C request message
-    WS.msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
+    msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
     // Decode i2c request message into struct
     if (!pb_decode(stream, wippersnapper_i2c_v1_I2CInitRequest_fields,
-                   &WS.msgI2cInitRequest)) {
+                   &msgI2cInitRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_i2c_v1_I2CInitRequest");
       return false; // fail out
     }
     // Create an I2C object using the message as a constructor
-    if (WS.msgI2cInitRequest.i2c_port_number == 0) {
-      WS._i2cPort0 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
+    if (msgI2cInitRequest.i2c_port_number == 0) {
+      WS._i2cPort0 = new WipperSnapper_Component_I2C(&msgI2cInitRequest);
       WS.i2cComponents.push_back(WS._i2cPort0);
       // did we init. the port successfully?
       is_success = WS._i2cPort0->_isInit;
-    } else if (WS.msgI2cInitRequest.i2c_port_number == 1) {
-      WS._i2cPort1 = new WipperSnapper_Component_I2C(&WS.msgI2cInitRequest);
+    } else if (msgI2cInitRequest.i2c_port_number == 1) {
+      WS._i2cPort1 = new WipperSnapper_Component_I2C(&msgI2cInitRequest);
       // did we init. the port successfully?
       is_success = WS._i2cPort1->_isInit;
       WS.i2cComponents.push_back(WS._i2cPort1);
@@ -553,7 +554,6 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
       return false; // fail out if we cant encode
     }
-    WS_DEBUG("TEST??");
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     return false; // fail out, we didn't encode anything to publish
