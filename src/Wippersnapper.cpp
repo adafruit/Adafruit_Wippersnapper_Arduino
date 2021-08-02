@@ -69,7 +69,8 @@ Wippersnapper::~Wippersnapper() {
 
 /**************************************************************************/
 /*!
-    @brief    Performs the filesystem-backed provisioning workflow
+    @brief    Executes the provisioning workflow.
+              NOTE: Must be called prior to connect().
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
@@ -130,9 +131,9 @@ void Wippersnapper::set_user_key() {
 /*!
     @brief    Prints a message buffer to the serial output
     @param    Buffer
-              Desired message to print.
-      @pram   bufLen
-              Length of buffer to print.
+              Desired message to print to the serial output.
+    @param    bufLen
+              Length of message buffer.
 */
 /**************************************************************************/
 void printMsgBuffer(char *buffer, uint16_t bufLen) {
@@ -388,7 +389,7 @@ bool Wippersnapper::decodeSignalMsg(
 */
 /**************************************************************************/
 void cbSignalTopic(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("* New Msg on Signal");
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal]: ");
   printMsgBuffer(data, len);
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
@@ -434,8 +435,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
                    &WS.msgI2cInitRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_i2c_v1_I2CInitRequest");
-      is_success = false;
-      return is_success;
+      return false; // fail out
     }
     // Create an I2C object using the message as a constructor
     if (WS.msgI2cInitRequest.i2c_port_number == 0) {
@@ -450,7 +450,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS.i2cComponents.push_back(WS._i2cPort1);
     } else {
       WS_DEBUG_PRINTLN("ERROR: Both I2C ports are in-use");
-      is_success = false;
+      return false; // fail out
     }
     // Create i2c init response
     msgi2cResponse.which_payload =
@@ -463,7 +463,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      is_success = false;
+      return false; // fail out
     }
     size_t msgSz;
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
@@ -482,13 +482,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
                    &msgScanReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_i2c_v1_I2CScanRequest");
-      is_success = false;
-      return false;
+      return false; // fail out
     }
-    // TODO: Check which port and select the correct object out of the i2c
-    // component vector
-    WS_DEBUG_PRINT("Port");
-    WS_DEBUG_PRINTLN(msgScanReq.i2c_port_number);
     // Scan all requested addresses on i2cportX and ret. address found, -1
     // otherwise.
     uint16_t addressFound;
@@ -498,7 +493,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       addressFound = WS._i2cPort1->scanAddresses(msgScanReq);
     } else {
       WS_DEBUG_PRINTLN("ERROR:: I2C Scan: Invalid port number");
-      return false;
+      return false; // fail out
     }
     // Create response
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
@@ -512,7 +507,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      is_success = false;
+      return false; // fail out
     }
     size_t msgSz;
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
@@ -533,19 +528,21 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
                    &msgI2CDeviceInitRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequest message.");
-      is_success = false;
-      return is_success;
+      return false; // fail out
     }
     // Attach device to I2C port
     bool deviceInitSuccess = false;
     if (msgI2CDeviceInitRequest.i2c_port_number == 0) {
-      deviceInitSuccess = WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
+      deviceInitSuccess =
+          WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
     } else if (msgI2CDeviceInitRequest.i2c_port_number == 1) {
-        deviceInitSuccess =WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
+      deviceInitSuccess =
+          WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
     }
     // Create response
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
-    msgi2cResponse.which_payload = wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
+    msgi2cResponse.which_payload =
+        wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
     msgi2cResponse.payload.resp_i2c_device_init.is_success = deviceInitSuccess;
     // Encode message
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
@@ -554,7 +551,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      is_success = false;
+      return false; // fail out
     }
     size_t msgSz;
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
@@ -564,14 +561,10 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");
-
-
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
-    is_success = false;
-    return is_success;
+    return false; // fail out
   }
-
   return is_success;
 }
 
@@ -586,7 +579,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 */
 /**************************************************************************/
 void cbSignalI2CReq(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("* New Msg on Signal-I2C: ");
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
   printMsgBuffer(data, len);
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));

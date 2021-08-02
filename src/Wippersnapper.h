@@ -42,14 +42,10 @@
 
 // WipperSnapper I2C Component
 #include "components/WipperSnapper_Component_I2C.h"
-// TODO - break this out
-// I2C Sensor Drivers
-//#include "drivers/I2C_Driver_AHTX0.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
-
 
 // Note: These might be better off in their respective wrappers
 #include <Adafruit_DotStar.h>
@@ -58,7 +54,7 @@
 #include <SPI.h>
 
 // Uncomment for staging builds
-#define USE_STAGING
+// #define USE_STAGING
 
 #ifdef USE_STAGING
 #define IO_MQTT_SERVER "io.adafruit.us" ///< Staging (development) mqtt server
@@ -74,7 +70,7 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-#define WS_VERSION "1.0.0-beta.3" ///< Library version (semver-formatted)
+#define WS_VERSION "1.0.0-beta.4" ///< Library version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
