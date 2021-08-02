@@ -839,7 +839,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
-      strlen("/i2c") + 1);
+      strlen(TOPIC_I2C) + 1);
 
   // Create global registration topic
   if (WS._topic_description) {
@@ -896,7 +896,7 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_brkr, _device_uid);
     strcat(WS._topic_signal_i2c_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_i2c_brkr, "broker");
-    strcat(WS._topic_signal_i2c_brkr, "/i2c");
+    strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
   } else { // malloc failed
     WS._topic_signal_i2c_brkr = 0;
     is_success = false;
@@ -909,7 +909,7 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_device, _device_uid);
     strcat(WS._topic_signal_i2c_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_i2c_device, "device");
-    strcat(WS._topic_signal_i2c_device, "/i2c");
+    strcat(WS._topic_signal_i2c_device, TOPIC_I2C);
   } else { // malloc failed
     WS._topic_signal_i2c_device = 0;
     is_success = false;

@@ -80,7 +80,7 @@
 #define TOPIC_WS "/wprsnpr/"       ///< WipperSnapper topic
 #define TOPIC_DESCRIPTION "/info/" ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/"  ///< Signals sub-topic
-#define TOPIC_I2C "/i2c/"          ///< I2C sub-topic
+#define TOPIC_I2C "/i2c"          ///< I2C sub-topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
