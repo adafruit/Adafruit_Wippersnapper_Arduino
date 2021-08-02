@@ -63,6 +63,15 @@ WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
   _isInit = false;
 }
 
+/*****************************************************/
+/*!
+    @brief    Returns if port is already initialized.
+*/
+/*****************************************************/
+bool WipperSnapper_Component_I2C::isInitialized() {
+    return _isInit;
+}
+
 /************************************************************************/
 /*!
     @brief    Destructor for a WipperSnapper I2C component.

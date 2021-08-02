@@ -33,9 +33,10 @@ public:
   uint16_t scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq);
   bool
   attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
-  bool _isInit;
+  bool isInitialized();
 
 private:
+  bool _isInit;
   int32_t _portNum;
   TwoWire *_i2c = NULL;
   std::vector<I2C_Driver *> activeDrivers;

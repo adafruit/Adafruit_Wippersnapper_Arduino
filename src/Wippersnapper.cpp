@@ -414,12 +414,12 @@ void cbSignalTopic(char *data, uint16_t len) {
 */
 /******************************************************************************************/
 void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
-    size_t msgSz;
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
-                        msgi2cResponse);
-    WS_DEBUG_PRINT("Publishing Message: I2CResponse...");
-    WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
-    WS_DEBUG_PRINTLN("Published!");
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
+                      msgi2cResponse);
+  WS_DEBUG_PRINT("Publishing Message: I2CResponse...");
+  WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
+  WS_DEBUG_PRINTLN("Published!");
 }
 
 /******************************************************************************************/
@@ -444,7 +444,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       wippersnapper_signal_v1_I2CResponse_init_zero;
   if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag) {
     WS_DEBUG_PRINTLN("I2C Init Request Found!");
-    wippersnapper_i2c_v1_I2CInitRequest msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
+    wippersnapper_i2c_v1_I2CInitRequest msgI2cInitRequest =
+        wippersnapper_i2c_v1_I2CInitRequest_init_zero;
     // Create I2C request message
     msgI2cInitRequest = wippersnapper_i2c_v1_I2CInitRequest_init_zero;
     // Decode i2c request message into struct
@@ -459,11 +460,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS._i2cPort0 = new WipperSnapper_Component_I2C(&msgI2cInitRequest);
       WS.i2cComponents.push_back(WS._i2cPort0);
       // did we init. the port successfully?
-      is_success = WS._i2cPort0->_isInit;
+      is_success = WS._i2cPort0->isInitialized();
     } else if (msgI2cInitRequest.i2c_port_number == 1) {
       WS._i2cPort1 = new WipperSnapper_Component_I2C(&msgI2cInitRequest);
       // did we init. the port successfully?
-      is_success = WS._i2cPort1->_isInit;
+      is_success = WS._i2cPort1->isInitialized();
       WS.i2cComponents.push_back(WS._i2cPort1);
     } else {
       WS_DEBUG_PRINTLN("ERROR: Both I2C ports are in-use");
@@ -497,12 +498,15 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Scan all requested addresses on i2cportX and ret. address found, -1
     // otherwise.
     uint16_t addressFound;
-    if (msgScanReq.i2c_port_number == 0 && WS._i2cPort0->_isInit == true) {
+    if (msgScanReq.i2c_port_number == 0 &&
+        WS._i2cPort0->isInitialized() == true) {
       addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
-    } else if (msgScanReq.i2c_port_number == 1 && WS._i2cPort1->_isInit == true) {
+    } else if (msgScanReq.i2c_port_number == 1 &&
+               WS._i2cPort1->isInitialized() == true) {
       addressFound = WS._i2cPort1->scanAddresses(msgScanReq);
     } else {
-      WS_DEBUG_PRINTLN("ERROR: Could not execute I2C scan, the I2C port was not initialized");
+      WS_DEBUG_PRINTLN("ERROR: Could not execute I2C scan, the I2C port was "
+                       "not initialized");
       addressFound = -1;
     }
     // Create response
@@ -533,10 +537,12 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     }
     // Attach device to I2C port
     bool deviceInitSuccess = false;
-    if (msgI2CDeviceInitRequest.i2c_port_number == 0 && WS._i2cPort0->_isInit == true) {
+    if (msgI2CDeviceInitRequest.i2c_port_number == 0 &&
+        WS._i2cPort0->isInitialized() == true) {
       deviceInitSuccess =
           WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
-    } else if (msgI2CDeviceInitRequest.i2c_port_number == 1 && WS._i2cPort1->_isInit == true) {
+    } else if (msgI2CDeviceInitRequest.i2c_port_number == 1 &&
+               WS._i2cPort1->isInitialized() == true) {
       deviceInitSuccess =
           WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
     }
