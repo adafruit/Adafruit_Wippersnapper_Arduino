@@ -487,12 +487,12 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Scan all requested addresses on i2cportX and ret. address found, -1
     // otherwise.
     uint16_t addressFound;
-    if (msgScanReq.i2c_port_number == 0) {
+    if (msgScanReq.i2c_port_number == 0 && WS._i2cPort0->_isInit == true) {
       addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
-    } else if (msgScanReq.i2c_port_number == 1) {
+    } else if (msgScanReq.i2c_port_number == 1 && WS._i2cPort1->_isInit == true) {
       addressFound = WS._i2cPort1->scanAddresses(msgScanReq);
     } else {
-      WS_DEBUG_PRINTLN("ERROR:: I2C Scan: Invalid port number");
+      WS_DEBUG_PRINTLN("ERROR: Could not execute I2C scan, the I2C port was not initialized");
       return false; // fail out
     }
     // Create response
@@ -532,10 +532,10 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     }
     // Attach device to I2C port
     bool deviceInitSuccess = false;
-    if (msgI2CDeviceInitRequest.i2c_port_number == 0) {
+    if (msgI2CDeviceInitRequest.i2c_port_number == 0 && WS._i2cPort0->_isInit == true) {
       deviceInitSuccess =
           WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
-    } else if (msgI2CDeviceInitRequest.i2c_port_number == 1) {
+    } else if (msgI2CDeviceInitRequest.i2c_port_number == 1 && WS._i2cPort1->_isInit == true) {
       deviceInitSuccess =
           WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
     }
