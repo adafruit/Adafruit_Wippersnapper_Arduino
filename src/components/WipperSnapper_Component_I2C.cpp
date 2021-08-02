@@ -35,8 +35,10 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-  // initialize TwoWire w/ desired portNum
-  _i2c = new TwoWire(msgInitRequest->i2c_port_number);
+  // initialize TwoWire w/ desired portNum if ESP32-S2
+  #if defined(ARDUINO_FEATHER_ESP32)
+    _i2c = new TwoWire(msgInitRequest->i2c_port_number);
+  #endif
   // validate if SDA & SCL has pullup
   if (digitalRead(msgInitRequest->i2c_pin_sda) == LOW) {
     pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
