@@ -1304,7 +1304,7 @@ ws_status_t Wippersnapper::mqttStatus() {
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
       WS_DEBUG_PRINT("PINGREQ...");
       ping();
-      WS_DEBUG_PRINT("PINGRESP!");
+      WS_DEBUG_PRINTLN("PINGRESP!");
       _prv_ping = millis();
     }
     // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
