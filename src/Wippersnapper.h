@@ -54,7 +54,7 @@
 #include <SPI.h>
 
 // Uncomment for staging builds
-// #define USE_STAGING
+#define USE_STAGING
 
 #ifdef USE_STAGING
 #define IO_MQTT_SERVER "io.adafruit.us" ///< Staging (development) mqtt server

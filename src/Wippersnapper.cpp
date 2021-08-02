@@ -406,6 +406,16 @@ void cbSignalTopic(char *data, uint16_t len) {
   }
 }
 
+void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
+    // TODO: Zero-out outgoing buffer
+    size_t msgSz;
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
+                        msgi2cResponse);
+    WS_DEBUG_PRINT("Publishing Message: I2CResponse...");
+    WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
+    WS_DEBUG_PRINTLN("Published!");
+}
+
 /******************************************************************************************/
 /*!
     @brief    Decodes an I2C signal request message and executes the
@@ -450,12 +460,12 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS.i2cComponents.push_back(WS._i2cPort1);
     } else {
       WS_DEBUG_PRINTLN("ERROR: Both I2C ports are in-use");
-      return false; // fail out
+      is_success = false;
     }
     // Create i2c init response
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag;
-    msgi2cResponse.payload.resp_i2c_init.is_initialized = true;
+    msgi2cResponse.payload.resp_i2c_init.is_initialized = is_success;
     // Encode message
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
@@ -463,15 +473,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      return false; // fail out
+      return false; // fail out if we can't encode the response
     }
-    size_t msgSz;
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
-                        &msgi2cResponse);
-    WS_DEBUG_PRINT("Publishing i2c init response...");
-    WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz,
-                      1);
-    WS_DEBUG_PRINTLN("Published!");
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request Found!");
@@ -482,7 +485,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
                    &msgScanReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_i2c_v1_I2CScanRequest");
-      return false; // fail out
+      return false; // fail out if we can't decode the request
     }
     // Scan all requested addresses on i2cportX and ret. address found, -1
     // otherwise.
@@ -493,7 +496,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       addressFound = WS._i2cPort1->scanAddresses(msgScanReq);
     } else {
       WS_DEBUG_PRINTLN("ERROR: Could not execute I2C scan, the I2C port was not initialized");
-      return false; // fail out
+      addressFound = -1;
     }
     // Create response
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
@@ -507,28 +510,19 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      return false; // fail out
+      return false; // fail out if we can't encode a response
     }
-    size_t msgSz;
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
-                        &msgi2cResponse);
-    // Publish
-    WS_DEBUG_PRINT("Publishing i2c response...");
-    WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz,
-                      1);
-    WS_DEBUG_PRINTLN("Published!");
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
-    WS_DEBUG_PRINTLN("AHTX Init Request Found!");
+    WS_DEBUG_PRINTLN("I2C Device Init Request Found!");
     // Decode stream into an I2CDeviceInitRequest
-    // Create I2C request message
     wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
         wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero;
     // Decode stream into struct, msgI2CDeviceInitRequest
     if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
                    &msgI2CDeviceInitRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequest message.");
-      return false; // fail out
+      return false; // fail out if we can't decode
     }
     // Attach device to I2C port
     bool deviceInitSuccess = false;
@@ -551,20 +545,14 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      return false; // fail out
+      return false; // fail out if we cant encode
     }
-    size_t msgSz;
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
-                        &msgi2cResponse);
-    // Publish
-    WS_DEBUG_PRINT("Publishing i2c response...");
-    WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz,
-                      1);
-    WS_DEBUG_PRINTLN("Published!");
+    WS_DEBUG("TEST??");
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
-    return false; // fail out
+    return false; // fail out, we didn't encode anything to publish
   }
+  publishI2CResponse(&msgi2cResponse);
   return is_success;
 }
 
@@ -1220,7 +1208,7 @@ ws_status_t Wippersnapper::run() {
   checkMQTTConnection(curTime);
 
   // Poll for packets from broker queue, return immediately
-  WS._mqtt->processPacketsUntilCallback(100);
+  WS._mqtt->processPacketsUntilCallback(10);
 
   // TODO: Loop thru components
   // Process digital inputs, digitalGPIO module
@@ -1301,7 +1289,9 @@ ws_status_t Wippersnapper::mqttStatus() {
   if (WS._mqtt->connected()) {
     // ping within keepalive to keep connection open
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
+      WS_DEBUG_PRINT("PINGREQ...");
       ping();
+      WS_DEBUG_PRINT("PINGRESP!");
       _prv_ping = millis();
     }
     // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
