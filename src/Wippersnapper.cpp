@@ -406,8 +406,14 @@ void cbSignalTopic(char *data, uint16_t len) {
   }
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Publishes an I2C response signal message to the broker.
+    @param    msgi2cResponse
+              A pointer to an I2C response message typedef.
+*/
+/******************************************************************************************/
 void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
-    // TODO: Zero-out outgoing buffer
     size_t msgSz;
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                         msgi2cResponse);
