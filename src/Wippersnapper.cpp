@@ -957,25 +957,30 @@ bool Wippersnapper::encodePinEvent(
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
+  // this should be a state machine, dept. on the network...
+
   // WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
   // Handle network connection
-  keepAliveWiFi();
+  //keepAliveWiFi();
+  handleNetworking();
 
   // Handle MQTT connection
   checkMQTTConnection(curTime);
 
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
+  feedWDT();
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
+  feedWDT();
 
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
-
   feedWDT();
+
   return status();
 }
 
@@ -1017,13 +1022,30 @@ ws_status_t Wippersnapper::status() {
   return _status;
 }
 
+void Wippersnapper::handleNetworking() {
+  // check if WiFi network connection is alive
+  while(keepAliveWiFi() != WS_NET_CONNECTED) {
+    WS_DEBUG_PRINT("Network Status: ");
+    WS_DEBUG_PRINTLN(networkStatus());
+    delay(20000);
+    feedWDT();
+  };
+  // TODO: 
+  // Check if MQTT connection is alive
+}
 
-void Wippersnapper::keepAliveWiFi() {
+
+ws_status_t Wippersnapper::keepAliveWiFi() {
+  WS_DEBUG_PRINTLN("keepAliveWiFi()");
   if (networkStatus() == WS_NET_CONNECTED) {
-    return; // return immediately if WL_CONNECTED
+    return WS_NET_CONNECTED; // return immediately if WL_CONNECTED
   }
   // Otherwise, try to reconnect
+  // TODO: add color LEDS to match main loop
+  WS_DEBUG_PRINTLN("Attempting to reconnect...");
+  feedWDT();
   _connect();
+  return networkStatus();
 }
 
 /**************************************************************************/

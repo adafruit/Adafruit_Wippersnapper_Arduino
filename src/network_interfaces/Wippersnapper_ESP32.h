@@ -211,7 +211,7 @@ protected:
 
     // wait for connection to be established
     long startRetry = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 30000) {
+    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
         // do nothing, busy loop during the timeout
     }
     // timeout expired and connected
@@ -219,11 +219,6 @@ protected:
       _mqtt_client->setCACert(_aio_root_ca);
       return;
     }
-    // timeout expired and not connected
-    if (WiFi.status() != WL_CONNECTED) {
-      delay(30000); // delay 30 seconds
-    }
-
   }
 
   /**************************************************************************/
