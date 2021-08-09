@@ -686,8 +686,8 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
-  // Enable WDT
-  Watchdog.enable(WS_WDT_TIMEOUT);
+  // Enable WDT w/60 second timeout for all connection-related tasks (may take longer than expected)
+  Watchdog.enable(60000);
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
@@ -766,6 +766,11 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
+
+  // Disable connectivity watchdog timer
+  Watchdog.disable();
+  // Enable default WDT for application loop
+  Watchdog.enable(WS_WDT_TIMEOUT);
 
   // Attempt to process initial sync packets from broker
   WS._mqtt->processPackets(500);
