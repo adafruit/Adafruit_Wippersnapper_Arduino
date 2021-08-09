@@ -209,12 +209,21 @@ protected:
       _status = WS_NET_DISCONNECTED;
     }
 
-    // wait until connection is established
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(100);
+    // wait for connection to be established
+    long startRetry = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 30000) {
+        // do nothing, busy loop during the timeout
+    }
+    // timeout expired and connected
+    if (WiFi.status() == WL_CONNECTED) {
+      _mqtt_client->setCACert(_aio_root_ca);
+      return;
+    }
+    // timeout expired and not connected
+    if (WiFi.status() != WL_CONNECTED) {
+      delay(30000); // delay 30 seconds
     }
 
-    _mqtt_client->setCACert(_aio_root_ca);
   }
 
   /**************************************************************************/

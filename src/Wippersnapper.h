@@ -47,7 +47,7 @@
 #include "Adafruit_SleepyDog.h"
 
 // Uncomment for staging builds
-// define USE_STAGING
+#define USE_STAGING
 
 #ifdef USE_STAGING
 #define IO_MQTT_SERVER "io.adafruit.us"
@@ -192,6 +192,7 @@ public:
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
+  void keepAliveWiFi();
   ws_status_t status();
   ws_status_t mqttStatus();
   ws_board_status_t getBoardStatus();
