@@ -686,7 +686,8 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
-  // Enable WDT w/60 second timeout for all connection-related tasks (may take longer than expected)
+  // Enable WDT w/60 second timeout for all connection-related tasks (may take
+  // longer than expected)
   if (Watchdog.enable(60000) == 0) {
     WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
     setStatusLEDColor(LED_ERROR);
@@ -773,7 +774,6 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
-
 
   // Attempt to process initial sync packets from broker
   WS._mqtt->processPackets(500);
@@ -977,7 +977,7 @@ ws_status_t Wippersnapper::status() {
 void Wippersnapper::handleNetworking() {
   bool mqttDisconnected = false;
   // Handle WiFi connection, BLOCKING
-  while(keepAliveWiFi() != WS_NET_CONNECTED) {
+  while (keepAliveWiFi() != WS_NET_CONNECTED) {
     setStatusLEDColor(LED_ERROR);
     WS_DEBUG_PRINT("Network Status: ");
     WS_DEBUG_PRINTLN(networkStatus());
@@ -1001,6 +1001,8 @@ void Wippersnapper::handleNetworking() {
 ws_status_t Wippersnapper::keepAliveWiFi() {
   WS_DEBUG_PRINTLN("keepAliveWiFi()");
   if (networkStatus() == WS_NET_CONNECTED) {
+    if (usingStatusNeoPixel)
+      statusLEDDeinit();
     return WS_NET_CONNECTED; // return immediately if WL_CONNECTED
   }
   // Otherwise, try to reconnect
@@ -1036,7 +1038,8 @@ ws_status_t Wippersnapper::mqttStatus() {
     // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
     if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
       if (!statusLEDInit()) {
-        WS_DEBUG_PRINTLN("Can not blink, status-LED in use by WipperSnapper Application");
+        WS_DEBUG_PRINTLN(
+            "Can not blink, status-LED in use by WipperSnapper Application");
       } else {
         statusLEDBlink(WS_LED_STATUS_KAT);
         statusLEDDeinit();
@@ -1074,12 +1077,9 @@ ws_status_t Wippersnapper::mqttStatus() {
   return WS_DISCONNECTED;
 }
 
-
 /********************************************************/
 /*!
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
-void Wippersnapper::feedWDT() {
-    Watchdog.reset();
-}
+void Wippersnapper::feedWDT() { Watchdog.reset(); }

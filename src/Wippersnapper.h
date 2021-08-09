@@ -39,12 +39,12 @@
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
-#include "Arduino.h"       // Wiring
+#include "Adafruit_SleepyDog.h"
+#include "Arduino.h" // Wiring
 #include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
-#include "Adafruit_SleepyDog.h"
 
 // Uncomment for staging builds
 #define USE_STAGING
@@ -136,7 +136,6 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-
 #define WS_WDT_TIMEOUT 10000 ///< WDT timeout
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
@@ -211,7 +210,6 @@ public:
   // Networking
   void handleNetworking();
   void ping();
-
 
   // MQTT topic callbacks //
   // Decodes a signal message
