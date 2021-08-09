@@ -193,7 +193,6 @@ public:
 
   virtual ws_status_t networkStatus();
   ws_status_t keepAliveWiFi();
-  void handleNetworking();
   ws_status_t status();
   ws_status_t mqttStatus();
   ws_board_status_t getBoardStatus();
@@ -208,10 +207,11 @@ public:
 
   // run() loop //
   ws_status_t run();
-  ws_status_t checkNetworkConnection();
-  ws_status_t checkMQTTConnection(uint32_t timeStart);
-  void ping();
   void feedWDT();
+  // Networking
+  void handleNetworking();
+  void ping();
+
 
   // MQTT topic callbacks //
   // Decodes a signal message
