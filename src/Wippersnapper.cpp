@@ -688,7 +688,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
   // enable WDT
-  enableWDT(60000);
+  enableWDT(WS_WDT_TIMEOUT);
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;

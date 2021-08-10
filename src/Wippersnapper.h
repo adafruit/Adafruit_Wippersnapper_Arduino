@@ -139,7 +139,7 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-#define WS_WDT_TIMEOUT 10000 ///< WDT timeout
+#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
