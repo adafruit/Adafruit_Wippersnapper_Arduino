@@ -770,11 +770,6 @@ void Wippersnapper::connect() {
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
 
-  /*   // Disable connectivity watchdog timer
-    Watchdog.disable();
-    // Enable default WDT for application loop
-    Watchdog.enable(WS_WDT_TIMEOUT); */
-
   // Attempt to process initial sync packets from broker
   WS._mqtt->processPackets(500);
 }
@@ -974,7 +969,6 @@ ws_status_t Wippersnapper::run() {
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
 
-  WS_DEBUG_PRINTLN("resetting wdt");
   feedWDT();
 
   return status();
