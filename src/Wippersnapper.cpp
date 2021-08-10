@@ -687,8 +687,8 @@ void Wippersnapper::subscribeWSTopics() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
-  /*   statusLEDInit();
-    setStatusLEDColor(LED_HW_INIT); */
+  // enable WDT
+  enableWDT(WS_WDT_TIMEOUT);
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
@@ -698,6 +698,8 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_NET_CONNECT);
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
+
+  feedWDT(); // WiFi connection complete, feed WDT
 
   // setup MQTT client
   setStatusLEDColor(LED_IO_CONNECT);
@@ -745,6 +747,7 @@ void Wippersnapper::connect() {
     delay(500);
   }
   WS_DEBUG_PRINTLN("MQTT Connection Established!");
+  feedWDT(); // MQTT connection established, feed WDT
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering Board...")
@@ -760,6 +763,8 @@ void Wippersnapper::connect() {
       delay(1000);
     }
   }
+
+  feedWDT(); // Hardware registered with IO, feed WDT
 
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
@@ -964,6 +969,8 @@ ws_status_t Wippersnapper::run() {
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
 
+  feedWDT();
+
   return status();
 }
 
@@ -1077,4 +1084,35 @@ ws_status_t Wippersnapper::mqttStatus() {
     }
   }
   return WS_DISCONNECTED;
+}
+
+/********************************************************/
+/*!
+    @brief    Feeds the WDT to prevent hardware reset.
+*/
+/*******************************************************/
+void Wippersnapper::feedWDT() {
+#ifndef ESP8266
+  Watchdog.reset();
+#endif
+}
+
+/********************************************************/
+/*!
+    @brief  Enables the watchdog timer.
+    @param  timeoutMS
+            The desired amount of time to elapse before
+            the WDT executes.
+*/
+/*******************************************************/
+void Wippersnapper::enableWDT(int timeoutMS) {
+#ifndef ESP8266
+  if (Watchdog.enable(timeoutMS) == 0) {
+    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
+    setStatusLEDColor(LED_ERROR);
+    for (;;) {
+      delay(1000);
+    }
+  }
+#endif
 }
