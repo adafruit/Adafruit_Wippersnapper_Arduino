@@ -1097,6 +1097,14 @@ void Wippersnapper::feedWDT() {
 #endif
 }
 
+/********************************************************/
+/*!
+    @brief  Enables the watchdog timer.
+    @param  timeoutMS
+            The desired amount of time to elapse before
+            the WDT executes.
+*/
+/*******************************************************/
 void Wippersnapper::enableWDT(int timeoutMS) {
 #ifndef ESP8266
   if (Watchdog.enable(timeoutMS) == 0) {
