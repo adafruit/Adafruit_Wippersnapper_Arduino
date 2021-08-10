@@ -44,10 +44,13 @@
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
+
+#ifndef ESP8266
 #include "Adafruit_SleepyDog.h"
+#endif
 
 // Uncomment for staging builds
-// define USE_STAGING
+// #define USE_STAGING
 
 #ifdef USE_STAGING
 #define IO_MQTT_SERVER "io.adafruit.us"
@@ -136,7 +139,6 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-
 #define WS_WDT_TIMEOUT 10000 ///< WDT timeout
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
@@ -209,6 +211,7 @@ public:
   ws_status_t checkNetworkConnection();
   ws_status_t checkMQTTConnection(uint32_t timeStart);
   void ping();
+  void enableWDT(int timeoutMS = 0);
   void feedWDT();
 
   // MQTT topic callbacks //

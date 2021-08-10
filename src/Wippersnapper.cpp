@@ -686,14 +686,9 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
-  // Enable WDT w/60 second timeout for all connection-related tasks (may take longer than expected)
-  if (Watchdog.enable(60000) == 0) {
-    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(1000);
-    }
-  }
+
+  // enable WDT
+  enableWDT(60000);
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
@@ -703,6 +698,7 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_NET_CONNECT);
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
+
   feedWDT(); // WiFi connection complete, feed WDT
 
   // setup MQTT client
@@ -774,10 +770,10 @@ void Wippersnapper::connect() {
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
 
-/*   // Disable connectivity watchdog timer
-  Watchdog.disable();
-  // Enable default WDT for application loop
-  Watchdog.enable(WS_WDT_TIMEOUT); */
+  /*   // Disable connectivity watchdog timer
+    Watchdog.disable();
+    // Enable default WDT for application loop
+    Watchdog.enable(WS_WDT_TIMEOUT); */
 
   // Attempt to process initial sync packets from broker
   WS._mqtt->processPackets(500);
@@ -1096,12 +1092,25 @@ ws_status_t Wippersnapper::mqttStatus() {
   return WS_DISCONNECTED;
 }
 
-
 /********************************************************/
 /*!
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
 void Wippersnapper::feedWDT() {
-    Watchdog.reset();
+#ifndef ESP8266
+  Watchdog.reset();
+#endif
+}
+
+void Wippersnapper::enableWDT(int timeoutMS) {
+#ifndef ESP8266
+  if (Watchdog.enable(timeoutMS) == 0) {
+    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
+    setStatusLEDColor(LED_ERROR);
+    for (;;) {
+      delay(1000);
+    }
+  }
+#endif
 }
