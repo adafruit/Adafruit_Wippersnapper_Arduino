@@ -39,7 +39,6 @@
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
-#include "Adafruit_SleepyDog.h"
 #include "Arduino.h" // Wiring
 #include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
