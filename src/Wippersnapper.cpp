@@ -686,15 +686,9 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
-  // Enable WDT w/60 second timeout for all connection-related tasks (may take
-  // longer than expected)
-  if (Watchdog.enable(60000) == 0) {
-    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(1000);
-    }
-  }
+
+  // enable WDT
+  enableWDT(WS_WDT_TIMEOUT);
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
@@ -704,6 +698,7 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_NET_CONNECT);
   _connect();
   WS_DEBUG_PRINTLN("Connected!");
+
   feedWDT(); // WiFi connection complete, feed WDT
 
   // setup MQTT client
@@ -1082,4 +1077,28 @@ ws_status_t Wippersnapper::mqttStatus() {
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
-void Wippersnapper::feedWDT() { Watchdog.reset(); }
+void Wippersnapper::feedWDT() {
+#ifndef ESP8266
+  Watchdog.reset();
+#endif
+}
+
+/********************************************************/
+/*!
+    @brief  Enables the watchdog timer.
+    @param  timeoutMS
+            The desired amount of time to elapse before
+            the WDT executes.
+*/
+/*******************************************************/
+void Wippersnapper::enableWDT(int timeoutMS) {
+#ifndef ESP8266
+  if (Watchdog.enable(timeoutMS) == 0) {
+    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
+    setStatusLEDColor(LED_ERROR);
+    for (;;) {
+      delay(1000);
+    }
+  }
+#endif
+}
