@@ -212,12 +212,13 @@ public:
   ws_status_t run();
   ws_status_t checkNetworkConnection();
   ws_status_t checkMQTTConnection(uint32_t timeStart);
-  void ping();
-  void enableWDT(int timeoutMS = 0);
-  void feedWDT();
   // Networking
   void handleNetworking();
   void ping();
+
+  // WDT
+  void enableWDT(int timeoutMS = 0);
+  void feedWDT();
 
   // MQTT topic callbacks //
   // Decodes a signal message
