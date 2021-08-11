@@ -245,7 +245,7 @@ public:
   Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
-  char sUID[9];             /*!< Unique network iface identifier */
+  char sUID[10];            /*!< Unique network iface identifier */
   const char *_boardId;     /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */

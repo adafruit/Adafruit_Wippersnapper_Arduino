@@ -176,7 +176,7 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
 */
 /**********************************************************/
 void Wippersnapper_DigitalGPIO::processDigitalInputs() {
-  uint32_t curTime = millis();
+  long curTime = millis();
   // Process digital digital pins
   for (int i = 0; i < _totalDigitalInputPins; i++) {
     if (_digital_input_pins[i].period >

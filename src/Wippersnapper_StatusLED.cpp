@@ -164,6 +164,8 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
     blinkNum = 4;
     ledBlinkColor = YELLOW;
   default:
+    blinkNum = 0;
+    ledBlinkColor = BLACK;
     break;
   }
 

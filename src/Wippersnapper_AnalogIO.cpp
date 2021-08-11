@@ -266,7 +266,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
 */
 /**********************************************************/
 void Wippersnapper_AnalogIO::processAnalogInputs() {
-  _curTime = millis();
+  long _curTime = millis();
   // Process analog input pins
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].period >

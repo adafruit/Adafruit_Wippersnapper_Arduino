@@ -75,7 +75,6 @@ private:
 
   uint16_t _pinValue; /*!< Pin's raw value from analogRead */
   float _pinVoltage;  /*!< Pin's calculated voltage, in volts. */
-  uint32_t _curTime;  /*!< Loop timer, in ms. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Signal message to send to broker on pin event. */
