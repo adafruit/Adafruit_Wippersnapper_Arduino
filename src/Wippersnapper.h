@@ -194,6 +194,7 @@ public:
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
+  ws_status_t keepAliveWiFi();
   ws_status_t status();
   ws_status_t mqttStatus();
   ws_board_status_t getBoardStatus();
@@ -210,7 +211,11 @@ public:
   ws_status_t run();
   ws_status_t checkNetworkConnection();
   ws_status_t checkMQTTConnection(uint32_t timeStart);
+  // Networking
+  void handleNetworking();
   void ping();
+
+  // WDT
   void enableWDT(int timeoutMS = 0);
   void feedWDT();
 

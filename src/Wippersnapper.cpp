@@ -858,51 +858,6 @@ void Wippersnapper::set_ssid_pass() {
 
 /**************************************************************************/
 /*!
-    @brief    Checks and handles network interface connection.
-    @returns  Network status as ws_status_t.
-*/
-/**************************************************************************/
-ws_status_t Wippersnapper::checkNetworkConnection() {
-  if (status() < WS_NET_CONNECTED) {
-    WS_DEBUG_PRINTLN("WiFi connection failed out, reconnecting...");
-    unsigned long startRetry = millis();
-    connect();
-    while (status() < WS_CONNECTED) { // return an error on timeout
-      if (millis() - startRetry > 60000) {
-        return status();
-      }
-      delay(500);
-    }
-  }
-  return status();
-}
-
-/**************************************************************************/
-/*!
-    @brief    Handles MQTT connection.
-    @param    timeStart
-                The time which this function was called, in milliseconds.
-    @returns  Network status, as ws_status_t.
-*/
-/**************************************************************************/
-ws_status_t Wippersnapper::checkMQTTConnection(uint32_t timeStart) {
-  // Return quickly
-  if (mqttStatus() == WS_CONNECTED) {
-    return status();
-  }
-
-  // loop until we have a connection
-  // mqttStatus() will try to reconnect before returning
-  while (mqttStatus() != WS_CONNECTED && millis() - timeStart < 60000) {
-  }
-  if (mqttStatus() != WS_CONNECTED) {
-    WS_DEBUG_PRINTLN("ERROR: Disconnected from MQTT!");
-  }
-  return status();
-}
-
-/**************************************************************************/
-/*!
     @brief    Pings MQTT broker.
 */
 /**************************************************************************/
@@ -952,23 +907,25 @@ bool Wippersnapper::encodePinEvent(
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
+  // this should be a state machine, dept. on the network...
+
   // WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
-  // Handle network connection
-  checkNetworkConnection();
-  // Handle MQTT connection
-  checkMQTTConnection(curTime);
+  // Handle networking
+  handleNetworking();
+  feedWDT();
 
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
+  feedWDT();
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
+  feedWDT();
 
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
-
   feedWDT();
 
   return status();
@@ -1012,6 +969,45 @@ ws_status_t Wippersnapper::status() {
   return _status;
 }
 
+void Wippersnapper::handleNetworking() {
+  bool mqttDisconnected = false;
+  // Handle WiFi connection, BLOCKING
+  while (keepAliveWiFi() != WS_NET_CONNECTED) {
+    setStatusLEDColor(LED_ERROR);
+    WS_DEBUG_PRINT("Network Status: ");
+    WS_DEBUG_PRINTLN(networkStatus());
+    delay(20000);
+    feedWDT();
+  };
+  // Handle MQTT connection, BLOCKING
+  while (mqttStatus() != WS_CONNECTED) {
+    setStatusLEDColor(LED_ERROR);
+    WS_DEBUG_PRINT("MQTT Error: ");
+    WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
+    mqttDisconnected = true;
+    delay(20000);
+    feedWDT();
+  }
+  // Perform re-registration if we disconnect from MQTT broker as well
+  if (mqttDisconnected)
+    registerBoard(10);
+}
+
+ws_status_t Wippersnapper::keepAliveWiFi() {
+  WS_DEBUG_PRINTLN("keepAliveWiFi()");
+  if (networkStatus() == WS_NET_CONNECTED) {
+    if (usingStatusNeoPixel)
+      statusLEDDeinit();
+    return WS_NET_CONNECTED; // return immediately if WL_CONNECTED
+  }
+  // Otherwise, try to reconnect
+  WS_DEBUG_PRINTLN("Attempting to reconnect...");
+  feedWDT();
+  setStatusLEDColor(LED_NET_CONNECT);
+  _connect();
+  return networkStatus();
+}
+
 /**************************************************************************/
 /*!
     @brief    Returns the board definition status
@@ -1027,19 +1023,7 @@ ws_board_status_t Wippersnapper::getBoardStatus() { return WS._boardStatus; }
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::mqttStatus() {
-  // if the connection failed,
-  // return so we don't hammer IO
-  if (_status == WS_CONNECT_FAILED) {
-    WS_DEBUG_PRINT("mqttStatus() failed to connect");
-#ifdef USE_TINYUSB
-    WS._fileSystem->writeErrorToBootOut(
-        "ERROR: Failed to connect to WipperSnapper, retrying...");
-#endif
-    WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(_status));
-    setStatusLEDColor(LED_ERROR);
-    return _status;
-  }
-
+  // First, handle the case where we're connected
   if (WS._mqtt->connected()) {
     // ping within keepalive to keep connection open
     if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
@@ -1049,7 +1033,8 @@ ws_status_t Wippersnapper::mqttStatus() {
     // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
     if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
       if (!statusLEDInit()) {
-        WS_DEBUG_PRINTLN("Can not blink, status-LED in use");
+        WS_DEBUG_PRINTLN(
+            "Can not blink, status-LED in use by WipperSnapper Application");
       } else {
         statusLEDBlink(WS_LED_STATUS_KAT);
         statusLEDDeinit();
@@ -1059,10 +1044,11 @@ ws_status_t Wippersnapper::mqttStatus() {
     return WS_CONNECTED;
   }
 
-  // prevent fast reconnect attempts, except for the first time through
+  // Next, handle the case where we are not connected and attempt to reconnect
   if (_last_mqtt_connect == 0 ||
       millis() - _last_mqtt_connect > WS_KEEPALIVE_INTERVAL_MS) {
     _last_mqtt_connect = millis();
+    setStatusLEDColor(LED_IO_CONNECT);
     switch (WS._mqtt->connect(WS._username, WS._key)) {
     case 0:
       return WS_CONNECTED;

@@ -15,6 +15,8 @@ WipperSnapper currently supports the following hardware. Don't see your board? D
 
 ESP32-S2
 * Adafruit FunHouse
+* Adafruit MagTag 2.9"
+* Adafruit Metro ESP32-S2
 
 SAMD51
 * Adafruit Metro M4 AirLift Lite
