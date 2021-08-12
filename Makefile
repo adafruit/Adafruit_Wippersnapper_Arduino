@@ -14,6 +14,7 @@ BOARD_METRO_AIRLIFT := samd51-metro-airlift
 BOARD_FUNHOUSE 		:= esp32s2-funhouse
 BOARD_METRO_S2		:= esp32s2-metro
 BOARD_MAGTAG_S2		:= esp32s2-magtag
+BOARD_ESP32_HUZZAH	:= esp32-feather
 
 # NOTE: path to "ci-arduino/build_platform.py" must be set on system prior to running
 
@@ -30,6 +31,18 @@ UF2_FAMILY_ESP32S2 := 0xbfdd4eee
 
 all: esp32s2 samd51
 clean-all: clean-esp32s2 clean-samd51
+
+## ESP32 ##
+
+esp32: esp32-huzzah
+clean-esp32: clean-esp32-huzzah
+
+esp32-huzzah:
+			mkdir -p build/$(BOARD_ESP32_HUZZAH)/
+			arduino-cli compile --fqbn esp32:esp32:featheresp32 -e examples/Wippersnapper_demo/Wippersnapper_demo.ino --build-path $(PWD)/build/$(BOARD_ESP32_HUZZAH) -v
+
+clean-esp32-huzzah:
+			rm -r build/$(BOARD_ESP32_HUZZAH)/
 
 ## ESP32-S2 ##
 esp32s2: esp32s2-funhouse esp32s2-metro esp32s2-magtag
