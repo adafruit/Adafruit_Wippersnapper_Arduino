@@ -139,6 +139,17 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
+// Networking FSM
+typedef enum {
+    FSM_NET_IDLE,
+    FSM_NET_CONNECTED,
+    FSM_MQTT_CONNECTED,
+    FSM_NET_CHECK_MQTT,
+    FSM_NET_CHECK_NETWORK,
+    FSM_NET_ESTABLISH_NETWORK,
+    FSM_NET_ESTABLISH_MQTT,
+} fsm_net_t;
+
 #define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds

@@ -688,91 +688,72 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("connect()");
 
   // enable WDT
-  enableWDT(WS_WDT_TIMEOUT);
+  //enableWDT(WS_WDT_TIMEOUT);
 
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
-  // Connect network interface
-  WS_DEBUG_PRINTLN("Connecting to WiFi...");
-  setStatusLEDColor(LED_NET_CONNECT);
-  _connect();
-  WS_DEBUG_PRINTLN("Connected!");
+  //feedWDT(); // WiFi connection complete, feed WDT
 
-  feedWDT(); // WiFi connection complete, feed WDT
-
-  // setup MQTT client
-  setStatusLEDColor(LED_IO_CONNECT);
-  // attempt to build Wippersnapper MQTT topics
-  if (!buildWSTopics()) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Unable to allocate memory for Wippersnapper topics.")
-#ifdef USE_TINYUSB
-    WS._fileSystem->writeErrorToBootOut(
-        "ERROR: Unable to allocate memory for Wippersnapper topics.");
-#endif
-    _disconnect();
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(1000);
-    }
-  }
 
   // Subscribe to wippersnapper topics
+  buildWSTopics();
   subscribeWSTopics();
 
   // Attempt to build error MQTT topics
-  if (!buildErrorTopics()) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for error topics.")
-#ifdef USE_TINYUSB
-    WS._fileSystem->writeErrorToBootOut(
-        "ERROR: Unable to allocate memory for error topics.");
-#endif
-    _disconnect();
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(1000);
-    }
-  }
+  buildErrorTopics();
   // Subscribe to error topics
   subscribeErrorTopics();
 
-  // MQTT setup
-  WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
-
-  // Wait for connection to broker
-  WS_DEBUG_PRINT("Connecting to Wippersnapper MQTT...");
-  while (status() < WS_CONNECTED) {
-    WS_DEBUG_PRINT(".");
-    delay(500);
-  }
-  WS_DEBUG_PRINTLN("MQTT Connection Established!");
-  feedWDT(); // MQTT connection established, feed WDT
-
-  // Register hardware with Wippersnapper
-  WS_DEBUG_PRINTLN("Registering Board...")
-  setStatusLEDColor(LED_IO_REGISTER_HW);
-  if (!registerBoard(10)) {
-    WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
-#ifdef USE_TINYUSB
-    WS._fileSystem->writeErrorToBootOut(
-        "Unable to register board with Wippersnapper.");
-#endif
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(1000);
+  WS_DEBUG_PRINTLN("NET START!!!");
+  // set fsm_net_t
+  fsm_net_t fsmNetwork;
+  fsmNetwork = FSM_NET_IDLE;
+  while (fsmNetwork  != FSM_NET_CONNECTED) {
+    switch (fsmNetwork){
+      case FSM_NET_IDLE:
+        WS_DEBUG_PRINTLN("FSM_NET_IDLE");
+        // transition
+        fsmNetwork = FSM_NET_CHECK_MQTT;
+        break;
+      case FSM_NET_CHECK_MQTT:
+        WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
+        // TODO: call funcn handler
+        if (!WS._mqtt->connected()) {
+          // transition
+          fsmNetwork = FSM_NET_CHECK_NETWORK;
+        }
+        // transition
+        fsmNetwork = FSM_NET_CONNECTED;
+        break;
+      case FSM_NET_CHECK_NETWORK:
+        WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
+        // check network
+        if (networkStatus() == WS_NET_CONNECTED) {
+          // transition
+          fsmNetwork = FSM_NET_ESTABLISH_MQTT;
+        }
+        fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
+        break;
+      case FSM_NET_ESTABLISH_NETWORK:
+        WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+        _connect();
+        // transition
+        fsmNetwork = FSM_NET_CHECK_NETWORK;
+        break;
+      case FSM_NET_ESTABLISH_MQTT:
+        WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+        WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+        //WS._mqtt->connect(WS._username, WS._key);
+        // transition
+        fsmNetwork = FSM_NET_CHECK_MQTT;
+        break;
     }
   }
-
-  feedWDT(); // Hardware registered with IO, feed WDT
-
-  WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
-  statusLEDBlink(WS_LED_STATUS_CONNECTED);
-  statusLEDDeinit();
-
-  // Attempt to process initial sync packets from broker
+  WS_DEBUG_PRINTLN("CONNECTED!!!");
   WS._mqtt->processPackets(500);
 }
+
 
 /**************************************************************************/
 /*!
@@ -909,7 +890,7 @@ bool Wippersnapper::encodePinEvent(
 ws_status_t Wippersnapper::run() {
   // this should be a state machine, dept. on the network...
 
-  // WS_DEBUG_PRINTLN("exec::run()");
+  WS_DEBUG_PRINTLN("exec::run()");
   uint32_t curTime = millis();
 
   // Handle networking
