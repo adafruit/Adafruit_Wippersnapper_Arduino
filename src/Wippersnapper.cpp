@@ -679,7 +679,7 @@ void Wippersnapper::subscribeWSTopics() {
   _topic_description_sub->setCallback(cbRegistrationStatus);
 }
 
-fsm_net_t Wippersnapper::runNetFSM {
+fsm_net_t Wippersnapper::runNetFSM() {
   // MQTT connack RC
   int mqttRC = 8;
   // Initial state
@@ -722,6 +722,7 @@ fsm_net_t Wippersnapper::runNetFSM {
         break;
     }
   }
+  statusLEDDeinit();
   return fsmNetwork;
 }
 
@@ -751,10 +752,28 @@ void Wippersnapper::connect() {
       // TODO: Error LED Blink
       // let the WDT fail out and reset itself
   }
+  feedWDT();
 
-  // TODO: Hardware model FSM here
+  // Register hardware with Wippersnapper
+  WS_DEBUG_PRINTLN("Registering Board...")
+  setStatusLEDColor(LED_IO_REGISTER_HW);
+  if (!registerBoard(10)) {
+    WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
+#ifdef USE_TINYUSB
+    WS._fileSystem->writeErrorToBootOut(
+        "Unable to register board with Wippersnapper.");
+#endif
+    setStatusLEDColor(LED_ERROR);
+    for (;;) {
+      delay(1000);
+    }
+  }
+  feedWDT(); // Hardware registered with IO, feed WDT
 
-  WS_DEBUG_PRINTLN("CONNECTED!!!");
+  WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+  statusLEDBlink(WS_LED_STATUS_CONNECTED);
+  statusLEDDeinit();
+
   WS._mqtt->processPackets(500);
 }
 
