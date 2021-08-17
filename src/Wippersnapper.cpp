@@ -681,7 +681,7 @@ void Wippersnapper::subscribeWSTopics() {
 
 fsm_net_t Wippersnapper::runNetFSM() {
   // MQTT connack RC
-  int mqttRC = 8;
+  int mqttRC;
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -689,7 +689,8 @@ fsm_net_t Wippersnapper::runNetFSM() {
     switch (fsmNetwork){
       case FSM_NET_CHECK_MQTT:
         // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
-        if (mqttRC == WS_MQTT_CONNECTED) {
+        if (WS._mqtt->connected()) {
+            // WS_DEBUG_PRINTLN("Connected to IO!");
             fsmNetwork = FSM_NET_CONNECTED;
             break;
         }
@@ -714,8 +715,11 @@ fsm_net_t Wippersnapper::runNetFSM() {
         //WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
         WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
         mqttRC = WS._mqtt->connect(WS._username, WS._key);
-        // transition
-        fsmNetwork = FSM_NET_CHECK_MQTT;
+        if (mqttRC == WS_MQTT_CONNECTED) {
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          break;
+        }
+        fsmNetwork = FSM_NET_CHECK_NETWORK;
         break;
       default:
         // don't feed wdt
@@ -911,14 +915,33 @@ bool Wippersnapper::encodePinEvent(
 */
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
-  // this should be a state machine, dept. on the network...
-
-  WS_DEBUG_PRINTLN("exec::run()");
-  uint32_t curTime = millis();
-
-  // Handle networking
-  handleNetworking();
+  // Check networking
   feedWDT();
+  if (runNetFSM() != FSM_NET_CONNECTED) {
+      WS_DEBUG_PRINTLN("Network establishment failed...");
+      setStatusLEDColor(LED_ERROR);
+      // let the WDT fail out and reset itself
+  }
+  feedWDT();
+
+  // Ping
+  // ping within keepalive to keep connection open
+  if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
+      WS_DEBUG_PRINTLN("PING!");
+      ping();
+      _prv_ping = millis();
+  }
+  // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
+  if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
+      if (!statusLEDInit()) {
+      WS_DEBUG_PRINTLN(
+          "Can not blink, status-LED in use by WipperSnapper Application");
+      } else {
+      statusLEDBlink(WS_LED_STATUS_KAT);
+      statusLEDDeinit();
+      }
+      _prvKATBlink = millis();
+  }
 
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
