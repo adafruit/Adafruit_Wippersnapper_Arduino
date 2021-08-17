@@ -196,6 +196,7 @@ public:
   virtual void set_ssid_pass();
 
   void connect();
+  fsm_net_t runNetFSM();
   virtual void _connect();
 
   void disconnect();

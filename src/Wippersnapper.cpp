@@ -679,78 +679,81 @@ void Wippersnapper::subscribeWSTopics() {
   _topic_description_sub->setCallback(cbRegistrationStatus);
 }
 
-/**************************************************************************/
-/*!
-    @brief    Connects to Adafruit IO+ Wippersnapper broker.
-*/
-/**************************************************************************/
-void Wippersnapper::connect() {
-  WS_DEBUG_PRINTLN("connect()");
-
-  // enable WDT
-  //enableWDT(WS_WDT_TIMEOUT);
-
-  _status = WS_IDLE;
-  WS._boardStatus = WS_BOARD_DEF_IDLE;
-
-  //feedWDT(); // WiFi connection complete, feed WDT
-
-
-  // Subscribe to wippersnapper topics
-  buildWSTopics();
-  subscribeWSTopics();
-
-  // Attempt to build error MQTT topics
-  buildErrorTopics();
-  // Subscribe to error topics
-  subscribeErrorTopics();
-
-
-
-  WS_DEBUG_PRINTLN("NET START!!!");
+fsm_net_t Wippersnapper::runNetFSM {
+  // MQTT connack RC
+  int mqttRC = 8;
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
-  // FSM
-  int mqttRC = 8;
   while (fsmNetwork  != FSM_NET_CONNECTED) {
     switch (fsmNetwork){
       case FSM_NET_CHECK_MQTT:
-        WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
+        // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
         if (mqttRC == WS_MQTT_CONNECTED) {
-            // transition
             fsmNetwork = FSM_NET_CONNECTED;
             break;
         }
         fsmNetwork = FSM_NET_CHECK_NETWORK;
         break;
       case FSM_NET_CHECK_NETWORK:
-        WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
-        // check network
-        WS_DEBUG_PRINT("Net Status: "); WS_DEBUG_PRINTLN(networkStatus());
+        // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
         if (networkStatus() == WS_NET_CONNECTED) {
-          // transition
-          WS_DEBUG_PRINTLN("Connected to WiFi");
+          //WS_DEBUG_PRINTLN("Connected to WiFi");
           fsmNetwork = FSM_NET_ESTABLISH_MQTT;
           break;
         }
         fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
         break;
       case FSM_NET_ESTABLISH_NETWORK:
-        WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+        //WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
         _connect();
         // transition
         fsmNetwork = FSM_NET_CHECK_NETWORK;
         break;
       case FSM_NET_ESTABLISH_MQTT:
-        WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+        //WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
         WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
         mqttRC = WS._mqtt->connect(WS._username, WS._key);
         // transition
         fsmNetwork = FSM_NET_CHECK_MQTT;
         break;
+      default:
+        // don't feed wdt
+        break;
     }
   }
+  return fsmNetwork;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Connects to Adafruit IO+ Wippersnapper broker.
+*/
+/**************************************************************************/
+void Wippersnapper::connect() {
+  // enable WDT
+  enableWDT(WS_WDT_TIMEOUT);
+
+  // not sure we need to track these...
+  _status = WS_IDLE;
+  WS._boardStatus = WS_BOARD_DEF_IDLE;
+
+  // build MQTT topics for WipperSnapper app, and subscribe
+  // TODO: Validate if we can alloc. for these.
+  buildWSTopics();
+  subscribeWSTopics();
+  buildErrorTopics();
+  subscribeErrorTopics();
+
+  feedWDT();
+  if (runNetFSM() != FSM_NET_CONNECTED) {
+      WS_DEBUG_PRINTLN("Network establishment failed...");
+      // TODO: Error LED Blink
+      // let the WDT fail out and reset itself
+  }
+
+  // TODO: Hardware model FSM here
+
   WS_DEBUG_PRINTLN("CONNECTED!!!");
   WS._mqtt->processPackets(500);
 }
