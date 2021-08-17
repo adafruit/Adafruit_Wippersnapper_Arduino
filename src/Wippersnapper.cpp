@@ -705,33 +705,34 @@ void Wippersnapper::connect() {
   // Subscribe to error topics
   subscribeErrorTopics();
 
+
+
   WS_DEBUG_PRINTLN("NET START!!!");
-  // set fsm_net_t
+  // Initial state
   fsm_net_t fsmNetwork;
-  fsmNetwork = FSM_NET_IDLE;
+  fsmNetwork = FSM_NET_CHECK_MQTT;
+  // FSM
+  int mqttRC = 8;
   while (fsmNetwork  != FSM_NET_CONNECTED) {
     switch (fsmNetwork){
-      case FSM_NET_IDLE:
-        WS_DEBUG_PRINTLN("FSM_NET_IDLE");
-        // transition
-        fsmNetwork = FSM_NET_CHECK_MQTT;
-        break;
       case FSM_NET_CHECK_MQTT:
         WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
-        // TODO: call funcn handler
-        if (!WS._mqtt->connected()) {
-          // transition
-          fsmNetwork = FSM_NET_CHECK_NETWORK;
+        if (mqttRC == WS_MQTT_CONNECTED) {
+            // transition
+            fsmNetwork = FSM_NET_CONNECTED;
+            break;
         }
-        // transition
-        fsmNetwork = FSM_NET_CONNECTED;
+        fsmNetwork = FSM_NET_CHECK_NETWORK;
         break;
       case FSM_NET_CHECK_NETWORK:
         WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
         // check network
+        WS_DEBUG_PRINT("Net Status: "); WS_DEBUG_PRINTLN(networkStatus());
         if (networkStatus() == WS_NET_CONNECTED) {
           // transition
+          WS_DEBUG_PRINTLN("Connected to WiFi");
           fsmNetwork = FSM_NET_ESTABLISH_MQTT;
+          break;
         }
         fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
         break;
@@ -744,7 +745,7 @@ void Wippersnapper::connect() {
       case FSM_NET_ESTABLISH_MQTT:
         WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
         WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
-        //WS._mqtt->connect(WS._username, WS._key);
+        mqttRC = WS._mqtt->connect(WS._username, WS._key);
         // transition
         fsmNetwork = FSM_NET_CHECK_MQTT;
         break;

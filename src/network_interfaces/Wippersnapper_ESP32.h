@@ -212,6 +212,7 @@ protected:
       delay(100);
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
+      delay(100);
     }
 
     // wait for a connection to be established
