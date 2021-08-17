@@ -141,13 +141,13 @@ typedef enum {
 
 // Networking FSM
 typedef enum {
-    FSM_NET_IDLE,
-    FSM_NET_CONNECTED,
-    FSM_MQTT_CONNECTED,
-    FSM_NET_CHECK_MQTT,
-    FSM_NET_CHECK_NETWORK,
-    FSM_NET_ESTABLISH_NETWORK,
-    FSM_NET_ESTABLISH_MQTT,
+  FSM_NET_IDLE,
+  FSM_NET_CONNECTED,
+  FSM_MQTT_CONNECTED,
+  FSM_NET_CHECK_MQTT,
+  FSM_NET_CHECK_NETWORK,
+  FSM_NET_ESTABLISH_NETWORK,
+  FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
 #define WS_WDT_TIMEOUT 60000 ///< WDT timeout
@@ -191,24 +191,19 @@ public:
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
-
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
 
-  void connect();
-  fsm_net_t runNetFSM();
   virtual void _connect();
-
-  void disconnect();
   virtual void _disconnect();
+  void connect();
+  void disconnect();
 
   virtual void setUID();
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
-  ws_status_t keepAliveWiFi();
   ws_status_t status();
-  ws_status_t mqttStatus();
   ws_board_status_t getBoardStatus();
 
   bool buildWSTopics();
@@ -219,13 +214,11 @@ public:
   // Performs board registration FSM
   bool registerBoard(uint8_t retries);
 
-  // run() loop //
+  // run() loop
   ws_status_t run();
-  ws_status_t checkNetworkConnection();
-  ws_status_t checkMQTTConnection(uint32_t timeStart);
   // Networking
-  void handleNetworking();
-  void ping();
+  void pingBroker();
+  fsm_net_t runNetFSM();
 
   // WDT
   void enableWDT(int timeoutMS = 0);
