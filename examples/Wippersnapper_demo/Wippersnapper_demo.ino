@@ -31,9 +31,7 @@ void setup() {
   // Set WiFi credentials
   wipper.set_ssid_pass();
 
-  Serial.println("Connecting to WipperSnapper");
   wipper.connect();
-  Serial.print("Connected to WipperSnapper!");
 
 }
 

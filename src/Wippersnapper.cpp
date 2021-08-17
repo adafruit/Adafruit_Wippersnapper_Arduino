@@ -685,49 +685,59 @@ fsm_net_t Wippersnapper::runNetFSM() {
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
-  while (fsmNetwork  != FSM_NET_CONNECTED) {
-    switch (fsmNetwork){
-      case FSM_NET_CHECK_MQTT:
-        // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
-        if (WS._mqtt->connected()) {
-            // WS_DEBUG_PRINTLN("Connected to IO!");
-            fsmNetwork = FSM_NET_CONNECTED;
-            break;
-        }
-        fsmNetwork = FSM_NET_CHECK_NETWORK;
+  while (fsmNetwork != FSM_NET_CONNECTED) {
+    switch (fsmNetwork) {
+    case FSM_NET_CHECK_MQTT:
+      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
+      if (WS._mqtt->connected()) {
+        // WS_DEBUG_PRINTLN("Connected to IO!");
+        fsmNetwork = FSM_NET_CONNECTED;
         break;
-      case FSM_NET_CHECK_NETWORK:
-        // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
-        if (networkStatus() == WS_NET_CONNECTED) {
-          //WS_DEBUG_PRINTLN("Connected to WiFi");
-          fsmNetwork = FSM_NET_ESTABLISH_MQTT;
-          break;
-        }
-        fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
+      }
+      fsmNetwork = FSM_NET_CHECK_NETWORK;
+      break;
+    case FSM_NET_CHECK_NETWORK:
+      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
+      if (networkStatus() == WS_NET_CONNECTED) {
+        // WS_DEBUG_PRINTLN("Connected to WiFi");
+        fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
-      case FSM_NET_ESTABLISH_NETWORK:
-        //WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
-        _connect();
-        // transition
-        fsmNetwork = FSM_NET_CHECK_NETWORK;
+      }
+      fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
+      break;
+    case FSM_NET_ESTABLISH_NETWORK:
+      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      _connect();
+      // transition
+      fsmNetwork = FSM_NET_CHECK_NETWORK;
+      break;
+    case FSM_NET_ESTABLISH_MQTT:
+      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+      mqttRC = WS._mqtt->connect(WS._username, WS._key);
+      if (mqttRC == WS_MQTT_CONNECTED) {
+        fsmNetwork = FSM_NET_CHECK_MQTT;
         break;
-      case FSM_NET_ESTABLISH_MQTT:
-        //WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
-        WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
-        mqttRC = WS._mqtt->connect(WS._username, WS._key);
-        if (mqttRC == WS_MQTT_CONNECTED) {
-          fsmNetwork = FSM_NET_CHECK_MQTT;
-          break;
-        }
-        fsmNetwork = FSM_NET_CHECK_NETWORK;
-        break;
-      default:
-        // don't feed wdt
-        break;
+      }
+      fsmNetwork = FSM_NET_CHECK_NETWORK;
+      break;
+    default:
+      // don't feed wdt
+      break;
     }
   }
   statusLEDDeinit();
   return fsmNetwork;
+}
+
+void Wippersnapper::haltError(String error) {
+  WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
+  WS_DEBUG_PRINTLN(error);
+  setStatusLEDColor(LED_ERROR);
+  for (;;) {
+    // let the WDT fail out and reset!
+    delay(100);
+  }
 }
 
 /**************************************************************************/
@@ -744,17 +754,19 @@ void Wippersnapper::connect() {
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   // build MQTT topics for WipperSnapper app, and subscribe
-  // TODO: Validate if we can alloc. for these.
-  buildWSTopics();
+  if (!buildWSTopics()) {
+    haltError("Unable to allocate space for MQTT topics");
+  }
   subscribeWSTopics();
-  buildErrorTopics();
+  if (!buildErrorTopics()) {
+    haltError("Unable to allocate space for MQTT error topics");
+  }
   subscribeErrorTopics();
 
+  // Run the network fsm
   feedWDT();
   if (runNetFSM() != FSM_NET_CONNECTED) {
-      WS_DEBUG_PRINTLN("Network establishment failed...");
-      // TODO: Error LED Blink
-      // let the WDT fail out and reset itself
+    haltError("Initial network connection failure");
   }
   feedWDT();
 
@@ -762,15 +774,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registering Board...")
   setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard(10)) {
-    WS_DEBUG_PRINTLN("Unable to register board with Wippersnapper.");
-#ifdef USE_TINYUSB
-    WS._fileSystem->writeErrorToBootOut(
-        "Unable to register board with Wippersnapper.");
-#endif
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(1000);
-    }
+    haltError("Unable to register board with Wippersnapper.");
   }
   feedWDT(); // Hardware registered with IO, feed WDT
 
@@ -780,7 +784,6 @@ void Wippersnapper::connect() {
 
   WS._mqtt->processPackets(500);
 }
-
 
 /**************************************************************************/
 /*!
@@ -909,13 +912,12 @@ bool Wippersnapper::encodePinEvent(
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
   // Check networking
-  // TODO: Handle MQTT errors within the new netcode, or spin them outwards to
+  // TODO: Handle MQTT errors within the new netcode, or bring them outwards to
   // another fsm
   feedWDT();
   if (runNetFSM() != FSM_NET_CONNECTED) {
-      WS_DEBUG_PRINTLN("WDT RESET: network re-connection failure");
-      setStatusLEDColor(LED_ERROR);
-      // let the WDT fail out and reset itself
+    // let the WDT fail out and reset itself
+    haltError("Network re-connection failure");
   }
   feedWDT();
 
@@ -938,22 +940,22 @@ ws_status_t Wippersnapper::run() {
 }
 
 void Wippersnapper::pingBroker() {
-    // ping within keepalive to keep connection open
+  // ping within keepalive to keep connection open
   if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
-      WS_DEBUG_PRINTLN("PING!");
-      WS._mqtt->ping();
-      _prv_ping = millis();
+    WS_DEBUG_PRINTLN("PING!");
+    WS._mqtt->ping();
+    _prv_ping = millis();
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
-      if (!statusLEDInit()) {
+    if (!statusLEDInit()) {
       WS_DEBUG_PRINTLN(
           "Can not blink, status-LED in use by WipperSnapper Application");
-      } else {
+    } else {
       statusLEDBlink(WS_LED_STATUS_KAT);
       statusLEDDeinit();
-      }
-      _prvKATBlink = millis();
+    }
+    _prvKATBlink = millis();
   }
 }
 
@@ -1008,7 +1010,7 @@ void Wippersnapper::enableWDT(int timeoutMS) {
     WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
     setStatusLEDColor(LED_ERROR);
     for (;;) {
-      delay(1000);
+      delay(100);
     }
   }
 #endif

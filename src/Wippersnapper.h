@@ -224,6 +224,9 @@ public:
   void enableWDT(int timeoutMS = 0);
   void feedWDT();
 
+  // Errors
+  void haltError(String error);
+
   // MQTT topic callbacks //
   // Decodes a signal message
   bool decodeSignalMsg(
