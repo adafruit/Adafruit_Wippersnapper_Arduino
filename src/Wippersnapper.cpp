@@ -116,10 +116,12 @@ void Wippersnapper::set_user_key(const char *aio_username,
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
-// NOTE: for NVS, credentials should already be set within setNVSConfig
 #ifdef USE_TINYUSB
   WS._username = _fileSystem->io_username;
   WS._key = _fileSystem->io_key;
+#elif USE_NVS
+  // setNVSConfig already performs this, just return
+  return;
 #endif
 }
 

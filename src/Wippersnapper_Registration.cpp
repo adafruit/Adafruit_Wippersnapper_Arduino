@@ -122,8 +122,8 @@ void Wippersnapper_Registration::encodeRegMsg() {
 
   // verify message
   if (!_status) {
-    WS_DEBUG_PRINTLN("ERROR: encoding description message failed!");
-    // printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+    // We can't go further here, reset the hardware and try again
+    WS.haltError("ERROR [CRITICAL]: encoding description message failed!");
   }
   WS_DEBUG_PRINTLN("Encoded!");
 }
@@ -135,6 +135,12 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
+  // Run the network fsm
+  if (runNetFSM() != FSM_NET_CONNECTED) {
+    haltError("Initial network connection failure");
+  }
+  // Feed prior to publish()
+  feedWDT();
   WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
   WS_DEBUG_PRINTLN("Published!")
   WS._boardStatus = WS_BOARD_DEF_SENT;
