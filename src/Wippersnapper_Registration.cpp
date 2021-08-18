@@ -72,6 +72,8 @@ bool Wippersnapper_Registration::processRegistration() {
       break;
     case FSMReg::REG_DECODE_MSG:
       if (!pollRegMsg()) {
+        // delay 10 seconds between polling cycles
+        delay(10*1000);
         // back to publishing state
         _state = FSMReg::REG_PUBLISH_MSG;
         break;
@@ -156,18 +158,15 @@ void Wippersnapper_Registration::publishRegMsg() {
 /************************************************************/
 bool Wippersnapper_Registration::pollRegMsg() {
   bool is_success = false;
-  // Attempt to obtain response from broker
-  uint8_t retryCount = 0;
+  // Check network
+  feedWDT();
+  runNetFSM();
 
-  // pump msg loop to obtain global boardstatus (from cb)
-  while (retryCount <= 3) {
-    WS._mqtt->processPackets(10);
-    if (WS._boardStatus == WS_BOARD_DEF_OK) {
-      is_success = true;
-      break;
-    }
-    retryCount++;
-  }
+  // poll for response from broker
+  feedWDT(); // let us drop out if we can't process
+  WS._mqtt->processPackets(10);
+  if (WS._boardStatus == WS_BOARD_DEF_OK)
+    is_success = true;
 
   return is_success;
 }
