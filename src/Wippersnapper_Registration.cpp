@@ -138,11 +138,11 @@ void Wippersnapper_Registration::encodeRegMsg() {
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
   // Run the network fsm
-  if (runNetFSM() != FSM_NET_CONNECTED) {
-    haltError("Initial network connection failure");
+  if (WS.runNetFSM() != FSM_NET_CONNECTED) {
+    WS.haltError("Initial network connection failure");
   }
   // Feed prior to publish()
-  feedWDT();
+  WS.feedWDT();
   WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
   WS_DEBUG_PRINTLN("Published!")
   WS._boardStatus = WS_BOARD_DEF_SENT;
@@ -159,11 +159,11 @@ void Wippersnapper_Registration::publishRegMsg() {
 bool Wippersnapper_Registration::pollRegMsg() {
   bool is_success = false;
   // Check network
-  feedWDT();
-  runNetFSM();
+  WS.feedWDT();
+  WS.runNetFSM();
 
   // poll for response from broker
-  feedWDT(); // let us drop out if we can't process
+  WS.feedWDT(); // let us drop out if we can't process
   WS._mqtt->processPackets(10);
   if (WS._boardStatus == WS_BOARD_DEF_OK)
     is_success = true;
