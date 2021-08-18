@@ -201,31 +201,31 @@ bool Wippersnapper_FS::createBootFile() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
-  // open for writing, should create a new file if one doesnt exist
+  // open for writing, create a new file if one doesnt exist
   File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
-  if (secretsFile) {
-    // Detect which configuration file template via board type //
-    // Hardware with built-in AirLift
-    if (USB_VID == 0x239A && (USB_PID == 0x8036 || USB_PID == 0x8038)) {
-      // Write airlift secrets.json to fs
-      secretsFile.println(FILE_TEMPLATE_AIRLIFT);
-      secretsFile.flush();
-      secretsFile.close();
-    } else if (USB_VID == 0x239A && (USB_PID == 0x80F9 || USB_PID == 0x80DF)) {
-      // Write esp32-s2 secrets.json to fs
-      secretsFile.println(FILE_TEMPLATE_WIFI_ESP32S2);
-      secretsFile.flush();
-      secretsFile.close();
-    }
-  } else {
-    secretsFile.close();
+  if (!secretsFile) {
     writeErrorToBootOut(
         "ERROR: Could not create secrets.json on QSPI flash filesystem.");
     while (1)
       yield();
   }
-
-  // Log to wipper_boot_out.txt
+  // write out secrets file to USB-MSD
+  // NOTE: This was chunked into sep. lines, had issue with writing the entire file at once
+  secretsFile.print("{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_key\":\"YOUR_IO_KEY_");
+  secretsFile.flush();
+  // platform-dependent changes
+  #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) || defined(ARDUINO_FUNHOUSE_ESP32S2)
+    secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_ssid\":\"YOUR_WIFI_SSID_");
+  #elif defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
+    secretsFile.print("HERE\",\n\t\"network_type_wifi_airlift\":{\n\t\t\"network_ssid\":\"YOUR_WIFI_SSID_");
+  #else
+  secretsFile.println("!!! ERROR: undefined board !!!");
+  #endif
+  secretsFile.flush();
+  secretsFile.print("HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
+  secretsFile.flush();
+  secretsFile.close();
+  // Log success to wipper_boot_out.txt
   writeErrorToBootOut(
       "* Successfully added secrets.json and wipper_boot_out.txt "
       "to drive!");
