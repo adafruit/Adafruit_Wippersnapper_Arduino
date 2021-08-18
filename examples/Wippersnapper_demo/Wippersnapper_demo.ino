@@ -26,11 +26,6 @@ void setup() {
   Serial.begin(115200);
   //while (!Serial) delay(10);
 
-  // Set Adafruit IO credentials
-  wipper.set_user_key();
-  // Set WiFi credentials
-  wipper.set_ssid_pass();
-
   wipper.connect();
 
 }
