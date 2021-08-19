@@ -308,16 +308,8 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
         pb_get_encoded_size(&msgSz,
                             wippersnapper_signal_v1_CreateSignalRequest_fields,
                             &_outgoingSignalMsg);
-        // Check network
-        if (WS.runNetFSM() != FSM_NET_CONNECTED) {
-            WS.haltError("Initial network connection failure");
-        }
-        // Feed prior to publish() in case of hang
-        WS.feedWDT();
-        // publish event data
-        WS_DEBUG_PRINT("Publishing...")
-        WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz,
-                          1);
+        WS_DEBUG_PRINT("Publishing pinEvent...");
+        WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
         WS_DEBUG_PRINTLN("Published!");
 
         // reset the digital pin
@@ -365,17 +357,9 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
           pb_get_encoded_size(
               &msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields,
               &_outgoingSignalMsg);
-
-          // Check network
-          if (WS.runNetFSM() != FSM_NET_CONNECTED) {
-              WS.haltError("Initial network connection failure");
-          }
-          // Feed prior to publish() in case of hang
-          WS.feedWDT();
-          // publish event data
-          WS_DEBUG_PRINT("Publishing...")
-          WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz,
-                            1);
+          // Publish
+          WS_DEBUG_PRINT("Publishing pinEvent...");
+          WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
           WS_DEBUG_PRINTLN("Published!");
 
           // set the pin value in the digital pin object for comparison on next
