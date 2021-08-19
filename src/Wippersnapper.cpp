@@ -831,12 +831,14 @@ fsm_net_t Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_NETWORK:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      setStatusLEDColor(LED_NET_CONNECT);
       _connect();
       // transition
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+      setStatusLEDColor(LED_IO_CONNECT);
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       mqttRC = WS._mqtt->connect(WS._username, WS._key);
       if (mqttRC == WS_MQTT_CONNECTED) {
@@ -995,6 +997,7 @@ void Wippersnapper::connect() {
     haltError("Initial network connection failure");
   }
   feedWDT();
+  setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering Board...")

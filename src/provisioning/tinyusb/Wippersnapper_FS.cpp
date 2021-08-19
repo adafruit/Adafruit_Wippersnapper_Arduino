@@ -146,6 +146,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
     createConfigFileSkel();
   }
 
+  WS.setStatusLEDColor(LED_HW_INIT);
   // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
