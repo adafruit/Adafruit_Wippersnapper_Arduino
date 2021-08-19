@@ -216,6 +216,8 @@ public:
 
   // run() loop
   ws_status_t run();
+  void processPackets();
+  void publish(const char *topic, uint8_t *payload, uint16_t bLen, uint8_t qos = 0);
   // Networking
   void pingBroker();
   fsm_net_t runNetFSM();

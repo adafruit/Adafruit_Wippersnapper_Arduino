@@ -143,7 +143,8 @@ void Wippersnapper_Registration::publishRegMsg() {
   }
   // Feed prior to publish()
   WS.feedWDT();
-  WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
+  //WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
+  WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
   WS_DEBUG_PRINTLN("Published!")
   WS._boardStatus = WS_BOARD_DEF_SENT;
 }

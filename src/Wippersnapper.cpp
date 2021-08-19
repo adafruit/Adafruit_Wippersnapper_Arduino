@@ -943,6 +943,29 @@ void Wippersnapper::enableWDT(int timeoutMS) {
 }
 
 
+void Wippersnapper::processPackets() {
+  feedWDT();
+  if (runNetFSM() != FSM_NET_CONNECTED) {
+    // let the WDT fail out and reset itself
+    haltError("Network re-connection failure");
+  }
+
+  // Process all incoming packets from Wippersnapper MQTT Broker
+  WS._mqtt->processPackets(10);
+  feedWDT();
+}
+
+void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen, uint8_t qos) {
+  feedWDT();
+  if (runNetFSM() != FSM_NET_CONNECTED) {
+    // let the WDT fail out and reset itself
+    haltError("Network re-connection failure");
+  }
+
+  WS._mqtt->publish(topic, payload, bLen, qos);
+  feedWDT();
+}
+
 /**************************************************************************/
 /*!
     @brief    Connects to Adafruit IO+ Wippersnapper broker.
