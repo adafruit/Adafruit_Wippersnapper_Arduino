@@ -125,10 +125,6 @@ void Wippersnapper::set_user_key() {
 #ifdef USE_TINYUSB
   WS._username = _fileSystem->io_username;
   WS._key = _fileSystem->io_key;
-#elif USE_NVS
-  // setNVSConfig already performs this, just return
-  WS_DEBUG("* Set NVS");
-  return;
 #endif
 }
 
