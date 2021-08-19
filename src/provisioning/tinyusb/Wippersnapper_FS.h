@@ -15,12 +15,12 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#include "Adafruit_TinyUSB.h"
 #include "Adafruit_SPIFlash.h"
+#include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h"
 #include "fatfs/diskio.h"
+#include "fatfs/ff.h"
 
 #include "Wippersnapper.h"
 

@@ -76,24 +76,24 @@ Wippersnapper::~Wippersnapper() {
 void Wippersnapper::provision() {
   // init. LED for status signaling
   statusLEDInit();
-  #ifdef USE_TINYUSB
-    // init new filesystem
-    _fileSystem = new Wippersnapper_FS();
-    // parse out secrets.json file
-    _fileSystem->parseSecrets();
-  #elif defined(USE_NVS)
-    // init esp32 nvs partition namespace
-    _nvs = new Wippersnapper_ESP32_nvs();
-    // validate esp32 has been programmed with credentials
-    if (!_nvs->validateNVSConfig()) {
-        WS_DEBUG_PRINTLN(
-            "ERROR: NVS partition or credentials not found - was NVS flashed?");
-        while (1)
-        yield();
-    }
-    // pull values out of NVS configuration
-    _nvs->setNVSConfig();
-  #endif
+#ifdef USE_TINYUSB
+  // init new filesystem
+  _fileSystem = new Wippersnapper_FS();
+  // parse out secrets.json file
+  _fileSystem->parseSecrets();
+#elif defined(USE_NVS)
+  // init esp32 nvs partition namespace
+  _nvs = new Wippersnapper_ESP32_nvs();
+  // validate esp32 has been programmed with credentials
+  if (!_nvs->validateNVSConfig()) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: NVS partition or credentials not found - was NVS flashed?");
+    while (1)
+      yield();
+  }
+  // pull values out of NVS configuration
+  _nvs->setNVSConfig();
+#endif
   // Set credentials
   set_user_key();
   set_ssid_pass();
@@ -353,7 +353,6 @@ bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field,
 
   return is_success;
 }
-
 
 /**************************************************************************/
 /*!
@@ -868,7 +867,6 @@ void Wippersnapper::runNetFSM() {
   }
 }
 
-
 /**************************************************************************/
 /*!
     @brief    Prints an error to the serial and halts the hardware until
@@ -999,7 +997,8 @@ void Wippersnapper::processPackets() {
             The Quality of Service to publish with.
 */
 /*******************************************************/
-void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen, uint8_t qos) {
+void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
+                            uint8_t qos) {
   runNetFSM();
   feedWDT();
   WS._mqtt->publish(topic, payload, bLen, qos);

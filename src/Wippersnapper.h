@@ -34,8 +34,8 @@
 #include "Wippersnapper_StatusLED_Colors.h"
 
 // Wippersnapper GPIO Components
-#include "components/Wippersnapper_DigitalGPIO.h"
 #include "components/Wippersnapper_AnalogIO.h"
+#include "components/Wippersnapper_DigitalGPIO.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -50,9 +50,10 @@
 #endif
 
 // Uncomment to use the staging IO server staging builds
-// #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server (Staging)
-#define IO_MQTT_SERVER "io.adafruit.com"  ///< Adafruit IO MQTT Server (Production)
-
+// #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
+// (Staging)
+#define IO_MQTT_SERVER                                                         \
+  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -62,7 +63,8 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-#define WS_VERSION "1.0.0-beta.4" ///< WipperSnapper app. version (semver-formatted)
+#define WS_VERSION                                                             \
+  "1.0.0-beta.4" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -181,7 +183,7 @@ public:
   bool usingStatusNeoPixel =
       false; ///< True if status LED is using the status neopixel
   bool usingStatusDotStar =
-      false;                   ///< True if status LED is using the status dotstar
+      false; ///< True if status LED is using the status dotstar
   bool usingStatusLED = false; ///< True if status LED is using the built-in LED
 
   void set_user_key(const char *aio_username, const char *aio_key);
@@ -211,7 +213,8 @@ public:
   // run() loop
   ws_status_t run();
   void processPackets();
-  void publish(const char *topic, uint8_t *payload, uint16_t bLen, uint8_t qos = 0);
+  void publish(const char *topic, uint8_t *payload, uint16_t bLen,
+               uint8_t qos = 0);
   // Networking
   void pingBroker();
   void runNetFSM();

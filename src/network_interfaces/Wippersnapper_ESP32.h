@@ -203,7 +203,7 @@ protected:
   void _connect() {
 
     if (WiFi.status() == WL_CONNECTED)
-        return;
+      return;
 
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
@@ -220,7 +220,6 @@ protected:
     while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
       // do nothing, busy loop during the timeout
     }
-
   }
 
   /**************************************************************************/

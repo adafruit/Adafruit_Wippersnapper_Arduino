@@ -73,7 +73,7 @@ bool Wippersnapper_Registration::processRegistration() {
     case FSMReg::REG_DECODE_MSG:
       if (!pollRegMsg()) {
         // delay 10 seconds between polling cycles
-        delay(10*1000);
+        delay(10 * 1000);
         // back to publishing state
         _state = FSMReg::REG_PUBLISH_MSG;
         break;

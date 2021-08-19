@@ -211,19 +211,25 @@ void Wippersnapper_FS::createConfigFileSkel() {
       yield();
   }
   // write out secrets file to USB-MSD
-  // NOTE: This was chunked into sep. lines, had issue with writing the entire file at once
-  secretsFile.print("{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_key\":\"YOUR_IO_KEY_");
+  // NOTE: This was chunked into sep. lines, had issue with writing the entire
+  // file at once
+  secretsFile.print("{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_"
+                    "key\":\"YOUR_IO_KEY_");
   secretsFile.flush();
-  // platform-dependent changes
-  #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) || defined(ARDUINO_FUNHOUSE_ESP32S2)
-    secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_ssid\":\"YOUR_WIFI_SSID_");
-  #elif defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
-    secretsFile.print("HERE\",\n\t\"network_type_wifi_airlift\":{\n\t\t\"network_ssid\":\"YOUR_WIFI_SSID_");
-  #else
+// platform-dependent changes
+#if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
+    defined(ARDUINO_FUNHOUSE_ESP32S2)
+  secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_"
+                    "ssid\":\"YOUR_WIFI_SSID_");
+#elif defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
+  secretsFile.print("HERE\",\n\t\"network_type_wifi_airlift\":{\n\t\t\"network_"
+                    "ssid\":\"YOUR_WIFI_SSID_");
+#else
   secretsFile.println("!!! ERROR: undefined board !!!");
-  #endif
+#endif
   secretsFile.flush();
-  secretsFile.print("HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
+  secretsFile.print(
+      "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
   secretsFile.flush();
   secretsFile.close();
   // Log success to wipper_boot_out.txt
