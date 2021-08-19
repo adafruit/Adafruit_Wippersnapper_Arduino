@@ -72,6 +72,8 @@ bool Wippersnapper_Registration::processRegistration() {
       break;
     case FSMReg::REG_DECODE_MSG:
       if (!pollRegMsg()) {
+        // delay 10 seconds between polling cycles
+        delay(10 * 1000);
         // back to publishing state
         _state = FSMReg::REG_PUBLISH_MSG;
         break;
@@ -122,8 +124,8 @@ void Wippersnapper_Registration::encodeRegMsg() {
 
   // verify message
   if (!_status) {
-    WS_DEBUG_PRINTLN("ERROR: encoding description message failed!");
-    // printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+    // We can't go further here, reset the hardware and try again
+    WS.haltError("ERROR [CRITICAL]: encoding description message failed!");
   }
   WS_DEBUG_PRINTLN("Encoded!");
 }
@@ -135,7 +137,10 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-  WS._mqtt->publish(WS._topic_description, _message_buffer, _message_len, 1);
+  // Run the network fsm
+  WS.runNetFSM();
+  // Publish
+  WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
   WS_DEBUG_PRINTLN("Published!")
   WS._boardStatus = WS_BOARD_DEF_SENT;
 }
@@ -150,18 +155,14 @@ void Wippersnapper_Registration::publishRegMsg() {
 /************************************************************/
 bool Wippersnapper_Registration::pollRegMsg() {
   bool is_success = false;
-  // Attempt to obtain response from broker
-  uint8_t retryCount = 0;
+  // Check network
+  WS.runNetFSM();
 
-  // pump msg loop to obtain global boardstatus (from cb)
-  while (retryCount <= 3) {
-    WS._mqtt->processPackets(10);
-    if (WS._boardStatus == WS_BOARD_DEF_OK) {
-      is_success = true;
-      break;
-    }
-    retryCount++;
-  }
+  // poll for response from broker
+  WS.feedWDT(); // let us drop out if we can't process
+  WS._mqtt->processPackets(10);
+  if (WS._boardStatus == WS_BOARD_DEF_OK)
+    is_success = true;
 
   return is_success;
 }

@@ -33,9 +33,9 @@
 #include "Wippersnapper_Registration.h"
 #include "Wippersnapper_StatusLED_Colors.h"
 
-// Wippersnapper GPIO
-#include "Wippersnapper_AnalogIO.h"
-#include "Wippersnapper_DigitalGPIO.h"
+// Wippersnapper GPIO Components
+#include "components/Wippersnapper_AnalogIO.h"
+#include "components/Wippersnapper_DigitalGPIO.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -49,14 +49,11 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-// Uncomment for staging builds
-// #define USE_STAGING
-
-#ifdef USE_STAGING
-#define IO_MQTT_SERVER "io.adafruit.us"
-#else
-#define IO_MQTT_SERVER "io.adafruit.com"
-#endif
+// Uncomment to use the staging IO server staging builds
+// #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
+// (Staging)
+#define IO_MQTT_SERVER                                                         \
+  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -66,8 +63,8 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-// Library version (semver-formatted)
-#define WS_VERSION "1.0.0-beta.3"
+#define WS_VERSION                                                             \
+  "1.0.0-beta.4" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -139,6 +136,17 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
+/** Defines the Wippersnapper client's network status */
+typedef enum {
+  FSM_NET_IDLE,
+  FSM_NET_CONNECTED,
+  FSM_MQTT_CONNECTED,
+  FSM_NET_CHECK_MQTT,
+  FSM_NET_CHECK_NETWORK,
+  FSM_NET_ESTABLISH_NETWORK,
+  FSM_NET_ESTABLISH_MQTT,
+} fsm_net_t;
+
 #define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
@@ -173,30 +181,25 @@ public:
   void setStatusLEDColor(uint32_t color);
   void statusLEDBlink(ws_led_status_t statusState);
   bool usingStatusNeoPixel =
-      false; // True if status LED is using the status neopixel
+      false; ///< True if status LED is using the status neopixel
   bool usingStatusDotStar =
-      false;                   // True if status LED is using the status dotstar
-  bool usingStatusLED = false; // True if status LED is using the built-in LED
+      false; ///< True if status LED is using the status dotstar
+  bool usingStatusLED = false; ///< True if status LED is using the built-in LED
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
-
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
 
-  void connect();
   virtual void _connect();
-
-  void disconnect();
   virtual void _disconnect();
+  void connect();
+  void disconnect();
 
   virtual void setUID();
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
-  ws_status_t keepAliveWiFi();
-  ws_status_t status();
-  ws_status_t mqttStatus();
   ws_board_status_t getBoardStatus();
 
   bool buildWSTopics();
@@ -207,17 +210,21 @@ public:
   // Performs board registration FSM
   bool registerBoard(uint8_t retries);
 
-  // run() loop //
+  // run() loop
   ws_status_t run();
-  ws_status_t checkNetworkConnection();
-  ws_status_t checkMQTTConnection(uint32_t timeStart);
+  void processPackets();
+  void publish(const char *topic, uint8_t *payload, uint16_t bLen,
+               uint8_t qos = 0);
   // Networking
-  void handleNetworking();
-  void ping();
+  void pingBroker();
+  void runNetFSM();
 
   // WDT
   void enableWDT(int timeoutMS = 0);
   void feedWDT();
+
+  // Errors
+  void haltError(String error);
 
   // MQTT topic callbacks //
   // Decodes a signal message

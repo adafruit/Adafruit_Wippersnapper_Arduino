@@ -103,6 +103,7 @@ public:
     WS._mqtt =
         new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
+    _mqtt_client->setCACert(_aio_root_ca);
   }
 
   /********************************************************/
@@ -200,6 +201,10 @@ protected:
   */
   /**************************************************************************/
   void _connect() {
+
+    if (WiFi.status() == WL_CONNECTED)
+      return;
+
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
@@ -207,17 +212,13 @@ protected:
       delay(100);
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
+      delay(100);
     }
 
-    // wait for connection to be established
+    // wait for a connection to be established
     long startRetry = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
       // do nothing, busy loop during the timeout
-    }
-    // timeout expired and connected
-    if (WiFi.status() == WL_CONNECTED) {
-      _mqtt_client->setCACert(_aio_root_ca);
-      return;
     }
   }
 
