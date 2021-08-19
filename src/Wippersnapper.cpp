@@ -127,6 +127,7 @@ void Wippersnapper::set_user_key() {
   WS._key = _fileSystem->io_key;
 #elif USE_NVS
   // setNVSConfig already performs this, just return
+  WS_DEBUG("* Set NVS");
   return;
 #endif
 }
