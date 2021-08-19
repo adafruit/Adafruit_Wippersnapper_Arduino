@@ -813,7 +813,6 @@ void Wippersnapper::subscribeWSTopics() {
 /*!
     @brief    Checks network and MQTT connectivity. Handles network
               re-connection and mqtt re-establishment.
-    @returns  Network state.
 */
 /**************************************************************************/
 void Wippersnapper::runNetFSM() {
@@ -870,6 +869,14 @@ void Wippersnapper::runNetFSM() {
 }
 
 
+/**************************************************************************/
+/*!
+    @brief    Prints an error to the serial and halts the hardware until
+              the WDT bites.
+    @param    error
+              The desired error to print to serial.
+*/
+/**************************************************************************/
 void Wippersnapper::haltError(String error) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
