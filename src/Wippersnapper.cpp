@@ -125,6 +125,88 @@ void Wippersnapper::set_user_key() {
 #endif
 }
 
+/**************************************************************************/
+/*!
+    @brief    Disconnects from Adafruit IO+ Wippersnapper.
+*/
+/**************************************************************************/
+void Wippersnapper::disconnect() { _disconnect(); }
+
+// Concrete class definition for abstract classes
+
+/****************************************************************************/
+/*!
+    @brief    Connects to wireless network.
+*/
+/****************************************************************************/
+void Wippersnapper::_connect() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Disconnect Wippersnapper MQTT session and network.
+*/
+/****************************************************************************/
+void Wippersnapper::_disconnect() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Sets the network interface's unique identifer, typically the
+              MAC address.
+*/
+/****************************************************************************/
+void Wippersnapper::setUID() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Sets up the MQTT client session.
+    @param    clientID
+              A unique client identifier string.
+*/
+/****************************************************************************/
+void Wippersnapper::setupMQTTClient(const char *clientID) {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Returns the network's connection status
+    @returns  Network status as ws_status_t.
+*/
+/****************************************************************************/
+ws_status_t Wippersnapper::networkStatus() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return WS_IDLE;
+}
+
+/****************************************************************************/
+/*!
+    @brief    Sets the device's wireless network credentials.
+    @param    ssid
+              Your wireless network's SSID
+    @param    ssidPassword
+              Your wireless network's password.
+*/
+/****************************************************************************/
+void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Sets the device's wireless network credentials from the
+              secrets.json configuration file.
+*/
+/****************************************************************************/
+void Wippersnapper::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
 // Decoders //
 /****************************************************************************/
 /*!
@@ -266,7 +348,6 @@ bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field,
   return is_success;
 }
 
-// Decoding API
 
 /**************************************************************************/
 /*!
@@ -378,6 +459,44 @@ void cbSignalTopic(char *data, uint16_t len) {
   if (!WS.decodeSignalMsg(&WS._incomingSignalMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to decode signal message");
   }
+}
+
+// TODO: This should be moved into digitalGPIO!
+/****************************************************************************/
+/*!
+    @brief    Handles MQTT messages on signal topic until timeout.
+    @param    outgoingSignalMsg
+                Empty signal message struct.
+    @param    pinMode
+                Pin's input type.
+    @param    pinName
+                Name of pin.
+    @param    pinVal
+                Value of pin.
+    @returns  True if pinEvent message encoded successfully, false otherwise.
+*/
+/****************************************************************************/
+bool Wippersnapper::encodePinEvent(
+    wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
+    wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal) {
+  bool is_success = true;
+  outgoingSignalMsg->which_payload =
+      wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
+  // fill the pin_event message
+  outgoingSignalMsg->payload.pin_event.mode = pinMode;
+  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "D%d", pinName);
+  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%d", pinVal);
+
+  // Encode signal message
+  pb_ostream_t stream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
+                 outgoingSignalMsg)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
+    is_success = false;
+  }
+
+  return is_success;
 }
 
 /**************************************************************************/
@@ -735,6 +854,7 @@ fsm_net_t Wippersnapper::runNetFSM() {
   return fsmNetwork;
 }
 
+
 void Wippersnapper::haltError(String error) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
@@ -744,6 +864,84 @@ void Wippersnapper::haltError(String error) {
     delay(100);
   }
 }
+
+/**************************************************************************/
+/*!
+    @brief    Sends board description message to Wippersnapper
+    @param    retries
+              Amount of times to retry registration process.
+    @returns  True if successful, False otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper::registerBoard(uint8_t retries = 10) {
+  bool is_success = false;
+  WS_DEBUG_PRINTLN("registerBoard()");
+  // Create new board
+  _registerBoard = new Wippersnapper_Registration();
+  // Run the FSM for the registration process
+  is_success = _registerBoard->processRegistration();
+  return is_success;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Returns the board definition status
+    @return   Wippersnapper board definition status
+*/
+/**************************************************************************/
+ws_board_status_t Wippersnapper::getBoardStatus() { return WS._boardStatus; }
+
+void Wippersnapper::pingBroker() {
+  // ping within keepalive to keep connection open
+  if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
+    WS_DEBUG_PRINTLN("PING!");
+    WS._mqtt->ping();
+    _prv_ping = millis();
+  }
+  // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
+  if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
+    if (!statusLEDInit()) {
+      WS_DEBUG_PRINTLN(
+          "Can not blink, status-LED in use by WipperSnapper Application");
+    } else {
+      statusLEDBlink(WS_LED_STATUS_KAT);
+      statusLEDDeinit();
+    }
+    _prvKATBlink = millis();
+  }
+}
+
+/********************************************************/
+/*!
+    @brief    Feeds the WDT to prevent hardware reset.
+*/
+/*******************************************************/
+void Wippersnapper::feedWDT() {
+#ifndef ESP8266
+  Watchdog.reset();
+#endif
+}
+
+/********************************************************/
+/*!
+    @brief  Enables the watchdog timer.
+    @param  timeoutMS
+            The desired amount of time to elapse before
+            the WDT executes.
+*/
+/*******************************************************/
+void Wippersnapper::enableWDT(int timeoutMS) {
+#ifndef ESP8266
+  if (Watchdog.enable(timeoutMS) == 0) {
+    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
+    setStatusLEDColor(LED_ERROR);
+    for (;;) {
+      delay(100);
+    }
+  }
+#endif
+}
+
 
 /**************************************************************************/
 /*!
@@ -792,125 +990,6 @@ void Wippersnapper::connect() {
 
 /**************************************************************************/
 /*!
-    @brief    Disconnects from Adafruit IO+ Wippersnapper.
-*/
-/**************************************************************************/
-void Wippersnapper::disconnect() { _disconnect(); }
-
-// Concrete class definition for abstract classes
-
-/****************************************************************************/
-/*!
-    @brief    Connects to wireless network.
-*/
-/****************************************************************************/
-void Wippersnapper::_connect() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-}
-
-/****************************************************************************/
-/*!
-    @brief    Disconnect Wippersnapper MQTT session and network.
-*/
-/****************************************************************************/
-void Wippersnapper::_disconnect() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-}
-
-/****************************************************************************/
-/*!
-    @brief    Sets the network interface's unique identifer, typically the
-              MAC address.
-*/
-/****************************************************************************/
-void Wippersnapper::setUID() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-}
-
-/****************************************************************************/
-/*!
-    @brief    Sets up the MQTT client session.
-    @param    clientID
-              A unique client identifier string.
-*/
-/****************************************************************************/
-void Wippersnapper::setupMQTTClient(const char *clientID) {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-}
-
-/****************************************************************************/
-/*!
-    @brief    Returns the network's connection status
-    @returns  Network status as ws_status_t.
-*/
-/****************************************************************************/
-ws_status_t Wippersnapper::networkStatus() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-  return WS_IDLE;
-}
-
-/****************************************************************************/
-/*!
-    @brief    Sets the device's wireless network credentials.
-    @param    ssid
-              Your wireless network's SSID
-    @param    ssidPassword
-              Your wireless network's password.
-*/
-/****************************************************************************/
-void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-}
-
-/****************************************************************************/
-/*!
-    @brief    Sets the device's wireless network credentials from the
-              secrets.json configuration file.
-*/
-/****************************************************************************/
-void Wippersnapper::set_ssid_pass() {
-  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
-}
-
-/****************************************************************************/
-/*!
-    @brief    Handles MQTT messages on signal topic until timeout.
-    @param    outgoingSignalMsg
-                Empty signal message struct.
-    @param    pinMode
-                Pin's input type.
-    @param    pinName
-                Name of pin.
-    @param    pinVal
-                Value of pin.
-    @returns  True if pinEvent message encoded successfully, false otherwise.
-*/
-/****************************************************************************/
-bool Wippersnapper::encodePinEvent(
-    wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-    wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal) {
-  bool is_success = true;
-  outgoingSignalMsg->which_payload =
-      wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  // fill the pin_event message
-  outgoingSignalMsg->payload.pin_event.mode = pinMode;
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "D%d", pinName);
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%d", pinVal);
-
-  // Encode signal message
-  pb_ostream_t stream =
-      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
-                 outgoingSignalMsg)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
-    is_success = false;
-  }
-
-  return is_success;
-}
-
-/**************************************************************************/
-/*!
     @brief    Processes incoming commands and handles network connection.
     @returns  Network status, as ws_status_t.
 */
@@ -942,81 +1021,4 @@ ws_status_t Wippersnapper::run() {
   feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
-}
-
-void Wippersnapper::pingBroker() {
-  // ping within keepalive to keep connection open
-  if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
-    WS_DEBUG_PRINTLN("PING!");
-    WS._mqtt->ping();
-    _prv_ping = millis();
-  }
-  // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
-  if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
-    if (!statusLEDInit()) {
-      WS_DEBUG_PRINTLN(
-          "Can not blink, status-LED in use by WipperSnapper Application");
-    } else {
-      statusLEDBlink(WS_LED_STATUS_KAT);
-      statusLEDDeinit();
-    }
-    _prvKATBlink = millis();
-  }
-}
-
-/**************************************************************************/
-/*!
-    @brief    Sends board description message to Wippersnapper
-    @param    retries
-              Amount of times to retry registration process.
-    @returns  True if successful, False otherwise.
-*/
-/**************************************************************************/
-bool Wippersnapper::registerBoard(uint8_t retries = 10) {
-  bool is_success = false;
-  WS_DEBUG_PRINTLN("registerBoard()");
-  // Create new board
-  _registerBoard = new Wippersnapper_Registration();
-  // Run the FSM for the registration process
-  is_success = _registerBoard->processRegistration();
-  return is_success;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Returns the board definition status
-    @return   Wippersnapper board definition status
-*/
-/**************************************************************************/
-ws_board_status_t Wippersnapper::getBoardStatus() { return WS._boardStatus; }
-
-/********************************************************/
-/*!
-    @brief    Feeds the WDT to prevent hardware reset.
-*/
-/*******************************************************/
-void Wippersnapper::feedWDT() {
-#ifndef ESP8266
-  Watchdog.reset();
-#endif
-}
-
-/********************************************************/
-/*!
-    @brief  Enables the watchdog timer.
-    @param  timeoutMS
-            The desired amount of time to elapse before
-            the WDT executes.
-*/
-/*******************************************************/
-void Wippersnapper::enableWDT(int timeoutMS) {
-#ifndef ESP8266
-  if (Watchdog.enable(timeoutMS) == 0) {
-    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(100);
-    }
-  }
-#endif
 }
