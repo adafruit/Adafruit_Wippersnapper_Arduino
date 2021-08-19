@@ -67,6 +67,12 @@ Wippersnapper::~Wippersnapper() {
   free(_throttle_sub);
 }
 
+/**************************************************************************/
+/*!
+    @brief    Provisions a WipperSnapper device with its network
+              configuration and Adafruit IO credentials.
+*/
+/**************************************************************************/
 void Wippersnapper::provision() {
   // init. LED for status signaling
   statusLEDInit();
@@ -803,7 +809,15 @@ void Wippersnapper::subscribeWSTopics() {
   _topic_description_sub->setCallback(cbRegistrationStatus);
 }
 
-fsm_net_t Wippersnapper::runNetFSM() {
+/**************************************************************************/
+/*!
+    @brief    Checks network and MQTT connectivity. Handles network
+              re-connection and mqtt re-establishment.
+    @returns  Network state.
+*/
+/**************************************************************************/
+void Wippersnapper::runNetFSM() {
+  WS.feedWDT();
   // MQTT connack RC
   int mqttRC;
   // Initial state
@@ -816,7 +830,8 @@ fsm_net_t Wippersnapper::runNetFSM() {
       if (WS._mqtt->connected()) {
         // WS_DEBUG_PRINTLN("Connected to IO!");
         fsmNetwork = FSM_NET_CONNECTED;
-        break;
+        statusLEDDeinit();
+        return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
@@ -852,8 +867,6 @@ fsm_net_t Wippersnapper::runNetFSM() {
       break;
     }
   }
-  statusLEDDeinit();
-  return fsmNetwork;
 }
 
 
@@ -893,6 +906,13 @@ bool Wippersnapper::registerBoard(uint8_t retries = 10) {
 /**************************************************************************/
 ws_board_status_t Wippersnapper::getBoardStatus() { return WS._boardStatus; }
 
+/**************************************************************************/
+/*!
+    @brief  Pings the MQTT broker within the keepalive interval
+            to keep the connection alive. Blinks the keepalive LED
+            every STATUS_LED_KAT_BLINK_TIME milliseconds.
+*/
+/**************************************************************************/
 void Wippersnapper::pingBroker() {
   // ping within keepalive to keep connection open
   if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
@@ -944,28 +964,38 @@ void Wippersnapper::enableWDT(int timeoutMS) {
 #endif
 }
 
-
+/********************************************************/
+/*!
+    @brief  Process all incoming packets from the
+            Adafruit IO MQTT broker. Handles network
+            connectivity.
+*/
+/*******************************************************/
 void Wippersnapper::processPackets() {
+  runNetFSM();
   feedWDT();
-  if (runNetFSM() != FSM_NET_CONNECTED) {
-    // let the WDT fail out and reset itself
-    haltError("Network re-connection failure");
-  }
-
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
-  feedWDT();
 }
 
+/********************************************************/
+/*!
+    @brief  Publishes a message to the Adafruit IO
+            MQTT broker. Handles network connectivity.
+    @param  topic
+            The MQTT topic to publish to.
+    @param  payload
+            The payload to publish.
+    @param  bLen
+            The length of the payload.
+    @param  qos
+            The Quality of Service to publish with.
+*/
+/*******************************************************/
 void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen, uint8_t qos) {
+  runNetFSM();
   feedWDT();
-  if (runNetFSM() != FSM_NET_CONNECTED) {
-    // let the WDT fail out and reset itself
-    haltError("Network re-connection failure");
-  }
-
   WS._mqtt->publish(topic, payload, bLen, qos);
-  feedWDT();
 }
 
 /**************************************************************************/
@@ -992,10 +1022,7 @@ void Wippersnapper::connect() {
   subscribeErrorTopics();
 
   // Run the network fsm
-  feedWDT();
-  if (runNetFSM() != FSM_NET_CONNECTED) {
-    haltError("Initial network connection failure");
-  }
+  runNetFSM();
   feedWDT();
   setStatusLEDColor(LED_CONNECTED);
 
@@ -1024,11 +1051,7 @@ ws_status_t Wippersnapper::run() {
   // Check networking
   // TODO: Handle MQTT errors within the new netcode, or bring them outwards to
   // another fsm
-  feedWDT();
-  if (runNetFSM() != FSM_NET_CONNECTED) {
-    // let the WDT fail out and reset itself
-    haltError("Network re-connection failure");
-  }
+  runNetFSM();
   feedWDT();
 
   // keepalive

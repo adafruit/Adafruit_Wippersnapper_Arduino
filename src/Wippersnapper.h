@@ -49,14 +49,10 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-// Uncomment for staging builds
-// #define USE_STAGING
+// Uncomment to use the staging IO server staging builds
+// #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server (Staging)
+#define IO_MQTT_SERVER "io.adafruit.com"  ///< Adafruit IO MQTT Server (Production)
 
-#ifdef USE_STAGING
-#define IO_MQTT_SERVER "io.adafruit.us"
-#else
-#define IO_MQTT_SERVER "io.adafruit.com"
-#endif
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -66,8 +62,7 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-// Library version (semver-formatted)
-#define WS_VERSION "1.0.0-beta.4"
+#define WS_VERSION "1.0.0-beta.4" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -139,7 +134,7 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
-// Networking FSM
+/** Defines the Wippersnapper client's network status */
 typedef enum {
   FSM_NET_IDLE,
   FSM_NET_CONNECTED,
@@ -203,7 +198,6 @@ public:
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
-  ws_status_t status();
   ws_board_status_t getBoardStatus();
 
   bool buildWSTopics();
@@ -220,7 +214,7 @@ public:
   void publish(const char *topic, uint8_t *payload, uint16_t bLen, uint8_t qos = 0);
   // Networking
   void pingBroker();
-  fsm_net_t runNetFSM();
+  void runNetFSM();
 
   // WDT
   void enableWDT(int timeoutMS = 0);
