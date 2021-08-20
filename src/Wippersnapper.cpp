@@ -974,7 +974,8 @@ void Wippersnapper::enableWDT(int timeoutMS) {
 */
 /*******************************************************/
 void Wippersnapper::processPackets() {
-  runNetFSM();
+  // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
+  // method when caused with WS object in another file.
   feedWDT();
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
@@ -996,7 +997,8 @@ void Wippersnapper::processPackets() {
 /*******************************************************/
 void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
                             uint8_t qos) {
-  runNetFSM();
+  // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
+  // method when caused with WS object in another file.
   feedWDT();
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
