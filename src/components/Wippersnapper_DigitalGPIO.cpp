@@ -59,10 +59,12 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pull) {
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+
 #ifdef STATUS_LED_PIN
-    // guard status LED pin, dont signal with it
+    // lock status LED pin for use as a digitalIO component
     if (pinName == STATUS_LED_PIN) {
-      WS.usingStatusLED = true;
+      WS_DEBUG_PRINTLN("* Using status LED as a digital output");
+      WS.lockStatusLED = true;
     }
 #endif
     WS_DEBUG_PRINT("Configured digital output pin on D");
@@ -132,7 +134,7 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 #ifdef STATUS_LED_PIN
                            // release status LED pin back for signaling
   if (pinName == STATUS_LED_PIN) {
-    WS.usingStatusLED = false;
+    WS.lockStatusLED = false;
   }
 #endif
 }

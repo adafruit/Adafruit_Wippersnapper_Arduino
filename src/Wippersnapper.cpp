@@ -825,7 +825,6 @@ void Wippersnapper::runNetFSM() {
       if (WS._mqtt->connected()) {
         // WS_DEBUG_PRINTLN("Connected to IO!");
         fsmNetwork = FSM_NET_CONNECTED;
-        statusLEDDeinit();
         return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
@@ -852,6 +851,7 @@ void Wippersnapper::runNetFSM() {
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       mqttRC = WS._mqtt->connect(WS._username, WS._key);
       if (mqttRC == WS_MQTT_CONNECTED) {
+        statusLEDDeinit();
         fsmNetwork = FSM_NET_CHECK_MQTT;
         break;
       }
@@ -924,9 +924,9 @@ void Wippersnapper::pingBroker() {
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
-    if (!statusLEDInit()) {
+    if (WS.lockStatusLED) {
       WS_DEBUG_PRINTLN(
-          "Can not blink, status-LED in use by WipperSnapper Application");
+          "Status-LED in-use by WipperSnapper");
     } else {
       statusLEDBlink(WS_LED_STATUS_KAT);
       statusLEDDeinit();
