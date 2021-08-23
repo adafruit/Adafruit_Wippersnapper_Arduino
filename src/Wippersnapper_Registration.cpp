@@ -138,7 +138,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
   // Run the network fsm
-  WS.runNetFSM();
+  //WS.runNetFSM();
   // Publish
   WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
   WS_DEBUG_PRINTLN("Published!")
@@ -156,7 +156,7 @@ void Wippersnapper_Registration::publishRegMsg() {
 bool Wippersnapper_Registration::pollRegMsg() {
   bool is_success = false;
   // Check network
-  WS.runNetFSM();
+  //WS.runNetFSM();
 
   // poll for response from broker
   WS.feedWDT(); // let us drop out if we can't process
