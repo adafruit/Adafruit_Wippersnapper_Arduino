@@ -925,8 +925,7 @@ void Wippersnapper::pingBroker() {
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
     if (WS.lockStatusLED) {
-      WS_DEBUG_PRINTLN(
-          "Status-LED in-use by WipperSnapper");
+      WS_DEBUG_PRINTLN("Status-LED in-use by WipperSnapper");
     } else {
       statusLEDBlink(WS_LED_STATUS_KAT);
       statusLEDDeinit();
@@ -1043,7 +1042,7 @@ void Wippersnapper::connect() {
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
   statusLEDDeinit();
 
-  WS._mqtt->processPackets(500);
+  WS._mqtt->processPackets(1000);
 }
 
 /**************************************************************************/
