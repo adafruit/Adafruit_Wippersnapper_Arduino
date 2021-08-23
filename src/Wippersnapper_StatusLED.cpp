@@ -38,7 +38,7 @@ bool Wippersnapper::statusLEDInit() {
   bool is_success = false;
 
 #ifdef USE_STATUS_NEOPIXEL
-  if (WS.WS.lockStatusNeoPixel == false) {
+  if (WS.lockStatusNeoPixel == false) {
     statusPixel->begin();
     statusPixel->show(); // turn all pixels off
     statusPixel->setBrightness(10);
