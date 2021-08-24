@@ -203,8 +203,6 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // fill the pin_event message
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  outgoingSignalMsg->payload.pin_event.mode =
-      wippersnapper_pin_v1_Mode_MODE_ANALOG;
   sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
   sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinVal);
 
@@ -243,10 +241,8 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // fill the pin_event message
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  outgoingSignalMsg->payload.pin_event.mode =
-      wippersnapper_pin_v1_Mode_MODE_ANALOG;
   sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%f", pinVal);
+  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%0.3f", pinVal);
 
   // Encode signal message
   pb_ostream_t stream =

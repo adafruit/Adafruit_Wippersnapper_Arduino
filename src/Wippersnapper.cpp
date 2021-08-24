@@ -485,7 +485,6 @@ bool Wippersnapper::encodePinEvent(
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
   // fill the pin_event message
-  outgoingSignalMsg->payload.pin_event.mode = pinMode;
   sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "D%d", pinName);
   sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%d", pinVal);
 
