@@ -33,6 +33,13 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
   // Default hysterisis of 2%
   _hysterisis = 0.02;
 
+// set rez to 16-bit for SAMD
+// NOTE: does not work on esp32 (see:
+// https://github.com/espressif/arduino-esp32/issues/5163)
+#ifdef ARDUINO_ARCH_SAMD
+  analogReadResolution(16);
+#endif
+
   // allocate analog input pins
   _analog_input_pins = new analogInputPin[_totalAnalogInputPins];
   for (int pin = 0; pin < _totalAnalogInputPins; pin++) {
@@ -160,8 +167,11 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
   uint16_t value;
   value = analogRead(pin);
-  // lshift for 16bit res.
-  value = value << 4;
+
+#ifdef ARDUINO_ARCH_ESP32
+  value = value << 3;
+#endif
+
   return value;
 }
 
