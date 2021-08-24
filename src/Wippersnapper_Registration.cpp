@@ -72,9 +72,9 @@ bool Wippersnapper_Registration::processRegistration() {
       break;
     case FSMReg::REG_DECODE_MSG:
       if (!pollRegMsg()) {
-        // delay 10 seconds between polling cycles
-        delay(10 * 1000);
-        // back to publishing state
+        // delay 1s between polling attempts
+        delay(1 * 1000);
+        // attempt to publish again
         _state = FSMReg::REG_PUBLISH_MSG;
         break;
       }
@@ -160,7 +160,7 @@ bool Wippersnapper_Registration::pollRegMsg() {
 
   // poll for response from broker
   WS.feedWDT(); // let us drop out if we can't process
-  WS._mqtt->processPackets(10);
+  WS._mqtt->processPackets(100);
   if (WS._boardStatus == WS_BOARD_DEF_OK)
     is_success = true;
 
