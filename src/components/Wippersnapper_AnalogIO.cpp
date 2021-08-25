@@ -26,9 +26,14 @@
 */
 /***********************************************************************************/
 Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
-                                               float vRef) {
-  _vRef = vRef;
+                                               float aRef) {
   _totalAnalogInputPins = totalAnalogInputPins;
+
+  // Set aref
+  setAref(aRef);
+
+  // Set ADC resolution, default to 16-bit
+  setADCResolution(16);
 
   // Default hysterisis of 2%
   _hysterisis = 0.02;
@@ -47,11 +52,46 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
 */
 /***********************************************************************************/
 Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
-  _vRef = 0.0;
+  _aRef = 0.0;
   _totalAnalogInputPins = 0;
   _hysterisis = 0;
   delete _analog_input_pins;
 }
+
+/***********************************************************************************/
+/*!
+    @brief  Sets the device's reference voltage.
+    @param  refVoltage
+            The voltage reference to use during conversions.
+*/
+/***********************************************************************************/
+void Wippersnapper_AnalogIO::setAref(float refVoltage) { _aRef = refVoltage; }
+
+/***********************************************************************************/
+/*!
+    @brief  Returns the device's reference voltage.
+*/
+/***********************************************************************************/
+float Wippersnapper_AnalogIO::getAref() { return _aRef; }
+
+void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
+// set the resolution natively in the BSP
+#ifdef ARDUINO_ARCH_SAMD
+  analogReadResolution(16);
+  _nativeResolution = 12;
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
+  scaleAnalogRead = true;
+  _nativeResolution = 13;
+#endif
+
+  _adcResolution = resolution;
+}
+
+int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
+
+int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
 
 /***********************************************************************************/
 /*!
@@ -160,8 +200,16 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
   uint16_t value;
   value = analogRead(pin);
-  // lshift for 16bit res.
-  value = value << 4;
+
+  // scale by the ADC resolution manually if not implemented by BSP
+  if (scaleAnalogRead) {
+    if (getADCresolution() > getNativeResolution()) {
+      value = value << (getADCresolution() - getNativeResolution());
+    } else {
+      value = value >> (getNativeResolution() - getADCresolution());
+    }
+  }
+
   return value;
 }
 
@@ -176,7 +224,7 @@ uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
 /**********************************************************/
 float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
   float pinVoltage;
-  pinVoltage = rawValue * _vRef / 65536;
+  pinVoltage = rawValue * getAref() / 65536;
   return pinVoltage;
 }
 
