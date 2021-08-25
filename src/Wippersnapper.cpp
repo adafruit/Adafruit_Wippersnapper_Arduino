@@ -620,7 +620,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   throttleMessage = strtok(NULL, " ");
   // Convert from seconds to to millis
   int throttleDuration = atoi(throttleMessage) * 1000;
-  
+
   WS_DEBUG_PRINT("Device is throttled for ");
   WS_DEBUG_PRINT(throttleDuration);
   WS_DEBUG_PRINTLN("ms and blocking command execution.");
