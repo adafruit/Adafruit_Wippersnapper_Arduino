@@ -597,8 +597,10 @@ void cbErrorTopic(char *errorData, uint16_t len) {
   if (!WS._mqtt->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
-  // attempt to re-establish a MQTT connection
-  retryMQTTConnection();
+  // WDT reset
+  for (;;) {
+    delay(100);
+  }
 }
 
 /**************************************************************************/
@@ -611,22 +613,30 @@ void cbErrorTopic(char *errorData, uint16_t len) {
 void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLN(throttleData);
-  // Parse out # of seconds from throttle error message
-  WS.throttleMessage = strtok(throttleData, ",");
-  WS.throttleMessage = strtok(NULL, " ");
-  // Convert to millis for delay
-  WS.throttleTime = atoi(WS.throttleMessage) * 1000;
-  WS_DEBUG_PRINT("Delaying for: ");
-  WS_DEBUG_PRINTLN(WS.throttleTime);
-  // Calculate amount of times to delay WS_KEEPALIVE_INTERVAL_MS
-  double throttleTimes = WS.throttleTime / WS_KEEPALIVE_INTERVAL_MS;
-  // round to nearest millis to prevent delaying for less time than req'd.
-  throttleTimes = ceil(throttleTimes);
-  for (int i = 0; i < (int)throttleTimes; i++) {
-    WS_DEBUG_PRINTLN("Delaying...")
+  char *throttleMessage;
+  // Parse out # of seconds from message buffer
+  throttleMessage = strtok(throttleData, ",");
+  throttleMessage = strtok(NULL, " ");
+  // Convert from seconds to to millis
+  int throttleDuration = atoi(throttleMessage) * 1000;
+
+  WS_DEBUG_PRINT("Device is throttled for ");
+  WS_DEBUG_PRINT(throttleDuration);
+  WS_DEBUG_PRINTLN("ms and blocking command execution.");
+  if (throttleDuration < WS_KEEPALIVE_INTERVAL_MS) {
     delay(WS_KEEPALIVE_INTERVAL_MS);
-    WS._mqtt->ping(); // keep the connection active
+  } else {
+    // round to nearest millis to prevent delaying for less time than req'd.
+    float throttleLoops = ceil(throttleDuration / WS_KEEPALIVE_INTERVAL_MS);
+    // block the run() loop
+    while (throttleLoops > 0) {
+      delay(WS_KEEPALIVE_INTERVAL_MS);
+      WS.feedWDT();
+      WS._mqtt->ping();
+      throttleLoops--;
+    }
   }
+  WS_DEBUG_PRINTLN("Device is un-throttled, resumed command execution");
 }
 
 /**************************************************************************/
