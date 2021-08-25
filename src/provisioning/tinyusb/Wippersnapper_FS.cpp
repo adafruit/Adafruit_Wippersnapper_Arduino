@@ -102,8 +102,30 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // wait for detach
   delay(500);
 
-  // init flash fs
-  flash.begin();
+  // Check new filesystem
+  if (!wipperFatFs.begin(&flash)) {
+    WS_DEBUG_PRINTLN("Error, failed to mount formatted filesystem!");
+    while(1) delay(1);
+  }
+
+  // TODO: Create filesystem, refactor this
+
+  // Clean FS
+  eraseCPDefaultFiles();
+  eraseBootFile();
+
+  // create wippersnapper_boot_out.txt file
+  if (!createBootFile()) {
+    WS.setStatusLEDColor(RED);
+    while (1)
+      ;
+  }
+
+  // check for secrets.json on fs
+  if (!configFileExists()) {
+    // create secrets.json on fs
+    createConfigFileSkel();
+  }
 
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
@@ -118,33 +140,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   usb_msc.setUnitReady(true);
   // init MSC
   usb_msc.begin();
-
-  // Does a circuitpython boot file exist?
-  // erase the default cpy fs while we're disconnected
-  if (wipperFatFs.exists("/boot_out.txt")) {
-    wipperFatFs.remove("/boot_out.txt");
-    wipperFatFs.remove("/code.py");
-    File libDir = wipperFatFs.open("/lib");
-    if (libDir.isDirectory()) {
-      libDir.rmRfStar();
-    }
-  }
-  // overwrite previous boot_out file on each boot
-  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
-    wipperFatFs.remove("/wipper_boot_out.txt");
-  }
-  // create wippersnapper_boot_out.txt file
-  if (!createBootFile()) {
-    WS.setStatusLEDColor(RED);
-    while (1)
-      ;
-  }
-
-  // check for secrets.json on fs
-  if (!configFileExists()) {
-    // create secrets.json on fs
-    createConfigFileSkel();
-  }
 
   WS.setStatusLEDColor(LED_HW_INIT);
   // re-attach the usb device
@@ -175,6 +170,34 @@ bool Wippersnapper_FS::configFileExists() {
     return false;
   }
   return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Erases the default CircuitPython filesystem if it exists.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::eraseCPDefaultFiles() {
+  if (wipperFatFs.exists("/boot_out.txt")) {
+    wipperFatFs.remove("/boot_out.txt");
+    wipperFatFs.remove("/code.py");
+    File libDir = wipperFatFs.open("/lib");
+    if (libDir.isDirectory()) {
+      libDir.rmRfStar();
+    }
+  }
+}
+
+/**************************************************************************/
+/*!
+    @brief    Erases the existing "wipper_boot_out.txt" file from the FS.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::eraseBootFile() {
+  // overwrite previous boot_out file on each boot
+  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
+    wipperFatFs.remove("/wipper_boot_out.txt");
+  }
 }
 
 /**************************************************************************/

@@ -44,6 +44,9 @@ public:
   Wippersnapper_FS();
   ~Wippersnapper_FS();
 
+  void eraseCPDefaultFiles();
+  void eraseBootFile();
+
   bool parseSecrets();
   bool configFileExists();
   void createConfigFileSkel();
