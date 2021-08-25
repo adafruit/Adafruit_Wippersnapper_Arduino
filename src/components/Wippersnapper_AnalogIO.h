@@ -39,8 +39,11 @@ class Wippersnapper;
 /**************************************************************************/
 class Wippersnapper_AnalogIO {
 public:
-  Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, float vref);
+  Wippersnapper_AnalogIO(int32_t totalAnalogInputPins);
   ~Wippersnapper_AnalogIO();
+
+  void setAref(float refVoltage);
+  float getAref();
 
   void initAnalogOutputPin(int pin);
   void initAnalogInputPin(
@@ -66,7 +69,7 @@ public:
 
   analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 private:
-  float _vRef;                   /*!< Hardware's reported voltage reference */
+  float _aRef;                   /*!< Hardware's reported voltage reference */
   int32_t _totalAnalogInputPins; /*!< Total number of analog input pins */
 
   float _hysterisis;         /*!< Hysterisis factor. */

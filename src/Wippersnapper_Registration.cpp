@@ -206,8 +206,8 @@ void Wippersnapper_Registration::decodeRegMsg(char *data, uint16_t len) {
       // Initialize Digital IO class
       WS._digitalGPIO = new Wippersnapper_DigitalGPIO(message.total_gpio_pins);
       // Initialize Analog IO class
-      WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins,
-                                                message.reference_voltage);
+      WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins);
+      WS._analogIO->setAref(message.reference_voltage);
       WS._boardStatus = WS_BOARD_DEF_OK;
       break;
     case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:

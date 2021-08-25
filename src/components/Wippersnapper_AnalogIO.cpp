@@ -25,9 +25,7 @@
                 ADC's voltage reference value, in volts.
 */
 /***********************************************************************************/
-Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
-                                               float vRef) {
-  _vRef = vRef;
+Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins) {
   _totalAnalogInputPins = totalAnalogInputPins;
 
   // Default hysterisis of 2%
@@ -54,11 +52,27 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
 */
 /***********************************************************************************/
 Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
-  _vRef = 0.0;
+  _aRef = 0.0;
   _totalAnalogInputPins = 0;
   _hysterisis = 0;
   delete _analog_input_pins;
 }
+
+/***********************************************************************************/
+/*!
+    @brief  Sets the device's reference voltage.
+    @param  refVoltage
+            The voltage reference to use during conversions.
+*/
+/***********************************************************************************/
+void Wippersnapper_AnalogIO::setAref(float refVoltage) { _aRef = refVoltage; }
+
+/***********************************************************************************/
+/*!
+    @brief  Returns the device's reference voltage.
+*/
+/***********************************************************************************/
+float Wippersnapper_AnalogIO::getAref() { return _aRef; }
 
 /***********************************************************************************/
 /*!
@@ -186,7 +200,8 @@ uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
 /**********************************************************/
 float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
   float pinVoltage;
-  pinVoltage = rawValue * _vRef / 65536;
+  float refVoltage = getAref();
+  pinVoltage = rawValue * refVoltage / 65536;
   return pinVoltage;
 }
 
