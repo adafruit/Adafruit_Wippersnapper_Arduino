@@ -598,7 +598,6 @@ void cbErrorTopic(char *errorData, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
   // WDT reset
-  setStatusLEDColor(LED_ERROR);
   for (;;) {
     delay(100);
   }
