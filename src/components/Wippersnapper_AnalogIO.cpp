@@ -224,8 +224,7 @@ uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
 /**********************************************************/
 float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
   float pinVoltage;
-  float refVoltage = getAref();
-  pinVoltage = rawValue * refVoltage / 65536;
+  pinVoltage = rawValue * getAref() / 65536;
   return pinVoltage;
 }
 
