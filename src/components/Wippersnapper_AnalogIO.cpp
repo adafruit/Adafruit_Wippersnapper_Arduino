@@ -25,18 +25,18 @@
                 ADC's voltage reference value, in volts.
 */
 /***********************************************************************************/
-Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins) {
+Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
+                                               float aRef) {
   _totalAnalogInputPins = totalAnalogInputPins;
+
+  // Set aref
+  setAref(aRef);
+
+  // Set ADC resolution, default to 16-bit
+  setADCResolution(16);
 
   // Default hysterisis of 2%
   _hysterisis = 0.02;
-
-// set rez to 16-bit for SAMD
-// NOTE: does not work on esp32 (see:
-// https://github.com/espressif/arduino-esp32/issues/5163)
-#ifdef ARDUINO_ARCH_SAMD
-  analogReadResolution(16);
-#endif
 
   // allocate analog input pins
   _analog_input_pins = new analogInputPin[_totalAnalogInputPins];
@@ -73,6 +73,25 @@ void Wippersnapper_AnalogIO::setAref(float refVoltage) { _aRef = refVoltage; }
 */
 /***********************************************************************************/
 float Wippersnapper_AnalogIO::getAref() { return _aRef; }
+
+void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
+// set the resolution natively in the BSP
+#ifdef ARDUINO_ARCH_SAMD
+  analogReadResolution(16);
+  _nativeResolution = 12;
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
+  scaleAnalogRead = true;
+  _nativeResolution = 13;
+#endif
+
+  _adcResolution = resolution;
+}
+
+int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
+
+int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
 
 /***********************************************************************************/
 /*!
@@ -182,9 +201,14 @@ uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
   uint16_t value;
   value = analogRead(pin);
 
-#ifdef ARDUINO_ARCH_ESP32
-  value = value << 3;
-#endif
+  // scale by the ADC resolution manually if not implemented by BSP
+  if (scaleAnalogRead) {
+    if (getADCresolution() > getNativeResolution()) {
+      value = value << (getADCresolution() - getNativeResolution());
+    } else {
+      value = value >> (getNativeResolution() - getADCresolution());
+    }
+  }
 
   return value;
 }
