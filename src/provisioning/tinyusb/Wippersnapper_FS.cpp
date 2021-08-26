@@ -87,13 +87,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
   initUSBMSC();
 
   // If we created a new filesystem, halt until user RESETs device.
-  if (_freshFS) {
-    while (1) {
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-      delay(1000);
-      yield();
-    }
-  }
+  if (_freshFS)
+    fsHalt();
 }
 
 /************************************************************/
@@ -207,9 +202,8 @@ void Wippersnapper_FS::initUSBMSC() {
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
   // Does secrets.json file exist?
-  if (!wipperFatFs.exists("/secrets.json")) {
+  if (!wipperFatFs.exists("/secrets.json"))
     return false;
-  }
   return true;
 }
 
@@ -223,9 +217,7 @@ void Wippersnapper_FS::eraseCPFS() {
     wipperFatFs.remove("/boot_out.txt");
     wipperFatFs.remove("/code.py");
     File libDir = wipperFatFs.open("/lib");
-    if (libDir.isDirectory()) {
-      libDir.rmRfStar();
-    }
+    libDir.rmRfStar();
   }
 }
 
@@ -310,9 +302,7 @@ void Wippersnapper_FS::parseSecrets() {
   File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
-    WS.setStatusLEDColor(RED);
-    while (1)
-      yield();
+    fsHalt();
   }
 
   // check if we can deserialize the secrets.json file
@@ -323,9 +313,7 @@ void Wippersnapper_FS::parseSecrets() {
 
     writeErrorToBootOut("ERROR: deserializeJson() failed with code");
     writeErrorToBootOut(err.c_str());
-    WS.setStatusLEDColor(RED);
-    while (1)
-      yield();
+    fsHalt();
   }
 
   // Get io username
@@ -334,9 +322,10 @@ void Wippersnapper_FS::parseSecrets() {
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     writeErrorToBootOut("ERROR: invalid io_username value in secrets.json!");
-    WS.setStatusLEDColor(RED);
-    while (1)
+    while (1) {
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
       yield();
+    }
   }
 
   // check if username is from templated json
@@ -345,9 +334,7 @@ void Wippersnapper_FS::parseSecrets() {
         "* ERROR: Default username found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
         "effect");
-    WS.setStatusLEDColor(RED);
-    while (1)
-      yield();
+    fsHalt();
   }
 
   // Get io key
@@ -356,9 +343,7 @@ void Wippersnapper_FS::parseSecrets() {
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
-    WS.setStatusLEDColor(RED);
-    while (1)
-      yield();
+    fsHalt();
   }
 
   // next, we detect the network interface from the `secrets.json`
@@ -383,18 +368,14 @@ void Wippersnapper_FS::parseSecrets() {
       writeErrorToBootOut(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
-      WS.setStatusLEDColor(RED);
-      while (1)
-        yield();
+      fsHalt();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_airlift"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
-      WS.setStatusLEDColor(RED);
-      while (1)
-        yield();
+      fsHalt();
     }
 
     // Set WiFi configuration with parsed values
@@ -423,18 +404,14 @@ void Wippersnapper_FS::parseSecrets() {
       writeErrorToBootOut(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
-      WS.setStatusLEDColor(RED);
-      while (1)
-        yield();
+      fsHalt();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_native"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
-      WS.setStatusLEDColor(RED);
-      while (1)
-        yield();
+      fsHalt();
     }
 
     // Set WiFi configuration with parsed values
@@ -449,9 +426,7 @@ void Wippersnapper_FS::parseSecrets() {
         "ERROR: Network interface not detected in secrets.json file.");
     writeErrorToBootOut(
         "ERROR: Network interface not detected in secrets.json file.");
-    WS.setStatusLEDColor(RED);
-    while (1)
-      yield();
+    fsHalt();
   }
 
   // clear the document and release all memory from the memory pool
@@ -466,7 +441,6 @@ void Wippersnapper_FS::parseSecrets() {
     @brief    Appends message string to wipper_boot_out.txt file.
     @param    str
                 PROGMEM string.
-
 */
 /**************************************************************************/
 void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
@@ -478,6 +452,19 @@ void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
     bootFile.close();
   } else {
     WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
+  }
+}
+
+/**************************************************************************/
+/*!
+    @brief    Halts execution and blinks the status LEDs yellow.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::fsHalt() {
+  while (1) {
+    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    delay(1000);
+    yield();
   }
 }
 
