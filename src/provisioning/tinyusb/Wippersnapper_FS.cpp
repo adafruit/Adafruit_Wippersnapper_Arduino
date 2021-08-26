@@ -144,8 +144,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   usb_msc.setUnitReady(true);
   // init MSC
   usb_msc.begin();
-
-  //WS.setStatusLEDColor(LED_HW_INIT);
   // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
@@ -155,6 +153,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   if (newFS) {
     while (1) {
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      delay(1000);
       yield();
     }
   }

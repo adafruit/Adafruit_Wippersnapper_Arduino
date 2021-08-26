@@ -31,11 +31,11 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "Wippersnapper_Registration.h"
-#include "Wippersnapper_StatusLED_Colors.h"
+#include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
 
 // Wippersnapper GPIO Components
-#include "components/Wippersnapper_AnalogIO.h"
-#include "components/Wippersnapper_DigitalGPIO.h"
+#include "components/analogIO/Wippersnapper_AnalogIO.h"
+#include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client

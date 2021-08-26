@@ -57,7 +57,7 @@ bool Wippersnapper::statusLEDInit() {
   if (WS.lockStatusDotStar == false) {
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn all pixels off
-    statusPixelDotStar->setBrightness(10);
+    statusPixelDotStar->setBrightness(5);
     WS.lockStatusDotStar = true;
     is_success = true;
   }
