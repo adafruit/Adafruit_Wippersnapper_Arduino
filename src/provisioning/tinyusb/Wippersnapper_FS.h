@@ -24,7 +24,6 @@
 
 #include "Wippersnapper.h"
 
-#define VOLUME_LABEL "WIPPER" ///< FatFs volume label
 // forward decl.
 class Wippersnapper;
 

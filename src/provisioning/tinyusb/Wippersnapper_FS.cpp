@@ -55,7 +55,7 @@ bool setVolumeLabel() {
     return false;
   }
   // set label
-  r = f_setlabel(VOLUME_LABEL);
+  r = f_setlabel("WIPPER");
   if (r != FR_OK) {
     return false;
   }
@@ -131,7 +131,6 @@ bool Wippersnapper_FS::initFilesystem() {
     // sync all data to flash
     flash.syncBlocks();
 
-    // fresh filesystem!
     _freshFS = true;
   }
 
@@ -144,6 +143,23 @@ bool Wippersnapper_FS::initFilesystem() {
 
   // If WipperSnapper was previously installed - remove the wippersnapper_boot_out.txt file
   eraseBootFile();
+
+  // No file indexing on macOS
+  wipperFatFs.mkdir("/.fseventsd/");
+  File writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
+  if (!writeFile)
+    return false;
+  writeFile.close();
+
+  writeFile = wipperFatFs.open("/.metadata_never_index", FILE_WRITE);
+  if (!writeFile)
+    return false;
+  writeFile.close();
+
+  writeFile = wipperFatFs.open("/.Trashes", FILE_WRITE);
+  if (!writeFile)
+    return false;
+  writeFile.close();
 
   // Create wippersnapper_boot_out.txt file
   if (!createBootFile())
