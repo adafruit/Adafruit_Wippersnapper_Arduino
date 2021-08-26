@@ -44,7 +44,10 @@ public:
   Wippersnapper_FS();
   ~Wippersnapper_FS();
 
-  void eraseCPDefaultFiles();
+  bool initFilesystem();
+  void initUSBMSC();
+
+  void eraseCPFS();
   void eraseBootFile();
 
   bool configFileExists();
@@ -65,6 +68,8 @@ public:
   // length of usernames/passwords/tokens
   // is 382 bytes, rounded to nearest power of 2.
   StaticJsonDocument<512> doc; /*!< Json configuration file */
+private:
+  bool _freshFS = false; /*!< True if filesystem was initialized by WipperSnapper, False otherwise. */
 };
 
 extern Wippersnapper WS;

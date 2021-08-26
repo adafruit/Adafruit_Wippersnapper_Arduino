@@ -70,13 +70,49 @@ bool setVolumeLabel() {
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
-  bool newFS = false;
-
-  // detach during init.
+  // Detach USB device during init.
   USBDevice.detach();
-  // wait for detach
+  // Wait for detach
   delay(500);
 
+  // If a filesystem does not already exist - attempt to initialize a new filesystem
+  if (!initFilesystem()) {
+      WS_PRINTLN("ERROR Initializing Filesystem");
+      WS.setStatusLEDColor(RED);
+      while (1)
+        ;
+  }
+
+  // Initialize USB-MSD
+  initUSBMSC();
+
+  // If we created a new filesystem, halt until user RESETs device.
+  if (_freshFS) {
+    while (1) {
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      delay(1000);
+      yield();
+    }
+  }
+}
+
+/************************************************************/
+/*!
+    @brief    Filesystem destructor
+*/
+/************************************************************/
+Wippersnapper_FS::~Wippersnapper_FS() {
+  io_username = NULL;
+  io_key = NULL;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes the flash filesystem.
+    @return   True if filesystem initialized correctly, false otherwise.
+*/
+/**************************************************************************/
+bool WipperSnapper_FS::initFilesystem() {
   // Init. flash library
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
@@ -86,51 +122,51 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // Check if FS exists
   if (!wipperFatFs.begin(&flash)) {
-    newFS = true;
-    // Create a new FatFS
+    // No filesystem exists - create a new FS
     // NOTE: THIS WILL ERASE ALL DATA ON THE FLASH
-    if (!makeFilesystem()) {
-      WS.setStatusLEDColor(RED);
-      while (1)
-        ;
-    }
-    // attempt to set the volume label
-    if (!setVolumeLabel()) {
-      WS.setStatusLEDColor(RED);
-      while (1)
-        ;
-    }
+    if (!makeFilesystem()) {}
+      return false;
+
+    // set volume label
+    if (!setVolumeLabel())
+      return false;
+
     // sync all data to flash
     flash.syncBlocks();
+
+    // fresh filesystem!
+    _freshFS = true;
   }
 
-  // Check new filesystem
-  if (!wipperFatFs.begin(&flash)) {
-    WS_DEBUG_PRINTLN("Error, failed to mount formatted filesystem!");
-    while (1)
-      delay(1);
-  }
+  // Check new FS
+  if (!wipperFatFs.begin(&flash))
+    return false;
 
-  // TODO: Create filesystem, refactor this
+  // If CircuitPython was previously installed - erase CPY FS
+  eraseCPFS();
 
-  // Clean FS
-  eraseCPDefaultFiles();
+  // If WipperSnapper was previously installed - remove the wippersnapper_boot_out.txt file
   eraseBootFile();
 
-  // create wippersnapper_boot_out.txt file
-  if (!createBootFile()) {
-    WS.setStatusLEDColor(RED);
-    while (1)
-      ;
-  }
+  // Create wippersnapper_boot_out.txt file
+  if (!createBootFile())
+    return false;
 
-  // check for secrets.json on fs
+  // Check if secrets.json file already exists
   if (!configFileExists()) {
-    // create secrets.json on fs
+    // Create new secrets.json file
     createConfigFileSkel();
   }
 
-  // Configure USB-MSC
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes the USB MSC device.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::initUSBMSC() {
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
   usb_msc.setID("Adafruit", "External Flash", "1.0");
@@ -148,25 +184,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   USBDevice.attach();
   // wait for enumeration
   delay(500);
-
-  // Drive is enumerated with fresh FS, halt and blink until reset.
-  if (newFS) {
-    while (1) {
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-      delay(1000);
-      yield();
-    }
-  }
-}
-
-/************************************************************/
-/*!
-    @brief    Filesystem destructor
-*/
-/************************************************************/
-Wippersnapper_FS::~Wippersnapper_FS() {
-  io_username = NULL;
-  io_key = NULL;
 }
 
 /**************************************************************************/
@@ -188,7 +205,7 @@ bool Wippersnapper_FS::configFileExists() {
     @brief    Erases the default CircuitPython filesystem if it exists.
 */
 /**************************************************************************/
-void Wippersnapper_FS::eraseCPDefaultFiles() {
+void Wippersnapper_FS::eraseCPFS() {
   if (wipperFatFs.exists("/boot_out.txt")) {
     wipperFatFs.remove("/boot_out.txt");
     wipperFatFs.remove("/code.py");
