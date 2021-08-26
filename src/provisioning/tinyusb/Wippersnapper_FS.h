@@ -53,6 +53,7 @@ public:
   void createConfigFileSkel();
   bool createBootFile();
   void writeErrorToBootOut(PGM_P str);
+  void fsHalt();
 
   void parseSecrets();
 
@@ -68,7 +69,8 @@ public:
   // is 382 bytes, rounded to nearest power of 2.
   StaticJsonDocument<512> doc; /*!< Json configuration file */
 private:
-  bool _freshFS = false; /*!< True if filesystem was initialized by WipperSnapper, False otherwise. */
+  bool _freshFS = false; /*!< True if filesystem was initialized by
+                            WipperSnapper, False otherwise. */
 };
 
 extern Wippersnapper WS;

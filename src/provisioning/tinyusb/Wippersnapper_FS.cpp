@@ -75,12 +75,13 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // Wait for detach
   delay(500);
 
-  // If a filesystem does not already exist - attempt to initialize a new filesystem
+  // If a filesystem does not already exist - attempt to initialize a new
+  // filesystem
   if (!initFilesystem()) {
-      WS_DEBUG_PRINTLN("ERROR Initializing Filesystem");
-      WS.setStatusLEDColor(RED);
-      while (1)
-        ;
+    WS_DEBUG_PRINTLN("ERROR Initializing Filesystem");
+    WS.setStatusLEDColor(RED);
+    while (1)
+      ;
   }
 
   // Initialize USB-MSD
@@ -136,7 +137,8 @@ bool Wippersnapper_FS::initFilesystem() {
   // If CircuitPython was previously installed - erase CPY FS
   eraseCPFS();
 
-  // If WipperSnapper was previously installed - remove the wippersnapper_boot_out.txt file
+  // If WipperSnapper was previously installed - remove the
+  // wippersnapper_boot_out.txt file
   eraseBootFile();
 
   // No file indexing on macOS
