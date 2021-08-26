@@ -148,25 +148,21 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
   int blinkNum = 0;
   uint32_t ledBlinkColor;
-  switch (statusState) {
-  case WS_LED_STATUS_KAT:
+  if (statusState == WS_LED_STATUS_KAT) {
     blinkNum = 1;
     ledBlinkColor = LED_CONNECTED;
-    break;
-  case WS_LED_STATUS_ERROR:
+  } else if (statusState == WS_LED_STATUS_ERROR) {
     blinkNum = 2;
     ledBlinkColor = LED_ERROR;
-  case WS_LED_STATUS_CONNECTED:
+  } else if (statusState == WS_LED_STATUS_CONNECTED) {
     blinkNum = 3;
     ledBlinkColor = LED_CONNECTED;
-    break;
-  case WS_LED_STATUS_FS_WRITE:
+  } else if (statusState == WS_LED_STATUS_FS_WRITE) {
     blinkNum = 4;
     ledBlinkColor = YELLOW;
-  default:
+  } else {
     blinkNum = 0;
     ledBlinkColor = BLACK;
-    break;
   }
 
   while (blinkNum > 0) {
