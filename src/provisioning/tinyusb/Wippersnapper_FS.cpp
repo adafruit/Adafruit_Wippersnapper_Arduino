@@ -70,17 +70,25 @@ bool setVolumeLabel() {
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
+  bool newFS = false;
 
-  // attempt to init flash library
+  // detach during init.
+  USBDevice.detach();
+  // wait for detach
+  delay(500);
+
+  // Init. flash library
   if (!flash.begin()) {
     WS.setStatusLEDColor(RED);
     while (1)
       ;
   }
 
-  // attempt to init filesystem if it doesn't exist
+  // Check if FS exists
   if (!wipperFatFs.begin(&flash)) {
-    // flash did NOT init, create a new FatFs
+    newFS = true;
+    // Create a new FatFS
+    // NOTE: THIS WILL ERASE ALL DATA ON THE FLASH
     if (!makeFilesystem()) {
       WS.setStatusLEDColor(RED);
       while (1)
@@ -95,12 +103,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
     // sync all data to flash
     flash.syncBlocks();
   }
-
-  // initialize USB-MSC device and flash
-  // detach the USB during initialization
-  USBDevice.detach();
-  // wait for detach
-  delay(500);
 
   // Check new filesystem
   if (!wipperFatFs.begin(&flash)) {
@@ -143,11 +145,19 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // init MSC
   usb_msc.begin();
 
-  WS.setStatusLEDColor(LED_HW_INIT);
+  //WS.setStatusLEDColor(LED_HW_INIT);
   // re-attach the usb device
   USBDevice.attach();
   // wait for enumeration
   delay(500);
+
+  // Drive is enumerated with fresh FS, halt and blink until reset.
+  if (newFS) {
+    while (1) {
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      yield();
+    }
+  }
 }
 
 /************************************************************/
@@ -256,10 +266,8 @@ void Wippersnapper_FS::createConfigFileSkel() {
       "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
   secretsFile.flush();
   secretsFile.close();
-  // Log success to wipper_boot_out.txt
   writeErrorToBootOut(
-      "* Successfully added secrets.json and wipper_boot_out.txt "
-      "to drive!");
+      "* Please edit the secrets.json file. Then, reset your board.");
 }
 
 /**************************************************************************/
