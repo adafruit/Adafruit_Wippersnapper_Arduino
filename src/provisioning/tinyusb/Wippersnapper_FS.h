@@ -19,8 +19,8 @@
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h"
 #include "fatfs/diskio.h"
+#include "fatfs/ff.h"
 
 #include "Wippersnapper.h"
 
@@ -47,11 +47,12 @@ public:
   void eraseCPDefaultFiles();
   void eraseBootFile();
 
-  bool parseSecrets();
   bool configFileExists();
   void createConfigFileSkel();
   bool createBootFile();
   void writeErrorToBootOut(PGM_P str);
+
+  void parseSecrets();
 
   // Adafruit IO Configuration
   const char *io_username =

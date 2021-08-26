@@ -105,7 +105,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // Check new filesystem
   if (!wipperFatFs.begin(&flash)) {
     WS_DEBUG_PRINTLN("Error, failed to mount formatted filesystem!");
-    while(1) delay(1);
+    while (1)
+      delay(1);
   }
 
   // TODO: Create filesystem, refactor this
@@ -127,6 +128,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
     createConfigFileSkel();
   }
 
+  // Configure USB-MSC
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
   usb_msc.setID("Adafruit", "External Flash", "1.0");
@@ -228,8 +230,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
   // open for writing, create a new file if one doesnt exist
   File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (!secretsFile) {
-    writeErrorToBootOut(
-        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
+    WS.setStatusLEDColor(RED);
     while (1)
       yield();
   }
@@ -264,17 +265,17 @@ void Wippersnapper_FS::createConfigFileSkel() {
 /**************************************************************************/
 /*!
     @brief    Parses a secrets.json file on the flash filesystem.
-    @return   True if parsed successfully, False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_FS::parseSecrets() {
+void Wippersnapper_FS::parseSecrets() {
   setNetwork = false;
   // open file for parsing
   File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
-    writeErrorToBootOut("ERROR: Could not open secrets.json file for reading!");
-    return false;
+    WS.setStatusLEDColor(RED);
+    while (1)
+      yield();
   }
 
   // check if we can deserialize the secrets.json file
@@ -285,7 +286,9 @@ bool Wippersnapper_FS::parseSecrets() {
 
     writeErrorToBootOut("ERROR: deserializeJson() failed with code");
     writeErrorToBootOut(err.c_str());
-    return false;
+    WS.setStatusLEDColor(RED);
+    while (1)
+      yield();
   }
 
   // Get io username
@@ -294,7 +297,9 @@ bool Wippersnapper_FS::parseSecrets() {
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     writeErrorToBootOut("ERROR: invalid io_username value in secrets.json!");
-    return false;
+    WS.setStatusLEDColor(RED);
+    while (1)
+      yield();
   }
 
   // check if username is from templated json
@@ -303,7 +308,7 @@ bool Wippersnapper_FS::parseSecrets() {
         "* ERROR: Default username found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
         "effect");
-    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    WS.setStatusLEDColor(RED);
     while (1)
       yield();
   }
@@ -314,7 +319,9 @@ bool Wippersnapper_FS::parseSecrets() {
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
-    return false;
+    WS.setStatusLEDColor(RED);
+    while (1)
+      yield();
   }
 
   // next, we detect the network interface from the `secrets.json`
@@ -339,14 +346,16 @@ bool Wippersnapper_FS::parseSecrets() {
       writeErrorToBootOut(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
-      return false;
+      WS.setStatusLEDColor(RED);
+      while (1)
+        yield();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_airlift"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      WS.setStatusLEDColor(RED);
       while (1)
         yield();
     }
@@ -377,14 +386,16 @@ bool Wippersnapper_FS::parseSecrets() {
       writeErrorToBootOut(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
-      return false;
+      WS.setStatusLEDColor(RED);
+      while (1)
+        yield();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_native"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      WS.setStatusLEDColor(RED);
       while (1)
         yield();
     }
@@ -401,6 +412,7 @@ bool Wippersnapper_FS::parseSecrets() {
         "ERROR: Network interface not detected in secrets.json file.");
     writeErrorToBootOut(
         "ERROR: Network interface not detected in secrets.json file.");
+    WS.setStatusLEDColor(RED);
     while (1)
       yield();
   }
@@ -410,8 +422,6 @@ bool Wippersnapper_FS::parseSecrets() {
 
   // close the tempFile
   secretsFile.close();
-
-  return true;
 }
 
 /**************************************************************************/
