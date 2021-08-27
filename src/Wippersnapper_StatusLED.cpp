@@ -144,8 +144,6 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 */
 /****************************************************************************/
 void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
-  WS_DEBUG_PRINT("LED Lock: ");
-  WS_DEBUG_PRINTLN(WS.lockStatusLED);
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return;
