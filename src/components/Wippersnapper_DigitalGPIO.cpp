@@ -64,7 +64,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     // lock status LED pin for use as a digitalIO component
     if (pinName == STATUS_LED_PIN) {
       WS_DEBUG_PRINTLN("* Using status LED as a digital output");
-      WS.lockStatusLED = true;
+      WS.lockStatusLED = false;
     }
 #endif
     WS_DEBUG_PRINT("Configured digital output pin on D");
@@ -131,10 +131,10 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   itoa(pinName, cstr, 10);
   pinMode(pinName, INPUT); // hi-z
 
+// if prv. in-use by DIO, release pin back to application
 #ifdef STATUS_LED_PIN
-                           // release status LED pin back for signaling
   if (pinName == STATUS_LED_PIN) {
-    WS.lockStatusLED = false;
+    WS.lockStatusLED = true;
   }
 #endif
 }
