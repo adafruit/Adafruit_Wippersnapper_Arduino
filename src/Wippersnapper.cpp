@@ -860,7 +860,6 @@ void Wippersnapper::runNetFSM() {
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       mqttRC = WS._mqtt->connect(WS._username, WS._key);
       if (mqttRC == WS_MQTT_CONNECTED) {
-        statusLEDDeinit();
         fsmNetwork = FSM_NET_CHECK_MQTT;
         break;
       }
@@ -933,12 +932,7 @@ void Wippersnapper::pingBroker() {
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
-    if (WS.lockStatusLED) {
-      WS_DEBUG_PRINTLN("Status-LED in-use by WipperSnapper");
-    } else {
-      statusLEDBlink(WS_LED_STATUS_KAT);
-      statusLEDDeinit();
-    }
+    statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }
 }
@@ -1049,7 +1043,6 @@ void Wippersnapper::connect() {
 
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
-  statusLEDDeinit();
 
   WS._mqtt->processPackets(1000);
 }

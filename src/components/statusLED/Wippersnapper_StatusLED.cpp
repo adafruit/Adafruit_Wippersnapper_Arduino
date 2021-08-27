@@ -64,12 +64,10 @@ bool Wippersnapper::statusLEDInit() {
 #endif
 
 #ifdef USE_STATUS_LED
-  if (!WS.lockStatusLED) {
-    pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
-    digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
-    WS.lockStatusLED = true;         // set global pin "lock" flag
-    is_success = true;
-  }
+  pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
+  digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
+  WS.lockStatusLED = true;         // set global pin "lock" flag
+  is_success = true;
 #endif
   return is_success;
 }
@@ -96,7 +94,7 @@ void Wippersnapper::statusLEDDeinit() {
   digitalWrite(STATUS_LED_PIN, 0); // turn off
   pinMode(STATUS_LED_PIN,
           INPUT);           // "release" for use by setting to input (hi-z)
-  WS.lockStatusLED = false; // release global pin lock flag
+  WS.lockStatusLED = false; // un-set global pin "lock" flag
 #endif
 }
 
@@ -146,6 +144,11 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 */
 /****************************************************************************/
 void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
+#ifdef USE_STATUS_LED
+  if (!WS.lockStatusLED)
+    return;
+#endif
+
   int blinkNum = 0;
   uint32_t ledBlinkColor;
   if (statusState == WS_LED_STATUS_KAT) {
