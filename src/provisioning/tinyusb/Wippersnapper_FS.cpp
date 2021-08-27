@@ -55,7 +55,7 @@ bool setVolumeLabel() {
     return false;
   }
   // set label
-  r = f_setlabel(VOLUME_LABEL);
+  r = f_setlabel("WIPPER");
   if (r != FR_OK) {
     return false;
   }
@@ -70,87 +70,26 @@ bool setVolumeLabel() {
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
-
-  // attempt to init flash library
-  if (!flash.begin()) {
-    WS.setStatusLEDColor(RED);
-    while (1)
-      ;
-  }
-
-  // attempt to init filesystem if it doesn't exist
-  if (!wipperFatFs.begin(&flash)) {
-    // flash did NOT init, create a new FatFs
-    if (!makeFilesystem()) {
-      WS.setStatusLEDColor(RED);
-      while (1)
-        ;
-    }
-    // attempt to set the volume label
-    if (!setVolumeLabel()) {
-      WS.setStatusLEDColor(RED);
-      while (1)
-        ;
-    }
-    // sync all data to flash
-    flash.syncBlocks();
-  }
-
-  // initialize USB-MSC device and flash
-  // detach the USB during initialization
+  // Detach USB device during init.
   USBDevice.detach();
-  // wait for detach
+  // Wait for detach
   delay(500);
 
-  // init flash fs
-  flash.begin();
-
-  // Set disk vendor id, product id and revision with string up to 8, 16, 4
-  // characters respectively
-  usb_msc.setID("Adafruit", "External Flash", "1.0");
-  // Set callback
-  usb_msc.setReadWriteCallback(qspi_msc_read_cb, qspi_msc_write_cb,
-                               qspi_msc_flush_cb);
-
-  // Set disk size, block size should be 512 regardless of spi flash page size
-  usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
-  // MSC is ready for read/write
-  usb_msc.setUnitReady(true);
-  // init MSC
-  usb_msc.begin();
-
-  // Does a circuitpython boot file exist?
-  // erase the default cpy fs while we're disconnected
-  if (wipperFatFs.exists("/boot_out.txt")) {
-    wipperFatFs.remove("/boot_out.txt");
-    wipperFatFs.remove("/code.py");
-    File libDir = wipperFatFs.open("/lib");
-    if (libDir.isDirectory()) {
-      libDir.rmRfStar();
-    }
-  }
-  // overwrite previous boot_out file on each boot
-  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
-    wipperFatFs.remove("/wipper_boot_out.txt");
-  }
-  // create wippersnapper_boot_out.txt file
-  if (!createBootFile()) {
+  // If a filesystem does not already exist - attempt to initialize a new
+  // filesystem
+  if (!initFilesystem()) {
+    WS_DEBUG_PRINTLN("ERROR Initializing Filesystem");
     WS.setStatusLEDColor(RED);
     while (1)
       ;
   }
 
-  // check for secrets.json on fs
-  if (!configFileExists()) {
-    // create secrets.json on fs
-    createConfigFileSkel();
-  }
+  // Initialize USB-MSD
+  initUSBMSC();
 
-  WS.setStatusLEDColor(LED_HW_INIT);
-  // re-attach the usb device
-  USBDevice.attach();
-  // wait for enumeration
-  delay(500);
+  // If we created a new filesystem, halt until user RESETs device.
+  if (_freshFS)
+    fsHalt();
 }
 
 /************************************************************/
@@ -165,16 +104,135 @@ Wippersnapper_FS::~Wippersnapper_FS() {
 
 /**************************************************************************/
 /*!
+    @brief    Initializes the flash filesystem.
+    @return   True if filesystem initialized correctly, false otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper_FS::initFilesystem() {
+  // Init. flash library
+  if (!flash.begin())
+    return false;
+
+  // Check if FS exists
+  if (!wipperFatFs.begin(&flash)) {
+    // No filesystem exists - create a new FS
+    // NOTE: THIS WILL ERASE ALL DATA ON THE FLASH
+    if (!makeFilesystem())
+      return false;
+
+    // set volume label
+    if (!setVolumeLabel())
+      return false;
+
+    // sync all data to flash
+    flash.syncBlocks();
+
+    _freshFS = true;
+  }
+
+  // Check new FS
+  if (!wipperFatFs.begin(&flash))
+    return false;
+
+  // If CircuitPython was previously installed - erase CPY FS
+  eraseCPFS();
+
+  // If WipperSnapper was previously installed - remove the
+  // wippersnapper_boot_out.txt file
+  eraseBootFile();
+
+  // No file indexing on macOS
+  wipperFatFs.mkdir("/.fseventsd/");
+  File writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
+  if (!writeFile)
+    return false;
+  writeFile.close();
+
+  writeFile = wipperFatFs.open("/.metadata_never_index", FILE_WRITE);
+  if (!writeFile)
+    return false;
+  writeFile.close();
+
+  writeFile = wipperFatFs.open("/.Trashes", FILE_WRITE);
+  if (!writeFile)
+    return false;
+  writeFile.close();
+
+  // Create wippersnapper_boot_out.txt file
+  if (!createBootFile())
+    return false;
+
+  // Check if secrets.json file already exists
+  if (!configFileExists()) {
+    // Create new secrets.json file
+    createConfigFileSkel();
+  }
+
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes the USB MSC device.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::initUSBMSC() {
+  // Set disk vendor id, product id and revision with string up to 8, 16, 4
+  // characters respectively
+  usb_msc.setID("Adafruit", "External Flash", "1.0");
+  // Set callback
+  usb_msc.setReadWriteCallback(qspi_msc_read_cb, qspi_msc_write_cb,
+                               qspi_msc_flush_cb);
+
+  // Set disk size, block size should be 512 regardless of spi flash page size
+  usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
+  // MSC is ready for read/write
+  usb_msc.setUnitReady(true);
+  // init MSC
+  usb_msc.begin();
+  // re-attach the usb device
+  USBDevice.attach();
+  // wait for enumeration
+  delay(500);
+}
+
+/**************************************************************************/
+/*!
     @brief    Checks if secrets.json file exists on the flash filesystem.
     @returns  True if secrets.json file exists, False otherwise.
 */
 /**************************************************************************/
 bool Wippersnapper_FS::configFileExists() {
   // Does secrets.json file exist?
-  if (!wipperFatFs.exists("/secrets.json")) {
+  if (!wipperFatFs.exists("/secrets.json"))
     return false;
-  }
   return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Erases the default CircuitPython filesystem if it exists.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::eraseCPFS() {
+  if (wipperFatFs.exists("/boot_out.txt")) {
+    wipperFatFs.remove("/boot_out.txt");
+    wipperFatFs.remove("/code.py");
+    File libDir = wipperFatFs.open("/lib");
+    libDir.rmRfStar();
+  }
+}
+
+/**************************************************************************/
+/*!
+    @brief    Erases the existing "wipper_boot_out.txt" file from the FS.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::eraseBootFile() {
+  // overwrite previous boot_out file on each boot
+  if (wipperFatFs.exists("/wipper_boot_out.txt")) {
+    wipperFatFs.remove("/wipper_boot_out.txt");
+  }
 }
 
 /**************************************************************************/
@@ -205,8 +263,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
   // open for writing, create a new file if one doesnt exist
   File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (!secretsFile) {
-    writeErrorToBootOut(
-        "ERROR: Could not create secrets.json on QSPI flash filesystem.");
+    WS.setStatusLEDColor(RED);
     while (1)
       yield();
   }
@@ -232,26 +289,22 @@ void Wippersnapper_FS::createConfigFileSkel() {
       "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
   secretsFile.flush();
   secretsFile.close();
-  // Log success to wipper_boot_out.txt
   writeErrorToBootOut(
-      "* Successfully added secrets.json and wipper_boot_out.txt "
-      "to drive!");
+      "* Please edit the secrets.json file. Then, reset your board.");
 }
 
 /**************************************************************************/
 /*!
     @brief    Parses a secrets.json file on the flash filesystem.
-    @return   True if parsed successfully, False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_FS::parseSecrets() {
+void Wippersnapper_FS::parseSecrets() {
   setNetwork = false;
   // open file for parsing
   File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
-    writeErrorToBootOut("ERROR: Could not open secrets.json file for reading!");
-    return false;
+    fsHalt();
   }
 
   // check if we can deserialize the secrets.json file
@@ -262,7 +315,7 @@ bool Wippersnapper_FS::parseSecrets() {
 
     writeErrorToBootOut("ERROR: deserializeJson() failed with code");
     writeErrorToBootOut(err.c_str());
-    return false;
+    fsHalt();
   }
 
   // Get io username
@@ -271,7 +324,10 @@ bool Wippersnapper_FS::parseSecrets() {
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     writeErrorToBootOut("ERROR: invalid io_username value in secrets.json!");
-    return false;
+    while (1) {
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      yield();
+    }
   }
 
   // check if username is from templated json
@@ -280,9 +336,7 @@ bool Wippersnapper_FS::parseSecrets() {
         "* ERROR: Default username found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
         "effect");
-    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-    while (1)
-      yield();
+    fsHalt();
   }
 
   // Get io key
@@ -291,7 +345,7 @@ bool Wippersnapper_FS::parseSecrets() {
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
-    return false;
+    fsHalt();
   }
 
   // next, we detect the network interface from the `secrets.json`
@@ -316,16 +370,14 @@ bool Wippersnapper_FS::parseSecrets() {
       writeErrorToBootOut(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
-      return false;
+      fsHalt();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_airlift"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-      while (1)
-        yield();
+      fsHalt();
     }
 
     // Set WiFi configuration with parsed values
@@ -354,16 +406,14 @@ bool Wippersnapper_FS::parseSecrets() {
       writeErrorToBootOut(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
-      return false;
+      fsHalt();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_native"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeErrorToBootOut("Default SSID found in secrets.json, please edit "
                           "the secrets.json file and reset the board");
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-      while (1)
-        yield();
+      fsHalt();
     }
 
     // Set WiFi configuration with parsed values
@@ -378,8 +428,7 @@ bool Wippersnapper_FS::parseSecrets() {
         "ERROR: Network interface not detected in secrets.json file.");
     writeErrorToBootOut(
         "ERROR: Network interface not detected in secrets.json file.");
-    while (1)
-      yield();
+    fsHalt();
   }
 
   // clear the document and release all memory from the memory pool
@@ -387,8 +436,6 @@ bool Wippersnapper_FS::parseSecrets() {
 
   // close the tempFile
   secretsFile.close();
-
-  return true;
 }
 
 /**************************************************************************/
@@ -396,7 +443,6 @@ bool Wippersnapper_FS::parseSecrets() {
     @brief    Appends message string to wipper_boot_out.txt file.
     @param    str
                 PROGMEM string.
-
 */
 /**************************************************************************/
 void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
@@ -408,6 +454,19 @@ void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
     bootFile.close();
   } else {
     WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
+  }
+}
+
+/**************************************************************************/
+/*!
+    @brief    Halts execution and blinks the status LEDs yellow.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::fsHalt() {
+  while (1) {
+    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    delay(1000);
+    yield();
   }
 }
 

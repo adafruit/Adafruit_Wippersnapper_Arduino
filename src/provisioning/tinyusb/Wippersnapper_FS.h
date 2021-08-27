@@ -24,7 +24,6 @@
 
 #include "Wippersnapper.h"
 
-#define VOLUME_LABEL "WIPPER" ///< FatFs volume label
 // forward decl.
 class Wippersnapper;
 
@@ -44,11 +43,19 @@ public:
   Wippersnapper_FS();
   ~Wippersnapper_FS();
 
-  bool parseSecrets();
+  bool initFilesystem();
+  void initUSBMSC();
+
+  void eraseCPFS();
+  void eraseBootFile();
+
   bool configFileExists();
   void createConfigFileSkel();
   bool createBootFile();
   void writeErrorToBootOut(PGM_P str);
+  void fsHalt();
+
+  void parseSecrets();
 
   // Adafruit IO Configuration
   const char *io_username =
@@ -61,6 +68,9 @@ public:
   // length of usernames/passwords/tokens
   // is 382 bytes, rounded to nearest power of 2.
   StaticJsonDocument<512> doc; /*!< Json configuration file */
+private:
+  bool _freshFS = false; /*!< True if filesystem was initialized by
+                            WipperSnapper, False otherwise. */
 };
 
 extern Wippersnapper WS;

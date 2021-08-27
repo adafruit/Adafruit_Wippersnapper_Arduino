@@ -57,7 +57,7 @@ bool Wippersnapper::statusLEDInit() {
   if (WS.lockStatusDotStar == false) {
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn all pixels off
-    statusPixelDotStar->setBrightness(10);
+    statusPixelDotStar->setBrightness(5);
     WS.lockStatusDotStar = true;
     is_success = true;
   }
@@ -151,25 +151,21 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
 
   int blinkNum = 0;
   uint32_t ledBlinkColor;
-  switch (statusState) {
-  case WS_LED_STATUS_KAT:
+  if (statusState == WS_LED_STATUS_KAT) {
     blinkNum = 1;
     ledBlinkColor = LED_CONNECTED;
-    break;
-  case WS_LED_STATUS_ERROR:
+  } else if (statusState == WS_LED_STATUS_ERROR) {
     blinkNum = 2;
     ledBlinkColor = LED_ERROR;
-  case WS_LED_STATUS_CONNECTED:
+  } else if (statusState == WS_LED_STATUS_CONNECTED) {
     blinkNum = 3;
     ledBlinkColor = LED_CONNECTED;
-    break;
-  case WS_LED_STATUS_FS_WRITE:
+  } else if (statusState == WS_LED_STATUS_FS_WRITE) {
     blinkNum = 4;
     ledBlinkColor = YELLOW;
-  default:
+  } else {
     blinkNum = 0;
     ledBlinkColor = BLACK;
-    break;
   }
 
   while (blinkNum > 0) {
