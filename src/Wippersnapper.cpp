@@ -909,20 +909,18 @@ bool Wippersnapper::registerBoard() {
   if (!encodePubRegistrationReq())
     return false;
 
-  // NOTE: The registration response msg will arrive
-  // async. to the `cbRegistrationStatus` function....
   runNetFSM();
   feedWDT();
-  // Blocking poll the broker to check if
-  // the msg was processed by cbRegistrationStatus
+  // NOTE: The registration response msg will arrive
+  // async. at the `cbRegistrationStatus` function
+  // and set the `boardStatus`
+
+  // If this condition fails, the WDT resets the h.w.
   while (WS._boardStatus != WS_BOARD_DEF_OK) {
-    WS_DEBUG_PRINT("POLLING REG");
+    WS_DEBUG_PRINT("Polling for registration message response...");
     WS_DEBUG_PRINTLN(WS._boardStatus);
     WS._mqtt->processPackets(10);
-    WS_DEBUG_PRINTLN("ERROR: Did not get registration response from broker, retrying...");
-    WS.setStatusLEDColor(LED_ERROR);
   }
-
   return true;
 }
 
