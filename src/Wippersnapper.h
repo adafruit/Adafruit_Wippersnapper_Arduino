@@ -30,7 +30,7 @@
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
-#include "Wippersnapper_Registration.h"
+//#include "Wippersnapper_Registration.h"
 #include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
 
 // Wippersnapper GPIO Components
@@ -207,8 +207,13 @@ public:
   bool buildErrorTopics();
   void subscribeErrorTopics();
 
-  // Performs board registration FSM
-  bool registerBoard(uint8_t retries);
+  // Registration API
+  bool encodeRegistrationReq();
+  void publishRegistrationReq();
+  void pollRegistrationResp();
+  void decodeRegistrationResp(char *data, uint16_t len);
+  // High-level function which performs board registration
+  bool registerBoard();
 
   // run() loop
   ws_status_t run();

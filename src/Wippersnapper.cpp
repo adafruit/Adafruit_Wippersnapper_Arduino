@@ -503,11 +503,11 @@ bool Wippersnapper::encodePinEvent(
 /**************************************************************************/
 /*!
     @brief    Called when broker responds to a device's publish across
-                the registration topic.
+              the registration topic.
 */
 /**************************************************************************/
 void cbRegistrationStatus(char *data, uint16_t len) {
-  WS._registerBoard->decodeRegMsg(data, len);
+  WS.decodeRegistrationResp(data, len);
 }
 
 /**************************************************************************/
@@ -890,22 +890,42 @@ void Wippersnapper::haltError(String error) {
   }
 }
 
+// TODO: Remove unused retries param
 /**************************************************************************/
 /*!
-    @brief    Sends board description message to Wippersnapper
-    @param    retries
-              Amount of times to retry registration process.
+    @brief    Attempts to register hardware with Adafruit.io WipperSnapper.
     @returns  True if successful, False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::registerBoard(uint8_t retries = 10) {
+bool Wippersnapper::registerBoard() {
   bool is_success = false;
-  WS_DEBUG_PRINTLN("registerBoard()");
-  // Create new board
-  _registerBoard = new Wippersnapper_Registration();
-  // Run the FSM for the registration process
-  is_success = _registerBoard->processRegistration();
-  return is_success;
+  WS_DEBUG_PRINTLN("Registering hardware with IO...");
+
+  // Encode registration request
+  WS_DEBUG_PRINT("Encoding registration message...");
+  if (!encodeRegistrationReq())
+    return false;
+  WS_DEBUG_PRINTLN("Encoded!");
+
+  // Publish registration request to broker
+  runNetFSM();
+  feedWDT();
+  publishRegistrationReq();
+  WS_DEBUG_PRINTLN("Published registration message!");
+
+  runNetFSM();
+  feedWDT();
+  // NOTE: The registration response msg will arrive
+  // async. to the `cbRegistrationStatus` function....
+  // Blocking poll the broker to check if
+  // the msg was processed by cbRegistrationStatus
+  while (WS._boardStatus != WS_BOARD_DEF_OK) {
+    WS._mqtt->processPackets(500);
+    WS_DEBUG_PRINTLN("ERROR: Did not get registration message from broker, retrying...");
+    WS.setStatusLEDColor(LED_ERROR);
+  }
+
+  return true;
 }
 
 /**************************************************************************/
@@ -1036,10 +1056,11 @@ void Wippersnapper::connect() {
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering Board...")
   setStatusLEDColor(LED_IO_REGISTER_HW);
-  if (!registerBoard(10)) {
+
+  if (!registerBoard()) {
     haltError("Unable to register board with Wippersnapper.");
   }
-  feedWDT(); // Hardware registered with IO, feed WDT
+  feedWDT(); // Hardware registered with IO, feed WDT */
 
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
