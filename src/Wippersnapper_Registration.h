@@ -32,15 +32,15 @@ public:
   bool processRegistration();
   void encodeRegMsg();
   void publishRegMsg();
-  bool pollRegMsg();
+  void pollRegMsg();
   void decodeRegMsg(char *data, uint16_t len);
 
 private:
   enum class FSMReg {
     REG_CREATE_ENCODE_MSG,
-    REG_PUBLISH_MSG,
-    REG_DECODE_MSG,
-    REG_DECODED_MSG,
+    REG_PUBLISH_REQ_MSG,
+    REG_POLL_MSG,
+    REG_PARSE_RESP_MSG,
   };
   FSMReg _state = FSMReg::REG_CREATE_ENCODE_MSG;
 

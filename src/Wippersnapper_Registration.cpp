@@ -63,24 +63,18 @@ bool Wippersnapper_Registration::processRegistration() {
     case FSMReg::REG_CREATE_ENCODE_MSG:
       WS_DEBUG_PRINT("Encoding registration message...");
       encodeRegMsg();
-      _state = FSMReg::REG_PUBLISH_MSG;
+      _state = FSMReg::REG_PUBLISH_REQ_MSG;
       break;
-    case FSMReg::REG_PUBLISH_MSG:
+    case FSMReg::REG_PUBLISH_REQ_MSG:
       WS_DEBUG_PRINT("Publishing registration message...");
       publishRegMsg();
-      _state = FSMReg::REG_DECODE_MSG;
+      _state = FSMReg::REG_POLL_MSG;
       break;
-    case FSMReg::REG_DECODE_MSG:
-      if (!pollRegMsg()) {
-        // delay 1s between polling attempts
-        delay(1 * 1000);
-        // attempt to publish again
-        _state = FSMReg::REG_PUBLISH_MSG;
-        break;
-      }
-      _state = FSMReg::REG_DECODED_MSG;
+    case FSMReg::REG_POLL_MSG:
+      pollRegMsg(); // blocking poll
+      _state = FSMReg::REG_PARSE_RESP_MSG;
       break;
-    case FSMReg::REG_DECODED_MSG:
+    case FSMReg::REG_PARSE_RESP_MSG:
       is_registered = true; // if successful
       break;
     default:
@@ -137,8 +131,7 @@ void Wippersnapper_Registration::encodeRegMsg() {
 */
 /************************************************************/
 void Wippersnapper_Registration::publishRegMsg() {
-  // Run the network fsm
-  // WS.runNetFSM();
+
   // Publish
   WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
   WS_DEBUG_PRINTLN("Published!")
@@ -147,24 +140,21 @@ void Wippersnapper_Registration::publishRegMsg() {
 
 /************************************************************/
 /*!
-    @brief    Polls the broker for a response to a published
-                registration message.
-    @returns  True if board definition received by broker
-                successfully, False otherwise.
+    @brief    Performs a blocking polling loop to obtain the
+              registration message response from the broker.
+              If not obtained, the WDT will time out and
+              reset the hardware.
 */
 /************************************************************/
-bool Wippersnapper_Registration::pollRegMsg() {
-  bool is_success = false;
-  // Check network
-  // WS.runNetFSM();
-
-  // poll for response from broker
-  WS.feedWDT(); // let us drop out if we can't process
-  WS._mqtt->processPackets(100);
-  if (WS._boardStatus == WS_BOARD_DEF_OK)
-    is_success = true;
-
-  return is_success;
+void Wippersnapper_Registration::pollRegMsg() {
+  // set the WDT
+  WS.feedWDT();
+  // poll and check until we WDT reset
+  while (WS._boardStatus != WS_BOARD_DEF_OK) {
+    WS._mqtt->processPackets(500);
+    WS_DEBUG_PRINTLN("ERROR: Did not get registration message from broker, retrying...");
+    WS.setStatusLEDColor(LED_ERROR);
+  }
 }
 
 /************************************************************/
