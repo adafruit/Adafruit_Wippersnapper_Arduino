@@ -902,25 +902,18 @@ bool Wippersnapper::registerBoard() {
   bool is_success = false;
   WS_DEBUG_PRINTLN("Registering hardware with IO...");
 
-  // Encode registration request
+  // Encode and publish registration request message to broker
   runNetFSM();
   feedWDT();
   WS_DEBUG_PRINT("Encoding registration request...");
   if (!encodePubRegistrationReq())
     return false;
 
+  // Blocking, attempt to obtain broker's response message
   runNetFSM();
   feedWDT();
-  // NOTE: The registration response msg will arrive
-  // async. at the `cbRegistrationStatus` function
-  // and set the `boardStatus`
+  pollRegistrationResp();
 
-  // If this condition fails, the WDT resets the h.w.
-  while (WS._boardStatus != WS_BOARD_DEF_OK) {
-    WS_DEBUG_PRINT("Polling for registration message response...");
-    WS_DEBUG_PRINTLN(WS._boardStatus);
-    WS._mqtt->processPackets(10);
-  }
   return true;
 }
 

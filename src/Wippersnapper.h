@@ -30,7 +30,6 @@
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
-//#include "Wippersnapper_Registration.h"
 #include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
 
 // Wippersnapper GPIO Components
@@ -156,7 +155,6 @@ typedef enum {
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   256 ///< MAXIMUM expected payload size, in bytes
 
-class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
@@ -208,11 +206,10 @@ public:
   void subscribeErrorTopics();
 
   // Registration API
-  bool encodePubRegistrationReq();
-  void pollRegistrationResp();
-  void decodeRegistrationResp(char *data, uint16_t len);
-  // High-level function which performs board registration
   bool registerBoard();
+  bool encodePubRegistrationReq();
+  void decodeRegistrationResp(char *data, uint16_t len);
+  void pollRegistrationResp();
 
   // run() loop
   ws_status_t run();
@@ -253,8 +250,6 @@ public:
 
   ws_board_status_t _boardStatus; ///< Hardware's registration status
 
-  Wippersnapper_Registration *_registerBoard =
-      NULL;                                ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class

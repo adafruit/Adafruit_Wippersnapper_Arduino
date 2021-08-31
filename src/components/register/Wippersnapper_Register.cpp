@@ -17,11 +17,15 @@
 
 extern Wippersnapper WS;
 
+/****************************************************************************/
+/*!
+    @brief    Encodes hardware registration request message and publishes
+              the message to the Adafruit IO broker.
+    @returns  True if encoded and/or published successfully, False otherwise.
+*/
+/****************************************************************************/
 bool Wippersnapper::encodePubRegistrationReq() {
   bool _status;
-  uint8_t _message_buffer[128];
-  size_t _message_len;
-  pb_ostream_t _msg_stream;
 
   WS_DEBUG_PRINT("Encoding registration msg...");
   // Create message object
@@ -38,12 +42,14 @@ bool Wippersnapper::encodePubRegistrationReq() {
   strcpy(_message.str_version, WS_VERSION);
 
   // encode registration request message
-  _msg_stream = pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
+  uint8_t _message_buffer[128];
+  pb_ostream_t _msg_stream =
+      pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
   _status = pb_encode(
       &_msg_stream,
       wippersnapper_description_v1_CreateDescriptionRequest_fields, &_message);
-  _message_len = _msg_stream.bytes_written;
+  size_t _message_len = _msg_stream.bytes_written;
 
   // verify message
   if (!_status)
@@ -57,25 +63,38 @@ bool Wippersnapper::encodePubRegistrationReq() {
   return _status;
 }
 
-/************************************************************/
+/****************************************************************************/
 /*!
-    @brief    Performs a blocking polling loop to obtain the
-              registration message response from the broker.
-              If not obtained, the WDT will time out and
-              reset the hardware.
+    @brief    Polls the broker for the hardware registration response message.
+
+              NOTE: This function is BLOCKING and will trigger a WDT reset
+              if the message has not arrived.
+
+             NOTE: The registration response msg will arrive
+             async. at the `cbRegistrationStatus` function
+             and set the `boardStatus`
 */
-/************************************************************/
+/****************************************************************************/
 void Wippersnapper::pollRegistrationResp() {
-  // set the WDT
-  WS.feedWDT();
-  // poll and check until we WDT reset
+  // Blocking loop, WDT reset upon failure.
   while (WS._boardStatus != WS_BOARD_DEF_OK) {
-    WS._mqtt->processPackets(500);
-    WS_DEBUG_PRINTLN("ERROR: Did not get registration message from broker, polling...");
-    WS.setStatusLEDColor(LED_ERROR);
+    WS_DEBUG_PRINT("Polling for registration message response...");
+    WS_DEBUG_PRINTLN(WS._boardStatus);
+    WS._mqtt->processPackets(10); // poll
+    WS._mqtt->ping();             // keepalive
   }
 }
 
+/****************************************************************************/
+/*!
+    @brief    Decodes hardware registration response message from the
+              Adafruit IO MQTT broker and initializes hardware components.
+    @param    data
+              MQTT message from the Adafruit IO MQTT broker.
+    @param    len
+              Length of data from the Adafruit IO MQTT broker.
+*/
+/****************************************************************************/
 void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("GOT Registration Response Message:");
   uint8_t buffer[len];
@@ -94,21 +113,22 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
     WS.haltError("Could not decode registration response");
   }
   // Decode registration response message
-  if (message.response == wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK) {
-      WS_DEBUG_PRINTLN("Hardware Response Msg:")
-      WS_DEBUG_PRINT("\tGPIO Pins: ");
-      WS_DEBUG_PRINTLN(message.total_gpio_pins);
-      WS_DEBUG_PRINT("\tAnalog Pins: ");
-      WS_DEBUG_PRINTLN(message.total_analog_pins);
-      WS_DEBUG_PRINT("\tReference voltage: ");
-      WS_DEBUG_PRINT(message.reference_voltage);
-      WS_DEBUG_PRINTLN("v");
-      // Initialize Digital IO class
-      WS._digitalGPIO = new Wippersnapper_DigitalGPIO(message.total_gpio_pins);
-      // Initialize Analog IO class
-      WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins,
-                                                message.reference_voltage);
-      WS._boardStatus = WS_BOARD_DEF_OK;
+  if (message.response ==
+      wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK) {
+    WS_DEBUG_PRINTLN("Hardware Response Msg:")
+    WS_DEBUG_PRINT("\tGPIO Pins: ");
+    WS_DEBUG_PRINTLN(message.total_gpio_pins);
+    WS_DEBUG_PRINT("\tAnalog Pins: ");
+    WS_DEBUG_PRINTLN(message.total_analog_pins);
+    WS_DEBUG_PRINT("\tReference voltage: ");
+    WS_DEBUG_PRINT(message.reference_voltage);
+    WS_DEBUG_PRINTLN("v");
+    // Initialize Digital IO class
+    WS._digitalGPIO = new Wippersnapper_DigitalGPIO(message.total_gpio_pins);
+    // Initialize Analog IO class
+    WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins,
+                                              message.reference_voltage);
+    WS._boardStatus = WS_BOARD_DEF_OK;
   } else {
     WS._boardStatus = WS_BOARD_DEF_INVALID;
   }
