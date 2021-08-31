@@ -208,8 +208,7 @@ public:
   void subscribeErrorTopics();
 
   // Registration API
-  bool encodeRegistrationReq();
-  void publishRegistrationReq();
+  bool encodePubRegistrationReq();
   void pollRegistrationResp();
   void decodeRegistrationResp(char *data, uint16_t len);
   // High-level function which performs board registration

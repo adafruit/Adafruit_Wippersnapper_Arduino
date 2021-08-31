@@ -17,28 +17,28 @@
 
 extern Wippersnapper WS;
 
-bool Wippersnapper::encodeRegistrationReq() {
-  WS_DEBUG_PRINT("Encoding registration msg...");
-  _status = true;
+bool Wippersnapper::encodePubRegistrationReq() {
+  bool _status;
+  uint8_t _message_buffer[128];
+  size_t _message_len;
+  pb_ostream_t _msg_stream;
 
+  WS_DEBUG_PRINT("Encoding registration msg...");
   // Create message object
   wippersnapper_description_v1_CreateDescriptionRequest _message =
       wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
 
-  // Set UID
-  _machine_name = WS._boardId;
-  _uid = atoi(WS.sUID);
-
   // Set machine_name
-  strcpy(_message.machine_name, _machine_name);
-  _message.mac_addr = _uid;
+  strcpy(_message.machine_name, WS._boardId);
+
+  // Set MAC address
+  _message.mac_addr = atoi(WS.sUID);
 
   // Set version
   strcpy(_message.str_version, WS_VERSION);
 
-  // encode message
-  pb_ostream_t _msg_stream =
-      pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
+  // encode registration request message
+  _msg_stream = pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
   _status = pb_encode(
       &_msg_stream,
@@ -47,19 +47,14 @@ bool Wippersnapper::encodeRegistrationReq() {
 
   // verify message
   if (!_status)
-    return _status
-  return _status;
-}
+    return _status;
 
-/************************************************************/
-/*!
-    @brief    Publishes a registration message to the
-                Wippersnapper broker.
-*/
-/************************************************************/
-void Wippersnapper::publishRegistrationReq() {
+  // pubish message
   WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
+  WS_DEBUG_PRINTLN("Published!");
   WS._boardStatus = WS_BOARD_DEF_SENT;
+
+  return _status;
 }
 
 /************************************************************/
@@ -76,13 +71,13 @@ void Wippersnapper::pollRegistrationResp() {
   // poll and check until we WDT reset
   while (WS._boardStatus != WS_BOARD_DEF_OK) {
     WS._mqtt->processPackets(500);
-    WS_DEBUG_PRINTLN("ERROR: Did not get registration message from broker, retrying...");
+    WS_DEBUG_PRINTLN("ERROR: Did not get registration message from broker, polling...");
     WS.setStatusLEDColor(LED_ERROR);
   }
 }
 
 void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("-> Registration Message");
+  WS_DEBUG_PRINTLN("GOT Registration Response Message:");
   uint8_t buffer[len];
   memcpy(buffer, data, len);
 
@@ -96,16 +91,16 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
   if (!pb_decode(&stream,
                  wippersnapper_description_v1_CreateDescriptionResponse_fields,
                  &message)) {
-    WS_DEBUG_PRINTLN("Error decoding description status message!");
-  } else { // set board status
-    switch (message.response) {
-    case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK:
-      WS_DEBUG_PRINTLN("Found hardware with:")
-      WS_DEBUG_PRINT("GPIO Pins: ");
+    WS.haltError("Could not decode registration response");
+  }
+  // Decode registration response message
+  if (message.response == wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK) {
+      WS_DEBUG_PRINTLN("Hardware Response Msg:")
+      WS_DEBUG_PRINT("\tGPIO Pins: ");
       WS_DEBUG_PRINTLN(message.total_gpio_pins);
-      WS_DEBUG_PRINT("Analog Pins: ");
+      WS_DEBUG_PRINT("\tAnalog Pins: ");
       WS_DEBUG_PRINTLN(message.total_analog_pins);
-      WS_DEBUG_PRINT("Reference voltage: ");
+      WS_DEBUG_PRINT("\tReference voltage: ");
       WS_DEBUG_PRINT(message.reference_voltage);
       WS_DEBUG_PRINTLN("v");
       // Initialize Digital IO class
@@ -114,15 +109,7 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
       WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins,
                                                 message.reference_voltage);
       WS._boardStatus = WS_BOARD_DEF_OK;
-      break;
-    case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_BOARD_NOT_FOUND:
-      WS._boardStatus = WS_BOARD_DEF_INVALID;
-      break;
-    case wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_UNSPECIFIED:
-      WS._boardStatus = WS_BOARD_DEF_UNSPECIFIED;
-      break;
-    default:
-      WS._boardStatus = WS_BOARD_DEF_UNSPECIFIED;
-    }
+  } else {
+    WS._boardStatus = WS_BOARD_DEF_INVALID;
   }
 }

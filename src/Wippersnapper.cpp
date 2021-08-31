@@ -507,6 +507,7 @@ bool Wippersnapper::encodePinEvent(
 */
 /**************************************************************************/
 void cbRegistrationStatus(char *data, uint16_t len) {
+  // call decoder for registration response msg
   WS.decodeRegistrationResp(data, len);
 }
 
@@ -902,26 +903,23 @@ bool Wippersnapper::registerBoard() {
   WS_DEBUG_PRINTLN("Registering hardware with IO...");
 
   // Encode registration request
-  WS_DEBUG_PRINT("Encoding registration message...");
-  if (!encodeRegistrationReq())
+  runNetFSM();
+  feedWDT();
+  WS_DEBUG_PRINT("Encoding registration request...");
+  if (!encodePubRegistrationReq())
     return false;
-  WS_DEBUG_PRINTLN("Encoded!");
 
-  // Publish registration request to broker
-  runNetFSM();
-  feedWDT();
-  publishRegistrationReq();
-  WS_DEBUG_PRINTLN("Published registration message!");
-
-  runNetFSM();
-  feedWDT();
   // NOTE: The registration response msg will arrive
   // async. to the `cbRegistrationStatus` function....
+  runNetFSM();
+  feedWDT();
   // Blocking poll the broker to check if
   // the msg was processed by cbRegistrationStatus
   while (WS._boardStatus != WS_BOARD_DEF_OK) {
-    WS._mqtt->processPackets(500);
-    WS_DEBUG_PRINTLN("ERROR: Did not get registration message from broker, retrying...");
+    WS_DEBUG_PRINT("POLLING REG");
+    WS_DEBUG_PRINTLN(WS._boardStatus);
+    WS._mqtt->processPackets(10);
+    WS_DEBUG_PRINTLN("ERROR: Did not get registration response from broker, retrying...");
     WS.setStatusLEDColor(LED_ERROR);
   }
 
