@@ -301,6 +301,7 @@ protected:
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
   char *_topic_description_status_complete;
+  char *_topic_device_pin_config_complete;
   char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
 
   Adafruit_MQTT_Subscribe

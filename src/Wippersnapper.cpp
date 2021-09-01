@@ -741,11 +741,16 @@ bool Wippersnapper::buildWSTopics() {
       strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
       strlen("broker") + 1);
 
-  // Registration status topic
+  // Registration status completion topic
   WS._topic_description_status_complete = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
       strlen("/device/complete") + 1);
+
+  // Topic to signal pin configuration complete from device to broker
+  WS._topic_device_pin_config_complete = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/pinConfigComplete") + 1);
 
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(
@@ -803,6 +808,18 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_device, "device");
   } else { // malloc failed
     WS._topic_signal_device = 0;
+    is_success = false;
+  }
+
+  // Create device-to-broker signal topic
+  if (WS._topic_device_pin_config_complete) {
+    strcpy(WS._topic_device_pin_config_complete, WS._username);
+    strcat(WS._topic_device_pin_config_complete, "/wprsnpr/");
+    strcat(WS._topic_device_pin_config_complete, _device_uid);
+    strcat(WS._topic_device_pin_config_complete, TOPIC_SIGNALS);
+    strcat(WS._topic_device_pin_config_complete, "device/pinConfigComplete");
+  } else { // malloc failed
+    WS._topic_device_pin_config_complete = 0;
     is_success = false;
   }
 
@@ -1080,10 +1097,35 @@ void Wippersnapper::connect() {
 
   WS_DEBUG_PRINTLN("POLLING CONFIG PACKETS FOR 2SEC.");
   WS._mqtt->processPackets(2000);
-  // TODO
   // did we get and process the registration message?
   if (!WS.pinCfgCompleted)
     haltError("Did not get configuration message from broker, resetting...");
+
+  // Publish that we've set up the pins and are ready to run
+    // Publish RegistrationComplete message to broker
+    wippersnapper_signal_v1_SignalResponse msg = wippersnapper_signal_v1_SignalResponse_init_zero;
+    msg.which_payload = wippersnapper_signal_v1_SignalResponse_configuration_complete_tag;
+    msg.payload.configuration_complete = true;
+
+    // encode registration request message
+    uint8_t _message_buffer[128];
+    pb_ostream_t _msg_stream =
+        pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
+
+    bool _status = pb_encode(
+        &_msg_stream,
+        wippersnapper_description_v1_RegistrationComplete_fields, &msg);
+    size_t _message_len = _msg_stream.bytes_written;
+
+    // verify message encoded correctly
+      if (!_status)
+        haltError("Could not encode, resetting...");
+
+    // Publish message
+    WS_DEBUG_PRINTLN("Publishing to pin config complete...");
+    WS.publish(WS._topic_device_pin_config_complete, _message_buffer, _message_len, 1);
+    WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
+
 
   WS_DEBUG_PRINTLN("Configuration complete!\nRunning application.");
 }
