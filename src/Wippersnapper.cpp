@@ -428,7 +428,6 @@ bool Wippersnapper::decodeSignalMsg(
   encodedSignalMsg->cb_payload.funcs.decode = cbSignalMsg;
 
   // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
-  WS_DEBUG_PRINT("Buffer Size: "); WS_DEBUG_PRINTLN(WS.bufSize);
   pb_istream_t stream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
   if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
                  encodedSignalMsg)) {
@@ -892,7 +891,6 @@ void Wippersnapper::haltError(String error) {
   }
 }
 
-// TODO: Remove unused retries param
 /**************************************************************************/
 /*!
     @brief    Attempts to register hardware with Adafruit.io WipperSnapper.
