@@ -49,11 +49,11 @@
 #endif
 
 // Uncomment the following use the staging IO server //
-//#define USE_STAGING
-//#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
+#define USE_STAGING
+#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
 
-#define IO_MQTT_SERVER                                                         \
-  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
+//#define IO_MQTT_SERVER                                                         \
+//  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -299,6 +299,7 @@ protected:
   // MQTT topics
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
+  char *_topic_description_status_complete;
   char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
 
   Adafruit_MQTT_Subscribe

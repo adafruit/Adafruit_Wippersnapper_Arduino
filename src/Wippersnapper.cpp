@@ -735,6 +735,12 @@ bool Wippersnapper::buildWSTopics() {
       strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
       strlen("broker") + 1);
 
+  // Registration status topic
+  WS._topic_description_status_complete = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
+      strlen("/device/complete") + 1);
+
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
@@ -766,6 +772,19 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description_status, "/broker");
   } else { // malloc failed
     WS._topic_description_status = 0;
+    is_success = false;
+  }
+
+    // Create registration status complete topic
+  if (WS._topic_description_status_complete) {
+    strcpy(WS._topic_description_status_complete, WS._username);
+    strcat(WS._topic_description_status_complete, "/wprsnpr/");
+    strcat(WS._topic_description_status_complete, _device_uid);
+    strcat(WS._topic_description_status_complete, TOPIC_DESCRIPTION);
+    strcat(WS._topic_description_status_complete, "status");
+    strcat(WS._topic_description_status_complete, "/device/complete");
+  } else { // malloc failed
+    WS._topic_description_status_complete = 0;
     is_success = false;
   }
 
@@ -1053,7 +1072,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
 
-  WS._mqtt->processPackets(1000);
+  WS_DEBUG_PRINTLN("POLLING CONFIG PACKETS FOR 2SEC.");
+  WS._mqtt->processPackets(2000);
+  WS_DEBUG_PRINTLN("DONE, running application.");
 }
 
 /**************************************************************************/
