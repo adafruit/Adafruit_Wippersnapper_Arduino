@@ -1053,7 +1053,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
 
-  WS._mqtt->processPackets(2000);
+  WS._mqtt->processPackets(1000);
 }
 
 /**************************************************************************/
