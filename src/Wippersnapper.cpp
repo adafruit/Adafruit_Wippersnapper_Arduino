@@ -385,6 +385,12 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msg)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
       is_success = false;
+      WS.pinCfgCompleted = false;
+    }
+    // configured!
+    if (!WS.pinCfgCompleted) {
+      WS.pinCfgCompleted = true;
+      WS_DEBUG_PRINTLN("Initial Pin Configuration Completed!");
     }
   } else if (field->tag ==
              wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
@@ -1074,7 +1080,12 @@ void Wippersnapper::connect() {
 
   WS_DEBUG_PRINTLN("POLLING CONFIG PACKETS FOR 2SEC.");
   WS._mqtt->processPackets(2000);
-  WS_DEBUG_PRINTLN("DONE, running application.");
+  // TODO
+  // did we get and process the registration message?
+  if (!WS.pinCfgCompleted)
+    haltError("Did not get configuration message from broker, resetting...");
+
+  WS_DEBUG_PRINTLN("Configuration complete!\nRunning application.");
 }
 
 /**************************************************************************/

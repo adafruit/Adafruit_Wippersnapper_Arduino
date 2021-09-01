@@ -280,6 +280,7 @@ public:
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
+  bool pinCfgCompleted = false;
 private:
   void _init();
 
