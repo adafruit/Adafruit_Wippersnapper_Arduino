@@ -387,10 +387,10 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       is_success = false;
       WS.pinCfgCompleted = false;
     }
-    // configured!
+    // If this is the initial configuration
     if (!WS.pinCfgCompleted) {
+      WS_DEBUG_PRINTLN("Initial Pin Configuration Complete!");
       WS.pinCfgCompleted = true;
-      WS_DEBUG_PRINTLN("Initial Pin Configuration Completed!");
     }
   } else if (field->tag ==
              wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
