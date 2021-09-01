@@ -48,13 +48,12 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-#define USE_STAGING
 
-// Uncomment to use the staging IO server staging builds
-#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
-// (Staging)
-//#define IO_MQTT_SERVER                                                         \
-//  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
+// Uncomment the following use the staging IO server //
+//#define USE_STAGING
+//#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
+
+#define IO_MQTT_SERVER "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -65,7 +64,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.8" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.9" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
