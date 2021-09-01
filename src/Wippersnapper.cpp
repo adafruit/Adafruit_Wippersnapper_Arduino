@@ -750,7 +750,8 @@ bool Wippersnapper::buildWSTopics() {
   // Topic to signal pin configuration complete from device to broker
   WS._topic_device_pin_config_complete = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/pinConfigComplete") + 1);
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device/pinConfigComplete") + 1);
 
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(
@@ -786,7 +787,7 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
-    // Create registration status complete topic
+  // Create registration status complete topic
   if (WS._topic_description_status_complete) {
     strcpy(WS._topic_description_status_complete, WS._username);
     strcat(WS._topic_description_status_complete, "/wprsnpr/");
@@ -1084,50 +1085,60 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
-  WS_DEBUG_PRINTLN("Registering Board...")
+  WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
   setStatusLEDColor(LED_IO_REGISTER_HW);
 
   if (!registerBoard()) {
-    haltError("Unable to register board with Wippersnapper.");
+    haltError("Unable to register with WipperSnapper.");
   }
   feedWDT(); // Hardware registered with IO, feed WDT */
+  WS_DEBUG_PRINTLN("Registered with WipperSnapper.");
 
-  WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
-  statusLEDBlink(WS_LED_STATUS_CONNECTED);
-
-  WS_DEBUG_PRINTLN("POLLING CONFIG PACKETS FOR 2SEC.");
+  WS_DEBUG_PRINTLN("Polling for configuration message...");
   WS._mqtt->processPackets(2000);
+
   // did we get and process the registration message?
   if (!WS.pinCfgCompleted)
     haltError("Did not get configuration message from broker, resetting...");
 
+  // Publish that we have completed the configuration workflow
+  feedWDT();
+  runNetFSM();
+  publishPinConfigComplete();
+
+  // Run application
+  statusLEDBlink(WS_LED_STATUS_CONNECTED);
+  WS_DEBUG_PRINTLN(
+      "Registration and configuration complete!\nRunning application...");
+}
+
+void Wippersnapper::publishPinConfigComplete() {
   // Publish that we've set up the pins and are ready to run
-    // Publish RegistrationComplete message to broker
-    wippersnapper_signal_v1_SignalResponse msg = wippersnapper_signal_v1_SignalResponse_init_zero;
-    msg.which_payload = wippersnapper_signal_v1_SignalResponse_configuration_complete_tag;
-    msg.payload.configuration_complete = true;
+  wippersnapper_signal_v1_SignalResponse msg =
+      wippersnapper_signal_v1_SignalResponse_init_zero;
+  msg.which_payload =
+      wippersnapper_signal_v1_SignalResponse_configuration_complete_tag;
+  msg.payload.configuration_complete = true;
 
-    // encode registration request message
-    uint8_t _message_buffer[128];
-    pb_ostream_t _msg_stream =
-        pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
+  // encode registration request message
+  uint8_t _message_buffer[128];
+  pb_ostream_t _msg_stream =
+      pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
-    bool _status = pb_encode(
-        &_msg_stream,
-        wippersnapper_description_v1_RegistrationComplete_fields, &msg);
-    size_t _message_len = _msg_stream.bytes_written;
+  bool _status =
+      pb_encode(&_msg_stream,
+                wippersnapper_description_v1_RegistrationComplete_fields, &msg);
+  size_t _message_len = _msg_stream.bytes_written;
 
-    // verify message encoded correctly
-      if (!_status)
-        haltError("Could not encode, resetting...");
+  // verify message encoded correctly
+  if (!_status)
+    haltError("Could not encode, resetting...");
 
-    // Publish message
-    WS_DEBUG_PRINTLN("Publishing to pin config complete...");
-    WS.publish(WS._topic_device_pin_config_complete, _message_buffer, _message_len, 1);
-    WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
-
-
-  WS_DEBUG_PRINTLN("Configuration complete!\nRunning application.");
+  // Publish message
+  WS_DEBUG_PRINTLN("Publishing to pin config complete...");
+  WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
+             _message_len, 1);
+  WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
 }
 
 /**************************************************************************/
@@ -1138,12 +1149,8 @@ void Wippersnapper::connect() {
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
   // Check networking
-  // TODO: Handle MQTT errors within the new netcode, or bring them outwards to
-  // another fsm
   runNetFSM();
   feedWDT();
-
-  // keepalive
   pingBroker();
 
   // Process all incoming packets from Wippersnapper MQTT Broker

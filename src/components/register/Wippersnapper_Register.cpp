@@ -81,7 +81,7 @@ void Wippersnapper::pollRegistrationResp() {
     WS_DEBUG_PRINT("Polling for registration message response...");
     WS_DEBUG_PRINTLN(WS._boardStatus);
     WS._mqtt->processPackets(10); // poll
-    //WS._mqtt->ping();             // keepalive
+    // WS._mqtt->ping();             // keepalive
   }
 }
 
@@ -131,7 +131,8 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
     WS._boardStatus = WS_BOARD_DEF_OK;
 
     // Publish RegistrationComplete message to broker
-    wippersnapper_description_v1_RegistrationComplete msg = wippersnapper_description_v1_RegistrationComplete_init_zero;
+    wippersnapper_description_v1_RegistrationComplete msg =
+        wippersnapper_description_v1_RegistrationComplete_init_zero;
     msg.is_complete = true;
 
     // encode registration request message
@@ -140,23 +141,22 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
         pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
     bool _status = pb_encode(
-        &_msg_stream,
-        wippersnapper_description_v1_RegistrationComplete_fields, &msg);
+        &_msg_stream, wippersnapper_description_v1_RegistrationComplete_fields,
+        &msg);
     size_t _message_len = _msg_stream.bytes_written;
 
     // verify message encoded correctly
-      if (!_status) {
-        WS._boardStatus = WS_BOARD_DEF_INVALID;
-        return;
-      }
+    if (!_status) {
+      WS._boardStatus = WS_BOARD_DEF_INVALID;
+      return;
+    }
 
     // Publish message
-    WS.publish(_topic_description_status_complete, _message_buffer, _message_len, 1);
+    WS.publish(_topic_description_status_complete, _message_buffer,
+               _message_len, 1);
     WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
 
   } else {
     WS._boardStatus = WS_BOARD_DEF_INVALID;
   }
-
-
 }

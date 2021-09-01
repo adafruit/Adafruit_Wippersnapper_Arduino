@@ -211,6 +211,8 @@ public:
   bool encodePubRegistrationReq();
   void decodeRegistrationResp(char *data, uint16_t len);
   void pollRegistrationResp();
+  // Configuration API
+  void publishPinConfigComplete();
 
   // run() loop
   ws_status_t run();
@@ -281,6 +283,7 @@ public:
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
   bool pinCfgCompleted = false;
+
 private:
   void _init();
 
@@ -302,7 +305,7 @@ protected:
                                       status resp. from the broker */
   char *_topic_description_status_complete;
   char *_topic_device_pin_config_complete;
-  char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
+  char *_topic_signal_brkr; /*!< Wprsnpr->Device messages */
 
   Adafruit_MQTT_Subscribe
       *_topic_description_sub; /*!< Subscription for registration topic. */
