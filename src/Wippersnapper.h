@@ -48,11 +48,13 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
+#define USE_STAGING
+
 // Uncomment to use the staging IO server staging builds
-// #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
+#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
 // (Staging)
-#define IO_MQTT_SERVER                                                         \
-  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
+//#define IO_MQTT_SERVER                                                         \
+//  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -153,7 +155,7 @@ typedef enum {
   4000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  256 ///< MAXIMUM expected payload size, in bytes
+  300 ///< MAXIMUM expected payload size, in bytes
 
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;

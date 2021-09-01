@@ -383,7 +383,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // decode each ConfigurePinRequest sub-message
     if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields,
                    &msg)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
+      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
       is_success = false;
     }
   } else if (field->tag ==
@@ -428,6 +428,7 @@ bool Wippersnapper::decodeSignalMsg(
   encodedSignalMsg->cb_payload.funcs.decode = cbSignalMsg;
 
   // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
+  WS_DEBUG_PRINT("Buffer Size: "); WS_DEBUG_PRINTLN(WS.bufSize);
   pb_istream_t stream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
   if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
                  encodedSignalMsg)) {
@@ -1054,7 +1055,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
 
-  WS._mqtt->processPackets(1000);
+  WS._mqtt->processPackets(2000);
 }
 
 /**************************************************************************/
