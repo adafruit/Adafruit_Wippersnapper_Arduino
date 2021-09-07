@@ -30,7 +30,6 @@
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
-#include "Wippersnapper_Registration.h"
 #include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
 
 // Wippersnapper GPIO Components
@@ -49,9 +48,10 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-// Uncomment to use the staging IO server staging builds
-// #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
-// (Staging)
+// Uncomment the following use the staging IO server //
+//#define USE_STAGING
+//#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
+
 #define IO_MQTT_SERVER                                                         \
   "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
@@ -64,7 +64,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.8" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.9" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -154,9 +154,8 @@ typedef enum {
   4000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  256 ///< MAXIMUM expected payload size, in bytes
+  300 ///< MAXIMUM expected payload size, in bytes
 
-class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
@@ -207,8 +206,13 @@ public:
   bool buildErrorTopics();
   void subscribeErrorTopics();
 
-  // Performs board registration FSM
-  bool registerBoard(uint8_t retries);
+  // Registration API
+  bool registerBoard();
+  bool encodePubRegistrationReq();
+  void decodeRegistrationResp(char *data, uint16_t len);
+  void pollRegistrationResp();
+  // Configuration API
+  void publishPinConfigComplete();
 
   // run() loop
   ws_status_t run();
@@ -249,8 +253,6 @@ public:
 
   ws_board_status_t _boardStatus; ///< Hardware's registration status
 
-  Wippersnapper_Registration *_registerBoard =
-      NULL;                                ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
@@ -280,6 +282,8 @@ public:
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
+  bool pinCfgCompleted = false;
+
 private:
   void _init();
 
@@ -299,7 +303,9 @@ protected:
   // MQTT topics
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
-  char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
+  char *_topic_description_status_complete;
+  char *_topic_device_pin_config_complete;
+  char *_topic_signal_brkr; /*!< Wprsnpr->Device messages */
 
   Adafruit_MQTT_Subscribe
       *_topic_description_sub; /*!< Subscription for registration topic. */

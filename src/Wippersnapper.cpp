@@ -383,8 +383,14 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // decode each ConfigurePinRequest sub-message
     if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields,
                    &msg)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
+      WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
       is_success = false;
+      WS.pinCfgCompleted = false;
+    }
+    // If this is the initial configuration
+    if (!WS.pinCfgCompleted) {
+      WS_DEBUG_PRINTLN("Initial Pin Configuration Complete!");
+      WS.pinCfgCompleted = true;
     }
   } else if (field->tag ==
              wippersnapper_signal_v1_CreateSignalRequest_pin_events_tag) {
@@ -503,11 +509,12 @@ bool Wippersnapper::encodePinEvent(
 /**************************************************************************/
 /*!
     @brief    Called when broker responds to a device's publish across
-                the registration topic.
+              the registration topic.
 */
 /**************************************************************************/
 void cbRegistrationStatus(char *data, uint16_t len) {
-  WS._registerBoard->decodeRegMsg(data, len);
+  // call decoder for registration response msg
+  WS.decodeRegistrationResp(data, len);
 }
 
 /**************************************************************************/
@@ -734,6 +741,18 @@ bool Wippersnapper::buildWSTopics() {
       strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
       strlen("broker") + 1);
 
+  // Registration status completion topic
+  WS._topic_description_status_complete = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
+      strlen("/device/complete") + 1);
+
+  // Topic to signal pin configuration complete from device to broker
+  WS._topic_device_pin_config_complete = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device/pinConfigComplete") + 1);
+
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
@@ -768,6 +787,19 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Create registration status complete topic
+  if (WS._topic_description_status_complete) {
+    strcpy(WS._topic_description_status_complete, WS._username);
+    strcat(WS._topic_description_status_complete, "/wprsnpr/");
+    strcat(WS._topic_description_status_complete, _device_uid);
+    strcat(WS._topic_description_status_complete, TOPIC_DESCRIPTION);
+    strcat(WS._topic_description_status_complete, "status");
+    strcat(WS._topic_description_status_complete, "/device/complete");
+  } else { // malloc failed
+    WS._topic_description_status_complete = 0;
+    is_success = false;
+  }
+
   // Create device-to-broker signal topic
   if (WS._topic_signal_device) {
     strcpy(WS._topic_signal_device, WS._username);
@@ -777,6 +809,18 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_device, "device");
   } else { // malloc failed
     WS._topic_signal_device = 0;
+    is_success = false;
+  }
+
+  // Create device-to-broker signal topic
+  if (WS._topic_device_pin_config_complete) {
+    strcpy(WS._topic_device_pin_config_complete, WS._username);
+    strcat(WS._topic_device_pin_config_complete, "/wprsnpr/");
+    strcat(WS._topic_device_pin_config_complete, _device_uid);
+    strcat(WS._topic_device_pin_config_complete, TOPIC_SIGNALS);
+    strcat(WS._topic_device_pin_config_complete, "device/pinConfigComplete");
+  } else { // malloc failed
+    WS._topic_device_pin_config_complete = 0;
     is_success = false;
   }
 
@@ -892,20 +936,27 @@ void Wippersnapper::haltError(String error) {
 
 /**************************************************************************/
 /*!
-    @brief    Sends board description message to Wippersnapper
-    @param    retries
-              Amount of times to retry registration process.
+    @brief    Attempts to register hardware with Adafruit.io WipperSnapper.
     @returns  True if successful, False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::registerBoard(uint8_t retries = 10) {
+bool Wippersnapper::registerBoard() {
   bool is_success = false;
-  WS_DEBUG_PRINTLN("registerBoard()");
-  // Create new board
-  _registerBoard = new Wippersnapper_Registration();
-  // Run the FSM for the registration process
-  is_success = _registerBoard->processRegistration();
-  return is_success;
+  WS_DEBUG_PRINTLN("Registering hardware with IO...");
+
+  // Encode and publish registration request message to broker
+  runNetFSM();
+  feedWDT();
+  WS_DEBUG_PRINT("Encoding registration request...");
+  if (!encodePubRegistrationReq())
+    return false;
+
+  // Blocking, attempt to obtain broker's response message
+  runNetFSM();
+  feedWDT();
+  pollRegistrationResp();
+
+  return true;
 }
 
 /**************************************************************************/
@@ -1034,17 +1085,60 @@ void Wippersnapper::connect() {
   setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
-  WS_DEBUG_PRINTLN("Registering Board...")
+  WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
   setStatusLEDColor(LED_IO_REGISTER_HW);
-  if (!registerBoard(10)) {
-    haltError("Unable to register board with Wippersnapper.");
+
+  if (!registerBoard()) {
+    haltError("Unable to register with WipperSnapper.");
   }
-  feedWDT(); // Hardware registered with IO, feed WDT
+  feedWDT(); // Hardware registered with IO, feed WDT */
+  WS_DEBUG_PRINTLN("Registered with WipperSnapper.");
 
-  WS_DEBUG_PRINTLN("Registered board with Wippersnapper.");
+  WS_DEBUG_PRINTLN("Polling for configuration message...");
+  WS._mqtt->processPackets(2000);
+
+  // did we get and process the registration message?
+  if (!WS.pinCfgCompleted)
+    haltError("Did not get configuration message from broker, resetting...");
+
+  // Publish that we have completed the configuration workflow
+  feedWDT();
+  runNetFSM();
+  publishPinConfigComplete();
+
+  // Run application
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
+  WS_DEBUG_PRINTLN(
+      "Registration and configuration complete!\nRunning application...");
+}
 
-  WS._mqtt->processPackets(1000);
+void Wippersnapper::publishPinConfigComplete() {
+  // Publish that we've set up the pins and are ready to run
+  wippersnapper_signal_v1_SignalResponse msg =
+      wippersnapper_signal_v1_SignalResponse_init_zero;
+  msg.which_payload =
+      wippersnapper_signal_v1_SignalResponse_configuration_complete_tag;
+  msg.payload.configuration_complete = true;
+
+  // encode registration request message
+  uint8_t _message_buffer[128];
+  pb_ostream_t _msg_stream =
+      pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
+
+  bool _status =
+      pb_encode(&_msg_stream,
+                wippersnapper_description_v1_RegistrationComplete_fields, &msg);
+  size_t _message_len = _msg_stream.bytes_written;
+
+  // verify message encoded correctly
+  if (!_status)
+    haltError("Could not encode, resetting...");
+
+  // Publish message
+  WS_DEBUG_PRINTLN("Publishing to pin config complete...");
+  WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
+             _message_len, 1);
+  WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
 }
 
 /**************************************************************************/
@@ -1055,12 +1149,8 @@ void Wippersnapper::connect() {
 /**************************************************************************/
 ws_status_t Wippersnapper::run() {
   // Check networking
-  // TODO: Handle MQTT errors within the new netcode, or bring them outwards to
-  // another fsm
   runNetFSM();
   feedWDT();
-
-  // keepalive
   pingBroker();
 
   // Process all incoming packets from Wippersnapper MQTT Broker
