@@ -1,6 +1,6 @@
-name: Arduino Library CI
+name: WipperSnapper Pull Request CI
 
-on: [pull_request, repository_dispatch]
+on: pull_request
 
 jobs:
   build:
