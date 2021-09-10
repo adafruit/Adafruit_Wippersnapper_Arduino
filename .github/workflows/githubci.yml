@@ -28,10 +28,18 @@ jobs:
         git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
     - name: build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
-    - name: upload build artifacts
+
+    - name: Set vars for branch name and SHA
+      id: vars
+      shell: bash
+      run: |
+        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: Files-${GITHUB_REF#refs/heads/}.${GITHUB_SHA}
+        name: ${{ matrix.arduino-platform }}.${{ steps.vars.outputs.branch }}.${{ steps.vars.outputs.sha_short }}
         path: |
             examples/*/build/*/*.hex
             examples/*/build/*/*.uf2
