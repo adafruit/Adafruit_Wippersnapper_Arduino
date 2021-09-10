@@ -35,7 +35,7 @@ jobs:
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: build-files
+        name: build-filess
         path: |
             examples/*/build/*/*.hex
             examples/*/build/*/*.uf2
