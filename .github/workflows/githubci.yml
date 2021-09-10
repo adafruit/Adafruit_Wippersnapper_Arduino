@@ -29,17 +29,16 @@ jobs:
     - name: build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
 
-    - name: Set vars for branch name and SHA
+    - name: Set var for SHA commit
       id: vars
       shell: bash
       run: |
-        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.arduino-platform }}.${{ steps.vars.outputs.branch }}.${{ steps.vars.outputs.sha_short }}
+        name: ${{ matrix.arduino-platform }}.${{ steps.vars.outputs.sha_short }}
         path: |
             examples/*/build/*/*.hex
             examples/*/build/*/*.uf2
