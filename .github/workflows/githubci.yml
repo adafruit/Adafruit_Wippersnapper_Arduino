@@ -7,9 +7,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["esp8266", "esp32", "funhouse",
-                           "pyportal_tinyusb", "metro_m4_airliftlite_tinyusb"]
-
+        arduino-platform: ["esp32", "funhouse", "magtag",
+                           "metroesp32s2", "pyportal_tinyusb",
+                           "metro_m4_airliftlite_tinyusb"]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-python@v1
@@ -30,7 +30,7 @@ jobs:
       run: |
         git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
 
-    - name: test platforms
+    - name: Build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
 
 
