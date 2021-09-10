@@ -35,7 +35,7 @@ jobs:
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.arduino-platform }}.${{ steps.vars.outputs.sha_short }}
+        name: ${{ github.event.repository.name }}.${{ matrix.arduino-platform }}.${{ steps.vars.outputs.sha_short }}
         path: |
             examples/*/build/*/*.hex
             examples/*/build/*/*.uf2
