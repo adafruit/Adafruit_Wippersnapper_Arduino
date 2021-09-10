@@ -39,7 +39,7 @@ jobs:
 
   clang_and_doxy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-project
     steps:
     - uses: actions/setup-python@v1
       with:
