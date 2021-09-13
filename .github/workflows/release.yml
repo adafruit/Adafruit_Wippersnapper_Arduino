@@ -1,24 +1,21 @@
 name: WipperSnapper Release CI
 
-on: release
+on: push
 
 jobs:
   release-project:
     name: Release WipperSnapper
     runs-on: ubuntu-latest
     needs: build-project
+    if: ${{ github.event_name == 'release'}}
+    permissions:
+      contents: write
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v2
         with:
           name: build-files
-      - name: Create a GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          draft: true
-      - name: Upload Assets to GitHub Release
+      - name: Upload Assets to the GitHub Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
