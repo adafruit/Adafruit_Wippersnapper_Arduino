@@ -1,6 +1,8 @@
 name: WipperSnapper Release CI
 
-on: release
+on:
+  release:
+    types: [published]
 
 jobs:
   release-project:
