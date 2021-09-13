@@ -1,6 +1,6 @@
 name: WipperSnapper Release CI
 
-on: push
+on: release
 
 jobs:
   release-project:
@@ -46,12 +46,12 @@ jobs:
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
       run: |
-            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ github.ref }}.uf2
-            mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ github.ref }}.hex
+            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.uf2
+            mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.hex
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
-            wippersnapper.${{ matrix.arduino-platform }}.${{ github.ref }}.uf2
-            wippersnapper.${{ matrix.arduino-platform }}.${{ github.ref }}.hex
+            wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.uf2
+            wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.hex
