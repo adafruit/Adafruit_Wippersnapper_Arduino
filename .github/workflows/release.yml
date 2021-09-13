@@ -18,7 +18,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: build-files/*/build/*/*.uf2
+          files: Wippersnapper_demo/build/*/*.uf2
 
   build-project:
     name: Build WipperSnapper
