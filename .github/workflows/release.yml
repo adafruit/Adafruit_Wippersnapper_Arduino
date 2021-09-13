@@ -12,13 +12,15 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-files
+      - name: Rename files to include tag name
+        run: mv wippersnapper.*.uf2 wippersnapper.*.${{ github.event.release.tag_name }}.uf2
       - name: List Files
         run: ls
       - name: Upload Assets to the GitHub Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: wippersnapper.*.uf2
+          files: wippersnapper.*.${{ github.event.release.tag_name }}.uf2
 
   build-project:
     name: Build WipperSnapper
