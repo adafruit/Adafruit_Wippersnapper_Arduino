@@ -18,7 +18,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: *.*.uf2
+          files: build/*.uf2
 
   build-project:
     name: Build WipperSnapper
@@ -46,12 +46,13 @@ jobs:
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
       run: |
-            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.uf2
-            mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.hex
+            mkdir build
+            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 build/wippersnapper.${{ matrix.arduino-platform }}.uf2
+            mv examples/*/build/*/Wippersnapper_demo.ino.hex build/wippersnapper.${{ matrix.arduino-platform }}.hex
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
-            wippersnapper.${{ matrix.arduino-platform }}.uf2
-            wippersnapper.${{ matrix.arduino-platform }}.hex
+            build/wippersnapper.${{ matrix.arduino-platform }}.uf2
+            build/wippersnapper.${{ matrix.arduino-platform }}.hex
