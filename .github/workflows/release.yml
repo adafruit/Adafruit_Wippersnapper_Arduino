@@ -1,9 +1,6 @@
 name: WipperSnapper Release CI
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+on: push
 
 jobs:
   release-project:
@@ -17,6 +14,7 @@ jobs:
           name: build-files
       - name: Upload Assets to the GitHub Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: examples/Wippersnapper_demo/build/*/*.uf2
 
