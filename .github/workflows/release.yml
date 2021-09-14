@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["esp32"]
+        arduino-platform: ["esp32s2-funhouse", "esp32s2-metro", "esp32s2-magtag"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -67,10 +67,19 @@ jobs:
         git submodule update --init --recursive && \
         cd tools && \
         python3 get.py
-    - name: Build ESP32-S2 platforms
+    - name: Build all ESP32-S2 platforms
+      run: make ${{ matrix.arduino-platform }}
+    - name: Rename build artifacts to reflect the platform name
       run: |
-        make clean
-        make esp32s2-magtag
+            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+            mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
+    - name: upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-files
+        path: |
+            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
 
   build-esp32:
