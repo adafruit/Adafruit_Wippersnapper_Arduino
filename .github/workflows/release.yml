@@ -12,9 +12,9 @@ jobs:
   release-wippersnapper:
     name: Release WipperSnapper
     runs-on: ubuntu-latest
-    needs: [build-samd, build-esp32]
+    needs: [build-samd, build-esp32, build-esp32s2]
     steps:
-      - name: Download build artifacts
+      - name: Download build artifacts from build-platform steps
         uses: actions/download-artifact@v2
         with:
           name: build-files
@@ -67,6 +67,10 @@ jobs:
         git submodule update --init --recursive && \
         cd tools && \
         python3 get.py
+    - name: Build ESP32-S2 platforms
+      run: |
+        make clean
+        make esp32s2-magtag
 
 
   build-esp32:
