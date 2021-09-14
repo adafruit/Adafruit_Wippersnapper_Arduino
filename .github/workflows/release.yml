@@ -12,7 +12,7 @@ jobs:
   release-project:
     name: Release WipperSnapper
     runs-on: ubuntu-latest
-    needs: build-samd
+    needs: [build-samd, build-esp32]
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v2
