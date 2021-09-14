@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Adafruit Industries, 2021
+#
+# SPDX-License-Identifier: MIT
 name: WipperSnapper Release CI
 
 on:
@@ -39,6 +42,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
+        git fetch --t
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
