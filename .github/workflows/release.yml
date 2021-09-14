@@ -1,8 +1,9 @@
 name: WipperSnapper Release CI
 
 on:
-  release:
-    types: [published]
+  push
+#  release:
+#    types: [published]
 
 jobs:
   release-project:
@@ -28,7 +29,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["pyportal_tinyusb", "metro_m4_airliftlite_tinyusb"]
+        arduino-platform: ["pyportal_tinyusb", "metro_m4_airliftlite_tinyusb",
+                           "esp32"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -50,6 +52,7 @@ jobs:
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.uf2
             mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.hex
+            mv examples/*/build/esp32.*.*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.bin
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -57,3 +60,4 @@ jobs:
         path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.hex
+            wippersnapper.${{ matrix.arduino-platform }}.${{ github.event.release.tag_name }}.bin
