@@ -25,8 +25,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-                  wippersnapper.*.*.uf2
-                  wippersnapper.*.*.bin
+                  wippersnapper.*.uf2
+                  wippersnapper.*.bin
 
   build-esp32:
     name: Build WipperSnapper ESP32
@@ -77,6 +77,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
+        git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
