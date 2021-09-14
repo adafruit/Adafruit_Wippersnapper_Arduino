@@ -28,7 +28,7 @@ jobs:
                   wippersnapper.*.uf2
                   wippersnapper.*.bin
 
-  build-esp32:
+  build-esp32s2:
     name: Build WipperSnapper ESP32-S2
     runs-on: ubuntu-latest
     strategy:
