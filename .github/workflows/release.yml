@@ -67,6 +67,7 @@ jobs:
         git submodule update --init --recursive && \
         cd tools && \
         python3 get.py
+        cd home/runner/work/Adafruit_Wippersnapper_Arduino/Adafruit_Wippersnapper_Arduino
     - name: Build all ESP32-S2 platforms
       run: make ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
