@@ -42,7 +42,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
-        git fetch --t
+        git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
