@@ -29,6 +29,45 @@ jobs:
                   wippersnapper.*.bin
 
   build-esp32:
+    name: Build WipperSnapper ESP32-S2
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arduino-platform: ["esp32"]
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - uses: actions/checkout@v2
+    - name: Get WipperSnapper version
+      run: |
+        git fetch --prune --unshallow --tags
+        git describe --dirty --tags
+        echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+    - uses: actions/checkout@v2
+      with:
+         repository: brentru/ci-arduino
+         path: ci
+    - name: Install CI-Arduino
+      run: bash ci/actions_install.sh
+    - name: Install ESP32-S2 TinyUSB BSP
+      run: |
+        sudo usermod -a -G dialout $USER && \
+        sudo apt-get install git && \
+        wget https://bootstrap.pypa.io/get-pip.py && \
+        sudo python3 get-pip.py && \
+        sudo pip3 install pyserial && \
+        mkdir -p ~/Arduino/hardware/espressif && \
+        cd ~/Arduino/hardware/espressif && \
+        git clone https://github.com/espressif/arduino-esp32.git esp32 && \
+        cd esp32 && \
+        git submodule update --init --recursive && \
+        cd tools && \
+        python3 get.py
+
+
+  build-esp32:
     name: Build WipperSnapper ESP32
     runs-on: ubuntu-latest
     strategy:
