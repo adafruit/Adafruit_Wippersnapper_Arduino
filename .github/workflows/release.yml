@@ -21,7 +21,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: wippersnapper.*.*.uf2
+          files: |
+          wippersnapper.*.*.uf2
+          wippersnapper.*.*.bin
 
   build-esp32:
     name: Build WipperSnapper ESP32
