@@ -5,8 +5,8 @@ name: WipperSnapper Release CI
 
 on:
   push
-#  release:
-#    types: [published]
+  release:
+    types: [published]
 
 jobs:
   release-wippersnapper:
