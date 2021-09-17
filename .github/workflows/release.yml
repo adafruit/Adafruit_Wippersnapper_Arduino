@@ -52,6 +52,9 @@ jobs:
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
+    - name: Install extra Arduino libraries
+      run: |
+        git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
     - name: Build for ESP32-S2
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
@@ -90,6 +93,9 @@ jobs:
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
+    - name: Install extra Arduino libraries
+      run: |
+        git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
     - name: build ESP32 platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
@@ -129,6 +135,7 @@ jobs:
     - name: Install extra Arduino libraries
       run: |
         git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
+        git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
     - name: build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
