@@ -1087,24 +1087,23 @@ void Wippersnapper::connect() {
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
   setStatusLEDColor(LED_IO_REGISTER_HW);
-
   if (!registerBoard()) {
     haltError("Unable to register with WipperSnapper.");
   }
-  feedWDT(); // Hardware registered with IO, feed WDT */
-  WS_DEBUG_PRINTLN("Registered with WipperSnapper.");
+  runNetFSM();
+  feedWDT();
 
-  WS_DEBUG_PRINTLN("Polling for configuration message...");
-  WS._mqtt->processPackets(2000);
-
-  // did we get and process the registration message?
-  if (!WS.pinCfgCompleted)
-    haltError("Did not get configuration message from broker, resetting...");
-
+  // Configure hardware
+  WS.pinCfgCompleted = false;
+  while (!WS.pinCfgCompleted) {
+    WS_DEBUG_PRINTLN("Polling for message containing hardware configuration...");
+    WS._mqtt->processPackets(10); // poll
+  }
   // Publish that we have completed the configuration workflow
   feedWDT();
   runNetFSM();
   publishPinConfigComplete();
+  WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // Run application
   statusLEDBlink(WS_LED_STATUS_CONNECTED);
@@ -1138,7 +1137,6 @@ void Wippersnapper::publishPinConfigComplete() {
   WS_DEBUG_PRINTLN("Publishing to pin config complete...");
   WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
              _message_len, 1);
-  WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
 }
 
 /**************************************************************************/
