@@ -69,19 +69,13 @@ Wippersnapper::~Wippersnapper() {
 
 /**************************************************************************/
 /*!
-<<<<<<< HEAD
-    @brief    Executes the provisioning workflow.
-              NOTE: Must be called prior to connect().
-=======
     @brief    Provisions a WipperSnapper device with its network
               configuration and Adafruit IO credentials.
->>>>>>> adafruit/master
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
   // init. LED for status signaling
   statusLEDInit();
-  setStatusLEDColor(LED_HW_INIT);
 #ifdef USE_TINYUSB
   // init new filesystem
   _fileSystem = new Wippersnapper_FS();
@@ -457,8 +451,9 @@ bool Wippersnapper::decodeSignalMsg(
 */
 /**************************************************************************/
 void cbSignalTopic(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal]: ");
-  printMsgBuffer(data, len);
+  WS_DEBUG_PRINTLN("cbSignalTopic: New Msg on Signal Topic");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
   // copy data to buffer
