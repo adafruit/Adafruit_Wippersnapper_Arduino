@@ -50,10 +50,14 @@ public:
     _ssPin = 10;
     _ackPin = 7;
     _rstPin = 5;
+    _gpio0Pin = -1;
     _wifi = &SPIWIFI;
     _ssid = 0;
     _pass = 0;
     _mqtt_client = new WiFiSSLClient;
+
+    // setup ESP32 co-processor pins during init.
+    WiFi.setPins(_ssPin, _ackPin, _rstPin, _gpio0Pin, _wifi);
   }
 
   /**************************************************************************/
@@ -193,7 +197,7 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
-  String _fv = "0.0.0";
+  String _fv;
   uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   int _ssPin, _ackPin, _rstPin, _gpio0Pin = -1;
   WiFiSSLClient *_mqtt_client;
@@ -208,22 +212,18 @@ protected:
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
-      // setup ESP32 pins
-      if (_ssPin != -1) {
-        WiFi.setPins(_ssPin, _ackPin, _rstPin, _gpio0Pin, _wifi);
-      }
 
-      // validate up-to-date nina-fw version
-      firmwareCheck();
-
-      // disconnect from possible previous connection
-      _disconnect();
-
-      // check for esp32 module
+      // check if co-processor connected first
       if (WiFi.status() == WL_NO_MODULE) {
         WS_DEBUG_PRINT("No ESP32 module detected!");
         return;
       }
+
+      // validate the nina-fw version
+      firmwareCheck();
+
+      // disconnect from possible previous connection
+      _disconnect();
 
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;

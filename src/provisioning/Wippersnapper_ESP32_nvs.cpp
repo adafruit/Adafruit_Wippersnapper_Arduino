@@ -47,6 +47,7 @@ bool Wippersnapper_ESP32_nvs::validateNVSConfig() {
   _aioPass = nvs.getString("wsAIOKey", "");
   // validate config properly set in partition
   if (_ssid == "" || _ssidPass == "" || _aioUser == "" || _aioPass == "") {
+    // TODO: Possibly LED blink/some external error handling around this
     return false;
   }
   return true;

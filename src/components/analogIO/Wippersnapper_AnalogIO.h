@@ -39,8 +39,11 @@ class Wippersnapper;
 /**************************************************************************/
 class Wippersnapper_AnalogIO {
 public:
-  Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, float vref);
+  Wippersnapper_AnalogIO(int32_t totalAnalogInputPins, float aRef);
   ~Wippersnapper_AnalogIO();
+
+  void setAref(float refVoltage);
+  float getAref();
 
   void initAnalogOutputPin(int pin);
   void initAnalogInputPin(
@@ -55,6 +58,10 @@ public:
   uint16_t readAnalogPinRaw(int pin);
   float getAnalogPinVoltage(uint16_t rawValue);
 
+  void setADCResolution(int resolution);
+  int getADCresolution();
+  int getNativeResolution();
+
   void processAnalogInputs();
 
   bool
@@ -66,7 +73,11 @@ public:
 
   analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 private:
-  float _vRef;                   /*!< Hardware's reported voltage reference */
+  float _aRef;           /*!< Hardware's reported voltage reference */
+  int _adcResolution;    /*!< Resolution returned by the analogRead() funcn. */
+  int _nativeResolution; /*!< Hardware's native ADC resolution. */
+  bool scaleAnalogRead = false; /*!< True if we need to manually scale the value
+                                   returned by analogRead(). */
   int32_t _totalAnalogInputPins; /*!< Total number of analog input pins */
 
   float _hysterisis;         /*!< Hysterisis factor. */
@@ -75,7 +86,6 @@ private:
 
   uint16_t _pinValue; /*!< Pin's raw value from analogRead */
   float _pinVoltage;  /*!< Pin's calculated voltage, in volts. */
-  uint32_t _curTime;  /*!< Loop timer, in ms. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Signal message to send to broker on pin event. */

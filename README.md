@@ -1,24 +1,26 @@
 ![Build CI](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/actions/workflows/githubci.yml/badge.svg)
 
-# WipperSnapper Arduino BETA
-Arduino Library for Adafruit IO WipperSnapper beta, the no-code IoT interface on Adafruit.io.
+# Adafruit.io WipperSnapper
+**WipperSnapper** is a no-code interface for developing internet-of-things projects. It's developed to be super-beginner friendly and work with multiple microcontroller architectures. 
 
-NOTE: This software is in early beta and is in active development.
+You will need a **free** [adafruit.io](https://io.adafruit.com) account to use WipperSnapper.
 
-Please report bugs on the [Adafruit IO Support Page](https://io.adafruit.com/support).
+**This software is in beta** and is actively being developed. Please report bugs via the [Adafruit IO Support Page](https://io.adafruit.com/support).
 
 ## Get WipperSnapper
 Compiled binaries and UF2 files for supported boards are provided on the [releases page](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/releases) of this repository.
 
-## Supported Hardware
-WipperSnapper currently supports the following hardware. Don't see your board? Don't worry - we'll be adding more hardware over time.
+## Documentation
 
-ESP32-S2
-* Adafruit FunHouse
+Guides are available on the [Adafruit Learning System](https://learn.adafruit.com) under the [WipperSnapper category](https://learn.adafruit.com/category/wippersnapper).
 
-SAMD51
-* Adafruit Metro M4 AirLift Lite
-* Adafruit PyPortal
+If you're new to WipperSnapper, we suggest reading through the [Quickstart: Adafruit IO WipperSnapper](https://learn.adafruit.com/quickstart-adafruit-io-wippersnapper) guide.
 
-## Adding Hardware to this library
-We're still working this out and will add instructions for adding your own hardware to WipperSnapper at a later date!
+## Supported Platforms
+The following platforms are supported by Adafruit IO WipperSnapper
+* ATMEL-SAMD
+* ESP32
+* ESP32-S2
+
+## Contributing
+TODO!

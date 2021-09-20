@@ -33,12 +33,11 @@
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
-#include "Wippersnapper_Registration.h"
-#include "Wippersnapper_StatusLED_Colors.h"
+#include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
 
-// Wippersnapper GPIO
-#include "Wippersnapper_AnalogIO.h"
-#include "Wippersnapper_DigitalGPIO.h"
+// Wippersnapper GPIO Components
+#include "components/analogIO/Wippersnapper_AnalogIO.h"
+#include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 
 // WipperSnapper I2C Component
 #include "components/WipperSnapper_Component_I2C.h"
@@ -53,14 +52,16 @@
 #include <ArduinoJson.h>
 #include <SPI.h>
 
-// Uncomment for staging builds
-// #define USE_STAGING
-
-#ifdef USE_STAGING
-#define IO_MQTT_SERVER "io.adafruit.us" ///< Staging (development) mqtt server
-#else
-#define IO_MQTT_SERVER "io.adafruit.com" ///< Production mqtt server
+#ifndef ESP8266
+#include "Adafruit_SleepyDog.h"
 #endif
+
+// Uncomment the following use the staging IO server //
+//#define USE_STAGING
+//#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
+
+#define IO_MQTT_SERVER                                                         \
+  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -70,7 +71,8 @@
 #include "provisioning/Wippersnapper_ESP32_nvs.h"
 #endif
 
-#define WS_VERSION "1.0.0-beta.4" ///< Library version (semver-formatted)
+#define WS_VERSION                                                             \
+  "1.0.0-beta.10" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -143,15 +145,26 @@ typedef enum {
   WS_BOARD_DEF_UNSPECIFIED
 } ws_board_status_t;
 
+/** Defines the Wippersnapper client's network status */
+typedef enum {
+  FSM_NET_IDLE,
+  FSM_NET_CONNECTED,
+  FSM_MQTT_CONNECTED,
+  FSM_NET_CHECK_MQTT,
+  FSM_NET_CHECK_NETWORK,
+  FSM_NET_ESTABLISH_NETWORK,
+  FSM_NET_ESTABLISH_MQTT,
+} fsm_net_t;
+
+#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   4000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  256 ///< MAXIMUM expected payload size, in bytes
+  300 ///< MAXIMUM expected payload size, in bytes
 
-class Wippersnapper_Registration;
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
@@ -176,30 +189,26 @@ public:
   void statusLEDDeinit();
   void setStatusLEDColor(uint32_t color);
   void statusLEDBlink(ws_led_status_t statusState);
-  bool usingStatusNeoPixel =
+  bool lockStatusNeoPixel =
       false; ///< True if status LED is using the status neopixel
-  bool usingStatusDotStar =
+  bool lockStatusDotStar =
       false; ///< True if status LED is using the status dotstar
-  bool usingStatusLED = false; ///< True if status LED is using the built-in LED
+  bool lockStatusLED = false; ///< True if status LED is using the built-in LED
 
   void set_user_key(const char *aio_username, const char *aio_key);
   void set_user_key();
-
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
 
-  void connect();
   virtual void _connect();
-
-  void disconnect();
   virtual void _disconnect();
+  void connect();
+  void disconnect();
 
   virtual void setUID();
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
-  ws_status_t status();
-  ws_status_t mqttStatus();
   ws_board_status_t getBoardStatus();
 
   bool buildWSTopics();
@@ -207,14 +216,29 @@ public:
   bool buildErrorTopics();
   void subscribeErrorTopics();
 
-  // Performs board registration FSM
-  bool registerBoard(uint8_t retries);
+  // Registration API
+  bool registerBoard();
+  bool encodePubRegistrationReq();
+  void decodeRegistrationResp(char *data, uint16_t len);
+  void pollRegistrationResp();
+  // Configuration API
+  void publishPinConfigComplete();
 
-  // run() loop //
+  // run() loop
   ws_status_t run();
-  ws_status_t checkNetworkConnection();
-  ws_status_t checkMQTTConnection(uint32_t timeStart);
-  void ping();
+  void processPackets();
+  void publish(const char *topic, uint8_t *payload, uint16_t bLen,
+               uint8_t qos = 0);
+  // Networking
+  void pingBroker();
+  void runNetFSM();
+
+  // WDT
+  void enableWDT(int timeoutMS = 0);
+  void feedWDT();
+
+  // Errors
+  void haltError(String error);
 
   // MQTT topic callbacks //
   // Decodes a signal message
@@ -247,14 +271,12 @@ public:
 
   ws_board_status_t _boardStatus; ///< Hardware's registration status
 
-  Wippersnapper_Registration *_registerBoard =
-      NULL;                                ///< Instance of registration class
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
   Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
 
-  uint8_t _uid[10];         /*!< Unique network iface identifier */
+  uint8_t _uid[6];          /*!< Unique network iface identifier */
   char sUID[10];            /*!< Unique network iface identifier */
   const char *_boardId;     /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
@@ -291,6 +313,8 @@ public:
                             milliseconds. */
   char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
                                      device. */
+  bool pinCfgCompleted = false;
+
 private:
   void _init();
 
@@ -310,7 +334,9 @@ protected:
   // MQTT topics
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
-  char *_topic_signal_brkr;        /*!< Wprsnpr->Device messages */
+  char *_topic_description_status_complete;
+  char *_topic_device_pin_config_complete;
+  char *_topic_signal_brkr; /*!< Wprsnpr->Device messages */
 
   Adafruit_MQTT_Subscribe
       *_topic_description_sub; /*!< Subscription for registration topic. */

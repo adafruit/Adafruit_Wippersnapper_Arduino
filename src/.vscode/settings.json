@@ -1,3 +1,6 @@
 {
-    "C_Cpp.dimInactiveRegions": false
+    "C_Cpp.dimInactiveRegions": false,
+    "files.associations": {
+        "__config": "cpp"
+    }
 }

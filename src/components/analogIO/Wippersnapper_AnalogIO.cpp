@@ -26,9 +26,14 @@
 */
 /***********************************************************************************/
 Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
-                                               float vRef) {
-  _vRef = vRef;
+                                               float aRef) {
   _totalAnalogInputPins = totalAnalogInputPins;
+
+  // Set aref
+  setAref(aRef);
+
+  // Set ADC resolution, default to 16-bit
+  setADCResolution(16);
 
   // Default hysterisis of 2%
   _hysterisis = 0.02;
@@ -47,11 +52,46 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
 */
 /***********************************************************************************/
 Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
-  _vRef = 0.0;
+  _aRef = 0.0;
   _totalAnalogInputPins = 0;
   _hysterisis = 0;
   delete _analog_input_pins;
 }
+
+/***********************************************************************************/
+/*!
+    @brief  Sets the device's reference voltage.
+    @param  refVoltage
+            The voltage reference to use during conversions.
+*/
+/***********************************************************************************/
+void Wippersnapper_AnalogIO::setAref(float refVoltage) { _aRef = refVoltage; }
+
+/***********************************************************************************/
+/*!
+    @brief  Returns the device's reference voltage.
+*/
+/***********************************************************************************/
+float Wippersnapper_AnalogIO::getAref() { return _aRef; }
+
+void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
+// set the resolution natively in the BSP
+#ifdef ARDUINO_ARCH_SAMD
+  analogReadResolution(16);
+  _nativeResolution = 12;
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
+  scaleAnalogRead = true;
+  _nativeResolution = 13;
+#endif
+
+  _adcResolution = resolution;
+}
+
+int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
+
+int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
 
 /***********************************************************************************/
 /*!
@@ -161,8 +201,16 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
   uint16_t value;
   value = analogRead(pin);
-  // lshift for 16bit res.
-  value = value << 4;
+
+  // scale by the ADC resolution manually if not implemented by BSP
+  if (scaleAnalogRead) {
+    if (getADCresolution() > getNativeResolution()) {
+      value = value << (getADCresolution() - getNativeResolution());
+    } else {
+      value = value >> (getNativeResolution() - getADCresolution());
+    }
+  }
+
   return value;
 }
 
@@ -177,7 +225,7 @@ uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
 /**********************************************************/
 float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
   float pinVoltage;
-  pinVoltage = rawValue * _vRef / 65536;
+  pinVoltage = rawValue * getAref() / 65536;
   return pinVoltage;
 }
 
@@ -204,8 +252,6 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // fill the pin_event message
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  outgoingSignalMsg->payload.pin_event.mode =
-      wippersnapper_pin_v1_Mode_MODE_ANALOG;
   sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
   sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinVal);
 
@@ -244,10 +290,8 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // fill the pin_event message
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  outgoingSignalMsg->payload.pin_event.mode =
-      wippersnapper_pin_v1_Mode_MODE_ANALOG;
   sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%f", pinVal);
+  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%0.3f", pinVal);
 
   // Encode signal message
   pb_ostream_t stream =
@@ -267,7 +311,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
 */
 /**********************************************************/
 void Wippersnapper_AnalogIO::processAnalogInputs() {
-  _curTime = millis();
+  long _curTime = millis();
   // Process analog input pins
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].period >
@@ -309,10 +353,8 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
         pb_get_encoded_size(&msgSz,
                             wippersnapper_signal_v1_CreateSignalRequest_fields,
                             &_outgoingSignalMsg);
-        // publish event data
-        WS_DEBUG_PRINT("Publishing...")
-        WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz,
-                          1);
+        WS_DEBUG_PRINT("Publishing pinEvent...");
+        WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
         WS_DEBUG_PRINTLN("Published!");
 
         // reset the digital pin
@@ -360,10 +402,9 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
           pb_get_encoded_size(
               &msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields,
               &_outgoingSignalMsg);
-          // publish event data
-          WS_DEBUG_PRINT("Publishing...")
-          WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz,
-                            1);
+          // Publish
+          WS_DEBUG_PRINT("Publishing pinEvent...");
+          WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
           WS_DEBUG_PRINTLN("Published!");
 
           // set the pin value in the digital pin object for comparison on next

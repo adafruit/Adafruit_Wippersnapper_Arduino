@@ -64,11 +64,11 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pull) {
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
+
 #ifdef STATUS_LED_PIN
-    // guard status LED pin, dont signal with it
-    if (pinName == STATUS_LED_PIN) {
-      WS.usingStatusLED = true;
-    }
+    // deinit status led, use it as a dio component instead
+    if (pinName == STATUS_LED_PIN)
+      WS.statusLEDDeinit();
 #endif
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
@@ -137,11 +137,10 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   itoa(pinName, cstr, 10);
   pinMode(pinName, INPUT); // hi-z
 
+// if prv. in-use by DIO, release pin back to application
 #ifdef STATUS_LED_PIN
-                           // release status LED pin back for signaling
-  if (pinName == STATUS_LED_PIN) {
-    WS.usingStatusLED = false;
-  }
+  if (pinName == STATUS_LED_PIN)
+    WS.statusLEDInit();
 #endif
 }
 
@@ -184,7 +183,7 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
 */
 /**********************************************************/
 void Wippersnapper_DigitalGPIO::processDigitalInputs() {
-  uint32_t curTime = millis();
+  long curTime = millis();
   // Process digital digital pins
   for (int i = 0; i < _totalDigitalInputPins; i++) {
     if (_digital_input_pins[i].period >
@@ -217,10 +216,9 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
         pb_get_encoded_size(&msgSz,
                             wippersnapper_signal_v1_CreateSignalRequest_fields,
                             &_outgoingSignalMsg);
-        // publish event data
-        WS_DEBUG_PRINT("Publishing...")
-        WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz,
-                          1);
+
+        WS_DEBUG_PRINT("Publishing pinEvent...");
+        WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
         WS_DEBUG_PRINTLN("Published!");
 
         // reset the digital pin
@@ -252,11 +250,8 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
           pb_get_encoded_size(
               &msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields,
               &_outgoingSignalMsg);
-
-          // publish event data
           WS_DEBUG_PRINT("Publishing pinEvent...");
-          WS._mqtt->publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz,
-                            1);
+          WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
           WS_DEBUG_PRINTLN("Published!");
 
           // set the pin value in the digital pin object for comparison on next

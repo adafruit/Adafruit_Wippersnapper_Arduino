@@ -15,8 +15,8 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#include "Adafruit_TinyUSB.h"
 #include "Adafruit_SPIFlash.h"
+#include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
 #include "fatfs/ff.h"
@@ -24,31 +24,6 @@
 
 #include "Wippersnapper.h"
 
-#define FILE_TEMPLATE_AIRLIFT                                                  \
-  "{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_key\":\"YOUR_IO_"   \
-  "KEY_"                                                                       \
-  "HERE\",\n\t\"network_type_wifi_airlift\":{\n\t\t\"network_ssid\":\"YOUR_"   \
-  "WIFI_SSID_"                                                                 \
-  "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}" ///< JSON
-                                                                      ///< string
-                                                                      ///< for
-///< airlift-specific
-///< configuration
-///< file
-
-#define FILE_TEMPLATE_WIFI_ESP32S2                                             \
-  "{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_key\":\"YOUR_IO_"   \
-  "KEY_"                                                                       \
-  "HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_ssid\":\"YOUR_"    \
-  "WIFI_SSID_"                                                                 \
-  "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}" ///< JSON
-                                                                      ///< string
-                                                                      ///< for
-///< esp32s2-specific
-///< configuration
-///< file
-
-#define VOLUME_LABEL "WIPPER" ///< FatFs volume label
 // forward decl.
 class Wippersnapper;
 
@@ -68,11 +43,19 @@ public:
   Wippersnapper_FS();
   ~Wippersnapper_FS();
 
-  bool parseSecrets();
+  bool initFilesystem();
+  void initUSBMSC();
+
+  void eraseCPFS();
+  void eraseBootFile();
+
   bool configFileExists();
   void createConfigFileSkel();
   bool createBootFile();
   void writeErrorToBootOut(PGM_P str);
+  void fsHalt();
+
+  void parseSecrets();
 
   // Adafruit IO Configuration
   const char *io_username =
@@ -85,6 +68,9 @@ public:
   // length of usernames/passwords/tokens
   // is 382 bytes, rounded to nearest power of 2.
   StaticJsonDocument<512> doc; /*!< Json configuration file */
+private:
+  bool _freshFS = false; /*!< True if filesystem was initialized by
+                            WipperSnapper, False otherwise. */
 };
 
 extern Wippersnapper WS;
