@@ -643,7 +643,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 /**************************************************************************/
 void cbSignalI2CReq(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
-  printMsgBuffer(data, len);
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
   memset(WS._buffer, 0, sizeof(WS._buffer));
   // copy mqtt data into buffer
@@ -663,6 +664,8 @@ void cbSignalI2CReq(char *data, uint16_t len) {
                  &WS.msgSignalI2C))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 // TODO: This should be moved into digitalGPIO!
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
