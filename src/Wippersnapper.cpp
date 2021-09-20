@@ -560,7 +560,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     }
     // Scan all requested addresses on i2cportX and ret. address found, -1
     // otherwise.
-    uint16_t addressFound;
+    int16_t addressFound;
     if (msgScanReq.i2c_port_number == 0 &&
         WS._i2cPort0->isInitialized() == true) {
       addressFound = WS._i2cPort0->scanAddresses(msgScanReq);

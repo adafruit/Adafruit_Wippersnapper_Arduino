@@ -80,13 +80,13 @@ bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
     @returns  The address which an I2C device is located, -1 otherwise.
 */
 /************************************************************************/
-uint16_t WipperSnapper_Component_I2C::scanAddresses(
+int16_t WipperSnapper_Component_I2C::scanAddresses(
     wippersnapper_i2c_v1_I2CScanRequest msgScanReq) {
   WS_DEBUG_PRINT("EXEC: I2C Scan on port ");
   WS_DEBUG_PRINTLN(_portNum);
   // decode stream into i2c request
-  uint16_t addrFound = -1;
-  uint16_t scanAddr;
+  int16_t addrFound = -1;
+  int16_t scanAddr;
   for (int i = 0; i < msgScanReq.address_count; i++) {
     scanAddr = msgScanReq.address[i];
     WS_DEBUG_PRINT("* Scanning address ");
