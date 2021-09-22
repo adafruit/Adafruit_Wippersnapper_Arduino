@@ -42,7 +42,7 @@ bool Wippersnapper::encodePubRegistrationReq() {
   strcpy(_message.str_version, WS_VERSION);
 
   // encode registration request message
-  uint8_t _message_buffer[128];
+  uint8_t _message_buffer[256];
   pb_ostream_t _msg_stream =
       pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
