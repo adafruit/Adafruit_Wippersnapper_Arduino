@@ -847,15 +847,13 @@ bool Wippersnapper::buildWSTopics() {
 void Wippersnapper::subscribeWSTopics() {
   // Subscribe to signal topic
   _topic_signal_brkr_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 0);
-  WS_DEBUG_PRINTLN("Subscribing to signals/broker");
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_brkr_sub);
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
   // Subscribe to registration status topic
   _topic_description_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
-  WS_DEBUG_PRINTLN("Subscribing to signals/status");
   WS._mqtt->subscribe(_topic_description_sub);
   _topic_description_sub->setCallback(cbRegistrationStatus);
 }
