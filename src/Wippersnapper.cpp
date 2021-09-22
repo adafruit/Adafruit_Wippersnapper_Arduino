@@ -733,41 +733,41 @@ bool Wippersnapper::buildWSTopics() {
   // Global registration topic
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
-                     strlen(TOPIC_DESCRIPTION) + strlen("status") + 1);
+                     strlen(TOPIC_INFO) + strlen("status") + 1);
 
   // Registration status topic
-  WS._topic_description_status = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
-      strlen("broker") + 1);
+  WS._topic_description_status =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status/") + strlen("broker") + 1);
 
   // Registration status completion topic
-  WS._topic_description_status_complete = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_DESCRIPTION) + strlen("status") +
-      strlen("/device/complete") + 1);
+  WS._topic_description_status_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status") + strlen("/device/complete") + 1);
 
   // Topic to signal pin configuration complete from device to broker
-  WS._topic_device_pin_config_complete = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-      strlen("device/pinConfigComplete") + 1);
+  WS._topic_device_pin_config_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
+                     strlen("device/pinConfigComplete") + 1);
 
   // Topic for signals from device to broker
   WS._topic_signal_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
 
   // Topic for signals from broker to device
   WS._topic_signal_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
   // Create global registration topic
   if (WS._topic_description) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
-    strcat(WS._topic_description, TOPIC_DESCRIPTION);
+    strcat(WS._topic_description, TOPIC_INFO);
     strcat(WS._topic_description, "status");
   } else { // malloc failed
     WS._topic_description = 0;
@@ -779,7 +779,7 @@ bool Wippersnapper::buildWSTopics() {
     strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
     strcat(WS._topic_description_status, _device_uid);
-    strcat(WS._topic_description_status, TOPIC_DESCRIPTION);
+    strcat(WS._topic_description_status, TOPIC_INFO);
     strcat(WS._topic_description_status, "status");
     strcat(WS._topic_description_status, "/broker");
   } else { // malloc failed
@@ -792,7 +792,7 @@ bool Wippersnapper::buildWSTopics() {
     strcpy(WS._topic_description_status_complete, WS._username);
     strcat(WS._topic_description_status_complete, "/wprsnpr/");
     strcat(WS._topic_description_status_complete, _device_uid);
-    strcat(WS._topic_description_status_complete, TOPIC_DESCRIPTION);
+    strcat(WS._topic_description_status_complete, TOPIC_INFO);
     strcat(WS._topic_description_status_complete, "status");
     strcat(WS._topic_description_status_complete, "/device/complete");
   } else { // malloc failed
@@ -941,7 +941,6 @@ void Wippersnapper::haltError(String error) {
 */
 /**************************************************************************/
 bool Wippersnapper::registerBoard() {
-  bool is_success = false;
   WS_DEBUG_PRINTLN("Registering hardware with IO...");
 
   // Encode and publish registration request message to broker
@@ -1065,18 +1064,20 @@ void Wippersnapper::connect() {
   // enable WDT
   enableWDT(WS_WDT_TIMEOUT);
 
+  // TODO!
   // not sure we need to track these...
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
-  // build MQTT topics for WipperSnapper app, and subscribe
+  // build MQTT topics for WipperSnapper and subscribe
   if (!buildWSTopics()) {
     haltError("Unable to allocate space for MQTT topics");
   }
-  subscribeWSTopics();
   if (!buildErrorTopics()) {
     haltError("Unable to allocate space for MQTT error topics");
   }
+  WS_DEBUG_PRINTLN("Subscribing to MQTT topics...");
+  subscribeWSTopics();
   subscribeErrorTopics();
 
   // Run the network fsm
@@ -1096,7 +1097,8 @@ void Wippersnapper::connect() {
   // Configure hardware
   WS.pinCfgCompleted = false;
   while (!WS.pinCfgCompleted) {
-    WS_DEBUG_PRINTLN("Polling for message containing hardware configuration...");
+    WS_DEBUG_PRINTLN(
+        "Polling for message containing hardware configuration...");
     WS._mqtt->processPackets(10); // poll
   }
   // Publish that we have completed the configuration workflow

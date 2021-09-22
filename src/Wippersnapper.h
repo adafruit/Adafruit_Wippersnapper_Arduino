@@ -64,16 +64,16 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.10" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.11" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
 #define TOPIC_IO_ERRORS "/errors"     ///< Adafruit IO Error MQTT Topic
 
 // Reserved Wippersnapper topics
-#define TOPIC_WS "/wprsnpr/"       ///< Global /wprsnpr/ topic
-#define TOPIC_DESCRIPTION "/info/" ///< Device description topic
-#define TOPIC_SIGNALS "/signals/"  ///< Device signals topic
+#define TOPIC_WS "/wprsnpr/"      ///< Global /wprsnpr/ topic
+#define TOPIC_INFO "/info/"       ///< Device description topic
+#define TOPIC_SIGNALS "/signals/" ///< Device signals topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -154,7 +154,7 @@ typedef enum {
   4000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  300 ///< MAXIMUM expected payload size, in bytes
+  512 ///< MAXIMUM expected payload size, in bytes
 
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
@@ -259,7 +259,7 @@ public:
   Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
-  char sUID[10];            /*!< Unique network iface identifier */
+  char sUID[13];            /*!< Unique network iface identifier */
   const char *_boardId;     /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
