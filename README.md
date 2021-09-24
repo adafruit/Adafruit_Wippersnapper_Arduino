@@ -1,6 +1,6 @@
 ![Build CI](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/actions/workflows/githubci.yml/badge.svg)
 
-# Adafruit.io WipperSnapper
+# Adafruit.io WipperSnapper BETA
 **WipperSnapper** is a no-code interface for developing internet-of-things projects. It's developed to be super-beginner friendly and work with multiple microcontroller architectures. 
 
 You will need a **free** [adafruit.io](https://io.adafruit.com) account to use WipperSnapper.
