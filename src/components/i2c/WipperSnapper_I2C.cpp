@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_Component_I2C.cpp
+ * @file WipperSnapper_I2C.cpp
  *
  * This component initiates I2C operations
  * using the Arduino generic TwoWire driver.
@@ -14,7 +14,7 @@
  *
  */
 
-#include "WipperSnapper_Component_I2C.h"
+#include "WipperSnapper_I2C.h"
 
 /***************************************************************************************************************/
 /*!
@@ -74,34 +74,34 @@ bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
 
 /************************************************************************/
 /*!
-    @brief    Destructor for a WipperSnapper I2C component.
+    @brief    Scans addresses on an I2C bus.
     @param    msgScanReq
               A decoded I2C scan request message.
     @returns  The address which an I2C device is located, -1 otherwise.
 */
 /************************************************************************/
-int16_t WipperSnapper_Component_I2C::scanAddresses(
+wippersnapper_i2c_v1_I2CScanResponse WipperSnapper_Component_I2C::scanAddresses(
     wippersnapper_i2c_v1_I2CScanRequest msgScanReq) {
   WS_DEBUG_PRINT("EXEC: I2C Scan on port ");
   WS_DEBUG_PRINTLN(_portNum);
-  // decode stream into i2c request
-  int16_t addrFound = -1;
-  int16_t scanAddr;
-  for (int i = 0; i < msgScanReq.address_count; i++) {
-    scanAddr = msgScanReq.address[i];
-    WS_DEBUG_PRINT("* Scanning address ");
-    WS_DEBUG_PRINTLN(scanAddr);
-    _i2c->beginTransmission(scanAddr);
+
+  // init. a scan response with a zero'd out response
+  wippersnapper_i2c_v1_I2CScanResponse scanResp = wippersnapper_i2c_v1_I2CScanResponse_init_zero;
+
+  // Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of those that respond.
+  int addrFoundIdx = 0;
+  for (int addr = 0; addr < 0x77; addr++) {
+    _i2c->beginTransmission(addr);
+    // Address ACKed
     if (_i2c->endTransmission() == 0) {
-      // found it!
-      WS_DEBUG_PRINTLN("I2C device detected!");
-      addrFound = scanAddr;
-      break;
-    } else {
-      WS_DEBUG_PRINTLN("I2C device not detected!");
+      WS_DEBUG_PRINT("Found I2C Device on: ");
+      WS_DEBUG_PRINTLN(addr);
+      scanResp.addresses_found[addrFoundIdx] = addr;
+      addrFoundIdx++;
     }
   }
-  return addrFound;
+
+  return scanResp;
 }
 
 /*******************************************************************************/

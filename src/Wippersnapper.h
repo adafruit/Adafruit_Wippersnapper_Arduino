@@ -35,12 +35,10 @@
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
 
-// Wippersnapper GPIO Components
+// Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
-
-// WipperSnapper I2C Component
-#include "components/WipperSnapper_Component_I2C.h"
+#include "components/i2c/WipperSnapper_I2C.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -73,7 +71,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.11" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.12" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -81,7 +79,7 @@
 
 // Reserved Wippersnapper topics
 #define TOPIC_WS "/wprsnpr/"       ///< WipperSnapper topic
-#define TOPIC_DESCRIPTION "/info/" ///< Registration sub-topic
+#define TOPIC_INFO "/info/" ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/"  ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"           ///< I2C sub-topic
 

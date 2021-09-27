@@ -548,7 +548,10 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     }
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
-    WS_DEBUG_PRINTLN("I2C Scan Request Found!");
+    WS_DEBUG_PRINTLN("EXEC: I2C Scan");
+    // TODO: Pull this out into Wippersnapper_I2C
+    /*
+    
     wippersnapper_i2c_v1_I2CScanRequest msgScanReq =
         wippersnapper_i2c_v1_I2CScanRequest_init_zero;
     // Decode i2c scan request message into struct
@@ -558,12 +561,12 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           "ERROR: Could not decode wippersnapper_i2c_v1_I2CScanRequest");
       return false; // fail out if we can't decode the request
     }
-    // Scan all requested addresses on i2cportX and ret. address found, -1
-    // otherwise.
-    int16_t addressFound;
+     // init. a scan response with a zero'd out response
+    wippersnapper_i2c_v1_I2CScanResponse scanResp = wippersnapper_i2c_v1_I2CScanResponse_init_zero;
+
     if (msgScanReq.i2c_port_number == 0 &&
         WS._i2cPort0->isInitialized() == true) {
-      addressFound = WS._i2cPort0->scanAddresses(msgScanReq);
+      WS._i2cPort0->scanAddresses(msgScanReq);
     } else if (msgScanReq.i2c_port_number == 1 &&
                WS._i2cPort1->isInitialized() == true) {
       addressFound = WS._i2cPort1->scanAddresses(msgScanReq);
@@ -572,6 +575,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
                        "not initialized");
       addressFound = -1;
     }
+    // TODO!
     // Create response
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =
@@ -584,8 +588,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      return false; // fail out if we can't encode a response
-    }
+      return false; // fail out if we can't encode a response */
+
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
     WS_DEBUG_PRINTLN("I2C Device Init Request Found!");
