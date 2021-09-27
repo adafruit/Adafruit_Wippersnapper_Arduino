@@ -63,6 +63,7 @@
 //#define IO_MQTT_SERVER                                                         \
 //  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
 
+
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
@@ -72,7 +73,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.10" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.11" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -163,7 +164,7 @@ typedef enum {
   4000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  300 ///< MAXIMUM expected payload size, in bytes
+  512 ///< MAXIMUM expected payload size, in bytes
 
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
@@ -277,7 +278,7 @@ public:
   Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
 
   uint8_t _uid[6];          /*!< Unique network iface identifier */
-  char sUID[10];            /*!< Unique network iface identifier */
+  char sUID[13];            /*!< Unique network iface identifier */
   const char *_boardId;     /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
