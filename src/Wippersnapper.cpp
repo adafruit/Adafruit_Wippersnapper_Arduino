@@ -548,7 +548,30 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     }
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
-    WS_DEBUG_PRINTLN("EXEC: I2C Scan");
+    WS_DEBUG_PRINTLN("Handling I2C Scan Request");
+    // Decode request
+    wippersnapper_i2c_v1_I2CScanRequest msgScanReq =
+        wippersnapper_i2c_v1_I2CScanRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CScanRequest_fields,
+                   &msgScanReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_i2c_v1_I2CScanRequest");
+      return false; // fail out if we can't decode the request
+    }
+    // Create a scan response
+    wippersnapper_i2c_v1_I2CScanResponse scanResp = wippersnapper_i2c_v1_I2CScanResponse_init_zero;
+    // Handle request
+    if (msgScanReq.i2c_port_number == 0 && WS._i2cPort0->isInitialized() == true) {
+        scanResp = WS._i2cPort0->scanAddresses();
+    } else if (msgScanReq.i2c_port_number == 1 && WS._i2cPort1->isInitialized() == true) {
+        scanResp = WS._i2cPort1->scanAddresses();
+    } else {
+        // fail out
+        WS_DEBUG_PRINTLN("ERROR: The I2C port requested is not initialized!");
+        return false;
+    }
+
+
     // TODO: Pull this out into Wippersnapper_I2C
     /*
     

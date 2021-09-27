@@ -30,7 +30,7 @@ public:
   WipperSnapper_Component_I2C(
       wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
   ~WipperSnapper_Component_I2C();
-  wippersnapper_i2c_v1_I2CScanResponse scanAddresses(wippersnapper_i2c_v1_I2CScanRequest msgScanReq);
+  wippersnapper_i2c_v1_I2CScanResponse scanAddresses();
   bool
   attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
   bool isInitialized();

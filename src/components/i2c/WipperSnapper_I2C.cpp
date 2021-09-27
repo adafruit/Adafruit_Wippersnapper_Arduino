@@ -80,10 +80,8 @@ bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
     @returns  The address which an I2C device is located, -1 otherwise.
 */
 /************************************************************************/
-wippersnapper_i2c_v1_I2CScanResponse WipperSnapper_Component_I2C::scanAddresses(
-    wippersnapper_i2c_v1_I2CScanRequest msgScanReq) {
-  WS_DEBUG_PRINT("EXEC: I2C Scan on port ");
-  WS_DEBUG_PRINTLN(_portNum);
+wippersnapper_i2c_v1_I2CScanResponse WipperSnapper_Component_I2C::scanAddresses() {
+  WS_DEBUG_PRINT("EXEC: I2C Scan on port "); WS_DEBUG_PRINTLN(_portNum);
 
   // init. a scan response with a zero'd out response
   wippersnapper_i2c_v1_I2CScanResponse scanResp = wippersnapper_i2c_v1_I2CScanResponse_init_zero;
