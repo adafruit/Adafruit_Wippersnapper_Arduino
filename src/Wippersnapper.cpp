@@ -570,49 +570,21 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         WS_DEBUG_PRINTLN("ERROR: The I2C port requested is not initialized!");
         return false;
     }
-
-
-    // TODO: Pull this out into Wippersnapper_I2C
-    /*
-    
-    wippersnapper_i2c_v1_I2CScanRequest msgScanReq =
-        wippersnapper_i2c_v1_I2CScanRequest_init_zero;
-    // Decode i2c scan request message into struct
-    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CScanRequest_fields,
-                   &msgScanReq)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode wippersnapper_i2c_v1_I2CScanRequest");
-      return false; // fail out if we can't decode the request
-    }
-     // init. a scan response with a zero'd out response
-    wippersnapper_i2c_v1_I2CScanResponse scanResp = wippersnapper_i2c_v1_I2CScanResponse_init_zero;
-
-    if (msgScanReq.i2c_port_number == 0 &&
-        WS._i2cPort0->isInitialized() == true) {
-      WS._i2cPort0->scanAddresses(msgScanReq);
-    } else if (msgScanReq.i2c_port_number == 1 &&
-               WS._i2cPort1->isInitialized() == true) {
-      addressFound = WS._i2cPort1->scanAddresses(msgScanReq);
-    } else {
-      WS_DEBUG_PRINTLN("ERROR: Could not execute I2C scan, the I2C port was "
-                       "not initialized");
-      addressFound = -1;
-    }
-    // TODO!
-    // Create response
+    // Encode I2C response message
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CResponse_resp_i2c_scan_tag;
-    msgi2cResponse.payload.resp_i2c_scan.address_found = (uint32_t)addressFound;
-    // Encode message
+    memcpy(msgi2cResponse.payload.resp_i2c_scan.addresses_found, scanResp.addresses_found, sizeof(scanResp.addresses_found));
+    msgi2cResponse.payload.resp_i2c_scan.addresses_found_count = scanResp.addresses_found_count;
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
                                                   sizeof(WS._buffer_outgoing));
+    // Encode
     if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                    &msgi2cResponse)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      return false; // fail out if we can't encode a response */
-
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message!");
+      return false; // fail out if we can't encode a response
+    }
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
     WS_DEBUG_PRINTLN("I2C Device Init Request Found!");
