@@ -13,9 +13,6 @@ A clear and concise description of what the bug is.
 ***Arduino board***
 INSERT ARDUINO BOARD NAME/TYPE HERE
 
-***Arduino IDE version (found in Arduino -> About Arduino menu)***
-INSERT ARDUINO VERSION HERE
-
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
@@ -25,6 +22,9 @@ Steps to reproduce the behavior:
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
+
+**Which components are connected to your device**
+Which components are set up on the WipperSnapper device page?
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
