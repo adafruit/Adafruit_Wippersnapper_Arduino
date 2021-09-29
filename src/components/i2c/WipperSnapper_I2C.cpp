@@ -74,23 +74,18 @@ bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
 
 /************************************************************************/
 /*!
-    @brief    Scans addresses on an I2C bus.
-    @param    msgScanReq
-              A decoded I2C scan request message.
-    @returns  The address which an I2C device is located, -1 otherwise.
+    @brief    Scans all I2C addresses on the bus between 0x08 and 0x7F
+              inclusive and returns an array of the devices found.
+    @returns  wippersnapper_i2c_v1_I2CScanResponse
 */
 /************************************************************************/
 wippersnapper_i2c_v1_I2CScanResponse WipperSnapper_Component_I2C::scanAddresses() {
-  WS_DEBUG_PRINT("EXEC: I2C Scan on port "); WS_DEBUG_PRINTLN(_portNum);
-
-  // init. a scan response with a zero'd out response
+  WS_DEBUG_PRINT("EXEC: I2C Scan on port # "); WS_DEBUG_PRINTLN(_portNum);
+  // Create response
   wippersnapper_i2c_v1_I2CScanResponse scanResp = wippersnapper_i2c_v1_I2CScanResponse_init_zero;
 
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of those that respond.
-  byte error;
   for (uint16_t addr = 0x08; addr < 0x7F; addr++) {
-    WS_DEBUG_PRINT("SCANNING: ");
-    WS_DEBUG_PRINTLN(addr);
     _i2c->beginTransmission(addr);
     // Address ACKed
     if (_i2c->endTransmission() == 0) {
@@ -100,10 +95,6 @@ wippersnapper_i2c_v1_I2CScanResponse WipperSnapper_Component_I2C::scanAddresses(
       scanResp.addresses_found_count++;
     }
   }
-
-  // DEBUG ONLY
-  WS_DEBUG_PRINT("# of addresses found on bus: ");
-  WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
 
   return scanResp;
 }
