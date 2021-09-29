@@ -79,12 +79,16 @@ bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
     @returns  wippersnapper_i2c_v1_I2CScanResponse
 */
 /************************************************************************/
-wippersnapper_i2c_v1_I2CScanResponse WipperSnapper_Component_I2C::scanAddresses() {
-  WS_DEBUG_PRINT("EXEC: I2C Scan on port # "); WS_DEBUG_PRINTLN(_portNum);
+wippersnapper_i2c_v1_I2CScanResponse
+WipperSnapper_Component_I2C::scanAddresses() {
+  WS_DEBUG_PRINT("EXEC: I2C Scan on port # ");
+  WS_DEBUG_PRINTLN(_portNum);
   // Create response
-  wippersnapper_i2c_v1_I2CScanResponse scanResp = wippersnapper_i2c_v1_I2CScanResponse_init_zero;
+  wippersnapper_i2c_v1_I2CScanResponse scanResp =
+      wippersnapper_i2c_v1_I2CScanResponse_init_zero;
 
-  // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of those that respond.
+  // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
+  // those that respond.
   for (uint16_t addr = 0x08; addr < 0x7F; addr++) {
     _i2c->beginTransmission(addr);
     // Address ACKed
