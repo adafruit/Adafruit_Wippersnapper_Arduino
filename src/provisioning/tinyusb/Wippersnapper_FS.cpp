@@ -12,9 +12,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(USE_TINYUSB)
+#if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) || defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL)
 #include "Wippersnapper_FS.h"
-
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
 // - EXTERNAL_FLASH_USE_QSPI
@@ -71,7 +70,7 @@ bool setVolumeLabel() {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
   // Detach USB device during init.
-  USBDevice.detach();
+  TinyUSBDevice.detach();
   // Wait for detach
   delay(500);
 
@@ -186,14 +185,18 @@ void Wippersnapper_FS::initUSBMSC() {
 
   // Set disk size, block size should be 512 regardless of spi flash page size
   usb_msc.setCapacity(flash.pageSize() * flash.numPages() / 512, 512);
+
   // MSC is ready for read/write
   usb_msc.setUnitReady(true);
+
   // init MSC
   usb_msc.begin();
+
   // re-attach the usb device
-  USBDevice.attach();
+  TinyUSBDevice.attach();
   // wait for enumeration
   delay(500);
+  WS.setStatusLEDColor(GREEN);
 }
 
 /**************************************************************************/
