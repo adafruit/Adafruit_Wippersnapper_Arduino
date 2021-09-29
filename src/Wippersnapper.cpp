@@ -573,6 +573,10 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     } else {
         scanResp = WS._i2cPort1->scanAddresses();
     }
+
+    WS_DEBUG_PRINT("# of addresses found on bus: ");
+    WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
+
     // Encode I2C response message
     // TODO: This should be refactored outwards
     // General
