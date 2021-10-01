@@ -49,19 +49,13 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
     - name: Install extra Arduino libraries
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
-        git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino.git /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-        cd /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-        git fetch origin
-        git checkout -b support-esp32-2.0 origin/support-esp32-2.0
-        git merge master
-        cd ~
     - name: Build for ESP32-S2
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
@@ -96,7 +90,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -134,7 +128,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
