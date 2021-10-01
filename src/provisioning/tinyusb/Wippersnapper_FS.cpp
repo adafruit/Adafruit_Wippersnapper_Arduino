@@ -196,7 +196,6 @@ void Wippersnapper_FS::initUSBMSC() {
   TinyUSBDevice.attach();
   // wait for enumeration
   delay(500);
-  WS.setStatusLEDColor(GREEN);
 }
 
 /**************************************************************************/
