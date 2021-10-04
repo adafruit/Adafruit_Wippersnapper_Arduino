@@ -915,7 +915,7 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_NETWORK:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
       // Attempt to connect to wireless network
-      maxAttempts = 2;
+      maxAttempts = 5;
       while (maxAttempts >= 0) {
         setStatusLEDColor(LED_NET_CONNECT);
         WS.feedWDT();
@@ -925,10 +925,9 @@ void Wippersnapper::runNetFSM() {
         if (networkStatus() == WS_NET_CONNECTED)
           break;
         setStatusLEDColor(BLACK);
-        delay(500);
         maxAttempts--;
       }
-      // Validate connection OK
+      // Validate connection
       if (networkStatus() == WS_NET_CONNECTED) {
         fsmNetwork = FSM_NET_CHECK_NETWORK;
         break;
@@ -949,7 +948,7 @@ void Wippersnapper::runNetFSM() {
           break;
         }
         setStatusLEDColor(BLACK);
-        delay(500;)
+        delay(500);
       }
       if (fsmNetwork == FSM_NET_CHECK_MQTT) {
         break;
