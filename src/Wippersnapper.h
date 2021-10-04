@@ -225,6 +225,7 @@ public:
 
   // Errors
   void haltError(String error);
+  void errorWriteHang(String error);
 
   // MQTT topic callbacks //
   // Decodes a signal message

@@ -860,6 +860,27 @@ void Wippersnapper::subscribeWSTopics() {
 
 /**************************************************************************/
 /*!
+    @brief    Writes an error message to the serial and the filesystem,
+                blinks WS_LED_STATUS_ERROR pattern and hangs.
+*/
+/**************************************************************************/
+void Wippersnapper::errorWriteHang(String error) {
+    // Otherwise we're not connected to the network
+    WS_DEBUG_PRINTLN(error);
+    // Should be USE_TINYUSB? Should check inside or here..?
+    _fileSystem->writeErrorToBootOut("ERROR: Unable to connect to WiFi network");
+
+    // blink and hang forever
+    while (1) {
+        WS.feedWDT();
+        WS.statusLEDBlink(WS_LED_STATUS_ERROR);
+        delay(1000);
+    }
+}
+
+
+/**************************************************************************/
+/*!
     @brief    Checks network and MQTT connectivity. Handles network
               re-connection and mqtt re-establishment.
 */
@@ -895,36 +916,26 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_NETWORK:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
       maxAttempts = 20;
-      setStatusLEDColor(LED_NET_CONNECT);
-
       while (maxAttempts >= 0) {
+        setStatusLEDColor(LED_NET_CONNECT);
         WS.feedWDT();
         // attempt to connect
         _connect();
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
+        // Blink LED?
+        setStatusLEDColor(BLACK);
         maxAttempts--;
       }
       // Validate connection
       if (networkStatus() == WS_NET_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_NETWORK;
           break;
+      } else {
+        // unrecoverable error, hang forever
+        errorWriteHang("Unable to connect to Wireless Network");
       }
-      // Otherwise we're not connected to the network
-      WS_DEBUG_PRINTLN("Unable to connect to the network, error code:");
-      WS_DEBUG_PRINTLN(networkStatus());
-      // Should be USE_TINYUSB?
-      _fileSystem->writeErrorToBootOut("ERROR: Unable to connect to WiFi network");
-
-      // blink and hang forever
-      while (1) {
-          WS.feedWDT();
-          WS.statusLEDBlink(WS_LED_STATUS_ERROR);
-          delay(1000);
-      }
-
-      //fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
