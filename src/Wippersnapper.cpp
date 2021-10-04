@@ -868,7 +868,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
-  _fileSystem->writeErrorToBootOut("errorName");
+  _fileSystem->writeErrorToBootOut(error.c_str());
 #endif
   // Signal and hang forever
   while (1) {
