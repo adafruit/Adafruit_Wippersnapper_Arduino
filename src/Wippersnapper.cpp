@@ -939,7 +939,7 @@ void Wippersnapper::runNetFSM() {
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       // Attempt to connect
-      maxAttempts = 2;
+      maxAttempts = 10;
       while (maxAttempts >= 0) {
         setStatusLEDColor(LED_IO_CONNECT);
         mqttRC = WS._mqtt->connect(WS._username, WS._key);
@@ -948,7 +948,8 @@ void Wippersnapper::runNetFSM() {
           break;
         }
         setStatusLEDColor(BLACK);
-        delay(500);
+        delay(1000);
+        maxAttempts--;
       }
       if (fsmNetwork == FSM_NET_CHECK_MQTT) {
         break;
