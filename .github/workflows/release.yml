@@ -12,7 +12,8 @@ jobs:
   release-wippersnapper:
     name: Release WipperSnapper
     runs-on: ubuntu-latest
-    needs: [build-samd, build-esp32, build-esp32s2]
+    #needs: [build-samd, build-esp32, build-esp32s2]
+    needs: [build-samd, build-esp32]
     steps:
       - name: Download build artifacts from build-platform steps
         uses: actions/download-artifact@v2
@@ -28,46 +29,46 @@ jobs:
                   wippersnapper.*.uf2
                   wippersnapper.*.bin
 
-  build-esp32s2:
-    name: Build WipperSnapper ESP32-S2
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arduino-platform: ["funhouse_tinyusb", "magtag_tinyusb",
-                           "metro_s2_tinyusb"]
-    steps:
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - uses: actions/checkout@v2
-    - name: Get WipperSnapper version
-      run: |
-        git fetch --prune --unshallow --tags
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-    - uses: actions/checkout@v2
-      with:
-         repository: brentru/ci-arduino
-         path: ci
-    - name: Install CI-Arduino
-      run: bash ci/actions_install.sh
-    - name: Install extra Arduino libraries
-      run: |
-        git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
-    - name: Build for ESP32-S2
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
-    - name: Rename build artifacts to reflect the platform name
-      run: |
-            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
-    - name: upload build artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: build-files
-        path: |
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
+#  build-esp32s2:
+#    name: Build WipperSnapper ESP32-S2
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        arduino-platform: ["funhouse_tinyusb", "magtag_tinyusb",
+#                           "metro_s2_tinyusb"]
+#    steps:
+#    - uses: actions/setup-python@v1
+#      with:
+#        python-version: '3.x'
+#    - uses: actions/checkout@v2
+#    - name: Get WipperSnapper version
+#      run: |
+#        git fetch --prune --unshallow --tags
+#        git describe --dirty --tags
+#        echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+#    - uses: actions/checkout@v2
+#      with:
+#         repository: brentru/ci-arduino
+#         path: ci
+#    - name: Install CI-Arduino
+#      run: bash ci/actions_install.sh
+#    - name: Install extra Arduino libraries
+#      run: |
+#        git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
+#    - name: Build for ESP32-S2
+#      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+#    - name: Rename build artifacts to reflect the platform name
+#      run: |
+#            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+#            mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
+#    - name: upload build artifacts
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: build-files
+#        path: |
+#            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
+#            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
 
   build-esp32:
@@ -89,7 +90,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -127,7 +128,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
