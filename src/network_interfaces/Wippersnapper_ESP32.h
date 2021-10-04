@@ -181,15 +181,15 @@ protected:
       delay(100);
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
-      delay(100);
+      delay(1000);
     }
 
-    // wait for a connection to be established
+/*     // wait for a connection to be established
     long startRetry = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
       // do nothing, busy loop during the timeout
-    }
-  }
+    } */
+}
 
   /**************************************************************************/
   /*!

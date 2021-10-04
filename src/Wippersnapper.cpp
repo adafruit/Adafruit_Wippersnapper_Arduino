@@ -871,6 +871,7 @@ void Wippersnapper::runNetFSM() {
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
+  int maxAttempts;
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
@@ -893,10 +894,37 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_NETWORK:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      maxAttempts = 20;
       setStatusLEDColor(LED_NET_CONNECT);
-      _connect();
-      // transition
-      fsmNetwork = FSM_NET_CHECK_NETWORK;
+
+      while (maxAttempts >= 0) {
+        WS.feedWDT();
+        // attempt to connect
+        _connect();
+        // did we connect?
+        if (networkStatus() == WS_NET_CONNECTED)
+          break;
+        maxAttempts--;
+      }
+      // Validate connection
+      if (networkStatus() == WS_NET_CONNECTED) {
+          fsmNetwork = FSM_NET_CHECK_NETWORK;
+          break;
+      }
+      // Otherwise we're not connected to the network
+      WS_DEBUG_PRINTLN("Unable to connect to the network, error code:");
+      WS_DEBUG_PRINTLN(networkStatus());
+      // Should be USE_TINYUSB?
+      _fileSystem->writeErrorToBootOut("ERROR: Unable to connect to WiFi network");
+
+      // blink and hang forever
+      while (1) {
+          WS.feedWDT();
+          WS.statusLEDBlink(WS_LED_STATUS_ERROR);
+          delay(1000);
+      }
+
+      //fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
