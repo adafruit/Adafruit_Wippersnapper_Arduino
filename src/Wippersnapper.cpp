@@ -865,19 +865,18 @@ void Wippersnapper::subscribeWSTopics() {
 */
 /**************************************************************************/
 void Wippersnapper::errorWriteHang(String error) {
-    // Otherwise we're not connected to the network
-    WS_DEBUG_PRINTLN(error);
-    // Should be USE_TINYUSB? Should check inside or here..?
-    _fileSystem->writeErrorToBootOut("ERROR: Unable to connect to WiFi network");
-
-    // blink and hang forever
-    while (1) {
-        WS.feedWDT();
-        WS.statusLEDBlink(WS_LED_STATUS_ERROR);
-        delay(1000);
-    }
+  // Print error
+  WS_DEBUG_PRINTLN(error);
+#ifdef USE_TINYUSB
+  _fileSystem->writeErrorToBootOut("errorName");
+#endif
+  // Signal and hang forever
+  while (1) {
+    WS.feedWDT();
+    WS.statusLEDBlink(WS_LED_STATUS_ERROR);
+    delay(1000);
+  }
 }
-
 
 /**************************************************************************/
 /*!
@@ -915,7 +914,8 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_NETWORK:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
-      maxAttempts = 20;
+      // Attempt to connect to wireless network
+      maxAttempts = 2;
       while (maxAttempts >= 0) {
         setStatusLEDColor(LED_NET_CONNECT);
         WS.feedWDT();
@@ -924,29 +924,38 @@ void Wippersnapper::runNetFSM() {
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
-        // Blink LED?
         setStatusLEDColor(BLACK);
+        delay(500);
         maxAttempts--;
       }
-      // Validate connection
+      // Validate connection OK
       if (networkStatus() == WS_NET_CONNECTED) {
-          fsmNetwork = FSM_NET_CHECK_NETWORK;
-          break;
-      } else {
-        // unrecoverable error, hang forever
-        errorWriteHang("Unable to connect to Wireless Network");
+        fsmNetwork = FSM_NET_CHECK_NETWORK;
+        break;
+      } else { // unrecoverable error, hang forever
+        errorWriteHang("ERROR: Unable to connect to Wireless Network");
       }
       break;
     case FSM_NET_ESTABLISH_MQTT:
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
-      setStatusLEDColor(LED_IO_CONNECT);
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
-      mqttRC = WS._mqtt->connect(WS._username, WS._key);
-      if (mqttRC == WS_MQTT_CONNECTED) {
-        fsmNetwork = FSM_NET_CHECK_MQTT;
-        break;
+      // Attempt to connect
+      maxAttempts = 2;
+      while (maxAttempts >= 0) {
+        setStatusLEDColor(LED_IO_CONNECT);
+        mqttRC = WS._mqtt->connect(WS._username, WS._key);
+        if (mqttRC == WS_MQTT_CONNECTED) {
+          fsmNetwork = FSM_NET_CHECK_MQTT;
+          break;
+        }
+        setStatusLEDColor(BLACK);
+        delay(500;)
       }
-      fsmNetwork = FSM_NET_CHECK_NETWORK;
+      if (fsmNetwork == FSM_NET_CHECK_MQTT) {
+        break;
+      } else { // unrecoverable error, hang forever
+        errorWriteHang("ERROR: Unable to connect to Adafruit.IO");
+      }
       break;
     default:
       // don't feed wdt
