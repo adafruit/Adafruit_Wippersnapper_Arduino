@@ -90,6 +90,6 @@ private:
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Signal message to send to broker on pin event. */
 };
-extern Wippersnapper WS;
+extern Wippersnapper WS; /*!< Wippersnapper variable. */
 
 #endif // WIPPERSNAPPER_DIGITALGPIO_H
