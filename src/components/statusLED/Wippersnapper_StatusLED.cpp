@@ -47,10 +47,23 @@ bool Wippersnapper::statusLEDInit() {
   }
 #endif
 
-// some hardware requires the NEOPIXEL_POWER pin to be enabled.
-#ifdef NEEDS_STATUS_NEOPIXEL_POWER
-  pinMode(NEOPIXEL_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_POWER, LOW);
+// some hardware requires the NEOPIXEL_POWER pin to be enabled
+// and the drive mode is hardware-dependant
+#ifdef NEEDS_STATUS_NEOPIXEL_PWR_HI
+  pinMode(STATUS_NEOPIXEL_PWR, OUTPUT);
+  digitalWrite(STATUS_NEOPIXEL_PWR, HIGH);
+#endif
+
+#ifdef NEEDS_STATUS_NEOPIXEL_PWR_LOW
+  pinMode(STATUS_NEOPIXEL_PWR, OUTPUT);
+  digitalWrite(STATUS_NEOPIXEL_PWR, LOW);
+#endif
+
+
+#ifdef NEEDS_STATUS_NEOPIXEL_POWER_HIGH
+  digitalWrite(STATUS_NEOPIXEL_PWR, HIGH);
+#elif NEEDS_STATUS_NEOPIXEL_POWER_LOW
+  digitalWrite(STATUS_NEOPIXEL_PWR, LOW);
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
