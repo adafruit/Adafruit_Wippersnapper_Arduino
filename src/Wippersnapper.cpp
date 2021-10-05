@@ -1163,6 +1163,12 @@ void Wippersnapper::connect() {
       "Registration and configuration complete!\nRunning application...");
 }
 
+/**************************************************************************/
+/*!
+    @brief    Publishes an ACK to the broker that the device has completed
+              its hardware configuration.
+*/
+/**************************************************************************/
 void Wippersnapper::publishPinConfigComplete() {
   // Publish that we've set up the pins and are ready to run
   wippersnapper_signal_v1_SignalResponse msg =
