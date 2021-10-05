@@ -189,7 +189,7 @@ protected:
     while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
       // do nothing, busy loop during the timeout
     }
-  }
+}
 
   /**************************************************************************/
   /*!
