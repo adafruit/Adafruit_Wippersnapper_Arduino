@@ -167,7 +167,7 @@ jobs:
       run: bash ci/actions_install.sh
 
     - name: clang
-      run: python3 ci/run-clang-format.py -e "ci/*" -e "bin/*" -r . 
+      run: python3 ci/run-clang-format.py -e "ci/*" -e "bin/*" -e "src/nanopb/*" -e "src/wippersnapper" -e "src/provisioning" -e "src/pb.h" -r . 
 
     - name: doxygen
       env:
