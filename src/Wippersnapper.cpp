@@ -862,6 +862,8 @@ void Wippersnapper::subscribeWSTopics() {
 /*!
     @brief    Writes an error message to the serial and the filesystem,
                 blinks WS_LED_STATUS_ERROR pattern and hangs.
+    @param    error
+              The error message to write to the serial and filesystem.
 */
 /**************************************************************************/
 void Wippersnapper::errorWriteHang(String error) {
