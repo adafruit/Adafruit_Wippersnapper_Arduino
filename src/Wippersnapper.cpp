@@ -604,7 +604,7 @@ void retryMQTTConnection() {
 /*!
     @brief    Called when client receives a message published across the
                 Adafruit IO MQTT /error special topic.
-    @param    data
+    @param    errorData
                 Data from MQTT broker.
     @param    len
                 Length of data received from MQTT broker.
