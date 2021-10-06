@@ -4,7 +4,9 @@
 name: WipperSnapper Release CI
 
 on:
-  push:
+  pull_request:
+  release:
+    types: [published]
 
 jobs:
   release-wippersnapper:
