@@ -51,6 +51,8 @@ Wippersnapper_DigitalGPIO::~Wippersnapper_DigitalGPIO() {
             The pin's name.
     @param  period
             The pin's period, in seconds.
+    @param  pull
+            The pin's pull mode.
 */
 /*******************************************************************************************************************************/
 void Wippersnapper_DigitalGPIO::initDigitalPin(

@@ -21,7 +21,7 @@
     @brief  Initializes Analog IO class.
     @param  totalAnalogInputPins
                 Total number of analog input pins to allocate.
-    @param  vRef
+    @param  aRef
                 ADC's voltage reference value, in volts.
 */
 /***********************************************************************************/
@@ -70,10 +70,19 @@ void Wippersnapper_AnalogIO::setAref(float refVoltage) { _aRef = refVoltage; }
 /***********************************************************************************/
 /*!
     @brief  Returns the device's reference voltage.
+    @returns Analog reference voltage, in volts.
 */
 /***********************************************************************************/
 float Wippersnapper_AnalogIO::getAref() { return _aRef; }
 
+/***********************************************************************************/
+/*!
+    @brief  Sets the device's ADC resolution, either natively via calling
+   Arduino API's analogReadResolution() or via scaling.
+    @param  resolution
+            The desired analog resolution, in bits.
+*/
+/***********************************************************************************/
 void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
 // set the resolution natively in the BSP
 #ifdef ARDUINO_ARCH_SAMD
@@ -89,8 +98,22 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   _adcResolution = resolution;
 }
 
+/***********************************************************************************/
+/*!
+    @brief    Gets the scaled ADC resolution.
+    @returns  resolution
+                The scaled analog resolution, in bits.
+*/
+/***********************************************************************************/
 int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
 
+/***********************************************************************************/
+/*!
+    @brief    Gets the device's native ADC resolution.
+    @returns  resolution
+                The native analog resolution, in bits.
+*/
+/***********************************************************************************/
 int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
 
 /***********************************************************************************/
