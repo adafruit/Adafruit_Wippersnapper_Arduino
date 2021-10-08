@@ -44,7 +44,7 @@ I2C_Driver::~I2C_Driver() {
 /*!
     @brief    Sets an I2C device's
                 polling period, in seconds.
-    @param    Period
+    @param    period
             The time elapsed between
             polling the I2C sensor for new
             data.
