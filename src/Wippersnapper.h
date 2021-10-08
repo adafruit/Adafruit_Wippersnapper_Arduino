@@ -58,7 +58,8 @@
 #define USE_STAGING
 #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
 
-//#define IO_MQTT_SERVER "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
+//#define IO_MQTT_SERVER "io.adafruit.com" ///< Adafruit IO MQTT Server
+//(Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -76,10 +77,10 @@
 #define TOPIC_IO_ERRORS "/errors"     ///< Adafruit IO Error MQTT Topic
 
 // Reserved Wippersnapper topics
-#define TOPIC_WS "/wprsnpr/"       ///< WipperSnapper topic
-#define TOPIC_INFO "/info/" ///< Registration sub-topic
-#define TOPIC_SIGNALS "/signals/"  ///< Signals sub-topic
-#define TOPIC_I2C "/i2c"           ///< I2C sub-topic
+#define TOPIC_WS "/wprsnpr/"      ///< WipperSnapper topic
+#define TOPIC_INFO "/info/"       ///< Registration sub-topic
+#define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
+#define TOPIC_I2C "/i2c"          ///< I2C sub-topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -302,7 +303,6 @@ public:
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
-
   // i2c signal msg
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
@@ -314,7 +314,6 @@ public:
   char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
                                      device. */
   bool pinCfgCompleted = false;
-
 
 private:
   void _init();

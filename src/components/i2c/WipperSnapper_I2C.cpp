@@ -35,10 +35,6 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-// initialize TwoWire w/ desired portNum if ESP32-S2
-#if defined(ARDUINO_ARCH_ESP32)
-  _i2c = new TwoWire(msgInitRequest->i2c_port_number);
-#endif
   // validate if SDA & SCL has pullup
   if (digitalRead(msgInitRequest->i2c_pin_sda) == LOW) {
     pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
@@ -46,8 +42,19 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   if (digitalRead(msgInitRequest->i2c_pin_scl) == LOW) {
     pinMode(msgInitRequest->i2c_pin_scl, INPUT_PULLUP);
   }
-  // set up i2c port
+
+// Initialize TwoWire interface
+#if defined(ARDUINO_ARCH_ESP32)
+  // ESP32, ESP32-S2
+  _i2c = new TwoWire(msgInitRequest->i2c_port_number);
   _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
+#else
+  // SAMD
+  _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
+                     msgInitRequest->i2c_pin_scl);
+  _i2c->begin();
+#endif
+
   _i2c->setClock(msgInitRequest->i2c_frequency);
   // set i2c obj. properties
   _portNum = msgInitRequest->i2c_port_number;
@@ -81,8 +88,8 @@ bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
 /************************************************************************/
 wippersnapper_i2c_v1_I2CScanResponse
 WipperSnapper_Component_I2C::scanAddresses() {
-  WS_DEBUG_PRINT("EXEC: I2C Scan on port # ");
-  WS_DEBUG_PRINTLN(_portNum);
+  WS_DEBUG_PRINT("EXEC: I2C Scan");
+
   // Create response
   wippersnapper_i2c_v1_I2CScanResponse scanResp =
       wippersnapper_i2c_v1_I2CScanResponse_init_zero;
