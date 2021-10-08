@@ -55,7 +55,7 @@
 #endif
 
 // Uncomment the following use the staging IO server //
-#define USE_STAGING ///< Use Adafruit IO staging certificate
+#define USE_STAGING                     ///< Use Adafruit IO staging certificate
 #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
 
 //#define IO_MQTT_SERVER "io.adafruit.com" ///< Adafruit IO MQTT Server
@@ -313,7 +313,7 @@ public:
                             milliseconds. */
   char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
                                      device. */
-  bool pinCfgCompleted = false; /*!< Did initial pin sync complete? */
+  bool pinCfgCompleted = false;   /*!< Did initial pin sync complete? */
 
 private:
   void _init();
