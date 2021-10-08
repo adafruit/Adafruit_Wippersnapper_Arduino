@@ -226,16 +226,18 @@ public:
   void processPackets();
   void publish(const char *topic, uint8_t *payload, uint16_t bLen,
                uint8_t qos = 0);
-  // Networking
+
+  // Networking helpers
   void pingBroker();
   void runNetFSM();
 
-  // WDT
+  // WDT helpers
   void enableWDT(int timeoutMS = 0);
   void feedWDT();
 
-  // Errors
+  // Error handling helpers
   void haltError(String error);
+  void errorWriteHang(String error);
 
   // MQTT topic callbacks //
   // Decodes a signal message
@@ -300,6 +302,7 @@ public:
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
+
   // i2c signal msg
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
@@ -311,6 +314,7 @@ public:
   char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
                                      device. */
   bool pinCfgCompleted = false;
+
 
 private:
   void _init();
@@ -331,9 +335,14 @@ protected:
   // MQTT topics
   char *_topic_description_status; /*!< MQTT subtopic carrying the description
                                       status resp. from the broker */
-  char *_topic_description_status_complete;
-  char *_topic_device_pin_config_complete;
-  char *_topic_signal_brkr; /*!< Wprsnpr->Device messages */
+  char *_topic_description_status_complete; /*!< MQTT topic carrying the ACK
+                                               signal from the device to the
+                                               broker after registration */
+  char *
+      _topic_device_pin_config_complete; /*!< MQTT topic carrying the ACK signal
+                                            from the device to the broker after
+                                            hardware configuration */
+  char *_topic_signal_brkr;              /*!< Wprsnpr->Device messages */
 
   Adafruit_MQTT_Subscribe
       *_topic_description_sub; /*!< Subscription for registration topic. */

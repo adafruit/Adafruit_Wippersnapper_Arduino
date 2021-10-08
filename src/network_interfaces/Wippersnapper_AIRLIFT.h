@@ -30,7 +30,7 @@
 #define NINAFWVER                                                              \
   "1.6.0" /*!< min. nina-fw version compatible with this library. */
 
-#define SPIWIFI SPI
+#define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
 extern Wippersnapper WS;
 /****************************************************************************/
@@ -116,9 +116,8 @@ public:
             ESP32 ACK pin.
   @param  rstPin
             ESP32 RST pin.
-  @param  gpio0pin
+  @param  gpio0Pin
             ESP32 GPIO0 pin.
-
   */
   /********************************************************/
   void set_airlift_pins(int ssPin, int ackPin, int rstPin, int gpio0Pin) {
@@ -195,13 +194,17 @@ public:
   const char *connectionType() { return "AIRLIFT"; }
 
 protected:
-  const char *_ssid;
-  const char *_pass;
-  String _fv;
-  uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  int _ssPin, _ackPin, _rstPin, _gpio0Pin = -1;
-  WiFiSSLClient *_mqtt_client;
-  SPIClass *_wifi;
+  const char *_ssid; /*!< Network SSID. */
+  const char *_pass; /*!< Network password. */
+  String _fv;        /*!< nina-fw firmware version. */
+  uint8_t mac[6] = {0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00}; /*!< ESP32 interface's MAC address. */
+  int _ssPin = -1;                     /*!< SPI S.S. pin. */
+  int _ackPin = -1;                    /*!< SPI ACK pin. */
+  int _rstPin = -1;                    /*!< SPI RST pin. */
+  int _gpio0Pin = -1;                  /*!< SPI GPIO0 pin, unused. */
+  WiFiSSLClient *_mqtt_client;         /*!< Instance of a secure WiFi client. */
+  SPIClass *_wifi; /*!< Instance of the SPI bus used by the AirLift. */
 
   /**************************************************************************/
   /*!
