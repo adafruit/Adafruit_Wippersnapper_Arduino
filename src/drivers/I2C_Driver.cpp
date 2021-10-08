@@ -19,7 +19,7 @@
     @brief    Creates a generic I2C Driver object.
     @param    deviceAddress
               The i2c device's address.
-    @param    _i2c
+    @param    i2c
               The desired i2c port.
 */
 /*******************************************************************************/
@@ -44,6 +44,10 @@ I2C_Driver::~I2C_Driver() {
 /*!
     @brief    Sets an I2C device's
                 polling period, in seconds.
+    @param    Period
+            The time elapsed between
+            polling the I2C sensor for new
+            data.
 */
 /*******************************************/
 void I2C_Driver::setPeriod(float period) { _pollPeriod = period; }

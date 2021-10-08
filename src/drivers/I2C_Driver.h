@@ -19,6 +19,11 @@
 
 #include <Adafruit_AHTX0.h>
 
+/**************************************************************************/
+/*!
+    @brief  Class that provides a sensor driver interface for the AHTX0.
+*/
+/**************************************************************************/
 class I2C_Driver {
 public:
   // GENERIC, shared

@@ -522,6 +522,7 @@ bool encodeI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
               Protobuf message's tag type.
     @param    arg
               Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
 */
 /******************************************************************************************/
 bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,

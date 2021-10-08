@@ -25,6 +25,11 @@
 class Wippersnapper;
 class I2C_Driver;
 
+/**************************************************************************/
+/*!
+    @brief  Class that provides an interface with the I2C bus.
+*/
+/**************************************************************************/
 class WipperSnapper_Component_I2C {
 public:
   WipperSnapper_Component_I2C(
