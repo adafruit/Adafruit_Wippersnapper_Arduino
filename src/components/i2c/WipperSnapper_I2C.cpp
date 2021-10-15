@@ -24,7 +24,7 @@
 */
 /***************************************************************************************************************/
 WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
-    wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest) {
+    wippersnapper_i2c_v1_I2CBusInitRequest *msgInitRequest) {
   WS_DEBUG_PRINTLN("EXEC: New I2C Port ");
   WS_DEBUG_PRINT("\tPort #: ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_port_number);
@@ -84,16 +84,16 @@ bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
 /*!
     @brief    Scans all I2C addresses on the bus between 0x08 and 0x7F
               inclusive and returns an array of the devices found.
-    @returns  wippersnapper_i2c_v1_I2CScanResponse
+    @returns  wippersnapper_i2c_v1_I2CBusScanResponse
 */
 /************************************************************************/
-wippersnapper_i2c_v1_I2CScanResponse
+wippersnapper_i2c_v1_I2CBusScanResponse
 WipperSnapper_Component_I2C::scanAddresses() {
   WS_DEBUG_PRINT("EXEC: I2C Scan");
 
   // Create response
-  wippersnapper_i2c_v1_I2CScanResponse scanResp =
-      wippersnapper_i2c_v1_I2CScanResponse_init_zero;
+  wippersnapper_i2c_v1_I2CBusScanResponse scanResp =
+      wippersnapper_i2c_v1_I2CBusScanResponse_init_zero;
 
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
   // those that respond.
