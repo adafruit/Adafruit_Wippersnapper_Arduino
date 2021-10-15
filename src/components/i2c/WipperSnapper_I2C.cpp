@@ -126,7 +126,8 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(
 
   // AHTX0 Sensor
   if (msgDeviceInitReq->has_aht_init) {
-    uint16_t addr = (uint16_t)msgDeviceInitReq->aht_init.address;
+    // TODO: Implement handling in future release
+/*     uint16_t addr = (uint16_t)msgDeviceInitReq->aht_init.address;
     WS_DEBUG_PRINTLN("Requesting to initialize AHTx sensor");
     WS_DEBUG_PRINT("\tSensor Addr: ");
     WS_DEBUG_PRINTLN(addr, HEX);
@@ -150,7 +151,7 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(
       aht->enableAHTX0Humidity();
     }
     // Push to vector for sensor drivers
-    activeDrivers.push_back(aht);
+    activeDrivers.push_back(aht); */
     attachSuccess = true;
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
