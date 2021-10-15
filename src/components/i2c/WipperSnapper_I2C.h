@@ -33,9 +33,9 @@ class I2C_Driver;
 class WipperSnapper_Component_I2C {
 public:
   WipperSnapper_Component_I2C(
-      wippersnapper_i2c_v1_I2CInitRequest *msgInitRequest);
+      wippersnapper_i2c_v1_I2CBusInitRequest *msgInitRequest);
   ~WipperSnapper_Component_I2C();
-  wippersnapper_i2c_v1_I2CScanResponse scanAddresses();
+  wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool
   attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
   bool isInitialized();
