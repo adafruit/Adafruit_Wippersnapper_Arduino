@@ -181,6 +181,7 @@ void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
   // de-allocate the pin within digital_input_pins[]
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].pinName == pin) {
+      _analog_input_pins[i].pinName = 0;
       _analog_input_pins[i].period = -1;
       _analog_input_pins[i].prvPinVal = 0.0;
       _analog_input_pins[i].prvPeriod = 0L;

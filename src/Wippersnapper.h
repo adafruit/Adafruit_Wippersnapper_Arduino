@@ -18,6 +18,9 @@
 #ifndef WIPPERSNAPPER_H
 #define WIPPERSNAPPER_H
 
+// Cpp STD
+#include <vector>
+
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_decode.h>
@@ -32,13 +35,16 @@
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
 
-// Wippersnapper GPIO Components
+// Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
+#include "components/i2c/WipperSnapper_I2C.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
+
+// Note: These might be better off in their respective wrappers
 #include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
@@ -48,8 +54,13 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-#define IO_MQTT_SERVER                                                         \
-  "io.adafruit.com" ///< Adafruit IO MQTT Server (Production)
+// Uncomment the following use the staging IO server //
+//#define USE_STAGING                     ///< Use Adafruit IO staging
+// certificate #define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT
+// Server
+
+#define IO_MQTT_SERVER "io.adafruit.com" ///< Adafruit IO MQTT Server
+//(Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -67,9 +78,10 @@
 #define TOPIC_IO_ERRORS "/errors"     ///< Adafruit IO Error MQTT Topic
 
 // Reserved Wippersnapper topics
-#define TOPIC_WS "/wprsnpr/"      ///< Global /wprsnpr/ topic
-#define TOPIC_INFO "/info/"       ///< Device description topic
-#define TOPIC_SIGNALS "/signals/" ///< Device signals topic
+#define TOPIC_WS "/wprsnpr/"      ///< WipperSnapper topic
+#define TOPIC_INFO "/info/"       ///< Registration sub-topic
+#define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
+#define TOPIC_I2C "/i2c"          ///< I2C sub-topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -156,6 +168,7 @@ class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class Wippersnapper_ESP32_nvs;
+class WipperSnapper_Component_I2C;
 
 /**************************************************************************/
 /*!
@@ -242,6 +255,14 @@ public:
   // Pin configure message
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
+  // I2C
+  std::vector<WipperSnapper_Component_I2C *>
+      i2cComponents; ///< Vector containing all I2C components
+  WipperSnapper_Component_I2C *_i2cPort0 =
+      NULL; ///< WipperSnapper I2C Component for I2C port #0
+  WipperSnapper_Component_I2C *_i2cPort1 =
+      NULL; ///< WipperSnapper I2C Component for I2C port #1
+
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
   uint8_t
@@ -277,10 +298,23 @@ public:
 
   char *_topic_signal_device; /*!< Device->Wprsnpr messages */
 
+  char *_topic_signal_i2c_brkr; /*!< Topic carries messages from a device to a
+                                   broker. */
+
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
 
-  bool pinCfgCompleted = false; /*!< Did pin configuration complete? */
+  // i2c signal msg
+  wippersnapper_signal_v1_I2CRequest msgSignalI2C =
+      wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
+                                                    ///< message
+
+  char *throttleMessage; /*!< Pointer to throttle message data. */
+  int throttleTime;      /*!< Total amount of time to throttle the device, in
+                            milliseconds. */
+  char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
+                                     device. */
+  bool pinCfgCompleted = false;   /*!< Did initial pin sync complete? */
 
 private:
   void _init();
@@ -316,6 +350,8 @@ protected:
       *_topic_signal_device_pub; /*!< Subscription for D2C signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
 
   char *_err_topic;      /*!< Adafruit IO MQTT error message topic. */
   char *_throttle_topic; /*!< Adafruit IO MQTT throttle message topic. */
