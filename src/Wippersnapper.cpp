@@ -631,11 +631,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (msgI2CDeviceInitRequest.i2c_port_number == 0 &&
         WS._i2cPort0->isInitialized() == true) {
       deviceInitSuccess =
-          WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
+          WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
     } else if (msgI2CDeviceInitRequest.i2c_port_number == 1 &&
                WS._i2cPort1->isInitialized() == true) {
       deviceInitSuccess =
-          WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
+          WS._i2cPort1->initI2CDevice(&msgI2CDeviceInitRequest);
     }
     // Create response
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;

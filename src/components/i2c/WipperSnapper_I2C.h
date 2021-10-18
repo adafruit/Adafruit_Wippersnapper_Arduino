@@ -36,14 +36,15 @@ public:
   ~WipperSnapper_Component_I2C();
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool
-  attachI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
+  initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
   bool isInitialized();
 
 private:
   bool _isInit;
   int32_t _portNum;
   TwoWire *_i2c = NULL;
-  //std::vector<I2C_Driver *> activeDrivers;
+  // Sensor drivers
+  WipperSnapper_I2C_Driver_AHTX0 *_ahtx0;
 };
 extern Wippersnapper WS;
 

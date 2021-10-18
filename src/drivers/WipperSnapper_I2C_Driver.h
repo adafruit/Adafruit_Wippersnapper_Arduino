@@ -1,6 +1,7 @@
 /*!
  * @file WipperSnapper_I2C_Driver.h
  *
+ * Base implementation for I2C device drivers.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -21,6 +22,7 @@
 class WipperSnapper_I2C_Driver  {
 
 public:
+ // TODO: Initializer should use in wire _i2c?
   WipperSnapper_I2C_Driver(){
       // TODO
   }
@@ -43,7 +45,6 @@ public:
 
 protected:
   bool isInitialized = false;
-
 };
 
 #endif // WipperSnapper_I2C_Driver_H

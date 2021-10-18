@@ -113,41 +113,46 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
 /*******************************************************************************/
 /*!
-    @brief    Initializes I2C device driver and attaches its object to the "bus"
+    @brief    Initializes I2C device driver.
     @param    msgDeviceInitReq
               A decoded I2CDevice initialization request message.
     @returns True if I2C device is initialized and attached, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_Component_I2C::attachI2CDevice(
+bool WipperSnapper_Component_I2C::initI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
-  bool attachSuccess = false;
-  // Determine which sensor-specific callback to utilize
 
-  // AHTX0 Sensor
+  // Determine which sensor-specific callback to utilize
   if (msgDeviceInitReq->has_aht_init) {
-    WipperSnapper_I2C_Driver_AHTX0 aht = WipperSnapper_I2C_Driver_AHTX0(this->_i2c);
-    
+    // AHTX0 Sensor
+    _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c);
+
     // Did we initialize successfully?
-    if (!aht.getInitialized()) {
+    if (!_ahtx0->getInitialized()) {
         WS_DEBUG_PRINTLN("ERROR: Failed to initialize AHTX0 chip!");
         return false;
     }
 
     // Configure AHTX0 sensor
     if (msgDeviceInitReq->aht_init.enable_temperature) {
-        aht.enableTemperatureSensor();
-        aht.setTemperatureSensorPeriod(msgDeviceInitReq->aht_init.period_temperature);
+        _ahtx0->enableTemperatureSensor();
+        _ahtx0->setTemperatureSensorPeriod(msgDeviceInitReq->aht_init.period_temperature);
+        WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceInitReq->aht_init.period_temperature);
+        WS_DEBUG_PRINTLN("seconds]");
     }
     if (msgDeviceInitReq->aht_init.enable_humidity) {
-        aht.enableHumiditySensor();
-        aht.setHumiditySensorPeriod(msgDeviceInitReq->aht_init.period_humidity);
+        _ahtx0->enableHumiditySensor();
+        _ahtx0->setHumiditySensorPeriod(msgDeviceInitReq->aht_init.period_humidity);
+        WS_DEBUG_PRINTLN("Enabled AHTX0 Humidity Sensor [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceInitReq->aht_init.period_humidity);
+        WS_DEBUG_PRINTLN("seconds]");
     }
 
-    attachSuccess = true;
+    WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
   WS_DEBUG_PRINTLN("Successfully initialized AHTX0 sensor!");
-  return attachSuccess;
+  return true;
 }
