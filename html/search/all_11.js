@@ -9,7 +9,7 @@ var searchData=
   ['wippersnapper_5fanalogio_2ecpp',['Wippersnapper_AnalogIO.cpp',['../_wippersnapper___analog_i_o_8cpp.html',1,'']]],
   ['wippersnapper_5fanalogio_2eh',['Wippersnapper_AnalogIO.h',['../_wippersnapper___analog_i_o_8h.html',1,'']]],
   ['wippersnapper_5fboards_2eh',['Wippersnapper_Boards.h',['../_wippersnapper___boards_8h.html',1,'']]],
-  ['wippersnapper_5fcomponent_5fi2c',['WipperSnapper_Component_I2C',['../class_wipper_snapper___component___i2_c.html',1,'WipperSnapper_Component_I2C'],['../class_wipper_snapper___component___i2_c.html#a998d064fea9511c57bc3400c483a2ce7',1,'WipperSnapper_Component_I2C::WipperSnapper_Component_I2C()']]],
+  ['wippersnapper_5fcomponent_5fi2c',['WipperSnapper_Component_I2C',['../class_wipper_snapper___component___i2_c.html',1,'WipperSnapper_Component_I2C'],['../class_wipper_snapper___component___i2_c.html#a82f3e2f3220c8cf33903d9bbd158e688',1,'WipperSnapper_Component_I2C::WipperSnapper_Component_I2C()']]],
   ['wippersnapper_5fdigitalgpio',['Wippersnapper_DigitalGPIO',['../class_wippersnapper___digital_g_p_i_o.html',1,'Wippersnapper_DigitalGPIO'],['../class_wippersnapper___digital_g_p_i_o.html#a6e2665cb084fd7b11933fe0f6d194d39',1,'Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO()']]],
   ['wippersnapper_5fdigitalgpio_2ecpp',['Wippersnapper_DigitalGPIO.cpp',['../_wippersnapper___digital_g_p_i_o_8cpp.html',1,'']]],
   ['wippersnapper_5fdigitalgpio_2eh',['Wippersnapper_DigitalGPIO.h',['../_wippersnapper___digital_g_p_i_o_8h.html',1,'']]],
