@@ -19,11 +19,10 @@
 #include "Wippersnapper.h"
 #include <Wire.h>
 
-#include "drivers/I2C_Driver.h"
+#include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 
 // forward decl.
 class Wippersnapper;
-class I2C_Driver;
 
 /**************************************************************************/
 /*!
@@ -44,7 +43,7 @@ private:
   bool _isInit;
   int32_t _portNum;
   TwoWire *_i2c = NULL;
-  std::vector<I2C_Driver *> activeDrivers;
+  //std::vector<I2C_Driver *> activeDrivers;
 };
 extern Wippersnapper WS;
 

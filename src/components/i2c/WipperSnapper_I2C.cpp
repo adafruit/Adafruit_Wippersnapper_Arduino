@@ -126,6 +126,7 @@ bool WipperSnapper_Component_I2C::attachI2CDevice(
 
   // AHTX0 Sensor
   if (msgDeviceInitReq->has_aht_init) {
+    //WipperSnapper_I2C_Driver_AHTX0 aht = WipperSnapper_I2C_Driver_AHTX0();
     // TODO: Implement handling in future release
     /*     uint16_t addr = (uint16_t)msgDeviceInitReq->aht_init.address;
         WS_DEBUG_PRINTLN("Requesting to initialize AHTx sensor");
