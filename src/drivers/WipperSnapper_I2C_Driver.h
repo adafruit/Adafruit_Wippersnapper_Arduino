@@ -33,7 +33,13 @@ public:
       return isInitialized;
   }
 
+  void updateTemperature(float *temperature) {
+      // base implementation
+  }
 
+  void updateHumidity(float *humidity) {
+      // base implementation
+  }
 
 protected:
   bool isInitialized = false;

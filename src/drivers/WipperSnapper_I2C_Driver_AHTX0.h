@@ -28,24 +28,37 @@ public:
   }
 
   ~WipperSnapper_I2C_Driver_AHTX0() {
-      // TODO
+      _aht_temp = NULL;
+      _aht_humidity = NULL;
   }
 
-  void enable_aht_temperature_sensor() {
+  void enableTemperatureSensor() {
     _aht_temp = _aht.getTemperatureSensor();
   }
 
-  void enable_aht_humidity_sensor() {
+  void enableHumiditySensor() {
     _aht_humidity = _aht.getHumiditySensor();
   }
 
-  void update_aht20(float *temperature, float *humidity) {
+  void disableTemperatureSensor() {
+    _aht_temp = NULL;
+  }
+
+  void disableHumiditySensor() {
+    _aht_humidity = NULL;
+  }
+
+  void updateTemperature(float *temperature) {
+    sensors_event_t _temp;
     // update temp, if sensor enabled
     if (_aht_temp != NULL) {
       _aht_temp->getEvent(&_temp);
       *temperature = _temp.temperature;
     }
+  }
 
+  void updateHumidity(float *humidity) {
+    sensors_event_t humidity;
     // update humid, if sensor enabled
     if (_aht_humidity != NULL) {
       _aht_humidity->getEvent(&_humidity);
@@ -56,7 +69,6 @@ public:
 protected:
   Adafruit_AHTX0 _aht;
   Adafruit_Sensor *_aht_temp, *_aht_humidity = NULL;
-  sensors_event_t _temp, _humidity;
 };
 
 #endif // WipperSnapper_I2C_Driver_AHTX0
