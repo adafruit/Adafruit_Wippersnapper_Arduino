@@ -159,7 +159,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 }
 
 void WipperSnapper_Component_I2C::update() {
-  long curTime = millis();
   for (int i = 0; i < drivers.size(); i++) {
       // Empty wippersnapper_i2c_v1_I2CSensorEvent container message
       wippersnapper_i2c_v1_I2CSensorEvent sensorEvent = wippersnapper_i2c_v1_I2CSensorEvent_init_zero;
@@ -167,6 +166,7 @@ void WipperSnapper_Component_I2C::update() {
       // Does the driver have a temperature sensor
       if (drivers[i]->getEnabledTemperatureSensor() == true) {
           // TODO: Check interval?
+          long curTime = millis();
           // if success -
           // Update temperature sensor and fill field
           wippersnapper_i2c_v1_SensorEvent sensorEventMsg = wippersnapper_i2c_v1_SensorEvent_init_zero;
@@ -174,6 +174,19 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINT("Read Temperature Sensor Value: ");
           WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
           WS_DEBUG_PRINTLN(" Degrees C");
+      }
+
+      // Does the driver have a humidity sensor
+      if (drivers[i]->getEnabledHumidSensor() == true) {
+          // TODO: Check interval?
+          long curTime = millis();
+          // if success -
+          // Update temperature sensor and fill field
+          wippersnapper_i2c_v1_SensorEvent sensorEventMsg = wippersnapper_i2c_v1_SensorEvent_init_zero;
+          drivers[i]->updateHumidity(&sensorEventMsg.event_data.relative_humidity);
+          WS_DEBUG_PRINT("Read Humidity Sensor Value: ");
+          WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
+          WS_DEBUG_PRINTLN(" %RH");
       }
 
       // TODO //

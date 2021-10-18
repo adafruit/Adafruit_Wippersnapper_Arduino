@@ -1492,7 +1492,6 @@ ws_status_t Wippersnapper::run() {
   WS._mqtt->processPackets(10);
   feedWDT();
 
-  // TODO: Loop thru components
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
   feedWDT();
@@ -1500,6 +1499,10 @@ ws_status_t Wippersnapper::run() {
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
   feedWDT();
+
+  // Process I2C sensor events
+  // WS._i2cPort0->update();
+  // feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
