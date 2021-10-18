@@ -19,6 +19,7 @@
 #include "Wippersnapper.h"
 #include <Wire.h>
 
+#include "drivers/WipperSnapper_I2C_Driver.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 
 // forward decl.
@@ -34,17 +35,22 @@ public:
   WipperSnapper_Component_I2C(
       wippersnapper_i2c_v1_I2CBusInitRequest *msgInitRequest);
   ~WipperSnapper_Component_I2C();
+  bool isInitialized();
+
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool
+
   initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
-  bool isInitialized();
+
+  void update();
 
 private:
   bool _isInit;
   int32_t _portNum;
-  TwoWire *_i2c = NULL;
+  TwoWire *_i2c = nullptr;
+  std::vector<WipperSnapper_I2C_Driver*> drivers;
   // Sensor drivers
-  WipperSnapper_I2C_Driver_AHTX0 *_ahtx0;
+  WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
 };
 extern Wippersnapper WS;
 

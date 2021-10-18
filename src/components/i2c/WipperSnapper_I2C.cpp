@@ -122,10 +122,11 @@ WipperSnapper_Component_I2C::scanAddresses() {
 bool WipperSnapper_Component_I2C::initI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
 
+  uint16_t i2cAddress = (uint16_t) msgDeviceInitReq->i2c_address;
   // Determine which sensor-specific callback to utilize
   if (msgDeviceInitReq->has_aht_init) {
     // AHTX0 Sensor
-    _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c);
+    _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
 
     // Did we initialize successfully?
     if (!_ahtx0->getInitialized()) {
@@ -148,11 +149,35 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         WS_DEBUG_PRINT(msgDeviceInitReq->aht_init.period_humidity);
         WS_DEBUG_PRINTLN("seconds]");
     }
-
+    drivers.push_back(_ahtx0);
     WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
   WS_DEBUG_PRINTLN("Successfully initialized AHTX0 sensor!");
   return true;
+}
+
+void WipperSnapper_Component_I2C::update() {
+  long curTime = millis();
+  for (int i = 0; i < drivers.size(); i++) {
+      // Empty wippersnapper_i2c_v1_I2CSensorEvent container message
+      wippersnapper_i2c_v1_I2CSensorEvent sensorEvent = wippersnapper_i2c_v1_I2CSensorEvent_init_zero;
+
+      // Does the driver have a temperature sensor
+      if (drivers[i]->getEnabledTemperatureSensor() == true) {
+          // TODO: Check interval?
+          // if success -
+          // Update temperature sensor and fill field
+          wippersnapper_i2c_v1_SensorEvent sensorEventMsg = wippersnapper_i2c_v1_SensorEvent_init_zero;
+          drivers[i]->updateTemperature(&sensorEventMsg.event_data.temperature);
+          WS_DEBUG_PRINT("Read Temperature Sensor Value: ");
+          WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
+          WS_DEBUG_PRINTLN(" Degrees C");
+      }
+
+      // TODO //
+      // Fill the container I2CSensorEvent -> Signal proto
+      // Publish proto
+  }
 }

@@ -17,34 +17,74 @@
 #define WipperSnapper_I2C_Driver_H
 
 #include "Wippersnapper.h"
-//extern Wippersnapper WS;
 
-class WipperSnapper_I2C_Driver  {
+/**************************************************************************/
+/*!
+    @brief  Base class for I2C Drivers.
+*/
+/**************************************************************************/
+class WipperSnapper_I2C_Driver {
 
 public:
- // TODO: Initializer should use in wire _i2c?
-  WipperSnapper_I2C_Driver(){
-      // TODO
+  /*******************************************************************************/
+  /*!
+      @brief    Constructor for an I2C sensor.
+  */
+  /*******************************************************************************/
+  WipperSnapper_I2C_Driver() {
+    // TODO
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Destructor for an I2C sensor.
+  */
+  /*******************************************************************************/
   ~WipperSnapper_I2C_Driver() {
-      // TODO
+    // TODO
   }
 
-  bool getInitialized() {
-      return isInitialized;
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the initialization status of an I2C driver.
+      @returns  True if I2C driver is initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool getInitialized() { return isInitialized; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a temperature sensor and converts
+                the reading into the expected SI unit.
+  */
+  /*******************************************************************************/
+  virtual void updateTemperature(float *temperature) {
+    // no-op
   }
 
-  void updateTemperature(float *temperature) {
-      // base implementation
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a humidity sensor and converts
+                the reading into the expected SI unit.
+  */
+  /*******************************************************************************/
+  virtual void updateHumidity(float *humidity) {
+    // no-op
   }
 
-  void updateHumidity(float *humidity) {
-      // base implementation
+  virtual bool getEnabledTemperatureSensor() {
+    return _hasTempSensor;
+  }
+
+  virtual bool getEnabledHumidSensor() {
+    return _hasHumidSensor;
   }
 
 protected:
   bool isInitialized = false;
+  uint16_t _sensorAddress; ///< The I2C device's unique I2C address
+  bool _hasTempSensor = false;
+  bool _hasHumidSensor = false;
 };
 
 #endif // WipperSnapper_I2C_Driver_H
