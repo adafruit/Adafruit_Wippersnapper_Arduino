@@ -175,7 +175,7 @@ void WipperSnapper_Component_I2C::update() {
 
     if (drivers[i]->getTempSensorPeriod() > -1L) {
       long curTime = millis(); // take the current time
-      if (curTime - drivers[i]->getTempSensorPeriodPrv >
+      if (curTime - drivers[i]->getTempSensorPeriodPrv() >
           drivers[i]->getTempSensorPeriod()) {
         // Update temperature sensor and fill field
         wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
@@ -191,7 +191,7 @@ void WipperSnapper_Component_I2C::update() {
 
     if (drivers[i]->getHumidSensorPeriod() > -1L) {
       long curTime = millis(); // take the current time
-      if (curTime - drivers[i]->getHumiditySensorPeriodPrv >
+      if (curTime - drivers[i]->getHumiditySensorPeriodPrv() >
           drivers[i]->getHumidSensorPeriod()) {
         // Update temperature sensor and fill field
         wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
