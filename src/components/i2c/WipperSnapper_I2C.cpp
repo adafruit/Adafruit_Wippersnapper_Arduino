@@ -133,13 +133,14 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize AHTX0 chip!");
       return false;
     }
+    WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
 
     // Configure AHTX0 sensor
     if (msgDeviceInitReq->aht_init.enable_temperature) {
       _ahtx0->enableTemperatureSensor();
       _ahtx0->setTemperatureSensorPeriod(
           msgDeviceInitReq->aht_init.period_temperature);
-      WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor [Returns every: ");
+      WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
       WS_DEBUG_PRINT(msgDeviceInitReq->aht_init.period_temperature);
       WS_DEBUG_PRINTLN("seconds]");
     }
@@ -147,12 +148,11 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       _ahtx0->enableHumiditySensor();
       _ahtx0->setHumiditySensorPeriod(
           msgDeviceInitReq->aht_init.period_humidity);
-      WS_DEBUG_PRINTLN("Enabled AHTX0 Humidity Sensor [Returns every: ");
+      WS_DEBUG_PRINTLN("Enabled AHTX0 Humidity Sensor, [Returns every: ");
       WS_DEBUG_PRINT(msgDeviceInitReq->aht_init.period_humidity);
       WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_ahtx0);
-    WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
@@ -179,21 +179,29 @@ bool WipperSnapper_Component_I2C::DeinitI2CDevice(
       // Check which type of request we're dealing with
       if (msgDeviceDeinitReq->has_aht) {
         // Should we delete the driver entirely, or just update?
-        if ((msgDeviceDeinitReq->aht.disable_temperature && drivers[i]->getHumidSensorPeriod() == -1L) || (msgDeviceDeinitReq->aht.disable_humidity && drivers[i]->getTempSensorPeriod() == -1L) || (msgDeviceDeinitReq->aht.disable_temperature && msgDeviceDeinitReq->aht.disable_humidity) {
+        if ((msgDeviceDeinitReq->aht.disable_temperature &&
+             drivers[i]->getHumidSensorPeriod() == -1L) ||
+            (msgDeviceDeinitReq->aht.disable_humidity &&
+             drivers[i]->getTempSensorPeriod() == -1L) ||
+            (msgDeviceDeinitReq->aht.disable_temperature &&
+             msgDeviceDeinitReq->aht.disable_humidity)) {
           // delete the driver and remove from list so we dont attempt to
           // update() it
           delete _ahtx0;
           drivers.erase(drivers.begin() + i);
           return true;
+          WS_DEBUG_PRINTLN("AHTX0 Deleted");
         }
         // Disable the device's temperature sensor
         else if (msgDeviceDeinitReq->aht.disable_temperature) {
           drivers[i]->disableTemperatureSensor();
           return true;
+          WS_DEBUG_PRINTLN("AHTX0 Temperature Sensor Disabled");
         }
         // Disable the device's humidity sensor
         else if (msgDeviceDeinitReq->aht.disable_humidity) {
           drivers[i]->disableHumiditySensor();
+          WS_DEBUG_PRINTLN("AHTX0 Humidity Sensor Disabled");
           return true;
         }
       }

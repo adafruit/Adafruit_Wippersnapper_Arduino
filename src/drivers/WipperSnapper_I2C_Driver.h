@@ -58,6 +58,11 @@ public:
   /*******************************************************************************/
   uint16_t getSensorAddress() { return _sensorAddress; }
 
+  virtual void enableTemperatureSensor(){};
+  virtual void disableTemperatureSensor(){};
+  virtual void enableHumiditySensor(){};
+  virtual void disableHumiditySensor(){};
+
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the humidity sensor's period, if

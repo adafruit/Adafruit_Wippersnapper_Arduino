@@ -656,7 +656,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Decode stream into struct, msgI2CDeviceDeinitRequest
     if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceDeinitRequest_fields,
                    &msgI2CDeviceDeinitRequest)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceDeinitRequest message.");
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode I2CDeviceDeinitRequest message.");
       return false; // fail out if we can't decode
     }
 
@@ -668,9 +669,9 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Delete device from I2C bus
     if (msgI2CDeviceDeinitRequest.i2c_port_number == 0 &&
         WS._i2cPort0->isInitialized() == true) {
-      msgi2cResponse.payload.resp_i2c_device_deinit.is_success = WS._i2cPort0->DeinitI2CDevice(&msgI2CDeviceDeinitRequest);
+      msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
+          WS._i2cPort0->DeinitI2CDevice(&msgI2CDeviceDeinitRequest);
     }
-
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
