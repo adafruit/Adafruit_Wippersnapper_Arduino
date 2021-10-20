@@ -45,10 +45,18 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the initialization status of an I2C driver.
-      @returns  True if I2C driver is initialized successfully, False otherwise.
+      @returns  True if I2C device is initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool getInitialized() { return _isInitialized; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the I2C device's address.
+      @returns  The I2C device's unique i2c address.
+  */
+  /*******************************************************************************/
+  uint16_t getSensorAddress() { return _sensorAddress; }
 
   /*********************************************************************************/
   /*!
@@ -156,10 +164,14 @@ protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
-  long _tempSensorPeriod = -1L; ///< The time period between reading the temperature sensor's value.
-  long _humidSensorPeriod = -1L; ///< The time period between reading the humidity sensor's value.
-  long _tempSensorPeriodPrv; ///< The time period when the temperature sensor was last read.
-  long _humidSensorPeriodPrv; ///< The time period when the humidity sensor was last read.
+  long _tempSensorPeriod =
+      -1L; ///< The time period between reading the temperature sensor's value.
+  long _humidSensorPeriod =
+      -1L; ///< The time period between reading the humidity sensor's value.
+  long _tempSensorPeriodPrv;  ///< The time period when the temperature sensor
+                              ///< was last read.
+  long _humidSensorPeriodPrv; ///< The time period when the humidity sensor was
+                              ///< last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

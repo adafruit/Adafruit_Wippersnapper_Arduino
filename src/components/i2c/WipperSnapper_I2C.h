@@ -38,9 +38,8 @@ public:
   bool isInitialized();
 
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
-  bool
-
-  initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
+  bool initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
+  bool DeinitI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
 
   void update();
 

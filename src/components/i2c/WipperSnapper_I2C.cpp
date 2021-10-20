@@ -162,6 +162,31 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
 /*******************************************************************************/
 /*!
+    @brief    Deinitializes an I2C device driver.
+    @param    msgDeviceDeinitReq
+              A decoded I2CDeviceDeinitRequest.
+    @returns True if I2C device is found and de-initialized, False otherwise.
+*/
+/*******************************************************************************/
+bool WipperSnapper_Component_I2C::DeinitI2CDevice(
+    wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
+  uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_address;
+  // Loop thru vector of drivers
+  for (int i = 0; i < drivers.size(); i++) {
+    if (drivers[i]->getSensorAddress() == deviceAddr) {
+      // driver found! let's delete it
+      delete _ahtx0;
+      // and remove it from the driver vector
+      drivers.erase(drivers.begin() + i);
+      return true;
+    }
+  }
+  // Driver was not erased or not found
+  return false;
+}
+
+/*******************************************************************************/
+/*!
     @brief    Queries all I2C device drivers for new values. Fills and sends an
               I2CSensorEvent with the sensor event data.
 */
@@ -180,8 +205,7 @@ void WipperSnapper_Component_I2C::update() {
         // Update temperature sensor and fill field
         wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
             wippersnapper_i2c_v1_SensorEvent_init_zero;
-        drivers[i]->updateTempSensor(
-            &sensorEventMsg.event_data.temperature);
+        drivers[i]->updateTempSensor(&sensorEventMsg.event_data.temperature);
         WS_DEBUG_PRINT("Read Temperature Sensor Value: ");
         WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
         WS_DEBUG_PRINTLN(" Degrees C");

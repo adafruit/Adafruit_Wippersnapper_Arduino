@@ -645,6 +645,39 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
+
+  } else if (field->tag ==
+             wippersnapper_signal_v1_I2CRequest_req_i2c_device_deinit_tag) {
+    WS_DEBUG_PRINTLN("NEW COMMAND: I2C Device De-init");
+    // Decode stream into an I2CDeviceDeinitRequest
+    wippersnapper_i2c_v1_I2CDeviceDeinitRequest msgI2CDeviceDeinitRequest =
+        wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_zero;
+    // Decode stream into struct, msgI2CDeviceDeinitRequest
+    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceDeinitRequest_fields,
+                   &msgI2CDeviceDeinitRequest)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceDeinitRequest message.");
+      return false; // fail out if we can't decode
+    }
+
+    // Empty I2C response to fill out
+    msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+
+    // Delete device from I2C bus
+    if (msgI2CDeviceDeinitRequest.i2c_port_number == 0 &&
+        WS._i2cPort0->isInitialized() == true) {
+      msgi2cResponse.payload.resp_i2c_device_deinit.is_success = WS._i2cPort0->DeinitI2CDevice(&msgI2CDeviceDeinitRequest);
+    }
+
+/*     // TODO
+    // Fill response
+    msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+    msgi2cResponse.which_payload =
+        wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
+    msgi2cResponse.payload.resp_i2c_device_init.is_success = deviceInitSuccess;
+    // Encode response
+    if (!encodeI2CResponse(&msgi2cResponse)) {
+      return false;
+    } */
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     return false; // fail out, we didn't encode anything to publish
