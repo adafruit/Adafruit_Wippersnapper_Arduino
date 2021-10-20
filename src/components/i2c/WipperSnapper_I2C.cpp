@@ -158,6 +158,13 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
   return true;
 }
 
+/*******************************************************************************/
+/*!
+    @brief    Queries the I2C sensor drivers for a new value if their
+              time interval has elapsed. Fills and sends an I2CSensorEvent with
+              the sensor event data.
+*/
+/*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
   for (int i = 0; i < drivers.size(); i++) {
       // Empty wippersnapper_i2c_v1_I2CSensorEvent container message
