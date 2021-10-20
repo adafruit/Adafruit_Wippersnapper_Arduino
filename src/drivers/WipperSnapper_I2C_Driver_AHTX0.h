@@ -87,7 +87,7 @@ public:
                 A pointer to a temperature reading.
   */
   /*******************************************************************************/
-  void updateTemperatureSensor(float *temperature) {
+  void updateTempSensor(float *temperature) {
     sensors_event_t temp;
     // update temp, if sensor enabled
     if (_aht_temp != NULL) {
@@ -103,7 +103,7 @@ public:
                 A pointer to a humidity reading.
   */
   /*******************************************************************************/
-  void updateHumiditySensor(float *humidity) {
+  void updateHumidSensor(float *humidity) {
     sensors_event_t humid;
     // update humid, if sensor enabled
     if (_aht_humidity != NULL) {

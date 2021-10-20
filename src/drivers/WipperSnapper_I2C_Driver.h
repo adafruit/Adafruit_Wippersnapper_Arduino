@@ -93,11 +93,11 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Base implementation - Reads a temperature sensor and converts
-                the reading into the expected SI unit.
+      @brief    Base implementation - Reads a temperature sensor. Expects value
+                to return in the proper SI unit.
   */
   /*******************************************************************************/
-  virtual void updateTemperatureSensor(float *temperature) {
+  virtual void updateTempSensor(float *temperature) {
     // no-op
   }
 
@@ -128,7 +128,7 @@ public:
      which the humidity sensor was queried last.
   */
   /*********************************************************************************/
-  virtual long getHumiditySensorPeriodPrv() { return _humidSensorPeriodPrv; }
+  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -148,7 +148,7 @@ public:
                 the reading into the expected SI unit.
   */
   /*******************************************************************************/
-  virtual void updateHumiditySensor(float *humidity) {
+  virtual void updateHumidSensor(float *humidity) {
     // no-op
   }
 
@@ -156,10 +156,10 @@ protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
-  long _tempSensorPeriod = -1L;
-  long _humidSensorPeriod = -1L;
-  long _tempSensorPeriodPrv;
-  long _humidSensorPeriodPrv;
+  long _tempSensorPeriod = -1L; ///< The time period between reading the temperature sensor's value.
+  long _humidSensorPeriod = -1L; ///< The time period between reading the humidity sensor's value.
+  long _tempSensorPeriodPrv; ///< The time period when the temperature sensor was last read.
+  long _humidSensorPeriodPrv; ///< The time period when the humidity sensor was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

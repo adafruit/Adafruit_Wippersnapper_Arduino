@@ -125,7 +125,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_address;
   // Determine which sensor-specific callback to utilize
   if (msgDeviceInitReq->has_aht_init) {
-    // AHTX0 Sensor
+    // Initialize new AHTX0 sensor
     _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
 
     // Did we initialize successfully?
@@ -162,9 +162,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
 /*******************************************************************************/
 /*!
-    @brief    Queries the I2C sensor drivers for a new value if their
-              time interval has elapsed. Fills and sends an I2CSensorEvent with
-              the sensor event data.
+    @brief    Queries all I2C device drivers for new values. Fills and sends an
+              I2CSensorEvent with the sensor event data.
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
@@ -173,6 +172,7 @@ void WipperSnapper_Component_I2C::update() {
     wippersnapper_i2c_v1_I2CSensorEvent sensorEvent =
         wippersnapper_i2c_v1_I2CSensorEvent_init_zero;
 
+    // Check if i2c device has a temperature sensor
     if (drivers[i]->getTempSensorPeriod() > -1L) {
       long curTime = millis(); // take the current time
       if (curTime - drivers[i]->getTempSensorPeriodPrv() >
@@ -180,7 +180,7 @@ void WipperSnapper_Component_I2C::update() {
         // Update temperature sensor and fill field
         wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
             wippersnapper_i2c_v1_SensorEvent_init_zero;
-        drivers[i]->updateTemperatureSensor(
+        drivers[i]->updateTempSensor(
             &sensorEventMsg.event_data.temperature);
         WS_DEBUG_PRINT("Read Temperature Sensor Value: ");
         WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
@@ -189,14 +189,15 @@ void WipperSnapper_Component_I2C::update() {
       }
     }
 
+    // Check if i2c device has a humidity sensor
     if (drivers[i]->getHumidSensorPeriod() > -1L) {
       long curTime = millis(); // take the current time
-      if (curTime - drivers[i]->getHumiditySensorPeriodPrv() >
+      if (curTime - drivers[i]->getHumidSensorPeriodPrv() >
           drivers[i]->getHumidSensorPeriod()) {
         // Update temperature sensor and fill field
         wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
             wippersnapper_i2c_v1_SensorEvent_init_zero;
-        drivers[i]->updateHumiditySensor(
+        drivers[i]->updateHumidSensor(
             &sensorEventMsg.event_data.relative_humidity);
         WS_DEBUG_PRINT("Read Humidity Sensor Value: ");
         WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
