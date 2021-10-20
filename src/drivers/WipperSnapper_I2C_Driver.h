@@ -31,8 +31,8 @@ public:
       @brief    Constructor for an I2C sensor.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver() {
-    // TODO
+  WipperSnapper_I2C_Driver(TwoWire *_i2c, uint16_t sensorAddress) {
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -41,7 +41,7 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver() {
-    // TODO
+    _sensorAddress = 0;
   }
 
   /*******************************************************************************/
@@ -50,7 +50,29 @@ public:
       @returns  True if I2C driver is initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool getInitialized() { return isInitialized; }
+  bool getInitialized() { return _isInitialized; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the humidity sensor's period, if set.
+  */
+  /*********************************************************************************/
+  virtual long getTempSensorPeriod() {
+    return _tempSensorPeriod;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the temperature sensor's return frequency.
+      @param    tempPeriod
+                The time interval at which to return new data from the temperature
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void setTemperatureSensorPeriod(float tempPeriod) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _tempSensorPeriod = (long)tempPeriod * 1000;
+  }
 
   /*******************************************************************************/
   /*!
@@ -58,8 +80,31 @@ public:
                 the reading into the expected SI unit.
   */
   /*******************************************************************************/
-  virtual void updateTemperature(float *temperature) {
+  virtual void updateTemperatureSensor(float *temperature) {
     // no-op
+  }
+
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the humidity sensor's period, if set.
+  */
+  /*********************************************************************************/
+  virtual long getHumidSensorPeriod() {
+    return _humidSensorPeriod;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the humidity sensor's return frequency.
+      @param    humidPeriod
+                The time interval at which to return new data from the humidity
+                sensor.
+  */
+  /*******************************************************************************/
+  void setHumiditySensorPeriod(float humidPeriod) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _humidSensorPeriod = (long)humidPeriod * 1000;
   }
 
   /*******************************************************************************/
@@ -68,23 +113,17 @@ public:
                 the reading into the expected SI unit.
   */
   /*******************************************************************************/
-  virtual void updateHumidity(float *humidity) {
+  virtual void updateHumiditySensor(float *humidity) {
     // no-op
   }
 
-  virtual bool getEnabledTemperatureSensor() {
-    return _hasTempSensor;
-  }
-
-  virtual bool getEnabledHumidSensor() {
-    return _hasHumidSensor;
-  }
-
 protected:
-  bool isInitialized = false;
-  uint16_t _sensorAddress; ///< The I2C device's unique I2C address
-  bool _hasTempSensor = false;
-  bool _hasHumidSensor = false;
+  bool _isInitialized = false; ///< True if the I2C device was initialized successfully, False otherwise.
+  uint16_t _sensorAddress; ///< The I2C device's unique I2C address.
+  long _tempSensorPeriod = -1L;
+  long _humidSensorPeriod = -1L;
+  long _tempSensorPeriodPrv;
+  long _humidSensorPeriodPrv;
 };
 
 #endif // WipperSnapper_I2C_Driver_H
