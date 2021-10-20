@@ -40,9 +40,7 @@ public:
       @brief    Destructor for an I2C sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver() {
-    _sensorAddress = 0;
-  }
+  ~WipperSnapper_I2C_Driver() { _sensorAddress = 0; }
 
   /*******************************************************************************/
   /*!
@@ -54,24 +52,43 @@ public:
 
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the humidity sensor's period, if set.
+      @brief    Base implementation - Returns the humidity sensor's period, if
+     set.
   */
   /*********************************************************************************/
-  virtual long getTempSensorPeriod() {
-    return _tempSensorPeriod;
-  }
+  virtual long getTempSensorPeriod() { return _tempSensorPeriod; }
 
   /*******************************************************************************/
   /*!
       @brief    Set the temperature sensor's return frequency.
       @param    tempPeriod
-                The time interval at which to return new data from the temperature
-                sensor.
+                The time interval at which to return new data from the
+     temperature sensor.
   */
   /*******************************************************************************/
   virtual void setTemperatureSensorPeriod(float tempPeriod) {
     // Period is in seconds, cast it to long and convert it to milliseconds
     _tempSensorPeriod = (long)tempPeriod * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+     which the temperature sensor was queried last.
+  */
+  /*********************************************************************************/
+  virtual long getTempSensorPeriodPrv() { return _tempSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the temperature sensor was queried.
+      @param    tempPeriodPrv
+                The time when the temperature sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setTemperatureSensorPeriodPrv(float tempPeriodPrv) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _tempSensorPeriodPrv = (long)tempPeriodPrv * 1000;
   }
 
   /*******************************************************************************/
@@ -84,15 +101,13 @@ public:
     // no-op
   }
 
-
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the humidity sensor's period, if set.
+      @brief    Base implementation - Returns the humidity sensor's period, if
+     set.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriod() {
-    return _humidSensorPeriod;
-  }
+  virtual long getHumidSensorPeriod() { return _humidSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -107,6 +122,26 @@ public:
     _humidSensorPeriod = (long)humidPeriod * 1000;
   }
 
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+     which the humidity sensor was queried last.
+  */
+  /*********************************************************************************/
+  virtual long getHumiditySensorPeriodPrv() { return _humidSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the humidity sensor was queried.
+      @param    humidPeriodPrv
+                The time when the humidity sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setHumiditySensorPeriodPrv(float humidPeriodPrv) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _humidSensorPeriodPrv = (long)humidPeriodPrv * 1000;
+  }
+
   /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a humidity sensor and converts
@@ -118,8 +153,9 @@ public:
   }
 
 protected:
-  bool _isInitialized = false; ///< True if the I2C device was initialized successfully, False otherwise.
-  uint16_t _sensorAddress; ///< The I2C device's unique I2C address.
+  bool _isInitialized = false; ///< True if the I2C device was initialized
+                               ///< successfully, False otherwise.
+  uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
   long _tempSensorPeriod = -1L;
   long _humidSensorPeriod = -1L;
   long _tempSensorPeriodPrv;

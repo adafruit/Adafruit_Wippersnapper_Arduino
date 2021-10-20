@@ -35,7 +35,8 @@ public:
                 The I2C interface.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress) : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
+  WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
     _isInitialized = _aht.begin(_i2c);
   }
 
@@ -56,32 +57,28 @@ public:
       @brief    Enables the AHTX0's temperature sensor.
   */
   /*******************************************************************************/
-  void enableTemperatureSensor() {
-    _aht_temp = _aht.getTemperatureSensor();
-  }
+  void enableTemperatureSensor() { _aht_temp = _aht.getTemperatureSensor(); }
 
   /*******************************************************************************/
   /*!
       @brief    Enables the AHTX0's humidity sensor.
   */
   /*******************************************************************************/
-  void enableHumiditySensor() {
-    _aht_humidity = _aht.getHumiditySensor();
-  }
+  void enableHumiditySensor() { _aht_humidity = _aht.getHumiditySensor(); }
 
   /*******************************************************************************/
   /*!
       @brief    Disables the AHTX0's temperature sensor.
   */
   /*******************************************************************************/
-  void disableTemperatureSensor() { _aht_temp = NULL;}
+  void disableTemperatureSensor() { _aht_temp = NULL; }
 
   /*******************************************************************************/
   /*!
       @brief    Disables the AHTX0's humidity sensor.
   */
   /*******************************************************************************/
-  void disableHumiditySensor() { _aht_humidity = NULL;}
+  void disableHumiditySensor() { _aht_humidity = NULL; }
 
   /*******************************************************************************/
   /*!
