@@ -174,11 +174,29 @@ bool WipperSnapper_Component_I2C::DeinitI2CDevice(
   // Loop thru vector of drivers
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
-      // driver found! let's delete it
-      delete _ahtx0;
-      // and remove it from the driver vector
-      drivers.erase(drivers.begin() + i);
-      return true;
+      // driver found!
+
+      // Check which type of request we're dealing with
+      if (msgDeviceDeinitReq->has_aht) {
+        // Should we delete the driver entirely, or just update?
+        if ((msgDeviceDeinitReq->aht.disable_temperature && drivers[i]->getHumidSensorPeriod() == -1L) || (msgDeviceDeinitReq->aht.disable_humidity && drivers[i]->getTempSensorPeriod() == -1L) || (msgDeviceDeinitReq->aht.disable_temperature && msgDeviceDeinitReq->aht.disable_humidity) {
+          // delete the driver and remove from list so we dont attempt to
+          // update() it
+          delete _ahtx0;
+          drivers.erase(drivers.begin() + i);
+          return true;
+        }
+        // Disable the device's temperature sensor
+        else if (msgDeviceDeinitReq->aht.disable_temperature) {
+          drivers[i]->disableTemperatureSensor();
+          return true;
+        }
+        // Disable the device's humidity sensor
+        else if (msgDeviceDeinitReq->aht.disable_humidity) {
+          drivers[i]->disableHumiditySensor();
+          return true;
+        }
+      }
     }
   }
   // Driver was not erased or not found
