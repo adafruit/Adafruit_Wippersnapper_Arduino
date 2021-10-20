@@ -71,14 +71,14 @@ public:
       @brief    Disables the AHTX0's temperature sensor.
   */
   /*******************************************************************************/
-  void disableTemperatureSensor() { _aht_temp = NULL; }
+  void disableTemperatureSensor() { _aht_temp = NULL; _tempSensorPeriod = -1L; }
 
   /*******************************************************************************/
   /*!
       @brief    Disables the AHTX0's humidity sensor.
   */
   /*******************************************************************************/
-  void disableHumiditySensor() { _aht_humidity = NULL; }
+  void disableHumiditySensor() { _aht_humidity = NULL; _humidSensorPeriod = -1L; }
 
   /*******************************************************************************/
   /*!

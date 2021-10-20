@@ -176,6 +176,7 @@ bool WipperSnapper_Component_I2C::DeinitI2CDevice(
     if (drivers[i]->getSensorAddress() == deviceAddr) {
       // driver found!
 
+      // !!TODO!! We may want to edit this section with an updateI2CDevice as well!
       // Check which type of request we're dealing with
       if (msgDeviceDeinitReq->has_aht) {
         // Should we delete the driver entirely, or just update?
