@@ -19,10 +19,9 @@
 #include "Wippersnapper.h"
 
 /** Types of I2C driver, corresponding to Driver_CLASSNAME.h */
-typedef enum DriverType
-{
-    UNSPECIFIED, // Unspecified/undefined i2c device driver.
-    AHTX0  // AHTX0 Driver
+typedef enum DriverType {
+  UNSPECIFIED, // Unspecified/undefined i2c device driver.
+  AHTX0        // AHTX0 Driver
 } DriverType;
 
 /**************************************************************************/
@@ -77,7 +76,8 @@ public:
   /*!
       @brief    Sets the I2C device driver's type.
       @param    driverType
-                The type of I2C driver (corresponds to header Driver_.h class name)
+                The type of I2C driver (corresponds to header Driver_.h class
+     name)
   */
   /*******************************************************************************/
   void setDriverType(DriverType driverType) { _driverType = driverType; }

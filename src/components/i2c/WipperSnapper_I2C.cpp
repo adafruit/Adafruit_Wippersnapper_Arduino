@@ -205,9 +205,8 @@ bool WipperSnapper_Component_I2C::DeinitI2CDevice(
           WS_DEBUG_PRINTLN("AHTX0 Humidity Sensor Disabled");
           return true;
         }
-      }
-      else {
-          WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
       }
     }
   }
