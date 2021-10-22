@@ -670,7 +670,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (msgI2CDeviceDeinitRequest.i2c_port_number == 0 &&
         WS._i2cPort0->isInitialized() == true) {
       msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
-          WS._i2cPort0->DeinitI2CDevice(&msgI2CDeviceDeinitRequest);
+          WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
     }
 
     // Encode response

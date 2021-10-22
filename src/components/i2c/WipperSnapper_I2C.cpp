@@ -162,13 +162,25 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
 /*******************************************************************************/
 /*!
+    @brief    Updates the properties of an I2C device driver.
+    @param    msgDeviceUpdateReq
+              A decoded I2CDeviceUpdateRequest.
+    @returns True if I2C device is was successfully updated, False otherwise.
+*/
+/*******************************************************************************/
+bool WipperSnapper_Component_I2C::updateI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq) {
+    // TODO!! //
+}
+
+/*******************************************************************************/
+/*!
     @brief    Deinitializes an I2C device driver.
     @param    msgDeviceDeinitReq
               A decoded I2CDeviceDeinitRequest.
     @returns True if I2C device is found and de-initialized, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_Component_I2C::DeinitI2CDevice(
+bool WipperSnapper_Component_I2C::deinitI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_address;
   // Loop thru vector of drivers

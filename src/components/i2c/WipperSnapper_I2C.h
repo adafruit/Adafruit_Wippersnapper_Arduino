@@ -39,7 +39,11 @@ public:
 
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
-  bool DeinitI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
+  // TODO: Update Implementation
+  // THIS NEEDS AN UPDATE REQUEST
+  bool updateI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq);
+  bool deinitI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
+
 
   void update();
 
