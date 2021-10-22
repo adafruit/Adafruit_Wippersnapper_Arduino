@@ -33,11 +33,14 @@ public:
       @brief    Constructor for an AHTX0 sensor.
       @param    _i2c
                 The I2C interface.
+      @param    sensorAddress
+                The 7-bit I2C address of the AHTX0 sensor.
   */
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
     setDriverType(AHTX0); // sets the type of I2C_Driver
+    _sensorAddress = sensorAddress;
     _isInitialized = _aht.begin(_i2c);
   }
 

@@ -176,7 +176,7 @@ bool WipperSnapper_Component_I2C::DeinitI2CDevice(
     if (drivers[i]->getSensorAddress() == deviceAddr) {
 
       // Check driver type
-      if (drivers[i]->getDriverType == AHTX0) {
+      if (drivers[i]->_driverType == AHTX0) {
         // Should we delete the driver entirely, or just update?
         if ((msgDeviceDeinitReq->aht.disable_temperature &&
              drivers[i]->getHumidSensorPeriod() == -1L) ||

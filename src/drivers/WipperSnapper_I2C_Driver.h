@@ -35,6 +35,10 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an I2C sensor.
+      @param    _i2c
+                Instance of the I2C object.
+      @param    sensorAddress
+                7-bit device address.
   */
   /*******************************************************************************/
   WipperSnapper_I2C_Driver(TwoWire *_i2c, uint16_t sensorAddress) {
@@ -70,7 +74,7 @@ public:
       @returns  The type of I2C driver in-use.
   */
   /*******************************************************************************/
-  DriverType getDriverType() { return _driverType; }
+  static DriverType getDriverType() { return _driverType; }
 
   /*******************************************************************************/
   /*!
@@ -114,6 +118,7 @@ public:
   /*!
       @brief    Base implementation - Returns the humidity sensor's period, if
      set.
+      @returns  Time when the temperature sensor should be polled, in seconds.
   */
   /*********************************************************************************/
   virtual long getTempSensorPeriod() { return _tempSensorPeriod; }
@@ -135,6 +140,7 @@ public:
   /*!
       @brief    Base implementation - Returns the previous time interval at
      which the temperature sensor was queried last.
+      @returns  Time when the temperature sensor was last queried, in seconds.
   */
   /*********************************************************************************/
   virtual long getTempSensorPeriodPrv() { return _tempSensorPeriodPrv; }
@@ -155,6 +161,8 @@ public:
   /*!
       @brief    Base implementation - Reads a temperature sensor. Expects value
                 to return in the proper SI unit.
+      @param    temperature
+                Pointer to a temperature value.
   */
   /*******************************************************************************/
   virtual void updateTempSensor(float *temperature) {
@@ -165,6 +173,7 @@ public:
   /*!
       @brief    Base implementation - Returns the humidity sensor's period, if
      set.
+      @returns  Time when the humidity sensor should be polled, in seconds.
   */
   /*********************************************************************************/
   virtual long getHumidSensorPeriod() { return _humidSensorPeriod; }
@@ -186,26 +195,17 @@ public:
   /*!
       @brief    Base implementation - Returns the previous time interval at
      which the humidity sensor was queried last.
+      @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets a timestamp for when the humidity sensor was queried.
-      @param    humidPeriodPrv
-                The time when the humidity sensor was queried last.
-  */
-  /*******************************************************************************/
-  virtual void setHumiditySensorPeriodPrv(float humidPeriodPrv) {
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _humidSensorPeriodPrv = (long)humidPeriodPrv * 1000;
-  }
+  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv;}
 
   /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a humidity sensor and converts
                 the reading into the expected SI unit.
+      @param    humidity
+                Pointer to a humidity value.
   */
   /*******************************************************************************/
   virtual void updateHumidSensor(float *humidity) {
@@ -216,7 +216,7 @@ protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
-  DriverType _driverType = UNSPECIFIED; ///< The type of I2C driver.
+  DriverType _driverType; ///< The type of I2C driver.
   long _tempSensorPeriod =
       -1L; ///< The time period between reading the temperature sensor's value.
   long _humidSensorPeriod =
