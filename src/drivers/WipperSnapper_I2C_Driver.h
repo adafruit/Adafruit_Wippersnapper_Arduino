@@ -18,6 +18,13 @@
 
 #include "Wippersnapper.h"
 
+/** Types of I2C driver, corresponding to Driver_CLASSNAME.h */
+typedef enum DriverType
+{
+    UNSPECIFIED, // Unspecified/undefined i2c device driver.
+    AHTX0  // AHTX0 Driver
+} DriverType;
+
 /**************************************************************************/
 /*!
     @brief  Base class for I2C Drivers.
@@ -58,9 +65,49 @@ public:
   /*******************************************************************************/
   uint16_t getSensorAddress() { return _sensorAddress; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the I2C device driver's type (corresponds to class name)
+      @returns  The type of I2C driver in-use.
+  */
+  /*******************************************************************************/
+  DriverType getDriverType() { return _driverType; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets the I2C device driver's type.
+      @param    driverType
+                The type of I2C driver (corresponds to header Driver_.h class name)
+  */
+  /*******************************************************************************/
+  void setDriverType(DriverType driverType) { _driverType = driverType; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's temperature sensor, if it exists.
+  */
+  /*******************************************************************************/
   virtual void enableTemperatureSensor(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's temperature sensor, if it exists.
+  */
+  /*******************************************************************************/
   virtual void disableTemperatureSensor(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's humidity sensor, if it exists.
+  */
+  /*******************************************************************************/
   virtual void enableHumiditySensor(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's temperature sensor, if it exists.
+  */
+  /*******************************************************************************/
   virtual void disableHumiditySensor(){};
 
   /*********************************************************************************/
@@ -169,6 +216,7 @@ protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
+  DriverType _driverType = UNSPECIFIED; ///< The type of I2C driver.
   long _tempSensorPeriod =
       -1L; ///< The time period between reading the temperature sensor's value.
   long _humidSensorPeriod =
