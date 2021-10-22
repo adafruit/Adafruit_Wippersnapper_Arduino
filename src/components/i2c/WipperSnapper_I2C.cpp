@@ -174,11 +174,9 @@ bool WipperSnapper_Component_I2C::DeinitI2CDevice(
   // Loop thru vector of drivers
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
-      // driver found!
 
-      // !!TODO!! We may want to edit this section with an updateI2CDevice as
-      // well! Check which type of request we're dealing with
-      if (msgDeviceDeinitReq->has_aht) {
+      // Check driver type
+      if (drivers[i]->getDriverType == AHTX0) {
         // Should we delete the driver entirely, or just update?
         if ((msgDeviceDeinitReq->aht.disable_temperature &&
              drivers[i]->getHumidSensorPeriod() == -1L) ||
@@ -193,18 +191,23 @@ bool WipperSnapper_Component_I2C::DeinitI2CDevice(
           return true;
           WS_DEBUG_PRINTLN("AHTX0 Deleted");
         }
+
         // Disable the device's temperature sensor
         else if (msgDeviceDeinitReq->aht.disable_temperature) {
           drivers[i]->disableTemperatureSensor();
           return true;
           WS_DEBUG_PRINTLN("AHTX0 Temperature Sensor Disabled");
         }
+
         // Disable the device's humidity sensor
         else if (msgDeviceDeinitReq->aht.disable_humidity) {
           drivers[i]->disableHumiditySensor();
           WS_DEBUG_PRINTLN("AHTX0 Humidity Sensor Disabled");
           return true;
         }
+      }
+      else {
+          WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
       }
     }
   }
