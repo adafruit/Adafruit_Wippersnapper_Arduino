@@ -19,10 +19,10 @@
 #include "Wippersnapper.h"
 
 /** Types of I2C driver, corresponding to Driver_CLASSNAME.h */
-typedef enum DriverType {
+typedef enum {
   UNSPECIFIED, // Unspecified/undefined i2c device driver.
   AHTX0        // AHTX0 Driver
-} DriverType;
+} DriverType_t;
 
 /**************************************************************************/
 /*!
@@ -74,7 +74,7 @@ public:
       @returns  The type of I2C driver in-use.
   */
   /*******************************************************************************/
-  static DriverType getDriverType() { return _driverType; }
+  DriverType_t getDriverType() { return _driverType; }
 
   /*******************************************************************************/
   /*!
@@ -84,7 +84,7 @@ public:
      name)
   */
   /*******************************************************************************/
-  void setDriverType(DriverType driverType) { _driverType = driverType; }
+  void setDriverType(DriverType_t driverType) { _driverType = driverType; }
 
   /*******************************************************************************/
   /*!
@@ -216,7 +216,7 @@ protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
-  DriverType _driverType; ///< The type of I2C driver.
+  DriverType_t _driverType; ///< The type of I2C driver.
   long _tempSensorPeriod =
       -1L; ///< The time period between reading the temperature sensor's value.
   long _humidSensorPeriod =
