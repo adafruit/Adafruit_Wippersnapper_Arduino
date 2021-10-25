@@ -124,7 +124,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_address;
   // Determine which sensor-specific callback to utilize
-  if (msgDeviceInitReq->has_aht_init) {
+  if (msgDeviceInitReq->has_aht) {
     // Initialize new AHTX0 sensor
     _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
 
@@ -136,20 +136,19 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
 
     // Configure AHTX0 sensor
-    if (msgDeviceInitReq->aht_init.enable_temperature) {
+    if (msgDeviceInitReq->aht.enable_temperature) {
       _ahtx0->enableTemperatureSensor();
       _ahtx0->setTemperatureSensorPeriod(
-          msgDeviceInitReq->aht_init.period_temperature);
+          msgDeviceInitReq->aht.period_temperature);
       WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->aht_init.period_temperature);
+      WS_DEBUG_PRINT(msgDeviceInitReq->aht.period_temperature);
       WS_DEBUG_PRINTLN("seconds]");
     }
-    if (msgDeviceInitReq->aht_init.enable_humidity) {
+    if (msgDeviceInitReq->aht.enable_humidity) {
       _ahtx0->enableHumiditySensor();
-      _ahtx0->setHumiditySensorPeriod(
-          msgDeviceInitReq->aht_init.period_humidity);
+      _ahtx0->setHumiditySensorPeriod(msgDeviceInitReq->aht.period_humidity);
       WS_DEBUG_PRINTLN("Enabled AHTX0 Humidity Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->aht_init.period_humidity);
+      WS_DEBUG_PRINT(msgDeviceInitReq->aht.period_humidity);
       WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_ahtx0);
@@ -168,13 +167,15 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     @returns True if I2C device is was successfully updated, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_Component_I2C::updateI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq) {
-    // TODO!! //
+bool WipperSnapper_Component_I2C::updateI2CDevice(
+    wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq) {
+  // TODO!! //
+  return false;
 }
 
 /*******************************************************************************/
 /*!
-    @brief    Deinitializes an I2C device driver.
+    @brief    Deinitializes and deletes an I2C device driver object.
     @param    msgDeviceDeinitReq
               A decoded I2CDeviceDeinitRequest.
     @returns True if I2C device is found and de-initialized, False otherwise.
@@ -183,42 +184,20 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(wippersnapper_i2c_v1_I2CDevice
 bool WipperSnapper_Component_I2C::deinitI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_address;
-  // Loop thru vector of drivers
+  // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
       // Check driver type
       if (drivers[i]->getDriverType() == AHTX0) {
-        // Should we delete the driver entirely, or just update?
-        if ((msgDeviceDeinitReq->aht.disable_temperature &&
-             drivers[i]->getHumidSensorPeriod() == -1L) ||
-            (msgDeviceDeinitReq->aht.disable_humidity &&
-             drivers[i]->getTempSensorPeriod() == -1L) ||
-            (msgDeviceDeinitReq->aht.disable_temperature &&
-             msgDeviceDeinitReq->aht.disable_humidity)) {
-          // delete the driver and remove from list so we dont attempt to
-          // update() it
-          delete _ahtx0;
-          drivers.erase(drivers.begin() + i);
-          return true;
-          WS_DEBUG_PRINTLN("AHTX0 Deleted");
-        }
-
-        // Disable the device's temperature sensor
-        else if (msgDeviceDeinitReq->aht.disable_temperature) {
-          drivers[i]->disableTemperatureSensor();
-          return true;
-          WS_DEBUG_PRINTLN("AHTX0 Temperature Sensor Disabled");
-        }
-
-        // Disable the device's humidity sensor
-        else if (msgDeviceDeinitReq->aht.disable_humidity) {
-          drivers[i]->disableHumiditySensor();
-          WS_DEBUG_PRINTLN("AHTX0 Humidity Sensor Disabled");
-          return true;
-        }
-      } else {
-        WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
+        // delete the driver and remove from list so we dont attempt to
+        // update() it
+        delete _ahtx0;
+        drivers.erase(drivers.begin() + i);
+        WS_DEBUG_PRINTLN("AHTX0 Deleted");
+        return true;
       }
+    } else {
+      WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
     }
   }
   // Driver was not erased or not found
@@ -233,44 +212,39 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
   for (int i = 0; i < drivers.size(); i++) {
-    // Empty wippersnapper_i2c_v1_I2CSensorEvent container message
-    wippersnapper_i2c_v1_I2CSensorEvent sensorEvent =
-        wippersnapper_i2c_v1_I2CSensorEvent_init_zero;
+    /*     // Empty wippersnapper_i2c_v1_I2CSensorEvent container message
+        wippersnapper_i2c_v1_I2CSensorEvent sensorEvent =
+            wippersnapper_i2c_v1_I2CSensorEvent_init_zero;
 
-    // Check if i2c device has a temperature sensor
-    if (drivers[i]->getTempSensorPeriod() > -1L) {
-      long curTime = millis(); // take the current time
-      if (curTime - drivers[i]->getTempSensorPeriodPrv() >
-          drivers[i]->getTempSensorPeriod()) {
-        // Update temperature sensor and fill field
-        wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
-            wippersnapper_i2c_v1_SensorEvent_init_zero;
-        drivers[i]->updateTempSensor(&sensorEventMsg.event_data.temperature);
-        WS_DEBUG_PRINT("Read Temperature Sensor Value: ");
-        WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
-        WS_DEBUG_PRINTLN(" Degrees C");
-        // TODO: Pack into the sensorEvent message
-      }
-    }
+        // Check if i2c device has a temperature sensor
+        if (drivers[i]->getTempSensorPeriod() > -1L) {
+          long curTime = millis(); // take the current time
+          if (curTime - drivers[i]->getTempSensorPeriodPrv() >
+              drivers[i]->getTempSensorPeriod()) {
+            // Update temperature sensor and fill field
+            wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
+                wippersnapper_i2c_v1_SensorEvent_init_zero;
+            drivers[i]->updateTempSensor(&sensorEventMsg.event_data.temperature);
+            WS_DEBUG_PRINT("Read Temperature Sensor Value: ");
+            WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
+            WS_DEBUG_PRINTLN(" Degrees C");
+            // TODO: Pack into the sensorEvent message
+          }
+        }
 
-    // Check if i2c device has a humidity sensor
-    if (drivers[i]->getHumidSensorPeriod() > -1L) {
-      long curTime = millis(); // take the current time
-      if (curTime - drivers[i]->getHumidSensorPeriodPrv() >
-          drivers[i]->getHumidSensorPeriod()) {
-        // Update temperature sensor and fill field
-        wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
-            wippersnapper_i2c_v1_SensorEvent_init_zero;
-        drivers[i]->updateHumidSensor(
-            &sensorEventMsg.event_data.relative_humidity);
-        WS_DEBUG_PRINT("Read Humidity Sensor Value: ");
-        WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
-        WS_DEBUG_PRINTLN(" %RH");
-      }
-    }
-
-    // TODO //
-    // Fill the container I2CSensorEvent -> Signal proto
-    // Publish proto
+        // Check if i2c device has a humidity sensor
+        if (drivers[i]->getHumidSensorPeriod() > -1L) {
+          long curTime = millis(); // take the current time
+          if (curTime - drivers[i]->getHumidSensorPeriodPrv() >
+              drivers[i]->getHumidSensorPeriod()) {
+            // Update temperature sensor and fill field
+            wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
+                wippersnapper_i2c_v1_SensorEvent_init_zero;
+            drivers[i]->updateHumidSensor(
+                &sensorEventMsg.event_data.relative_humidity);
+            WS_DEBUG_PRINT("Read Humidity Sensor Value: ");
+            WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
+            WS_DEBUG_PRINTLN(" %RH");
+          } */
   }
 }
