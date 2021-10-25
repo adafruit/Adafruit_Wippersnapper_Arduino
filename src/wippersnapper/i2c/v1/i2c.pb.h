@@ -137,11 +137,7 @@ extern "C" {
 #define wippersnapper_i2c_v1_I2CBusScanRequest_init_default {0}
 #define wippersnapper_i2c_v1_I2CBusScanResponse_init_default {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_init_default {0, 0, false, wippersnapper_i2c_v1_AHTUpdateRequest_init_default, false, wippersnapper_i2c_v1_DPS310UpdateRequest_init_default}
-<<<<<<< HEAD
-#define wippersnapper_i2c_v1_I2CDeviceInitResponse_init_default {0}
-=======
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_init_default {0, 0}
->>>>>>> adafruit/protobuf-update-5b90b479e0f65b28d5b41c111d26029a6a7687c6
 #define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_init_default {0, 0, false, wippersnapper_i2c_v1_AHTUpdateRequest_init_default, false, wippersnapper_i2c_v1_DPS310UpdateRequest_init_default}
 #define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_init_default {0, 0}
 #define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_default {0, 0}

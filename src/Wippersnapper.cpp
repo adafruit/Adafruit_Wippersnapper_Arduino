@@ -641,6 +641,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       msgi2cResponse.payload.resp_i2c_device_init.is_success =
           WS._i2cPort1->initI2CDevice(&msgI2CDeviceInitRequest);
     }
+    msgi2cResponse.payload.resp_i2c_device_init.i2c_address = msgI2CDeviceInitRequest.i2c_address;
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
