@@ -141,15 +141,8 @@ extern "C" {
 #define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_init_default {0, 0}
 #define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_default {0, 0}
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_init_default {0, 0}
-<<<<<<< HEAD
-#define wippersnapper_i2c_v1_AHTInitRequest_init_default {0, 0, 0, 0}
-#define wippersnapper_i2c_v1_AHTDeinitRequest_init_default {0, 0}
-#define wippersnapper_i2c_v1_DPS310InitRequest_init_default {0, 0, 0, 0}
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_init_default {0, 0}
-=======
 #define wippersnapper_i2c_v1_AHTUpdateRequest_init_default {0, 0, 0, 0}
 #define wippersnapper_i2c_v1_DPS310UpdateRequest_init_default {0, 0, 0, 0}
->>>>>>> adafruit/protobuf-update-63c8ecb244d94617a06e36fa70b204f910c6f572
 #define wippersnapper_i2c_v1_SensorEvent_init_default {_wippersnapper_i2c_v1_SensorType_MIN, 0}
 #define wippersnapper_i2c_v1_I2CDeviceEvent_init_default {0, {{NULL}, NULL}}
 #define wippersnapper_i2c_v1_I2CBusInitRequest_init_zero {0, 0, 0, 0}
