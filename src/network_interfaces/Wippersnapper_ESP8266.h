@@ -104,12 +104,21 @@ public:
   @brief  Sets up an Adafruit_MQTT_Client
   @param  clientID
           MQTT client identifier
+  @param  useStaging
+          True to use the Adafruit.io staging broker,
+            False otherwise.
   */
   /*******************************************************************/
-  void setupMQTTClient(const char *clientID) {
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, WS._mqtt_port,
-                                 clientID, WS._username, WS._key);
+  void setupMQTTClient(const char *clientID, bool useStaging = false) {
+    if (useStaging == true) {
+      WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, "io.adafruit.us",
+                                          WS._mqtt_port, clientID, WS._username,
+                                          WS._key);
+    } else {
+      WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, "io.adafruit.com",
+                                          WS._mqtt_port, clientID, WS._username,
+                                          WS._key);
+    }
   }
 
   /********************************************************/
