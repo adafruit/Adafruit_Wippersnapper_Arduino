@@ -55,9 +55,9 @@
 #endif
 
 // Uncomment the following use the staging IO server //
-#define USE_STAGING                     ///< Use Adafruit IO staging certificate
-#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
-//(Staging)
+//#define USE_STAGING                     ///< Use Adafruit IO staging certificate
+#define IO_MQTT_SERVER "io.adafruit.com" ///< Adafruit IO MQTT Server
+//(Production)
 
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
