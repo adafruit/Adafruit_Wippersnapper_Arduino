@@ -104,14 +104,14 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID, bool useStaging = false) {
     if (useStaging == true) {
-      mqttBrokerURL = "io.adafruit.us";
+      _mqttBrokerURL = "io.adafruit.us";
       _mqtt_client->setCACert(_aio_root_ca_staging);
     } else {
-      mqttBrokerURL = "io.adafruit.com";
+      _mqttBrokerURL = "io.adafruit.com";
       _mqtt_client->setCACert(_aio_root_ca_prod);
     }
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, mqttBrokerURL, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_mqtt_client, _mqttBrokerURL, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
   }
 
@@ -145,7 +145,7 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
-  const char *mqttBrokerURL;
+  const char *_mqttBrokerURL;
   uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   WiFiClientSecure *_mqtt_client;
 
