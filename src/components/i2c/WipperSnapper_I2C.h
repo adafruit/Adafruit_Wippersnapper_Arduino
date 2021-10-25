@@ -38,12 +38,14 @@ public:
   bool isInitialized();
 
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
-  bool initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
+  bool
+  initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
   // TODO: Update Implementation
   // THIS NEEDS AN UPDATE REQUEST
-  bool updateI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq);
-  bool deinitI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
-
+  bool updateI2CDevice(
+      wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq);
+  bool deinitI2CDevice(
+      wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
 
   void update();
 
@@ -51,7 +53,7 @@ private:
   bool _isInit;
   int32_t _portNum;
   TwoWire *_i2c = nullptr;
-  std::vector<WipperSnapper_I2C_Driver*> drivers;
+  std::vector<WipperSnapper_I2C_Driver *> drivers;
   // Sensor drivers
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
 };

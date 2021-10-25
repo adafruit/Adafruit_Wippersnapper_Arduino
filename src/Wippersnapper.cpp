@@ -646,10 +646,45 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
+  } else if (field->tag ==
+             wippersnapper_signal_v1_I2CRequest_req_i2c_device_update_tag) {
+    WS_DEBUG_PRINTLN("=> INCOMING REQUEST: I2CDeviceUpdateRequest");
+
+    // New I2CDeviceUpdateRequest message
+    wippersnapper_i2c_v1_I2CDeviceUpdateRequest msgI2CDeviceUpdateRequest =
+        wippersnapper_i2c_v1_I2CDeviceUpdateRequest_init_zero;
+
+    // Decode stream into message
+    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceUpdateRequest_fields,
+                   &msgI2CDeviceUpdateRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode I2CDeviceUpdateRequest message.");
+      return false; // fail out if we can't decode
+    }
+
+    // !!! TODO: This is not ready yet, PR is in for it !!!
+    // Empty I2C response to fill out
+    msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+    msgi2cResponse.which_payload =
+        wippersnapper_signal_v1_I2CResponse_resp_i2c_device_deinit_tag;
+
+    // Update I2C device
+    // Delete device from I2C bus
+    if (msgI2CDeviceUpdateRequest.i2c_port_number == 0 &&
+        WS._i2cPort0->isInitialized() == true) {
+      msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
+          WS._i2cPort0->updateI2CDevice(&msgI2CDeviceUpdateRequest);
+    }
+
+    // Encode response
+    // !!! TODO: This needs work from the updateResponse merge !!!
+    if (!encodeI2CResponse(&msgi2cResponse)) {
+      return false;
+    }
 
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_device_deinit_tag) {
-    WS_DEBUG_PRINTLN("NEW COMMAND: I2C Device De-init");
+    WS_DEBUG_PRINTLN("NEW COMMAND: I2C Device Deinit");
     // Decode stream into an I2CDeviceDeinitRequest
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest msgI2CDeviceDeinitRequest =
         wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_zero;

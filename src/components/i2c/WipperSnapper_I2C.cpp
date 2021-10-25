@@ -159,18 +159,66 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
   return true;
 }
 
-/*******************************************************************************/
+/*********************************************************************************/
 /*!
     @brief    Updates the properties of an I2C device driver.
     @param    msgDeviceUpdateReq
               A decoded I2CDeviceUpdateRequest.
-    @returns True if I2C device is was successfully updated, False otherwise.
+    @returns True if the I2C device is was successfully updated, False
+   otherwise.
 */
-/*******************************************************************************/
+/*********************************************************************************/
 bool WipperSnapper_Component_I2C::updateI2CDevice(
-    wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq) {
-  // TODO!! //
-  return false;
+    wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq) {
+  bool is_success = false;
+  uint16_t deviceAddr = (uint16_t)msgDeviceUpdateReq->i2c_address;
+  // Loop thru vector of drivers to find the unique address
+  for (int i = 0; i < drivers.size(); i++) {
+    if (drivers[i]->getSensorAddress() == deviceAddr) {
+      // Check driver type
+      if (drivers[i]->getDriverType() == AHTX0) {
+        // Update AHTX0 sensor configuration
+        if (msgDeviceUpdateReq->aht.enable_temperature == true) {
+          drivers[i]->enableTemperatureSensor();
+          WS_DEBUG_PRINTLN("ENABLED AHTX0 Temperature Sensor");
+        } else {
+          drivers[i]->disableTemperatureSensor();
+          WS_DEBUG_PRINTLN("DISABLED AHTX0 Temperature Sensor");
+        }
+
+        if (msgDeviceUpdateReq->aht.enable_humidity == true) {
+          drivers[i]->enableHumiditySensor();
+          WS_DEBUG_PRINTLN("ENABLED AHTX0 Humidity Sensor");
+        } else {
+          drivers[i]->disableHumiditySensor();
+          WS_DEBUG_PRINTLN("ENABLED AHTX0 Humidity Sensor");
+        }
+
+        // Update AHTX0's  sensor time periods
+        if (drivers[i]->getTempSensorPeriod() !=
+            msgDeviceUpdateReq->aht.period_temperature) {
+          drivers[i]->setTemperatureSensorPeriod(
+              msgDeviceUpdateReq->aht.period_temperature);
+          WS_DEBUG_PRINTLN(
+              "UPDATED AHTX0 Temperature Sensor, [Returns every: ");
+          WS_DEBUG_PRINT(msgDeviceUpdateReq->aht.period_temperature);
+          WS_DEBUG_PRINTLN("seconds]");
+        }
+        if (drivers[i]->getHumidSensorPeriod() !=
+            msgDeviceUpdateReq->aht.period_humidity) {
+          drivers[i]->setHumiditySensorPeriod(
+              msgDeviceUpdateReq->aht.period_humidity);
+          WS_DEBUG_PRINTLN("UPDATED AHTX0 Humidity Sensor, [Returns every: ");
+          WS_DEBUG_PRINT(msgDeviceUpdateReq->aht.period_humidity);
+          WS_DEBUG_PRINTLN("seconds]");
+        }
+        is_success = true;
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
+      }
+    }
+  }
+  return is_success;
 }
 
 /*******************************************************************************/
