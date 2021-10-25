@@ -34,6 +34,7 @@ typedef struct _wippersnapper_signal_v1_I2CRequest {
         wippersnapper_i2c_v1_I2CBusSetFrequency req_i2c_set_freq;
         wippersnapper_i2c_v1_I2CDeviceInitRequest req_i2c_device_init;
         wippersnapper_i2c_v1_I2CDeviceDeinitRequest req_i2c_device_deinit;
+        wippersnapper_i2c_v1_I2CDeviceUpdateRequest req_i2c_device_update;
     } payload;
 } wippersnapper_signal_v1_I2CRequest;
 
@@ -82,6 +83,7 @@ extern "C" {
 #define wippersnapper_signal_v1_I2CRequest_req_i2c_set_freq_tag 3
 #define wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag 4
 #define wippersnapper_signal_v1_I2CRequest_req_i2c_device_deinit_tag 5
+#define wippersnapper_signal_v1_I2CRequest_req_i2c_device_update_tag 6
 #define wippersnapper_signal_v1_I2CResponse_resp_i2c_init_tag 1
 #define wippersnapper_signal_v1_I2CResponse_resp_i2c_scan_tag 2
 #define wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag 3
@@ -95,7 +97,8 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_init,payload.req_i2c_init), 
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_scan,payload.req_i2c_scan),   2) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_set_freq,payload.req_i2c_set_freq),   3) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_device_init,payload.req_i2c_device_init),   4) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_device_deinit,payload.req_i2c_device_deinit),   5)
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_device_deinit,payload.req_i2c_device_deinit),   5) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_device_update,payload.req_i2c_device_update),   6)
 #define wippersnapper_signal_v1_I2CRequest_CALLBACK NULL
 #define wippersnapper_signal_v1_I2CRequest_DEFAULT NULL
 #define wippersnapper_signal_v1_I2CRequest_payload_req_i2c_init_MSGTYPE wippersnapper_i2c_v1_I2CBusInitRequest
@@ -103,6 +106,7 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,req_i2c_device_deinit,payload.req_i2
 #define wippersnapper_signal_v1_I2CRequest_payload_req_i2c_set_freq_MSGTYPE wippersnapper_i2c_v1_I2CBusSetFrequency
 #define wippersnapper_signal_v1_I2CRequest_payload_req_i2c_device_init_MSGTYPE wippersnapper_i2c_v1_I2CDeviceInitRequest
 #define wippersnapper_signal_v1_I2CRequest_payload_req_i2c_device_deinit_MSGTYPE wippersnapper_i2c_v1_I2CDeviceDeinitRequest
+#define wippersnapper_signal_v1_I2CRequest_payload_req_i2c_device_update_MSGTYPE wippersnapper_i2c_v1_I2CDeviceUpdateRequest
 
 #define wippersnapper_signal_v1_I2CResponse_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,resp_i2c_init,payload.resp_i2c_init),   1) \

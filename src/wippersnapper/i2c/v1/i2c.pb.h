@@ -32,29 +32,19 @@ typedef enum _wippersnapper_i2c_v1_SensorType {
 } wippersnapper_i2c_v1_SensorType;
 
 /* Struct definitions */
-typedef struct _wippersnapper_i2c_v1_AHTDeinitRequest {
-    bool disable_temperature;
-    bool disable_humidity;
-} wippersnapper_i2c_v1_AHTDeinitRequest;
-
-typedef struct _wippersnapper_i2c_v1_AHTInitRequest {
+typedef struct _wippersnapper_i2c_v1_AHTUpdateRequest {
     bool enable_temperature;
     float period_temperature;
     bool enable_humidity;
     float period_humidity;
-} wippersnapper_i2c_v1_AHTInitRequest;
+} wippersnapper_i2c_v1_AHTUpdateRequest;
 
-typedef struct _wippersnapper_i2c_v1_DPS310DeinitRequest {
-    bool disable_pressure;
-    bool disable_temperature;
-} wippersnapper_i2c_v1_DPS310DeinitRequest;
-
-typedef struct _wippersnapper_i2c_v1_DPS310InitRequest {
-    bool enable_temperature;
-    float period_temperature;
+typedef struct _wippersnapper_i2c_v1_DPS310UpdateRequest {
     bool enable_pressure;
     float period_pressure;
-} wippersnapper_i2c_v1_DPS310InitRequest;
+    bool enable_temperature;
+    float period_temperature;
+} wippersnapper_i2c_v1_DPS310UpdateRequest;
 
 typedef struct _wippersnapper_i2c_v1_I2CBusInitRequest {
     int32_t i2c_pin_scl;
@@ -81,6 +71,11 @@ typedef struct _wippersnapper_i2c_v1_I2CBusSetFrequency {
     int32_t bus_id;
 } wippersnapper_i2c_v1_I2CBusSetFrequency;
 
+typedef struct _wippersnapper_i2c_v1_I2CDeviceDeinitRequest {
+    int32_t i2c_port_number;
+    uint32_t i2c_address;
+} wippersnapper_i2c_v1_I2CDeviceDeinitRequest;
+
 typedef struct _wippersnapper_i2c_v1_I2CDeviceDeinitResponse {
     bool is_success;
     uint32_t i2c_address;
@@ -95,29 +90,33 @@ typedef struct _wippersnapper_i2c_v1_I2CDeviceInitResponse {
     bool is_success;
 } wippersnapper_i2c_v1_I2CDeviceInitResponse;
 
+typedef struct _wippersnapper_i2c_v1_I2CDeviceUpdateResponse {
+    uint32_t i2c_address;
+    bool is_success;
+} wippersnapper_i2c_v1_I2CDeviceUpdateResponse;
+
 typedef struct _wippersnapper_i2c_v1_SensorEvent {
     wippersnapper_i2c_v1_SensorType type;
     float value;
 } wippersnapper_i2c_v1_SensorEvent;
 
-typedef struct _wippersnapper_i2c_v1_I2CDeviceDeinitRequest {
-    int32_t i2c_port_number;
-    uint32_t i2c_address;
-    bool detach_device;
-    bool has_aht;
-    wippersnapper_i2c_v1_AHTDeinitRequest aht;
-    bool has_dps;
-    wippersnapper_i2c_v1_DPS310DeinitRequest dps;
-} wippersnapper_i2c_v1_I2CDeviceDeinitRequest;
-
 typedef struct _wippersnapper_i2c_v1_I2CDeviceInitRequest {
     int32_t i2c_port_number;
     uint32_t i2c_address;
-    bool has_aht_init;
-    wippersnapper_i2c_v1_AHTInitRequest aht_init;
-    bool has_dps310_init;
-    wippersnapper_i2c_v1_DPS310InitRequest dps310_init;
+    bool has_aht;
+    wippersnapper_i2c_v1_AHTUpdateRequest aht;
+    bool has_dps310;
+    wippersnapper_i2c_v1_DPS310UpdateRequest dps310;
 } wippersnapper_i2c_v1_I2CDeviceInitRequest;
+
+typedef struct _wippersnapper_i2c_v1_I2CDeviceUpdateRequest {
+    int32_t i2c_port_number;
+    uint32_t i2c_address;
+    bool has_aht;
+    wippersnapper_i2c_v1_AHTUpdateRequest aht;
+    bool has_dps;
+    wippersnapper_i2c_v1_DPS310UpdateRequest dps;
+} wippersnapper_i2c_v1_I2CDeviceUpdateRequest;
 
 
 /* Helper constants for enums */
@@ -136,14 +135,21 @@ extern "C" {
 #define wippersnapper_i2c_v1_I2CBusSetFrequency_init_default {0, 0}
 #define wippersnapper_i2c_v1_I2CBusScanRequest_init_default {0}
 #define wippersnapper_i2c_v1_I2CBusScanResponse_init_default {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
-#define wippersnapper_i2c_v1_I2CDeviceInitRequest_init_default {0, 0, false, wippersnapper_i2c_v1_AHTInitRequest_init_default, false, wippersnapper_i2c_v1_DPS310InitRequest_init_default}
+#define wippersnapper_i2c_v1_I2CDeviceInitRequest_init_default {0, 0, false, wippersnapper_i2c_v1_AHTUpdateRequest_init_default, false, wippersnapper_i2c_v1_DPS310UpdateRequest_init_default}
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_init_default {0}
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_default {0, 0, 0, false, wippersnapper_i2c_v1_AHTDeinitRequest_init_default, false, wippersnapper_i2c_v1_DPS310DeinitRequest_init_default}
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_init_default {0, 0, false, wippersnapper_i2c_v1_AHTUpdateRequest_init_default, false, wippersnapper_i2c_v1_DPS310UpdateRequest_init_default}
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_init_default {0, 0}
+#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_default {0, 0}
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_init_default {0, 0}
+<<<<<<< HEAD
 #define wippersnapper_i2c_v1_AHTInitRequest_init_default {0, 0, 0, 0}
 #define wippersnapper_i2c_v1_AHTDeinitRequest_init_default {0, 0}
 #define wippersnapper_i2c_v1_DPS310InitRequest_init_default {0, 0, 0, 0}
 #define wippersnapper_i2c_v1_DPS310DeinitRequest_init_default {0, 0}
+=======
+#define wippersnapper_i2c_v1_AHTUpdateRequest_init_default {0, 0, 0, 0}
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_init_default {0, 0, 0, 0}
+>>>>>>> adafruit/protobuf-update-63c8ecb244d94617a06e36fa70b204f910c6f572
 #define wippersnapper_i2c_v1_SensorEvent_init_default {_wippersnapper_i2c_v1_SensorType_MIN, 0}
 #define wippersnapper_i2c_v1_I2CDeviceEvent_init_default {0, {{NULL}, NULL}}
 #define wippersnapper_i2c_v1_I2CBusInitRequest_init_zero {0, 0, 0, 0}
@@ -151,30 +157,26 @@ extern "C" {
 #define wippersnapper_i2c_v1_I2CBusSetFrequency_init_zero {0, 0}
 #define wippersnapper_i2c_v1_I2CBusScanRequest_init_zero {0}
 #define wippersnapper_i2c_v1_I2CBusScanResponse_init_zero {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
-#define wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero {0, 0, false, wippersnapper_i2c_v1_AHTInitRequest_init_zero, false, wippersnapper_i2c_v1_DPS310InitRequest_init_zero}
+#define wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero {0, 0, false, wippersnapper_i2c_v1_AHTUpdateRequest_init_zero, false, wippersnapper_i2c_v1_DPS310UpdateRequest_init_zero}
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_init_zero {0}
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_zero {0, 0, 0, false, wippersnapper_i2c_v1_AHTDeinitRequest_init_zero, false, wippersnapper_i2c_v1_DPS310DeinitRequest_init_zero}
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_init_zero {0, 0, false, wippersnapper_i2c_v1_AHTUpdateRequest_init_zero, false, wippersnapper_i2c_v1_DPS310UpdateRequest_init_zero}
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_init_zero {0, 0}
+#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_zero {0, 0}
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_init_zero {0, 0}
-#define wippersnapper_i2c_v1_AHTInitRequest_init_zero {0, 0, 0, 0}
-#define wippersnapper_i2c_v1_AHTDeinitRequest_init_zero {0, 0}
-#define wippersnapper_i2c_v1_DPS310InitRequest_init_zero {0, 0, 0, 0}
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_init_zero {0, 0}
+#define wippersnapper_i2c_v1_AHTUpdateRequest_init_zero {0, 0, 0, 0}
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_init_zero {0, 0, 0, 0}
 #define wippersnapper_i2c_v1_SensorEvent_init_zero {_wippersnapper_i2c_v1_SensorType_MIN, 0}
 #define wippersnapper_i2c_v1_I2CDeviceEvent_init_zero {0, {{NULL}, NULL}}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define wippersnapper_i2c_v1_AHTDeinitRequest_disable_temperature_tag 1
-#define wippersnapper_i2c_v1_AHTDeinitRequest_disable_humidity_tag 2
-#define wippersnapper_i2c_v1_AHTInitRequest_enable_temperature_tag 1
-#define wippersnapper_i2c_v1_AHTInitRequest_period_temperature_tag 2
-#define wippersnapper_i2c_v1_AHTInitRequest_enable_humidity_tag 3
-#define wippersnapper_i2c_v1_AHTInitRequest_period_humidity_tag 4
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_disable_pressure_tag 1
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_disable_temperature_tag 2
-#define wippersnapper_i2c_v1_DPS310InitRequest_enable_temperature_tag 1
-#define wippersnapper_i2c_v1_DPS310InitRequest_period_temperature_tag 2
-#define wippersnapper_i2c_v1_DPS310InitRequest_enable_pressure_tag 3
-#define wippersnapper_i2c_v1_DPS310InitRequest_period_pressure_tag 4
+#define wippersnapper_i2c_v1_AHTUpdateRequest_enable_temperature_tag 1
+#define wippersnapper_i2c_v1_AHTUpdateRequest_period_temperature_tag 2
+#define wippersnapper_i2c_v1_AHTUpdateRequest_enable_humidity_tag 3
+#define wippersnapper_i2c_v1_AHTUpdateRequest_period_humidity_tag 4
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_enable_pressure_tag 1
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_period_pressure_tag 2
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_enable_temperature_tag 3
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_period_temperature_tag 4
 #define wippersnapper_i2c_v1_I2CBusInitRequest_i2c_pin_scl_tag 1
 #define wippersnapper_i2c_v1_I2CBusInitRequest_i2c_pin_sda_tag 2
 #define wippersnapper_i2c_v1_I2CBusInitRequest_i2c_frequency_tag 3
@@ -184,22 +186,25 @@ extern "C" {
 #define wippersnapper_i2c_v1_I2CBusScanResponse_addresses_found_tag 1
 #define wippersnapper_i2c_v1_I2CBusSetFrequency_frequency_tag 1
 #define wippersnapper_i2c_v1_I2CBusSetFrequency_bus_id_tag 2
+#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_i2c_port_number_tag 1
+#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_i2c_address_tag 2
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_is_success_tag 1
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_i2c_address_tag 2
 #define wippersnapper_i2c_v1_I2CDeviceEvent_sensor_address_tag 1
 #define wippersnapper_i2c_v1_I2CDeviceEvent_sensor_event_tag 2
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_is_success_tag 1
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_i2c_address_tag 1
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_is_success_tag 2
 #define wippersnapper_i2c_v1_SensorEvent_type_tag 1
 #define wippersnapper_i2c_v1_SensorEvent_value_tag 2
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_i2c_port_number_tag 1
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_i2c_address_tag 2
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_detach_device_tag 3
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_aht_tag 4
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_dps_tag 5
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_i2c_port_number_tag 1
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_i2c_address_tag 2
-#define wippersnapper_i2c_v1_I2CDeviceInitRequest_aht_init_tag 3
-#define wippersnapper_i2c_v1_I2CDeviceInitRequest_dps310_init_tag 4
+#define wippersnapper_i2c_v1_I2CDeviceInitRequest_aht_tag 3
+#define wippersnapper_i2c_v1_I2CDeviceInitRequest_dps310_tag 4
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_i2c_port_number_tag 1
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_i2c_address_tag 2
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_aht_tag 3
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_dps_tag 4
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_i2c_v1_I2CBusInitRequest_FIELDLIST(X, a) \
@@ -234,28 +239,39 @@ X(a, STATIC,   REPEATED, UINT32,   addresses_found,   1)
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    i2c_port_number,   1) \
 X(a, STATIC,   SINGULAR, UINT32,   i2c_address,       2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  aht_init,          3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  dps310_init,       4)
+X(a, STATIC,   OPTIONAL, MESSAGE,  aht,               3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  dps310,            4)
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_CALLBACK NULL
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_DEFAULT NULL
-#define wippersnapper_i2c_v1_I2CDeviceInitRequest_aht_init_MSGTYPE wippersnapper_i2c_v1_AHTInitRequest
-#define wippersnapper_i2c_v1_I2CDeviceInitRequest_dps310_init_MSGTYPE wippersnapper_i2c_v1_DPS310InitRequest
+#define wippersnapper_i2c_v1_I2CDeviceInitRequest_aht_MSGTYPE wippersnapper_i2c_v1_AHTUpdateRequest
+#define wippersnapper_i2c_v1_I2CDeviceInitRequest_dps310_MSGTYPE wippersnapper_i2c_v1_DPS310UpdateRequest
 
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     is_success,        1)
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_CALLBACK NULL
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_DEFAULT NULL
 
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_FIELDLIST(X, a) \
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    i2c_port_number,   1) \
 X(a, STATIC,   SINGULAR, UINT32,   i2c_address,       2) \
-X(a, STATIC,   SINGULAR, BOOL,     detach_device,     3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  aht,               4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  dps,               5)
+X(a, STATIC,   OPTIONAL, MESSAGE,  aht,               3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  dps,               4)
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_CALLBACK NULL
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_DEFAULT NULL
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_aht_MSGTYPE wippersnapper_i2c_v1_AHTUpdateRequest
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_dps_MSGTYPE wippersnapper_i2c_v1_DPS310UpdateRequest
+
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   i2c_address,       1) \
+X(a, STATIC,   SINGULAR, BOOL,     is_success,        2)
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_CALLBACK NULL
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_DEFAULT NULL
+
+#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, INT32,    i2c_port_number,   1) \
+X(a, STATIC,   SINGULAR, UINT32,   i2c_address,       2)
 #define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_CALLBACK NULL
 #define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_DEFAULT NULL
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_aht_MSGTYPE wippersnapper_i2c_v1_AHTDeinitRequest
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_dps_MSGTYPE wippersnapper_i2c_v1_DPS310DeinitRequest
 
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     is_success,        1) \
@@ -263,33 +279,21 @@ X(a, STATIC,   SINGULAR, UINT32,   i2c_address,       2)
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_CALLBACK NULL
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_DEFAULT NULL
 
-#define wippersnapper_i2c_v1_AHTInitRequest_FIELDLIST(X, a) \
+#define wippersnapper_i2c_v1_AHTUpdateRequest_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_temperature,   1) \
 X(a, STATIC,   SINGULAR, FLOAT,    period_temperature,   2) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_humidity,   3) \
 X(a, STATIC,   SINGULAR, FLOAT,    period_humidity,   4)
-#define wippersnapper_i2c_v1_AHTInitRequest_CALLBACK NULL
-#define wippersnapper_i2c_v1_AHTInitRequest_DEFAULT NULL
+#define wippersnapper_i2c_v1_AHTUpdateRequest_CALLBACK NULL
+#define wippersnapper_i2c_v1_AHTUpdateRequest_DEFAULT NULL
 
-#define wippersnapper_i2c_v1_AHTDeinitRequest_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     disable_temperature,   1) \
-X(a, STATIC,   SINGULAR, BOOL,     disable_humidity,   2)
-#define wippersnapper_i2c_v1_AHTDeinitRequest_CALLBACK NULL
-#define wippersnapper_i2c_v1_AHTDeinitRequest_DEFAULT NULL
-
-#define wippersnapper_i2c_v1_DPS310InitRequest_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_temperature,   1) \
-X(a, STATIC,   SINGULAR, FLOAT,    period_temperature,   2) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_pressure,   3) \
-X(a, STATIC,   SINGULAR, FLOAT,    period_pressure,   4)
-#define wippersnapper_i2c_v1_DPS310InitRequest_CALLBACK NULL
-#define wippersnapper_i2c_v1_DPS310InitRequest_DEFAULT NULL
-
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     disable_pressure,   1) \
-X(a, STATIC,   SINGULAR, BOOL,     disable_temperature,   2)
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_CALLBACK NULL
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_DEFAULT NULL
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, BOOL,     enable_pressure,   1) \
+X(a, STATIC,   SINGULAR, FLOAT,    period_pressure,   2) \
+X(a, STATIC,   SINGULAR, BOOL,     enable_temperature,   3) \
+X(a, STATIC,   SINGULAR, FLOAT,    period_temperature,   4)
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_CALLBACK NULL
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_DEFAULT NULL
 
 #define wippersnapper_i2c_v1_SensorEvent_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
@@ -311,12 +315,12 @@ extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CBusScanRequest_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CBusScanResponse_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceInitRequest_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceInitResponse_msg;
+extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceUpdateRequest_msg;
+extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceUpdateResponse_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceDeinitRequest_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceDeinitResponse_msg;
-extern const pb_msgdesc_t wippersnapper_i2c_v1_AHTInitRequest_msg;
-extern const pb_msgdesc_t wippersnapper_i2c_v1_AHTDeinitRequest_msg;
-extern const pb_msgdesc_t wippersnapper_i2c_v1_DPS310InitRequest_msg;
-extern const pb_msgdesc_t wippersnapper_i2c_v1_DPS310DeinitRequest_msg;
+extern const pb_msgdesc_t wippersnapper_i2c_v1_AHTUpdateRequest_msg;
+extern const pb_msgdesc_t wippersnapper_i2c_v1_DPS310UpdateRequest_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_v1_SensorEvent_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceEvent_msg;
 
@@ -328,12 +332,12 @@ extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceEvent_msg;
 #define wippersnapper_i2c_v1_I2CBusScanResponse_fields &wippersnapper_i2c_v1_I2CBusScanResponse_msg
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_fields &wippersnapper_i2c_v1_I2CDeviceInitRequest_msg
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_fields &wippersnapper_i2c_v1_I2CDeviceInitResponse_msg
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_fields &wippersnapper_i2c_v1_I2CDeviceUpdateRequest_msg
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_fields &wippersnapper_i2c_v1_I2CDeviceUpdateResponse_msg
 #define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_fields &wippersnapper_i2c_v1_I2CDeviceDeinitRequest_msg
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_fields &wippersnapper_i2c_v1_I2CDeviceDeinitResponse_msg
-#define wippersnapper_i2c_v1_AHTInitRequest_fields &wippersnapper_i2c_v1_AHTInitRequest_msg
-#define wippersnapper_i2c_v1_AHTDeinitRequest_fields &wippersnapper_i2c_v1_AHTDeinitRequest_msg
-#define wippersnapper_i2c_v1_DPS310InitRequest_fields &wippersnapper_i2c_v1_DPS310InitRequest_msg
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_fields &wippersnapper_i2c_v1_DPS310DeinitRequest_msg
+#define wippersnapper_i2c_v1_AHTUpdateRequest_fields &wippersnapper_i2c_v1_AHTUpdateRequest_msg
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_fields &wippersnapper_i2c_v1_DPS310UpdateRequest_msg
 #define wippersnapper_i2c_v1_SensorEvent_fields &wippersnapper_i2c_v1_SensorEvent_msg
 #define wippersnapper_i2c_v1_I2CDeviceEvent_fields &wippersnapper_i2c_v1_I2CDeviceEvent_msg
 
@@ -345,12 +349,12 @@ extern const pb_msgdesc_t wippersnapper_i2c_v1_I2CDeviceEvent_msg;
 #define wippersnapper_i2c_v1_I2CBusScanResponse_size 720
 #define wippersnapper_i2c_v1_I2CDeviceInitRequest_size 49
 #define wippersnapper_i2c_v1_I2CDeviceInitResponse_size 2
-#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_size 31
+#define wippersnapper_i2c_v1_I2CDeviceUpdateRequest_size 49
+#define wippersnapper_i2c_v1_I2CDeviceUpdateResponse_size 8
+#define wippersnapper_i2c_v1_I2CDeviceDeinitRequest_size 17
 #define wippersnapper_i2c_v1_I2CDeviceDeinitResponse_size 8
-#define wippersnapper_i2c_v1_AHTInitRequest_size 14
-#define wippersnapper_i2c_v1_AHTDeinitRequest_size 4
-#define wippersnapper_i2c_v1_DPS310InitRequest_size 14
-#define wippersnapper_i2c_v1_DPS310DeinitRequest_size 4
+#define wippersnapper_i2c_v1_AHTUpdateRequest_size 14
+#define wippersnapper_i2c_v1_DPS310UpdateRequest_size 14
 #define wippersnapper_i2c_v1_SensorEvent_size    7
 /* wippersnapper_i2c_v1_I2CDeviceEvent_size depends on runtime parameters */
 
