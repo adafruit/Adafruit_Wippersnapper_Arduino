@@ -259,40 +259,43 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
+  // New I2CResponse message
+  wippersnapper_signal_v1_I2CResponse msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+  // Set I2CDeviceEvent tag
+  msgi2cResponse.which_payload = wippersnapper_signal_v1_I2CResponse_resp_i2c_device_update_tag;
+
+  long curTime;
   for (int i = 0; i < drivers.size(); i++) {
-    /*     // Empty wippersnapper_i2c_v1_I2CSensorEvent container message
-        wippersnapper_i2c_v1_I2CSensorEvent sensorEvent =
-            wippersnapper_i2c_v1_I2CSensorEvent_init_zero;
-
-        // Check if i2c device has a temperature sensor
-        if (drivers[i]->getTempSensorPeriod() > -1L) {
-          long curTime = millis(); // take the current time
-          if (curTime - drivers[i]->getTempSensorPeriodPrv() >
-              drivers[i]->getTempSensorPeriod()) {
-            // Update temperature sensor and fill field
-            wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
-                wippersnapper_i2c_v1_SensorEvent_init_zero;
-            drivers[i]->updateTempSensor(&sensorEventMsg.event_data.temperature);
-            WS_DEBUG_PRINT("Read Temperature Sensor Value: ");
-            WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
-            WS_DEBUG_PRINTLN(" Degrees C");
-            // TODO: Pack into the sensorEvent message
+      // Check driver type
+      if (drivers[i]->getDriverType() == AHTX0) {
+          // reset sensor # counter
+          msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
+          // Check if we're polling the temperature sensor
+          if (millis() - drivers[i]->getTempSensorPeriodPrv() > drivers[i]->getTempSensorPeriod() && drivers[i]->getTempSensorPeriod() > -1L) {
+              // poll
+              WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
+              float temp;
+              drivers[i]->updateTempSensor(&temp);
+              WS_DEBUG_PRINT("\tTemperature: "); WS_DEBUG_PRINT(temp); WS_DEBUG_PRINTLN(" degrees C");
+              // Pack event payload
+              // msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count]->type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+              // msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
           }
-        }
 
-        // Check if i2c device has a humidity sensor
-        if (drivers[i]->getHumidSensorPeriod() > -1L) {
-          long curTime = millis(); // take the current time
-          if (curTime - drivers[i]->getHumidSensorPeriodPrv() >
-              drivers[i]->getHumidSensorPeriod()) {
-            // Update temperature sensor and fill field
-            wippersnapper_i2c_v1_SensorEvent sensorEventMsg =
-                wippersnapper_i2c_v1_SensorEvent_init_zero;
-            drivers[i]->updateHumidSensor(
-                &sensorEventMsg.event_data.relative_humidity);
-            WS_DEBUG_PRINT("Read Humidity Sensor Value: ");
-            WS_DEBUG_PRINT(sensorEventMsg.event_data.temperature);
-            WS_DEBUG_PRINTLN(" %RH");
-          } */
+          // Check if we're polling the humidity sensor
+          if (millis() - drivers[i]->getHumidSensorPeriodPrv() > drivers[i]->getHumidSensorPeriod() && drivers[i]->getHumidSensorPeriod() > -1L) {
+              // poll
+              WS_DEBUG_PRINTLN("Polling AHTX0 Humidity Sensor...");
+              float humid;
+              drivers[i]->updateHumidSensor(&humid);
+              WS_DEBUG_PRINT("\tHumidity: "); WS_DEBUG_PRINT(humid); WS_DEBUG_PRINTLN(" % rH");
+              // TODO: Pack event payload
+          }
+          // Did we write into the device event?
+          if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
+            msgi2cResponse.payload.resp_i2c_device_event.sensor_address = (uint32_t) drivers[i]->getSensorAddress();
+            // TODO: more packing and publishing here
+          }
+    }
   }
 }
