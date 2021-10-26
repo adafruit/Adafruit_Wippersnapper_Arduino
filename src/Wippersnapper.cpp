@@ -946,7 +946,7 @@ void Wippersnapper::subscribeErrorTopics() {
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::buildWSTopics(bool useStagingBroker = false) {
+bool Wippersnapper::buildWSTopics(bool useStagingBroker) {
   bool is_success = true;
   // Get UID from the network iface
   setUID();
