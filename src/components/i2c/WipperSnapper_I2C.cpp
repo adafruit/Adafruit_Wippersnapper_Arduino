@@ -152,10 +152,37 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_ahtx0);
-  } else {
+  } else if (msgDeviceInitReq->has_dps310) {
+    // Initialize new DPS310 sensor
+    _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
+
+    // Did we initialize successfully?
+    if (!_dps310->getInitialized()) {
+        WS_DEBUG_PRINTLN("ERROR: DPS310 not initialized successfully!");
+        return false;
+    }
+    WS_DEBUG_PRINTLN("Successfully Initialized DPS310!");
+
+    // Configure DPS310
+    if (msgDeviceInitReq->dps310.enable_temperature) {
+        _dps310->enableTemperatureSensor();
+        _dps310->setTemperatureSensorPeriod(msgDeviceInitReq->dps310.period_temperature);
+        WS_DEBUG_PRINTLN("Enabled DPS310 Humidity Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceInitReq->dps310.period_temperature);
+        WS_DEBUG_PRINTLN("seconds]");
+    }
+    if (msgDeviceInitReq->dps310.enable_pressure) {
+        _dps310->enablePressureSensor();
+        _dps310->setPressureSensorPeriod(msgDeviceInitReq->dps310.period_pressure);
+        WS_DEBUG_PRINTLN("Enabled DPS310 Pressure Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceInitReq->dps310.period_pressure);
+        WS_DEBUG_PRINTLN("seconds]");
+    }
+    drivers.push_back(_dps310);
+  }
+  else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
-  WS_DEBUG_PRINTLN("Successfully initialized AHTX0 sensor!");
   return true;
 }
 
