@@ -240,7 +240,45 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
           WS_DEBUG_PRINTLN("seconds]");
         }
         is_success = true;
-      } else {
+      } else if (drivers[i]->getDriverType() == DPS310) {
+        // Update DPS310 sensor configuration
+        if (msgDeviceUpdateReq->dps.enable_temperature == true) {
+          drivers[i]->enableTemperatureSensor();
+          WS_DEBUG_PRINTLN("ENABLED DPS310 Temperature Sensor");
+        } else {
+          drivers[i]->disableTemperatureSensor();
+          WS_DEBUG_PRINTLN("DISABLED DPS310 Temperature Sensor");
+        }
+
+        if (msgDeviceUpdateReq->dps.enable_pressure == true) {
+          drivers[i]->enablePressureSensor();
+          WS_DEBUG_PRINTLN("ENABLED DPS310 Pressure Sensor");
+        } else {
+          drivers[i]->disablePressureSensor();
+          WS_DEBUG_PRINTLN("DISABLED DPS310 Pressure Sensor");
+        }
+
+        // Update DPS310's sensor time periods
+        if (drivers[i]->getTempSensorPeriod() !=
+            msgDeviceUpdateReq->dps.period_temperature) {
+          drivers[i]->setTemperatureSensorPeriod(
+              msgDeviceUpdateReq->dps.period_temperature);
+          WS_DEBUG_PRINTLN(
+              "UPDATED DPS310 Temperature Sensor, [Returns every: ");
+          WS_DEBUG_PRINT(msgDeviceUpdateReq->dps.period_temperature);
+          WS_DEBUG_PRINTLN("seconds]");
+        }
+        if (drivers[i]->getPressureSensorPeriod() !=
+            msgDeviceUpdateReq->dps.period_pressure) {
+          drivers[i]->setPressureSensorPeriod(
+              msgDeviceUpdateReq->dps.period_pressure);
+          WS_DEBUG_PRINTLN("UPDATED DPS310 Pressure Sensor, [Returns every: ");
+          WS_DEBUG_PRINT(msgDeviceUpdateReq->dps.period_pressure);
+          WS_DEBUG_PRINTLN("seconds]");
+        }
+        is_success = true;
+      }
+      else {
         WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
       }
     }
