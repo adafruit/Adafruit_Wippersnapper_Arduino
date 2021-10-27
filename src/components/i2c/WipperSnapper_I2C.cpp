@@ -281,15 +281,16 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
         if (!drivers[i]->getTemp(&temp)) {
             WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 temperature value.");
-            return false;
+            break;
         }
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(temp.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
         // Pack event payload
-        // msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count]->type
-        // = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
-        // msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+        // TODO: Abstract this
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].value = temp.temperature;
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
       }
 
       // Check if we're polling the humidity sensor
@@ -301,18 +302,40 @@ void WipperSnapper_Component_I2C::update() {
         sensors_event_t humid;
         if (!drivers[i]->getHumid(&humid)) {
             WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 humidity value.");
-            return false;
+            break;
         }
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(humid.relative_humidity);
         WS_DEBUG_PRINTLN(" % rH");
-        // TODO: Pack event payload
+        // Pack event payload
+        // TODO: Abstract this
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].value = humid.relative_humidity;
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
       }
       // Did we write into the device event?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
+        // TODO: Abstract this, global, maybe pass it the address to an encode()
+        // fill address, used as event's UID
         msgi2cResponse.payload.resp_i2c_device_event.sensor_address =
             (uint32_t)drivers[i]->getSensorAddress();
-        // TODO: more packing and publishing here
+        
+        // TODO: Abstract this
+        // Encode
+        memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+        pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+        if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse)) {
+            WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C device event response message!");
+            break;
+        }
+
+        // Publish
+        size_t msgSz;
+        pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse);
+        WS_DEBUG_PRINT("Publishing Message: I2C Device Sensor Event Response...");
+        WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
+        WS_DEBUG_PRINTLN("Published!");
+
       }
     }
   }
