@@ -168,7 +168,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool updateTempSensor(sensors_event_t *tempEvent) { return true; }
+  virtual bool getTemp(sensors_event_t *tempEvent) { return true; }
 
   /*********************************************************************************/
   /*!
@@ -211,7 +211,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool updateHumidSensor(sensors_event_t *humidEvent) { return true; }
+  virtual bool getHumid(sensors_event_t *humidEvent) { return true; }
 
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized

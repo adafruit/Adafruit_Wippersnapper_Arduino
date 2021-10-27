@@ -277,9 +277,12 @@ void WipperSnapper_Component_I2C::update() {
               drivers[i]->getTempSensorPeriod() &&
           drivers[i]->getTempSensorPeriod() > -1L) {
         // poll
-        WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
         sensors_event_t temp;
-        drivers[i]->updateTempSensor(&temp);
+        WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
+        if (!drivers[i]->getTemp(&temp)) {
+            WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 temperature value.");
+            return false;
+        }
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(temp.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
@@ -296,7 +299,10 @@ void WipperSnapper_Component_I2C::update() {
         // poll
         WS_DEBUG_PRINTLN("Polling AHTX0 Humidity Sensor...");
         sensors_event_t humid;
-        drivers[i]->updateHumidSensor(&humid);
+        if (!drivers[i]->getHumid(&humid)) {
+            WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 humidity value.");
+            return false;
+        }
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(humid.relative_humidity);
         WS_DEBUG_PRINTLN(" % rH");

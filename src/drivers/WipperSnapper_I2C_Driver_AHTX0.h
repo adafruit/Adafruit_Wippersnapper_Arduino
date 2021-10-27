@@ -100,7 +100,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool updateTempSensor(sensors_event_t *tempEvent) {
+  bool getTemp(sensors_event_t *tempEvent) {
     // update temp, if sensor enabled
     if (_aht_temp != NULL) {
       _aht_temp->getEvent(tempEvent);
@@ -118,7 +118,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool updateHumidSensor(sensors_event_t *humidEvent) {
+  bool getHumid(sensors_event_t *humidEvent) {
     // update humidity, if sensor enabled
     if (_aht_humidity != NULL) {
       _aht_humidity->getEvent(humidEvent);
