@@ -21,6 +21,7 @@
 
 #include "drivers/WipperSnapper_I2C_Driver.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
+#include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 
 // forward decl.
 class Wippersnapper;
@@ -62,6 +63,7 @@ private:
   std::vector<WipperSnapper_I2C_Driver *> drivers;
   // Sensor drivers
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
+  WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
 };
 extern Wippersnapper WS;
 

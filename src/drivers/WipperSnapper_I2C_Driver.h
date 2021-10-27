@@ -22,7 +22,8 @@
 /** Types of I2C driver, corresponding to Driver_CLASSNAME.h */
 typedef enum {
   UNSPECIFIED, // Unspecified/undefined i2c device driver.
-  AHTX0        // AHTX0 Driver
+  AHTX0,       // AHTX0 device driver
+  DPS310,      // DPS310 device driver
 } DriverType_t;
 
 /**************************************************************************/
@@ -114,6 +115,20 @@ public:
   */
   /*******************************************************************************/
   virtual void disableHumiditySensor(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's pressure sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enablePressureSensor(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's pressure sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disablePressureSensor(){};
 
   /*********************************************************************************/
   /*!
@@ -213,6 +228,49 @@ public:
   /*******************************************************************************/
   virtual bool getHumid(sensors_event_t *humidEvent) { return true; }
 
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the pressure sensor's period, if
+     set.
+      @returns  Time when the pressure sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPressureSensorPeriod() { return _pressureSensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the pressure sensor's return frequency.
+      @param    pressurePeriod
+                The time interval at which to return new data from the pressure
+                sensor.
+  */
+  /*******************************************************************************/
+  void setPressureSensorPeriod(float pressurePeriod) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _pressureSensorPeriod = (long)pressurePeriod * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the pressure sensor was queried last.
+      @returns  Time when the pressure sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPressureSensorPeriodPrv() { return _pressureSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a pressure sensor and converts
+                the reading into the expected SI unit.
+      @param    pressureEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getPressure(sensors_event_t *pressureEvent) { return true; }
+
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
@@ -220,12 +278,16 @@ protected:
   DriverType_t _driverType;    ///< The type of I2C driver.
   long _tempSensorPeriod =
       -1L; ///< The time period between reading the temperature sensor's value.
+  long _tempSensorPeriodPrv =
+      -1L; ///< The time when the temperature sensor was last read
   long _humidSensorPeriod =
       -1L; ///< The time period between reading the humidity sensor's value.
-  long _tempSensorPeriodPrv;  ///< The time period when the temperature sensor
-                              ///< was last read.
-  long _humidSensorPeriodPrv; ///< The time period when the humidity sensor was
+  long _humidSensorPeriodPrv; ///< The time when the humidity sensor was
                               ///< last read.
+  long _pressureSensorPeriod =
+      -1L; ///< The time period between reading the pressure sensor's value.
+  long _pressureSensorPeriodPrv; ///< The time when the pressure sensor
+                                 ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
