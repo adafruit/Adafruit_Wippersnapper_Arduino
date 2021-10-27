@@ -254,6 +254,55 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
 
 /*******************************************************************************/
 /*!
+    @brief    Encodes an I2C sensor device's signal message.
+    @param    msgi2cResponse
+              Pointer to an I2CResponse signal message.
+    @param    sensorAddress
+              The unique I2C address of the sensor.
+    @returns  True if message encoded successfully, False otherwise.
+*/
+/*******************************************************************************/
+bool WipperSnapper_Component_I2C::encodeI2CDeviceEventMsg(
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+    uint32_t sensorAddress) {
+  msgi2cResponse->payload.resp_i2c_device_event.sensor_address = sensorAddress;
+  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+  pb_ostream_t ostream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
+                 &msgi2cResponse)) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to encode I2C device event response message!");
+    return false;
+  }
+  return true;
+}
+
+/*******************************************************************************/
+/*!
+    @brief    Publishes an I2C sensor device's signal message.
+    @param    msgi2cResponse
+              Pointer to an I2CResponse signal message.
+    @returns  True if message published to the broker successfully,
+                False otherwise.
+*/
+/*******************************************************************************/
+bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg(
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
+                      msgi2cResponse);
+  WS_DEBUG_PRINT("PUBLISHING -> I2C Device Sensor Event Message...");
+  if (!WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
+                         msgSz, 1)) {
+    return false;
+  };
+  WS_DEBUG_PRINTLN("PUBLISHED!");
+  return true;
+}
+
+/*******************************************************************************/
+/*!
     @brief    Queries all I2C device drivers for new values. Fills and sends an
               I2CSensorEvent with the sensor event data.
 */
@@ -273,6 +322,7 @@ void WipperSnapper_Component_I2C::update() {
       // reset sensor # counter
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
       // Check if we're polling the temperature sensor
+      // Nothing here is aht-specific though...
       if (millis() - drivers[i]->getTempSensorPeriodPrv() >
               drivers[i]->getTempSensorPeriod() &&
           drivers[i]->getTempSensorPeriod() > -1L) {
@@ -280,16 +330,23 @@ void WipperSnapper_Component_I2C::update() {
         sensors_event_t temp;
         WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
         if (!drivers[i]->getTemp(&temp)) {
-            WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 temperature value.");
-            break;
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 temperature value.");
+          break;
         }
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(temp.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
         // Pack event payload
         // TODO: Abstract this
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].value = temp.temperature;
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .value = temp.temperature;
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .type =
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
         msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
       }
 
@@ -301,41 +358,38 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN("Polling AHTX0 Humidity Sensor...");
         sensors_event_t humid;
         if (!drivers[i]->getHumid(&humid)) {
-            WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 humidity value.");
-            break;
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 humidity value.");
+          break;
         }
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(humid.relative_humidity);
         WS_DEBUG_PRINTLN(" % rH");
         // Pack event payload
         // TODO: Abstract this
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].value = humid.relative_humidity;
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .value = humid.relative_humidity;
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .type =
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
         msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
       }
       // Did we write into the device event?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
-        // TODO: Abstract this, global, maybe pass it the address to an encode()
-        // fill address, used as event's UID
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_address =
-            (uint32_t)drivers[i]->getSensorAddress();
-        
-        // TODO: Abstract this
-        // Encode
-        memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-        pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-        if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse)) {
-            WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C device event response message!");
-            break;
+        // Encode device event message
+        if (!encodeI2CDeviceEventMsg(
+                &msgi2cResponse, (uint32_t)drivers[i]->getSensorAddress())) {
+          WS_DEBUG_PRINTLN("ERROR: Failed to encode sensor event");
+          break;
         }
-
-        // Publish
-        size_t msgSz;
-        pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields, &msgi2cResponse);
-        WS_DEBUG_PRINT("Publishing Message: I2C Device Sensor Event Response...");
-        WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz, 1);
-        WS_DEBUG_PRINTLN("Published!");
-
+        // Publish device event message
+        if (!publishI2CDeviceEventMsg(&msgi2cResponse)) {
+          WS_DEBUG_PRINTLN("ERROR: Failed to publish sensor event");
+          break;
+        }
       }
     }
   }

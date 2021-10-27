@@ -49,6 +49,12 @@ public:
 
   void update();
 
+  bool
+  encodeI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+                          uint32_t sensorAddress);
+  bool
+  publishI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse);
+
 private:
   bool _isInit;
   int32_t _portNum;
