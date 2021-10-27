@@ -373,6 +373,23 @@ bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg(
 
 /*******************************************************************************/
 /*!
+    @brief    Fills a sensor_event message with the sensor's value and type.
+    @param    msgi2cResponse
+              A pointer to the signal's I2CResponse message.
+    @param    value
+              The value read by the sensor.
+    @param    sensorType
+              The SI unit represented by the sensor's value.
+*/
+/*******************************************************************************/
+void WipperSnapper_Component_I2C::fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value, wippersnapper_i2c_v1_SensorType sensorType) {
+  msgi2cResponse->payload.resp_i2c_device_event.sensor_event[msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count].value = value;
+  msgi2cResponse->payload.resp_i2c_device_event.sensor_event[msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count].type = sensorType;
+  msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count++;
+}
+
+/*******************************************************************************/
+/*!
     @brief    Queries all I2C device drivers for new values. Fills and sends an
               I2CSensorEvent with the sensor event data.
 */
@@ -391,8 +408,6 @@ void WipperSnapper_Component_I2C::update() {
     if (drivers[i]->driverType == AHTX0) {
       // reset sensor # counter
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
-      // Check if we're polling the temperature sensor
-      // Nothing here is aht-specific though...
       if (millis() - drivers[i]->getTempSensorPeriodPrv() >
               drivers[i]->getTempSensorPeriod() &&
           drivers[i]->getTempSensorPeriod() > -1L) {
@@ -406,18 +421,9 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(temp.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
-        // Pack event payload
-        // TODO: Abstract this
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .value = temp.temperature;
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .type =
-            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+
+        // pack data into msg
+        fillEventMessage(&msgi2cResponse, temp.temperature, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
       }
 
       // Check if we're polling the humidity sensor
@@ -434,18 +440,9 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(humid.relative_humidity);
         WS_DEBUG_PRINTLN(" % rH");
-        // Pack event payload
-        // TODO: Abstract this
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .value = humid.relative_humidity;
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .type =
-            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+
+        // pack data into msg
+        fillEventMessage(&msgi2cResponse, humid.relative_humidity, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
       }
       // Did we write into the device event?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
@@ -480,18 +477,8 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(tempEvent.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
-        // Pack event payload
-        // TODO: Abstract this
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .value = tempEvent.temperature;
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .type =
-            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+        // pack data into msg
+        fillEventMessage(&msgi2cResponse, tempEvent.temperature, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
       }
 
       // Check if we're polling the humidity sensor
@@ -508,18 +495,9 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT("\tPressure: ");
         WS_DEBUG_PRINT(presEvent.pressure);
         WS_DEBUG_PRINTLN(" hPa");
-        // Pack event payload
-        // TODO: Abstract this
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .value = presEvent.pressure;
-        msgi2cResponse.payload.resp_i2c_device_event
-            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
-                              .sensor_event_count]
-            .type =
-            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE;
-        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+
+        // pack data into msg
+        fillEventMessage(&msgi2cResponse, presEvent.pressure, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE);
       }
       // Did we write into the device event?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
