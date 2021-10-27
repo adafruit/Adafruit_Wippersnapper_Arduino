@@ -306,14 +306,19 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
         // update() it
         delete _ahtx0;
         drivers.erase(drivers.begin() + i);
-        WS_DEBUG_PRINTLN("AHTX0 Deleted");
+        WS_DEBUG_PRINTLN("DEINIT'D AHTX0");
         return true;
+      }
+      else if (drivers[i]->getDriverType == DPS310) {
+        delete _dps310;
+        driver.erase(drivers.begin() + i);
+        WS_DEBUG_PRINTLN("DEINIT'D DPS310");
       }
     } else {
       WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
     }
   }
-  // Driver was not erased or not found
+  // Driver was not found
   return false;
 }
 
@@ -456,6 +461,6 @@ void WipperSnapper_Component_I2C::update() {
           break;
         }
       }
-    }
-  }
+    } // aht
+  } // loop
 }
