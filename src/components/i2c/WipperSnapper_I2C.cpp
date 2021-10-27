@@ -260,42 +260,54 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
   // New I2CResponse message
-  wippersnapper_signal_v1_I2CResponse msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+  wippersnapper_signal_v1_I2CResponse msgi2cResponse =
+      wippersnapper_signal_v1_I2CResponse_init_zero;
   // Set I2CDeviceEvent tag
-  msgi2cResponse.which_payload = wippersnapper_signal_v1_I2CResponse_resp_i2c_device_update_tag;
+  msgi2cResponse.which_payload =
+      wippersnapper_signal_v1_I2CResponse_resp_i2c_device_update_tag;
 
   long curTime;
   for (int i = 0; i < drivers.size(); i++) {
-      // Check driver type
-      if (drivers[i]->getDriverType() == AHTX0) {
-          // reset sensor # counter
-          msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
-          // Check if we're polling the temperature sensor
-          if (millis() - drivers[i]->getTempSensorPeriodPrv() > drivers[i]->getTempSensorPeriod() && drivers[i]->getTempSensorPeriod() > -1L) {
-              // poll
-              WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
-              float temp;
-              drivers[i]->updateTempSensor(&temp);
-              WS_DEBUG_PRINT("\tTemperature: "); WS_DEBUG_PRINT(temp); WS_DEBUG_PRINTLN(" degrees C");
-              // Pack event payload
-              // msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count]->type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
-              // msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
-          }
+    // Check driver type
+    if (drivers[i]->getDriverType() == AHTX0) {
+      // reset sensor # counter
+      msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
+      // Check if we're polling the temperature sensor
+      if (millis() - drivers[i]->getTempSensorPeriodPrv() >
+              drivers[i]->getTempSensorPeriod() &&
+          drivers[i]->getTempSensorPeriod() > -1L) {
+        // poll
+        WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
+        sensors_event_t temp;
+        drivers[i]->updateTempSensor(&temp);
+        WS_DEBUG_PRINT("\tTemperature: ");
+        WS_DEBUG_PRINT(temp.temperature);
+        WS_DEBUG_PRINTLN(" degrees C");
+        // Pack event payload
+        // msgi2cResponse.payload.resp_i2c_device_event.sensor_event[msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count]->type
+        // = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+        // msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+      }
 
-          // Check if we're polling the humidity sensor
-          if (millis() - drivers[i]->getHumidSensorPeriodPrv() > drivers[i]->getHumidSensorPeriod() && drivers[i]->getHumidSensorPeriod() > -1L) {
-              // poll
-              WS_DEBUG_PRINTLN("Polling AHTX0 Humidity Sensor...");
-              float humid;
-              drivers[i]->updateHumidSensor(&humid);
-              WS_DEBUG_PRINT("\tHumidity: "); WS_DEBUG_PRINT(humid); WS_DEBUG_PRINTLN(" % rH");
-              // TODO: Pack event payload
-          }
-          // Did we write into the device event?
-          if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
-            msgi2cResponse.payload.resp_i2c_device_event.sensor_address = (uint32_t) drivers[i]->getSensorAddress();
-            // TODO: more packing and publishing here
-          }
+      // Check if we're polling the humidity sensor
+      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
+              drivers[i]->getHumidSensorPeriod() &&
+          drivers[i]->getHumidSensorPeriod() > -1L) {
+        // poll
+        WS_DEBUG_PRINTLN("Polling AHTX0 Humidity Sensor...");
+        sensors_event_t humid;
+        drivers[i]->updateHumidSensor(&humid);
+        WS_DEBUG_PRINT("\tHumidity: ");
+        WS_DEBUG_PRINT(humid.relative_humidity);
+        WS_DEBUG_PRINTLN(" % rH");
+        // TODO: Pack event payload
+      }
+      // Did we write into the device event?
+      if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_address =
+            (uint32_t)drivers[i]->getSensorAddress();
+        // TODO: more packing and publishing here
+      }
     }
   }
 }

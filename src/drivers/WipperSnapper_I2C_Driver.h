@@ -17,6 +17,7 @@
 #define WipperSnapper_I2C_Driver_H
 
 #include "Wippersnapper.h"
+#include <Adafruit_Sensor.h>
 
 /** Types of I2C driver, corresponding to Driver_CLASSNAME.h */
 typedef enum {
@@ -161,13 +162,13 @@ public:
   /*!
       @brief    Base implementation - Reads a temperature sensor. Expects value
                 to return in the proper SI unit.
-      @param    temperature
-                Pointer to a temperature value.
+      @param    tempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
   */
   /*******************************************************************************/
-  virtual void updateTempSensor(float *temperature) {
-    // no-op
-  }
+  virtual bool updateTempSensor(sensors_event_t *tempEvent) { return true; }
 
   /*********************************************************************************/
   /*!
@@ -198,25 +199,25 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv;}
+  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a humidity sensor and converts
                 the reading into the expected SI unit.
-      @param    humidity
-                Pointer to a humidity value.
+      @param    humidEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
   */
   /*******************************************************************************/
-  virtual void updateHumidSensor(float *humidity) {
-    // no-op
-  }
+  virtual bool updateHumidSensor(sensors_event_t *humidEvent) { return true; }
 
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
-  DriverType_t _driverType; ///< The type of I2C driver.
+  DriverType_t _driverType;    ///< The type of I2C driver.
   long _tempSensorPeriod =
       -1L; ///< The time period between reading the temperature sensor's value.
   long _humidSensorPeriod =

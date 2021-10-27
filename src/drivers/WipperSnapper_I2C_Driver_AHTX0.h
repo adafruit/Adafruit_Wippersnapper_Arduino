@@ -94,33 +94,37 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the AHTX0's current temperature.
-      @param    temperature
-                A pointer to a temperature reading.
+      @param    tempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the temperature was obtained successfully, False
+                otherwise.
   */
   /*******************************************************************************/
-  void updateTempSensor(float *temperature) {
-    sensors_event_t temp;
+  bool updateTempSensor(sensors_event_t *tempEvent) {
     // update temp, if sensor enabled
     if (_aht_temp != NULL) {
-      _aht_temp->getEvent(&temp);
-      *temperature = temp.temperature;
+      _aht_temp->getEvent(tempEvent);
+      return true;
     }
+    return false;
   }
 
   /*******************************************************************************/
   /*!
       @brief    Gets the AHTX0's current humidity.
-      @param    humidity
-                A pointer to a humidity reading.
+      @param    humidEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the humidity was obtained successfully, False
+                otherwise.
   */
   /*******************************************************************************/
-  void updateHumidSensor(float *humidity) {
-    sensors_event_t humid;
-    // update humid, if sensor enabled
+  bool updateHumidSensor(sensors_event_t *humidEvent) {
+    // update humidity, if sensor enabled
     if (_aht_humidity != NULL) {
-      _aht_humidity->getEvent(&humid);
-      *humidity = humid.relative_humidity;
+      _aht_humidity->getEvent(humidEvent);
+      return true;
     }
+    return false;
   }
 
 protected:
