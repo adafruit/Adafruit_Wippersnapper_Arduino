@@ -203,7 +203,7 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
       // Check driver type
-      if (drivers[i]->getDriverType() == AHTX0) {
+      if (drivers[i]->driverType == AHTX0) {
         // Update AHTX0 sensor configuration
         if (msgDeviceUpdateReq->aht.enable_temperature == true) {
           drivers[i]->enableTemperatureSensor();
@@ -240,7 +240,7 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
           WS_DEBUG_PRINTLN("seconds]");
         }
         is_success = true;
-      } else if (drivers[i]->getDriverType() == DPS310) {
+      } else if (drivers[i]->driverType == DPS310) {
         // Update DPS310 sensor configuration
         if (msgDeviceUpdateReq->dps.enable_temperature == true) {
           drivers[i]->enableTemperatureSensor();
@@ -301,7 +301,7 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
       // Check driver type
-      if (drivers[i]->getDriverType() == AHTX0) {
+      if (drivers[i]->driverType == AHTX0) {
         // delete the driver and remove from list so we dont attempt to
         // update() it
         delete _ahtx0;
@@ -309,9 +309,9 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
         WS_DEBUG_PRINTLN("DEINIT'D AHTX0");
         return true;
       }
-      else if (drivers[i]->getDriverType == DPS310) {
+      else if (drivers[i]->driverType == DPS310) {
         delete _dps310;
-        driver.erase(drivers.begin() + i);
+        drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D DPS310");
       }
     } else {
@@ -388,7 +388,7 @@ void WipperSnapper_Component_I2C::update() {
   long curTime;
   for (int i = 0; i < drivers.size(); i++) {
     // Check driver type
-    if (drivers[i]->getDriverType() == AHTX0) {
+    if (drivers[i]->driverType == AHTX0) {
       // reset sensor # counter
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
       // Check if we're polling the temperature sensor
@@ -445,6 +445,80 @@ void WipperSnapper_Component_I2C::update() {
                               .sensor_event_count]
             .type =
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+      }
+      // Did we write into the device event?
+      if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
+        // Encode device event message
+        if (!encodeI2CDeviceEventMsg(
+                &msgi2cResponse, (uint32_t)drivers[i]->getSensorAddress())) {
+          WS_DEBUG_PRINTLN("ERROR: Failed to encode sensor event");
+          break;
+        }
+        // Publish device event message
+        if (!publishI2CDeviceEventMsg(&msgi2cResponse)) {
+          WS_DEBUG_PRINTLN("ERROR: Failed to publish sensor event");
+          break;
+        }
+      }
+    } // aht
+    if (drivers[i]->driverType == DPS310) {
+      // reset sensor # counter
+      msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
+      // Check if we're polling the temperature sensor
+      // Nothing here is aht-specific though...
+      if (millis() - drivers[i]->getTempSensorPeriodPrv() >
+              drivers[i]->getTempSensorPeriod() &&
+          drivers[i]->getTempSensorPeriod() > -1L) {
+        // poll
+        sensors_event_t tempEvent;
+        WS_DEBUG_PRINTLN("Polling DPS310 Temperature Sensor...");
+        if (!drivers[i]->getTemp(&tempEvent)) {
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain DPS310 temperature value.");
+          break;
+        }
+        WS_DEBUG_PRINT("\tTemperature: ");
+        WS_DEBUG_PRINT(tempEvent.temperature);
+        WS_DEBUG_PRINTLN(" degrees C");
+        // Pack event payload
+        // TODO: Abstract this
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .value = tempEvent.temperature;
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .type =
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+        msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
+      }
+
+      // Check if we're polling the humidity sensor
+      if (millis() - drivers[i]->getPressureSensorPeriodPrv() >
+              drivers[i]->getPressureSensorPeriod() &&
+          drivers[i]->getPressureSensorPeriod() > -1L) {
+        // poll
+        WS_DEBUG_PRINTLN("Polling DPS310 Pressure Sensor...");
+        sensors_event_t presEvent;
+        if (!drivers[i]->getPressure(&presEvent)) {
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain DPS310 pressure value.");
+          break;
+        }
+        WS_DEBUG_PRINT("\tPressure: ");
+        WS_DEBUG_PRINT(presEvent.pressure);
+        WS_DEBUG_PRINTLN(" hPa");
+        // Pack event payload
+        // TODO: Abstract this
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .value = presEvent.pressure;
+        msgi2cResponse.payload.resp_i2c_device_event
+            .sensor_event[msgi2cResponse.payload.resp_i2c_device_event
+                              .sensor_event_count]
+            .type =
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE;
         msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count++;
       }
       // Did we write into the device event?

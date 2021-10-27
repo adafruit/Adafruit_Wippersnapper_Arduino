@@ -76,7 +76,8 @@ public:
       @returns  The type of I2C driver in-use.
   */
   /*******************************************************************************/
-  DriverType_t getDriverType() { return _driverType; }
+  //DriverType_t getDriverType() { return driverType; }
+
 
   /*******************************************************************************/
   /*!
@@ -86,7 +87,7 @@ public:
      name)
   */
   /*******************************************************************************/
-  void setDriverType(DriverType_t driverType) { _driverType = driverType; }
+  void setDriverType(DriverType_t driverType) { driverType = driverType; }
 
   /*******************************************************************************/
   /*!
@@ -271,11 +272,11 @@ public:
   /*******************************************************************************/
   virtual bool getPressure(sensors_event_t *pressureEvent) { return true; }
 
+  DriverType_t driverType;    ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
-  DriverType_t _driverType;    ///< The type of I2C driver.
   long _tempSensorPeriod =
       -1L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =
