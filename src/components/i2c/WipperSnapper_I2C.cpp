@@ -121,6 +121,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
 /*******************************************************************************/
 bool WipperSnapper_Component_I2C::initI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
+  WS_DEBUG_PRINTLN("Attempting to initialize an I2C device...");
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_address;
   // Determine which sensor-specific callback to utilize

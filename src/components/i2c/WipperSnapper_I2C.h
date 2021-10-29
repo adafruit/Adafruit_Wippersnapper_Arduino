@@ -61,7 +61,7 @@ public:
   publishI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse);
 
 private:
-  bool _isInit;
+  bool _isInit = false;
   int32_t _portNum;
   TwoWire *_i2c = nullptr;
   std::vector<WipperSnapper_I2C_Driver *> drivers;
