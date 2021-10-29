@@ -86,7 +86,7 @@ public:
      name)
   */
   /*******************************************************************************/
-  void setDriverType(DriverType_t driverType) { driverType = driverType; }
+  void setDriverType(DriverType_t type) { driverType = type; }
 
   /*******************************************************************************/
   /*!
@@ -270,8 +270,7 @@ public:
   */
   /*******************************************************************************/
   virtual bool getPressure(sensors_event_t *pressureEvent) { return true; }
-  DriverType_t driverType; ///< The type of I2C driver.
-
+  DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.

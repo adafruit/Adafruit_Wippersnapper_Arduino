@@ -151,6 +151,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINT(msgDeviceInitReq->aht.period_humidity);
       WS_DEBUG_PRINTLN("seconds]");
     }
+    WS_DEBUG_PRINT("Driver Type: ");
+    WS_DEBUG_PRINTLN(_ahtx0->driverType);
     drivers.push_back(_ahtx0);
   } else if (msgDeviceInitReq->has_dps310) {
     // Initialize new DPS310 sensor
@@ -203,6 +205,12 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
       // Check driver type
+
+      WS_DEBUG_PRINT("FOUND: Sensor driver at addr = ");
+      WS_DEBUG_PRINTLN(deviceAddr);
+      WS_DEBUG_PRINT("Driver Type = ");
+      WS_DEBUG_PRINTLN(drivers[i]->driverType);
+
       if (drivers[i]->driverType == AHTX0) {
         // Update AHTX0 sensor configuration
         if (msgDeviceUpdateReq->aht.enable_temperature == true) {
