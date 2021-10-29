@@ -629,10 +629,6 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
 
-    WS_DEBUG_PRINTLN("attempting to initialize I2C device..");
-    WS_DEBUG_PRINT("Port0 init? ");
-    // TODO: Might need a global, this object is NULL you're calling a null here!!
-    WS_DEBUG_PRINTLN(WS._isI2CPort0Init);
     // Initialize device and fill response
     if (msgI2CDeviceInitRequest.i2c_port_number == 0 &&
         WS._isI2CPort0Init == true) {
@@ -680,6 +676,9 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         WS._isI2CPort0Init == true) {
       msgi2cResponse.payload.resp_i2c_device_update.is_success =
           WS._i2cPort0->updateI2CDevice(&msgI2CDeviceUpdateRequest);
+    } else {
+        WS_DEBUG_PRINTLN("ERROR: Could not update I2C device");
+        return false;
     }
 
     // Fill address
@@ -714,6 +713,9 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         WS._isI2CPort0Init == true) {
       msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
           WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
+    } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to de-initialize an I2C device");
+        return false;
     }
 
     // Encode response
