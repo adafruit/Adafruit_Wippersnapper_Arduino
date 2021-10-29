@@ -81,7 +81,7 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Sets the I2C device driver's type.
-      @param    driverType
+      @param    type
                 The type of I2C driver (corresponds to header Driver_.h class
      name)
   */

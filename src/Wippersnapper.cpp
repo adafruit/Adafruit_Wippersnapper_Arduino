@@ -593,8 +593,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     } else if (msgScanReq.i2c_port_number == 0 && WS._isI2CPort1Init == true) {
       scanResp = WS._i2cPort1->scanAddresses();
     } else {
-        WS_DEBUG_PRINTLN("Port not initialized prior to scan, failing out");
-        return false;
+      WS_DEBUG_PRINTLN("Port not initialized prior to scan, failing out");
+      return false;
     }
     WS_DEBUG_PRINTLN("Scan Complete!");
     WS_DEBUG_PRINT("\t# of addresses found on bus: ");
@@ -639,10 +639,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       msgi2cResponse.payload.resp_i2c_device_init.is_success =
           WS._i2cPort1->initI2CDevice(&msgI2CDeviceInitRequest);
     } else {
-        WS_DEBUG_PRINTLN("ERROR: I2C bus not init'd, failing out..");
-        return false;
+      WS_DEBUG_PRINTLN("ERROR: I2C bus not init'd, failing out..");
+      return false;
     }
-    msgi2cResponse.payload.resp_i2c_device_init.i2c_address = msgI2CDeviceInitRequest.i2c_address;
+    msgi2cResponse.payload.resp_i2c_device_init.i2c_address =
+        msgI2CDeviceInitRequest.i2c_address;
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
@@ -677,12 +678,13 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       msgi2cResponse.payload.resp_i2c_device_update.is_success =
           WS._i2cPort0->updateI2CDevice(&msgI2CDeviceUpdateRequest);
     } else {
-        WS_DEBUG_PRINTLN("ERROR: Could not update I2C device");
-        return false;
+      WS_DEBUG_PRINTLN("ERROR: Could not update I2C device");
+      return false;
     }
 
     // Fill address
-    msgi2cResponse.payload.resp_i2c_device_update.i2c_address = msgI2CDeviceUpdateRequest.i2c_address;
+    msgi2cResponse.payload.resp_i2c_device_update.i2c_address =
+        msgI2CDeviceUpdateRequest.i2c_address;
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
@@ -714,8 +716,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
           WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
     } else {
-        WS_DEBUG_PRINTLN("ERROR: Failed to de-initialize an I2C device");
-        return false;
+      WS_DEBUG_PRINTLN("ERROR: Failed to de-initialize an I2C device");
+      return false;
     }
 
     // Encode response

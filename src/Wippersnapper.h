@@ -259,8 +259,10 @@ public:
       NULL; ///< WipperSnapper I2C Component for I2C port #0
   WipperSnapper_Component_I2C *_i2cPort1 =
       NULL; ///< WipperSnapper I2C Component for I2C port #1
-  bool _isI2CPort0Init = false;
-  bool _isI2CPort1Init = false;
+  bool _isI2CPort0Init =
+      false; ///< True if I2C port 0 has been initialized, False otherwise.
+  bool _isI2CPort1Init =
+      false; ///< True if I2C port 1 has been initialized, False otherwise.
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */

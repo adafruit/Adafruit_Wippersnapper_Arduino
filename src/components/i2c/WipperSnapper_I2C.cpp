@@ -206,12 +206,6 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
       // Check driver type
-
-      WS_DEBUG_PRINT("FOUND: Sensor driver at addr = ");
-      WS_DEBUG_PRINTLN(deviceAddr);
-      WS_DEBUG_PRINT("Driver Type = ");
-      WS_DEBUG_PRINTLN(drivers[i]->driverType);
-
       if (drivers[i]->driverType == AHTX0) {
         // Update AHTX0 sensor configuration
         if (msgDeviceUpdateReq->aht.enable_temperature == true) {
