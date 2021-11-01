@@ -532,6 +532,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
   // Create I2C Response
   wippersnapper_signal_v1_I2CResponse msgi2cResponse =
       wippersnapper_signal_v1_I2CResponse_init_zero;
+
+  // TODO: This might not be necessary anymore as I2CInit is sent elsewhere?
   if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag) {
     WS_DEBUG_PRINTLN("I2C Init Request Found!");
     // Decode I2CBusInitRequest

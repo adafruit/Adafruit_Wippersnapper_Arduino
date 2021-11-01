@@ -43,6 +43,9 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     pinMode(msgInitRequest->i2c_pin_scl, INPUT_PULLUP);
   }
 
+  // CHECK AGAIN, IF NOT RETURN FALSE BACK
+  // TODO
+
 // Initialize TwoWire interface
 #if defined(ARDUINO_ARCH_ESP32)
   // ESP32, ESP32-S2
@@ -155,7 +158,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINT("Driver Type: ");
     WS_DEBUG_PRINTLN(_ahtx0->driverType);
     drivers.push_back(_ahtx0);
-  } else if (msgDeviceInitReq->has_dps310) {
+  } else if (msgDeviceInitReq->has_dps) {
     // Initialize new DPS310 sensor
     _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
 
@@ -167,18 +170,18 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("Successfully Initialized DPS310!");
 
     // Configure DPS310
-    if (msgDeviceInitReq->dps310.enable_temperature) {
+    if (msgDeviceInitReq->dps.enable_temperature) {
         _dps310->enableTemperatureSensor();
-        _dps310->setTemperatureSensorPeriod(msgDeviceInitReq->dps310.period_temperature);
+        _dps310->setTemperatureSensorPeriod(msgDeviceInitReq->dps.period_temperature);
         WS_DEBUG_PRINTLN("Enabled DPS310 Humidity Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceInitReq->dps310.period_temperature);
+        WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_temperature);
         WS_DEBUG_PRINTLN("seconds]");
     }
-    if (msgDeviceInitReq->dps310.enable_pressure) {
+    if (msgDeviceInitReq->dps.enable_pressure) {
         _dps310->enablePressureSensor();
-        _dps310->setPressureSensorPeriod(msgDeviceInitReq->dps310.period_pressure);
+        _dps310->setPressureSensorPeriod(msgDeviceInitReq->dps.period_pressure);
         WS_DEBUG_PRINTLN("Enabled DPS310 Pressure Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceInitReq->dps310.period_pressure);
+        WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_pressure);
         WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_dps310);
@@ -194,7 +197,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("Successfully Initialized SCD30!");
 
     // Configure DPS310
-    if (msgDeviceInitReq->dps310.enable_temperature) {
+    if (msgDeviceInitReq->dps.enable_temperature) {
         _scd30->enableTemperatureSensor();
         _scd30->setTemperatureSensorPeriod(msgDeviceInitReq->scd30.period_temperature);
         WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
