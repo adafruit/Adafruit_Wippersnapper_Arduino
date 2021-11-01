@@ -307,12 +307,12 @@ public:
   /*!
       @brief    Base implementation - Reads a CO2 sensor.
       @param    CO2Value
-                The CO2 value, in ppm.
+                    The CO2 value, in ppm.
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getCO2(float *co2) { return true; }
+  virtual bool getCO2(float *CO2Value) { return true; }
 
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:

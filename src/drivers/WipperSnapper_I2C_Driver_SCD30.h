@@ -51,8 +51,7 @@ public:
   ~WipperSnapper_I2C_Driver_SCD30() {
     _tempSensorPeriod = -1L;
     _pressureSensorPeriod = -1L;
-    _dps_temp = NULL;
-    _dps_pressure = NULL;
+    _CO2SensorPeriod = -1L;
     setDriverType(UNSPECIFIED);
   }
 
@@ -66,14 +65,15 @@ public:
   */
   /*******************************************************************************/
   bool getTemp(sensors_event_t *tempEvent) {
-    if (_scd30.dataReady()) {
-      // attempt to get temperature data
-      if (!_scd30.getEvent(&tempEvent)) {
-        return false; // unable to get temperature data
-      }
-      // data was not available
+    // check if data is available
+    if (!_scd30.dataReady())
       return false;
-    }
+
+    // attempt to get temperature data
+    sensors_event_t humidEvent;
+    if (!_scd30.getEvent(&humidEvent, tempEvent))
+      return false;
+
     return true;
   }
 
@@ -87,14 +87,31 @@ public:
   */
   /*******************************************************************************/
   bool getHumid(sensors_event_t *humidEvent) {
-    if (_scd30.dataReady()) {
-      // attempt to get humidity data
-      if (!_scd30.getEvent(&humidEvent)) {
-        return false; // unable to get data
-      }
-      // data was not available
+    // check if data is available
+    if (!_scd30.dataReady())
       return false;
-    }
+
+    // attempt to get temperature data
+    sensors_event_t tempEvent;
+    if (!_scd30.getEvent(humidEvent, &tempEvent))
+      return false;
+
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SCD30's current CO2 reading.
+      @param    CO2Value
+                  The CO2 value, in ppm.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getCO2(float *CO2Value) {
+    if (!_scd30.dataReady())
+      return false;
+    CO2Value = &_scd30.CO2;
     return true;
   }
 
