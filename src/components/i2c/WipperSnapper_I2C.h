@@ -69,6 +69,7 @@ private:
   // Sensor drivers
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
+  WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
 };
 extern Wippersnapper WS;
 

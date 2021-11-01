@@ -182,8 +182,41 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_dps310);
-  }
-  else {
+  } else if (msgDeviceInitReq->has_scd30) {
+    // Initialize new SCD30 sensor
+    _scd30 = new WipperSnapper_I2C_Driver_SCD30(this->_i2c, i2cAddress);
+
+    // Did we initialize successfully?
+    if (!_scd30->getInitialized()) {
+        WS_DEBUG_PRINTLN("ERROR: SCD30 not initialized successfully!");
+        return false;
+    }
+    WS_DEBUG_PRINTLN("Successfully Initialized SCD30!");
+
+    // Configure DPS310
+    if (msgDeviceInitReq->dps310.enable_temperature) {
+        _scd30->enableTemperatureSensor();
+        _scd30->setTemperatureSensorPeriod(msgDeviceInitReq->scd30.period_temperature);
+        WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_temperature);
+        WS_DEBUG_PRINTLN("seconds]");
+    }
+    if (msgDeviceInitReq->scd30.enable_humidity) {
+        _scd30->enableHumiditySensor();
+        _scd30->setHumiditySensorPeriod(msgDeviceInitReq->scd30.period_humidity);
+        WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_humidity);
+        WS_DEBUG_PRINTLN("seconds]");
+    }
+    if (msgDeviceInitReq->scd30.enable_co2) {
+        _scd30->enableCO2Sensor();
+        _scd30->setCO2SensorPeriod(msgDeviceInitReq->scd30.period_co2);
+        WS_DEBUG_PRINTLN("Enabled SCD30 CO2 Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_co2);
+        WS_DEBUG_PRINTLN("seconds]");
+    }
+    drivers.push_back(_scd30);
+  } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
   return true;
