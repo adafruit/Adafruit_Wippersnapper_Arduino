@@ -24,6 +24,7 @@ typedef enum {
   UNSPECIFIED, // Unspecified/undefined i2c device driver.
   AHTX0,       // AHTX0 device driver
   DPS310,      // DPS310 device driver
+  SCD30,       // SCD30 device driver
 } DriverType_t;
 
 /**************************************************************************/
@@ -270,6 +271,49 @@ public:
   */
   /*******************************************************************************/
   virtual bool getPressure(sensors_event_t *pressureEvent) { return true; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the gas sensor's period, if
+     set.
+      @returns  Time when the CO2 sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getCO2SensorPeriod() { return _CO2SensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the CO2 sensor's return frequency.
+      @param    CO2Period
+                The time interval at which to return new data from the CO2
+                sensor.
+  */
+  /*******************************************************************************/
+  void setCO2SensorPeriod(float CO2Period) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _CO2SensorPeriod = (long)CO2Period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at which
+                    the CO2 sensor was queried last.
+      @returns  Time when the CO2 sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getCO2SensorPeriodPrv() { return _CO2SensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a CO2 sensor.
+      @param    CO2Value
+                The CO2 value, in ppm.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getCO2(float *co2) { return true; }
+
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
@@ -286,6 +330,10 @@ protected:
   long _pressureSensorPeriod =
       -1L; ///< The time period between reading the pressure sensor's value.
   long _pressureSensorPeriodPrv; ///< The time when the pressure sensor
+                                 ///< was last read.
+  long _CO2SensorPeriod =
+      -1L; ///< The time period between reading the CO2 sensor's value.
+  long _CO2SensorPeriodPrv; ///< The time when the CO2 sensor
                                  ///< was last read.
 };
 
