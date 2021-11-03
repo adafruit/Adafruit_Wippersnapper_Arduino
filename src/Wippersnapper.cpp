@@ -533,51 +533,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
   wippersnapper_signal_v1_I2CResponse msgi2cResponse =
       wippersnapper_signal_v1_I2CResponse_init_zero;
 
-  // TODO: This might not be necessary anymore as I2CInit is sent elsewhere?
-  if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag) {
-    WS_DEBUG_PRINTLN("I2C Init Request Found!");
-    // Decode I2CBusInitRequest
-    wippersnapper_i2c_v1_I2CBusInitRequest msgI2CBusInitRequest =
-        wippersnapper_i2c_v1_I2CBusInitRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CBusInitRequest_fields,
-                   &msgI2CBusInitRequest)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode wippersnapper_i2c_v1_I2CBusInitRequest");
-      return false; // fail out
-    }
-
-    // Create a new I2C Component
-    if (msgI2CBusInitRequest.i2c_port_number == 0) {
-      WS._i2cPort0 = new WipperSnapper_Component_I2C(&msgI2CBusInitRequest);
-      WS.i2cComponents.push_back(WS._i2cPort0);
-      // did we init. the port successfully?
-      is_success = WS._i2cPort0->isInitialized();
-      WS._isI2CPort0Init = true;
-    } else if (msgI2CBusInitRequest.i2c_port_number == 1) {
-      WS._i2cPort1 = new WipperSnapper_Component_I2C(&msgI2CBusInitRequest);
-      // did we init. the port successfully?
-      is_success = WS._i2cPort1->isInitialized();
-      WS.i2cComponents.push_back(WS._i2cPort1);
-      WS._isI2CPort1Init = true;
-    } else {
-      WS_DEBUG_PRINTLN("ERROR: Both I2C ports are in-use");
-      is_success = false;
-    }
-
-    // Fill I2CResponse
-    msgi2cResponse.which_payload =
-        wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag;
-
-    // TODO: This should be set within the I2C initialization
-    msgi2cResponse.payload.resp_i2c_init.response =
-        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
-
-    // Encode I2CResponse
-    if (!encodeI2CResponse(&msgi2cResponse)) {
-      return false;
-    }
-  } else if (field->tag ==
-             wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
+  if (field->tag == wippersnapper_signal_v1_I2CRequest_req_i2c_scan_tag) {
     WS_DEBUG_PRINTLN("I2C Scan Request");
 
     // Decode I2CBusScanRequest
@@ -708,7 +664,6 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
-
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_device_deinit_tag) {
     WS_DEBUG_PRINTLN("NEW COMMAND: I2C Device Deinit");
