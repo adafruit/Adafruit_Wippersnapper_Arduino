@@ -38,6 +38,7 @@ public:
       wippersnapper_i2c_v1_I2CBusInitRequest *msgInitRequest);
   ~WipperSnapper_Component_I2C();
   bool isInitialized();
+  wippersnapper_i2c_v1_BusResponse getBusStatus();
 
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool
@@ -65,6 +66,7 @@ private:
   bool _isInit = false;
   int32_t _portNum;
   TwoWire *_i2c = nullptr;
+  wippersnapper_i2c_v1_BusResponse _busStatusResponse;
   std::vector<WipperSnapper_I2C_Driver *> drivers;
   // Sensor drivers
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;

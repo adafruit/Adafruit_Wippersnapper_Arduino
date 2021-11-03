@@ -35,45 +35,37 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-
   // Enable pullups on SCL, SDA
   pinMode(msgInitRequest->i2c_pin_scl, INPUT_PULLUP);
   pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
-  delay(10);
+  delay(150);
 
-  // Are SCL and SDA both HIGH?
-  if ((digitalRead(msgInitRequest->i2c_pin_scl) == HIGH) && (digitalRead(msgInitRequest->i2c_pin_sda) == HIGH))
-    return 0; // Bus OK!
+  // Is SDA or SCL stuck low?
+  if ((digitalRead(msgInitRequest->i2c_pin_scl) == 0) || (digitalRead(msgInitRequest->i2c_pin_sda) == 0)) {
+      _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_PULLUPS;
+      _isInit = false;
+      return;
+  } else {
+  // Reset state of SCL/SDA pins
+  pinMode(msgInitRequest->i2c_pin_scl, INPUT);
+  pinMode(msgInitRequest->i2c_pin_sda, INPUT);
 
-  // Is SCL stuck LOW?
-  if (digitalRead(msgInitRequest->i2c_pin_scl) == LOW)
-    return 1; // NOTE: STUCK! Issue PUBLISH about it being stuck
-
-  // Is SDA stuck LOW?
-
-
-
-  // CHECK AGAIN, IF NOT RETURN FALSE BACK
-  // TODO
-
-// Initialize TwoWire interface
-#if defined(ARDUINO_ARCH_ESP32)
+  // Initialize I2C bus
+  #if defined(ARDUINO_ARCH_ESP32)
   // ESP32, ESP32-S2
   _i2c = new TwoWire(msgInitRequest->i2c_port_number);
   _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
-#else
+  #else
   // SAMD
   _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
-                     msgInitRequest->i2c_pin_scl);
+                      msgInitRequest->i2c_pin_scl);
   _i2c->begin();
-#endif
-
-  // _i2c->setClock(msgInitRequest->i2c_frequency);
-
+  #endif
   // set i2c obj. properties
   _portNum = msgInitRequest->i2c_port_number;
   _isInit = true;
-  yield();
+  _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
+  }
 }
 
 /*************************************************************/
@@ -93,6 +85,8 @@ WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
 */
 /*****************************************************/
 bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
+
+wippersnapper_i2c_v1_BusResponse WipperSnapper_Component_I2C::getBusStatus() { return _busStatusResponse; }
 
 /************************************************************************/
 /*!
