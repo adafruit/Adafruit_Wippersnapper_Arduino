@@ -41,30 +41,32 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   delay(150);
 
   // Is SDA or SCL stuck low?
-  if ((digitalRead(msgInitRequest->i2c_pin_scl) == 0) || (digitalRead(msgInitRequest->i2c_pin_sda) == 0)) {
-      _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_PULLUPS;
-      _isInit = false;
-      return;
+  if ((digitalRead(msgInitRequest->i2c_pin_scl) == 0) ||
+      (digitalRead(msgInitRequest->i2c_pin_sda) == 0)) {
+    _busStatusResponse =
+        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_PULLUPS;
+    _isInit = false;
+    return;
   } else {
-  // Reset state of SCL/SDA pins
-  pinMode(msgInitRequest->i2c_pin_scl, INPUT);
-  pinMode(msgInitRequest->i2c_pin_sda, INPUT);
+    // Reset state of SCL/SDA pins
+    pinMode(msgInitRequest->i2c_pin_scl, INPUT);
+    pinMode(msgInitRequest->i2c_pin_sda, INPUT);
 
-  // Initialize I2C bus
-  #if defined(ARDUINO_ARCH_ESP32)
-  // ESP32, ESP32-S2
-  _i2c = new TwoWire(msgInitRequest->i2c_port_number);
-  _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
-  #else
-  // SAMD
-  _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
-                      msgInitRequest->i2c_pin_scl);
-  _i2c->begin();
-  #endif
-  // set i2c obj. properties
-  _portNum = msgInitRequest->i2c_port_number;
-  _isInit = true;
-  _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
+// Initialize I2C bus
+#if defined(ARDUINO_ARCH_ESP32)
+    // ESP32, ESP32-S2
+    _i2c = new TwoWire(msgInitRequest->i2c_port_number);
+    _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
+#else
+    // SAMD
+    _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
+                       msgInitRequest->i2c_pin_scl);
+    _i2c->begin();
+#endif
+    // set i2c obj. properties
+    _portNum = msgInitRequest->i2c_port_number;
+    _isInit = true;
+    _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   }
 }
 
@@ -86,7 +88,9 @@ WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
 /*****************************************************/
 bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
 
-wippersnapper_i2c_v1_BusResponse WipperSnapper_Component_I2C::getBusStatus() { return _busStatusResponse; }
+wippersnapper_i2c_v1_BusResponse WipperSnapper_Component_I2C::getBusStatus() {
+  return _busStatusResponse;
+}
 
 /************************************************************************/
 /*!
@@ -169,25 +173,26 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
     // Did we initialize successfully?
     if (!_dps310->getInitialized()) {
-        WS_DEBUG_PRINTLN("ERROR: DPS310 not initialized successfully!");
-        return false;
+      WS_DEBUG_PRINTLN("ERROR: DPS310 not initialized successfully!");
+      return false;
     }
     WS_DEBUG_PRINTLN("Successfully Initialized DPS310!");
 
     // Configure DPS310
     if (msgDeviceInitReq->dps.enable_temperature) {
-        _dps310->enableTemperatureSensor();
-        _dps310->setTemperatureSensorPeriod(msgDeviceInitReq->dps.period_temperature);
-        WS_DEBUG_PRINTLN("Enabled DPS310 Humidity Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_temperature);
-        WS_DEBUG_PRINTLN("seconds]");
+      _dps310->enableTemperatureSensor();
+      _dps310->setTemperatureSensorPeriod(
+          msgDeviceInitReq->dps.period_temperature);
+      WS_DEBUG_PRINTLN("Enabled DPS310 Humidity Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_temperature);
+      WS_DEBUG_PRINTLN("seconds]");
     }
     if (msgDeviceInitReq->dps.enable_pressure) {
-        _dps310->enablePressureSensor();
-        _dps310->setPressureSensorPeriod(msgDeviceInitReq->dps.period_pressure);
-        WS_DEBUG_PRINTLN("Enabled DPS310 Pressure Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_pressure);
-        WS_DEBUG_PRINTLN("seconds]");
+      _dps310->enablePressureSensor();
+      _dps310->setPressureSensorPeriod(msgDeviceInitReq->dps.period_pressure);
+      WS_DEBUG_PRINTLN("Enabled DPS310 Pressure Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_pressure);
+      WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_dps310);
   } else if (msgDeviceInitReq->has_scd30) {
@@ -196,32 +201,33 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
     // Did we initialize successfully?
     if (!_scd30->getInitialized()) {
-        WS_DEBUG_PRINTLN("ERROR: SCD30 not initialized successfully!");
-        return false;
+      WS_DEBUG_PRINTLN("ERROR: SCD30 not initialized successfully!");
+      return false;
     }
     WS_DEBUG_PRINTLN("Successfully Initialized SCD30!");
 
     // Configure DPS310
     if (msgDeviceInitReq->dps.enable_temperature) {
-        _scd30->enableTemperatureSensor();
-        _scd30->setTemperatureSensorPeriod(msgDeviceInitReq->scd30.period_temperature);
-        WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_temperature);
-        WS_DEBUG_PRINTLN("seconds]");
+      _scd30->enableTemperatureSensor();
+      _scd30->setTemperatureSensorPeriod(
+          msgDeviceInitReq->scd30.period_temperature);
+      WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_temperature);
+      WS_DEBUG_PRINTLN("seconds]");
     }
     if (msgDeviceInitReq->scd30.enable_humidity) {
-        _scd30->enableHumiditySensor();
-        _scd30->setHumiditySensorPeriod(msgDeviceInitReq->scd30.period_humidity);
-        WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_humidity);
-        WS_DEBUG_PRINTLN("seconds]");
+      _scd30->enableHumiditySensor();
+      _scd30->setHumiditySensorPeriod(msgDeviceInitReq->scd30.period_humidity);
+      WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_humidity);
+      WS_DEBUG_PRINTLN("seconds]");
     }
     if (msgDeviceInitReq->scd30.enable_co2) {
-        _scd30->enableCO2Sensor();
-        _scd30->setCO2SensorPeriod(msgDeviceInitReq->scd30.period_co2);
-        WS_DEBUG_PRINTLN("Enabled SCD30 CO2 Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_co2);
-        WS_DEBUG_PRINTLN("seconds]");
+      _scd30->enableCO2Sensor();
+      _scd30->setCO2SensorPeriod(msgDeviceInitReq->scd30.period_co2);
+      WS_DEBUG_PRINTLN("Enabled SCD30 CO2 Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_co2);
+      WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_scd30);
   } else {
@@ -321,8 +327,7 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
           WS_DEBUG_PRINTLN("seconds]");
         }
         is_success = true;
-      }
-      else {
+      } else {
         WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
       }
     }
@@ -352,8 +357,7 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D AHTX0");
         return true;
-      }
-      else if (drivers[i]->driverType == DPS310) {
+      } else if (drivers[i]->driverType == DPS310) {
         delete _dps310;
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D DPS310");
@@ -426,9 +430,17 @@ bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg(
               The SI unit represented by the sensor's value.
 */
 /*******************************************************************************/
-void WipperSnapper_Component_I2C::fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value, wippersnapper_i2c_v1_SensorType sensorType) {
-  msgi2cResponse->payload.resp_i2c_device_event.sensor_event[msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count].value = value;
-  msgi2cResponse->payload.resp_i2c_device_event.sensor_event[msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count].type = sensorType;
+void WipperSnapper_Component_I2C::fillEventMessage(
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value,
+    wippersnapper_i2c_v1_SensorType sensorType) {
+  msgi2cResponse->payload.resp_i2c_device_event
+      .sensor_event[msgi2cResponse->payload.resp_i2c_device_event
+                        .sensor_event_count]
+      .value = value;
+  msgi2cResponse->payload.resp_i2c_device_event
+      .sensor_event[msgi2cResponse->payload.resp_i2c_device_event
+                        .sensor_event_count]
+      .type = sensorType;
   msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count++;
 }
 
@@ -467,7 +479,9 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN(" degrees C");
 
         // pack data into msg
-        fillEventMessage(&msgi2cResponse, temp.temperature, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
+        fillEventMessage(
+            &msgi2cResponse, temp.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
       }
 
       // Check if we're polling the humidity sensor
@@ -486,7 +500,9 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN(" % rH");
 
         // pack data into msg
-        fillEventMessage(&msgi2cResponse, humid.relative_humidity, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
+        fillEventMessage(
+            &msgi2cResponse, humid.relative_humidity,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
       }
       // Did we write into the device event?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
@@ -522,7 +538,9 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT(tempEvent.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
         // pack data into msg
-        fillEventMessage(&msgi2cResponse, tempEvent.temperature, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
+        fillEventMessage(
+            &msgi2cResponse, tempEvent.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
       }
 
       // Check if we're polling the humidity sensor
@@ -541,7 +559,8 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN(" hPa");
 
         // pack data into msg
-        fillEventMessage(&msgi2cResponse, presEvent.pressure, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE);
+        fillEventMessage(&msgi2cResponse, presEvent.pressure,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE);
       }
       // Did we write into the device event?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
@@ -558,5 +577,5 @@ void WipperSnapper_Component_I2C::update() {
         }
       }
     } // aht
-  } // loop
+  }   // loop
 }

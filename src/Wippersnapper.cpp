@@ -556,7 +556,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           new WipperSnapper_Component_I2C(&msgScanReq.bus_init_request);
       WS.i2cComponents.push_back(WS._i2cPort0);
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
-      msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =  WS._i2cPort0->getBusStatus();
+      msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =
+          WS._i2cPort0->getBusStatus();
       // TODO: Fail out and publish back if not SUCCESS STATUS
     }
 
@@ -604,7 +605,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           &msgI2CDeviceInitRequest.bus_init_request);
       WS.i2cComponents.push_back(WS._i2cPort0);
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
-      msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =  WS._i2cPort0->getBusStatus();
+      msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =
+          WS._i2cPort0->getBusStatus();
       // TODO: Fail out and publish back if not SUCCESS STATUS
     }
 
@@ -619,7 +621,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 
     // TODO: This needs to be fixed in PR77
     msgi2cResponse.payload.resp_i2c_device_init.has_bus_init_response = true;
-    msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
+    msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =
+        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
