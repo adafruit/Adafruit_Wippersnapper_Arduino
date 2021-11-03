@@ -198,7 +198,7 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv;}
+  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -216,7 +216,7 @@ protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
-  DriverType_t _driverType; ///< The type of I2C driver.
+  DriverType_t _driverType;    ///< The type of I2C driver.
   long _tempSensorPeriod =
       -1L; ///< The time period between reading the temperature sensor's value.
   long _humidSensorPeriod =

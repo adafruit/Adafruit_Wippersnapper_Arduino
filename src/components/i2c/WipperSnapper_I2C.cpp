@@ -168,8 +168,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     @returns True if I2C device is was successfully updated, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_Component_I2C::updateI2CDevice(wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq) {
-    // TODO!! //
+bool WipperSnapper_Component_I2C::updateI2CDevice(
+    wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq) {
+  // TODO!! //
 }
 
 /*******************************************************************************/
