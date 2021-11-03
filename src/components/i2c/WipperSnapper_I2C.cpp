@@ -35,13 +35,23 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-  // validate if SDA & SCL has pullup
-  if (digitalRead(msgInitRequest->i2c_pin_sda) == LOW) {
-    pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
-  }
-  if (digitalRead(msgInitRequest->i2c_pin_scl) == LOW) {
-    pinMode(msgInitRequest->i2c_pin_scl, INPUT_PULLUP);
-  }
+
+  // Enable pullups on SCL, SDA
+  pinMode(msgInitRequest->i2c_pin_scl, INPUT_PULLUP);
+  pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
+  delay(10);
+
+  // Are SCL and SDA both HIGH?
+  if ((digitalRead(msgInitRequest->i2c_pin_scl) == HIGH) && (digitalRead(msgInitRequest->i2c_pin_sda) == HIGH))
+    return 0; // Bus OK!
+
+  // Is SCL stuck LOW?
+  if (digitalRead(msgInitRequest->i2c_pin_scl) == LOW)
+    return 1; // NOTE: STUCK! Issue PUBLISH about it being stuck
+
+  // Is SDA stuck LOW?
+
+
 
   // CHECK AGAIN, IF NOT RETURN FALSE BACK
   // TODO
@@ -58,7 +68,8 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   _i2c->begin();
 #endif
 
-  _i2c->setClock(msgInitRequest->i2c_frequency);
+  // _i2c->setClock(msgInitRequest->i2c_frequency);
+
   // set i2c obj. properties
   _portNum = msgInitRequest->i2c_port_number;
   _isInit = true;
