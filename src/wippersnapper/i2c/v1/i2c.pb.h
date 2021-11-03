@@ -90,10 +90,12 @@ typedef struct _wippersnapper_i2c_v1_I2CDeviceInitResponse {
     bool is_success;
 } wippersnapper_i2c_v1_I2CDeviceInitResponse;
 
+
 typedef struct _wippersnapper_i2c_v1_I2CDeviceUpdateResponse {
     uint32_t i2c_address;
     bool is_success;
 } wippersnapper_i2c_v1_I2CDeviceUpdateResponse;
+
 
 typedef struct _wippersnapper_i2c_v1_SensorEvent {
     wippersnapper_i2c_v1_SensorType type;
