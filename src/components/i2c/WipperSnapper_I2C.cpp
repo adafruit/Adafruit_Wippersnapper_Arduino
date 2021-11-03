@@ -46,7 +46,6 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     _busStatusResponse =
         wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_PULLUPS;
     _isInit = false;
-    return;
   } else {
     // Reset state of SCL/SDA pins
     pinMode(msgInitRequest->i2c_pin_scl, INPUT);
@@ -107,6 +106,10 @@ WipperSnapper_Component_I2C::scanAddresses() {
   wippersnapper_i2c_v1_I2CBusScanResponse scanResp =
       wippersnapper_i2c_v1_I2CBusScanResponse_init_zero;
 
+  // Set I2C WDT timeout to catch I2C hangs
+  WS.enableWDT(2000);
+  WS.feedWDT();
+
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
   // those that respond.
   for (uint16_t addr = 0x08; addr < 0x7F; addr++) {
@@ -119,6 +122,10 @@ WipperSnapper_Component_I2C::scanAddresses() {
       scanResp.addresses_found_count++;
     }
   }
+
+  // re-enable WipperSnapper WDT timeout
+  WS.enableWDT(WS_WDT_TIMEOUT);
+  WS.feedWDT();
 
   return scanResp;
 }

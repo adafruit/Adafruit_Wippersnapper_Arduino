@@ -1326,14 +1326,14 @@ bool Wippersnapper::registerBoard() {
 
   // Encode and publish registration request message to broker
   runNetFSM();
-  feedWDT();
+  WS.feedWDT();
   WS_DEBUG_PRINT("Encoding registration request...");
   if (!encodePubRegistrationReq())
     return false;
 
   // Blocking, attempt to obtain broker's response message
   runNetFSM();
-  feedWDT();
+  WS.feedWDT();
   pollRegistrationResp();
 
   return true;
@@ -1389,6 +1389,7 @@ void Wippersnapper::feedWDT() {
 /*******************************************************/
 void Wippersnapper::enableWDT(int timeoutMS) {
 #ifndef ESP8266
+  Watchdog.disable();
   if (Watchdog.enable(timeoutMS) == 0) {
     WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
     setStatusLEDColor(LED_ERROR);
@@ -1409,7 +1410,7 @@ void Wippersnapper::enableWDT(int timeoutMS) {
 void Wippersnapper::processPackets() {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
-  feedWDT();
+  WS.feedWDT();
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
 }
@@ -1432,7 +1433,7 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
                             uint8_t qos) {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
-  feedWDT();
+  WS.feedWDT();
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
 
@@ -1443,7 +1444,7 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 /**************************************************************************/
 void Wippersnapper::connect() {
   // enable WDT
-  enableWDT(WS_WDT_TIMEOUT);
+  WS.enableWDT(WS_WDT_TIMEOUT);
 
   // TODO!
   // not sure we need to track these...
@@ -1463,7 +1464,7 @@ void Wippersnapper::connect() {
 
   // Run the network fsm
   runNetFSM();
-  feedWDT();
+  WS.feedWDT();
   setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
@@ -1473,7 +1474,7 @@ void Wippersnapper::connect() {
     haltError("Unable to register with WipperSnapper.");
   }
   runNetFSM();
-  feedWDT();
+  WS.feedWDT();
 
   // Configure hardware
   WS.pinCfgCompleted = false;
@@ -1483,7 +1484,7 @@ void Wippersnapper::connect() {
     WS._mqtt->processPackets(10); // poll
   }
   // Publish that we have completed the configuration workflow
-  feedWDT();
+  WS.feedWDT();
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
@@ -1537,24 +1538,24 @@ void Wippersnapper::publishPinConfigComplete() {
 ws_status_t Wippersnapper::run() {
   // Check networking
   runNetFSM();
-  feedWDT();
+  WS.feedWDT();
   pingBroker();
 
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
-  feedWDT();
+  WS.feedWDT();
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
-  feedWDT();
+  WS.feedWDT();
 
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
-  feedWDT();
+  WS.feedWDT();
 
   // Process I2C sensor events
   // WS._i2cPort0->update();
-  // feedWDT();
+  // WS.feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

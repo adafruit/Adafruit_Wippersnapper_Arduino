@@ -24,6 +24,8 @@
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
 
+#define I2C_TIMEOUT_MS 25
+
 // forward decl.
 class Wippersnapper;
 
