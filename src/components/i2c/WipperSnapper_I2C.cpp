@@ -55,16 +55,28 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
 #if defined(ARDUINO_ARCH_ESP32)
     // ESP32, ESP32-S2
     _i2c = new TwoWire(msgInitRequest->i2c_port_number);
-    _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
+    if (!_i2c->begin(msgInitRequest->i2c_pin_sda,
+                     msgInitRequest->i2c_pin_scl)) {
+      _isInit = false; // if the peripheral was configured incorrectly
+    } else {
+      _isInit = true; // if the peripheral was configured incorrectly
+    }
+    // Set clock
+    if (!_i2c->setClock(msgInitRequest->i2c_frequency)) {
+      _isInit = true; // clock was configured incorrectly
+    } else {
+      _isInit = false; // clock was configured correctly
+    }
+
 #else
     // SAMD
     _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
                        msgInitRequest->i2c_pin_scl);
     _i2c->begin();
+    _isInit = true;
 #endif
     // set i2c obj. properties
     _portNum = msgInitRequest->i2c_port_number;
-    _isInit = true;
     _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   }
 }
