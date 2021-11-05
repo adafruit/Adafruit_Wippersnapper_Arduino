@@ -54,7 +54,6 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
