@@ -105,6 +105,7 @@ jobs:
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/Wippersnapper_demo/build/esp32.esp32.*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
+            ls examples/Wippersnapper_demo/build/esp32.esp32.*/
             mv examples/Wippersnapper_demo/build/esp32.esp32.*/Wippersnapper_demo_staging.ino.bin staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
