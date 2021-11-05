@@ -133,14 +133,25 @@ WipperSnapper_Component_I2C::scanAddresses() {
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
     // https://github.com/espressif/arduino-esp32/blob/master/libraries/Wire/src/Wire.cpp
     if (endTransmissionRC == 2) {
-      // TODO //
-      // Handle ESP_FAIL
-    } else if (endTransmissionRC == 4) {
-      // TODO //
-      // log_e("Bus is in Slave Mode");
+      WS_DEBUG_PRINTLN("ESP_ERR_ESP_FAIL: I2C Bus Failure");
+      // TODO: We should add an enum for this here...
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
+      break;
     } else if (endTransmissionRC == 5) {
-      // TODO //
-      // Handle ESP_ERR_TIMEOUT
+      WS_DEBUG_PRINTLN("ESP_ERR_TIMEOUT: I2C Bus Busy");
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
+      // NOTE: ESP-IDF appears to handle this "behind the scenes" by
+      // resetting/clearing the bus. The user should be prompted to
+      // perform a bus scan again.
+      break;
+    } else if (endTransmissionRC != 0) {
+      WS_DEBUG_PRINT("ESP_ERR: I2C Error Code: ");
+      WS_DEBUG_PRINTLN(endTransmissionRC);
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
+      break;
     }
 #endif
 
