@@ -97,13 +97,22 @@ public:
   @brief  Initializes the MQTT client.
   @param  clientID
           MQTT client identifier
+  @param  useStaging
+          True to use the Adafruit.io staging broker,
+            False otherwise.
   */
   /********************************************************/
-  void setupMQTTClient(const char *clientID) {
+  void setupMQTTClient(const char *clientID, bool useStaging = false) {
+    if (useStaging == true) {
+      _mqttBrokerURL = "io.adafruit.us";
+      _mqtt_client->setCACert(_aio_root_ca_staging);
+    } else {
+      _mqttBrokerURL = "io.adafruit.com";
+      _mqtt_client->setCACert(_aio_root_ca_prod);
+    }
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqtt_broker, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_mqtt_client, _mqttBrokerURL, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
-    _mqtt_client->setCACert(_aio_root_ca);
   }
 
   /********************************************************/
@@ -136,12 +145,12 @@ public:
 protected:
   const char *_ssid;
   const char *_pass;
+  const char *_mqttBrokerURL;
   uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   WiFiClientSecure *_mqtt_client;
 
-#ifdef USE_STAGING
   // io.adafruit.us
-  const char *_aio_root_ca =
+  const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
       "MIIEZTCCA02gAwIBAgIQQAF1BIMUpMghjISpDBbN3zANBgkqhkiG9w0BAQsFADA/\n"
       "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n"
@@ -168,9 +177,9 @@ protected:
       "O5b85o3AM/OJ+CktFBQtfvBhcJVd9wvlwPsk+uyOy2HI7mNxKKgsBTt375teA2Tw\n"
       "UdHkhVNcsAKX1H7GNNLOEADksd86wuoXvg==\n"
       "-----END CERTIFICATE-----\n";
-#else
+
   // io.adafruit.com
-  const char *_aio_root_ca =
+  const char *_aio_root_ca_prod =
       "-----BEGIN CERTIFICATE-----\n"
       "MIIDrzCCApegAwIBAgIQCDvgVpBCRrGhdWrJWZHHSjANBgkqhkiG9w0BAQUFADBh\n"
       "MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3\n"
@@ -193,7 +202,6 @@ protected:
       "YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk\n"
       "CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=\n"
       "-----END CERTIFICATE-----\n";
-#endif
 
   /**************************************************************************/
   /*!

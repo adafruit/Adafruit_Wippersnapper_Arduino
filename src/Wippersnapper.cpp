@@ -170,9 +170,12 @@ void Wippersnapper::setUID() {
     @brief    Sets up the MQTT client session.
     @param    clientID
               A unique client identifier string.
+    @param    useStaging
+              True to use the Adafruit.io staging broker, False otherwise.
 */
 /****************************************************************************/
-void Wippersnapper::setupMQTTClient(const char *clientID) {
+void Wippersnapper::setupMQTTClient(const char *clientID,
+                                    bool useStaging = false) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -963,11 +966,13 @@ void Wippersnapper::subscribeErrorTopics() {
 /**************************************************************************/
 /*!
     @brief    Generates device-specific Wippersnapper control topics.
+    @param    useStagingBroker
+              True if using non-production MQTT broker, false otherwise.
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::buildWSTopics() {
+bool Wippersnapper::buildWSTopics(bool useStagingBroker) {
   bool is_success = true;
   // Get UID from the network iface
   setUID();
@@ -989,7 +994,7 @@ bool Wippersnapper::buildWSTopics() {
   strcat(_device_uid, WS.sUID);
 
   // Create MQTT client object
-  setupMQTTClient(_device_uid);
+  setupMQTTClient(_device_uid, useStagingBroker);
 
   // Global registration topic
   WS._topic_description =
@@ -1413,9 +1418,12 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 /**************************************************************************/
 /*!
     @brief    Connects to Adafruit IO+ Wippersnapper broker.
+    @param    useStagingBroker
+              True to use the Adafruit.io staging MQTT broker for debugging
+                new features, False otherwise.
 */
 /**************************************************************************/
-void Wippersnapper::connect() {
+void Wippersnapper::connect(bool useStagingBroker) {
   // enable WDT
   enableWDT(WS_WDT_TIMEOUT);
 
@@ -1425,7 +1433,7 @@ void Wippersnapper::connect() {
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   // build MQTT topics for WipperSnapper and subscribe
-  if (!buildWSTopics()) {
+  if (!buildWSTopics(useStagingBroker)) {
     haltError("Unable to allocate space for MQTT topics");
   }
   if (!buildErrorTopics()) {
