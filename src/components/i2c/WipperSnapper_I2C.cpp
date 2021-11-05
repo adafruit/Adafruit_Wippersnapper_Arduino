@@ -67,7 +67,6 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     } else {
       _isInit = false; // clock was configured correctly
     }
-
 #else
     // SAMD
     _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
@@ -112,32 +111,57 @@ wippersnapper_i2c_v1_BusResponse WipperSnapper_Component_I2C::getBusStatus() {
 /************************************************************************/
 wippersnapper_i2c_v1_I2CBusScanResponse
 WipperSnapper_Component_I2C::scanAddresses() {
-  WS_DEBUG_PRINT("EXEC: I2C Scan");
-
-  // Create response
+  uint8_t endTransmissionRC;
+  uint16_t address;
   wippersnapper_i2c_v1_I2CBusScanResponse scanResp =
       wippersnapper_i2c_v1_I2CBusScanResponse_init_zero;
 
-  // Set I2C WDT timeout to catch I2C hangs
+#ifndef ARDUINO_ARCH_ESP32
+  // Set I2C WDT timeout to catch I2C hangs, SAMD-specific
   WS.enableWDT(2000);
   WS.feedWDT();
+#endif
 
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
   // those that respond.
-  for (uint16_t addr = 0x08; addr < 0x7F; addr++) {
-    _i2c->beginTransmission(addr);
-    // Address ACKed
-    if (_i2c->endTransmission() == 0) {
+  WS_DEBUG_PRINT("EXEC: I2C Scan");
+  for (address = 0x08; address < 0x7F; address++) {
+    _i2c->beginTransmission(address);
+    endTransmissionRC = _i2c->endTransmission();
+
+#if defined(ARDUINO_ARCH_ESP32)
+    // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
+    // https://github.com/espressif/arduino-esp32/blob/master/libraries/Wire/src/Wire.cpp
+    if (endTransmissionRC == 2) {
+      // TODO //
+      // Handle ESP_FAIL
+    } else if (endTransmissionRC == 4) {
+      // TODO //
+      // log_e("Bus is in Slave Mode");
+    } else if (endTransmissionRC == 5) {
+      // TODO //
+      // Handle ESP_ERR_TIMEOUT
+    }
+#endif
+
+    // Found device!
+    if (endTransmissionRC == 0) {
       WS_DEBUG_PRINT("Found I2C Device on: ");
-      WS_DEBUG_PRINTLN(addr);
-      scanResp.addresses_found[scanResp.addresses_found_count] = (uint32_t)addr;
+      WS_DEBUG_PRINTLN(address);
+      scanResp.addresses_found[scanResp.addresses_found_count] =
+          (uint32_t)address;
       scanResp.addresses_found_count++;
     }
   }
 
-  // re-enable WipperSnapper WDT timeout
+#ifndef ARDUINO_ARCH_ESP32
+  // re-enable WipperSnapper SAMD WDT timeout
   WS.enableWDT(WS_WDT_TIMEOUT);
   WS.feedWDT();
+#endif
+
+  if (scanResp.addresses_found_count == 0)
+    WS_DEBUG_PRINTLN("No I2C devices found");
 
   return scanResp;
 }
