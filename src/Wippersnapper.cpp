@@ -563,12 +563,12 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       is_success = false;
     }
 
-    // Pack I2CResponse message
+    // Fill I2CResponse
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CRequest_req_i2c_init_tag;
     msgi2cResponse.payload.resp_i2c_init.is_initialized = is_success;
 
-    // Encode I2CResponse message
+    // Encode I2CResponse
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
@@ -605,15 +605,14 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINT("\t# of addresses found on bus: ");
     WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
 
-    // Pack I2CResponse
+    // Fill I2CResponse
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CResponse_resp_i2c_scan_tag;
     memcpy(msgi2cResponse.payload.resp_i2c_scan.addresses_found,
            scanResp.addresses_found, sizeof(scanResp.addresses_found));
     msgi2cResponse.payload.resp_i2c_scan.addresses_found_count =
         scanResp.addresses_found_count;
-
-    // Encode I2C Response
+    // Encode I2CResponse
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
@@ -629,30 +628,57 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequest message.");
       return false; // fail out if we can't decode
     }
-    // Attach device to I2C port
-    bool deviceInitSuccess = false;
-    if (msgI2CDeviceInitRequest.i2c_port_number == 0 &&
-        WS._i2cPort0->isInitialized() == true) {
-      deviceInitSuccess =
-          WS._i2cPort0->attachI2CDevice(&msgI2CDeviceInitRequest);
-    } else if (msgI2CDeviceInitRequest.i2c_port_number == 1 &&
-               WS._i2cPort1->isInitialized() == true) {
-      deviceInitSuccess =
-          WS._i2cPort1->attachI2CDevice(&msgI2CDeviceInitRequest);
-    }
+
     // Create response
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =
         wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
-    msgi2cResponse.payload.resp_i2c_device_init.is_success = deviceInitSuccess;
-    // Encode message
-    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
-                                                  sizeof(WS._buffer_outgoing));
-    if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
-                   &msgi2cResponse)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message");
-      return false; // fail out if we cant encode
+
+    // Initialize device and fill response
+    if (msgI2CDeviceInitRequest.i2c_port_number == 0 &&
+        WS._i2cPort0->isInitialized() == true) {
+      msgi2cResponse.payload.resp_i2c_device_init.is_success =
+          WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
+    } else if (msgI2CDeviceInitRequest.i2c_port_number == 1 &&
+               WS._i2cPort1->isInitialized() == true) {
+      msgi2cResponse.payload.resp_i2c_device_init.is_success =
+          WS._i2cPort1->initI2CDevice(&msgI2CDeviceInitRequest);
+    }
+
+    // Encode response
+    if (!encodeI2CResponse(&msgi2cResponse)) {
+      return false;
+    }
+
+  } else if (field->tag ==
+             wippersnapper_signal_v1_I2CRequest_req_i2c_device_deinit_tag) {
+    WS_DEBUG_PRINTLN("NEW COMMAND: I2C Device De-init");
+    // Decode stream into an I2CDeviceDeinitRequest
+    wippersnapper_i2c_v1_I2CDeviceDeinitRequest msgI2CDeviceDeinitRequest =
+        wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_zero;
+    // Decode stream into struct, msgI2CDeviceDeinitRequest
+    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceDeinitRequest_fields,
+                   &msgI2CDeviceDeinitRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode I2CDeviceDeinitRequest message.");
+      return false; // fail out if we can't decode
+    }
+
+    // Empty I2C response to fill out
+    msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+    msgi2cResponse.which_payload =
+        wippersnapper_signal_v1_I2CResponse_resp_i2c_device_deinit_tag;
+
+    // Delete device from I2C bus
+    if (msgI2CDeviceDeinitRequest.i2c_port_number == 0 &&
+        WS._i2cPort0->isInitialized() == true) {
+      msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
+          WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
+    }
+
+    // Encode response
+    if (!encodeI2CResponse(&msgi2cResponse)) {
+      return false;
     }
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
@@ -1500,7 +1526,6 @@ ws_status_t Wippersnapper::run() {
   WS._mqtt->processPackets(10);
   feedWDT();
 
-  // TODO: Loop thru components
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
   feedWDT();
@@ -1508,6 +1533,10 @@ ws_status_t Wippersnapper::run() {
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
   feedWDT();
+
+  // Process I2C sensor events
+  // WS._i2cPort0->update();
+  // feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
