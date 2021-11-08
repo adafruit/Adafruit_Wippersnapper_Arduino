@@ -54,11 +54,6 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-// Uncomment the following use the staging IO server //
-#define USE_STAGING                     ///< Use Adafruit IO staging certificate
-#define IO_MQTT_SERVER "io.adafruit.us" ///< Adafruit IO MQTT Server
-//(Production)
-
 #ifdef USE_TINYUSB
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
@@ -198,16 +193,16 @@ public:
 
   virtual void _connect();
   virtual void _disconnect();
-  void connect();
+  void connect(bool useStagingBroker = false);
   void disconnect();
 
   virtual void setUID();
-  virtual void setupMQTTClient(const char *clientID);
+  virtual void setupMQTTClient(const char *clientID, bool useStaging);
 
   virtual ws_status_t networkStatus();
   ws_board_status_t getBoardStatus();
 
-  bool buildWSTopics();
+  bool buildWSTopics(bool useStagingBroker);
   void subscribeWSTopics();
   bool buildErrorTopics();
   void subscribeErrorTopics();
@@ -284,8 +279,7 @@ public:
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
 
-  const char *_mqtt_broker = IO_MQTT_SERVER; /*!< MQTT Broker URL */
-  uint16_t _mqtt_port = 8883;                /*!< MQTT Broker URL */
+  uint16_t _mqtt_port = 8883; /*!< MQTT Broker URL */
 
   // AIO credentials
   const char *_username; /*!< Adafruit IO username */

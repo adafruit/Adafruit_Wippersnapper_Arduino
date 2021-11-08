@@ -170,9 +170,12 @@ void Wippersnapper::setUID() {
     @brief    Sets up the MQTT client session.
     @param    clientID
               A unique client identifier string.
+    @param    useStaging
+              True to use the Adafruit.io staging broker, False otherwise.
 */
 /****************************************************************************/
-void Wippersnapper::setupMQTTClient(const char *clientID) {
+void Wippersnapper::setupMQTTClient(const char *clientID,
+                                    bool useStaging = false) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -556,7 +559,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           new WipperSnapper_Component_I2C(&msgScanReq.bus_init_request);
       WS.i2cComponents.push_back(WS._i2cPort0);
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
-      msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =
+      msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
       // TODO: Fail out and publish back if not SUCCESS STATUS
     }
@@ -605,7 +608,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           &msgI2CDeviceInitRequest.bus_init_request);
       WS.i2cComponents.push_back(WS._i2cPort0);
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
-      msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =
+      msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
       // TODO: Fail out and publish back if not SUCCESS STATUS
     }
@@ -619,9 +622,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     msgi2cResponse.payload.resp_i2c_device_init.i2c_address =
         msgI2CDeviceInitRequest.i2c_address;
 
-    // TODO: This needs to be fixed in PR77
-    msgi2cResponse.payload.resp_i2c_device_init.has_bus_init_response = true;
-    msgi2cResponse.payload.resp_i2c_device_init.bus_init_response.response =
+    msgi2cResponse.payload.resp_i2c_init.bus_response =
         wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 
     // Encode response
@@ -989,11 +990,13 @@ void Wippersnapper::subscribeErrorTopics() {
 /**************************************************************************/
 /*!
     @brief    Generates device-specific Wippersnapper control topics.
+    @param    useStagingBroker
+              True if using non-production MQTT broker, false otherwise.
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::buildWSTopics() {
+bool Wippersnapper::buildWSTopics(bool useStagingBroker) {
   bool is_success = true;
   // Get UID from the network iface
   setUID();
@@ -1015,7 +1018,7 @@ bool Wippersnapper::buildWSTopics() {
   strcat(_device_uid, WS.sUID);
 
   // Create MQTT client object
-  setupMQTTClient(_device_uid);
+  setupMQTTClient(_device_uid, useStagingBroker);
 
   // Global registration topic
   WS._topic_description =
@@ -1440,9 +1443,12 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 /**************************************************************************/
 /*!
     @brief    Connects to Adafruit IO+ Wippersnapper broker.
+    @param    useStagingBroker
+              True to use the Adafruit.io staging MQTT broker for debugging
+                new features, False otherwise.
 */
 /**************************************************************************/
-void Wippersnapper::connect() {
+void Wippersnapper::connect(bool useStagingBroker) {
   // enable WDT
   WS.enableWDT(WS_WDT_TIMEOUT);
 
@@ -1452,7 +1458,7 @@ void Wippersnapper::connect() {
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   // build MQTT topics for WipperSnapper and subscribe
-  if (!buildWSTopics()) {
+  if (!buildWSTopics(useStagingBroker)) {
     haltError("Unable to allocate space for MQTT topics");
   }
   if (!buildErrorTopics()) {
