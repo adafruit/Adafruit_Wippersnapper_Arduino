@@ -61,12 +61,7 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     } else {
       _isInit = true; // if the peripheral was configured incorrectly
     }
-    // Set clock
-    if (!_i2c->setClock(msgInitRequest->i2c_frequency)) {
-      _isInit = true; // clock was configured incorrectly
-    } else {
-      _isInit = false; // clock was configured correctly
-    }
+    _i2c->setClock(msgInitRequest->i2c_frequency);
 #else
     // SAMD
     _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
