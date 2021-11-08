@@ -141,10 +141,10 @@ WipperSnapper_Component_I2C::scanAddresses() {
       // resetting/clearing the bus. The user should be prompted to
       // perform a bus scan again.
       break;
-    } else if (endTransmissionRC == 7 ) {
-        WS_DEBUG_PRINT("I2C_ESP_ERR: SDA/SCL shorted, requests queued: ");
-        WS_DEBUG_PRINTLN(endTransmissionRC);
-        break;
+    } else if (endTransmissionRC == 7) {
+      WS_DEBUG_PRINT("I2C_ESP_ERR: SDA/SCL shorted, requests queued: ");
+      WS_DEBUG_PRINTLN(endTransmissionRC);
+      break;
     }
 #endif
 
@@ -374,6 +374,52 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
           WS_DEBUG_PRINTLN("seconds]");
         }
         is_success = true;
+      } else if (drivers[i]->driverType == SCD30) {
+        // Update SCD30 sensor configuration
+        if (msgDeviceUpdateReq->scd30.enable_temperature == true) {
+          drivers[i]->enableTemperatureSensor();
+          WS_DEBUG_PRINTLN("ENABLED SCD30 Temperature Sensor");
+        } else {
+          drivers[i]->disableTemperatureSensor();
+          WS_DEBUG_PRINTLN("DISABLED SCD30 Temperature Sensor");
+        }
+
+        if (msgDeviceUpdateReq->scd30.enable_humidity == true) {
+          drivers[i]->enableHumiditySensor();
+          WS_DEBUG_PRINTLN("ENABLED SCD30 Humidity Sensor");
+        } else {
+          drivers[i]->disableHumiditySensor();
+          WS_DEBUG_PRINTLN("DISABLED SCD30 Humidity Sensor");
+        }
+
+        // Update SCD30's sensor time periods
+        if (drivers[i]->getTempSensorPeriod() !=
+            msgDeviceUpdateReq->scd30.period_temperature) {
+          drivers[i]->setTemperatureSensorPeriod(
+              msgDeviceUpdateReq->scd30.period_temperature);
+          WS_DEBUG_PRINTLN(
+              "UPDATED SCD30 Temperature Sensor, [Returns every: ");
+          WS_DEBUG_PRINT(msgDeviceUpdateReq->scd30.period_temperature);
+          WS_DEBUG_PRINTLN("seconds]");
+        }
+
+        if (drivers[i]->getHumidSensorPeriod() !=
+            msgDeviceUpdateReq->scd30.period_humidity) {
+          drivers[i]->setHumiditySensorPeriod(
+              msgDeviceUpdateReq->scd30.period_humidity);
+          WS_DEBUG_PRINTLN("UPDATED SCD30 Humidity Sensor, [Returns every: ");
+          WS_DEBUG_PRINT(msgDeviceUpdateReq->scd30.period_humidity);
+          WS_DEBUG_PRINTLN("seconds]");
+        }
+
+        if (drivers[i]->getCO2SensorPeriod() !=
+            msgDeviceUpdateReq->scd30.period_co2) {
+          drivers[i]->setCO2SensorPeriod(msgDeviceUpdateReq->scd30.period_co2);
+          WS_DEBUG_PRINTLN("UPDATED SCD30 Pressure Sensor, [Returns every: ");
+          WS_DEBUG_PRINT(msgDeviceUpdateReq->scd30.period_co2);
+          WS_DEBUG_PRINTLN("seconds]");
+        }
+        is_success = true;
       } else {
         WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
       }
@@ -408,6 +454,10 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
         delete _dps310;
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D DPS310");
+      } else if (drivers[i]->driverType == SCD30) {
+        delete _scd30;
+        drivers.erase(drivers.begin() + i);
+        WS_DEBUG_PRINTLN("DEINIT'D SCD30");
       }
     } else {
       WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
@@ -565,7 +615,7 @@ void WipperSnapper_Component_I2C::update() {
           break;
         }
       }
-    } // aht
+    }
     if (drivers[i]->driverType == DPS310) {
       // reset sensor # counter
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
@@ -623,6 +673,108 @@ void WipperSnapper_Component_I2C::update() {
           break;
         }
       }
-    } // aht
-  }   // loop
+    }
+    if (drivers[i]->driverType == SCD30) {
+      // reset sensor # counter
+      msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
+
+      // Check if we're polling the temperature sensor
+      if (millis() - drivers[i]->getTempSensorPeriodPrv() >
+              drivers[i]->getTempSensorPeriod() &&
+          drivers[i]->getTempSensorPeriod() > -1L) {
+        // poll
+        sensors_event_t tempEvent;
+        WS_DEBUG_PRINTLN("Polling SCD30 Temperature Sensor...");
+        if (!drivers[i]->getTemp(&tempEvent)) {
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 temperature value.");
+          break;
+        }
+        WS_DEBUG_PRINT("\tTemperature: ");
+        WS_DEBUG_PRINT(tempEvent.temperature);
+        WS_DEBUG_PRINTLN(" degrees C");
+        // pack data into msg
+        fillEventMessage(
+            &msgi2cResponse, tempEvent.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
+      }
+
+      // Check if we're polling the humidity sensor
+      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
+              drivers[i]->getHumidSensorPeriod() &&
+          drivers[i]->getHumidSensorPeriod() > -1L) {
+        // poll
+        WS_DEBUG_PRINTLN("Polling SCD30 Humidity Sensor...");
+        sensors_event_t humidEvent;
+        if (!drivers[i]->getHumid(&humidEvent)) {
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 humidity value.");
+          break;
+        }
+        WS_DEBUG_PRINT("\tHumidity: ");
+        WS_DEBUG_PRINT(humidEvent.relative_humidity);
+        WS_DEBUG_PRINTLN(" %RH");
+
+        // pack data into msg
+        fillEventMessage(
+            &msgi2cResponse, humidEvent.relative_humidity,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
+      }
+
+      // Check if we're polling the humidity sensor
+      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
+              drivers[i]->getHumidSensorPeriod() &&
+          drivers[i]->getHumidSensorPeriod() > -1L) {
+        // poll
+        WS_DEBUG_PRINTLN("Polling SCD30 Humidity Sensor...");
+        sensors_event_t humidEvent;
+        if (!drivers[i]->getHumid(&humidEvent)) {
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 humidity value.");
+          break;
+        }
+        WS_DEBUG_PRINT("\tHumidity: ");
+        WS_DEBUG_PRINT(humidEvent.relative_humidity);
+        WS_DEBUG_PRINTLN(" %RH");
+
+        // pack data into msg
+        fillEventMessage(
+            &msgi2cResponse, humidEvent.relative_humidity,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
+      }
+
+      // Check if we're polling the gas sensor
+      if (millis() - drivers[i]->getCO2SensorPeriodPrv() >
+              drivers[i]->getCO2SensorPeriod() &&
+          drivers[i]->getCO2SensorPeriod() > -1L) {
+        // poll
+        WS_DEBUG_PRINTLN("Polling SCD30 C02 Sensor...");
+        float CO2;
+        if (!drivers[i]->getCO2(&CO2)) {
+          WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 CO2 value.");
+          break;
+        }
+        WS_DEBUG_PRINT("\tCO2: ");
+        WS_DEBUG_PRINT(CO2);
+        WS_DEBUG_PRINTLN(" ppm");
+
+        // pack data into msg
+        // TODO: We may want a SENSOR_TYPE_GAS in the future
+        fillEventMessage(&msgi2cResponse, CO2,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW);
+      }
+
+      // Did we write into the device event?
+      if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
+        // Encode device event message
+        if (!encodeI2CDeviceEventMsg(
+                &msgi2cResponse, (uint32_t)drivers[i]->getSensorAddress())) {
+          WS_DEBUG_PRINTLN("ERROR: Failed to encode sensor event");
+          break;
+        }
+        // Publish device event message
+        if (!publishI2CDeviceEventMsg(&msgi2cResponse)) {
+          WS_DEBUG_PRINTLN("ERROR: Failed to publish sensor event");
+          break;
+        }
+      }
+    }
+  } // loop
 }
