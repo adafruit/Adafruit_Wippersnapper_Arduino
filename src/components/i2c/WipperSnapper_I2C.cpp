@@ -118,7 +118,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
 #ifndef ARDUINO_ARCH_ESP32
   // Set I2C WDT timeout to catch I2C hangs, SAMD-specific
-  WS.enableWDT(2000);
+  WS.enableWDT(I2C_TIMEOUT_MS);
   WS.feedWDT();
 #endif
 
@@ -166,7 +166,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
   }
 
 #ifndef ARDUINO_ARCH_ESP32
-  // re-enable WipperSnapper SAMD WDT timeout
+  // re-enable WipperSnapper SAMD WDT global timeout
   WS.enableWDT(WS_WDT_TIMEOUT);
   WS.feedWDT();
 #endif
