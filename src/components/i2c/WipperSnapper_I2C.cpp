@@ -93,6 +93,12 @@ WipperSnapper_Component_I2C::~WipperSnapper_Component_I2C() {
 /*****************************************************/
 bool WipperSnapper_Component_I2C::isInitialized() { return _isInit; }
 
+/*****************************************************/
+/*!
+    @brief    Returns the state of the I2C bus.
+    @returns  wippersnapper_i2c_v1_BusResponse.
+*/
+/*****************************************************/
 wippersnapper_i2c_v1_BusResponse WipperSnapper_Component_I2C::getBusStatus() {
   return _busStatusResponse;
 }
