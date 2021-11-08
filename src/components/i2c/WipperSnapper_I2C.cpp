@@ -141,12 +141,10 @@ WipperSnapper_Component_I2C::scanAddresses() {
       // resetting/clearing the bus. The user should be prompted to
       // perform a bus scan again.
       break;
-    } else if (endTransmissionRC != 0) {
-      WS_DEBUG_PRINT("ESP_ERR: I2C Error Code: ");
-      WS_DEBUG_PRINTLN(endTransmissionRC);
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
-      break;
+    } else if (endTransmissionRC == 7 ) {
+        WS_DEBUG_PRINT("I2C_ESP_ERR: SDA/SCL shorted, requests queued: ");
+        WS_DEBUG_PRINTLN(endTransmissionRC);
+        break;
     }
 #endif
 
