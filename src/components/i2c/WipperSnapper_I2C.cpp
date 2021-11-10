@@ -318,6 +318,21 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_scd4x);
+  } else if (msgDeviceInitReq->has_scd4x) {
+    // Initialize new PM25 sensor
+    _pm25 = new WipperSnapper_I2C_Driver_PM25AQI(this->_i2c, i2cAddress);
+
+    // Did we initialize successfully?
+    if (!_pm25->getInitialized()) {
+      WS_DEBUG_PRINTLN("ERROR: PM25 not initialized successfully!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("Successfully initialized PM25 sensor!");
+
+    // Configure PM25
+    // TODO
+
+    drivers.push_back(_pm25);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }
