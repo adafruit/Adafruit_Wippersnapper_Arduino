@@ -25,6 +25,7 @@ typedef enum {
   AHTX0,       // AHTX0 device driver
   DPS310,      // DPS310 device driver
   SCD30,       // SCD30 device driver
+  SCD4X,       // SCD4X device driver
 } DriverType_t;
 
 /**************************************************************************/
@@ -83,7 +84,8 @@ public:
   /*!
       @brief    Sets the I2C device driver's type.
       @param    type
-                The type of I2C driver (corresponds to header Driver_.h class name)
+                The type of I2C driver (corresponds to header Driver_.h class
+     name)
   */
   /*******************************************************************************/
   void setDriverType(DriverType_t type) { driverType = type; }
@@ -309,8 +311,8 @@ public:
 
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the previous time interval at which
-                    the CO2 sensor was queried last.
+      @brief    Base implementation - Returns the previous time interval at
+     which the CO2 sensor was queried last.
       @returns  Time when the CO2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
@@ -347,7 +349,7 @@ protected:
   long _CO2SensorPeriod =
       -1L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv; ///< The time when the CO2 sensor
-                                 ///< was last read.
+                            ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

@@ -283,6 +283,21 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_scd30);
+  } else if (msgDeviceInitReq->has_scd30) {
+    // Initialize new SCD30 sensor
+    _scd4x = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
+
+    // Did we initialize successfully?
+    if (!_scd4x->getInitialized()) {
+      WS_DEBUG_PRINTLN("ERROR: SCD4x not initialized successfully!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("Successfully Initialized SCD4x!");
+
+    // Configure SCD4x
+    // TODO!
+
+    drivers.push_back(_scd4x);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
   }

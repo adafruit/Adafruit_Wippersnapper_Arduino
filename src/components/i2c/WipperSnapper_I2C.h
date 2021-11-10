@@ -23,6 +23,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
+#include "drivers/WipperSnapper_I2C_Driver_SCD4X.h"
 
 #define I2C_TIMEOUT_MS 50 ///< Default I2C timeout, in milliseconds.
 
@@ -69,11 +70,12 @@ private:
   int32_t _portNum;
   TwoWire *_i2c = nullptr;
   wippersnapper_i2c_v1_BusResponse _busStatusResponse;
-  std::vector<WipperSnapper_I2C_Driver *> drivers;
-  // Sensor drivers
+  std::vector<WipperSnapper_I2C_Driver *> drivers; ///< List of sensor drivers
+  // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
+  WipperSnapper_I2C_Driver_SCD4X *_scd4x = nullptr;
 };
 extern Wippersnapper WS;
 
