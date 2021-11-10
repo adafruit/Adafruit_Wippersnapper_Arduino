@@ -354,6 +354,99 @@ public:
   /*******************************************************************************/
   virtual bool getCO2(float *CO2Value) { return true; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Set the PM10 sensor's return frequency.
+      @param    pm10Period
+                The time interval at which to return new data from the PM
+                sensor.
+  */
+  /*******************************************************************************/
+  void setPM10STDPeriod(float pm10Period) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _pm10STDPeriod = (long)pm10Period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the PM sensor's period, if
+     set.
+      @returns  Time when the PM sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPM10STDSensorPeriod() { return _pm10STDPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+     which the PM sensor was queried last.
+      @returns  Time when the PM sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPM10STDSensorPeriodPrv() { return _pm10STDPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the 25 sensor's return frequency.
+      @param    pm25Period
+                The time interval at which to return new data from the PM
+                sensor.
+  */
+  /*******************************************************************************/
+  void setPM25STDPeriod(float pm25Period) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _pm25STDPeriod = (long)pm25Period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the PM sensor's period, if
+     set.
+      @returns  Time when the PM sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPM25STDSensorPeriod() { return _pm25STDPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+     which the PM sensor was queried last.
+      @returns  Time when the PM sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPM25STDSensorPeriodPrv() { return _pm25STDPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the PM100 sensor's return frequency.
+      @param    pm100
+                The time interval at which to return new data from the PM
+                sensor.
+  */
+  /*******************************************************************************/
+  void setPM100STDPeriod(float pm100Period) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _pm100STDPeriod = (long)pm100Period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the PM sensor's period, if
+     set.
+      @returns  Time when the PM sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPM100STDSensorPeriod() { return _pm100STDPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+     which the PM sensor was queried last.
+      @returns  Time when the PM sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getPM100STDSensorPeriodPrv() { return _pm100STDPeriodPrv; }
+
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
@@ -375,6 +468,12 @@ protected:
       -1L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv; ///< The time when the CO2 sensor
                             ///< was last read.
+  long _pm10STDPeriod = -1L;
+  long _pm10STDPeriodPrv;
+  long _pm25STDPeriod = -1L;
+  long _pm25STDPeriodPrv;
+  long _pm100STDPeriod = -1L;
+  long _pm100STDPeriodPrv;
 };
 
 #endif // WipperSnapper_I2C_Driver_H
