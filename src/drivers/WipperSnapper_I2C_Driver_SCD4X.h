@@ -86,8 +86,33 @@ public:
     setDriverType(UNSPECIFIED);
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SCD30's current temperature.
+      @param    tempEvent
+                Pointer to a temperature sensor value.
+      @returns  True if the temperature was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getTemp(float *tempEvent) {
+    uint16_t error;
+    // Read Measurement
+    uint16_t co2 = 0;
+    float temperature = 0.0f;
+    float humidity = 0.0f;
+    error = _scd4x.readMeasurement(co2, temperature, humidity);
+    if (error)
+        return false;
+    tempEvent = &temperature;
+    return true;
+  }
+
 protected:
   SensirionI2CScd4x _scd4x; ///< SCD4X object
+  uint16_t _co2      = 0;
+  float _temperature = 0.0f;
+  float _humidity    = 0.0f;
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD4X

@@ -201,6 +201,18 @@ public:
   /*******************************************************************************/
   virtual bool getTemp(sensors_event_t *tempEvent) { return true; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a temperature sensor. Expects value
+                to return in the proper SI unit.
+      @param    tempEvent
+                Pointer to an temperature value.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getTemp(float *tempEvent) { return true; }
+
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the humidity sensor's period, if
