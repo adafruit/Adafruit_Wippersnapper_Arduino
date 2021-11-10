@@ -256,6 +256,18 @@ public:
   /*******************************************************************************/
   virtual bool getHumid(sensors_event_t *humidEvent) { return true; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a humidity sensor and converts
+                the reading into the expected SI unit.
+      @param    humidEvent
+                Pointer to a humidity value.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getHumid(float *humidEvent) { return true; }
+
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the pressure sensor's period, if

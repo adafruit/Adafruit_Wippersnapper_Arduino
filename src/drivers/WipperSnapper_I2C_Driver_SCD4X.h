@@ -98,13 +98,50 @@ public:
   bool getTemp(float *tempEvent) {
     uint16_t error;
     // Read Measurement
-    uint16_t co2 = 0;
-    float temperature = 0.0f;
-    float humidity = 0.0f;
-    error = _scd4x.readMeasurement(co2, temperature, humidity);
+    error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
     if (error)
       return false;
-    tempEvent = &temperature;
+    tempEvent = &_temperature;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SCD4X's current humidity.
+      @param    humidEvent
+                Pointer to a humidity sensor value.
+      @returns  True if the humidity was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getHumid(float *humidEvent) {
+    uint16_t error;
+    // Read Measurement
+    error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
+    if (error)
+      return false;
+    humidEvent = &_humidity;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SCD4X's current humidity.
+      @param    CO2Value
+                The CO2 value, in ppm.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getCO2(float *CO2Value) {
+    uint16_t error;
+    // Read Measurement
+    error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
+    float co2 = (float)_co2;
+    if (error)
+      return false;
+    if (co2 == 0.0f)
+      CO2Value = &co2;
     return true;
   }
 

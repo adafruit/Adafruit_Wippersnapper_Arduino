@@ -881,19 +881,19 @@ void WipperSnapper_Component_I2C::update() {
                 drivers[i]->getHumidSensorPeriod() &&
             drivers[i]->getHumidSensorPeriod() > -1L) {
           // poll
-          WS_DEBUG_PRINTLN("Polling SCD30 Humidity Sensor...");
-          sensors_event_t humidEvent;
+          WS_DEBUG_PRINTLN("Polling SCD40 Humidity Sensor...");
+          float humidEvent = 0.0f;
           if (!drivers[i]->getHumid(&humidEvent)) {
-            WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 humidity value.");
+            WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD40 humidity value.");
             break;
           }
           WS_DEBUG_PRINT("\tHumidity: ");
-          WS_DEBUG_PRINT(humidEvent.relative_humidity);
+          WS_DEBUG_PRINT(humidEvent);
           WS_DEBUG_PRINTLN(" %RH");
 
           // pack data into msg
           fillEventMessage(
-              &msgi2cResponse, humidEvent.relative_humidity,
+              &msgi2cResponse, humidEvent,
               wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
         }
 
@@ -931,7 +931,6 @@ void WipperSnapper_Component_I2C::update() {
           }
           WS_DEBUG_PRINT("\tCO2: ");
           WS_DEBUG_PRINT(CO2);
-          WS_DEBUG_PRINTLN(" ppm");
 
           // pack data into msg
           // TODO: We may want a SENSOR_TYPE_GAS in the future
