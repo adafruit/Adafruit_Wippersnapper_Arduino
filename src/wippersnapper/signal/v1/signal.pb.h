@@ -157,11 +157,7 @@ extern const pb_msgdesc_t wippersnapper_signal_v1_SignalResponse_msg;
 #define wippersnapper_signal_v1_SignalResponse_fields &wippersnapper_signal_v1_SignalResponse_msg
 
 /* Maximum encoded size of messages (where known) */
-<<<<<<< HEAD
-#define wippersnapper_signal_v1_I2CRequest_size  115
-=======
 #define wippersnapper_signal_v1_I2CRequest_size  139
->>>>>>> 44e8da48f8623a6f02e7db21d96266af12d1b86a
 #define wippersnapper_signal_v1_I2CResponse_size 725
 #if defined(wippersnapper_pin_v1_ConfigurePinRequests_size) && defined(wippersnapper_pin_v1_PinEvents_size) && defined(wippersnapper_pin_v1_ConfigurePWMPinRequests_size) && defined(wippersnapper_pin_v1_PWMPinEvents_size)
 union wippersnapper_signal_v1_CreateSignalRequest_payload_size_union {char f6[(6 + wippersnapper_pin_v1_ConfigurePinRequests_size)]; char f7[(6 + wippersnapper_pin_v1_PinEvents_size)]; char f10[(6 + wippersnapper_pin_v1_ConfigurePWMPinRequests_size)]; char f12[(6 + wippersnapper_pin_v1_PWMPinEvents_size)]; char f0[21];};

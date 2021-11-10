@@ -259,8 +259,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     WS_DEBUG_PRINTLN("Successfully Initialized SCD30!");
 
-    // Configure DPS310
-    if (msgDeviceInitReq->dps.enable_temperature) {
+    // Configure SCD4x
+    if (msgDeviceInitReq->scd30.enable_temperature) {
       _scd30->enableTemperatureSensor();
       _scd30->setTemperatureSensorPeriod(
           msgDeviceInitReq->scd30.period_temperature);
@@ -283,8 +283,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINTLN("seconds]");
     }
     drivers.push_back(_scd30);
-  } else if (msgDeviceInitReq->has_scd30) {
-    // Initialize new SCD30 sensor
+  } else if (msgDeviceInitReq->has_scd4x) {
+    // Initialize new SCD4x sensor
     _scd4x = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
 
     // Did we initialize successfully?
@@ -295,8 +295,28 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("Successfully Initialized SCD4x!");
 
     // Configure SCD4x
-    // TODO!
-
+    if (msgDeviceInitReq->scd4x.enable_temperature) {
+      _scd4x->enableTemperatureSensor();
+      _scd4x->setTemperatureSensorPeriod(
+          msgDeviceInitReq->scd4x.period_temperature);
+      WS_DEBUG_PRINTLN("Enabled scd4x Humidity Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->scd4x.period_temperature);
+      WS_DEBUG_PRINTLN("seconds]");
+    }
+    if (msgDeviceInitReq->scd4x.enable_humidity) {
+      _scd4x->enableHumiditySensor();
+      _scd4x->setHumiditySensorPeriod(msgDeviceInitReq->scd4x.period_humidity);
+      WS_DEBUG_PRINTLN("Enabled scd4x Humidity Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->scd4x.period_humidity);
+      WS_DEBUG_PRINTLN("seconds]");
+    }
+    if (msgDeviceInitReq->scd4x.enable_co2) {
+      _scd4x->enableCO2Sensor();
+      _scd4x->setCO2SensorPeriod(msgDeviceInitReq->scd4x.period_co2);
+      WS_DEBUG_PRINTLN("Enabled scd4x CO2 Sensor, [Returns every: ");
+      WS_DEBUG_PRINT(msgDeviceInitReq->scd4x.period_co2);
+      WS_DEBUG_PRINTLN("seconds]");
+    }
     drivers.push_back(_scd4x);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Sensor not found")
