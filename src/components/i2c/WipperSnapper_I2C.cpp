@@ -843,12 +843,10 @@ void WipperSnapper_Component_I2C::update() {
         }
         WS_DEBUG_PRINT("\tCO2: ");
         WS_DEBUG_PRINT(CO2);
-        WS_DEBUG_PRINTLN(" ppm");
 
         // pack data into msg
-        // TODO: We may want a SENSOR_TYPE_GAS in the future
         fillEventMessage(&msgi2cResponse, CO2,
-                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW);
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
       }
 
       if (drivers[i]->driverType == SCD4X) {
@@ -933,9 +931,8 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINT(CO2);
 
           // pack data into msg
-          // TODO: We may want a SENSOR_TYPE_GAS in the future
           fillEventMessage(&msgi2cResponse, CO2,
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
         }
 
         // Did we write into the device event?
