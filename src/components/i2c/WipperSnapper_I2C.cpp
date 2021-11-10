@@ -461,12 +461,58 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
           WS_DEBUG_PRINTLN("seconds]");
         }
         is_success = true;
-      } else {
-        WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
       }
+    } else if (drivers[i]->driverType == SCD4X) {
+      // Update SCD4x sensor configuration
+      if (msgDeviceUpdateReq->scd4x.enable_temperature == true) {
+        drivers[i]->enableTemperatureSensor();
+        WS_DEBUG_PRINTLN("ENABLED scd4x Temperature Sensor");
+      } else {
+        drivers[i]->disableTemperatureSensor();
+        WS_DEBUG_PRINTLN("DISABLED scd4x Temperature Sensor");
+      }
+
+      if (msgDeviceUpdateReq->scd4x.enable_humidity == true) {
+        drivers[i]->enableHumiditySensor();
+        WS_DEBUG_PRINTLN("ENABLED scd4x Humidity Sensor");
+      } else {
+        drivers[i]->disableHumiditySensor();
+        WS_DEBUG_PRINTLN("DISABLED scd4x Humidity Sensor");
+      }
+
+      // Update scd4x's sensor time periods
+      if (drivers[i]->getTempSensorPeriod() !=
+          msgDeviceUpdateReq->scd4x.period_temperature) {
+        drivers[i]->setTemperatureSensorPeriod(
+            msgDeviceUpdateReq->scd4x.period_temperature);
+        WS_DEBUG_PRINTLN("UPDATED scd4x Temperature Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceUpdateReq->scd4x.period_temperature);
+        WS_DEBUG_PRINTLN("seconds]");
+      }
+
+      if (drivers[i]->getHumidSensorPeriod() !=
+          msgDeviceUpdateReq->scd4x.period_humidity) {
+        drivers[i]->setHumiditySensorPeriod(
+            msgDeviceUpdateReq->scd4x.period_humidity);
+        WS_DEBUG_PRINTLN("UPDATED scd4x Humidity Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceUpdateReq->scd4x.period_humidity);
+        WS_DEBUG_PRINTLN("seconds]");
+      }
+
+      if (drivers[i]->getCO2SensorPeriod() !=
+          msgDeviceUpdateReq->scd4x.period_co2) {
+        drivers[i]->setCO2SensorPeriod(msgDeviceUpdateReq->scd4x.period_co2);
+        WS_DEBUG_PRINTLN("UPDATED scd4x Pressure Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(msgDeviceUpdateReq->scd4x.period_co2);
+        WS_DEBUG_PRINTLN("seconds]");
+      }
+      is_success = true;
+    } else {
+      WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
     }
   }
-  return is_success;
+}
+return is_success;
 }
 
 /*******************************************************************************/
@@ -499,6 +545,10 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
         delete _scd30;
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D SCD30");
+      } else if (drivers[i]->driverType == SCD4X) {
+        delete _scd4x;
+        drivers.erase(drivers.begin() + i);
+        WS_DEBUG_PRINTLN("DEINIT'D SCD4X");
       }
     } else {
       WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
