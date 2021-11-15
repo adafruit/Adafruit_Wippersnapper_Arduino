@@ -185,9 +185,8 @@ public:
                 The time when the temperature sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setTemperatureSensorPeriodPrv(float tempPeriodPrv) {
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _tempSensorPeriodPrv = (long)tempPeriodPrv * 1000;
+  virtual void setTemperatureSensorPeriodPrv(long tempPeriodPrv) {
+    _tempSensorPeriodPrv = tempPeriodPrv;
   }
 
   /*******************************************************************************/
@@ -244,6 +243,17 @@ public:
   */
   /*********************************************************************************/
   virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the temperature sensor was queried.
+      @param    humidPeriodPrv
+                The time when the temperature sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setHumidSensorPeriodPrv(long humidPeriodPrv) {
+    _humidSensorPeriodPrv = humidPeriodPrv;
+  }
 
   /*******************************************************************************/
   /*!
@@ -458,22 +468,22 @@ protected:
       -1L; ///< The time when the temperature sensor was last read
   long _humidSensorPeriod =
       -1L; ///< The time period between reading the humidity sensor's value.
-  long _humidSensorPeriodPrv; ///< The time when the humidity sensor was
-                              ///< last read.
+  long _humidSensorPeriodPrv = -1L; ///< The time when the humidity sensor was
+                                    ///< last read.
   long _pressureSensorPeriod =
       -1L; ///< The time period between reading the pressure sensor's value.
-  long _pressureSensorPeriodPrv; ///< The time when the pressure sensor
-                                 ///< was last read.
+  long _pressureSensorPeriodPrv = -1L; ///< The time when the pressure sensor
+                                       ///< was last read.
   long _CO2SensorPeriod =
       -1L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv; ///< The time when the CO2 sensor
                             ///< was last read.
   long _pm10STDPeriod = -1L;
-  long _pm10STDPeriodPrv;
+  long _pm10STDPeriodPrv = -1L;
   long _pm25STDPeriod = -1L;
-  long _pm25STDPeriodPrv;
+  long _pm25STDPeriodPrv = -1L;
   long _pm100STDPeriod = -1L;
-  long _pm100STDPeriodPrv;
+  long _pm100STDPeriodPrv = -1L;
 };
 
 #endif // WipperSnapper_I2C_Driver_H

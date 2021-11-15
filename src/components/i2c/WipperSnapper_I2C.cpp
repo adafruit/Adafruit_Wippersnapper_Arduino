@@ -598,7 +598,7 @@ bool WipperSnapper_Component_I2C::encodeI2CDeviceEventMsg(
   pb_ostream_t ostream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
   if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
-                 &msgi2cResponse)) {
+                 msgi2cResponse)) {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to encode I2C device event response message!");
     return false;
@@ -666,7 +666,7 @@ void WipperSnapper_Component_I2C::update() {
       wippersnapper_signal_v1_I2CResponse_init_zero;
   // Set I2CDeviceEvent tag
   msgi2cResponse.which_payload =
-      wippersnapper_signal_v1_I2CResponse_resp_i2c_device_update_tag;
+      wippersnapper_signal_v1_I2CResponse_resp_i2c_device_event_tag;
 
   long curTime;
   for (int i = 0; i < drivers.size(); i++) {
@@ -674,9 +674,10 @@ void WipperSnapper_Component_I2C::update() {
     if (drivers[i]->driverType == AHTX0) {
       // reset sensor # counter
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
-      if (millis() - drivers[i]->getTempSensorPeriodPrv() >
+      curTime = millis();
+      if (curTime - drivers[i]->getTempSensorPeriodPrv() >
               drivers[i]->getTempSensorPeriod() &&
-          drivers[i]->getTempSensorPeriod() > -1L) {
+          drivers[i]->getTempSensorPeriod() != -1L) {
         // poll
         sensors_event_t temp;
         WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
@@ -692,12 +693,14 @@ void WipperSnapper_Component_I2C::update() {
         fillEventMessage(
             &msgi2cResponse, temp.temperature,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
+        drivers[i]->setTemperatureSensorPeriodPrv(curTime);
       }
 
       // Check if we're polling the humidity sensor
-      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
+      curTime = millis();
+      if (curTime - drivers[i]->getHumidSensorPeriodPrv() >
               drivers[i]->getHumidSensorPeriod() &&
-          drivers[i]->getHumidSensorPeriod() > -1L) {
+          drivers[i]->getHumidSensorPeriod() != -1L) {
         // poll
         WS_DEBUG_PRINTLN("Polling AHTX0 Humidity Sensor...");
         sensors_event_t humid;
@@ -713,6 +716,7 @@ void WipperSnapper_Component_I2C::update() {
         fillEventMessage(
             &msgi2cResponse, humid.relative_humidity,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
+        drivers[i]->setHumidSensorPeriodPrv(curTime);
       }
       // Did we write into the device event?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {

@@ -1560,8 +1560,9 @@ ws_status_t Wippersnapper::run() {
   WS.feedWDT();
 
   // Process I2C sensor events
-  // WS._i2cPort0->update();
-  // WS.feedWDT();
+  if (WS._isI2CPort0Init)
+    WS._i2cPort0->update();
+  WS.feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
