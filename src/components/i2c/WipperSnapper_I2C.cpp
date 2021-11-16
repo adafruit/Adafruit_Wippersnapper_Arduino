@@ -638,11 +638,19 @@ bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg(
               The value read by the sensor.
     @param    sensorType
               The SI unit represented by the sensor's value.
+    @param    precision
+              The amount of decimal points to round to.
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::fillEventMessage(
     wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value,
-    wippersnapper_i2c_v1_SensorType sensorType) {
+    wippersnapper_i2c_v1_SensorType sensorType, uint8_t precision = 2) {
+  // truncate to match desired `precision`
+  char str[40];
+  snprintf(str, sizeof(str) - 1, "%0.*f", precision, value);
+  sscanf(str, "%f", &value);
+
+  // fill
   msgi2cResponse->payload.resp_i2c_device_event
       .sensor_event[msgi2cResponse->payload.resp_i2c_device_event
                         .sensor_event_count]
@@ -671,9 +679,12 @@ void WipperSnapper_Component_I2C::update() {
   long curTime;
   for (int i = 0; i < drivers.size(); i++) {
     // Check driver type
+
     if (drivers[i]->driverType == AHTX0) {
       // reset sensor # counter
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
+
+      // temp
       curTime = millis();
       if (curTime - drivers[i]->getTempSensorPeriodPrv() >
               drivers[i]->getTempSensorPeriod() &&
@@ -696,7 +707,7 @@ void WipperSnapper_Component_I2C::update() {
         drivers[i]->setTemperatureSensorPeriodPrv(curTime);
       }
 
-      // Check if we're polling the humidity sensor
+      // humid
       curTime = millis();
       if (curTime - drivers[i]->getHumidSensorPeriodPrv() >
               drivers[i]->getHumidSensorPeriod() &&
@@ -713,12 +724,16 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN(" % rH");
 
         // pack data into msg
+        // TODO: Truncate within this call? (precision=)
         fillEventMessage(
             &msgi2cResponse, humid.relative_humidity,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
         drivers[i]->setHumidSensorPeriodPrv(curTime);
       }
       // Did we write into the device event?
+      // check size as we fill the message
+      // publish if mesg is too big?
+      // otherwise, publish at the end of the loop
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
         // Encode device event message
         if (!encodeI2CDeviceEventMsg(

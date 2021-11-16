@@ -21,6 +21,7 @@
 
 #include "drivers/WipperSnapper_I2C_Driver.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
+#include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25AQI.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
@@ -57,8 +58,8 @@ public:
   void update();
 
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
-                        float value,
-                        wippersnapper_i2c_v1_SensorType sensorType);
+                        float value, wippersnapper_i2c_v1_SensorType sensorType,
+                        uint8_t precision);
 
   bool
   encodeI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
@@ -78,6 +79,7 @@ private:
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
   WipperSnapper_I2C_Driver_SCD4X *_scd4x = nullptr;
   WipperSnapper_I2C_Driver_PM25AQI *_pm25 = nullptr;
+  WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
 };
 extern Wippersnapper WS;
 
