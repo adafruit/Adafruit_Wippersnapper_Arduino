@@ -80,15 +80,25 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#ab2bebfb333680e689fe5c1999815ceab">~WipperSnapper_Component_I2C</a> ()</td></tr>
 <tr class="memdesc:ab2bebfb333680e689fe5c1999815ceab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for a WipperSnapper I2C component. <br /></td></tr>
 <tr class="separator:ab2bebfb333680e689fe5c1999815ceab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19937e439840bb1586721fbf975bbccc"><td class="memItemLeft" align="right" valign="top">wippersnapper_i2c_v1_I2CBusScanResponse&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a19937e439840bb1586721fbf975bbccc">scanAddresses</a> ()</td></tr>
-<tr class="memdesc:a19937e439840bb1586721fbf975bbccc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scans all I2C addresses on the bus between 0x08 and 0x7F inclusive and returns an array of the devices found.  <a href="#a19937e439840bb1586721fbf975bbccc">More...</a><br /></td></tr>
-<tr class="separator:a19937e439840bb1586721fbf975bbccc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c9b804b7b6466b8dbf0854b35994433"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a7c9b804b7b6466b8dbf0854b35994433">attachI2CDevice</a> (wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq)</td></tr>
-<tr class="memdesc:a7c9b804b7b6466b8dbf0854b35994433"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes I2C device driver and attaches its object to the "bus".  <a href="#a7c9b804b7b6466b8dbf0854b35994433">More...</a><br /></td></tr>
-<tr class="separator:a7c9b804b7b6466b8dbf0854b35994433"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a437cd9d59c7085b4cf90a6b90e167903"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a437cd9d59c7085b4cf90a6b90e167903">isInitialized</a> ()</td></tr>
 <tr class="memdesc:a437cd9d59c7085b4cf90a6b90e167903"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns if i2c port is initialized.  <a href="#a437cd9d59c7085b4cf90a6b90e167903">More...</a><br /></td></tr>
 <tr class="separator:a437cd9d59c7085b4cf90a6b90e167903"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19937e439840bb1586721fbf975bbccc"><td class="memItemLeft" align="right" valign="top">wippersnapper_i2c_v1_I2CBusScanResponse&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a19937e439840bb1586721fbf975bbccc">scanAddresses</a> ()</td></tr>
+<tr class="memdesc:a19937e439840bb1586721fbf975bbccc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scans all I2C addresses on the bus between 0x08 and 0x7F inclusive and returns an array of the devices found.  <a href="#a19937e439840bb1586721fbf975bbccc">More...</a><br /></td></tr>
+<tr class="separator:a19937e439840bb1586721fbf975bbccc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf276df7870551bab8283381c6ca55df"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#abf276df7870551bab8283381c6ca55df">initI2CDevice</a> (wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq)</td></tr>
+<tr class="memdesc:abf276df7870551bab8283381c6ca55df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes I2C device driver.  <a href="#abf276df7870551bab8283381c6ca55df">More...</a><br /></td></tr>
+<tr class="separator:abf276df7870551bab8283381c6ca55df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a388d3b5db077aad3ef475d5806a6835c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a388d3b5db077aad3ef475d5806a6835c">updateI2CDevice</a> (wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceUpdateReq)</td></tr>
+<tr class="memdesc:a388d3b5db077aad3ef475d5806a6835c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of an I2C device driver.  <a href="#a388d3b5db077aad3ef475d5806a6835c">More...</a><br /></td></tr>
+<tr class="separator:a388d3b5db077aad3ef475d5806a6835c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4699aa12693873b23955342e05ea80a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#aa4699aa12693873b23955342e05ea80a">deinitI2CDevice</a> (wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq)</td></tr>
+<tr class="memdesc:aa4699aa12693873b23955342e05ea80a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitializes an I2C device driver.  <a href="#aa4699aa12693873b23955342e05ea80a">More...</a><br /></td></tr>
+<tr class="separator:aa4699aa12693873b23955342e05ea80a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="memItemLeft" align="right" valign="top"><a id="a1ea4a4a30e5486e4fee944ad54b6ca3d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a1ea4a4a30e5486e4fee944ad54b6ca3d">update</a> ()</td></tr>
+<tr class="memdesc:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queries all I2C device drivers for new values. Fills and sends an I2CSensorEvent with the sensor event data. <br /></td></tr>
+<tr class="separator:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that provides an interface with the I2C bus. </p>
@@ -120,6 +130,26 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a437cd9d59c7085b4cf90a6b90e167903"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a437cd9d59c7085b4cf90a6b90e167903">&#9670;&nbsp;</a></span>isInitialized()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_Component_I2C::isInitialized </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns if i2c port is initialized. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if initialized, False otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="a19937e439840bb1586721fbf975bbccc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a19937e439840bb1586721fbf975bbccc">&#9670;&nbsp;</a></span>scanAddresses()</h2>
 
@@ -140,14 +170,14 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7c9b804b7b6466b8dbf0854b35994433"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7c9b804b7b6466b8dbf0854b35994433">&#9670;&nbsp;</a></span>attachI2CDevice()</h2>
+<a id="abf276df7870551bab8283381c6ca55df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf276df7870551bab8283381c6ca55df">&#9670;&nbsp;</a></span>initI2CDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_Component_I2C::attachI2CDevice </td>
+          <td class="memname">bool WipperSnapper_Component_I2C::initI2CDevice </td>
           <td>(</td>
           <td class="paramtype">wippersnapper_i2c_v1_I2CDeviceInitRequest *&#160;</td>
           <td class="paramname"><em>msgDeviceInitReq</em></td><td>)</td>
@@ -156,7 +186,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Initializes I2C device driver and attaches its object to the "bus". </p>
+<p>Initializes I2C device driver. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">msgDeviceInitReq</td><td>A decoded I2CDevice initialization request message. </td></tr>
@@ -167,23 +197,57 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a437cd9d59c7085b4cf90a6b90e167903"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a437cd9d59c7085b4cf90a6b90e167903">&#9670;&nbsp;</a></span>isInitialized()</h2>
+<a id="a388d3b5db077aad3ef475d5806a6835c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a388d3b5db077aad3ef475d5806a6835c">&#9670;&nbsp;</a></span>updateI2CDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_Component_I2C::isInitialized </td>
+          <td class="memname">bool WipperSnapper_Component_I2C::updateI2CDevice </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">wippersnapper_i2c_v1_I2CDeviceDeinitRequest *&#160;</td>
+          <td class="paramname"><em>msgDeviceUpdateReq</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Returns if i2c port is initialized. </p>
-<dl class="section return"><dt>Returns</dt><dd>True if initialized, False otherwise. </dd></dl>
+<p>Updates the properties of an I2C device driver. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msgDeviceUpdateReq</td><td>A decoded I2CDeviceUpdateRequest. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if I2C device is was successfully updated, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="aa4699aa12693873b23955342e05ea80a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4699aa12693873b23955342e05ea80a">&#9670;&nbsp;</a></span>deinitI2CDevice()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_Component_I2C::deinitI2CDevice </td>
+          <td>(</td>
+          <td class="paramtype">wippersnapper_i2c_v1_I2CDeviceDeinitRequest *&#160;</td>
+          <td class="paramname"><em>msgDeviceDeinitReq</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deinitializes an I2C device driver. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msgDeviceDeinitReq</td><td>A decoded I2CDeviceDeinitRequest. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if I2C device is found and de-initialized, False otherwise. </dd></dl>
 
 </div>
 </div>

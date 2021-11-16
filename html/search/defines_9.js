@@ -1,9 +1,12 @@
 var searchData=
 [
-  ['topic_5fi2c',['TOPIC_I2C',['../_wippersnapper_8h.html#a32a0a525a3293ab5a136d3cfbb077b87',1,'Wippersnapper.h']]],
-  ['topic_5finfo',['TOPIC_INFO',['../_wippersnapper_8h.html#aca5c392d3a0fc61da9336eccb6d590b0',1,'Wippersnapper.h']]],
-  ['topic_5fio_5ferrors',['TOPIC_IO_ERRORS',['../_wippersnapper_8h.html#af3c3141789df6bb253e2966887703d5f',1,'Wippersnapper.h']]],
-  ['topic_5fio_5fthrottle',['TOPIC_IO_THROTTLE',['../_wippersnapper_8h.html#a51f191d073d2da08b445e665133b5452',1,'Wippersnapper.h']]],
-  ['topic_5fsignals',['TOPIC_SIGNALS',['../_wippersnapper_8h.html#aad558f89eb1da80a2a4f3dfc35d67d62',1,'Wippersnapper.h']]],
-  ['topic_5fws',['TOPIC_WS',['../_wippersnapper_8h.html#aba5c95a423aef413e489708178aee276',1,'Wippersnapper.h']]]
+  ['ws_5fdebug',['WS_DEBUG',['../_wippersnapper_8h.html#a588e957b4cb40edf5d7ce01584a1793e',1,'Wippersnapper.h']]],
+  ['ws_5fdebug_5fprint',['WS_DEBUG_PRINT',['../_wippersnapper_8h.html#a4b57776de6f8948ef3dc51df4d35e0d3',1,'Wippersnapper.h']]],
+  ['ws_5fdebug_5fprintln',['WS_DEBUG_PRINTLN',['../_wippersnapper_8h.html#ad2a23384400df93a7df6062b0975a04d',1,'Wippersnapper.h']]],
+  ['ws_5fkeepalive_5finterval',['WS_KEEPALIVE_INTERVAL',['../_wippersnapper_8h.html#ab12e6ab2ab9c4e528e26e645397c707c',1,'Wippersnapper.h']]],
+  ['ws_5fkeepalive_5finterval_5fms',['WS_KEEPALIVE_INTERVAL_MS',['../_wippersnapper_8h.html#a0915836cfab6a06783749f8d3c72324b',1,'Wippersnapper.h']]],
+  ['ws_5fmqtt_5fmax_5fpayload_5fsize',['WS_MQTT_MAX_PAYLOAD_SIZE',['../_wippersnapper_8h.html#a07b8444860c318fdff531a3d0c4f2e4a',1,'Wippersnapper.h']]],
+  ['ws_5fprinter',['WS_PRINTER',['../_wippersnapper_8h.html#ae04b6b322705e95cdf2d837493a55a57',1,'Wippersnapper.h']]],
+  ['ws_5fversion',['WS_VERSION',['../_wippersnapper_8h.html#aea527b2900703a26fe8c38d065b4f9e7',1,'Wippersnapper.h']]],
+  ['ws_5fwdt_5ftimeout',['WS_WDT_TIMEOUT',['../_wippersnapper_8h.html#a54f9fdefbcf023cac9afac805602da36',1,'Wippersnapper.h']]]
 ];

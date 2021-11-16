@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['attachi2cdevice',['attachI2CDevice',['../class_wipper_snapper___component___i2_c.html#a7c9b804b7b6466b8dbf0854b35994433',1,'WipperSnapper_Component_I2C']]]
+  ['builderrortopics',['buildErrorTopics',['../class_wippersnapper.html#a99658bdea2e433bfee8d8f074a6784eb',1,'Wippersnapper']]],
+  ['buildwstopics',['buildWSTopics',['../class_wippersnapper.html#a6e6909979a36a866e68a9659d317b7c3',1,'Wippersnapper']]]
 ];
