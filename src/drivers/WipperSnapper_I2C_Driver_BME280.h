@@ -109,6 +109,55 @@ public:
     _pressureSensorPeriod = 0.0;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the BME280's current temperature.
+      @param    tempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the temperature was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getTemp(sensors_event_t *tempEvent) {
+    if (_bme_temp == NULL)
+      return false;
+    _bme_temp->getEvent(tempEvent);
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the BME280's current relative humidity reading.
+      @param    humidEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the humidity was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getHumid(sensors_event_t *humidEvent) {
+    if (_bme_humidity == NULL)
+      return false;
+    _bme_humidity->getEvent(humidEvent);
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads a pressure sensor and converts
+                the reading into the expected SI unit.
+      @param    pressureEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getPressure(sensors_event_t *pressureEvent) {
+    if (_bme_pressure == NULL)
+      return false;
+    _bme_pressure->getEvent(pressureEvent);
+    return true;
+  }
+
 protected:
   Adafruit_BME280 _bme;
   Adafruit_Sensor *_bme_temp = NULL;
