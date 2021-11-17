@@ -133,13 +133,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
 #if defined(ARDUINO_ARCH_ESP32)
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
     // https://github.com/espressif/arduino-esp32/blob/master/libraries/Wire/src/Wire.cpp
-    if (endTransmissionRC == 2) {
-      WS_DEBUG_PRINTLN("ESP_ERR_ESP_FAIL: I2C Bus Failure");
-      // TODO: We should add an enum for this here...
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
-      break;
-    } else if (endTransmissionRC == 5) {
+    if (endTransmissionRC == 5) {
       WS_DEBUG_PRINTLN("ESP_ERR_TIMEOUT: I2C Bus Busy");
       scanResp.bus_response =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
