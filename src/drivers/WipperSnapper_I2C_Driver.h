@@ -469,21 +469,27 @@ protected:
   long _humidSensorPeriod =
       0L; ///< The time period between reading the humidity sensor's value.
   long _humidSensorPeriodPrv = 0L; ///< The time when the humidity sensor was
-                                    ///< last read.
+                                   ///< last read.
   long _pressureSensorPeriod =
       0L; ///< The time period between reading the pressure sensor's value.
   long _pressureSensorPeriodPrv = 0L; ///< The time when the pressure sensor
-                                       ///< was last read.
+                                      ///< was last read.
   long _CO2SensorPeriod =
       0L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv = 0L; ///< The time when the CO2 sensor
-                            ///< was last read.
-  long _pm10STDPeriod = 0L; ///< The time between reading the PM1.0 sensor's value.
-  long _pm10STDPeriodPrv = 0L; ///< The time when the PM1.0 sensor was last read.
-  long _pm25STDPeriod = 0L; ///< The time between reading the PM2.5 sensor's value.
-  long _pm25STDPeriodPrv = 0L; ///< The time when the PM2.5 sensor was last read.
-  long _pm100STDPeriod = 0L; ///< The time between reading the PM10.0 sensor's value.
-  long _pm100STDPeriodPrv = 0L; ///< The time when the PM10.0 sensor was last read.
+                                 ///< was last read.
+  long _pm10STDPeriod =
+      0L; ///< The time between reading the PM1.0 sensor's value.
+  long _pm10STDPeriodPrv =
+      0L; ///< The time when the PM1.0 sensor was last read.
+  long _pm25STDPeriod =
+      0L; ///< The time between reading the PM2.5 sensor's value.
+  long _pm25STDPeriodPrv =
+      0L; ///< The time when the PM2.5 sensor was last read.
+  long _pm100STDPeriod =
+      0L; ///< The time between reading the PM10.0 sensor's value.
+  long _pm100STDPeriodPrv =
+      0L; ///< The time when the PM10.0 sensor was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

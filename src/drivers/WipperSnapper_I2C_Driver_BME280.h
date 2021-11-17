@@ -160,9 +160,12 @@ public:
 
 protected:
   Adafruit_BME280 _bme; ///< BME280  object
-  Adafruit_Sensor *_bme_temp = NULL; ///< Ptr to an adafruit_sensor representing the temperature
-  Adafruit_Sensor *_bme_pressure = NULL; ///< Ptr to an adafruit_sensor representing the pressure
-  Adafruit_Sensor *_bme_humidity = NULL; ///< Ptr to an adafruit_sensor representing the humidity
+  Adafruit_Sensor *_bme_temp =
+      NULL; ///< Ptr to an adafruit_sensor representing the temperature
+  Adafruit_Sensor *_bme_pressure =
+      NULL; ///< Ptr to an adafruit_sensor representing the pressure
+  Adafruit_Sensor *_bme_humidity =
+      NULL; ///< Ptr to an adafruit_sensor representing the humidity
 };
 
 #endif // WipperSnapper_I2C_Driver_BME280
