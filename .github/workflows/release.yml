@@ -35,7 +35,7 @@ jobs:
       fail-fast: false
       matrix:
         arduino-platform: ["funhouse_tinyusb", "magtag_tinyusb",
-                           "metro_s2_tinyusb"]
+                           "metro_s2_tinyusb", "feather_s2_tinyusb"]
     steps:
     - uses: actions/setup-python@v1
       with:
