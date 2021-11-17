@@ -86,8 +86,7 @@ public:
   /*!
       @brief    Sets the I2C device driver's type.
       @param    type
-                The type of I2C driver (corresponds to header Driver_.h class
-     name)
+                test
   */
   /*******************************************************************************/
   void setDriverType(DriverType_t type) { driverType = type; }
@@ -430,7 +429,7 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Set the PM100 sensor's return frequency.
-      @param    pm100
+      @param    pm100Period
                 The time interval at which to return new data from the PM
                 sensor.
   */
@@ -479,12 +478,12 @@ protected:
       0L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv = 0L; ///< The time when the CO2 sensor
                             ///< was last read.
-  long _pm10STDPeriod = 0L;
-  long _pm10STDPeriodPrv = 0L;
-  long _pm25STDPeriod = 0L;
-  long _pm25STDPeriodPrv = 0L;
-  long _pm100STDPeriod = 0L;
-  long _pm100STDPeriodPrv = 0L;
+  long _pm10STDPeriod = 0L; ///< The time between reading the PM1.0 sensor's value.
+  long _pm10STDPeriodPrv = 0L; ///< The time when the PM1.0 sensor was last read.
+  long _pm25STDPeriod = 0L; ///< The time between reading the PM2.5 sensor's value.
+  long _pm25STDPeriodPrv = 0L; ///< The time when the PM2.5 sensor was last read.
+  long _pm100STDPeriod = 0L; ///< The time between reading the PM10.0 sensor's value.
+  long _pm100STDPeriodPrv = 0L; ///< The time when the PM10.0 sensor was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

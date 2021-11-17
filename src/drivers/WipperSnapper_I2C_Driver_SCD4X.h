@@ -147,9 +147,9 @@ public:
 
 protected:
   SensirionI2CScd4x _scd4x; ///< SCD4X object
-  uint16_t _co2 = 0;
-  float _temperature = 0.0f;
-  float _humidity = 0.0f;
+  uint16_t _co2 = 0; ///< The CO2 value last read from the sensor
+  float _temperature = 0.0f; ///< The temperature value last read from the sensor
+  float _humidity = 0.0f; ///< The humidity value last read from the sensor
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD4X
