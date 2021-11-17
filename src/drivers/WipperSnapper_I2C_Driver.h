@@ -464,27 +464,27 @@ protected:
                                ///< successfully, False otherwise.
   uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
   long _tempSensorPeriod =
-      -1L; ///< The time period between reading the temperature sensor's value.
+      0L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =
-      -1L; ///< The time when the temperature sensor was last read
+      0L; ///< The time when the temperature sensor was last read
   long _humidSensorPeriod =
-      -1L; ///< The time period between reading the humidity sensor's value.
-  long _humidSensorPeriodPrv = -1L; ///< The time when the humidity sensor was
+      0L; ///< The time period between reading the humidity sensor's value.
+  long _humidSensorPeriodPrv = 0L; ///< The time when the humidity sensor was
                                     ///< last read.
   long _pressureSensorPeriod =
-      -1L; ///< The time period between reading the pressure sensor's value.
-  long _pressureSensorPeriodPrv = -1L; ///< The time when the pressure sensor
+      0L; ///< The time period between reading the pressure sensor's value.
+  long _pressureSensorPeriodPrv = 0L; ///< The time when the pressure sensor
                                        ///< was last read.
   long _CO2SensorPeriod =
-      -1L; ///< The time period between reading the CO2 sensor's value.
-  long _CO2SensorPeriodPrv; ///< The time when the CO2 sensor
+      0L; ///< The time period between reading the CO2 sensor's value.
+  long _CO2SensorPeriodPrv = 0L; ///< The time when the CO2 sensor
                             ///< was last read.
-  long _pm10STDPeriod = -1L;
-  long _pm10STDPeriodPrv = -1L;
-  long _pm25STDPeriod = -1L;
-  long _pm25STDPeriodPrv = -1L;
-  long _pm100STDPeriod = -1L;
-  long _pm100STDPeriodPrv = -1L;
+  long _pm10STDPeriod = 0L;
+  long _pm10STDPeriodPrv = 0L;
+  long _pm25STDPeriod = 0L;
+  long _pm25STDPeriodPrv = 0L;
+  long _pm100STDPeriod = 0L;
+  long _pm100STDPeriodPrv = 0L;
 };
 
 #endif // WipperSnapper_I2C_Driver_H

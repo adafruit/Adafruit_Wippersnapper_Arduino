@@ -51,9 +51,9 @@ public:
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_DPS310() {
     _dps_temp = NULL;
-    _tempSensorPeriod = -1L;
+    _tempSensorPeriod = 0L;
     _dps_pressure = NULL;
-    _pressureSensorPeriod = -1L;
+    _pressureSensorPeriod = 0L;
     setDriverType(UNSPECIFIED);
   }
 
@@ -85,7 +85,7 @@ public:
   /*******************************************************************************/
   void disableTemperatureSensor() {
     _dps_temp = NULL;
-    _tempSensorPeriod = -1L;
+    _tempSensorPeriod = 0L;
   }
 
   /*******************************************************************************/
@@ -95,7 +95,7 @@ public:
   /*******************************************************************************/
   void disablePressureSensor() {
     _dps_pressure = NULL;
-    _pressureSensorPeriod = -1L;
+    _pressureSensorPeriod = 0L;
   }
 
   /*******************************************************************************/

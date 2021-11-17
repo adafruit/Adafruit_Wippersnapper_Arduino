@@ -49,9 +49,9 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_SCD30() {
-    _tempSensorPeriod = -1L;
-    _pressureSensorPeriod = -1L;
-    _CO2SensorPeriod = -1L;
+    _tempSensorPeriod = 0L;
+    _pressureSensorPeriod = 0L;
+    _CO2SensorPeriod = 0L;
     setDriverType(UNSPECIFIED);
   }
 

@@ -51,9 +51,9 @@ public:
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_AHTX0() {
     _aht_temp = NULL;
-    _tempSensorPeriod = -1L;
+    _tempSensorPeriod = 0L;
     _aht_humidity = NULL;
-    _humidSensorPeriod = -1L;
+    _humidSensorPeriod = 0L;
     setDriverType(UNSPECIFIED);
   }
 
@@ -78,7 +78,7 @@ public:
   /*******************************************************************************/
   void disableTemperatureSensor() {
     _aht_temp = NULL;
-    _tempSensorPeriod = -1L;
+    _tempSensorPeriod = 0L;
   }
 
   /*******************************************************************************/
@@ -88,7 +88,7 @@ public:
   /*******************************************************************************/
   void disableHumiditySensor() {
     _aht_humidity = NULL;
-    _humidSensorPeriod = -1L;
+    _humidSensorPeriod = 0L;
   }
 
   /*******************************************************************************/

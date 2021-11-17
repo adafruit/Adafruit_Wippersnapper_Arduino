@@ -80,9 +80,9 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_SCD4X() {
-    _tempSensorPeriod = -1L;
-    _humidSensorPeriod = -1L;
-    _CO2SensorPeriod = -1L;
+    _tempSensorPeriod = 0L;
+    _humidSensorPeriod = 0L;
+    _CO2SensorPeriod = 0L;
     setDriverType(UNSPECIFIED);
   }
 
