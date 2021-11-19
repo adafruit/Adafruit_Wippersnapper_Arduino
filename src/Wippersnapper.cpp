@@ -658,7 +658,6 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       return false; // fail out if we can't decode
     }
 
-    // !!! TODO: This is not ready yet, PR is in for it !!!
     // Empty I2C response to fill out
     msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
     msgi2cResponse.which_payload =

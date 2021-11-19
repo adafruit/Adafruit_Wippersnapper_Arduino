@@ -413,6 +413,7 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           WS_DEBUG_PRINTLN("seconds]");
         }
         is_success = true;
+        break;
       } else if (drivers[i]->driverType == SCD30) {
         // Update SCD30 sensor configuration
         if (msgDeviceUpdateReq->scd30.enable_temperature == true) {
@@ -459,6 +460,7 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           WS_DEBUG_PRINTLN("seconds]");
         }
         is_success = true;
+        break;
       }
     } else if (drivers[i]->driverType == SCD4X) {
       // Update SCD4x sensor configuration
@@ -505,6 +507,7 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
         WS_DEBUG_PRINTLN("seconds]");
       }
       is_success = true;
+      break;
     } else {
       WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
     }
