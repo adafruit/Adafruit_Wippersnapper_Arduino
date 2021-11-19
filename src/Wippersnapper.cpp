@@ -561,9 +561,13 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
       msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
-      // Fail out and publish back if not SUCCESS STATUS
+      // Fail out and publish back if not RESPONSE_SUCCESS
       if (msgi2cResponse.payload.resp_i2c_init.bus_response != wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
-          // TODO: Handle this
+        if (!encodeI2CResponse(&msgi2cResponse)) {
+            WS_DEBUG_PRINTLN("ERROR: encoding I2C Response!");
+            return false;
+        }
+        publishI2CResponse(&msgi2cResponse);
       }
     }
 
@@ -609,9 +613,13 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
       msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
-      // Fail out and publish back if not SUCCESS STATUS
+      // Fail out and publish back if not RESPONSE_SUCCESS
       if (msgi2cResponse.payload.resp_i2c_init.bus_response != wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
-          // TODO: Handle this
+        if (!encodeI2CResponse(&msgi2cResponse)) {
+            WS_DEBUG_PRINTLN("ERROR: encoding I2C Response!");
+            return false;
+        }
+        publishI2CResponse(&msgi2cResponse);
       }
     }
 
