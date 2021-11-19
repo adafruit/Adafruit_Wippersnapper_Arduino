@@ -35,6 +35,12 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
+// Invert Feather ESP32-S2 pin power for I2C
+#ifdef ARDUINO_ADAFRUIT_FEATHER_ESP32S2
+  pinMode(PIN_I2C_POWER_INVERTED, OUTPUT);
+  digitalWrite(PIN_I2C_POWER_INVERTED, LOW);
+#endif
+
   // Enable pullups on SCL, SDA
   pinMode(msgInitRequest->i2c_pin_scl, INPUT_PULLUP);
   pinMode(msgInitRequest->i2c_pin_sda, INPUT_PULLUP);
