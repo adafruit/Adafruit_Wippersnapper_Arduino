@@ -49,7 +49,7 @@ public:
   initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
   // TODO: Update Implementation
   // THIS NEEDS AN UPDATE REQUEST
-  bool updateI2CDevice(
+  bool updateI2CDeviceProperties(
       wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq);
   bool deinitI2CDevice(
       wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);

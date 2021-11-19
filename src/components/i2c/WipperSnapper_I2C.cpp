@@ -150,7 +150,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
     // Found device!
     if (endTransmissionRC == 0) {
-      WS_DEBUG_PRINT("Found I2C Device on: ");
+      WS_DEBUG_PRINT("Found I2C Device at 0x");
       WS_DEBUG_PRINTLN(address);
       scanResp.addresses_found[scanResp.addresses_found_count] =
           (uint32_t)address;
@@ -164,8 +164,12 @@ WipperSnapper_Component_I2C::scanAddresses() {
   WS.feedWDT();
 #endif
 
-  if (scanResp.addresses_found_count == 0)
+  if (scanResp.addresses_found_count == 0) {
     WS_DEBUG_PRINTLN("No I2C devices found");
+  } else {
+    WS_DEBUG_PRINT("I2C Devices Found: ")
+    WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
+  }
 
   return scanResp;
 }
@@ -211,8 +215,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINT(msgDeviceInitReq->aht.period_humidity);
       WS_DEBUG_PRINTLN("seconds]");
     }
-    WS_DEBUG_PRINT("Driver Type: ");
-    WS_DEBUG_PRINTLN(_ahtx0->driverType);
     drivers.push_back(_ahtx0);
   } else if (msgDeviceInitReq->has_dps) {
     // Initialize new DPS310 sensor
@@ -313,7 +315,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     drivers.push_back(_scd4x);
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Sensor not found")
+    WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
+    return false;
   }
   return true;
 }
@@ -327,7 +330,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
    otherwise.
 */
 /*********************************************************************************/
-bool WipperSnapper_Component_I2C::updateI2CDevice(
+bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
     wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq) {
   bool is_success = false;
   uint16_t deviceAddr = (uint16_t)msgDeviceUpdateReq->i2c_address;
@@ -518,6 +521,7 @@ bool WipperSnapper_Component_I2C::updateI2CDevice(
 /*******************************************************************************/
 bool WipperSnapper_Component_I2C::deinitI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
+  bool is_success = false;
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_address;
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
@@ -529,26 +533,28 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
         delete _ahtx0;
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D AHTX0");
-        return true;
+        is_success = true;
       } else if (drivers[i]->driverType == DPS310) {
         delete _dps310;
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D DPS310");
+        is_success = true;
       } else if (drivers[i]->driverType == SCD30) {
         delete _scd30;
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D SCD30");
+        is_success = true;
       } else if (drivers[i]->driverType == SCD4X) {
         delete _scd4x;
         drivers.erase(drivers.begin() + i);
         WS_DEBUG_PRINTLN("DEINIT'D SCD4X");
+        is_success = true;
       }
     } else {
       WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
     }
   }
-  // Driver was not found
-  return false;
+  return is_success;
 }
 
 /*******************************************************************************/
@@ -616,16 +622,12 @@ bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg(
 void WipperSnapper_Component_I2C::fillEventMessage(
     wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value,
     wippersnapper_i2c_v1_SensorType sensorType, uint8_t precision = 2) {
-  // truncate to match desired `precision`
-  char str[40];
-  snprintf(str, sizeof(str) - 1, "%0.*f", precision, value);
-  sscanf(str, "%f", &value);
-
-  // fill
+  // fill sensor value
   msgi2cResponse->payload.resp_i2c_device_event
       .sensor_event[msgi2cResponse->payload.resp_i2c_device_event
                         .sensor_event_count]
       .value = value;
+  // fill sensor type
   msgi2cResponse->payload.resp_i2c_device_event
       .sensor_event[msgi2cResponse->payload.resp_i2c_device_event
                         .sensor_event_count]

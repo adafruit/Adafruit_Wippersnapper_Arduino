@@ -562,10 +562,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
       // Fail out and publish back if not RESPONSE_SUCCESS
-      if (msgi2cResponse.payload.resp_i2c_init.bus_response != wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
+      if (msgi2cResponse.payload.resp_i2c_init.bus_response !=
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
         if (!encodeI2CResponse(&msgi2cResponse)) {
-            WS_DEBUG_PRINTLN("ERROR: encoding I2C Response!");
-            return false;
+          WS_DEBUG_PRINTLN("ERROR: encoding I2C Response!");
+          return false;
         }
         publishI2CResponse(&msgi2cResponse);
       }
@@ -574,7 +575,6 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Execute I2C Scan
     if (WS._isI2CPort0Init == true)
       scanResp = WS._i2cPort0->scanAddresses();
-
 
     // Fill I2CResponse
     msgi2cResponse.which_payload =
@@ -614,10 +614,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
       // Fail out and publish back if not RESPONSE_SUCCESS
-      if (msgi2cResponse.payload.resp_i2c_init.bus_response != wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
+      if (msgi2cResponse.payload.resp_i2c_init.bus_response !=
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
         if (!encodeI2CResponse(&msgi2cResponse)) {
-            WS_DEBUG_PRINTLN("ERROR: encoding I2C Response!");
-            return false;
+          WS_DEBUG_PRINTLN("ERROR: encoding I2C Response!");
+          return false;
         }
         publishI2CResponse(&msgi2cResponse);
       }
@@ -663,7 +664,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 
     // Update I2C device
     if (WS._isI2CPort0Init == true)
-        msgi2cResponse.payload.resp_i2c_device_update.is_success = WS._i2cPort0->updateI2CDevice(&msgI2CDeviceUpdateRequest);
+      msgi2cResponse.payload.resp_i2c_device_update.is_success =
+          WS._i2cPort0->updateI2CDeviceProperties(&msgI2CDeviceUpdateRequest);
 
     // Fill address
     msgi2cResponse.payload.resp_i2c_device_update.i2c_address =
@@ -694,7 +696,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 
     // Delete device from I2C bus
     if (WS._isI2CPort0Init == true)
-      msgi2cResponse.payload.resp_i2c_device_deinit.is_success = WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
+      msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
+          WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
