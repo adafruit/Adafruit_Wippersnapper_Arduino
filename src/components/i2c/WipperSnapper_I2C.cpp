@@ -169,7 +169,8 @@ WipperSnapper_Component_I2C::scanAddresses() {
   } else {
     WS_DEBUG_PRINT("I2C Devices Found: ")
     WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
-    scanResp.bus_response = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
+    scanResp.bus_response =
+        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   }
 
   return scanResp;
