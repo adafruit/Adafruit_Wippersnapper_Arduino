@@ -583,6 +583,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
            scanResp.addresses_found, sizeof(scanResp.addresses_found));
     msgi2cResponse.payload.resp_i2c_scan.addresses_found_count =
         scanResp.addresses_found_count;
+
+    msgi2cResponse.payload.resp_i2c_scan.bus_response = scanResp.bus_response;
     // Encode I2CResponse
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
