@@ -561,17 +561,16 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
       msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
-      // TODO: Fail out and publish back if not SUCCESS STATUS
+      // Fail out and publish back if not SUCCESS STATUS
+      if (msgi2cResponse.payload.resp_i2c_init.bus_response != wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
+          // TODO: Handle this
+      }
     }
 
     // Execute I2C Scan
     if (WS._isI2CPort0Init == true)
       scanResp = WS._i2cPort0->scanAddresses();
 
-    // TODO: Move this intot he end of scanAddresses
-    WS_DEBUG_PRINTLN("Scan Complete!");
-    WS_DEBUG_PRINT("\t# of addresses found on bus: ");
-    WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
 
     // Fill I2CResponse
     msgi2cResponse.which_payload =
@@ -610,7 +609,10 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
       msgi2cResponse.payload.resp_i2c_init.bus_response =
           WS._i2cPort0->getBusStatus();
-      // TODO: Fail out and publish back if not SUCCESS STATUS
+      // Fail out and publish back if not SUCCESS STATUS
+      if (msgi2cResponse.payload.resp_i2c_init.bus_response != wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS) {
+          // TODO: Handle this
+      }
     }
 
     // Initialize I2C device
@@ -652,15 +654,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_signal_v1_I2CResponse_resp_i2c_device_update_tag;
 
     // Update I2C device
-    // Delete device from I2C bus
-    if (msgI2CDeviceUpdateRequest.i2c_port_number == 0 &&
-        WS._isI2CPort0Init == true) {
-      msgi2cResponse.payload.resp_i2c_device_update.is_success =
-          WS._i2cPort0->updateI2CDevice(&msgI2CDeviceUpdateRequest);
-    } else {
-      WS_DEBUG_PRINTLN("ERROR: Could not update I2C device");
-      return false;
-    }
+    if (WS._isI2CPort0Init == true)
+        msgi2cResponse.payload.resp_i2c_device_update.is_success = WS._i2cPort0->updateI2CDevice(&msgI2CDeviceUpdateRequest);
 
     // Fill address
     msgi2cResponse.payload.resp_i2c_device_update.i2c_address =
@@ -690,14 +685,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_signal_v1_I2CResponse_resp_i2c_device_deinit_tag;
 
     // Delete device from I2C bus
-    if (msgI2CDeviceDeinitRequest.i2c_port_number == 0 &&
-        WS._isI2CPort0Init == true) {
-      msgi2cResponse.payload.resp_i2c_device_deinit.is_success =
-          WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
-    } else {
-      WS_DEBUG_PRINTLN("ERROR: Failed to de-initialize an I2C device");
-      return false;
-    }
+    if (WS._isI2CPort0Init == true)
+      msgi2cResponse.payload.resp_i2c_device_deinit.is_success = WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
