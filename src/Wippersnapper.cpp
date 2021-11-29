@@ -635,7 +635,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     msgi2cResponse.payload.resp_i2c_device_init.i2c_address =
         msgI2CDeviceInitRequest.i2c_address;
 
-    msgi2cResponse.payload.resp_i2c_init.bus_response =
+    msgi2cResponse.payload.resp_i2c_device_init.bus_response =
         wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 
     // Encode response
