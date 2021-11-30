@@ -56,10 +56,9 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_ESP8266() : Wippersnapper() {
-    _ssid = 0;
-    _pass = 0;
+    _ssid = "";
+    _pass = "";
     _mqtt_client = new WiFiClientSecure;
-    _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
   }
 
   /**************************************************************************/
@@ -101,7 +100,7 @@ public:
 
   /*******************************************************************/
   /*!
-  @brief  Sets up an Adafruit_MQTT_Client
+  @brief  Sets up an Adafruit_MQTT client
   @param  clientID
           MQTT client identifier
   @param  useStaging
@@ -115,6 +114,8 @@ public:
     } else {
       _mqttBrokerURL = "io.adafruit.com";
     }
+
+    _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
     WS._mqtt =
         new Adafruit_MQTT_Client(_mqtt_client, _mqttBrokerURL, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
@@ -160,13 +161,24 @@ protected:
   */
   /**************************************************************************/
   void _connect() {
+
+    if (WiFi.status() == WL_CONNECTED)
+      return;
+
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
+      _disconnect();
       delay(1000);
       WiFi.begin(_ssid, _pass);
-      delay(2000);
       _status = WS_NET_DISCONNECTED;
+      delay(100);
+    }
+
+    // wait for a connection to be established
+    long startRetry = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
+      // do nothing, busy loop during the timeout
     }
   }
 
@@ -177,7 +189,7 @@ protected:
   /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
-    delay(300);
+    delay(500);
   }
 };
 

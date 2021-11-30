@@ -94,7 +94,7 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Initializes the MQTT client.
+  @brief  Initializes the MQTT client
   @param  clientID
           MQTT client identifier
   @param  useStaging
