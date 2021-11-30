@@ -172,6 +172,8 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
   if (scanResp.addresses_found_count == 0) {
     WS_DEBUG_PRINTLN("No I2C devices found");
+    scanResp.bus_response =
+        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_WIRING;
   } else {
     WS_DEBUG_PRINT("I2C Devices Found: ")
     WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
