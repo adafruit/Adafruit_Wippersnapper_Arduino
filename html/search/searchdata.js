@@ -4,9 +4,9 @@ var indexSectionsWithContent =
   1: "adw",
   2: "w",
   3: "_bcdefghinprsuw~",
-  4: "_bilmprstw",
+  4: "_bdilmprstw",
   5: "dfw",
-  6: "bcglnprstwy",
+  6: "bcgilnprstwy",
   7: "a"
 };
 

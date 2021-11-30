@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['mac',['mac',['../class_wippersnapper___a_i_r_l_i_f_t.html#a2929944ebbbf30c1c62952a186e17ab1',1,'Wippersnapper_AIRLIFT']]],
-  ['msgsignali2c',['msgSignalI2C',['../class_wippersnapper.html#a71e758d3d2bb5f05c6ac804de7ae9e99',1,'Wippersnapper']]]
+  ['lockstatusdotstar',['lockStatusDotStar',['../class_wippersnapper.html#a118e66d9ca105e5056e256b5126e7502',1,'Wippersnapper']]],
+  ['lockstatusled',['lockStatusLED',['../class_wippersnapper.html#a60b5ba446db929076121abed29dd294d',1,'Wippersnapper']]],
+  ['lockstatusneopixel',['lockStatusNeoPixel',['../class_wippersnapper.html#a115869c2a6bcdf7b500caca65d5f9ab9',1,'Wippersnapper']]]
 ];
