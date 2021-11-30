@@ -1,7 +1,7 @@
 /*!
- * @file WipperSnapper_I2C_Driver_AHTX0.h
+ * @file WipperSnapper_I2C_Driver_DPS310.h
  *
- * Device driver for an AHT Humidity and Temperature sensor.
+ * Device driver the DPS310 barometric pressure sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,87 +13,94 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_AHTX0_H
-#define WipperSnapper_I2C_Driver_AHTX0_H
+#ifndef WipperSnapper_I2C_Driver_DPS310_H
+#define WipperSnapper_I2C_Driver_DPS310_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <Adafruit_AHTX0.h>
+#include <Adafruit_DPS310.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the AHTX0 temperature
-            and humidity sensor.
+    @brief  Class that provides a sensor driver for the DPS310 barometric
+            pressure sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_AHTX0 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_DPS310 : public WipperSnapper_I2C_Driver {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an AHTX0 sensor.
+      @brief    Constructor for a DPS310 sensor.
       @param    _i2c
                 The I2C interface.
       @param    sensorAddress
-                The 7-bit I2C address of the AHTX0 sensor.
+                The 7-bit I2C address of the sensor.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_DPS310(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(AHTX0); // sets the type of I2C_Driver
+    setDriverType(DPS310);
     _sensorAddress = sensorAddress;
-    _isInitialized = _aht.begin(_i2c);
+    _isInitialized = _dps310.begin_I2C((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an AHTX0 sensor.
+      @brief    Destructor for an DPS310 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_AHTX0() {
-    _aht_temp = NULL;
+  ~WipperSnapper_I2C_Driver_DPS310() {
+    _dps_temp = NULL;
     _tempSensorPeriod = 0L;
-    _aht_humidity = NULL;
-    _humidSensorPeriod = 0L;
+    _dps_pressure = NULL;
+    _pressureSensorPeriod = 0L;
     setDriverType(UNSPECIFIED);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Enables the AHTX0's temperature sensor.
+      @brief    Enables the DPS310's temperature sensor. Sets highest precision
+                options
   */
   /*******************************************************************************/
-  void enableTemperatureSensor() { _aht_temp = _aht.getTemperatureSensor(); }
+  void enableTemperatureSensor() {
+    _dps310.configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps_temp = _dps310.getTemperatureSensor();
+  }
 
   /*******************************************************************************/
   /*!
-      @brief    Enables the AHTX0's humidity sensor.
+      @brief    Enables the DPS310's pressure sensor.
   */
   /*******************************************************************************/
-  void enableHumiditySensor() { _aht_humidity = _aht.getHumiditySensor(); }
+  void enablePressureSensor() {
+    _dps310.configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps_pressure = _dps310.getPressureSensor();
+  }
 
   /*******************************************************************************/
   /*!
-      @brief    Disables the AHTX0's temperature sensor.
+      @brief    Disables the DPS310's pressure sensor.
   */
   /*******************************************************************************/
   void disableTemperatureSensor() {
-    _aht_temp = NULL;
+    _dps_temp = NULL;
     _tempSensorPeriod = 0L;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Disables the AHTX0's humidity sensor.
+      @brief    Disables the DPS310's pressure sensor.
   */
   /*******************************************************************************/
-  void disableHumiditySensor() {
-    _aht_humidity = NULL;
-    _humidSensorPeriod = 0L;
+  void disablePressureSensor() {
+    _dps_pressure = NULL;
+    _pressureSensorPeriod = 0L;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the AHTX0's current temperature.
+      @brief    Gets the DPS310's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -101,9 +108,8 @@ public:
   */
   /*******************************************************************************/
   bool getTemp(sensors_event_t *tempEvent) {
-    // update temp, if sensor enabled
-    if (_aht_temp != NULL) {
-      _aht_temp->getEvent(tempEvent);
+    if (_dps_temp != NULL && _dps310.temperatureAvailable()) {
+      _dps_temp->getEvent(tempEvent);
       return true;
     }
     return false;
@@ -111,28 +117,27 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the AHTX0's current humidity.
-      @param    humidEvent
+      @brief    Gets the DPS310's pressure reading.
+      @param    pressureEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the humidity was obtained successfully, False
+      @returns  True if the pressure was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getHumid(sensors_event_t *humidEvent) {
-    // update humidity, if sensor enabled
-    if (_aht_humidity != NULL) {
-      _aht_humidity->getEvent(humidEvent);
+  bool getPressure(sensors_event_t *pressureEvent) {
+    if (_dps_pressure != NULL && _dps310.pressureAvailable()) {
+      _dps_pressure->getEvent(pressureEvent);
       return true;
     }
     return false;
   }
 
 protected:
-  Adafruit_AHTX0 _aht; ///< AHTX0 driver object
-  Adafruit_Sensor *_aht_temp =
-      NULL; ///< Holds data for the AHTX0's temperature sensor
-  Adafruit_Sensor *_aht_humidity =
-      NULL; ///< Holds data for the AHTX0's humidity sensor
+  Adafruit_DPS310 _dps310; ///< DPS310 driver object
+  Adafruit_Sensor *_dps_temp =
+      NULL; ///< Holds data for the DPS310's temperature sensor
+  Adafruit_Sensor *_dps_pressure =
+      NULL; ///< Holds data for the DPS310's pressure sensor
 };
 
-#endif // WipperSnapper_I2C_Driver_AHTX0
+#endif // WipperSnapper_I2C_Driver_DPS310
