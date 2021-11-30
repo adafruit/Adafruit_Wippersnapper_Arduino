@@ -93,6 +93,8 @@ void Wippersnapper::provision() {
   }
   // pull values out of NVS configuration
   _nvs->setNVSConfig();
+#elif defined(USE_LITTLEFS)
+  // TODO
 #endif
   // Set credentials
   set_user_key();

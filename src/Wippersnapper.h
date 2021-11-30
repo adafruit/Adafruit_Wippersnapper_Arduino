@@ -47,20 +47,21 @@
 // Note: These might be better off in their respective wrappers
 #include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
-#include <ArduinoJson.h>
 #include <SPI.h>
 
 #ifndef ESP8266
 #include "Adafruit_SleepyDog.h"
 #endif
 
-#ifdef USE_TINYUSB
-#include "provisioning/tinyusb/Wippersnapper_FS.h"
+// Provisioning FS
+#if defined(USE_TINYUSB)
+    #include "provisioning/tinyusb/Wippersnapper_FS.h"
+#elif defined(USE_NVS)
+    #include "provisioning/Wippersnapper_ESP32_nvs.h"
+#elif defined(USE_LITTLEFS)
+    #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
 
-#ifdef USE_NVS
-#include "provisioning/Wippersnapper_ESP32_nvs.h"
-#endif
 
 #define WS_VERSION                                                             \
   "1.0.0-beta.16" ///< WipperSnapper app. version (semver-formatted)
