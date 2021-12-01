@@ -29,16 +29,26 @@ class Wippersnapper;
             platforms without native USB (such as ESP32, ESP8266).
 */
 /***************************************************************************/
-class Wippersnapper_LittleFS {
+class WipperSnapper_LittleFS {
 public:
-  Wippersnapper_LittleFS();
-  ~Wippersnapper_LittleFS();
+  WipperSnapper_LittleFS();
+  ~WipperSnapper_LittleFS();
 
   void parseSecrets();
   void fsHalt();
-  bool setNetwork; /*!< True if a network interface type was set up, False otherwise. */
-private:
 
+  // Adafruit IO Configuration
+  const char *io_username =
+      NULL;                  /*!< Adafruit IO username, from config json. */
+  const char *io_key = NULL; /*!< Adafruit IO password, from config json. */
+  bool setNetwork; /*!< True if a network interface type was set up, False
+                      otherwise. */
+
+private:
+  // NOTE: calculated capacity with maximum
+  // length of usernames/passwords/tokens
+  // is 382 bytes, rounded to nearest power of 2.
+  StaticJsonDocument<512> _doc; /*!< Json configuration file */
 };
 
 extern Wippersnapper WS;

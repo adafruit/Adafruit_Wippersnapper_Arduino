@@ -16,28 +16,26 @@
 #include "WipperSnapper_LittleFS.h"
 
 // ctor
-Wippersnapper_FS::Wippersnapper_FS() {
-
+WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
-  (if !LittleFS.begin()) {
+  if (!LittleFS.begin()) {
     WS_DEBUG_PRINTLN("ERROR: Failure initializing LittleFS!");
     WS.setStatusLEDColor(RED);
     while (1)
       ;
   }
 
-  // Check for secrets.json file on FS
-  if(!LittleFS.exists("/secrets.json", "r")) {
+  // Check if `secrets.json` file exists on FS
+  if (!LittleFS.exists("/secrets.json")) {
     WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem!");
     WS.setStatusLEDColor(RED);
     while (1)
       ;
   }
-
 }
 
 // dtor
-Wippersnapper_FS::~Wippersnapper_FS() {
+WipperSnapper_LittleFS::~WipperSnapper_LittleFS() {
   LittleFS.end();
 }
 
@@ -46,17 +44,17 @@ Wippersnapper_FS::~Wippersnapper_FS() {
     @brief    Parses a secrets.json file on the flash filesystem.
 */
 /**************************************************************************/
-void Wippersnapper_FS::parseSecrets() {
+void WipperSnapper_LittleFS::parseSecrets() {
   setNetwork = false;
   // open file for parsing
-  File secretsFile = LittleFS.open("/secrets.json");
+  File secretsFile = LittleFS.open("/secrets.json", "r");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
     fsHalt();
   }
 
   // check if we can deserialize the secrets.json file
-  DeserializationError err = deserializeJson(doc, secretsFile);
+  DeserializationError err = deserializeJson(_doc, secretsFile);
   if (err) {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
@@ -64,7 +62,7 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Get io username
-  io_username = doc["io_username"];
+  io_username = _doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
@@ -75,12 +73,12 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // check if username is from templated json
-  if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
+  if (_doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
     fsHalt();
   }
 
   // Get io key
-  io_key = doc["io_key"];
+  io_key = _doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
@@ -91,7 +89,7 @@ void Wippersnapper_FS::parseSecrets() {
   WS_DEBUG_PRINTLN("Attempting to find network interface...");
 
   const char *network_type_wifi_native_network_ssid =
-      doc["network_type_wifi_native"]["network_ssid"];
+      _doc["network_type_wifi_native"]["network_ssid"];
   if (network_type_wifi_native_network_ssid == nullptr) {
     WS_DEBUG_PRINTLN(
         "Network interface is not native WiFi, checking next type...");
@@ -100,7 +98,7 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINTLN("Setting network:");
     // Parse network password
     const char *network_type_wifi_native_network_password =
-        doc["network_type_wifi_native"]["network_password"];
+        _doc["network_type_wifi_native"]["network_password"];
     // validation
     if (network_type_wifi_native_network_password == nullptr) {
       WS_DEBUG_PRINTLN(
@@ -109,7 +107,7 @@ void Wippersnapper_FS::parseSecrets() {
       fsHalt();
     }
     // check if SSID is from template (not entered)
-    if (doc["network_type_wifi_native"]["network_password"] ==
+    if (_doc["network_type_wifi_native"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       fsHalt();
     }
@@ -127,13 +125,13 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // clear the document and release all memory from the memory pool
-  doc.clear();
+  _doc.clear();
 
   // close the tempFile
   secretsFile.close();
 }
 
-void Wippersnapper_FS::fsHalt() {
+void WipperSnapper_LittleFS::fsHalt() {
   while (1) {
     WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
     delay(1000);
