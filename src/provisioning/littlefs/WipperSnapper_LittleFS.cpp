@@ -45,7 +45,6 @@ WipperSnapper_LittleFS::~WipperSnapper_LittleFS() {
 */
 /**************************************************************************/
 void WipperSnapper_LittleFS::parseSecrets() {
-  setNetwork = false;
   // open file for parsing
   File secretsFile = LittleFS.open("/secrets.json", "r");
   if (!secretsFile) {
@@ -61,74 +60,44 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
 
-  // Get io username
-  io_username = _doc["io_username"];
+  // Get IO username from JSON
+  const char *io_username = _doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_username == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
-    while (1) {
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
-      yield();
-    }
-  }
-
-  // check if username is from templated json
-  if (_doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
+  if (io_username == nullptr)
     fsHalt();
-  }
+  // set application's IO username
+  WS._username = io_username;
 
-  // Get io key
-  io_key = _doc["io_key"];
+  // Get IO key from JSON
+  const char *io_key = _doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_key == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
+  if (io_key == nullptr)
     fsHalt();
-  }
+  // Set applicaiton's IO key
+  WS._key = io_key;
 
-  // next, we detect the network interface from the `secrets.json`
-  WS_DEBUG_PRINTLN("Attempting to find network interface...");
-
+  // Parse SSID
   const char *network_type_wifi_native_network_ssid =
       _doc["network_type_wifi_native"]["network_ssid"];
-  if (network_type_wifi_native_network_ssid == nullptr) {
-    WS_DEBUG_PRINTLN(
-        "Network interface is not native WiFi, checking next type...");
-  } else {
-    WS_DEBUG_PRINTLN("Network Interface Found: Native WiFi (ESP32S2, ESP32)");
-    WS_DEBUG_PRINTLN("Setting network:");
-    // Parse network password
-    const char *network_type_wifi_native_network_password =
-        _doc["network_type_wifi_native"]["network_password"];
-    // validation
-    if (network_type_wifi_native_network_password == nullptr) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: invalid network_type_wifi_native_network_password value in "
-          "secrets.json!");
-      fsHalt();
-    }
-    // check if SSID is from template (not entered)
-    if (_doc["network_type_wifi_native"]["network_password"] ==
-        "YOUR_WIFI_SSID_HERE") {
-      fsHalt();
-    }
-
-    // Set WiFi configuration with parsed values
-    WS._network_ssid = network_type_wifi_native_network_ssid;
-    WS._network_pass = network_type_wifi_native_network_password;
-    setNetwork = true;
-  }
-
-  // Was a network_type detected in the configuration file?
-  if (!setNetwork) {
-    WS_DEBUG_PRINTLN("ERROR: Network interface not detected in secrets.json file.");
+  if (network_type_wifi_native_network_ssid == nullptr)
     fsHalt();
-  }
+
+  // Parse SSID password
+  const char *network_type_wifi_native_network_password = _doc["network_type_wifi_native"]["network_password"];
+  // validation
+  if (network_type_wifi_native_network_password == nullptr)
+    fsHalt();
+
+  // Set WiFi configuration with parsed values
+  WS._network_ssid = network_type_wifi_native_network_ssid;
+  WS._network_pass = network_type_wifi_native_network_password;
+
+  // close the tempFile
+  secretsFile.close();
 
   // clear the document and release all memory from the memory pool
   _doc.clear();
 
-  // close the tempFile
-  secretsFile.close();
 }
 
 void WipperSnapper_LittleFS::fsHalt() {

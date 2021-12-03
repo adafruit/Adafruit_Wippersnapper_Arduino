@@ -94,7 +94,8 @@ void Wippersnapper::provision() {
   // pull values out of NVS configuration
   _nvs->setNVSConfig();
 #elif defined(USE_LITTLEFS)
-  // TODO
+  _littleFS = new WipperSnapper_LittleFS();
+  _littleFS->parseSecrets();
 #endif
   // Set credentials
   set_user_key();
@@ -124,7 +125,7 @@ void Wippersnapper::set_user_key(const char *aio_username,
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
-#ifdef USE_TINYUSB
+#if defined(USE_TINYUSB)
   WS._username = _fileSystem->io_username;
   WS._key = _fileSystem->io_key;
 #endif
@@ -1459,7 +1460,7 @@ void Wippersnapper::connect(bool useStagingBroker) {
 
   WS_DEBUG_PRINTLN("OUTPUT FROM LITTLEFS TOOL:");
   WS_DEBUG_PRINT("\tIO Username:"); WS_DEBUG_PRINTLN(WS._username);
-  WS_DEBUG_PRINT("\tIO Password:"); WS_DEBUG_PRINTLN(WS._username);
+  WS_DEBUG_PRINT("\tIO Password:"); WS_DEBUG_PRINTLN(WS._key);
   WS_DEBUG_PRINT("\tSSID:"); WS_DEBUG_PRINTLN(WS._network_ssid);
   WS_DEBUG_PRINT("\tSSID PASS:"); WS_DEBUG_PRINTLN(WS._network_pass);
 
