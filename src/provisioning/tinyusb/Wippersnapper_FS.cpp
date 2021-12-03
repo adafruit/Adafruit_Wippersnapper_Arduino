@@ -321,7 +321,7 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Get io username
-  io_username = doc["io_username"];
+  const char * io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
@@ -340,15 +340,19 @@ void Wippersnapper_FS::parseSecrets() {
         "effect");
     fsHalt();
   }
+  // set application username
+  WS._username = io_username;
 
   // Get io key
-  io_key = doc["io_key"];
+  const char *io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
     fsHalt();
   }
+  // set application key
+  WS._key = io_key;
 
   // next, we detect the network interface from the `secrets.json`
   WS_DEBUG_PRINTLN("Attempting to find network interface...");

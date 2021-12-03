@@ -58,10 +58,6 @@ public:
 
   void parseSecrets();
 
-  // Adafruit IO Configuration
-  const char *io_username =
-      NULL;                  /*!< Adafruit IO username, from config json. */
-  const char *io_key = NULL; /*!< Adafruit IO password, from config json. */
   bool setNetwork; /*!< True if a network interface type was set up, False
                       otherwise. */
 
