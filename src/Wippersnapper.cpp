@@ -97,38 +97,9 @@ void Wippersnapper::provision() {
   _littleFS = new WipperSnapper_LittleFS();
   _littleFS->parseSecrets();
 #endif
-  // Set credentials
-  set_user_key();
+
+  // For all provisioning methods: set WiFi credentials
   set_ssid_pass();
-}
-
-/****************************************************************************/
-/*!
-    @brief    Configures the device's Adafruit IO credentials. This method
-              should be used only if provisioning is not avaliable.
-    @param    aio_username
-              Your Adafruit IO username.
-    @param    aio_key
-              Your Adafruit IO active key.
-*/
-/****************************************************************************/
-void Wippersnapper::set_user_key(const char *aio_username,
-                                 const char *aio_key) {
-  WS._username = aio_username;
-  WS._key = aio_key;
-}
-
-/****************************************************************************/
-/*!
-    @brief    Configures the device's Adafruit IO credentials from the
-                secrets.json file.
-*/
-/****************************************************************************/
-void Wippersnapper::set_user_key() {
-#if defined(USE_TINYUSB)
-  WS._username = _fileSystem->io_username;
-  WS._key = _fileSystem->io_key;
-#endif
 }
 
 /**************************************************************************/
