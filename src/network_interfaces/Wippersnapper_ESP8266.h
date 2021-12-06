@@ -18,26 +18,13 @@
 #define WIPPERSNAPPER_ESP8266_H
 
 #ifdef ESP8266
-
+#include "ESP8266WiFi.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
-#include "ESP8266WiFi.h"
-#include "WiFiClientSecure.h"
 #include "Wippersnapper.h"
 
-#ifdef USE_STAGING
-// Adafruit IO Staging SSL Fingerprint
-// Fingerprint for io.adafruit.us staging server
-#define WS_SSL_FINGERPRINT                                                     \
-  "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
-#else
-#define WS_SSL_FINGERPRINT                                                     \
-  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF" ///< Latest
-                                                                ///< Adafruit IO
-                                                                ///< SSL
-                                                                ///< Fingerprint
-#endif
+static const char *fingerprint PROGMEM = "A0 A4 61 E0 D6 F8 94 FF FA C1 F2 DC 09 23 72 E1 CC 23 CD 64";
 
 extern Wippersnapper WS;
 
@@ -56,8 +43,8 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_ESP8266() : Wippersnapper() {
-    _ssid = "";
-    _pass = "";
+    _ssid = 0;
+    _pass = 0;
     _mqtt_client = new WiFiClientSecure;
   }
 
@@ -87,6 +74,17 @@ public:
     _pass = ssidPassword;
   }
 
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password from the
+            ESP8266's LittleFS.
+  */
+  /**********************************************************/
+  void set_ssid_pass() {
+    _ssid = WS._network_ssid;
+    _pass = WS._network_pass;
+  }
+
   /********************************************************/
   /*!
   @brief  Gets the ESP8266's unique client identifier.
@@ -100,7 +98,7 @@ public:
 
   /*******************************************************************/
   /*!
-  @brief  Sets up an Adafruit_MQTT client
+  @brief  Sets up an Adafruit_MQTT_Client
   @param  clientID
           MQTT client identifier
   @param  useStaging
@@ -109,16 +107,26 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID, bool useStaging = false) {
+
+    WS_DEBUG_PRINTLN("setupMQTTClient");
+    WS_DEBUG_PRINT("Using Staging? ");
+    WS_DEBUG_PRINTLN(useStaging);
+
     if (useStaging == true) {
       _mqttBrokerURL = "io.adafruit.us";
     } else {
       _mqttBrokerURL = "io.adafruit.com";
     }
-
-    _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
+    WS_DEBUG_PRINTLN("****DUMP MQTT_CLIENT***");
+    WS_DEBUG_PRINTLN(WS._username);
+    WS_DEBUG_PRINTLN(WS._key);
+    WS_DEBUG_PRINTLN(_mqttBrokerURL);
+    WS_DEBUG_PRINTLN(WS._mqtt_port);
+    WS_DEBUG_PRINTLN(clientID);
+    WS_DEBUG_PRINTLN("****");
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, _mqttBrokerURL, WS._mqtt_port,
-                                 clientID, WS._username, WS._key);
+        new Adafruit_MQTT_Client(_mqtt_client, _mqttBrokerURL, 433,
+                                 clientID, "brentrubell", "aio_QUHn80jW6oUVhJ2UtwAYxY9NYRRS");
   }
 
   /********************************************************/
@@ -149,9 +157,9 @@ public:
   const char *connectionType() { return "ESP8266"; }
 
 protected:
-  const char *_ssid;
-  const char *_pass;
-  const char *_mqttBrokerURL;
+  const char *_ssid = NULL;
+  const char *_pass = NULL;
+  const char *_mqttBrokerURL = NULL;
   uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   WiFiClientSecure *_mqtt_client;
 
@@ -162,24 +170,28 @@ protected:
   /**************************************************************************/
   void _connect() {
 
-    if (WiFi.status() == WL_CONNECTED)
-      return;
+  /* 
+      Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
+      would try to act as both a client and an access-point and could cause
+      network-issues with your other WiFi-devices on your WiFi-network.
+  */
+  // We start by connecting to a WiFi network
+  WS_DEBUG_PRINT("Connecting to ");
+  WS_DEBUG_PRINTLN("Transit");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(_ssid, _pass);
 
-    if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID;
-    } else {
-      _disconnect();
-      delay(1000);
-      WiFi.begin(_ssid, _pass);
-      _status = WS_NET_DISCONNECTED;
-      delay(100);
-    }
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    WS_DEBUG_PRINT(".");
+  }
+  WS_DEBUG_PRINT("");
 
-    // wait for a connection to be established
-    long startRetry = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
-      // do nothing, busy loop during the timeout
-    }
+  WS_DEBUG_PRINTLN("WiFi connected");
+  WS_DEBUG_PRINTLN("IP address: ");
+  WS_DEBUG_PRINTLN(WiFi.localIP());
+  _mqtt_client->setFingerprint(fingerprint);
+
   }
 
   /**************************************************************************/
@@ -189,7 +201,7 @@ protected:
   /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
-    delay(500);
+    delay(300);
   }
 };
 

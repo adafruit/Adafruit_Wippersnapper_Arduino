@@ -901,7 +901,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
     // block the run() loop
     while (throttleLoops > 0) {
       delay(WS_KEEPALIVE_INTERVAL_MS);
-      WS.feedWDT();
+      //WS.feedWDT();
       WS._mqtt->ping();
       throttleLoops--;
     }
@@ -1180,7 +1180,7 @@ void Wippersnapper::errorWriteHang(String error) {
 #endif
   // Signal and hang forever
   while (1) {
-    WS.feedWDT();
+    //WS.feedWDT();
     WS.statusLEDBlink(WS_LED_STATUS_ERROR);
     delay(1000);
   }
@@ -1193,9 +1193,9 @@ void Wippersnapper::errorWriteHang(String error) {
 */
 /**************************************************************************/
 void Wippersnapper::runNetFSM() {
-  WS.feedWDT();
+  //WS.feedWDT();
   // MQTT connack RC
-  int mqttRC;
+  int8_t mqttRC;
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -1203,32 +1203,35 @@ void Wippersnapper::runNetFSM() {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
+      WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
-        // WS_DEBUG_PRINTLN("Connected to IO!");
+        WS_DEBUG_PRINTLN("Connected to IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
-      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
+      WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
       if (networkStatus() == WS_NET_CONNECTED) {
-        // WS_DEBUG_PRINTLN("Connected to WiFi");
+        WS_DEBUG_PRINTLN("Connected to WiFi");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts >= 0) {
+        WS_DEBUG_PRINT("CONNECT ATTEMPT #");
+        WS_DEBUG_PRINTLN(maxAttempts);
         setStatusLEDColor(LED_NET_CONNECT);
-        WS.feedWDT();
+        //WS.feedWDT();
         // attempt to connect
         _connect();
+        //WS.feedWDT();
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
@@ -1244,19 +1247,21 @@ void Wippersnapper::runNetFSM() {
       }
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       // Attempt to connect
-      maxAttempts = 10;
+      maxAttempts = 5;
       while (maxAttempts >= 0) {
         setStatusLEDColor(LED_IO_CONNECT);
-        mqttRC = WS._mqtt->connect(WS._username, WS._key);
+        mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
         }
+        WS_DEBUG_PRINT("MQTT RC: ");
+        WS_DEBUG_PRINTLN(mqttRC);
         setStatusLEDColor(BLACK);
-        delay(1000);
+        delay(5000);
         maxAttempts--;
       }
       if (fsmNetwork == FSM_NET_CHECK_MQTT) {
@@ -1301,14 +1306,14 @@ bool Wippersnapper::registerBoard() {
 
   // Encode and publish registration request message to broker
   runNetFSM();
-  WS.feedWDT();
+  //WS.feedWDT();
   WS_DEBUG_PRINT("Encoding registration request...");
   if (!encodePubRegistrationReq())
     return false;
 
   // Blocking, attempt to obtain broker's response message
   runNetFSM();
-  WS.feedWDT();
+  //WS.feedWDT();
   pollRegistrationResp();
 
   return true;
@@ -1385,7 +1390,7 @@ void Wippersnapper::enableWDT(int timeoutMS) {
 void Wippersnapper::processPackets() {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
-  WS.feedWDT();
+  //WS.feedWDT();
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
 }
@@ -1408,7 +1413,7 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
                             uint8_t qos) {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
-  WS.feedWDT();
+  //WS.feedWDT();
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
 
@@ -1422,7 +1427,7 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 /**************************************************************************/
 void Wippersnapper::connect(bool useStagingBroker) {
   // enable WDT
-  WS.enableWDT(WS_WDT_TIMEOUT);
+  //WS.enableWDT(WS_WDT_TIMEOUT);
 
   // TODO!
   // not sure we need to track these...
@@ -1446,9 +1451,11 @@ void Wippersnapper::connect(bool useStagingBroker) {
   subscribeWSTopics();
   subscribeErrorTopics();
 
+  // Connect to Network
+  WS_DEBUG_PRINTLN("Running Network FSM...");
   // Run the network fsm
   runNetFSM();
-  WS.feedWDT();
+  //WS.feedWDT();
   setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
@@ -1458,7 +1465,7 @@ void Wippersnapper::connect(bool useStagingBroker) {
     haltError("Unable to register with WipperSnapper.");
   }
   runNetFSM();
-  WS.feedWDT();
+  //WS.feedWDT();
 
   // Configure hardware
   WS.pinCfgCompleted = false;
@@ -1468,7 +1475,7 @@ void Wippersnapper::connect(bool useStagingBroker) {
     WS._mqtt->processPackets(10); // poll
   }
   // Publish that we have completed the configuration workflow
-  WS.feedWDT();
+  //WS.feedWDT();
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
@@ -1522,25 +1529,25 @@ void Wippersnapper::publishPinConfigComplete() {
 ws_status_t Wippersnapper::run() {
   // Check networking
   runNetFSM();
-  WS.feedWDT();
+  //WS.feedWDT();
   pingBroker();
 
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
-  WS.feedWDT();
+  //WS.feedWDT();
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
-  WS.feedWDT();
+  //WS.feedWDT();
 
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
-  WS.feedWDT();
+  //WS.feedWDT();
 
   // Process I2C sensor events
   if (WS._isI2CPort0Init)
     WS._i2cPort0->update();
-  WS.feedWDT();
+  //WS.feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

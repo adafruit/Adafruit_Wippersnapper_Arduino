@@ -23,8 +23,8 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
-#include "WiFiClientSecure.h"
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
 extern Wippersnapper WS;
 
 /****************************************************************************/
