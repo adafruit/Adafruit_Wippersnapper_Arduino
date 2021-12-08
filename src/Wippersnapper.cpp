@@ -1204,25 +1204,25 @@ void Wippersnapper::runNetFSM() {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
+      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
-        WS_DEBUG_PRINTLN("Connected to IO!");
+        // WS_DEBUG_PRINTLN("Connected to IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
-      WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
+      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
       if (networkStatus() == WS_NET_CONNECTED) {
-        WS_DEBUG_PRINTLN("Connected to WiFi");
+        // WS_DEBUG_PRINTLN("Connected to WiFi");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts >= 0) {
@@ -1246,7 +1246,7 @@ void Wippersnapper::runNetFSM() {
       }
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       // Attempt to connect
       maxAttempts = 5;
@@ -1257,8 +1257,6 @@ void Wippersnapper::runNetFSM() {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
         }
-        WS_DEBUG_PRINT("MQTT RC: ");
-        WS_DEBUG_PRINTLN(mqttRC);
         setStatusLEDColor(BLACK);
         delay(5000);
         maxAttempts--;
