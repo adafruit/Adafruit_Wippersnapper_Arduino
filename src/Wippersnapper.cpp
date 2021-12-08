@@ -901,7 +901,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
     // block the run() loop
     while (throttleLoops > 0) {
       delay(WS_KEEPALIVE_INTERVAL_MS);
-      //WS.feedWDT();
+      // WS.feedWDT();
       WS._mqtt->ping();
       throttleLoops--;
     }
@@ -975,7 +975,8 @@ bool Wippersnapper::buildWSTopics(bool useStagingBroker) {
   bool is_success = true;
 
   // Validate that we've correctly pulled configuration keys from the FS
-  if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL || WS._network_pass == NULL)
+  if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL ||
+      WS._network_pass == NULL)
     return false;
 
   // Get UID from the network iface
@@ -1180,7 +1181,7 @@ void Wippersnapper::errorWriteHang(String error) {
 #endif
   // Signal and hang forever
   while (1) {
-    //WS.feedWDT();
+    // WS.feedWDT();
     WS.statusLEDBlink(WS_LED_STATUS_ERROR);
     delay(1000);
   }
@@ -1193,7 +1194,7 @@ void Wippersnapper::errorWriteHang(String error) {
 */
 /**************************************************************************/
 void Wippersnapper::runNetFSM() {
-  //WS.feedWDT();
+  // WS.feedWDT();
   // MQTT connack RC
   int8_t mqttRC;
   // Initial state
@@ -1225,13 +1226,11 @@ void Wippersnapper::runNetFSM() {
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts >= 0) {
-        WS_DEBUG_PRINT("CONNECT ATTEMPT #");
-        WS_DEBUG_PRINTLN(maxAttempts);
         setStatusLEDColor(LED_NET_CONNECT);
-        //WS.feedWDT();
+        // WS.feedWDT();
         // attempt to connect
         _connect();
-        //WS.feedWDT();
+        // WS.feedWDT();
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
@@ -1306,14 +1305,14 @@ bool Wippersnapper::registerBoard() {
 
   // Encode and publish registration request message to broker
   runNetFSM();
-  //WS.feedWDT();
+  // WS.feedWDT();
   WS_DEBUG_PRINT("Encoding registration request...");
   if (!encodePubRegistrationReq())
     return false;
 
   // Blocking, attempt to obtain broker's response message
   runNetFSM();
-  //WS.feedWDT();
+  // WS.feedWDT();
   pollRegistrationResp();
 
   return true;
@@ -1390,7 +1389,7 @@ void Wippersnapper::enableWDT(int timeoutMS) {
 void Wippersnapper::processPackets() {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
-  //WS.feedWDT();
+  // WS.feedWDT();
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
 }
@@ -1413,7 +1412,7 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
                             uint8_t qos) {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
-  //WS.feedWDT();
+  // WS.feedWDT();
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
 
@@ -1427,7 +1426,7 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 /**************************************************************************/
 void Wippersnapper::connect(bool useStagingBroker) {
   // enable WDT
-  //WS.enableWDT(WS_WDT_TIMEOUT);
+  // WS.enableWDT(WS_WDT_TIMEOUT);
 
   // TODO!
   // not sure we need to track these...
@@ -1435,10 +1434,14 @@ void Wippersnapper::connect(bool useStagingBroker) {
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
   WS_DEBUG_PRINTLN("OUTPUT FROM LITTLEFS TOOL:");
-  WS_DEBUG_PRINT("\tIO Username:"); WS_DEBUG_PRINTLN(WS._username);
-  WS_DEBUG_PRINT("\tIO Password:"); WS_DEBUG_PRINTLN(WS._key);
-  WS_DEBUG_PRINT("\tSSID:"); WS_DEBUG_PRINTLN(WS._network_ssid);
-  WS_DEBUG_PRINT("\tSSID PASS:"); WS_DEBUG_PRINTLN(WS._network_pass);
+  WS_DEBUG_PRINT("\tIO Username:");
+  WS_DEBUG_PRINTLN(WS._username);
+  WS_DEBUG_PRINT("\tIO Password:");
+  WS_DEBUG_PRINTLN(WS._key);
+  WS_DEBUG_PRINT("\tSSID:");
+  WS_DEBUG_PRINTLN(WS._network_ssid);
+  WS_DEBUG_PRINT("\tSSID PASS:");
+  WS_DEBUG_PRINTLN(WS._network_pass);
 
   // build MQTT topics for WipperSnapper and subscribe
   if (!buildWSTopics(useStagingBroker)) {
@@ -1455,7 +1458,7 @@ void Wippersnapper::connect(bool useStagingBroker) {
   WS_DEBUG_PRINTLN("Running Network FSM...");
   // Run the network fsm
   runNetFSM();
-  //WS.feedWDT();
+  // WS.feedWDT();
   setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
@@ -1465,7 +1468,7 @@ void Wippersnapper::connect(bool useStagingBroker) {
     haltError("Unable to register with WipperSnapper.");
   }
   runNetFSM();
-  //WS.feedWDT();
+  // WS.feedWDT();
 
   // Configure hardware
   WS.pinCfgCompleted = false;
@@ -1475,7 +1478,7 @@ void Wippersnapper::connect(bool useStagingBroker) {
     WS._mqtt->processPackets(10); // poll
   }
   // Publish that we have completed the configuration workflow
-  //WS.feedWDT();
+  // WS.feedWDT();
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
@@ -1529,25 +1532,25 @@ void Wippersnapper::publishPinConfigComplete() {
 ws_status_t Wippersnapper::run() {
   // Check networking
   runNetFSM();
-  //WS.feedWDT();
+  // WS.feedWDT();
   pingBroker();
 
   // Process all incoming packets from Wippersnapper MQTT Broker
   WS._mqtt->processPackets(10);
-  //WS.feedWDT();
+  // WS.feedWDT();
 
   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
-  //WS.feedWDT();
+  // WS.feedWDT();
 
   // Process analog inputs
   WS._analogIO->processAnalogInputs();
-  //WS.feedWDT();
+  // WS.feedWDT();
 
   // Process I2C sensor events
   if (WS._isI2CPort0Init)
     WS._i2cPort0->update();
-  //WS.feedWDT();
+  // WS.feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
