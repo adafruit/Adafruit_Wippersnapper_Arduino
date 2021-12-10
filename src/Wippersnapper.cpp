@@ -737,7 +737,7 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 /****************************************************************************/
 bool Wippersnapper::encodePinEvent(
     wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-    wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal) {
+    uint8_t pinName, int pinVal) {
   bool is_success = true;
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;

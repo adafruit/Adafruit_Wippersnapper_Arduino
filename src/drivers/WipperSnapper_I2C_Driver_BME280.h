@@ -48,7 +48,7 @@ public:
       @brief    Destructor for an BME280 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_BME280() {
+  virtual ~WipperSnapper_I2C_Driver_BME280() {
     _bme_temp = NULL;
     _bme_humidity = NULL;
     _bme_pressure = NULL;

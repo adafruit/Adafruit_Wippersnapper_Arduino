@@ -714,7 +714,6 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN(" % rH");
 
         // pack data into msg
-        // TODO: Truncate within this call? (precision=)
         fillEventMessage(
             &msgi2cResponse, humid.relative_humidity,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);

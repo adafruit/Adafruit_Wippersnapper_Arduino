@@ -203,9 +203,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
 
         WS_DEBUG_PRINT("Encoding...")
         // Create and encode a pinEvent message
-        if (!WS.encodePinEvent(&_outgoingSignalMsg,
-                               wippersnapper_pin_v1_Mode_MODE_DIGITAL,
-                               _digital_input_pins[i].pinName, pinVal)) {
+        if (!WS.encodePinEvent(&_outgoingSignalMsg, _digital_input_pins[i].pinName, pinVal)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
           break;
         }
@@ -237,9 +235,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
 
           WS_DEBUG_PRINT("Encoding pinEvent...");
           // Create and encode a pinEvent message
-          if (!WS.encodePinEvent(&_outgoingSignalMsg,
-                                 wippersnapper_pin_v1_Mode_MODE_DIGITAL,
-                                 _digital_input_pins[i].pinName, pinVal)) {
+          if (!WS.encodePinEvent(&_outgoingSignalMsg, _digital_input_pins[i].pinName, pinVal)) {
             WS_DEBUG_PRINTLN("ERROR: Unable to encode pinEvent");
             break;
           }

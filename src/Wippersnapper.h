@@ -242,8 +242,7 @@ public:
   // Encodes a pin event message
   bool
   encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-                 wippersnapper_pin_v1_Mode pinMode, uint8_t pinName,
-                 int pinVal);
+                 uint8_t pinName, int pinVal);
 
   // Pin configure message
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);

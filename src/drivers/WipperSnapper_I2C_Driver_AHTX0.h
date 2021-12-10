@@ -49,7 +49,7 @@ public:
       @brief    Destructor for an AHTX0 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_AHTX0() {
+  virtual ~WipperSnapper_I2C_Driver_AHTX0() {
     _aht_temp = NULL;
     _tempSensorPeriod = 0L;
     _aht_humidity = NULL;

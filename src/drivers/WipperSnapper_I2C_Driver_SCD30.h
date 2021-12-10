@@ -48,7 +48,7 @@ public:
       @brief    Destructor for an SCD30 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_SCD30() {
+  virtual ~WipperSnapper_I2C_Driver_SCD30() {
     _tempSensorPeriod = 0L;
     _pressureSensorPeriod = 0L;
     _CO2SensorPeriod = 0L;

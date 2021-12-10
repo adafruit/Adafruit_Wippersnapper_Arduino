@@ -79,7 +79,7 @@ public:
       @brief    Destructor for an SCD4x sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_SCD4X() {
+  virtual ~WipperSnapper_I2C_Driver_SCD4X() {
     _tempSensorPeriod = 0L;
     _humidSensorPeriod = 0L;
     _CO2SensorPeriod = 0L;
