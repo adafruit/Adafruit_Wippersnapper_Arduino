@@ -1414,6 +1414,24 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
 
+
+/**************************************************************************/
+/*!
+    @brief    Checks validity of WipperSnapper application credentials.
+    @returns  True if WipperSnapper application credentials exist
+                and are valid, False otherwise.
+*/
+/**************************************************************************/
+bool validateAppCreds() {
+    // Check if null
+    if (WS._username == 0 || WS._key == 0 || WS._network_ssid == 0 || WS._network_pass == 0)
+        return false;
+    // Check credential length
+    if (strlen(WS._username) == 0 || strlen(WS._key) == 0 || strlen(WS._network_ssid) == 0 || strlen(WS._network_pass) == 0)
+        return false;
+    return true;
+}
+
 /**************************************************************************/
 /*!
     @brief    Connects to Adafruit IO+ Wippersnapper broker.
@@ -1426,20 +1444,11 @@ void Wippersnapper::connect(bool useStagingBroker) {
   // enable WDT
   // WS.enableWDT(WS_WDT_TIMEOUT);
 
-  // TODO!
-  // not sure we need to track these...
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
-  WS_DEBUG_PRINTLN("OUTPUT FROM LITTLEFS TOOL:");
-  WS_DEBUG_PRINT("\tIO Username:");
-  WS_DEBUG_PRINTLN(WS._username);
-  WS_DEBUG_PRINT("\tIO Password:");
-  WS_DEBUG_PRINTLN(WS._key);
-  WS_DEBUG_PRINT("\tSSID:");
-  WS_DEBUG_PRINTLN(WS._network_ssid);
-  WS_DEBUG_PRINT("\tSSID PASS:");
-  WS_DEBUG_PRINTLN(WS._network_pass);
+  if (!validateAppCreds())
+    haltError("Unable to validate application credentials.");
 
   // build MQTT topics for WipperSnapper and subscribe
   if (!buildWSTopics(useStagingBroker)) {
