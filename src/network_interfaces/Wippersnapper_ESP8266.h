@@ -24,6 +24,10 @@
 #include "ESP8266WiFi.h"
 #include "Wippersnapper.h"
 
+static const char *fingerprint PROGMEM = "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF";
+static const char *fingerprint_staging PROGMEM= "A0 A4 61 E0 D6 F8 94 FF FA C1 F2 DC 09 23 72 E1 "
+                                                    "CC 23 CD 64"; ///< AIO Staging SSL Fingerprint
+
 extern Wippersnapper WS;
 
 /******************************************************************************/
@@ -110,6 +114,7 @@ public:
       _wifi_client->setFingerprint(fingerprint_staging);
     } else {
       _mqttBrokerURL = "io.adafruit.com";
+      _wifi_client->setFingerprint(fingerprint);
     }
 
     WS._mqtt =
@@ -149,12 +154,6 @@ protected:
   const char *_pass = NULL;
   const char *_mqttBrokerURL = NULL;
   uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  const char *fingerprint =
-      "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF";
-  ; ///< AIO Production SSL Fingerprint
-  const char
-      *fingerprint_staging = "A0 A4 61 E0 D6 F8 94 FF FA C1 F2 DC 09 23 72 E1 "
-                             "CC 23 CD 64"; ///< AIO Staging SSL Fingerprint
   WiFiClientSecure *_wifi_client;
 
   /**************************************************************************/
