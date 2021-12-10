@@ -154,7 +154,7 @@ public:
       @returns  Time when the temperature sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getTempSensorPeriod() { return _tempSensorPeriod; }
+  virtual unsigned long getTempSensorPeriod() { return _tempSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -176,7 +176,7 @@ public:
       @returns  Time when the temperature sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getTempSensorPeriodPrv() { return _tempSensorPeriodPrv; }
+  virtual unsigned long getTempSensorPeriodPrv() { return _tempSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -220,7 +220,7 @@ public:
       @returns  Time when the humidity sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriod() { return _humidSensorPeriod; }
+  virtual unsigned long getHumidSensorPeriod() { return _humidSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -242,7 +242,7 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
+  virtual unsigned long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -286,7 +286,7 @@ public:
       @returns  Time when the pressure sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPressureSensorPeriod() { return _pressureSensorPeriod; }
+  virtual unsigned long getPressureSensorPeriod() { return _pressureSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -308,7 +308,7 @@ public:
       @returns  Time when the pressure sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPressureSensorPeriodPrv() { return _pressureSensorPeriodPrv; }
+  virtual unsigned long getPressureSensorPeriodPrv() { return _pressureSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -329,7 +329,7 @@ public:
       @returns  Time when the CO2 sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getCO2SensorPeriod() { return _CO2SensorPeriod; }
+  virtual unsigned long getCO2SensorPeriod() { return _CO2SensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -351,7 +351,7 @@ public:
       @returns  Time when the CO2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getCO2SensorPeriodPrv() { return _CO2SensorPeriodPrv; }
+  virtual unsigned long getCO2SensorPeriodPrv() { return _CO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -384,8 +384,7 @@ public:
       @returns  Time when the PM sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM10STDSensorPeriod() { return _pm10STDPeriod; }
-
+  virtual unsigned long getPM10STDSensorPeriod() { return _pm10STDPeriod; }
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the previous time interval at
@@ -393,7 +392,7 @@ public:
       @returns  Time when the PM sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM10STDSensorPeriodPrv() { return _pm10STDPeriodPrv; }
+  virtual unsigned long getPM10STDSensorPeriodPrv() { return _pm10STDPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -415,7 +414,7 @@ public:
       @returns  Time when the PM sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM25STDSensorPeriod() { return _pm25STDPeriod; }
+  virtual unsigned long getPM25STDSensorPeriod() { return _pm25STDPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -424,7 +423,7 @@ public:
       @returns  Time when the PM sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM25STDSensorPeriodPrv() { return _pm25STDPeriodPrv; }
+  virtual unsigned long getPM25STDSensorPeriodPrv() { return _pm25STDPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -446,7 +445,7 @@ public:
       @returns  Time when the PM sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM100STDSensorPeriod() { return _pm100STDPeriod; }
+  virtual unsigned long getPM100STDSensorPeriod() { return _pm100STDPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -455,7 +454,7 @@ public:
       @returns  Time when the PM sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM100STDSensorPeriodPrv() { return _pm100STDPeriodPrv; }
+  virtual unsigned long getPM100STDSensorPeriodPrv() { return _pm100STDPeriodPrv; }
 
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:

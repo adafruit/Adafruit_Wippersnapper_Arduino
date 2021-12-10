@@ -57,8 +57,7 @@ public:
   void update();
 
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
-                        float value, wippersnapper_i2c_v1_SensorType sensorType,
-                        uint8_t precision);
+                        float value, wippersnapper_i2c_v1_SensorType sensorType);
 
   bool
   encodeI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,

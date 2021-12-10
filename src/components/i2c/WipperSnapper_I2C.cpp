@@ -632,13 +632,11 @@ bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg(
               The value read by the sensor.
     @param    sensorType
               The SI unit represented by the sensor's value.
-    @param    precision
-              The amount of decimal points to round to.
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::fillEventMessage(
     wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value,
-    wippersnapper_i2c_v1_SensorType sensorType, uint8_t precision = 2) {
+    wippersnapper_i2c_v1_SensorType sensorType) {
   // fill sensor value
   msgi2cResponse->payload.resp_i2c_device_event
       .sensor_event[msgi2cResponse->payload.resp_i2c_device_event
