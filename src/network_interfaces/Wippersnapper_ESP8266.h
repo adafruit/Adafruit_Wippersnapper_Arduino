@@ -166,20 +166,14 @@ protected:
     if (WiFi.status() == WL_CONNECTED)
       return;
 
-    if (strlen(_ssid) == 0) {
-      // TODO: The network _ssid and _password should be validated within the
-      // filesystem provisioning check, not here..
-      _status = WS_SSID_INVALID;
-      return;
-    } else {
-      _disconnect();
-      delay(100);
-      // ESP8266 MUST be in STA mode to avoid device acting as client/server
-      WiFi.mode(WIFI_STA);
-      WiFi.begin(_ssid, _pass);
-      _status = WS_NET_DISCONNECTED;
-      delay(100);
-    }
+    // Attempt connection
+    _disconnect();
+    delay(100);
+    // ESP8266 MUST be in STA mode to avoid device acting as client/server
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(_ssid, _pass);
+    _status = WS_NET_DISCONNECTED;
+    delay(100);
 
     // wait for a connection to be established
     long startRetry = millis();

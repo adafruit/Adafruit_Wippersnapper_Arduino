@@ -148,8 +148,8 @@ void Wippersnapper::setUID() {
               True to use the Adafruit.io staging broker, False otherwise.
 */
 /****************************************************************************/
-void Wippersnapper::setupMQTTClient(const char *clientID,
-                                    bool useStaging = false) {
+void Wippersnapper::setupMQTTClient(const char */*clientID*/,
+                                    bool /*useStaging*/) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -173,7 +173,7 @@ ws_status_t Wippersnapper::networkStatus() {
               Your wireless network's password.
 */
 /****************************************************************************/
-void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
+void Wippersnapper::set_ssid_pass(const char */*ssid*/, const char */*ssidPassword*/) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 

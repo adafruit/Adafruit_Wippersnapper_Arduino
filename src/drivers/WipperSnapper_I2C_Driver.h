@@ -47,7 +47,7 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver(TwoWire *_i2c, uint16_t sensorAddress) {
+  WipperSnapper_I2C_Driver(TwoWire *, uint16_t sensorAddress) {
     _sensorAddress = sensorAddress;
   }
 
@@ -199,7 +199,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getTemp(sensors_event_t *tempEvent) { return true; }
+  virtual bool getTemp(sensors_event_t *) { return true; }
 
   /*******************************************************************************/
   /*!
@@ -211,7 +211,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getTemp(float *tempEvent) { return true; }
+  virtual bool getTemp(float *) { return true; }
 
   /*********************************************************************************/
   /*!
@@ -265,7 +265,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getHumid(sensors_event_t *humidEvent) { return true; }
+  virtual bool getHumid(sensors_event_t *) { return true; }
 
   /*******************************************************************************/
   /*!
@@ -277,7 +277,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getHumid(float *humidEvent) { return true; }
+  virtual bool getHumid(float *) { return true; }
 
   /*********************************************************************************/
   /*!
@@ -320,7 +320,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getPressure(sensors_event_t *pressureEvent) { return true; }
+  virtual bool getPressure(sensors_event_t *) { return true; }
 
   /*********************************************************************************/
   /*!
@@ -362,7 +362,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getCO2(float *CO2Value) { return true; }
+  virtual bool getCO2(float *) { return true; }
 
   /*******************************************************************************/
   /*!
