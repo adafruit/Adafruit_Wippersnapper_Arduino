@@ -17,7 +17,7 @@
 #ifndef WIPPERSNAPPER_ESP8266_H
 #define WIPPERSNAPPER_ESP8266_H
 
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
@@ -202,5 +202,5 @@ protected:
   }
 };
 
-#endif // ESP8266 Arduino
+#endif // ARDUINO_ARCH_ESP8266
 #endif // WIPPERSNAPPER_ESP8266_H
