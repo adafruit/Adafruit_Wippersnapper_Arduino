@@ -161,17 +161,11 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (WS._mqttBrokerURL != nullptr)
-        WS._mqttBrokerURL
+    if (WS._mqttBrokerURL == nullptr)
+        WS._mqttBrokerURL = "io.adafruit.com";
 
-
-    if (useStaging == true) {
-      _mqttBrokerURL = "io.adafruit.us";
-    } else {
-      _mqttBrokerURL = "io.adafruit.com";
-    }
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, _mqttBrokerURL, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
   }
 

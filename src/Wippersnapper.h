@@ -193,7 +193,7 @@ public:
 
   virtual void _connect();
   virtual void _disconnect();
-  void connect(bool useStagingBroker = false);
+  void connect();
   void disconnect();
 
   virtual void setUID();
