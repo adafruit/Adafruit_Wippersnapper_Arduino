@@ -279,7 +279,7 @@ public:
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
 
-  const char *_mqttBrokerURL = nullptr;
+  const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883; /*!< MQTT Broker Port */
 
   // AIO credentials
