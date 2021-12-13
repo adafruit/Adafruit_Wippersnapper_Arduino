@@ -101,7 +101,7 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     if (WS._mqttBrokerURL == nullptr) {
-       WS._mqttBrokerURL = "io.adafruit.com";
+      WS._mqttBrokerURL = "io.adafruit.com";
       _mqtt_client->setCACert(_aio_root_ca_prod);
     } else {
       _mqtt_client->setCACert(_aio_root_ca_staging);

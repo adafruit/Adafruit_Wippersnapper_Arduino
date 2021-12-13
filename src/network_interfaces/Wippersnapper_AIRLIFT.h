@@ -162,7 +162,7 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     if (WS._mqttBrokerURL == nullptr)
-        WS._mqttBrokerURL = "io.adafruit.com";
+      WS._mqttBrokerURL = "io.adafruit.com";
 
     WS._mqtt =
         new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
