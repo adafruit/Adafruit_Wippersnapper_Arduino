@@ -280,7 +280,7 @@ public:
   char *_topic_description; /*!< MQTT topic for the device description  */
 
   const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
-  uint16_t _mqtt_port = 8883; /*!< MQTT Broker Port */
+  uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
 
   // AIO credentials
   const char *_username; /*!< Adafruit IO username */
