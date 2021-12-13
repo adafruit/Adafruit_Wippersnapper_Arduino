@@ -197,12 +197,12 @@ public:
   void disconnect();
 
   virtual void setUID();
-  virtual void setupMQTTClient(const char *clientID, bool useStaging);
+  virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
   ws_board_status_t getBoardStatus();
 
-  bool buildWSTopics(bool useStagingBroker);
+  bool buildWSTopics();
   void subscribeWSTopics();
   bool buildErrorTopics();
   void subscribeErrorTopics();
@@ -279,7 +279,8 @@ public:
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
 
-  uint16_t _mqtt_port = 8883; /*!< MQTT Broker URL */
+  const char *_mqttBrokerURL = nullptr;
+  uint16_t _mqtt_port = 8883; /*!< MQTT Broker Port */
 
   // AIO credentials
   const char *_username; /*!< Adafruit IO username */

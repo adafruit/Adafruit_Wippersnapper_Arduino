@@ -158,12 +158,13 @@ public:
   @brief  Initializes the MQTT client.
   @param  clientID
           MQTT client identifier
-  @param  useStaging
-          True to use the Adafruit.io staging broker,
-            False otherwise.
   */
   /********************************************************/
-  void setupMQTTClient(const char *clientID, bool useStaging = false) {
+  void setupMQTTClient(const char *clientID) {
+    if (WS._mqttBrokerURL != nullptr)
+        WS._mqttBrokerURL
+
+
     if (useStaging == true) {
       _mqttBrokerURL = "io.adafruit.us";
     } else {
