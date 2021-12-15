@@ -43,7 +43,7 @@ var searchData=
   ['_5fmqtt',['_mqtt',['../class_wippersnapper.html#a4aae92d295fa7740aef1bd6e45a13349',1,'Wippersnapper']]],
   ['_5fmqtt_5fclient',['_mqtt_client',['../class_wippersnapper___a_i_r_l_i_f_t.html#af56696c5a407755fb5a998747250f116',1,'Wippersnapper_AIRLIFT']]],
   ['_5fmqtt_5fport',['_mqtt_port',['../class_wippersnapper.html#a13a4074ad97215f51d4fa76b65052b76',1,'Wippersnapper']]],
-  ['_5fmqttbrokerurl',['_mqttBrokerURL',['../class_wippersnapper___a_i_r_l_i_f_t.html#a7c519ff51e3b6fec56d75739d0c73e32',1,'Wippersnapper_AIRLIFT']]],
+  ['_5fmqttbrokerurl',['_mqttBrokerURL',['../class_wippersnapper___a_i_r_l_i_f_t.html#a7c519ff51e3b6fec56d75739d0c73e32',1,'Wippersnapper_AIRLIFT::_mqttBrokerURL()'],['../class_wippersnapper.html#a9c4a5ba5c17a08fc2079d149a094e9d6',1,'Wippersnapper::_mqttBrokerURL()']]],
   ['_5fnetwork_5fpass',['_network_pass',['../class_wippersnapper.html#a34ee03c04d7cf32ebc458955c6d54ac6',1,'Wippersnapper']]],
   ['_5fnetwork_5fssid',['_network_ssid',['../class_wippersnapper.html#a8667f030177bfd31a0842821ead74cd4',1,'Wippersnapper']]],
   ['_5fnvs',['_nvs',['../class_wippersnapper.html#a66931112ecf7732f3726f6ed963799a9',1,'Wippersnapper']]],

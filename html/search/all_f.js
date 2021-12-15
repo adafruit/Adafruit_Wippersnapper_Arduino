@@ -19,7 +19,7 @@ var searchData=
   ['settemperaturesensorperiod',['setTemperatureSensorPeriod',['../class_wipper_snapper___i2_c___driver.html#aa5c912d211c29d556520b653ee20eebe',1,'WipperSnapper_I2C_Driver']]],
   ['settemperaturesensorperiodprv',['setTemperatureSensorPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a2cb53f832083683ce83789c806e803ce',1,'WipperSnapper_I2C_Driver']]],
   ['setuid',['setUID',['../class_wippersnapper___a_i_r_l_i_f_t.html#a6d44f58fb144e3bd4138726629650d10',1,'Wippersnapper_AIRLIFT::setUID()'],['../class_wippersnapper.html#a741a2b9cde176cb8c18d558fca2fa3b5',1,'Wippersnapper::setUID()']]],
-  ['setupmqttclient',['setupMQTTClient',['../class_wippersnapper___a_i_r_l_i_f_t.html#a9f2a86a9e5289a02c7ba48a4a7a4f052',1,'Wippersnapper_AIRLIFT::setupMQTTClient()'],['../class_wippersnapper.html#aa95495e3ecef2c66cb89ff86afc46c5c',1,'Wippersnapper::setupMQTTClient()']]],
+  ['setupmqttclient',['setupMQTTClient',['../class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045',1,'Wippersnapper_AIRLIFT::setupMQTTClient()'],['../class_wippersnapper.html#a95627d13a469876e0aefb8a120a18732',1,'Wippersnapper::setupMQTTClient()']]],
   ['spiwifi',['SPIWIFI',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#a02a0537d71f1fad2ceb5cef4950f4f18',1,'Wippersnapper_AIRLIFT.h']]],
   ['status_5fled_5fkat_5fblink_5ftime',['STATUS_LED_KAT_BLINK_TIME',['../_wippersnapper___status_l_e_d___colors_8h.html#a8e55f35b622e41481fb79d87b42a8b81',1,'Wippersnapper_StatusLED_Colors.h']]],
   ['statusledblink',['statusLEDBlink',['../class_wippersnapper.html#a87a70aebcc7459fb338e195d6b3f7b63',1,'Wippersnapper']]],

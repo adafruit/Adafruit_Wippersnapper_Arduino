@@ -10,7 +10,7 @@ var searchData=
   ['cbsignaltopic',['cbSignalTopic',['../_wippersnapper_8cpp.html#adf3bf6470c06cad9086c3a8556474dbe',1,'Wippersnapper.cpp']]],
   ['cbthrottletopic',['cbThrottleTopic',['../_wippersnapper_8cpp.html#aa1e37658221dffced66cc9e1548e5be1',1,'Wippersnapper.cpp']]],
   ['configurepinrequest',['configurePinRequest',['../class_wippersnapper.html#a0c0734f96682aaed52945d659ba6917e',1,'Wippersnapper']]],
-  ['connect',['connect',['../class_wippersnapper.html#a42db48e6b63e86e66d08f84a565a3da6',1,'Wippersnapper']]],
+  ['connect',['connect',['../class_wippersnapper.html#add749b3d330161a132fd7e0114618ec0',1,'Wippersnapper']]],
   ['connectiontype',['connectionType',['../class_wippersnapper___a_i_r_l_i_f_t.html#adf8d75a7530ff367f8a03e8e9afca7b1',1,'Wippersnapper_AIRLIFT']]],
   ['cyan',['CYAN',['../_wippersnapper___status_l_e_d___colors_8h.html#ad243f93c16bc4c1d3e0a13b84421d760',1,'Wippersnapper_StatusLED_Colors.h']]]
 ];
