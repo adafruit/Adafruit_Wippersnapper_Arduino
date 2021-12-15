@@ -61,8 +61,6 @@ jobs:
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
-            mv examples/*/build/*/Wippersnapper_demo_staging.ino.uf2 staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            mv examples/*/build/*/Wippersnapper_demo_staging.ino.bin staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -70,8 +68,6 @@ jobs:
         path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
-            staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
 
   build-esp32:
@@ -105,14 +101,13 @@ jobs:
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/Wippersnapper_demo/build/esp32.esp32.*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
-            mv examples/Wippersnapper_demo_staging/build/esp32.esp32.*/Wippersnapper_demo_staging.ino.bin staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
-            staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
+
 
   build-samd:
     name: Build WipperSnapper SAMD
@@ -148,8 +143,6 @@ jobs:
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
-            mv examples/*/build/*/Wippersnapper_demo_staging.ino.uf2 staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            mv examples/*/build/*/Wippersnapper_demo_staging.ino.hex staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -157,8 +150,6 @@ jobs:
         path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
-            staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            staging.wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
 
   clang_and_doxy:

@@ -45,6 +45,8 @@ bool Wippersnapper_ESP32_nvs::validateNVSConfig() {
   _ssidPass = nvs.getString("wsNetPass", "");
   _aioUser = nvs.getString("wsAIOUser", "");
   _aioPass = nvs.getString("wsAIOKey", "");
+  _aioURL = nvs.getString("wsAIOURL", "");
+
   // validate config properly set in partition
   if (_ssid == "" || _ssidPass == "" || _aioUser == "" || _aioPass == "") {
     // TODO: Possibly LED blink/some external error handling around this
@@ -64,6 +66,7 @@ bool Wippersnapper_ESP32_nvs::setNVSConfig() {
   WS._network_pass = _ssidPass.c_str();
   WS._username = _aioUser.c_str();
   WS._key = _aioPass.c_str();
+  WS._mqttBrokerURL = _aioURL.c_str();
   return true;
 }
 

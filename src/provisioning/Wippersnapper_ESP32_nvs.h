@@ -40,6 +40,7 @@ private:
   String _ssidPass;
   String _aioUser;
   String _aioPass;
+  String _aioURL;
 };
 
 extern Wippersnapper WS;

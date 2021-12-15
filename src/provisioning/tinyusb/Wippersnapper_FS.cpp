@@ -433,6 +433,9 @@ void Wippersnapper_FS::parseSecrets() {
     fsHalt();
   }
 
+  // Optional, Set the IO URL
+  WS._mqttBrokerURL = doc["io_url"];
+
   // clear the document and release all memory from the memory pool
   doc.clear();
 

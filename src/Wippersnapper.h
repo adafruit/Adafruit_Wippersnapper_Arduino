@@ -63,7 +63,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.16" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.17" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -193,16 +193,16 @@ public:
 
   virtual void _connect();
   virtual void _disconnect();
-  void connect(bool useStagingBroker = false);
+  void connect();
   void disconnect();
 
   virtual void setUID();
-  virtual void setupMQTTClient(const char *clientID, bool useStaging);
+  virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
   ws_board_status_t getBoardStatus();
 
-  bool buildWSTopics(bool useStagingBroker);
+  bool buildWSTopics();
   void subscribeWSTopics();
   bool buildErrorTopics();
   void subscribeErrorTopics();
@@ -279,7 +279,8 @@ public:
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
   char *_topic_description; /*!< MQTT topic for the device description  */
 
-  uint16_t _mqtt_port = 8883; /*!< MQTT Broker URL */
+  const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
+  uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
 
   // AIO credentials
   const char *_username; /*!< Adafruit IO username */
