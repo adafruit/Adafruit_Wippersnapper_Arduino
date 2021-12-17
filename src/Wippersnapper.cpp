@@ -589,6 +589,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
     WS_DEBUG_PRINTLN("I2C Device Init Request Found!");
+
     // Decode stream into an I2CDeviceInitRequest
     wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
         wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero;

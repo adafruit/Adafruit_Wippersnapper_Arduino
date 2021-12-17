@@ -196,138 +196,50 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
   WS_DEBUG_PRINTLN("Attempting to initialize an I2C device...");
 
-  uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_address;
-  // Determine which sensor-specific callback to utilize
-  if (msgDeviceInitReq->has_aht) {
-    // Initialize new AHTX0 sensor
-    _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
+  uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
 
-    // Did we initialize successfully?
+  // AHT20
+  if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
+    // Initialize AHTX0
+    _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
     if (!_ahtx0->getInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize AHTX0 chip!");
       return false;
     }
-    WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
-
-    // Configure AHTX0 sensor
-    if (msgDeviceInitReq->aht.enable_temperature) {
-      _ahtx0->enableTemperatureSensor();
-      _ahtx0->setTemperatureSensorPeriod(
-          msgDeviceInitReq->aht.period_temperature);
-      WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->aht.period_temperature);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    if (msgDeviceInitReq->aht.enable_humidity) {
-      _ahtx0->enableHumiditySensor();
-      _ahtx0->setHumiditySensorPeriod(msgDeviceInitReq->aht.period_humidity);
-      WS_DEBUG_PRINTLN("Enabled AHTX0 Humidity Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->aht.period_humidity);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
+    // add to vec. of driver objects
     drivers.push_back(_ahtx0);
-  } else if (msgDeviceInitReq->has_dps) {
-    // Initialize new DPS310 sensor
-    _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
-
-    // Did we initialize successfully?
-    if (!_dps310->getInitialized()) {
-      WS_DEBUG_PRINTLN("ERROR: DPS310 not initialized successfully!");
-      return false;
+    WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
+    // Configure sensor properties
+    // TODO: This will become a generic function, I think we'll pass sensorObject into it.
+    for (i = 0; i < msgDeviceInitReq->i2c_device_properties_count; i++) {
+      // Generic as well?
+      switch(msgDeviceInitReq->i2c_device_properties[i].sensor_type) {
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+            _ahtx0->enableTemperatureSensor();
+            _ahtx0->setTemperatureSensorPeriod(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+            // TODO: This should be moved into the driver?
+            WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
+            WS_DEBUG_PRINT(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+            WS_DEBUG_PRINTLN("seconds]");
+            break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+            _ahtx0->enableHumiditySensor();
+            _ahtx0->setHumiditySensorPeriod(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+            // TODO: This should be moved into the driver?
+            WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
+            WS_DEBUG_PRINT(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+            WS_DEBUG_PRINTLN("seconds]");
+            break;
+        default:
+            WS_DEBUG_PRINTLN("ERROR: Unable to determine device sensor type!");
+      }
     }
-    WS_DEBUG_PRINTLN("Successfully Initialized DPS310!");
-
-    // Configure DPS310
-    if (msgDeviceInitReq->dps.enable_temperature) {
-      _dps310->enableTemperatureSensor();
-      _dps310->setTemperatureSensorPeriod(
-          msgDeviceInitReq->dps.period_temperature);
-      WS_DEBUG_PRINTLN("Enabled DPS310 Humidity Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_temperature);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    if (msgDeviceInitReq->dps.enable_pressure) {
-      _dps310->enablePressureSensor();
-      _dps310->setPressureSensorPeriod(msgDeviceInitReq->dps.period_pressure);
-      WS_DEBUG_PRINTLN("Enabled DPS310 Pressure Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->dps.period_pressure);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    drivers.push_back(_dps310);
-  } else if (msgDeviceInitReq->has_scd30) {
-    // Initialize new SCD30 sensor
-    _scd30 = new WipperSnapper_I2C_Driver_SCD30(this->_i2c, i2cAddress);
-
-    // Did we initialize successfully?
-    if (!_scd30->getInitialized()) {
-      WS_DEBUG_PRINTLN("ERROR: SCD30 not initialized successfully!");
-      return false;
-    }
-    WS_DEBUG_PRINTLN("Successfully Initialized SCD30!");
-
-    // Configure SCD4x
-    if (msgDeviceInitReq->scd30.enable_temperature) {
-      _scd30->enableTemperatureSensor();
-      _scd30->setTemperatureSensorPeriod(
-          msgDeviceInitReq->scd30.period_temperature);
-      WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_temperature);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    if (msgDeviceInitReq->scd30.enable_humidity) {
-      _scd30->enableHumiditySensor();
-      _scd30->setHumiditySensorPeriod(msgDeviceInitReq->scd30.period_humidity);
-      WS_DEBUG_PRINTLN("Enabled SCD30 Humidity Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_humidity);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    if (msgDeviceInitReq->scd30.enable_co2) {
-      _scd30->enableCO2Sensor();
-      _scd30->setCO2SensorPeriod(msgDeviceInitReq->scd30.period_co2);
-      WS_DEBUG_PRINTLN("Enabled SCD30 CO2 Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->scd30.period_co2);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    drivers.push_back(_scd30);
-  } else if (msgDeviceInitReq->has_scd4x) {
-    // Initialize new SCD4x sensor
-    _scd4x = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
-
-    // Did we initialize successfully?
-    if (!_scd4x->getInitialized()) {
-      WS_DEBUG_PRINTLN("ERROR: SCD4x not initialized successfully!");
-      return false;
-    }
-    WS_DEBUG_PRINTLN("Successfully Initialized SCD4x!");
-
-    // Configure SCD4x
-    if (msgDeviceInitReq->scd4x.enable_temperature) {
-      _scd4x->enableTemperatureSensor();
-      _scd4x->setTemperatureSensorPeriod(
-          msgDeviceInitReq->scd4x.period_temperature);
-      WS_DEBUG_PRINTLN("Enabled scd4x Humidity Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->scd4x.period_temperature);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    if (msgDeviceInitReq->scd4x.enable_humidity) {
-      _scd4x->enableHumiditySensor();
-      _scd4x->setHumiditySensorPeriod(msgDeviceInitReq->scd4x.period_humidity);
-      WS_DEBUG_PRINTLN("Enabled scd4x Humidity Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->scd4x.period_humidity);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    if (msgDeviceInitReq->scd4x.enable_co2) {
-      _scd4x->enableCO2Sensor();
-      _scd4x->setCO2SensorPeriod(msgDeviceInitReq->scd4x.period_co2);
-      WS_DEBUG_PRINTLN("Enabled scd4x CO2 Sensor, [Returns every: ");
-      WS_DEBUG_PRINT(msgDeviceInitReq->scd4x.period_co2);
-      WS_DEBUG_PRINTLN("seconds]");
-    }
-    drivers.push_back(_scd4x);
+    // TODO: Check next type!
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     return false;
   }
+
   return true;
 }
 
