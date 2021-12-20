@@ -63,28 +63,34 @@ public:
       @brief    Enables the BME280's temperature sensor.
   */
   /*******************************************************************************/
-  void enableTemperatureSensor() { _bme_temp = _bme.getTemperatureSensor(); }
+  void enableSensorAmbientTemperature() {
+    _bme_temp = _bme.getSensorAmbientTemperatureeratureSensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Enables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void enableHumiditySensor() { _bme_humidity = _bme.getHumiditySensor(); }
+  void enableSensorRelativeHumidity() {
+    _bme_humidity = _bme.getSensorRelativeHumidityitySensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Enables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void enablePressureSensor() { _bme_pressure = _bme.getPressureSensor(); }
+  void enableSensorPressure() {
+    _bme_pressure = _bme.getSensorPressureSensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Disables the BME280's temperature sensor.
   */
   /*******************************************************************************/
-  void disableTemperatureSensor() {
+  void disableSensorAmbientTemperature() {
     _bme_temp = NULL;
     _tempSensorPeriod = 0.0;
   }
@@ -94,7 +100,7 @@ public:
       @brief    Disables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void disableHumiditySensor() {
+  void disableSensorRelativeHumidity() {
     _bme_humidity = NULL;
     _humidSensorPeriod = 0.0;
   }
@@ -104,7 +110,7 @@ public:
       @brief    Disables the BME280's pressure sensor.
   */
   /*******************************************************************************/
-  void disablePressureSensor() {
+  void disableSensorPressure() {
     _bme_pressure = NULL;
     _pressureSensorPeriod = 0.0;
   }
@@ -118,7 +124,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getTemp(sensors_event_t *tempEvent) {
+  bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
     if (_bme_temp == NULL)
       return false;
     _bme_temp->getEvent(tempEvent);
@@ -134,7 +140,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getHumid(sensors_event_t *humidEvent) {
+  bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
     if (_bme_humidity == NULL)
       return false;
     _bme_humidity->getEvent(humidEvent);
@@ -151,7 +157,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getPressure(sensors_event_t *pressureEvent) {
+  bool getSensorPressure(sensors_event_t *pressureEvent) {
     if (_bme_pressure == NULL)
       return false;
     _bme_pressure->getEvent(pressureEvent);

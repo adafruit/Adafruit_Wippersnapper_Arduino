@@ -63,9 +63,9 @@ public:
                 options
   */
   /*******************************************************************************/
-  void enableTemperatureSensor() {
+  void enableSensorAmbientTemperature() {
     _dps310.configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_temp = _dps310.getTemperatureSensor();
+    _dps_temp = _dps310.getSensorAmbientTemperatureeratureSensor();
   }
 
   /*******************************************************************************/
@@ -73,9 +73,9 @@ public:
       @brief    Enables the DPS310's pressure sensor.
   */
   /*******************************************************************************/
-  void enablePressureSensor() {
+  void enableSensorPressure() {
     _dps310.configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_pressure = _dps310.getPressureSensor();
+    _dps_pressure = _dps310.getSensorPressureSensor();
   }
 
   /*******************************************************************************/
@@ -83,7 +83,7 @@ public:
       @brief    Disables the DPS310's pressure sensor.
   */
   /*******************************************************************************/
-  void disableTemperatureSensor() {
+  void disableSensorAmbientTemperature() {
     _dps_temp = NULL;
     _tempSensorPeriod = 0L;
   }
@@ -93,7 +93,7 @@ public:
       @brief    Disables the DPS310's pressure sensor.
   */
   /*******************************************************************************/
-  void disablePressureSensor() {
+  void disableSensorPressure() {
     _dps_pressure = NULL;
     _pressureSensorPeriod = 0L;
   }
@@ -107,7 +107,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getTemp(sensors_event_t *tempEvent) {
+  bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
     if (_dps_temp != NULL && _dps310.temperatureAvailable()) {
       _dps_temp->getEvent(tempEvent);
       return true;
@@ -124,7 +124,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getPressure(sensors_event_t *pressureEvent) {
+  bool getSensorPressure(sensors_event_t *pressureEvent) {
     if (_dps_pressure != NULL && _dps310.pressureAvailable()) {
       _dps_pressure->getEvent(pressureEvent);
       return true;

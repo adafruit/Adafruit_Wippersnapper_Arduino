@@ -216,8 +216,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       // Generic as well?
       switch (msgDeviceInitReq->i2c_device_properties[i].sensor_type) {
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-        _ahtx0->enableTemperatureSensor();
-        _ahtx0->setTemperatureSensorPeriod(
+        _ahtx0->enableSensorAmbientTemperature();
+        _ahtx0->setSensorAmbientTemperaturePeriod(
             msgDeviceInitReq->i2c_device_properties[i].sensor_period);
         // TODO: This should be moved into the driver?
         WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
@@ -226,8 +226,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         WS_DEBUG_PRINTLN("seconds]");
         break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-        _ahtx0->enableHumiditySensor();
-        _ahtx0->setHumiditySensorPeriod(
+        _ahtx0->enableSensorRelativeHumidity();
+        _ahtx0->setSensorRelativeHumidityPeriod(
             msgDeviceInitReq->i2c_device_properties[i].sensor_period);
         // TODO: This should be moved into the driver?
         WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
@@ -272,11 +272,12 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
         // test
         switch (msgDeviceUpdateReq->i2c_device_properties[j].sensor_type) {
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-          _ahtx0->setTemperatureSensorPeriod(
+          // todo: updateTemperatureSensorProperties() call
+          _ahtx0->setSensorAmbientTemperaturePeriod(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-          _ahtx0->setHumiditySensorPeriod(
+          _ahtx0->setSensorRelativeHumidityPeriod(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         default:
@@ -437,13 +438,13 @@ void WipperSnapper_Component_I2C::update() {
 
       // temp
       curTime = millis();
-      if (curTime - drivers[i]->getTempSensorPeriodPrv() >
-              drivers[i]->getTempSensorPeriod() &&
-          drivers[i]->getTempSensorPeriod() != 0L) {
+      if (curTime - drivers[i]->getSensorAmbientTemperaturePeriodPrv() >
+              drivers[i]->getSensorAmbientTemperaturePeriod() &&
+          drivers[i]->getSensorAmbientTemperaturePeriod() != 0L) {
         // poll
         sensors_event_t temp;
         WS_DEBUG_PRINTLN("Polling AHTX0 Temperature Sensor...");
-        if (!drivers[i]->getTemp(&temp)) {
+        if (!drivers[i]->getSensorAmbientTemperature(&temp)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 temperature value.");
           break;
         }
@@ -455,18 +456,18 @@ void WipperSnapper_Component_I2C::update() {
         fillEventMessage(
             &msgi2cResponse, temp.temperature,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
-        drivers[i]->setTemperatureSensorPeriodPrv(curTime);
+        drivers[i]->setSensorAmbientTemperaturePeriodPrv(curTime);
       }
 
       // humid
       curTime = millis();
-      if (curTime - drivers[i]->getHumidSensorPeriodPrv() >
-              drivers[i]->getHumidSensorPeriod() &&
-          drivers[i]->getHumidSensorPeriod() != 0L) {
+      if (curTime - drivers[i]->getSensorRelativeHumidityPeriodPrv() >
+              drivers[i]->getSensorRelativeHumidityPeriod() &&
+          drivers[i]->getSensorRelativeHumidityPeriod() != 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling AHTX0 Humidity Sensor...");
         sensors_event_t humid;
-        if (!drivers[i]->getHumid(&humid)) {
+        if (!drivers[i]->getSensorRelativeHumidity(&humid)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain AHTX0 humidity value.");
           break;
         }
@@ -479,20 +480,20 @@ void WipperSnapper_Component_I2C::update() {
         fillEventMessage(
             &msgi2cResponse, humid.relative_humidity,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
-        drivers[i]->setHumidSensorPeriodPrv(curTime);
+        drivers[i]->setSensorRelativeHumidityPeriodPrv(curTime);
       }
     } else if (drivers[i]->driverType == DPS310) {
       // reset sensor # counter
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
       // Check if we're polling the temperature sensor
       // Nothing here is aht-specific though...
-      if (millis() - drivers[i]->getTempSensorPeriodPrv() >
-              drivers[i]->getTempSensorPeriod() &&
-          drivers[i]->getTempSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorAmbientTemperaturePeriodPrv() >
+              drivers[i]->getSensorAmbientTemperaturePeriod() &&
+          drivers[i]->getSensorAmbientTemperaturePeriod() > 0L) {
         // poll
         sensors_event_t tempEvent;
         WS_DEBUG_PRINTLN("Polling DPS310 Temperature Sensor...");
-        if (!drivers[i]->getTemp(&tempEvent)) {
+        if (!drivers[i]->getSensorAmbientTemperature(&tempEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain DPS310 temperature value.");
           break;
         }
@@ -506,13 +507,13 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the humidity sensor
-      if (millis() - drivers[i]->getPressureSensorPeriodPrv() >
-              drivers[i]->getPressureSensorPeriod() &&
-          drivers[i]->getPressureSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorPressurePeriodPrv() >
+              drivers[i]->getSensorPressurePeriod() &&
+          drivers[i]->getSensorPressurePeriod() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling DPS310 Pressure Sensor...");
         sensors_event_t presEvent;
-        if (!drivers[i]->getPressure(&presEvent)) {
+        if (!drivers[i]->getSensorPressure(&presEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain DPS310 pressure value.");
           break;
         }
@@ -529,13 +530,13 @@ void WipperSnapper_Component_I2C::update() {
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 
       // Check if we're polling the temperature sensor
-      if (millis() - drivers[i]->getTempSensorPeriodPrv() >
-              drivers[i]->getTempSensorPeriod() &&
-          drivers[i]->getTempSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorAmbientTemperaturePeriodPrv() >
+              drivers[i]->getSensorAmbientTemperaturePeriod() &&
+          drivers[i]->getSensorAmbientTemperaturePeriod() > 0L) {
         // poll
         sensors_event_t tempEvent;
         WS_DEBUG_PRINTLN("Polling SCD30 Temperature Sensor...");
-        if (!drivers[i]->getTemp(&tempEvent)) {
+        if (!drivers[i]->getSensorAmbientTemperature(&tempEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 temperature value.");
           break;
         }
@@ -549,13 +550,13 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the humidity sensor
-      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
-              drivers[i]->getHumidSensorPeriod() &&
-          drivers[i]->getHumidSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorRelativeHumidityPeriodPrv() >
+              drivers[i]->getSensorRelativeHumidityPeriod() &&
+          drivers[i]->getSensorRelativeHumidityPeriod() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD30 Humidity Sensor...");
         sensors_event_t humidEvent;
-        if (!drivers[i]->getHumid(&humidEvent)) {
+        if (!drivers[i]->getSensorRelativeHumidity(&humidEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 humidity value.");
           break;
         }
@@ -570,13 +571,13 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the humidity sensor
-      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
-              drivers[i]->getHumidSensorPeriod() &&
-          drivers[i]->getHumidSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorRelativeHumidityPeriodPrv() >
+              drivers[i]->getSensorRelativeHumidityPeriod() &&
+          drivers[i]->getSensorRelativeHumidityPeriod() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD30 Humidity Sensor...");
         sensors_event_t humidEvent;
-        if (!drivers[i]->getHumid(&humidEvent)) {
+        if (!drivers[i]->getSensorRelativeHumidity(&humidEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 humidity value.");
           break;
         }
@@ -591,13 +592,13 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the gas sensor
-      if (millis() - drivers[i]->getCO2SensorPeriodPrv() >
-              drivers[i]->getCO2SensorPeriod() &&
-          drivers[i]->getCO2SensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorCO2PeriodPrv() >
+              drivers[i]->getSensorCO2Period() &&
+          drivers[i]->getSensorCO2Period() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD30 C02 Sensor...");
         float CO2;
-        if (!drivers[i]->getCO2(&CO2)) {
+        if (!drivers[i]->getSensorCO2(&CO2)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 CO2 value.");
           break;
         }
@@ -613,13 +614,13 @@ void WipperSnapper_Component_I2C::update() {
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 
       // Check if we're polling the temperature sensor
-      if (millis() - drivers[i]->getTempSensorPeriodPrv() >
-              drivers[i]->getTempSensorPeriod() &&
-          drivers[i]->getTempSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorAmbientTemperaturePeriodPrv() >
+              drivers[i]->getSensorAmbientTemperaturePeriod() &&
+          drivers[i]->getSensorAmbientTemperaturePeriod() > 0L) {
         // poll
         float tempEvent = 0.0f;
         WS_DEBUG_PRINTLN("Polling SCD4x Temperature Sensor...");
-        if (!drivers[i]->getTemp(&tempEvent)) {
+        if (!drivers[i]->getSensorAmbientTemperature(&tempEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD4X temperature value.");
           break;
         }
@@ -633,13 +634,13 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the humidity sensor
-      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
-              drivers[i]->getHumidSensorPeriod() &&
-          drivers[i]->getHumidSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorRelativeHumidityPeriodPrv() >
+              drivers[i]->getSensorRelativeHumidityPeriod() &&
+          drivers[i]->getSensorRelativeHumidityPeriod() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD40 Humidity Sensor...");
         float humidEvent = 0.0f;
-        if (!drivers[i]->getHumid(&humidEvent)) {
+        if (!drivers[i]->getSensorRelativeHumidity(&humidEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD40 humidity value.");
           break;
         }
@@ -654,13 +655,13 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the humidity sensor
-      if (millis() - drivers[i]->getHumidSensorPeriodPrv() >
-              drivers[i]->getHumidSensorPeriod() &&
-          drivers[i]->getHumidSensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorRelativeHumidityPeriodPrv() >
+              drivers[i]->getSensorRelativeHumidityPeriod() &&
+          drivers[i]->getSensorRelativeHumidityPeriod() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD30 Humidity Sensor...");
         sensors_event_t humidEvent;
-        if (!drivers[i]->getHumid(&humidEvent)) {
+        if (!drivers[i]->getSensorRelativeHumidity(&humidEvent)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 humidity value.");
           break;
         }
@@ -675,13 +676,13 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the gas sensor
-      if (millis() - drivers[i]->getCO2SensorPeriodPrv() >
-              drivers[i]->getCO2SensorPeriod() &&
-          drivers[i]->getCO2SensorPeriod() > 0L) {
+      if (millis() - drivers[i]->getSensorCO2PeriodPrv() >
+              drivers[i]->getSensorCO2Period() &&
+          drivers[i]->getSensorCO2Period() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD30 C02 Sensor...");
         float CO2;
-        if (!drivers[i]->getCO2(&CO2)) {
+        if (!drivers[i]->getSensorCO2(&CO2)) {
           WS_DEBUG_PRINTLN("ERROR: Unable to obtain SCD30 CO2 value.");
           break;
         }

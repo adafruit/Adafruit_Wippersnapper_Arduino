@@ -64,7 +64,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getTemp(sensors_event_t *tempEvent) {
+  bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
     // check if data is available
     if (!_scd30.dataReady())
       return false;
@@ -86,7 +86,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getHumid(sensors_event_t *humidEvent) {
+  bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
     // check if data is available
     if (!_scd30.dataReady())
       return false;
@@ -108,7 +108,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getCO2(float *CO2Value) {
+  bool getSensorCO2(float *CO2Value) {
     if (!_scd30.dataReady())
       return false;
     CO2Value = &_scd30.CO2;

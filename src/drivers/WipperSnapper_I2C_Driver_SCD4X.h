@@ -95,7 +95,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getTemp(float *tempEvent) {
+  bool getSensorAmbientTemperature(float *tempEvent) {
     uint16_t error;
     // Read Measurement
     error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
@@ -114,7 +114,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getHumid(float *humidEvent) {
+  bool getSensorRelativeHumidity(float *humidEvent) {
     uint16_t error;
     // Read Measurement
     error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
@@ -133,7 +133,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getCO2(float *CO2Value) {
+  virtual bool getSensorCO2(float *CO2Value) {
     uint16_t error;
     // Read Measurement
     error = _scd4x.readMeasurement(_co2, _temperature, _humidity);

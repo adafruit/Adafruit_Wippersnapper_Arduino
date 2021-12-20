@@ -96,56 +96,56 @@ public:
       @brief    Enables the device's temperature sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableTemperatureSensor(){};
+  virtual void enableSensorAmbientTemperature(){};
 
   /*******************************************************************************/
   /*!
       @brief    Disables the device's temperature sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableTemperatureSensor(){};
+  virtual void disableSensorAmbientTemperature(){};
 
   /*******************************************************************************/
   /*!
-      @brief    Enables the device's humidity sensor, if it exists.
+      @brief    Enables the device's relative humidity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableHumiditySensor(){};
+  virtual void enableSensorRelativeHumidity(){};
 
   /*******************************************************************************/
   /*!
-      @brief    Disables the device's temperature sensor, if it exists.
+      @brief    Disables the device's relative humidity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableHumiditySensor(){};
+  virtual void disableSensorRelativeHumidity(){};
 
   /*******************************************************************************/
   /*!
       @brief    Enables the device's pressure sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enablePressureSensor(){};
+  virtual void enableSensorPressure(){};
 
   /*******************************************************************************/
   /*!
       @brief    Disables the device's pressure sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disablePressureSensor(){};
+  virtual void disableSensorPressure(){};
 
   /*******************************************************************************/
   /*!
       @brief    Enables the device's CO2 sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableCO2Sensor(){};
+  virtual void enableSensorCO2(){};
 
   /*******************************************************************************/
   /*!
       @brief    Disables the device's CO2 sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableCO2Sensor(){};
+  virtual void disableSensorCO2(){};
 
   /*********************************************************************************/
   /*!
@@ -154,7 +154,7 @@ public:
       @returns  Time when the temperature sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getTempSensorPeriod() { return _tempSensorPeriod; }
+  virtual long getSensorAmbientTemperaturePeriod() { return _tempSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -164,10 +164,8 @@ public:
      temperature sensor.
   */
   /*******************************************************************************/
-  virtual void setTemperatureSensorPeriod(float tempPeriod) {
+  virtual void setSensorAmbientTemperaturePeriod(float tempPeriod) {
     // Period is in seconds, cast it to long and convert it to milliseconds
-    if (tempPeriod == 0)
-      disableTemperatureSensor();
     _tempSensorPeriod = (long)tempPeriod * 1000;
   }
 
@@ -178,7 +176,9 @@ public:
       @returns  Time when the temperature sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getTempSensorPeriodPrv() { return _tempSensorPeriodPrv; }
+  virtual long getSensorAmbientTemperaturePeriodPrv() {
+    return _tempSensorPeriodPrv;
+  }
 
   /*******************************************************************************/
   /*!
@@ -187,7 +187,7 @@ public:
                 The time when the temperature sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setTemperatureSensorPeriodPrv(long tempPeriodPrv) {
+  virtual void setSensorAmbientTemperaturePeriodPrv(long tempPeriodPrv) {
     _tempSensorPeriodPrv = tempPeriodPrv;
   }
 
@@ -201,7 +201,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getTemp(sensors_event_t *tempEvent) { return true; }
+  virtual bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
+    return true;
+  }
 
   /*******************************************************************************/
   /*!
@@ -213,7 +215,17 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getTemp(float *tempEvent) { return true; }
+  virtual bool getSensorAmbientTemperature(float *tempEvent) { return true; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Update the properties of a temperature
+                  sensor, provided sensor_period.
+      @param    tempPeriod
+                Sensor's period.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorAmbientTemperature(float tempPeriod) { return; }
 
   /*********************************************************************************/
   /*!
@@ -222,7 +234,7 @@ public:
       @returns  Time when the humidity sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriod() { return _humidSensorPeriod; }
+  virtual long getSensorRelativeHumidityPeriod() { return _humidSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -232,9 +244,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void setHumiditySensorPeriod(float humidPeriod) {
-    if (humidPeriod == 0)
-        disableHumiditySensor();
+  void setSensorRelativeHumidityPeriod(float humidPeriod) {
     // Period is in seconds, cast it to long and convert it to milliseconds
     _humidSensorPeriod = (long)humidPeriod * 1000;
   }
@@ -246,7 +256,9 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getHumidSensorPeriodPrv() { return _humidSensorPeriodPrv; }
+  virtual long getSensorRelativeHumidityPeriodPrv() {
+    return _humidSensorPeriodPrv;
+  }
 
   /*******************************************************************************/
   /*!
@@ -255,7 +267,7 @@ public:
                 The time when the temperature sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setHumidSensorPeriodPrv(long humidPeriodPrv) {
+  virtual void setSensorRelativeHumidityPeriodPrv(long humidPeriodPrv) {
     _humidSensorPeriodPrv = humidPeriodPrv;
   }
 
@@ -269,7 +281,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getHumid(sensors_event_t *humidEvent) { return true; }
+  virtual bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
+    return true;
+  }
 
   /*******************************************************************************/
   /*!
@@ -281,7 +295,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getHumid(float *humidEvent) { return true; }
+  virtual bool getSensorRelativeHumidity(float *humidEvent) { return true; }
 
   /*********************************************************************************/
   /*!
@@ -290,7 +304,7 @@ public:
       @returns  Time when the pressure sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPressureSensorPeriod() { return _pressureSensorPeriod; }
+  virtual long getSensorPressurePeriod() { return _pressureSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -300,9 +314,9 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void setPressureSensorPeriod(float pressurePeriod) {
+  void setSensorPressurePeriod(float pressurePeriod) {
     if (pressurePeriod == 0)
-        disablePressureSensor();
+      disableSensorPressure();
     // Period is in seconds, cast it to long and convert it to milliseconds
     _pressureSensorPeriod = (long)pressurePeriod * 1000;
   }
@@ -314,7 +328,7 @@ public:
       @returns  Time when the pressure sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPressureSensorPeriodPrv() { return _pressureSensorPeriodPrv; }
+  virtual long getSensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -326,7 +340,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getPressure(sensors_event_t *pressureEvent) { return true; }
+  virtual bool getSensorPressure(sensors_event_t *pressureEvent) {
+    return true;
+  }
 
   /*********************************************************************************/
   /*!
@@ -335,7 +351,7 @@ public:
       @returns  Time when the CO2 sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getCO2SensorPeriod() { return _CO2SensorPeriod; }
+  virtual long getSensorCO2Period() { return _CO2SensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -345,9 +361,9 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void setCO2SensorPeriod(float CO2Period) {
+  void setSensorCO2Period(float CO2Period) {
     if (CO2Period == 0)
-      disableCO2Sensor();
+      disableSensorCO2();
     // Period is in seconds, cast it to long and convert it to milliseconds
     _CO2SensorPeriod = (long)CO2Period * 1000;
   }
@@ -359,7 +375,7 @@ public:
       @returns  Time when the CO2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getCO2SensorPeriodPrv() { return _CO2SensorPeriodPrv; }
+  virtual long getSensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -370,7 +386,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getCO2(float *CO2Value) { return true; }
+  virtual bool getSensorCO2(float *CO2Value) { return true; }
 
   /*******************************************************************************/
   /*!
@@ -380,7 +396,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void setPM10STDPeriod(float pm10Period) {
+  void setSensorPM10STDPeriod(float pm10Period) {
     // Period is in seconds, cast it to long and convert it to milliseconds
     _pm10STDPeriod = (long)pm10Period * 1000;
   }
@@ -392,7 +408,7 @@ public:
       @returns  Time when the PM sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM10STDSensorPeriod() { return _pm10STDPeriod; }
+  virtual long setPM10STDSensorPeriod() { return _pm10STDPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -401,7 +417,7 @@ public:
       @returns  Time when the PM sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getPM10STDSensorPeriodPrv() { return _pm10STDPeriodPrv; }
+  virtual long setPM10STDSensorPeriodPrv() { return _pm10STDPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -411,7 +427,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void setPM25STDPeriod(float pm25Period) {
+  void setPM25STDSensorPeriod(float pm25Period) {
     // Period is in seconds, cast it to long and convert it to milliseconds
     _pm25STDPeriod = (long)pm25Period * 1000;
   }

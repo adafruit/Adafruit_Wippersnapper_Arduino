@@ -62,21 +62,25 @@ public:
       @brief    Enables the AHTX0's temperature sensor.
   */
   /*******************************************************************************/
-  void enableTemperatureSensor() { _aht_temp = _aht.getTemperatureSensor(); }
+  void enableSensorAmbientTemperature() {
+    _aht_temp = _aht.getSensorAmbientTemperatureeratureSensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Enables the AHTX0's humidity sensor.
   */
   /*******************************************************************************/
-  void enableHumiditySensor() { _aht_humidity = _aht.getHumiditySensor(); }
+  void enableSensorRelativeHumidity() {
+    _aht_humidity = _aht.getSensorRelativeHumidityitySensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Disables the AHTX0's temperature sensor.
   */
   /*******************************************************************************/
-  void disableTemperatureSensor() {
+  void disableSensorAmbientTemperature() {
     _aht_temp = NULL;
     _tempSensorPeriod = 0L;
   }
@@ -86,10 +90,20 @@ public:
       @brief    Disables the AHTX0's humidity sensor.
   */
   /*******************************************************************************/
-  void disableHumiditySensor() {
+  void disableSensorRelativeHumidity() {
     _aht_humidity = NULL;
     _humidSensorPeriod = 0L;
   }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of an ambient temperature
+                  sensor, provided sensor_period.
+      @param    tempPeriod
+                Sensor's period.
+  */
+  /*******************************************************************************/
+  void updateSensorAmbientTemperature(float tempPeriod) { return; }
 
   /*******************************************************************************/
   /*!
@@ -100,7 +114,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getTemp(sensors_event_t *tempEvent) {
+  bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
     // update temp, if sensor enabled
     if (_aht_temp != NULL) {
       _aht_temp->getEvent(tempEvent);
@@ -118,7 +132,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getHumid(sensors_event_t *humidEvent) {
+  bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
     // update humidity, if sensor enabled
     if (_aht_humidity != NULL) {
       _aht_humidity->getEvent(humidEvent);
