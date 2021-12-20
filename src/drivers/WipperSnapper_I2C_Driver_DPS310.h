@@ -119,6 +119,25 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Updates the properties of a pressure sensor.
+      @param    presPeriod
+                The time interval at which to return new data from the pressure
+                sensor.
+  */
+  /*******************************************************************************/
+  void updateSensorPressure(float presPeriod) {
+    // disable the sensor
+    if (presPeriod == 0)
+      disableSensorPressure();
+    // enable a previously disabled sensor
+    if (presPeriod > 0 && _dps_pressure == NULL)
+      enableSensorPressure();
+
+    setSensorPressurePeriod(presPeriod);
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the DPS310's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.

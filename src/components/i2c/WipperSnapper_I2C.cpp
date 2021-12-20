@@ -272,14 +272,18 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
         // test
         switch (msgDeviceUpdateReq->i2c_device_properties[j].sensor_type) {
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-          // todo: updateTemperatureSensorProperties() call
-          _ahtx0->updateSensorAmbientTemperature(
+          drivers[i]->updateSensorAmbientTemperature(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-          _ahtx0->updateSensorRelativeHumidity(
+          drivers[i]->updateSensorRelativeHumidity(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
+          drivers[i]->updateSensorPressure(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        // TODO: implement more types
         default:
           WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
           return false;

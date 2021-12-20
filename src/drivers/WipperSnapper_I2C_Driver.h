@@ -354,6 +354,16 @@ public:
     return true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a pressure sensor.
+      @param    presPeriod
+                The time interval at which to return new data from the pressure
+                sensor.
+  */
+  /*******************************************************************************/
+  void updateSensorPressure(float presPeriod) { return; }
+
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the gas sensor's period, if
