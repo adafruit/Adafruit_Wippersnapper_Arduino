@@ -166,6 +166,8 @@ public:
   /*******************************************************************************/
   virtual void setTemperatureSensorPeriod(float tempPeriod) {
     // Period is in seconds, cast it to long and convert it to milliseconds
+    if (tempPeriod == 0)
+      disableTemperatureSensor();
     _tempSensorPeriod = (long)tempPeriod * 1000;
   }
 
@@ -231,6 +233,8 @@ public:
   */
   /*******************************************************************************/
   void setHumiditySensorPeriod(float humidPeriod) {
+    if (humidPeriod == 0)
+        disableHumiditySensor();
     // Period is in seconds, cast it to long and convert it to milliseconds
     _humidSensorPeriod = (long)humidPeriod * 1000;
   }
@@ -297,6 +301,8 @@ public:
   */
   /*******************************************************************************/
   void setPressureSensorPeriod(float pressurePeriod) {
+    if (pressurePeriod == 0)
+        disablePressureSensor();
     // Period is in seconds, cast it to long and convert it to milliseconds
     _pressureSensorPeriod = (long)pressurePeriod * 1000;
   }
@@ -340,6 +346,8 @@ public:
   */
   /*******************************************************************************/
   void setCO2SensorPeriod(float CO2Period) {
+    if (CO2Period == 0)
+      disableCO2Sensor();
     // Period is in seconds, cast it to long and convert it to milliseconds
     _CO2SensorPeriod = (long)CO2Period * 1000;
   }

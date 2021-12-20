@@ -210,28 +210,34 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_ahtx0);
     WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
     // Configure sensor properties
-    // TODO: This will become a generic function, I think we'll pass sensorObject into it.
+    // TODO: This will become a generic function, I think we'll pass
+    // sensorObject into it.
     for (i = 0; i < msgDeviceInitReq->i2c_device_properties_count; i++) {
       // Generic as well?
-      switch(msgDeviceInitReq->i2c_device_properties[i].sensor_type) {
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-            _ahtx0->enableTemperatureSensor();
-            _ahtx0->setTemperatureSensorPeriod(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
-            // TODO: This should be moved into the driver?
-            WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
-            WS_DEBUG_PRINT(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
-            WS_DEBUG_PRINTLN("seconds]");
-            break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-            _ahtx0->enableHumiditySensor();
-            _ahtx0->setHumiditySensorPeriod(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
-            // TODO: This should be moved into the driver?
-            WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
-            WS_DEBUG_PRINT(msgDeviceInitReq->i2c_device_properties[i].sensor_period);
-            WS_DEBUG_PRINTLN("seconds]");
-            break;
-        default:
-            WS_DEBUG_PRINTLN("ERROR: Unable to determine device sensor type!");
+      switch (msgDeviceInitReq->i2c_device_properties[i].sensor_type) {
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+        _ahtx0->enableTemperatureSensor();
+        _ahtx0->setTemperatureSensorPeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+        _ahtx0->enableHumiditySensor();
+        _ahtx0->setHumiditySensorPeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled AHTX0 Temperature Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      default:
+        WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
+        return false;
       }
     }
     // TODO: Check next type!
@@ -239,7 +245,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     return false;
   }
-
   return true;
 }
 
@@ -254,183 +259,31 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 /*********************************************************************************/
 bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
     wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq) {
-  bool is_success = false;
-  uint16_t deviceAddr = (uint16_t)msgDeviceUpdateReq->i2c_address;
+  bool is_success = true;
+
+  uint16_t i2cAddress = (uint16_t)msgDeviceUpdateReq->i2c_address;
+
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
-    if (drivers[i]->getSensorAddress() == deviceAddr) {
-      // Check driver type
-      if (drivers[i]->driverType == AHTX0) {
-        // Update AHTX0 sensor configuration
-        if (msgDeviceUpdateReq->aht.enable_temperature == true) {
-          drivers[i]->enableTemperatureSensor();
-          WS_DEBUG_PRINTLN("ENABLED AHTX0 Temperature Sensor");
-        } else {
-          drivers[i]->disableTemperatureSensor();
-          WS_DEBUG_PRINTLN("DISABLED AHTX0 Temperature Sensor");
+    if (drivers[i]->getSensorAddress() == i2cAddress) {
+      // Update the properties of each driver
+      for (int j = 0; j < msgDeviceUpdateReq->i2c_device_properties_count;
+           j++) {
+        // test
+        switch (msgDeviceUpdateReq->i2c_device_properties[j].sensor_type) {
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+          _ahtx0->setTemperatureSensorPeriod(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+          _ahtx0->setHumiditySensorPeriod(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        default:
+          WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
+          return false;
         }
-
-        if (msgDeviceUpdateReq->aht.enable_humidity == true) {
-          drivers[i]->enableHumiditySensor();
-          WS_DEBUG_PRINTLN("ENABLED AHTX0 Humidity Sensor");
-        } else {
-          drivers[i]->disableHumiditySensor();
-          WS_DEBUG_PRINTLN("ENABLED AHTX0 Humidity Sensor");
-        }
-
-        // Update AHTX0's  sensor time periods
-        if (drivers[i]->getTempSensorPeriod() !=
-            msgDeviceUpdateReq->aht.period_temperature) {
-          drivers[i]->setTemperatureSensorPeriod(
-              msgDeviceUpdateReq->aht.period_temperature);
-          WS_DEBUG_PRINTLN(
-              "UPDATED AHTX0 Temperature Sensor, [Returns every: ");
-          WS_DEBUG_PRINT(msgDeviceUpdateReq->aht.period_temperature);
-          WS_DEBUG_PRINTLN("seconds]");
-        }
-        if (drivers[i]->getHumidSensorPeriod() !=
-            msgDeviceUpdateReq->aht.period_humidity) {
-          drivers[i]->setHumiditySensorPeriod(
-              msgDeviceUpdateReq->aht.period_humidity);
-          WS_DEBUG_PRINTLN("UPDATED AHTX0 Humidity Sensor, [Returns every: ");
-          WS_DEBUG_PRINT(msgDeviceUpdateReq->aht.period_humidity);
-          WS_DEBUG_PRINTLN("seconds]");
-        }
-        is_success = true;
-      } else if (drivers[i]->driverType == DPS310) {
-        // Update DPS310 sensor configuration
-        if (msgDeviceUpdateReq->dps.enable_temperature == true) {
-          drivers[i]->enableTemperatureSensor();
-          WS_DEBUG_PRINTLN("ENABLED DPS310 Temperature Sensor");
-        } else {
-          drivers[i]->disableTemperatureSensor();
-          WS_DEBUG_PRINTLN("DISABLED DPS310 Temperature Sensor");
-        }
-
-        if (msgDeviceUpdateReq->dps.enable_pressure == true) {
-          drivers[i]->enablePressureSensor();
-          WS_DEBUG_PRINTLN("ENABLED DPS310 Pressure Sensor");
-        } else {
-          drivers[i]->disablePressureSensor();
-          WS_DEBUG_PRINTLN("DISABLED DPS310 Pressure Sensor");
-        }
-
-        // Update DPS310's sensor time periods
-        if (drivers[i]->getTempSensorPeriod() !=
-            msgDeviceUpdateReq->dps.period_temperature) {
-          drivers[i]->setTemperatureSensorPeriod(
-              msgDeviceUpdateReq->dps.period_temperature);
-          WS_DEBUG_PRINTLN(
-              "UPDATED DPS310 Temperature Sensor, [Returns every: ");
-          WS_DEBUG_PRINT(msgDeviceUpdateReq->dps.period_temperature);
-          WS_DEBUG_PRINTLN("seconds]");
-        }
-        if (drivers[i]->getPressureSensorPeriod() !=
-            msgDeviceUpdateReq->dps.period_pressure) {
-          drivers[i]->setPressureSensorPeriod(
-              msgDeviceUpdateReq->dps.period_pressure);
-          WS_DEBUG_PRINTLN("UPDATED DPS310 Pressure Sensor, [Returns every: ");
-          WS_DEBUG_PRINT(msgDeviceUpdateReq->dps.period_pressure);
-          WS_DEBUG_PRINTLN("seconds]");
-        }
-        is_success = true;
-        break;
-      } else if (drivers[i]->driverType == SCD30) {
-        // Update SCD30 sensor configuration
-        if (msgDeviceUpdateReq->scd30.enable_temperature == true) {
-          drivers[i]->enableTemperatureSensor();
-          WS_DEBUG_PRINTLN("ENABLED SCD30 Temperature Sensor");
-        } else {
-          drivers[i]->disableTemperatureSensor();
-          WS_DEBUG_PRINTLN("DISABLED SCD30 Temperature Sensor");
-        }
-
-        if (msgDeviceUpdateReq->scd30.enable_humidity == true) {
-          drivers[i]->enableHumiditySensor();
-          WS_DEBUG_PRINTLN("ENABLED SCD30 Humidity Sensor");
-        } else {
-          drivers[i]->disableHumiditySensor();
-          WS_DEBUG_PRINTLN("DISABLED SCD30 Humidity Sensor");
-        }
-
-        // Update SCD30's sensor time periods
-        if (drivers[i]->getTempSensorPeriod() !=
-            msgDeviceUpdateReq->scd30.period_temperature) {
-          drivers[i]->setTemperatureSensorPeriod(
-              msgDeviceUpdateReq->scd30.period_temperature);
-          WS_DEBUG_PRINTLN(
-              "UPDATED SCD30 Temperature Sensor, [Returns every: ");
-          WS_DEBUG_PRINT(msgDeviceUpdateReq->scd30.period_temperature);
-          WS_DEBUG_PRINTLN("seconds]");
-        }
-
-        if (drivers[i]->getHumidSensorPeriod() !=
-            msgDeviceUpdateReq->scd30.period_humidity) {
-          drivers[i]->setHumiditySensorPeriod(
-              msgDeviceUpdateReq->scd30.period_humidity);
-          WS_DEBUG_PRINTLN("UPDATED SCD30 Humidity Sensor, [Returns every: ");
-          WS_DEBUG_PRINT(msgDeviceUpdateReq->scd30.period_humidity);
-          WS_DEBUG_PRINTLN("seconds]");
-        }
-
-        if (drivers[i]->getCO2SensorPeriod() !=
-            msgDeviceUpdateReq->scd30.period_co2) {
-          drivers[i]->setCO2SensorPeriod(msgDeviceUpdateReq->scd30.period_co2);
-          WS_DEBUG_PRINTLN("UPDATED SCD30 Pressure Sensor, [Returns every: ");
-          WS_DEBUG_PRINT(msgDeviceUpdateReq->scd30.period_co2);
-          WS_DEBUG_PRINTLN("seconds]");
-        }
-        is_success = true;
-        break;
       }
-    } else if (drivers[i]->driverType == SCD4X) {
-      // Update SCD4x sensor configuration
-      if (msgDeviceUpdateReq->scd4x.enable_temperature == true) {
-        drivers[i]->enableTemperatureSensor();
-        WS_DEBUG_PRINTLN("ENABLED scd4x Temperature Sensor");
-      } else {
-        drivers[i]->disableTemperatureSensor();
-        WS_DEBUG_PRINTLN("DISABLED scd4x Temperature Sensor");
-      }
-
-      if (msgDeviceUpdateReq->scd4x.enable_humidity == true) {
-        drivers[i]->enableHumiditySensor();
-        WS_DEBUG_PRINTLN("ENABLED scd4x Humidity Sensor");
-      } else {
-        drivers[i]->disableHumiditySensor();
-        WS_DEBUG_PRINTLN("DISABLED scd4x Humidity Sensor");
-      }
-
-      // Update scd4x's sensor time periods
-      if (drivers[i]->getTempSensorPeriod() !=
-          msgDeviceUpdateReq->scd4x.period_temperature) {
-        drivers[i]->setTemperatureSensorPeriod(
-            msgDeviceUpdateReq->scd4x.period_temperature);
-        WS_DEBUG_PRINTLN("UPDATED scd4x Temperature Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceUpdateReq->scd4x.period_temperature);
-        WS_DEBUG_PRINTLN("seconds]");
-      }
-
-      if (drivers[i]->getHumidSensorPeriod() !=
-          msgDeviceUpdateReq->scd4x.period_humidity) {
-        drivers[i]->setHumiditySensorPeriod(
-            msgDeviceUpdateReq->scd4x.period_humidity);
-        WS_DEBUG_PRINTLN("UPDATED scd4x Humidity Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceUpdateReq->scd4x.period_humidity);
-        WS_DEBUG_PRINTLN("seconds]");
-      }
-
-      if (drivers[i]->getCO2SensorPeriod() !=
-          msgDeviceUpdateReq->scd4x.period_co2) {
-        drivers[i]->setCO2SensorPeriod(msgDeviceUpdateReq->scd4x.period_co2);
-        WS_DEBUG_PRINTLN("UPDATED scd4x Pressure Sensor, [Returns every: ");
-        WS_DEBUG_PRINT(msgDeviceUpdateReq->scd4x.period_co2);
-        WS_DEBUG_PRINTLN("seconds]");
-      }
-      is_success = true;
-      break;
-    } else {
-      WS_DEBUG_PRINTLN("ERROR: Sensor driver not found!");
     }
   }
   return is_success;
