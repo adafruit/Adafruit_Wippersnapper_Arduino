@@ -117,6 +117,25 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Updates the properties of an ambient temperature
+                  sensor, provided sensor_period.
+      @param    tempPeriod
+                Sensor's period.
+  */
+  /*******************************************************************************/
+  void updateSensorAmbientTemperature(float tempPeriod) {
+      // disable the sensor
+      if (tempPeriod == 0)
+        disableSensorAmbientTemperature();
+      // enable a previously disabled sensor
+      if (tempPeriod > 0 && _bme_temp == NULL)
+        enableSensorAmbientTemperature();
+
+      setSensorAmbientTemperaturePeriod(tempPeriod);
+   }
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the BME280's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.

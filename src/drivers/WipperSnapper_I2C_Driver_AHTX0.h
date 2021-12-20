@@ -81,7 +81,7 @@ public:
   */
   /*******************************************************************************/
   void disableSensorAmbientTemperature() {
-    _aht_temp = NULL;
+    _aht_temp = NULL; // TODO: change to nullptr instead!
     _tempSensorPeriod = 0L;
   }
 
@@ -91,7 +91,7 @@ public:
   */
   /*******************************************************************************/
   void disableSensorRelativeHumidity() {
-    _aht_humidity = NULL;
+    _aht_humidity = NULL;  // TODO: change to nullptr instead!
     _humidSensorPeriod = 0L;
   }
 
@@ -103,7 +103,16 @@ public:
                 Sensor's period.
   */
   /*******************************************************************************/
-  void updateSensorAmbientTemperature(float tempPeriod) { return; }
+  void updateSensorAmbientTemperature(float tempPeriod) {
+      // disable the sensor
+      if (tempPeriod == 0)
+        disableSensorAmbientTemperature();
+      // enable a previously disabled sensor
+      if (tempPeriod > 0 && _aht_temp == NULL)
+        enableSensorAmbientTemperature();
+
+      setSensorAmbientTemperaturePeriod(tempPeriod);
+   }
 
   /*******************************************************************************/
   /*!
