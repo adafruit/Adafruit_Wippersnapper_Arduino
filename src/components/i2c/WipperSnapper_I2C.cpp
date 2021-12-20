@@ -305,34 +305,14 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getSensorAddress() == deviceAddr) {
-      // Check driver type
-      if (drivers[i]->driverType == AHTX0) {
-        // delete the driver and remove from list so we dont attempt to
-        // update() it
-        delete _ahtx0;
-        drivers.erase(drivers.begin() + i);
-        WS_DEBUG_PRINTLN("DEINIT'D AHTX0");
-        is_success = true;
-      } else if (drivers[i]->driverType == DPS310) {
-        delete _dps310;
-        drivers.erase(drivers.begin() + i);
-        WS_DEBUG_PRINTLN("DEINIT'D DPS310");
-        is_success = true;
-      } else if (drivers[i]->driverType == SCD30) {
-        delete _scd30;
-        drivers.erase(drivers.begin() + i);
-        WS_DEBUG_PRINTLN("DEINIT'D SCD30");
-        is_success = true;
-      } else if (drivers[i]->driverType == SCD4X) {
-        delete _scd4x;
-        drivers.erase(drivers.begin() + i);
-        WS_DEBUG_PRINTLN("DEINIT'D SCD4X");
-        is_success = true;
-      }
+      drivers.erase(drivers.begin() + i);
+      WS_DEBUG_PRINTLN("Driver de-initialized!");
+      is_success = true;
     } else {
-      WS_DEBUG_PRINTLN("ERROR: Driver type unspecified");
+      WS_DEBUG_PRINTLN("ERROR: Driver type not found");
     }
   }
+
   return is_success;
 }
 
