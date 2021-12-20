@@ -297,6 +297,16 @@ public:
   /*******************************************************************************/
   virtual bool getSensorRelativeHumidity(float *humidEvent) { return true; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a relative humidity sensor.
+      @param    humidPeriod
+                The time interval at which to return new data from the humidity
+                sensor.
+  */
+  /*******************************************************************************/
+  void updateSensorRelativeHumidity(float humidPeriod) { return; }
+
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the pressure sensor's period, if

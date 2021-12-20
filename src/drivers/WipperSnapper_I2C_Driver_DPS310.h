@@ -107,15 +107,15 @@ public:
   */
   /*******************************************************************************/
   void updateSensorAmbientTemperature(float tempPeriod) {
-      // disable the sensor
-      if (tempPeriod == 0)
-        disableSensorAmbientTemperature();
-      // enable a previously disabled sensor
-      if (tempPeriod > 0 && _dps_temp == NULL)
-        enableSensorAmbientTemperature();
+    // disable the sensor
+    if (tempPeriod == 0)
+      disableSensorAmbientTemperature();
+    // enable a previously disabled sensor
+    if (tempPeriod > 0 && _dps_temp == NULL)
+      enableSensorAmbientTemperature();
 
-      setSensorAmbientTemperaturePeriod(tempPeriod);
-   }
+    setSensorAmbientTemperaturePeriod(tempPeriod);
+  }
 
   /*******************************************************************************/
   /*!

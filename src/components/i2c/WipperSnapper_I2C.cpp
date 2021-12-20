@@ -277,7 +277,7 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-          _ahtx0->setSensorRelativeHumidityPeriod(
+          _ahtx0->updateSensorRelativeHumidity(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         default:

@@ -124,15 +124,34 @@ public:
   */
   /*******************************************************************************/
   void updateSensorAmbientTemperature(float tempPeriod) {
-      // disable the sensor
-      if (tempPeriod == 0)
-        disableSensorAmbientTemperature();
-      // enable a previously disabled sensor
-      if (tempPeriod > 0 && _bme_temp == NULL)
-        enableSensorAmbientTemperature();
+    // disable the sensor
+    if (tempPeriod == 0)
+      disableSensorAmbientTemperature();
+    // enable a previously disabled sensor
+    if (tempPeriod > 0 && _bme_temp == NULL)
+      enableSensorAmbientTemperature();
 
-      setSensorAmbientTemperaturePeriod(tempPeriod);
-   }
+    setSensorAmbientTemperaturePeriod(tempPeriod);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a relative humidity sensor.
+      @param    humidPeriod
+                The time interval at which to return new data from the humidity
+                sensor.
+  */
+  /*******************************************************************************/
+  void updateSensorRelativeHumidity(float humidPeriod) {
+    // disable the sensor
+    if (humidPeriod == 0)
+      disableSensorRelativeHumidity();
+    // enable a previously disabled sensor
+    if (humidPeriod > 0 && _bme_humidity == NULL)
+      enableSensorRelativeHumidity();
+
+    setSensorRelativeHumidityPeriod(humidPeriod);
+  }
 
   /*******************************************************************************/
   /*!
