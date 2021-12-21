@@ -81,9 +81,7 @@ public:
       @brief    Enables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void enableSensorPressure() {
-    _bme_pressure = _bme.getPressureSensor();
-  }
+  void enableSensorPressure() { _bme_pressure = _bme.getPressureSensor(); }
 
   /*******************************************************************************/
   /*!

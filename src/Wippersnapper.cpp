@@ -608,7 +608,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Has the I2C bus been initialized?
     if (!WS._isI2CPort0Init) {
       WS._i2cPort0 = new WipperSnapper_Component_I2C(
-          &msgI2CDeviceInitRequest.bus_init_request);
+          &msgI2CDeviceInitRequest.i2c_bus_init_req);
       WS.i2cComponents.push_back(WS._i2cPort0);
       WS._isI2CPort0Init = WS._i2cPort0->isInitialized();
       msgi2cResponse.payload.resp_i2c_init.bus_response =
@@ -631,7 +631,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 
     // Fill device's address
     msgi2cResponse.payload.resp_i2c_device_init.i2c_address =
-        msgI2CDeviceInitRequest.i2c_address;
+        msgI2CDeviceInitRequest.i2c_device_address;
 
     msgi2cResponse.payload.resp_i2c_device_init.bus_response =
         wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
