@@ -316,7 +316,6 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
       WS_DEBUG_PRINTLN("ERROR: Driver type not found");
     }
   }
-
   return is_success;
 }
 
@@ -405,7 +404,7 @@ void WipperSnapper_Component_I2C::fillEventMessage(
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
-  // New I2CResponse message
+/*   // New I2CResponse message
   wippersnapper_signal_v1_I2CResponse msgi2cResponse =
       wippersnapper_signal_v1_I2CResponse_init_zero;
   // Set I2CDeviceEvent tag
@@ -576,9 +575,9 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the gas sensor
-      if (millis() - drivers[i]->getSensorCO2PeriodPrv() >
-              drivers[i]->getSensorCO2Period() &&
-          drivers[i]->getSensorCO2Period() > 0L) {
+      if (millis() - drivers[i]->getSensorperiodPrv() >
+              drivers[i]->getSensorperiod() &&
+          drivers[i]->getSensorperiod() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD30 C02 Sensor...");
         float CO2;
@@ -660,9 +659,9 @@ void WipperSnapper_Component_I2C::update() {
       }
 
       // Check if we're polling the gas sensor
-      if (millis() - drivers[i]->getSensorCO2PeriodPrv() >
-              drivers[i]->getSensorCO2Period() &&
-          drivers[i]->getSensorCO2Period() > 0L) {
+      if (millis() - drivers[i]->getSensorperiodPrv() >
+              drivers[i]->getSensorperiod() &&
+          drivers[i]->getSensorperiod() > 0L) {
         // poll
         WS_DEBUG_PRINTLN("Polling SCD30 C02 Sensor...");
         float CO2;
@@ -692,5 +691,5 @@ void WipperSnapper_Component_I2C::update() {
         break;
       }
     }
-  } // loop
+  } // loop */
 }

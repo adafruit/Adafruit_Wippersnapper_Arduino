@@ -65,7 +65,7 @@ public:
   /*******************************************************************************/
   void enableSensorAmbientTemperature() {
     _dps310.configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_temp = _dps310.getSensorAmbientTemperatureeratureSensor();
+    _dps_temp = _dps310.getTemperatureSensor();
   }
 
   /*******************************************************************************/
@@ -75,7 +75,7 @@ public:
   /*******************************************************************************/
   void enableSensorPressure() {
     _dps310.configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_pressure = _dps310.getSensorPressureSensor();
+    _dps_pressure = _dps310.getPressureSensor();
   }
 
   /*******************************************************************************/
@@ -102,38 +102,38 @@ public:
   /*!
       @brief    Updates the properties of an ambient temperature
                   sensor, provided sensor_period.
-      @param    tempPeriod
+      @param    period
                 Sensor's period.
   */
   /*******************************************************************************/
-  void updateSensorAmbientTemperature(float tempPeriod) {
+  void updateSensorAmbientTemperature(float period) {
     // disable the sensor
-    if (tempPeriod == 0)
+    if (period == 0)
       disableSensorAmbientTemperature();
     // enable a previously disabled sensor
-    if (tempPeriod > 0 && _dps_temp == NULL)
+    if (period > 0 && _dps_temp == NULL)
       enableSensorAmbientTemperature();
 
-    setSensorAmbientTemperaturePeriod(tempPeriod);
+    setSensorAmbientTemperaturePeriod(period);
   }
 
   /*******************************************************************************/
   /*!
       @brief    Updates the properties of a pressure sensor.
-      @param    presPeriod
+      @param    period
                 The time interval at which to return new data from the pressure
                 sensor.
   */
   /*******************************************************************************/
-  void updateSensorPressure(float presPeriod) {
+  void updateSensorPressure(float period) {
     // disable the sensor
-    if (presPeriod == 0)
+    if (period == 0)
       disableSensorPressure();
     // enable a previously disabled sensor
-    if (presPeriod > 0 && _dps_pressure == NULL)
+    if (period > 0 && _dps_pressure == NULL)
       enableSensorPressure();
 
-    setSensorPressurePeriod(presPeriod);
+    setSensorPressurePeriod(period);
   }
 
   /*******************************************************************************/

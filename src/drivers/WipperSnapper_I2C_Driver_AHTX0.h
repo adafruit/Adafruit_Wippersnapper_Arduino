@@ -63,7 +63,7 @@ public:
   */
   /*******************************************************************************/
   void enableSensorAmbientTemperature() {
-    _aht_temp = _aht.getSensorAmbientTemperatureeratureSensor();
+    _aht_temp = _aht.getTemperatureSensor();
   }
 
   /*******************************************************************************/
@@ -72,7 +72,7 @@ public:
   */
   /*******************************************************************************/
   void enableSensorRelativeHumidity() {
-    _aht_humidity = _aht.getSensorRelativeHumidityitySensor();
+    _aht_humidity = _aht.getHumiditySensor();
   }
 
   /*******************************************************************************/
@@ -99,38 +99,38 @@ public:
   /*!
       @brief    Updates the properties of an ambient temperature
                   sensor, provided sensor_period.
-      @param    tempPeriod
+      @param    period
                 Sensor's period.
   */
   /*******************************************************************************/
-  void updateSensorAmbientTemperature(float tempPeriod) {
+  void updateSensorAmbientTemperature(float period) {
     // disable the sensor
-    if (tempPeriod == 0)
+    if (period == 0)
       disableSensorAmbientTemperature();
     // enable a previously disabled sensor
-    if (tempPeriod > 0 && _aht_temp == NULL)
+    if (period > 0 && _aht_temp == NULL)
       enableSensorAmbientTemperature();
 
-    setSensorAmbientTemperaturePeriod(tempPeriod);
+    setSensorAmbientTemperaturePeriod(period);
   }
 
   /*******************************************************************************/
   /*!
       @brief    Updates the properties of a relative humidity sensor.
-      @param    humidPeriod
+      @param    period
                 The time interval at which to return new data from the humidity
                 sensor.
   */
   /*******************************************************************************/
-  void updateSensorRelativeHumidity(float humidPeriod) {
+  void updateSensorRelativeHumidity(float period) {
     // disable the sensor
-    if (humidPeriod == 0)
+    if (period == 0)
       disableSensorRelativeHumidity();
     // enable a previously disabled sensor
-    if (humidPeriod > 0 && _aht_humidity == NULL)
+    if (period > 0 && _aht_humidity == NULL)
       enableSensorRelativeHumidity();
 
-    setSensorRelativeHumidityPeriod(humidPeriod);
+    setSensorRelativeHumidityPeriod(period);
   }
 
   /*******************************************************************************/
