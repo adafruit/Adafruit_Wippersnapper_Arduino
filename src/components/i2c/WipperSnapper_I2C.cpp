@@ -434,6 +434,8 @@ void WipperSnapper_Component_I2C::update() {
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
 
         (*iter)->setSensorAmbientTemperaturePeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get ambient temperature!");
       }
     }
 
@@ -454,6 +456,8 @@ void WipperSnapper_Component_I2C::update() {
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
 
         (*iter)->setSensorRelativeHumidityPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get relative humidity!");
       }
     }
 
