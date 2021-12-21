@@ -406,62 +406,72 @@ void WipperSnapper_Component_I2C::fillEventMessage(
 void WipperSnapper_Component_I2C::update() {
 
   // Create response message
-  wippersnapper_signal_v1_I2CResponse msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
-  msgi2cResponse.which_payload = wippersnapper_signal_v1_I2CResponse_resp_i2c_device_event_tag;
+  wippersnapper_signal_v1_I2CResponse msgi2cResponse =
+      wippersnapper_signal_v1_I2CResponse_init_zero;
+  msgi2cResponse.which_payload =
+      wippersnapper_signal_v1_I2CResponse_resp_i2c_device_event_tag;
 
   long curTime;
   std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
-  for(iter = drivers.begin(), end = drivers.end() ; iter != end; ++iter) {
+  for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
     // Number of events which occured for this driver
     msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 
-    // Temperature sensor
-    sensors_event_t event;
-    if ((*iter)->getSensorAmbientTemperature(&event)) {
-          WS_DEBUG_PRINT("\tTemperature: ");
-          WS_DEBUG_PRINT(event.temperature);
-          WS_DEBUG_PRINTLN(" degrees C");
+    // AMBIENT_TEMPERATURE sensor
+    curTime = millis();
+    if ((*iter)->getSensorAmbientTemperaturePeriod() != 0L &&
+        curTime - (*iter)->getSensorAmbientTemperaturePeriodPrv() >
+            (*iter)->getSensorAmbientTemperaturePeriod()) {
+      sensors_event_t event;
+      if ((*iter)->getSensorAmbientTemperature(&event)) {
+        WS_DEBUG_PRINT("\tTemperature: ");
+        WS_DEBUG_PRINT(event.temperature);
+        WS_DEBUG_PRINTLN(" degrees C");
 
-          // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.temperature, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
-          (*iter)->setSensorAmbientTemperaturePeriodPrv(curTime);
+        // pack event data into msg
+        fillEventMessage(
+            &msgi2cResponse, event.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
+
+        (*iter)->setSensorAmbientTemperaturePeriodPrv(curTime);
+      }
     }
 
-    // Humidity sensor
-    sensors_event_t event;
-    if ((*iter)->getSensorAmbientTemperature(&event)) {
-          WS_DEBUG_PRINT("\tHumidity: ");
-          WS_DEBUG_PRINT(event.temperature);
-          WS_DEBUG_PRINTLN("%RH");
+    // RELATIVE_HUMIDITY sensor
+    curTime = millis();
+    if ((*iter)->getSensorRelativeHumidityPeriod() != 0L &&
+        curTime - (*iter)->getSensorRelativeHumidityPeriodPrv() >
+            (*iter)->getSensorRelativeHumidityPeriod()) {
+      sensors_event_t event;
+      if ((*iter)->getSensorAmbientTemperature(&event)) {
+        WS_DEBUG_PRINT("\tHumidity: ");
+        WS_DEBUG_PRINT(event.temperature);
+        WS_DEBUG_PRINTLN("%RH");
 
-          // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.relative_humidity, wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
-          (*iter)->setSensorAmbientTemperaturePeriodPrv(curTime);
+        // pack event data into msg
+        fillEventMessage(
+            &msgi2cResponse, event.relative_humidity,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
+
+        (*iter)->setSensorRelativeHumidityPeriodPrv(curTime);
+      }
     }
 
-    // Did this driver write into sensor_event?
+    // Did this driver obtain data from sensors?
     if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count == 0)
       continue;
 
-    // Encode sensor_event message
-    if (!encodeI2CDeviceEventMsg(&msgi2cResponse, (*iter)->getSensorAddress()))
+    // Encode I2CDeviceEvent message
+    if (!encodeI2CDeviceEventMsg(&msgi2cResponse,
+                                 (*iter)->getSensorAddress())) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to encode I2CDeviceEvent!");
+      continue;
+    }
 
-      // Did we write into the device event?
-      if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count > 0) {
-        // Encode device event message
-        if (!encodeI2CDeviceEventMsg(&msgi2cResponse,
-                                     (uint32_t)drivers[i]->getSensorAddress()))
-    { WS_DEBUG_PRINTLN("ERROR: Failed to encode sensor event"); break;
-        }
-        // Publish device event message
-        if (!publishI2CDeviceEventMsg(&msgi2cResponse)) {
-          WS_DEBUG_PRINTLN("ERROR: Failed to publish sensor event");
-          break;
-        }
-      }
-
-
+    // Publish I2CDeviceEvent
+    if (!publishI2CDeviceEventMsg(&msgi2cResponse)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to publish sensor event");
+      continue;
+    }
   }
-
-
 }
