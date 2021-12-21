@@ -202,7 +202,7 @@ public:
   */
   /*******************************************************************************/
   virtual bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
-    return true;
+    return false;
   }
 
   /*******************************************************************************/
@@ -215,7 +215,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorAmbientTemperature(float *tempEvent) { return true; }
+  virtual bool getSensorAmbientTemperature(float *tempEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -282,7 +282,7 @@ public:
   */
   /*******************************************************************************/
   virtual bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
-    return true;
+    return false;
   }
 
   /*******************************************************************************/
@@ -295,7 +295,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorRelativeHumidity(float *humidEvent) { return true; }
+  virtual bool getSensorRelativeHumidity(float *humidEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -351,7 +351,7 @@ public:
   */
   /*******************************************************************************/
   virtual bool getSensorPressure(sensors_event_t *pressureEvent) {
-    return true;
+    return false;
   }
 
   /*******************************************************************************/
@@ -404,7 +404,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorCO2(float *CO2Value) { return true; }
+  virtual bool getSensorCO2(float *CO2Value) { return false; }
 
   /*******************************************************************************/
   /*!
