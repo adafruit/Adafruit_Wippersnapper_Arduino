@@ -342,6 +342,17 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Sets a timestamp for when the pressure sensor was queried.
+      @param    period
+                The time when the pressure sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorPressurePeriodPrv(long period) {
+    _pressureSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Base implementation - Reads a pressure sensor and converts
                 the reading into the expected SI unit.
       @param    pressureEvent
@@ -363,58 +374,6 @@ public:
   */
   /*******************************************************************************/
   void updateSensorPressure(float period) { return; }
-
-  /*********************************************************************************/
-  /*!
-      @brief    Base implementation - Returns the gas sensor's period, if
-     set.
-      @returns  Time when the CO2 sensor should be polled, in seconds.
-  */
-  /*********************************************************************************/
-  virtual long getSensorperiod() { return _CO2SensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the CO2 sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the CO2
-                sensor.
-  */
-  /*******************************************************************************/
-  void setSensorperiod(float period) {
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _CO2SensorPeriod = (long)period * 1000;
-  }
-
-  /*********************************************************************************/
-  /*!
-      @brief    Base implementation - Returns the previous time interval at
-     which the CO2 sensor was queried last.
-      @returns  Time when the CO2 sensor was last queried, in seconds.
-  */
-  /*********************************************************************************/
-  virtual long getSensorperiodPrv() { return _CO2SensorPeriodPrv; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a CO2 sensor.
-      @param    CO2Value
-                    The CO2 value, in ppm.
-      @returns  True if the sensor value was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getSensorCO2(float *CO2Value) { return false; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a CO2 sensor.
-      @param    period
-                The time interval at which to return new data from the CO2
-                sensor.
-  */
-  /*******************************************************************************/
-  void updateSensorCO2(float period) { return; }
 
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:

@@ -240,7 +240,58 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         return false;
       }
     }
-    // TODO: Check next type!
+  }
+  // BME280
+  if (strcmp("bme280", msgDeviceInitReq->i2c_device_name) == 0) {
+    _bme280 = new WipperSnapper_I2C_Driver_BME280(this->_i2c, i2cAddress);
+    if (!_bme280->getInitialized()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize BME280!");
+      return false;
+    }
+    // add to vec. of driver objects
+    drivers.push_back(_bme280);
+    WS_DEBUG_PRINTLN("BME280 Initialized Successfully!");
+    // Configure sensor properties
+    // TODO: This will become a generic function, I think we'll pass
+    // sensorObject into it.
+    for (int i = 0; i < msgDeviceInitReq->i2c_device_properties_count; i++) {
+      // Generic as well?
+      switch (msgDeviceInitReq->i2c_device_properties[i].sensor_type) {
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+        _bme280->enableSensorAmbientTemperature();
+        _bme280->setSensorAmbientTemperaturePeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled Temperature Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+        _bme280->enableSensorRelativeHumidity();
+        _bme280->setSensorRelativeHumidityPeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled Humidity Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
+        _bme280->enableSensorPressure();
+        _bme280->setSensorPressurePeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled Pressure Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      default:
+        WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
+        return false;
+      }
+    }
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     return false;
@@ -417,12 +468,14 @@ void WipperSnapper_Component_I2C::update() {
     // Number of events which occured for this driver
     msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 
+    // Event struct
+    sensors_event_t event;
+
     // AMBIENT_TEMPERATURE sensor
     curTime = millis();
     if ((*iter)->getSensorAmbientTemperaturePeriod() != 0L &&
         curTime - (*iter)->getSensorAmbientTemperaturePeriodPrv() >
             (*iter)->getSensorAmbientTemperaturePeriod()) {
-      sensors_event_t event;
       if ((*iter)->getSensorAmbientTemperature(&event)) {
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(event.temperature);
@@ -444,7 +497,6 @@ void WipperSnapper_Component_I2C::update() {
     if ((*iter)->getSensorRelativeHumidityPeriod() != 0L &&
         curTime - (*iter)->getSensorRelativeHumidityPeriodPrv() >
             (*iter)->getSensorRelativeHumidityPeriod()) {
-      sensors_event_t event;
       if ((*iter)->getSensorAmbientTemperature(&event)) {
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(event.temperature);
@@ -456,6 +508,26 @@ void WipperSnapper_Component_I2C::update() {
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
 
         (*iter)->setSensorRelativeHumidityPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get relative humidity!");
+      }
+    }
+
+    // PRESSURE sensor
+    curTime = millis();
+    if ((*iter)->getSensorPressurePeriod() != 0L &&
+        curTime - (*iter)->getSensorPressurePeriodPrv() >
+            (*iter)->getSensorPressurePeriod()) {
+      if ((*iter)->getSensorPressure(&event)) {
+        WS_DEBUG_PRINT("\tPressure: ");
+        WS_DEBUG_PRINT(event.pressure);
+        WS_DEBUG_PRINTLN(" hPa");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.pressure,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE);
+
+        (*iter)->setSensorPressurePeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get relative humidity!");
       }
