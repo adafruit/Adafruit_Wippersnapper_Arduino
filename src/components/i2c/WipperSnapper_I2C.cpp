@@ -683,6 +683,27 @@ void WipperSnapper_Component_I2C::update() {
       }
     }
 
+    // CO2 sensor
+    curTime = millis();
+    if ((*iter)->getSensorCO2Period() != 0L &&
+        curTime - (*iter)->getSensorCO2PeriodPrv() >
+            (*iter)->getSensorCO2Period()) {
+      float value;
+      if ((*iter)->getSensorCO2(&value)) {
+        WS_DEBUG_PRINT("\tco2: ");
+        WS_DEBUG_PRINT(value);
+        WS_DEBUG_PRINTLN(" ppm");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, value,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
+
+        (*iter)->setSensorCO2PeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get relative humidity!");
+      }
+    }
+
     // Did this driver obtain data from sensors?
     if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count == 0)
       continue;

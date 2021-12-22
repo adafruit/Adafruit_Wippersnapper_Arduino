@@ -172,6 +172,46 @@ public:
 
   /*********************************************************************************/
   /*!
+      @brief    Base implementation - Returns the pressure sensor's period, if
+     set.
+      @returns  Time when the pressure sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorCO2Period() { return _CO2SensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the pressure sensor was queried last.
+      @returns  Time when the pressure sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the pressure sensor was queried.
+      @param    period
+                The time when the pressure sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorCO2PeriodPrv(long period) {
+    _CO2SensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SCD4X's current humidity.
+      @param    CO2Value
+                The CO2 value, in ppm.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getSensorCO2(float *CO2Value) { return false; }
+
+  /*********************************************************************************/
+  /*!
       @brief    Base implementation - Returns the humidity sensor's period, if
      set.
       @returns  Time when the temperature sensor should be polled, in seconds.
