@@ -65,8 +65,8 @@ public:
   */
   /*******************************************************************************/
   bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
-    // check if data is available
-    if (!_scd30.dataReady())
+    // check if sensor is enabled and data is available
+    if (_tempSensorPeriod != 0 && (!_scd30.dataReady()))
       return false;
 
     // attempt to get temperature data
@@ -87,8 +87,8 @@ public:
   */
   /*******************************************************************************/
   bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
-    // check if data is available
-    if (!_scd30.dataReady())
+    // check if sensor is enabled and data is available
+    if (_humidSensorPeriod != 0 && (!_scd30.dataReady()))
       return false;
 
     // attempt to get temperature data
@@ -109,14 +109,15 @@ public:
   */
   /*******************************************************************************/
   bool getSensorCO2(float *CO2Value) {
-    if (!_scd30.dataReady())
+    // check if sensor is enabled and data is available
+    if (_CO2SensorPeriod != 0 && (!_scd30.dataReady()))
       return false;
     CO2Value = &_scd30.CO2;
     return true;
   }
 
 protected:
-  Adafruit_SCD30 _scd30; ///< SCD30 driver object
+  Adafruit_SCD30 _scd30;                ///< SCD30 driver object
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD30
