@@ -88,6 +88,19 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Updates the properties of a CO2 sensor.
+      @param    period
+                The time interval at which to return new data from the CO2
+                sensor.
+  */
+  /*******************************************************************************/
+  void updateSensorCO2(float period) {
+    // "always enabled", controlled by the period instead of an object
+    setSensorCO2Period(period);
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the SCD30's current temperature.
       @param    tempEvent
                 Pointer to a temperature sensor value.
@@ -97,6 +110,10 @@ public:
   /*******************************************************************************/
   bool getSensorAmbientTemperature(float *tempEvent) {
     uint16_t error;
+    // check if sensor is enabled
+    if (_tempSensorPeriod == 0)
+      return false;
+
     // Read Measurement
     error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
     if (error)
@@ -116,6 +133,9 @@ public:
   /*******************************************************************************/
   bool getSensorRelativeHumidity(float *humidEvent) {
     uint16_t error;
+    // Check if sensor is enabled
+    if (_humidSensorPeriod == 0)
+      return false;
     // Read Measurement
     error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
     if (error)
@@ -135,6 +155,9 @@ public:
   /*******************************************************************************/
   virtual bool getSensorCO2(float *CO2Value) {
     uint16_t error;
+    // check if co2 sensor enabled
+    if (_CO2SensorPeriod == 0)
+      return false;
     // Read Measurement
     error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
     float co2 = (float)_co2;

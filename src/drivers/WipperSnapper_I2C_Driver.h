@@ -142,6 +142,29 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Set the co2 sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+     co2 sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorCO2Period(float period) {
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _CO2SensorPeriod = (long)period * 1000;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a CO2 sensor.
+      @param    period
+                The time interval at which to return new data from the CO2
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorCO2(float period) { return; }
+
+  /*******************************************************************************/
+  /*!
       @brief    Disables the device's CO2 sensor, if it exists.
   */
   /*******************************************************************************/
@@ -305,7 +328,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void updateSensorRelativeHumidity(float period) { return; }
+  virtual void updateSensorRelativeHumidity(float period) { return; }
 
   /*********************************************************************************/
   /*!
@@ -373,7 +396,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void updateSensorPressure(float period) { return; }
+  virtual void updateSensorPressure(float period) { return; }
 
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:

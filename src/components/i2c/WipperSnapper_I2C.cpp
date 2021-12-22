@@ -202,7 +202,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
    * initialization, we should pass the msgDeviceInitReq into a function
    * which'll setup() (good name?) the properties and return back here for error
    * handling, etc.
-   * 
+   *
    * We may want to also handle within the superclass.
    */
 
@@ -391,6 +391,55 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         return false;
       }
     }
+  }
+  // SCD4x
+  else if (strcmp("SCD4X", msgDeviceInitReq->i2c_device_name) == 0) {
+    _scd4x = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
+    if (!_scd4x->getInitialized()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize scd4x!");
+      return false;
+    }
+    // add to vec. of driver objects
+    drivers.push_back(_scd4x);
+    WS_DEBUG_PRINTLN("scd4x Initialized Successfully!");
+    for (int i = 0; i < msgDeviceInitReq->i2c_device_properties_count; i++) {
+      // Generic as well?
+      switch (msgDeviceInitReq->i2c_device_properties[i].sensor_type) {
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+        _scd4x->enableSensorAmbientTemperature();
+        _scd4x->setSensorAmbientTemperaturePeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled Temperature Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+        _scd4x->enableSensorRelativeHumidity();
+        _scd4x->setSensorRelativeHumidityPeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the component driver?
+        WS_DEBUG_PRINTLN("Enabled Relative Humidity Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
+        _scd4x->enableSensorCO2();
+        _scd4x->setSensorCO2Period(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled Pressure Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      default:
+        WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
+        return false;
+      }
+    }
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     return false;
@@ -433,7 +482,9 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           drivers[i]->updateSensorPressure(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
-        // TODO: implement more types
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
+          drivers[i]->updateSensorCO2(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
         default:
           WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
           return false;

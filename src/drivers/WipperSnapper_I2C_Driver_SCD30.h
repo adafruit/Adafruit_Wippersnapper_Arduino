@@ -117,7 +117,7 @@ public:
   }
 
 protected:
-  Adafruit_SCD30 _scd30;                ///< SCD30 driver object
+  Adafruit_SCD30 _scd30; ///< SCD30 driver object
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD30
