@@ -198,6 +198,12 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
 
+  /* TODO: I think the entire block below should be handled by the driver
+   * initialization, we should pass the msgDeviceInitReq into a function
+   * which'll setup() (good name?) the properties and return back here for error
+   * handling, etc
+   */
+
   // AHT20
   if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
     // Initialize AHTX0
@@ -242,7 +248,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
   }
   // BME280
-  if (strcmp("bme280", msgDeviceInitReq->i2c_device_name) == 0) {
+  else if (strcmp("bme280", msgDeviceInitReq->i2c_device_name) == 0) {
     _bme280 = new WipperSnapper_I2C_Driver_BME280(this->_i2c, i2cAddress);
     if (!_bme280->getInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize BME280!");
@@ -280,6 +286,48 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
         _bme280->enableSensorPressure();
         _bme280->setSensorPressurePeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled Pressure Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      default:
+        WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
+        return false;
+      }
+    }
+  }
+  // DPS310
+  else if (strcmp("DPS310", msgDeviceInitReq->i2c_device_name) == 0) {
+    _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
+    if (!_dps310->getInitialized()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize DPS310!");
+      return false;
+    }
+    // add to vec. of driver objects
+    drivers.push_back(_dps310);
+    WS_DEBUG_PRINTLN("DPS310 Initialized Successfully!");
+    // Configure sensor properties
+    // TODO: This will become a generic function, I think we'll pass
+    // sensorObject into it.
+    for (int i = 0; i < msgDeviceInitReq->i2c_device_properties_count; i++) {
+      // Generic as well?
+      switch (msgDeviceInitReq->i2c_device_properties[i].sensor_type) {
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+        _dps310->enableSensorAmbientTemperature();
+        _dps310->setSensorAmbientTemperaturePeriod(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        // TODO: This should be moved into the driver?
+        WS_DEBUG_PRINTLN("Enabled Temperature Sensor, [Returns every: ");
+        WS_DEBUG_PRINT(
+            msgDeviceInitReq->i2c_device_properties[i].sensor_period);
+        WS_DEBUG_PRINTLN("seconds]");
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
+        _dps310->enableSensorPressure();
+        _dps310->setSensorPressurePeriod(
             msgDeviceInitReq->i2c_device_properties[i].sensor_period);
         // TODO: This should be moved into the driver?
         WS_DEBUG_PRINTLN("Enabled Pressure Sensor, [Returns every: ");
