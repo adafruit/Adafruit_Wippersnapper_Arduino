@@ -35,7 +35,8 @@ jobs:
       fail-fast: false
       matrix:
         arduino-platform: ["funhouse_tinyusb", "magtag_tinyusb",
-                           "metro_s2_tinyusb", "feather_s2_tinyusb"]
+                           "metro_s2_tinyusb", "feather_s2_tinyusb",
+                           "qtpy_esp32_s2"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -57,6 +58,10 @@ jobs:
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
     - name: Build for ESP32-S2
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+    - name: list
+      run : |
+            ls
+            ls examples/*/build/
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2

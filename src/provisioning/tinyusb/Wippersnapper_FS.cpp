@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) || defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+#if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) || defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) || defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -277,7 +277,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
   secretsFile.flush();
 // platform-dependent changes
 #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
-    defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+    defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) || defined (ARDUINO_ADAFRUIT_QTPY_ESP32S2)
   secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_"
                     "ssid\":\"YOUR_WIFI_SSID_");
 #elif defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
