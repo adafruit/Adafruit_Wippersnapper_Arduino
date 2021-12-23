@@ -58,6 +58,38 @@ public:
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver() { _sensorAddress = 0; }
 
+  void
+  configureDriver(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
+    int propertyIdx = 0;
+    while (propertyIdx < msgDeviceInitReq->i2c_device_properties_count) {
+      switch (
+          msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_type) {
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+        enableSensorAmbientTemperature();
+        setSensorAmbientTemperaturePeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+        enableSensorRelativeHumidity();
+        setSensorRelativeHumidityPeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
+        enableSensorPressure();
+        setSensorPressurePeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
+        enableSensorCO2();
+        setSensorCO2Period(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+      default:
+        break;
+      }
+      ++propertyIdx;
+    }
+  }
+
   /*******************************************************************************/
   /*!
       @brief    Gets the initialization status of an I2C driver.
