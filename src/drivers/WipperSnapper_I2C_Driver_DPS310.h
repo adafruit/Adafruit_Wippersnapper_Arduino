@@ -145,7 +145,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     if (_dps_temp != NULL && _dps310.temperatureAvailable()) {
       _dps_temp->getEvent(tempEvent);
       return true;
@@ -162,7 +162,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorPressure(sensors_event_t *pressureEvent) {
+  bool getEventPressure(sensors_event_t *pressureEvent) {
     if (_dps_pressure != NULL && _dps310.pressureAvailable()) {
       _dps_pressure->getEvent(pressureEvent);
       return true;

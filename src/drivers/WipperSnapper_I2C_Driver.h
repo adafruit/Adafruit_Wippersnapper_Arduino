@@ -96,7 +96,7 @@ public:
       @returns  True if I2C device is initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool getInitialized() { return _isInitialized; }
+  bool isInitialized() { return _isInitialized; }
 
   /*******************************************************************************/
   /*!
@@ -104,7 +104,7 @@ public:
       @returns  The I2C device's unique i2c address.
   */
   /*******************************************************************************/
-  uint16_t getSensorAddress() { return _sensorAddress; }
+  uint16_t sensorAddress() { return _sensorAddress; }
 
   /*******************************************************************************/
   /*!
@@ -209,7 +209,7 @@ public:
       @returns  Time when the pressure sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorCO2Period() { return _CO2SensorPeriod; }
+  virtual long sensorCO2Period() { return _CO2SensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -218,7 +218,7 @@ public:
       @returns  Time when the pressure sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
+  virtual long sensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -240,7 +240,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorCO2(float *CO2Value) { return false; }
+  virtual bool getEventCO2(float *CO2Value) { return false; }
 
   /*********************************************************************************/
   /*!
@@ -249,7 +249,7 @@ public:
       @returns  Time when the temperature sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorAmbientTemperaturePeriod() { return _tempSensorPeriod; }
+  virtual long sensorAmbientTemperaturePeriod() { return _tempSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -271,7 +271,7 @@ public:
       @returns  Time when the temperature sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorAmbientTemperaturePeriodPrv() {
+  virtual long sensorAmbientTemperaturePeriodPrv() {
     return _tempSensorPeriodPrv;
   }
 
@@ -296,7 +296,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
+  virtual bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     return false;
   }
 
@@ -310,7 +310,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorAmbientTemperature(float *tempEvent) { return false; }
+  virtual bool getEventAmbientTemperature(float *tempEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -329,7 +329,7 @@ public:
       @returns  Time when the humidity sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorRelativeHumidityPeriod() { return _humidSensorPeriod; }
+  virtual long sensorRelativeHumidityPeriod() { return _humidSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -351,7 +351,7 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorRelativeHumidityPeriodPrv() {
+  virtual long sensorRelativeHumidityPeriodPrv() {
     return _humidSensorPeriodPrv;
   }
 
@@ -376,7 +376,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
+  virtual bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     return false;
   }
 
@@ -390,7 +390,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorRelativeHumidity(float *humidEvent) { return false; }
+  virtual bool getEventRelativeHumidity(float *humidEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -409,7 +409,7 @@ public:
       @returns  Time when the pressure sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorPressurePeriod() { return _pressureSensorPeriod; }
+  virtual long sensorPressurePeriod() { return _pressureSensorPeriod; }
 
   /*******************************************************************************/
   /*!
@@ -433,7 +433,7 @@ public:
       @returns  Time when the pressure sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
+  virtual long sensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -456,7 +456,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorPressure(sensors_event_t *pressureEvent) {
+  virtual bool getEventPressure(sensors_event_t *pressureEvent) {
     return false;
   }
 

@@ -160,7 +160,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     if (_bme_temp == NULL)
       return false;
     _bme_temp->getEvent(tempEvent);
@@ -176,7 +176,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     if (_bme_humidity == NULL)
       return false;
     _bme_humidity->getEvent(humidEvent);
@@ -193,7 +193,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorPressure(sensors_event_t *pressureEvent) {
+  bool getEventPressure(sensors_event_t *pressureEvent) {
     if (_bme_pressure == NULL)
       return false;
     _bme_pressure->getEvent(pressureEvent);

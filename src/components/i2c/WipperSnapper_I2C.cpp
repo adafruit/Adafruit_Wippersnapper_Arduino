@@ -174,7 +174,6 @@ WipperSnapper_Component_I2C::scanAddresses() {
   WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
 
   scanResp.bus_response = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
-
   return scanResp;
 }
 
@@ -192,17 +191,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
 
-  /* TODO: I think the entire block below should be handled by the driver
-   * initialization, we should pass the msgDeviceInitReq into a function
-   * which'll setup() (good name?) the properties and return back here for error
-   * handling, etc.
-   *
-   * We may want to also handle within the superclass.
-   */
-
   if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
     _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
-    if (!_ahtx0->getInitialized()) {
+    if (!_ahtx0->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize AHTX0 chip!");
       return false;
     }
@@ -211,7 +202,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_ahtx0);
   } else if (strcmp("bme280", msgDeviceInitReq->i2c_device_name) == 0) {
     _bme280 = new WipperSnapper_I2C_Driver_BME280(this->_i2c, i2cAddress);
-    if (!_bme280->getInitialized()) {
+    if (!_bme280->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize BME280!");
       return false;
     }
@@ -220,7 +211,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("BME280 Initialized Successfully!");
   } else if (strcmp("DPS310", msgDeviceInitReq->i2c_device_name) == 0) {
     _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
-    if (!_dps310->getInitialized()) {
+    if (!_dps310->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize DPS310!");
       return false;
     }
@@ -229,7 +220,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("DPS310 Initialized Successfully!");
   } else if (strcmp("SCD30", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd30 = new WipperSnapper_I2C_Driver_SCD30(this->_i2c, i2cAddress);
-    if (!_scd30->getInitialized()) {
+    if (!_scd30->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD30!");
       return false;
     }
@@ -238,7 +229,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
   } else if (strcmp("SCD4X", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd4x = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
-    if (!_scd4x->getInitialized()) {
+    if (!_scd4x->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize scd4x!");
       return false;
     }
@@ -269,7 +260,7 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
 
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
-    if (drivers[i]->getSensorAddress() == i2cAddress) {
+    if (drivers[i]->sensorAddress() == i2cAddress) {
       // Update the properties of each driver
       for (int j = 0; j < msgDeviceUpdateReq->i2c_device_properties_count;
            j++) {
@@ -314,7 +305,7 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_address;
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
-    if (drivers[i]->getSensorAddress() == deviceAddr) {
+    if (drivers[i]->sensorAddress() == deviceAddr) {
       drivers.erase(drivers.begin() + i);
       WS_DEBUG_PRINTLN("Driver de-initialized!");
       is_success = true;
@@ -428,10 +419,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // AMBIENT_TEMPERATURE sensor
     curTime = millis();
-    if ((*iter)->getSensorAmbientTemperaturePeriod() != 0L &&
-        curTime - (*iter)->getSensorAmbientTemperaturePeriodPrv() >
-            (*iter)->getSensorAmbientTemperaturePeriod()) {
-      if ((*iter)->getSensorAmbientTemperature(&event)) {
+    if ((*iter)->sensorAmbientTemperaturePeriod() != 0L &&
+        curTime - (*iter)->sensorAmbientTemperaturePeriodPrv() >
+            (*iter)->sensorAmbientTemperaturePeriod()) {
+      if ((*iter)->getEventAmbientTemperature(&event)) {
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(event.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
@@ -449,12 +440,12 @@ void WipperSnapper_Component_I2C::update() {
 
     // RELATIVE_HUMIDITY sensor
     curTime = millis();
-    if ((*iter)->getSensorRelativeHumidityPeriod() != 0L &&
-        curTime - (*iter)->getSensorRelativeHumidityPeriodPrv() >
-            (*iter)->getSensorRelativeHumidityPeriod()) {
-      if ((*iter)->getSensorAmbientTemperature(&event)) {
+    if ((*iter)->sensorRelativeHumidityPeriod() != 0L &&
+        curTime - (*iter)->sensorRelativeHumidityPeriodPrv() >
+            (*iter)->sensorRelativeHumidityPeriod()) {
+      if ((*iter)->getEventRelativeHumidity(&event)) {
         WS_DEBUG_PRINT("\tHumidity: ");
-        WS_DEBUG_PRINT(event.temperature);
+        WS_DEBUG_PRINT(event.relative_humidity);
         WS_DEBUG_PRINTLN("%RH");
 
         // pack event data into msg
@@ -470,10 +461,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // PRESSURE sensor
     curTime = millis();
-    if ((*iter)->getSensorPressurePeriod() != 0L &&
-        curTime - (*iter)->getSensorPressurePeriodPrv() >
-            (*iter)->getSensorPressurePeriod()) {
-      if ((*iter)->getSensorPressure(&event)) {
+    if ((*iter)->sensorPressurePeriod() != 0L &&
+        curTime - (*iter)->sensorPressurePeriodPrv() >
+            (*iter)->sensorPressurePeriod()) {
+      if ((*iter)->getEventPressure(&event)) {
         WS_DEBUG_PRINT("\tPressure: ");
         WS_DEBUG_PRINT(event.pressure);
         WS_DEBUG_PRINTLN(" hPa");
@@ -490,11 +481,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // CO2 sensor
     curTime = millis();
-    if ((*iter)->getSensorCO2Period() != 0L &&
-        curTime - (*iter)->getSensorCO2PeriodPrv() >
-            (*iter)->getSensorCO2Period()) {
+    if ((*iter)->sensorCO2Period() != 0L &&
+        curTime - (*iter)->sensorCO2PeriodPrv() > (*iter)->sensorCO2Period()) {
       float value;
-      if ((*iter)->getSensorCO2(&value)) {
+      if ((*iter)->getEventCO2(&value)) {
         WS_DEBUG_PRINT("\tco2: ");
         WS_DEBUG_PRINT(value);
         WS_DEBUG_PRINTLN(" ppm");
@@ -514,8 +504,7 @@ void WipperSnapper_Component_I2C::update() {
       continue;
 
     // Encode I2CDeviceEvent message
-    if (!encodeI2CDeviceEventMsg(&msgi2cResponse,
-                                 (*iter)->getSensorAddress())) {
+    if (!encodeI2CDeviceEventMsg(&msgi2cResponse, (*iter)->sensorAddress())) {
       WS_DEBUG_PRINTLN("ERROR: Failed to encode I2CDeviceEvent!");
       continue;
     }

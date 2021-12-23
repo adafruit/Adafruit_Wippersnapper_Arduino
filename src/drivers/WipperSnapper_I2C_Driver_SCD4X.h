@@ -108,7 +108,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorAmbientTemperature(float *tempEvent) {
+  bool getEventAmbientTemperature(float *tempEvent) {
     uint16_t error;
     // check if sensor is enabled
     if (_tempSensorPeriod == 0)
@@ -131,7 +131,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorRelativeHumidity(float *humidEvent) {
+  bool getEventRelativeHumidity(float *humidEvent) {
     uint16_t error;
     // Check if sensor is enabled
     if (_humidSensorPeriod == 0)
@@ -153,7 +153,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getSensorCO2(float *CO2Value) {
+  virtual bool getEventCO2(float *CO2Value) {
     uint16_t error;
     // check if co2 sensor enabled
     if (_CO2SensorPeriod == 0)

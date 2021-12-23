@@ -64,7 +64,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
     if (_tempSensorPeriod != 0 && (!_scd30.dataReady()))
       return false;
@@ -86,7 +86,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorRelativeHumidity(sensors_event_t *humidEvent) {
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
     if (_humidSensorPeriod != 0 && (!_scd30.dataReady()))
       return false;
@@ -108,7 +108,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getSensorCO2(float *CO2Value) {
+  bool getEventCO2(float *CO2Value) {
     // check if sensor is enabled and data is available
     if (_CO2SensorPeriod != 0 && (!_scd30.dataReady()))
       return false;
