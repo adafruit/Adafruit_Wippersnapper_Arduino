@@ -340,6 +340,7 @@ void Wippersnapper_FS::parseSecrets() {
         "effect");
     fsHalt();
   }
+  WS._username = io_username;
 
   // Get io key
   io_key = doc["io_key"];
@@ -349,6 +350,7 @@ void Wippersnapper_FS::parseSecrets() {
     writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
     fsHalt();
   }
+  WS._key = io_key;
 
   // next, we detect the network interface from the `secrets.json`
   WS_DEBUG_PRINTLN("Attempting to find network interface...");
