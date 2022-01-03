@@ -77,14 +77,10 @@ void Wippersnapper::provision() {
   // init. LED for status signaling
   statusLEDInit();
 #ifdef USE_TINYUSB
-  // init new filesystem
   _fileSystem = new Wippersnapper_FS();
-  // parse out secrets.json file
   _fileSystem->parseSecrets();
 #elif defined(USE_NVS)
-  // init esp32 nvs partition namespace
   _nvs = new Wippersnapper_ESP32_nvs();
-  // parse out secrets
   _nvs->parseSecrets();
 #endif
   // Set credentials
@@ -106,19 +102,6 @@ void Wippersnapper::set_user_key(const char *aio_username,
                                  const char *aio_key) {
   WS._username = aio_username;
   WS._key = aio_key;
-}
-
-/****************************************************************************/
-/*!
-    @brief    Configures the device's Adafruit IO credentials from the
-                secrets.json file.
-*/
-/****************************************************************************/
-void Wippersnapper::set_user_key() {
-#ifdef USE_TINYUSB
-  WS._username = _fileSystem->io_username;
-  WS._key = _fileSystem->io_key;
-#endif
 }
 
 /**************************************************************************/

@@ -44,19 +44,25 @@ Wippersnapper_ESP32_nvs::~Wippersnapper_ESP32_nvs() { nvs.end(); }
 */
 /****************************************************************************/
 void Wippersnapper_ESP32_nvs::parseSecrets() {
-  // parsey
+  // Parse from
+  // https://github.com/adafruit/Adafruit_WebSerial_NVMGenerator/blob/main/wsPartitions.csv
   _ssid = nvs.getString("wsNetSSID", "");
   _ssidPass = nvs.getString("wsNetPass", "");
   _aioUser = nvs.getString("wsAIOUser", "");
   _aioPass = nvs.getString("wsAIOKey", "");
-  _aioURL = nvs.getString("wsAIOURL", "");
 
-  // Validate configuration was set within the partition
-  if (_ssid == "" || _ssidPass == "" || _aioUser == "" || _aioPass == "") {
+  // Validate getString() calls
+  if (_ssid.length() == 0 || _ssidPass.length() == 0 ||
+      _aioUser.length() == 0 || _aioPass.length() == 0) {
     WS.setStatusLEDColor(RED);
     while (1)
       ;
   }
+
+  // optional NVS staging url
+  _aioURL = nvs.getString("wsAIOURL", "");
+  if (_aioURL.length() == 0)
+    _aioURL = "io.adafruit.com";
 
   // Set global configuration strings
   WS._network_ssid = _ssid.c_str();
