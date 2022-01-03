@@ -84,15 +84,8 @@ void Wippersnapper::provision() {
 #elif defined(USE_NVS)
   // init esp32 nvs partition namespace
   _nvs = new Wippersnapper_ESP32_nvs();
-  // validate esp32 has been programmed with credentials
-  if (!_nvs->validateNVSConfig()) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: NVS partition or credentials not found - was NVS flashed?");
-    while (1)
-      yield();
-  }
-  // pull values out of NVS configuration
-  _nvs->setNVSConfig();
+  // parse out secrets
+  _nvs->parseSecrets();
 #endif
   // Set credentials
   set_user_key();

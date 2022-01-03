@@ -22,8 +22,12 @@
 */
 /****************************************************************************/
 Wippersnapper_ESP32_nvs::Wippersnapper_ESP32_nvs() {
-  // init. nvs, read-only
-  nvs.begin("wsNamespace", false);
+  // Attempt to initialize NVS partition
+  if (!nvs.begin("wsNamespace", false)) {
+    WS.setStatusLEDColor(RED);
+    while (1)
+      ;
+  }
 }
 
 /****************************************************************************/
@@ -35,39 +39,31 @@ Wippersnapper_ESP32_nvs::~Wippersnapper_ESP32_nvs() { nvs.end(); }
 
 /****************************************************************************/
 /*!
-    @brief    Reads and validates credentials from nvs' "wsNamespace"
+    @brief    Reads, validates, and sets credentials from nvs' "wsNamespace"
                 namespace.
-    @returns  True if credentials were found, False otherwise.
 */
 /****************************************************************************/
-bool Wippersnapper_ESP32_nvs::validateNVSConfig() {
+void Wippersnapper_ESP32_nvs::parseSecrets() {
+  // parsey
   _ssid = nvs.getString("wsNetSSID", "");
   _ssidPass = nvs.getString("wsNetPass", "");
   _aioUser = nvs.getString("wsAIOUser", "");
   _aioPass = nvs.getString("wsAIOKey", "");
   _aioURL = nvs.getString("wsAIOURL", "");
 
-  // validate config properly set in partition
+  // Validate configuration was set within the partition
   if (_ssid == "" || _ssidPass == "" || _aioUser == "" || _aioPass == "") {
-    // TODO: Possibly LED blink/some external error handling around this
-    return false;
+    WS.setStatusLEDColor(RED);
+    while (1)
+      ;
   }
-  return true;
-}
 
-/****************************************************************************/
-/*!
-    @brief    Sets Wippersnapper configuration using nvs configuration
-    @returns  True if credentials set successfully, False otherwise.
-*/
-/****************************************************************************/
-bool Wippersnapper_ESP32_nvs::setNVSConfig() {
+  // Set global configuration strings
   WS._network_ssid = _ssid.c_str();
   WS._network_pass = _ssidPass.c_str();
   WS._username = _aioUser.c_str();
   WS._key = _aioPass.c_str();
   WS._mqttBrokerURL = _aioURL.c_str();
-  return true;
 }
 
 #endif // ARDUINO_ARCH_ESP32

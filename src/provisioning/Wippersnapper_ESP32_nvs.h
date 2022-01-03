@@ -29,9 +29,7 @@ class Wippersnapper_ESP32_nvs {
 public:
   Wippersnapper_ESP32_nvs();
   ~Wippersnapper_ESP32_nvs();
-
-  bool validateNVSConfig();
-  bool setNVSConfig();
+  void parseSecrets();
 
   Preferences nvs; ///< Provides access to ESP32's Non-Volatile Storage
 
