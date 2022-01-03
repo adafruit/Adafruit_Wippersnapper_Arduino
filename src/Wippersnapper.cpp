@@ -83,8 +83,8 @@ void Wippersnapper::provision() {
   _nvs = new Wippersnapper_ESP32_nvs();
   _nvs->parseSecrets();
 #endif
-  // Set credentials
-  set_user_key();
+
+  // Set WiFi credentials within network interface
   set_ssid_pass();
 }
 
@@ -1194,8 +1194,6 @@ void Wippersnapper::errorWriteHang(String error) {
 /**************************************************************************/
 void Wippersnapper::runNetFSM() {
   WS.feedWDT();
-  // MQTT connack RC
-  int mqttRC;
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -1250,7 +1248,7 @@ void Wippersnapper::runNetFSM() {
       maxAttempts = 10;
       while (maxAttempts >= 0) {
         setStatusLEDColor(LED_IO_CONNECT);
-        mqttRC = WS._mqtt->connect();
+        int8_t mqttRC = WS._mqtt->connect(WS._username, WS._key);
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;

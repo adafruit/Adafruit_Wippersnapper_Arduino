@@ -100,15 +100,8 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS_DEBUG_PRINT("BROKER URL: ");
-    WS_DEBUG_PRINT(WS._mqttBrokerURL);
-
-    WS_DEBUG_PRINT("USERNAME: ");
-    WS_DEBUG_PRINT(WS._username);
-    WS_DEBUG_PRINT("KEY: ");
-    WS_DEBUG_PRINT(WS._key);
-
     if (WS._mqttBrokerURL == nullptr) {
+      WS_DEBUG_PRINTLN("IO ADAFRUIT TEST L114");
       WS._mqttBrokerURL = "io.adafruit.com";
       _mqtt_client->setCACert(_aio_root_ca_prod);
     } else {

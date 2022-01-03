@@ -59,17 +59,12 @@ void Wippersnapper_ESP32_nvs::parseSecrets() {
       ;
   }
 
-  // optional NVS staging url
-  _aioURL = nvs.getString("wsAIOURL", "");
-  if (_aioURL.length() == 0)
-    _aioURL = "io.adafruit.com";
-
   // Set global configuration strings
   WS._network_ssid = _ssid.c_str();
   WS._network_pass = _ssidPass.c_str();
   WS._username = _aioUser.c_str();
   WS._key = _aioPass.c_str();
-  WS._mqttBrokerURL = _aioURL.c_str();
+  WS._mqttBrokerURL = nullptr;
 }
 
 #endif // ARDUINO_ARCH_ESP32
