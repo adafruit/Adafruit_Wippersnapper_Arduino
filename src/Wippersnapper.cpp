@@ -1248,7 +1248,7 @@ void Wippersnapper::runNetFSM() {
       maxAttempts = 10;
       while (maxAttempts >= 0) {
         setStatusLEDColor(LED_IO_CONNECT);
-        int8_t mqttRC = WS._mqtt->connect(WS._username, WS._key);
+        int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
