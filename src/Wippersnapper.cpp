@@ -1201,9 +1201,7 @@ void Wippersnapper::runNetFSM() {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
-
-      // have we connected prior?
+      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
         fsmNetwork = FSM_NET_CONNECTED;
         return;
@@ -1211,47 +1209,42 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
-      WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
+      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
       if (networkStatus() == WS_NET_CONNECTED) {
-        WS_DEBUG_PRINTLN("Connected to WiFi");
+        // WS_DEBUG_PRINTLN("Connected to WiFi");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
       // Attempt to connect to wireless network
       maxAttempts = 5;
-      while (maxAttempts >= 0) {
+      while (maxAttempts > 0) {
         setStatusLEDColor(LED_NET_CONNECT);
         WS.feedWDT();
         // attempt to connect
         WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
+        delay(5000);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
         setStatusLEDColor(BLACK);
-        delay(5000); // delay 5s before re-connecting
         maxAttempts--;
       }
       // Validate connection
-      WS_DEBUG_PRINT("Done trying to establish, are we connected? ");
-      WS_DEBUG_PRINTLN(networkStatus());
-      if (networkStatus() == WS_NET_CONNECTED) {
-        fsmNetwork = FSM_NET_CHECK_NETWORK;
-        break;
-      } else { // unrecoverable error, hang forever
-        errorWriteHang("ERROR: Unable to connect to Wireless Network");
-      }
+      if (networkStatus() != WS_NET_CONNECTED)
+        haltError("ERROR: Unable to connect to WiFi, rebooting soon...");
+      fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       // Attempt to connect
-      maxAttempts = 10;
-      while (maxAttempts >= 0) {
+      maxAttempts = 5;
+      while (maxAttempts > 0) {
         setStatusLEDColor(LED_IO_CONNECT);
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
@@ -1259,18 +1252,16 @@ void Wippersnapper::runNetFSM() {
           break;
         }
         setStatusLEDColor(BLACK);
-        WS_DEBUG_PRINTLN("Unable to connect to Adafruit IO MQTT, retrying in 5 seconds...");
+        WS_DEBUG_PRINTLN(
+            "Unable to connect to Adafruit IO MQTT, retrying in 5 seconds...");
         delay(5000);
         maxAttempts--;
       }
-      if (fsmNetwork == FSM_NET_CHECK_MQTT) {
-        break;
-      } else { // unrecoverable error, hang forever
-        errorWriteHang("ERROR: Unable to connect to Adafruit.IO MQTT, resetting...");
-      }
+      if (fsmNetwork != FSM_NET_CHECK_MQTT)
+        haltError(
+            "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...");
       break;
     default:
-      // don't feed wdt
       break;
     }
   }
