@@ -119,9 +119,6 @@ public:
   */
   /********************************************************/
   ws_status_t networkStatus() {
-    delay(100);
-    WS_DEBUG_PRINT("networkStatus: ");
-    WS_DEBUG_PRINTLN(WiFi.status());
     switch (WiFi.status()) {
     case WL_CONNECTED:
       return WS_NET_CONNECTED;
