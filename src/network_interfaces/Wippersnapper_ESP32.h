@@ -119,6 +119,9 @@ public:
   */
   /********************************************************/
   ws_status_t networkStatus() {
+    delay(100);
+    WS_DEBUG_PRINT("networkStatus: ");
+    WS_DEBUG_PRINTLN(WiFi.status());
     switch (WiFi.status()) {
     case WL_CONNECTED:
       return WS_NET_CONNECTED;
@@ -216,14 +219,8 @@ protected:
       _disconnect();
       delay(100);
       WiFi.begin(_ssid, _pass);
-      _status = WS_NET_DISCONNECTED;
       delay(100);
-    }
-
-    // wait for a connection to be established
-    long startRetry = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
-      // do nothing, busy loop during the timeout
+      _status = WS_NET_DISCONNECTED;
     }
   }
 
