@@ -78,6 +78,16 @@
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #define USE_NVS
+#elif defined(ARDUINO_SAMD_NANO_33_IOT)
+#define BOARD_ID "nano-33-iot"
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 13
+#define USE_EXAMPLE_HARDCODE
+#elif defined(ARDUINO_SAMD_MKRWIFI1010)
+#define BOARD_ID "mkr-wifi-1010"
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 6
+#define USE_EXAMPLE_HARDCODE
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif
