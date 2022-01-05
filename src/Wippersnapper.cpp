@@ -85,9 +85,6 @@ void Wippersnapper::provision() {
   _nvs->parseSecrets();
 #endif
 
-#ifdef USE_EXAMPLE_HARDCODE
-  // do nothing
-#endif
   set_ssid_pass();
 }
 
