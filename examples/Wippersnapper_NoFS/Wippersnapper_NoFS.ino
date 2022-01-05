@@ -32,8 +32,6 @@
 #include "Wippersnapper_Networking.h"
 Wippersnapper_WiFi wipper(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 
-Wippersnapper_WiFi wipper;
-
 // Enable debug output for beta builds
 #define WS_DEBUG
 
