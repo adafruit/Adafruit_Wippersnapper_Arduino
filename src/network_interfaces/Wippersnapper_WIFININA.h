@@ -42,16 +42,24 @@ public:
   /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for ublox devices.
+  @param  aioUsername
+          Adafruit IO username
+  @param  aioKey
+          Adafruit IO key
+  @param  netSSID
+          Wireless Network SSID
+  @param  netPass
+          Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_WIFININA(const char *user, const char *key, const char *ssid,
-                         const char *pass)
+  Wippersnapper_WIFININA(const char *aioUsername, const char *aioKey, const char *netSSID,
+                         const char *netPass)
       : Wippersnapper() {
     _wifi = &SPIWIFI;
-    _ssid = ssid;
-    _pass = pass;
-    _username = user;
-    _key = key;
+    _ssid = netPass;
+    _pass = netSSID;
+    _username = aioUsername;
+    _key = aioKey;
     set_user_key(_username, _key);
     _mqtt_client = new WiFiSSLClient;
     WS._mqttBrokerURL == nullptr;
@@ -104,11 +112,13 @@ public:
     _mqtt_client = new WiFiSSLClient;
   }
 
-  /********************************************************/
+  /***********************************************************/
   /*!
-  @brief  Checks the nina-fw version on the module.
+  @brief   Checks the nina-fw version on the module.
+  @return  True if firmware on the ublox module matches
+           the latest version of the library, False otherwise.
   */
-  /********************************************************/
+  /***********************************************************/
   bool firmwareCheck() {
     String fv = WiFi.firmwareVersion();
     if (fv < WIFI_FIRMWARE_LATEST_VERSION)
