@@ -24,9 +24,6 @@
 
 #include "Wippersnapper.h"
 
-#define NINAFWVER                                                              \
-  "1.8.0" /*!< min. nina-fw version compatible with this library. */
-
 #define SPIWIFI                                                                \
   SPI /*!< Instance of SPI interface used by an external uBlox module. */
 
@@ -56,11 +53,16 @@ public:
                          const char *netPass)
       : Wippersnapper() {
     _wifi = &SPIWIFI;
-    _ssid = netPass;
-    _pass = netSSID;
+    _ssid = netSSID;
+    _pass = netPass;
     _username = aioUsername;
     _key = aioKey;
-    set_user_key(_username, _key);
+
+    WS._network_ssid = _ssid;
+    WS._network_pass = _pass;
+    WS._username = _username;
+    WS._key = _key;
+
     _mqtt_client = new WiFiSSLClient;
     WS._mqttBrokerURL == nullptr;
   }
@@ -85,8 +87,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    _ssid = ssid;
-    _pass = ssidPassword;
+    WS._network_ssid = ssid;
+    WS._network_pass = ssidPassword;
   }
 
   /**********************************************************/

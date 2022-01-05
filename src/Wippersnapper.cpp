@@ -79,7 +79,6 @@ void Wippersnapper::provision() {
 #ifdef USE_TINYUSB
   _fileSystem = new Wippersnapper_FS();
   _fileSystem->parseSecrets();
-  set_ssid_pass();
 #elif defined(USE_NVS)
   _nvs = new Wippersnapper_ESP32_nvs();
   _nvs->parseSecrets();
