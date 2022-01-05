@@ -1,6 +1,6 @@
 /*!
  * @file Wippersnapper_WIFININA.h
- * 
+ *
  * Network interface for the ublox wifi module on the
  * Arduino MKR WiFi 1010, Arduino Nano 33 IoT and Arduino UNO WiFi Rev.2.
  *
@@ -19,15 +19,16 @@
 #include <Adafruit_MQTT.h>
 #include <Adafruit_MQTT_Client.h>
 #include <Arduino.h>
-#include <WiFiNINA.h>
 #include <SPI.h>
+#include <WiFiNINA.h>
 
 #include "Wippersnapper.h"
 
 #define NINAFWVER                                                              \
   "1.8.0" /*!< min. nina-fw version compatible with this library. */
 
-#define SPIWIFI SPI /*!< Instance of SPI interface used by an external uBlox module. */
+#define SPIWIFI                                                                \
+  SPI /*!< Instance of SPI interface used by an external uBlox module. */
 
 extern Wippersnapper WS;
 /****************************************************************************/
@@ -44,7 +45,8 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_WIFININA(const char *user, const char *key, const char *ssid,
-                         const char *pass) : Wippersnapper() {
+                         const char *pass)
+      : Wippersnapper() {
     _wifi = &SPIWIFI;
     _ssid = ssid;
     _pass = pass;
@@ -110,7 +112,7 @@ public:
   bool firmwareCheck() {
     String fv = WiFi.firmwareVersion();
     if (fv < WIFI_FIRMWARE_LATEST_VERSION)
-        return false;
+      return false;
     return true;
   }
 
@@ -174,7 +176,7 @@ protected:
   const char *_pass;          /*!< Network password. */
   const char *_mqttBrokerURL; /*!< MQTT broker URL. */
 
-  WiFiSSLClient *_mqtt_client;         /*!< Instance of a secure WiFi client. */
+  WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the ublox. */
 
   /**************************************************************************/
@@ -186,11 +188,12 @@ protected:
 
     // check if co-processor connected first
     if (WiFi.status() == WL_NO_MODULE)
-        errorWriteHang("No WiFi Module Detected!");
+      errorWriteHang("No WiFi Module Detected!");
 
     // validate the nina-fw version
     if (!firmwareCheck())
-        errorWriteHang("Please upgrade the firmware on the ESP module to the latest version.");
+      errorWriteHang("Please upgrade the firmware on the ESP module to the "
+                     "latest version.");
 
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
