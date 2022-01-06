@@ -159,7 +159,7 @@ jobs:
 
   # NOTE: This does NOT release artifacts, it only builds
   build-samd-non-fs:
-    name: Build WipperSnapper SAMD (Non-FS-backed provisioning)
+    name: Build WipperSnapper SAMD (NO-TINYUSB)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
