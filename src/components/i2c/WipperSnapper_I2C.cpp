@@ -57,7 +57,6 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     pinMode(msgInitRequest->i2c_pin_scl, INPUT);
     pinMode(msgInitRequest->i2c_pin_sda, INPUT);
 
-
 // Initialize I2C bus
 #if defined(ARDUINO_ARCH_ESP32)
     _i2c = new TwoWire(msgInitRequest->i2c_port_number);

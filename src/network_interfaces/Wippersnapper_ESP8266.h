@@ -64,7 +64,8 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_ESP8266(const char *aioUsername, const char *aioKey,
-                         const char *netSSID, const char *netPass) : Wippersnapper() {
+                        const char *netSSID, const char *netPass)
+      : Wippersnapper() {
     _ssid = netSSID;
     _pass = netPass;
     _username = aioUsername;
