@@ -82,26 +82,11 @@ void Wippersnapper::provision() {
 #elif defined(USE_NVS)
   _nvs = new Wippersnapper_ESP32_nvs();
   _nvs->parseSecrets();
+#else
+  set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
 
-  // Set WiFi credentials within network interface
   set_ssid_pass();
-}
-
-/****************************************************************************/
-/*!
-    @brief    Configures the device's Adafruit IO credentials. This method
-              should be used only if provisioning is not avaliable.
-    @param    aio_username
-              Your Adafruit IO username.
-    @param    aio_key
-              Your Adafruit IO active key.
-*/
-/****************************************************************************/
-void Wippersnapper::set_user_key(const char *aio_username,
-                                 const char *aio_key) {
-  WS._username = aio_username;
-  WS._key = aio_key;
 }
 
 /**************************************************************************/
@@ -183,6 +168,16 @@ void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
 */
 /****************************************************************************/
 void Wippersnapper::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Configures the device's Adafruit IO credentials. This method
+              should be used only if filesystem-backed provisioning is
+              not avaliable.
+/****************************************************************************/
+void Wippersnapper::set_user_key() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 

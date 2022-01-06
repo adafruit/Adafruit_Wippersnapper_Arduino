@@ -156,6 +156,66 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
+  # NOTE: This does NOT release artifacts, it only builds
+  build-samd-non-fs:
+    name: Build WipperSnapper SAMD (NO-TINYUSB)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arduino-platform: ["mkrwifi1010", "nano_33_iot"]
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - uses: actions/checkout@v2
+    - name: Get WipperSnapper version
+      run: |
+        git fetch --prune --unshallow --tags
+        git describe --dirty --tags
+        echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+    - uses: actions/checkout@v2
+      with:
+         repository: brentru/ci-arduino
+         path: ci
+    - name: Install CI-Arduino
+      run: bash ci/actions_install.sh
+    - name: Install extra Arduino libraries
+      run: |
+        git clone --quiet https://github.com/arduino-libraries/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
+        git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
+    - name: build platforms
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+
+  # NOTE: This does NOT release artifacts, it only builds
+  build-esp8266:
+    name: Build WipperSnapper ESP8266
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arduino-platform: ["esp8266"]
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - uses: actions/checkout@v2
+    - name: Get WipperSnapper version
+      run: |
+        git fetch --prune --unshallow --tags
+        git describe --dirty --tags
+        echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
+    - uses: actions/checkout@v2
+      with:
+         repository: brentru/ci-arduino
+         path: ci
+    - name: Install CI-Arduino
+      run: bash ci/actions_install.sh
+    - name: Install extra Arduino library
+      run: |
+        git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
+    - name: build platforms
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
 
   clang_and_doxy:
     runs-on: ubuntu-latest
