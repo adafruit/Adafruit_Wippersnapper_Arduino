@@ -4,7 +4,7 @@
 name: WipperSnapper Release CI
 
 on:
-  pull_request:
+  #pull_request:
   release:
     types: [published]
 
