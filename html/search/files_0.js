@@ -21,5 +21,6 @@ var searchData=
   ['wippersnapper_5fnetworking_2eh',['Wippersnapper_Networking.h',['../_wippersnapper___networking_8h.html',1,'']]],
   ['wippersnapper_5fregister_2ecpp',['Wippersnapper_Register.cpp',['../_wippersnapper___register_8cpp.html',1,'']]],
   ['wippersnapper_5fstatusled_2ecpp',['Wippersnapper_StatusLED.cpp',['../_wippersnapper___status_l_e_d_8cpp.html',1,'']]],
-  ['wippersnapper_5fstatusled_5fcolors_2eh',['Wippersnapper_StatusLED_Colors.h',['../_wippersnapper___status_l_e_d___colors_8h.html',1,'']]]
+  ['wippersnapper_5fstatusled_5fcolors_2eh',['Wippersnapper_StatusLED_Colors.h',['../_wippersnapper___status_l_e_d___colors_8h.html',1,'']]],
+  ['wippersnapper_5fwifinina_2eh',['Wippersnapper_WIFININA.h',['../_wippersnapper___w_i_f_i_n_i_n_a_8h.html',1,'']]]
 ];

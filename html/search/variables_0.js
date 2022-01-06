@@ -41,14 +41,14 @@ var searchData=
   ['_5fkey',['_key',['../class_wippersnapper.html#aac70eead5aa5a98fe062dcebefc6c0b6',1,'Wippersnapper']]],
   ['_5flast_5fmqtt_5fconnect',['_last_mqtt_connect',['../class_wippersnapper.html#ad91ea7ed5595bd655f0a8719a7216a45',1,'Wippersnapper']]],
   ['_5fmqtt',['_mqtt',['../class_wippersnapper.html#a4aae92d295fa7740aef1bd6e45a13349',1,'Wippersnapper']]],
-  ['_5fmqtt_5fclient',['_mqtt_client',['../class_wippersnapper___a_i_r_l_i_f_t.html#af56696c5a407755fb5a998747250f116',1,'Wippersnapper_AIRLIFT']]],
+  ['_5fmqtt_5fclient',['_mqtt_client',['../class_wippersnapper___a_i_r_l_i_f_t.html#af56696c5a407755fb5a998747250f116',1,'Wippersnapper_AIRLIFT::_mqtt_client()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#af1e950739e88ebe968346be3a6d54c57',1,'Wippersnapper_WIFININA::_mqtt_client()']]],
   ['_5fmqtt_5fport',['_mqtt_port',['../class_wippersnapper.html#a13a4074ad97215f51d4fa76b65052b76',1,'Wippersnapper']]],
-  ['_5fmqttbrokerurl',['_mqttBrokerURL',['../class_wippersnapper___a_i_r_l_i_f_t.html#a7c519ff51e3b6fec56d75739d0c73e32',1,'Wippersnapper_AIRLIFT::_mqttBrokerURL()'],['../class_wippersnapper.html#a9c4a5ba5c17a08fc2079d149a094e9d6',1,'Wippersnapper::_mqttBrokerURL()']]],
+  ['_5fmqttbrokerurl',['_mqttBrokerURL',['../class_wippersnapper___a_i_r_l_i_f_t.html#a7c519ff51e3b6fec56d75739d0c73e32',1,'Wippersnapper_AIRLIFT::_mqttBrokerURL()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#a3d0e00a2882446cad9157c5dd1bd7755',1,'Wippersnapper_WIFININA::_mqttBrokerURL()'],['../class_wippersnapper.html#a9c4a5ba5c17a08fc2079d149a094e9d6',1,'Wippersnapper::_mqttBrokerURL()']]],
   ['_5fnetwork_5fpass',['_network_pass',['../class_wippersnapper.html#a34ee03c04d7cf32ebc458955c6d54ac6',1,'Wippersnapper']]],
   ['_5fnetwork_5fssid',['_network_ssid',['../class_wippersnapper.html#a8667f030177bfd31a0842821ead74cd4',1,'Wippersnapper']]],
   ['_5fnvs',['_nvs',['../class_wippersnapper.html#a66931112ecf7732f3726f6ed963799a9',1,'Wippersnapper']]],
   ['_5foutgoingsignalmsg',['_outgoingSignalMsg',['../class_wippersnapper.html#a3c5eb7a0b81de9ca7472e4a37b3d27fe',1,'Wippersnapper']]],
-  ['_5fpass',['_pass',['../class_wippersnapper___a_i_r_l_i_f_t.html#a60b11a804f697efcb2958126eb280b53',1,'Wippersnapper_AIRLIFT']]],
+  ['_5fpass',['_pass',['../class_wippersnapper___a_i_r_l_i_f_t.html#a60b11a804f697efcb2958126eb280b53',1,'Wippersnapper_AIRLIFT::_pass()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#addedfe0336fb0c28f0d9a781ceb51e90',1,'Wippersnapper_WIFININA::_pass()']]],
   ['_5fpm100stdperiod',['_pm100STDPeriod',['../class_wipper_snapper___i2_c___driver.html#a3c2c9ae364c9ccabf3d06f7fb3daa80f',1,'WipperSnapper_I2C_Driver']]],
   ['_5fpm100stdperiodprv',['_pm100STDPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#aae7a98f93db39dc7cf7a5b4a87036ce7',1,'WipperSnapper_I2C_Driver']]],
   ['_5fpm10stdperiod',['_pm10STDPeriod',['../class_wipper_snapper___i2_c___driver.html#ac009ca3fe0937cc3bdcf197cd3160c6c',1,'WipperSnapper_I2C_Driver']]],
@@ -63,7 +63,7 @@ var searchData=
   ['_5fscd30',['_scd30',['../class_wipper_snapper___i2_c___driver___s_c_d30.html#a9ce42500d9fcd34b7d767cc15a1f6461',1,'WipperSnapper_I2C_Driver_SCD30']]],
   ['_5fscd4x',['_scd4x',['../class_wipper_snapper___i2_c___driver___s_c_d4_x.html#aa453d00dd54afd804002341d916b33c0',1,'WipperSnapper_I2C_Driver_SCD4X']]],
   ['_5fsensoraddress',['_sensorAddress',['../class_wipper_snapper___i2_c___driver.html#a504fa3d1869f741dbb46a8e5f5f5e281',1,'WipperSnapper_I2C_Driver']]],
-  ['_5fssid',['_ssid',['../class_wippersnapper___a_i_r_l_i_f_t.html#a6ec6435a676ba335c86f47bc373ac2e6',1,'Wippersnapper_AIRLIFT']]],
+  ['_5fssid',['_ssid',['../class_wippersnapper___a_i_r_l_i_f_t.html#a6ec6435a676ba335c86f47bc373ac2e6',1,'Wippersnapper_AIRLIFT::_ssid()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#a7b2129e4a4691c6b57a2a78719929cd9',1,'Wippersnapper_WIFININA::_ssid()']]],
   ['_5fsspin',['_ssPin',['../class_wippersnapper___a_i_r_l_i_f_t.html#ae0fb6f803b4a9f81d9a4b15ffa46a9ee',1,'Wippersnapper_AIRLIFT']]],
   ['_5fstatus',['_status',['../class_wippersnapper.html#a9a1b5d8342f11f48567092a643d9cd94',1,'Wippersnapper']]],
   ['_5ftemperature',['_temperature',['../class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a1a023f74fb0423307994b3cb64c72fb2',1,'WipperSnapper_I2C_Driver_SCD4X']]],
@@ -85,5 +85,5 @@ var searchData=
   ['_5ftopic_5fsignal_5fi2c_5fsub',['_topic_signal_i2c_sub',['../class_wippersnapper.html#aad2d8a69238e2019579af498634b5510',1,'Wippersnapper']]],
   ['_5fuid',['_uid',['../class_wippersnapper.html#aeffbbf027549646e2c70f7703a0593a1',1,'Wippersnapper']]],
   ['_5fusername',['_username',['../class_wippersnapper.html#a9380123bb67437ece953f46e32bad6fe',1,'Wippersnapper']]],
-  ['_5fwifi',['_wifi',['../class_wippersnapper___a_i_r_l_i_f_t.html#a583121d8e9177c59463b815ceac98ea6',1,'Wippersnapper_AIRLIFT']]]
+  ['_5fwifi',['_wifi',['../class_wippersnapper___a_i_r_l_i_f_t.html#a583121d8e9177c59463b815ceac98ea6',1,'Wippersnapper_AIRLIFT::_wifi()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#a0543a08ce2fdf662678eb69a9f6145ee',1,'Wippersnapper_WIFININA::_wifi()']]]
 ];

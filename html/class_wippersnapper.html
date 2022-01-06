@@ -78,7 +78,8 @@ Inheritance diagram for Wippersnapper:</div>
  <div class="center">
   <img src="class_wippersnapper.png" usemap="#Wippersnapper_map" alt=""/>
   <map id="Wippersnapper_map" name="Wippersnapper_map">
-<area href="class_wippersnapper___a_i_r_l_i_f_t.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_AIRLIFT" shape="rect" coords="0,56,150,80"/>
+<area href="class_wippersnapper___a_i_r_l_i_f_t.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_AIRLIFT" shape="rect" coords="0,56,160,80"/>
+<area href="class_wippersnapper___w_i_f_i_n_i_n_a.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_WIFININA" shape="rect" coords="170,56,330,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -105,9 +106,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a87a70aebcc7459fb338e195d6b3f7b63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a87a70aebcc7459fb338e195d6b3f7b63">statusLEDBlink</a> (<a class="el" href="_wippersnapper___status_l_e_d___colors_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a> statusState)</td></tr>
 <tr class="memdesc:a87a70aebcc7459fb338e195d6b3f7b63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blinks a status LED a specific color depending on the hardware's state.  <a href="#a87a70aebcc7459fb338e195d6b3f7b63">More...</a><br /></td></tr>
 <tr class="separator:a87a70aebcc7459fb338e195d6b3f7b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abbbf686b4df5afbfcb8d0ee649a73790"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#abbbf686b4df5afbfcb8d0ee649a73790">set_user_key</a> (const char *aio_username, const char *aio_key)</td></tr>
-<tr class="memdesc:abbbf686b4df5afbfcb8d0ee649a73790"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the device's Adafruit IO credentials. This method should be used only if provisioning is not avaliable.  <a href="#abbbf686b4df5afbfcb8d0ee649a73790">More...</a><br /></td></tr>
-<tr class="separator:abbbf686b4df5afbfcb8d0ee649a73790"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae17c82aa45ff311c9cc8a23b98acca92"><td class="memItemLeft" align="right" valign="top"><a id="ae17c82aa45ff311c9cc8a23b98acca92"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ae17c82aa45ff311c9cc8a23b98acca92">set_user_key</a> ()</td></tr>
+<tr class="memdesc:ae17c82aa45ff311c9cc8a23b98acca92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the device's Adafruit IO credentials. This method should be used only if filesystem-backed provisioning is not avaliable. /*. <br /></td></tr>
+<tr class="separator:ae17c82aa45ff311c9cc8a23b98acca92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50aca7f9bc2ced0a2928c1f85624c9b8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a50aca7f9bc2ced0a2928c1f85624c9b8">set_ssid_pass</a> (const char *ssid, const char *ssidPassword)</td></tr>
 <tr class="memdesc:a50aca7f9bc2ced0a2928c1f85624c9b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the device's wireless network credentials.  <a href="#a50aca7f9bc2ced0a2928c1f85624c9b8">More...</a><br /></td></tr>
 <tr class="separator:a50aca7f9bc2ced0a2928c1f85624c9b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -426,43 +428,6 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="abbbf686b4df5afbfcb8d0ee649a73790"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abbbf686b4df5afbfcb8d0ee649a73790">&#9670;&nbsp;</a></span>set_user_key()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Wippersnapper::set_user_key </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>aio_username</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>aio_key</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Configures the device's Adafruit IO credentials. This method should be used only if provisioning is not avaliable. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">aio_username</td><td>Your Adafruit IO username. </td></tr>
-    <tr><td class="paramname">aio_key</td><td>Your Adafruit IO active key. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a50aca7f9bc2ced0a2928c1f85624c9b8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a50aca7f9bc2ced0a2928c1f85624c9b8">&#9670;&nbsp;</a></span>set_ssid_pass()</h2>
 
@@ -506,7 +471,7 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5d98c8d0158c551f78c242ed57e42165">Wippersnapper_AIRLIFT</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#a12f2c625c55546f1cc318ed352db7be4">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5d98c8d0158c551f78c242ed57e42165">Wippersnapper_AIRLIFT</a>.</p>
 
 </div>
 </div>
@@ -542,7 +507,7 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">Wippersnapper_AIRLIFT</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#af93ea859ff730b169c2ff1bfec455e11">Wippersnapper_WIFININA</a>.</p>
 
 </div>
 </div>
@@ -572,7 +537,7 @@ Protected Attributes</h2></td></tr>
 <p>Returns the network's connection status. </p>
 <dl class="section return"><dt>Returns</dt><dd>Network status as ws_status_t. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac238fc561ddcd654a47b474f74ec37fb">Wippersnapper_AIRLIFT</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac238fc561ddcd654a47b474f74ec37fb">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#aa33a4dfb0f3d2857deafdd4847baa07c">Wippersnapper_WIFININA</a>.</p>
 
 </div>
 </div>
