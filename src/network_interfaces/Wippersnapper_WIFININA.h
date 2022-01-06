@@ -49,22 +49,17 @@ public:
           Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_WIFININA(const char *aioUsername, const char *aioKey, const char *netSSID,
-                         const char *netPass)
+  Wippersnapper_WIFININA(const char *aioUsername, const char *aioKey,
+                         const char *netSSID, const char *netPass)
       : Wippersnapper() {
     _wifi = &SPIWIFI;
+    _mqtt_client = new WiFiSSLClient;
+    WS._mqttBrokerURL = "io.adafruit.com";
+
     _ssid = netSSID;
     _pass = netPass;
     _username = aioUsername;
     _key = aioKey;
-
-    WS._network_ssid = _ssid;
-    WS._network_pass = _pass;
-    WS._username = _username;
-    WS._key = _key;
-
-    _mqtt_client = new WiFiSSLClient;
-    WS._mqttBrokerURL == nullptr;
   }
 
   /**************************************************************************/
@@ -75,6 +70,17 @@ public:
   ~Wippersnapper_WIFININA() {
     if (_mqtt)
       delete _mqtt;
+  }
+
+  /****************************************************************************/
+  /*!
+      @brief    Configures the device's Adafruit IO credentials. This method
+                should be used only if filesystem-backed provisioning is
+                not avaliable.
+  /****************************************************************************/
+  void set_user_key() {
+    WS._username = _username;
+    WS._key = _key;
   }
 
   /**********************************************************/
@@ -94,12 +100,12 @@ public:
   /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password from the
-            secrets.json provisioning file.
+          header file's credentials.
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._network_ssid;
-    _pass = WS._network_pass;
+    WS._network_ssid = _ssid;
+    WS._network_pass = _pass;
   }
 
   /********************************************************/
@@ -148,9 +154,6 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (WS._mqttBrokerURL == nullptr)
-      WS._mqttBrokerURL = "io.adafruit.com";
-
     WS._mqtt =
         new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
                                  clientID, WS._username, WS._key);

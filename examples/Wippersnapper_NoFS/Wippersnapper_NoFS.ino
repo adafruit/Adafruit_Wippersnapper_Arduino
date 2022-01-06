@@ -32,9 +32,6 @@
 #include "Wippersnapper_Networking.h"
 Wippersnapper_WiFi wipper(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 
-// Enable debug output for beta builds
-#define WS_DEBUG
-
 void setup() {
   // Provisioning must occur prior to serial init.
   wipper.provision();
