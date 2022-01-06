@@ -40,3 +40,6 @@
 # VSCode artifacts
 ./vscode/*
 src/.vscode/settings.json
+
+# macOS
+.DS_STORE

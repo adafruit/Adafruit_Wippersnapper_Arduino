@@ -114,7 +114,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
 
-  build-samd-tinyusb:
+  build-samd:
     name: Build WipperSnapper SAMD
     runs-on: ubuntu-latest
     strategy:
@@ -156,13 +156,14 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
-  build-samd:
-    name: Build WipperSnapper SAMD (Non-TinyUSB)
+
+  build-esp8266:
+    name: Build WipperSnapper ESP8266
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["pyportal_tinyusb", "metro_m4_airliftlite_tinyusb"]
+        arduino-platform: ["esp8266"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -179,28 +180,15 @@ jobs:
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
-      # manually install Adafruit WiFiNINA library fork
     - name: Install extra Arduino libraries
       run: |
-        git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
     - name: build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
-    - name: Rename build artifacts to reflect the platform name
-      run: |
-            mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
-    - name: upload build artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: build-files
-        path: |
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
   clang_and_doxy:
     runs-on: ubuntu-latest
-    needs: [build-samd-tinyusb, build-esp32, build-esp32s2]
+    needs: [build-samd, build-esp32, build-esp32s2]
     steps:
     - uses: actions/setup-python@v1
       with:
