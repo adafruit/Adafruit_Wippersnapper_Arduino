@@ -52,14 +52,14 @@ public:
   Wippersnapper_WIFININA(const char *aioUsername, const char *aioKey,
                          const char *netSSID, const char *netPass)
       : Wippersnapper() {
-    _wifi = &SPIWIFI;
-    _mqtt_client = new WiFiSSLClient;
-    WS._mqttBrokerURL = "io.adafruit.com";
-
     _ssid = netSSID;
     _pass = netPass;
     _username = aioUsername;
     _key = aioKey;
+
+    _wifi = &SPIWIFI;
+    _mqtt_client = new WiFiSSLClient;
+    WS._mqttBrokerURL = "io.adafruit.com";
   }
 
   /**************************************************************************/
