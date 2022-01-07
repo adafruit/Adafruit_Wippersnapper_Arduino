@@ -129,17 +129,17 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Checks the version of an ESP32 module against
-  NINAFWVER. Raises an error if the firmware needs to be
-  upgraded.
+  @brief    Checks the version of an ESP32 module running
+            nina-fw.
+  @returns  True if matches min. required to run
+            WipperSnapper, False otherwise.
   */
   /********************************************************/
-  void firmwareCheck() {
+  bool firmwareCheck() {
     _fv = WiFi.firmwareVersion();
-    if (_fv < NINAFWVER) {
-      WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
-                       "latest version.");
-    }
+    if (_fv < NINAFWVER)
+      return false;
+    return true;
   }
 
   /********************************************************/
@@ -220,14 +220,16 @@ protected:
       _status = WS_SSID_INVALID;
     } else {
 
-      // check if co-processor connected first
+      // validate co-processor is physically connected connection
       if (WiFi.status() == WL_NO_MODULE) {
         WS_DEBUG_PRINT("No ESP32 module detected!");
         return;
       }
 
-      // validate the nina-fw version
-      firmwareCheck();
+      // validate co-processor's firmware version
+      if (!firmwareCheck())
+        WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
+                         "latest version.");
 
       // disconnect from possible previous connection
       _disconnect();
