@@ -36,7 +36,8 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
 // Invert Feather ESP32-S2 pin power for I2C
-#ifdef ARDUINO_ADAFRUIT_FEATHER_ESP32S2
+#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
   pinMode(PIN_I2C_POWER_INVERTED, OUTPUT);
   digitalWrite(PIN_I2C_POWER_INVERTED, LOW);
 #endif
