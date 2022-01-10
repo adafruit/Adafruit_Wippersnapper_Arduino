@@ -35,11 +35,15 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-// Invert Feather ESP32-S2 pin power for I2C
-#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+  // Invert Feather ESP32-S2 pin power for I2C
   pinMode(PIN_I2C_POWER_INVERTED, OUTPUT);
   digitalWrite(PIN_I2C_POWER_INVERTED, LOW);
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+  // Power the AP2112 regulator
+  // TODO: Remove when fixed by latest BSP release
+  pinMode(TFT_I2C_POWER, OUTPUT);
+  digitalWrite(TFT_I2C_POWER, HIGH);
 #endif
 
   // Enable pullups on SCL, SDA
