@@ -36,7 +36,7 @@ jobs:
       matrix:
         arduino-platform: ["funhouse_tinyusb", "magtag_tinyusb",
                            "metro_s2_tinyusb", "feather_s2_tinyusb",
-                           "qtpy_esp32_s2"]
+                           "qtpy_esp32_s2", "feather_s2_tft_tinyusb"]
     steps:
     - uses: actions/setup-python@v1
       with:

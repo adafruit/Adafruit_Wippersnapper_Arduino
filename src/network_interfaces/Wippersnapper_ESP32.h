@@ -216,8 +216,8 @@ protected:
       _disconnect();
       delay(100);
       WiFi.begin(_ssid, _pass);
-      delay(100);
       _status = WS_NET_DISCONNECTED;
+      delay(5000);
     }
   }
 
