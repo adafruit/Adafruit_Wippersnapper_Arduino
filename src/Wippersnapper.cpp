@@ -1222,7 +1222,7 @@ void Wippersnapper::runNetFSM() {
         // attempt to connect
         WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
-        delay(5000);
+        delay(1000);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
