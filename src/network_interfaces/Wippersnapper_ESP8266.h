@@ -53,11 +53,23 @@ public:
   /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for ESP8266 devices.
+  @param  aioUsername
+          Adafruit IO username
+  @param  aioKey
+          Adafruit IO key
+  @param  netSSID
+          Wireless Network SSID
+  @param  netPass
+          Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266() : Wippersnapper() {
-    _ssid = 0;
-    _pass = 0;
+  Wippersnapper_ESP8266(const char *aioUsername, const char *aioKey,
+                        const char *netSSID, const char *netPass)
+      : Wippersnapper() {
+    _ssid = netSSID;
+    _pass = netPass;
+    _username = aioUsername;
+    _key = aioKey;
     _mqtt_client = new WiFiClientSecure;
     _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
   }
@@ -107,8 +119,7 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (WS._mqttBrokerURL == nullptr)
-      WS._mqttBrokerURL = "io.adafruit.com";
+    WS._mqttBrokerURL = "io.adafruit.com";
     WS._mqtt =
         new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
                                  clientID, WS._username, WS._key);

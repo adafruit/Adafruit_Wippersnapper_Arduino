@@ -33,6 +33,7 @@
 
 # Doxygen
 *.bak
+html/*
 
 # Clang-format Python Script
 *.py
@@ -40,3 +41,6 @@
 # VSCode artifacts
 ./vscode/*
 src/.vscode/settings.json
+
+# macOS
+.DS_STORE

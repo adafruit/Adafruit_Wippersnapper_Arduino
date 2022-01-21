@@ -35,10 +35,15 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-// Invert Feather ESP32-S2 pin power for I2C
-#ifdef ARDUINO_ADAFRUIT_FEATHER_ESP32S2
+#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+  // Invert Feather ESP32-S2 pin power for I2C
   pinMode(PIN_I2C_POWER_INVERTED, OUTPUT);
   digitalWrite(PIN_I2C_POWER_INVERTED, LOW);
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+  // Power the AP2112 regulator
+  // TODO: Remove when fixed by latest BSP release
+  pinMode(TFT_I2C_POWER, OUTPUT);
+  digitalWrite(TFT_I2C_POWER, HIGH);
 #endif
 
   // Enable pullups on SCL, SDA
@@ -59,7 +64,6 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
 
 // Initialize I2C bus
 #if defined(ARDUINO_ARCH_ESP32)
-    // ESP32, ESP32-S2
     _i2c = new TwoWire(msgInitRequest->i2c_port_number);
     if (!_i2c->begin(msgInitRequest->i2c_pin_sda,
                      msgInitRequest->i2c_pin_scl)) {
@@ -68,6 +72,11 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
       _isInit = true; // if the peripheral was configured incorrectly
     }
     _i2c->setClock(msgInitRequest->i2c_frequency);
+#elif defined(ARDUINO_ARCH_ESP8266)
+    _i2c = new TwoWire();
+    _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
+    _i2c->setClock(msgInitRequest->i2c_frequency);
+    _isInit = true;
 #else
     // SAMD
     _i2c = new TwoWire(&PERIPH_WIRE, msgInitRequest->i2c_pin_sda,
@@ -75,6 +84,7 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     _i2c->begin();
     _isInit = true;
 #endif
+
     // set i2c obj. properties
     _portNum = msgInitRequest->i2c_port_number;
     _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
