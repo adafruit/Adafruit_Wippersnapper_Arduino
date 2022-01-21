@@ -630,7 +630,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
 
     // Fill device's address
-    msgi2cResponse.payload.resp_i2c_device_init.i2c_address =
+    msgi2cResponse.payload.resp_i2c_device_init.i2c_device_address =
         msgI2CDeviceInitRequest.i2c_device_address;
 
     msgi2cResponse.payload.resp_i2c_device_init.bus_response =
@@ -667,8 +667,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           WS._i2cPort0->updateI2CDeviceProperties(&msgI2CDeviceUpdateRequest);
 
     // Fill address
-    msgi2cResponse.payload.resp_i2c_device_update.i2c_address =
-        msgI2CDeviceUpdateRequest.i2c_address;
+    msgi2cResponse.payload.resp_i2c_device_update.i2c_device_address =
+        msgI2CDeviceUpdateRequest.i2c_device_address;
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {

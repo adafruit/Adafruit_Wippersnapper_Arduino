@@ -209,7 +209,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _bme280->configureDriver(msgDeviceInitReq);
     drivers.push_back(_bme280);
     WS_DEBUG_PRINTLN("BME280 Initialized Successfully!");
-  } else if (strcmp("DPS310", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("dps310", msgDeviceInitReq->i2c_device_name) == 0) {
     _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
     if (!_dps310->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize DPS310!");
@@ -218,7 +218,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _dps310->configureDriver(msgDeviceInitReq);
     drivers.push_back(_dps310);
     WS_DEBUG_PRINTLN("DPS310 Initialized Successfully!");
-  } else if (strcmp("SCD30", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("scd30", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd30 = new WipperSnapper_I2C_Driver_SCD30(this->_i2c, i2cAddress);
     if (!_scd30->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD30!");
@@ -227,7 +227,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd30->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd30);
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
-  } else if (strcmp("SCD4X", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("scd4x", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd4x = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
     if (!_scd4x->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize scd4x!");
@@ -256,7 +256,7 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
     wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq) {
   bool is_success = true;
 
-  uint16_t i2cAddress = (uint16_t)msgDeviceUpdateReq->i2c_address;
+  uint16_t i2cAddress = (uint16_t)msgDeviceUpdateReq->i2c_device_address;
 
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
@@ -302,7 +302,7 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
 bool WipperSnapper_Component_I2C::deinitI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
   bool is_success = false;
-  uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_address;
+  uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_device_address;
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->sensorAddress() == deviceAddr) {
