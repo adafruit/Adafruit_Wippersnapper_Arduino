@@ -475,7 +475,7 @@ void WipperSnapper_Component_I2C::update() {
 
         (*iter)->setSensorPressurePeriodPrv(curTime);
       } else {
-        WS_DEBUG_PRINTLN("ERROR: Failed to get relative humidity!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to get Pressure!");
       }
     }
 
@@ -495,7 +495,7 @@ void WipperSnapper_Component_I2C::update() {
 
         (*iter)->setSensorCO2PeriodPrv(curTime);
       } else {
-        WS_DEBUG_PRINTLN("ERROR: Failed to get relative humidity!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to get CO2!");
       }
     }
 
