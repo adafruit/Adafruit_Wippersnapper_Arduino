@@ -63,7 +63,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.19" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.23" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
