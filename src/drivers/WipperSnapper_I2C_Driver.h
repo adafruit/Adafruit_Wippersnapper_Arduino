@@ -182,6 +182,10 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorCO2Period(float period) {
+    if (period == 0) {
+        disableSensorCO2();
+        return;
+    }
     // Period is in seconds, cast it to long and convert it to milliseconds
     _CO2SensorPeriod = (long)period * 1000;
   }
@@ -194,7 +198,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorCO2(float period) { return; }
+  virtual void updateSensorCO2(float period) { setSensorCO2Period(period); }
 
   /*******************************************************************************/
   /*!
@@ -261,6 +265,10 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorAmbientTemperaturePeriod(float period) {
+    if (period == 0) {
+        disableSensorAmbientTemperature();
+        return;
+    }
     // Period is in seconds, cast it to long and convert it to milliseconds
     _tempSensorPeriod = (long)period * 1000;
   }
@@ -321,7 +329,7 @@ public:
                 Sensor's period.
   */
   /*******************************************************************************/
-  virtual void updateSensorAmbientTemperature(float period) { return; }
+  virtual void updateSensorAmbientTemperature(float period) { setSensorAmbientTemperaturePeriod(period); }
 
   /*********************************************************************************/
   /*!
@@ -340,7 +348,11 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void setSensorRelativeHumidityPeriod(float period) {
+  virtual void setSensorRelativeHumidityPeriod(float period) {
+    if (period == 0) {
+        disableSensorAmbientTemperature();
+        return;
+    }
     // Period is in seconds, cast it to long and convert it to milliseconds
     _humidSensorPeriod = (long)period * 1000;
   }
@@ -401,7 +413,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorRelativeHumidity(float period) { return; }
+  virtual void updateSensorRelativeHumidity(float period) { setSensorRelativeHumidityPeriod(period); }
 
   /*********************************************************************************/
   /*!
@@ -420,7 +432,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  void setSensorPressurePeriod(float period) {
+  virtual void setSensorPressurePeriod(float period) {
     if (period == 0)
       disableSensorPressure();
     // Period is in seconds, cast it to long and convert it to milliseconds
@@ -469,7 +481,7 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorPressure(float period) { return; }
+  virtual void updateSensorPressure(float period) { setSensorPressurePeriod(period); }
 
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
