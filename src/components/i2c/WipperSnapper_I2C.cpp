@@ -248,8 +248,11 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("scd4x Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
+    _busStatusResponse =
+        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
     return false;
   }
+  _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   return true;
 }
 

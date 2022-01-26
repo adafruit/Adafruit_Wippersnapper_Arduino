@@ -482,7 +482,18 @@ bool encodeI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   return true;
 }
 
-
+/******************************************************************************************/
+/*!
+    @brief    Decodes a list of I2C Device Initialization messages.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from pb_decode calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+/******************************************************************************************/
 bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream, const pb_field_t *field,
                           void **arg) {
   WS_DEBUG_PRINTLN("EXEC: cbDecodeI2CDeviceInitRequestList");
@@ -526,13 +537,10 @@ bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream, const pb_field_t *fi
       msgi2cResponse.payload.resp_i2c_device_init.is_success =
           WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
 
-    // Fill device's address
+    // Fill device's address and the initialization status
     msgi2cResponse.payload.resp_i2c_device_init.i2c_device_address =
         msgI2CDeviceInitRequest.i2c_device_address;
-
-    // TODO: This needs to be sourced from the component itself later..
-    msgi2cResponse.payload.resp_i2c_device_init.bus_response =
-        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
+    msgi2cResponse.payload.resp_i2c_device_init.bus_response = WS._i2cPort0->getBusStatus();
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
@@ -676,12 +684,10 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       msgi2cResponse.payload.resp_i2c_device_init.is_success =
           WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
 
-    // Fill device's address
+    // Fill device's address and bus status
     msgi2cResponse.payload.resp_i2c_device_init.i2c_device_address =
         msgI2CDeviceInitRequest.i2c_device_address;
-
-    msgi2cResponse.payload.resp_i2c_device_init.bus_response =
-        wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
+    msgi2cResponse.payload.resp_i2c_device_init.bus_response = WS._i2cPort0->getBusStatus();
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
