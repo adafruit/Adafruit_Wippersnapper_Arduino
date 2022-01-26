@@ -40,3 +40,5 @@
 # VSCode artifacts
 ./vscode/*
 src/.vscode/settings.json
+
+.DS_STORE
