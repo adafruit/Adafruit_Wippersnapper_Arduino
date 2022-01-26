@@ -42,7 +42,7 @@ public:
     setDriverType(BME680); // sets the type of I2C_Driver
     _isInitialized = _bme.begin(sensorAddress, _i2c);
     if (!_isInitialized)
-        return;
+      return;
     // Set up oversampling and filter initialization
     _bme->setTemperatureOversampling(BME680_OS_8X);
     _bme->setHumidityOversampling(BME680_OS_2X);
@@ -57,12 +57,10 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_BME680() {
-    _bme_temp = NULL;
-    _bme_humidity = NULL;
-    _bme_pressure = NULL;
     _tempSensorPeriod = 0.0L;
     _humidSensorPeriod = 0.0L;
     _pressureSensorPeriod = 0.0L;
+    _bme_gas = 0;
     setDriverType(UNSPECIFIED);
   }
 
@@ -70,6 +68,55 @@ public:
   // NOTE: enableSensorX() calls are handled in the base class, I2C_Driver
   // NOTE: disableSensorX() calls are handled in the base class, I2C_Driver
 
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the BME680's temperature sensor.
+      @param    tempEvent
+                A temperature value.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventAmbientTemperature(float tempEvent) {
+    if (!_bme->performReading())
+      return false;
+    tempEvent = _bme.temperature;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the BME680's humidity sensor.
+      @param    humidEvent
+                A humidity value
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventRelativeHumidity(float humidEvent) {
+    if (!_bme->performReading())
+      return false;
+    humidEvent = _bme.humidity;
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the BME680's pressure sensor.
+      @param    pressureEvent
+                A pressure value
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPressure(float pressureEvent) {
+    if (!bme->performReading())
+      return false;
+    pressureEvent = _bme.pressure / 100.0;
+    return true;
+  }
+
+  // TODO: Implement gas sensor
 
 protected:
   Adafruit_BME680 _bme;   ///< BME680  object

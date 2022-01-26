@@ -183,8 +183,8 @@ public:
   /*******************************************************************************/
   virtual void setSensorCO2Period(float period) {
     if (period == 0) {
-        disableSensorCO2();
-        return;
+      disableSensorCO2();
+      return;
     }
     // Period is in seconds, cast it to long and convert it to milliseconds
     _CO2SensorPeriod = (long)period * 1000;
@@ -266,8 +266,8 @@ public:
   /*******************************************************************************/
   virtual void setSensorAmbientTemperaturePeriod(float period) {
     if (period == 0) {
-        disableSensorAmbientTemperature();
-        return;
+      disableSensorAmbientTemperature();
+      return;
     }
     // Period is in seconds, cast it to long and convert it to milliseconds
     _tempSensorPeriod = (long)period * 1000;
@@ -319,7 +319,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAmbientTemperature(float *tempEvent) { return false; }
+  virtual bool getEventAmbientTemperature(float tempEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -329,7 +329,9 @@ public:
                 Sensor's period.
   */
   /*******************************************************************************/
-  virtual void updateSensorAmbientTemperature(float period) { setSensorAmbientTemperaturePeriod(period); }
+  virtual void updateSensorAmbientTemperature(float period) {
+    setSensorAmbientTemperaturePeriod(period);
+  }
 
   /*********************************************************************************/
   /*!
@@ -350,8 +352,8 @@ public:
   /*******************************************************************************/
   virtual void setSensorRelativeHumidityPeriod(float period) {
     if (period == 0) {
-        disableSensorAmbientTemperature();
-        return;
+      disableSensorAmbientTemperature();
+      return;
     }
     // Period is in seconds, cast it to long and convert it to milliseconds
     _humidSensorPeriod = (long)period * 1000;
@@ -403,7 +405,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventRelativeHumidity(float *humidEvent) { return false; }
+  virtual bool getEventRelativeHumidity(float humidEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -413,7 +415,9 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorRelativeHumidity(float period) { setSensorRelativeHumidityPeriod(period); }
+  virtual void updateSensorRelativeHumidity(float period) {
+    setSensorRelativeHumidityPeriod(period);
+  }
 
   /*********************************************************************************/
   /*!
@@ -475,13 +479,27 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Base implementation - Reads a pressure sensor and converts
+                the reading into the expected SI unit.
+      @param    pressureEvent
+                A pressure value
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPressure(float pressureEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
       @brief    Updates the properties of a pressure sensor.
       @param    period
                 The time interval at which to return new data from the pressure
                 sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorPressure(float period) { setSensorPressurePeriod(period); }
+  virtual void updateSensorPressure(float period) {
+    setSensorPressurePeriod(period);
+  }
 
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
