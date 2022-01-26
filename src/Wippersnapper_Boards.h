@@ -60,6 +60,14 @@
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
 #define PIN_I2C_POWER_INVERTED 7
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+#define BOARD_ID "adafruit-feather-esp32s2-tft"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define NEEDS_STATUS_NEOPIXEL_POWER
+#define STATUS_NEOPIXEL_PIN 33
+#define STATUS_NEOPIXEL_NUM 1
+#define PIN_I2C_POWER_INVERTED 7
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2)
 #define BOARD_ID "adafruit-qtpy-esp32s2"
 #define USE_TINYUSB
@@ -78,6 +86,14 @@
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #define USE_NVS
+#elif defined(ARDUINO_SAMD_NANO_33_IOT)
+#define BOARD_ID "nano-33-iot"
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 13
+#elif defined(ARDUINO_SAMD_MKRWIFI1010)
+#define BOARD_ID "mkr-wifi-1010"
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 6
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

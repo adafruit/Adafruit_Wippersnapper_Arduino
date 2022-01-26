@@ -77,55 +77,16 @@ void Wippersnapper::provision() {
   // init. LED for status signaling
   statusLEDInit();
 #ifdef USE_TINYUSB
-  // init new filesystem
   _fileSystem = new Wippersnapper_FS();
-  // parse out secrets.json file
   _fileSystem->parseSecrets();
 #elif defined(USE_NVS)
-  // init esp32 nvs partition namespace
   _nvs = new Wippersnapper_ESP32_nvs();
-  // validate esp32 has been programmed with credentials
-  if (!_nvs->validateNVSConfig()) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: NVS partition or credentials not found - was NVS flashed?");
-    while (1)
-      yield();
-  }
-  // pull values out of NVS configuration
-  _nvs->setNVSConfig();
+  _nvs->parseSecrets();
+#else
+  set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
-  // Set credentials
-  set_user_key();
+
   set_ssid_pass();
-}
-
-/****************************************************************************/
-/*!
-    @brief    Configures the device's Adafruit IO credentials. This method
-              should be used only if provisioning is not avaliable.
-    @param    aio_username
-              Your Adafruit IO username.
-    @param    aio_key
-              Your Adafruit IO active key.
-*/
-/****************************************************************************/
-void Wippersnapper::set_user_key(const char *aio_username,
-                                 const char *aio_key) {
-  WS._username = aio_username;
-  WS._key = aio_key;
-}
-
-/****************************************************************************/
-/*!
-    @brief    Configures the device's Adafruit IO credentials from the
-                secrets.json file.
-*/
-/****************************************************************************/
-void Wippersnapper::set_user_key() {
-#ifdef USE_TINYUSB
-  WS._username = _fileSystem->io_username;
-  WS._key = _fileSystem->io_key;
-#endif
 }
 
 /**************************************************************************/
@@ -207,6 +168,16 @@ void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
 */
 /****************************************************************************/
 void Wippersnapper::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
+    @brief    Configures the device's Adafruit IO credentials. This method
+              should be used only if filesystem-backed provisioning is
+              not avaliable.
+/****************************************************************************/
+void Wippersnapper::set_user_key() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -1295,8 +1266,6 @@ void Wippersnapper::errorWriteHang(String error) {
 /**************************************************************************/
 void Wippersnapper::runNetFSM() {
   WS.feedWDT();
-  // MQTT connack RC
-  int mqttRC;
   // Initial state
   fsm_net_t fsmNetwork;
   fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -1306,7 +1275,6 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_CHECK_MQTT:
       // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
-        // WS_DEBUG_PRINTLN("Connected to IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
@@ -1325,11 +1293,13 @@ void Wippersnapper::runNetFSM() {
       // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
       // Attempt to connect to wireless network
       maxAttempts = 5;
-      while (maxAttempts >= 0) {
+      while (maxAttempts > 0) {
         setStatusLEDColor(LED_NET_CONNECT);
         WS.feedWDT();
         // attempt to connect
+        WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
+        delay(1000);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
@@ -1337,37 +1307,33 @@ void Wippersnapper::runNetFSM() {
         maxAttempts--;
       }
       // Validate connection
-      if (networkStatus() == WS_NET_CONNECTED) {
-        fsmNetwork = FSM_NET_CHECK_NETWORK;
-        break;
-      } else { // unrecoverable error, hang forever
-        errorWriteHang("ERROR: Unable to connect to Wireless Network");
-      }
+      if (networkStatus() != WS_NET_CONNECTED)
+        haltError("ERROR: Unable to connect to WiFi, rebooting soon...");
+      fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
       // Attempt to connect
-      maxAttempts = 10;
-      while (maxAttempts >= 0) {
+      maxAttempts = 5;
+      while (maxAttempts > 0) {
         setStatusLEDColor(LED_IO_CONNECT);
-        mqttRC = WS._mqtt->connect();
+        int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
         }
         setStatusLEDColor(BLACK);
-        delay(1000);
+        WS_DEBUG_PRINTLN(
+            "Unable to connect to Adafruit IO MQTT, retrying in 5 seconds...");
+        delay(5000);
         maxAttempts--;
       }
-      if (fsmNetwork == FSM_NET_CHECK_MQTT) {
-        break;
-      } else { // unrecoverable error, hang forever
-        errorWriteHang("ERROR: Unable to connect to Adafruit.IO");
-      }
+      if (fsmNetwork != FSM_NET_CHECK_MQTT)
+        haltError(
+            "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...");
       break;
     default:
-      // don't feed wdt
       break;
     }
   }

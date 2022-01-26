@@ -33,6 +33,7 @@
 
 # Doxygen
 *.bak
+html/*
 
 # Clang-format Python Script
 *.py
