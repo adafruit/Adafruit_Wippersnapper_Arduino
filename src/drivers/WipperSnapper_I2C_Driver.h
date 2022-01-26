@@ -136,7 +136,7 @@ public:
       @brief    Disables the device's temperature sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorAmbientTemperature(){};
+  virtual void disableSensorAmbientTemperature(){_tempSensorPeriod = 0.0};
 
   /*******************************************************************************/
   /*!
@@ -150,7 +150,7 @@ public:
       @brief    Disables the device's relative humidity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorRelativeHumidity(){};
+  virtual void disableSensorRelativeHumidity(){_humidSensorPeriod = 0.0};
 
   /*******************************************************************************/
   /*!
@@ -164,7 +164,7 @@ public:
       @brief    Disables the device's pressure sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorPressure(){};
+  virtual void disableSensorPressure(){_pressureSensorPeriod = 0.0};
 
   /*******************************************************************************/
   /*!
@@ -205,7 +205,7 @@ public:
       @brief    Disables the device's CO2 sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorCO2(){};
+  virtual void disableSensorCO2(){_CO2SensorPeriod = 0.0};
 
   /*********************************************************************************/
   /*!

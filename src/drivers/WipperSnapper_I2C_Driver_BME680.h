@@ -66,6 +66,10 @@ public:
     setDriverType(UNSPECIFIED);
   }
 
+  // NOTE: updateSensorX() calls are handled in the base class, I2C_Driver
+  // NOTE: enableSensorX() calls are handled in the base class, I2C_Driver
+  // NOTE: disableSensorX() calls are handled in the base class, I2C_Driver
+
 
 protected:
   Adafruit_BME680 _bme;   ///< BME680  object
