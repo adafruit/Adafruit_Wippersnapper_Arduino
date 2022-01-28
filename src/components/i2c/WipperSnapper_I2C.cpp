@@ -502,17 +502,17 @@ void WipperSnapper_Component_I2C::update() {
     curTime = millis();
     if ((*iter)->sensorCO2Period() != 0L &&
         curTime - (*iter)->sensorCO2PeriodPrv() > (*iter)->sensorCO2Period()) {
-      float value;
-      if ((*iter)->getEventCO2(&value)) {
+      if ((*iter)->getEventCO2(&event)) {
         // TODO: These "prints" should also reference which driver type/driver # it is, otherwise we have multiple temp sensors hard to track..
         WS_DEBUG_PRINT("\tco2: ");
         // NOTE: Adafruit_Sensor does not officially support co2 readings, so we pack them into data[] within the driver and access it here
-        WS_DEBUG_PRINT(value.data[0]);
+        // TODO: This is not implemented yet!
+        //WS_DEBUG_PRINT(value.data[0]);
         WS_DEBUG_PRINTLN(" ppm");
 
+        // TODO: This is not implemented yet due to sensor.co2 not being in Adafruit_Sensor yet
         // pack event data into msg
-        fillEventMessage(&msgi2cResponse, value.data[0],
-                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
+        // fillEventMessage(&msgi2cResponse, value.data[0], wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
 
         (*iter)->setSensorCO2PeriodPrv(curTime);
       } else {
