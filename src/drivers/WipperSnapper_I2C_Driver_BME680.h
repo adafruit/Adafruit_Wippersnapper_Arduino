@@ -93,7 +93,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventRelativeHumidity(float humidEvent) {
+  bool getEventRelativeHumidity(float humidEvent) {
     if (!_bme->performReading())
       return false;
     humidEvent = _bme.humidity;
@@ -109,14 +109,29 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPressure(float pressureEvent) {
+  bool getEventPressure(float pressureEvent) {
     if (!bme->performReading())
       return false;
     pressureEvent = _bme.pressure / 100.0;
     return true;
   }
 
-  // TODO: Implement gas sensor
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the BME680's gas sensor and converts
+                the reading into the expected SI unit.
+      @param    gasReading
+                Gas resistor (ohms) reading.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventGas(uint32_t gas_resistance;) {
+    if (!bme->performReading())
+      return false;
+    gas_resistance = _bme.gas_resistance / 1000.0;
+    return true;
+  }
 
 protected:
   Adafruit_BME680 _bme;   ///< BME680  object

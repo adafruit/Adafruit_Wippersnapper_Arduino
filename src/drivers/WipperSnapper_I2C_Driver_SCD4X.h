@@ -57,16 +57,13 @@ public:
     }
 
     // attempt to get serial number
-    error = _scd4x.getSerialNumber(serial0, serial1, serial2);
-    // Error trying to execute getSerialNumber()
-    if (error) {
+    if (!_scd4x.getSerialNumber(serial0, serial1, serial2)) {
       _isInitialized = false;
       return;
     }
 
     // attempt to start measurement
-    error = _scd4x.startPeriodicMeasurement();
-    if (error) {
+    if (!_scd4x.startPeriodicMeasurement()) {
       _isInitialized = false;
       return;
     }
@@ -88,37 +85,23 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Updates the properties of a CO2 sensor.
-      @param    period
-                The time interval at which to return new data from the CO2
-                sensor.
-  */
-  /*******************************************************************************/
-  void updateSensorCO2(float period) {
-    // "always enabled", controlled by the period instead of an object
-    setSensorCO2Period(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the SCD30's current temperature.
+      @brief    Gets the SCD4x's current temperature.
       @param    tempEvent
                 Pointer to a temperature sensor value.
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(float *tempEvent) {
+  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     uint16_t error;
     // check if sensor is enabled
     if (_tempSensorPeriod == 0)
       return false;
 
     // Read Measurement
-    error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
-    if (error)
+    if (!_scd4x.readMeasurement(_co2, _temperature, _humidity))
       return false;
-    tempEvent = &_temperature;
+    tempEvent->temperature = _temperature;
     return true;
   }
 
@@ -131,16 +114,16 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventRelativeHumidity(float *humidEvent) {
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     uint16_t error;
     // Check if sensor is enabled
     if (_humidSensorPeriod == 0)
       return false;
     // Read Measurement
-    error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
-    if (error)
-      return false;
-    humidEvent = &_humidity;
+    if (!_scd4x.readMeasurement(_co2, _temperature, _humidity))
+      ;
+    return false;
+    humidEvent->relative_humidity = _humidity;
     return true;
   }
 
@@ -153,18 +136,15 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventCO2(float *CO2Value) {
+  virtual bool getEventCO2(float *co2Event) {
     uint16_t error;
     // check if co2 sensor enabled
     if (_CO2SensorPeriod == 0)
       return false;
     // Read Measurement
-    error = _scd4x.readMeasurement(_co2, _temperature, _humidity);
-    float co2 = (float)_co2;
-    if (error)
+    if (!_scd4x.readMeasurement(_co2, _temperature, _humidity))
       return false;
-    if (co2 == 0.0f)
-      CO2Value = &co2;
+    co2Event->data[0] = (float)_co2;
     return true;
   }
 

@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -92,6 +92,10 @@ public:
         enableSensorCO2();
         setSensorCO2Period(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+        enableSensorGas();
+        setSensorGasPeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
       default:
         break;
       }
@@ -169,9 +173,9 @@ public:
 
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the pressure sensor's period, if
+      @brief    Base implementation - Returns the co2 sensor's period, if
      set.
-      @returns  Time when the pressure sensor should be polled, in seconds.
+      @returns  Time when the co2 sensor should be polled, in seconds.
   */
   /*********************************************************************************/
   virtual long sensorCO2Period() { return _CO2SensorPeriod; }
@@ -179,17 +183,17 @@ public:
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the previous time interval at
-                    which the pressure sensor was queried last.
-      @returns  Time when the pressure sensor was last queried, in seconds.
+                    which the co2 sensor was queried last.
+      @returns  Time when the co2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
   virtual long sensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
-      @brief    Sets a timestamp for when the pressure sensor was queried.
+      @brief    Sets a timestamp for when the co2 sensor was queried.
       @param    period
-                The time when the pressure sensor was queried last.
+                The time when the co2 sensor was queried last.
   */
   /*******************************************************************************/
   virtual void setSensorCO2PeriodPrv(long period) {
@@ -198,14 +202,14 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the SCD4X's current humidity.
-      @param    CO2Value
+      @brief    Gets a sensor's CO2 value.
+      @param    co2Event
                 The CO2 value, in ppm.
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventCO2(float *CO2Value) { return false; }
+  virtual bool getEventCO2(sensors_event_t *co2Event) { return false; }
 
   /********************** SENSOR_TYPE: AMBIENT TEMPERATURE
    * ***********************/
@@ -527,8 +531,7 @@ public:
 
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the gas sensor's period, if
-     set.
+      @brief    Base implementation - Returns the gas sensor's period, if set.
       @returns  Time when the Gas sensor should be polled, in seconds.
   */
   /*********************************************************************************/
@@ -573,25 +576,13 @@ public:
   /*!
       @brief    Base implementation - Reads a gas sensor and converts
                 the reading into the expected SI unit.
-      @param    GasEvent
-                Pointer to an Adafruit_Sensor event.
+      @param    gasReading
+                Gas resistor (ohms) reading.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventGas(sensors_event_t *GasEvent) { return false; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a gas sensor and converts
-                the reading into the expected SI unit.
-      @param    GasEvent
-                A Gas value
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventGas(float GasEvent) { return false; }
+  virtual bool getEventGas(uint32_t gas_resistance;) { return gas_resistance; }
 
   /*******************************************************************************/
   /*!
