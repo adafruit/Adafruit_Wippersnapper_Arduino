@@ -124,54 +124,21 @@ public:
   /*******************************************************************************/
   void setDriverType(DriverType_t type) { driverType = type; }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorAmbientTemperature(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorAmbientTemperature(){_tempSensorPeriod = 0.0};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's relative humidity sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorRelativeHumidity(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's relative humidity sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorRelativeHumidity(){_humidSensorPeriod = 0.0};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's pressure sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorPressure(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's pressure sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorPressure(){_pressureSensorPeriod = 0.0};
-
+  /****************************** SENSOR_TYPE: CO2
+   * *******************************/
   /*******************************************************************************/
   /*!
       @brief    Enables the device's CO2 sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableSensorCO2(){};
+  virtual void enableSensorCO2() { return; };
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's CO2 sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorCO2(){_CO2SensorPeriod = 0.0};
 
   /*******************************************************************************/
   /*!
@@ -199,13 +166,6 @@ public:
   */
   /*******************************************************************************/
   virtual void updateSensorCO2(float period) { setSensorCO2Period(period); }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's CO2 sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorCO2(){_CO2SensorPeriod = 0.0};
 
   /*********************************************************************************/
   /*!
@@ -246,6 +206,22 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventCO2(float *CO2Value) { return false; }
+
+  /********************** SENSOR_TYPE: AMBIENT TEMPERATURE
+   * ***********************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's temperature sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorAmbientTemperature(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's temperature sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorAmbientTemperature(){_tempSensorPeriod = 0.0};
 
   /*********************************************************************************/
   /*!
@@ -333,6 +309,22 @@ public:
     setSensorAmbientTemperaturePeriod(period);
   }
 
+  /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
+   * ***********************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's relative humidity sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorRelativeHumidity(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's relative humidity sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorRelativeHumidity(){_humidSensorPeriod = 0.0};
+
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the humidity sensor's period, if
@@ -418,6 +410,22 @@ public:
   virtual void updateSensorRelativeHumidity(float period) {
     setSensorRelativeHumidityPeriod(period);
   }
+
+  /**************************** SENSOR_TYPE: PRESSURE
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's pressure sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorPressure(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's pressure sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorPressure(){_pressureSensorPeriod = 0.0};
 
   /*********************************************************************************/
   /*!
