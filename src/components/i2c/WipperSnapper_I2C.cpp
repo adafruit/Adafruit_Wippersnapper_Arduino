@@ -295,12 +295,14 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           drivers[i]->updateSensorCO2(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
         default:
+          // TODO: We should be filling `wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR` here instead!
           WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
           return false;
         }
       }
     }
   }
+  // TODO: fill bus response success here instead
   return is_success;
 }
 
@@ -326,6 +328,7 @@ bool WipperSnapper_Component_I2C::deinitI2CDevice(
       WS_DEBUG_PRINTLN("ERROR: Driver type not found");
     }
   }
+  // TODO: Switch to using bus response here, too!
   return is_success;
 }
 
@@ -436,6 +439,7 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorAmbientTemperaturePeriodPrv() >
             (*iter)->sensorAmbientTemperaturePeriod()) {
       if ((*iter)->getEventAmbientTemperature(&event)) {
+        // TODO: These "prints" should also reference which driver type/driver # it is, otherwise we have multiple temp sensors hard to track..
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(event.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
@@ -447,7 +451,7 @@ void WipperSnapper_Component_I2C::update() {
 
         (*iter)->setSensorAmbientTemperaturePeriodPrv(curTime);
       } else {
-        WS_DEBUG_PRINTLN("ERROR: Failed to get ambient temperature!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to get ambient temperature sensor reading!");
       }
     }
 
@@ -457,6 +461,7 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorRelativeHumidityPeriodPrv() >
             (*iter)->sensorRelativeHumidityPeriod()) {
       if ((*iter)->getEventRelativeHumidity(&event)) {
+        // TODO: These "prints" should also reference which driver type/driver # it is, otherwise we have multiple temp sensors hard to track..
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(event.relative_humidity);
         WS_DEBUG_PRINTLN("%RH");
@@ -468,7 +473,7 @@ void WipperSnapper_Component_I2C::update() {
 
         (*iter)->setSensorRelativeHumidityPeriodPrv(curTime);
       } else {
-        WS_DEBUG_PRINTLN("ERROR: Failed to get relative humidity!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to get humidity sensor reading!");
       }
     }
 
@@ -478,6 +483,7 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorPressurePeriodPrv() >
             (*iter)->sensorPressurePeriod()) {
       if ((*iter)->getEventPressure(&event)) {
+        // TODO: These "prints" should also reference which driver type/driver # it is, otherwise we have multiple temp sensors hard to track..
         WS_DEBUG_PRINT("\tPressure: ");
         WS_DEBUG_PRINT(event.pressure);
         WS_DEBUG_PRINTLN(" hPa");
@@ -488,7 +494,7 @@ void WipperSnapper_Component_I2C::update() {
 
         (*iter)->setSensorPressurePeriodPrv(curTime);
       } else {
-        WS_DEBUG_PRINTLN("ERROR: Failed to get Pressure!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to get Pressure sensor reading!");
       }
     }
 
@@ -498,17 +504,19 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorCO2PeriodPrv() > (*iter)->sensorCO2Period()) {
       float value;
       if ((*iter)->getEventCO2(&value)) {
+        // TODO: These "prints" should also reference which driver type/driver # it is, otherwise we have multiple temp sensors hard to track..
         WS_DEBUG_PRINT("\tco2: ");
-        WS_DEBUG_PRINT(value);
+        // NOTE: Adafruit_Sensor does not officially support co2 readings, so we pack them into data[] within the driver and access it here
+        WS_DEBUG_PRINT(value.data[0]);
         WS_DEBUG_PRINTLN(" ppm");
 
         // pack event data into msg
-        fillEventMessage(&msgi2cResponse, value,
+        fillEventMessage(&msgi2cResponse, value.data[0],
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
 
         (*iter)->setSensorCO2PeriodPrv(curTime);
       } else {
-        WS_DEBUG_PRINTLN("ERROR: Failed to get CO2!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to obtain CO2 sensor reading!");
       }
     }
 
