@@ -142,7 +142,7 @@ public:
       @brief    Disables the device's CO2 sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorCO2(){_CO2SensorPeriod = 0.0};
+  virtual void disableSensorCO2(){_CO2SensorPeriod = 0.0;}
 
   /*******************************************************************************/
   /*!
@@ -218,14 +218,14 @@ public:
       @brief    Enables the device's temperature sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableSensorAmbientTemperature(){};
+  virtual void enableSensorAmbientTemperature(){return;};
 
   /*******************************************************************************/
   /*!
       @brief    Disables the device's temperature sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorAmbientTemperature(){_tempSensorPeriod = 0.0};
+  virtual void disableSensorAmbientTemperature(){_tempSensorPeriod = 0.0;}
 
   /*********************************************************************************/
   /*!
@@ -327,7 +327,7 @@ public:
       @brief    Disables the device's relative humidity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorRelativeHumidity(){_humidSensorPeriod = 0.0};
+  virtual void disableSensorRelativeHumidity(){_humidSensorPeriod = 0.0;}
 
   /*********************************************************************************/
   /*!
@@ -429,7 +429,7 @@ public:
       @brief    Disables the device's pressure sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorPressure(){_pressureSensorPeriod = 0.0};
+  virtual void disableSensorPressure(){_pressureSensorPeriod = 0.0;}
 
   /*********************************************************************************/
   /*!
@@ -527,7 +527,7 @@ public:
       @brief    Disables the device's gas sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorGas(){_gasSensorPeriod = 0.0};
+  virtual void disableSensorGas(){_gasSensorPeriod = 0.0;}
 
   /*********************************************************************************/
   /*!
@@ -582,7 +582,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventGas(uint32_t gas_resistance;) { return gas_resistance; }
+  virtual bool getEventGas(uint32_t gas_resistance) { return gas_resistance; }
 
   /*******************************************************************************/
   /*!

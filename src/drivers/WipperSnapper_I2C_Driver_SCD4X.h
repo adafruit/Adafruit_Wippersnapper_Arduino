@@ -144,7 +144,8 @@ public:
     // Read Measurement
     if (!_scd4x.readMeasurement(_co2, _temperature, _humidity))
       return false;
-    co2Event->data[0] = (float)_co2;
+    // TODO: this needs to be implemented
+    // co2Event->data[0] = co2val;
     return true;
   }
 
