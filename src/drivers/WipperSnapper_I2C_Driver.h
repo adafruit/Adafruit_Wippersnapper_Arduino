@@ -59,6 +59,14 @@ public:
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver() { _sensorAddress = 0; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Uses an I2CDeviceInitRequest message to configure the sensors
+                  belonging to the driver.
+      @param    msgDeviceInitReq
+                I2CDeviceInitRequest containing a list of I2C device properties.
+  */
+  /*******************************************************************************/
   void
   configureDriver(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
     int propertyIdx = 0;
@@ -109,17 +117,9 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the I2C device driver's type (corresponds to class name)
-      @returns  The type of I2C driver in-use.
-  */
-  /*******************************************************************************/
-  // DriverType_t getDriverType() { return driverType; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets the I2C device driver's type.
+      @brief    Sets the device driver's DriverType property.
       @param    type
-                test
+                I2C device driver type
   */
   /*******************************************************************************/
   void setDriverType(DriverType_t type) { driverType = type; }
@@ -509,6 +509,100 @@ public:
     setSensorPressurePeriod(period);
   }
 
+  /**************************** SENSOR_TYPE: Gas
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's gas sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorGas(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's gas sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorGas(){_gasSensorPeriod = 0.0};
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the gas sensor's period, if
+     set.
+      @returns  Time when the Gas sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorGasPeriod() { return _gasSensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the gas sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the Gas
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorGasPeriod(float period) {
+    if (period == 0)
+      disableSensorGas();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _gasSensorPeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the gas sensor was queried last.
+      @returns  Time when the gas sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorGasPeriodPrv() { return _gasSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the gas sensor was queried.
+      @param    period
+                The time when the gas sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorGasPeriodPrv(long period) {
+    _gasSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a gas sensor and converts
+                the reading into the expected SI unit.
+      @param    GasEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventGas(sensors_event_t *GasEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a gas sensor and converts
+                the reading into the expected SI unit.
+      @param    GasEvent
+                A Gas value
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventGas(float GasEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a gas sensor.
+      @param    period
+                The time interval at which to return new data from the Gas
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorGas(float period) { setSensorGasPeriod(period); }
+
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
@@ -529,6 +623,10 @@ protected:
   long _CO2SensorPeriod =
       0L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv = 0L; ///< The time when the CO2 sensor
+                                 ///< was last read.
+  long _gasSensorPeriod =
+      0L; ///< The time period between reading the CO2 sensor's value.
+  long _gasSensorPeriodPrv = 0L; ///< The time when the CO2 sensor
                                  ///< was last read.
 };
 
