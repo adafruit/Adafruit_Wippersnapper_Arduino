@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -261,14 +261,10 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     @brief    Updates the properties of an I2C device driver.
     @param    msgDeviceUpdateReq
               A decoded I2CDeviceUpdateRequest.
-    @returns True if the I2C device is was successfully updated, False
-   otherwise.
 */
 /*********************************************************************************/
-bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
+void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
     wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq) {
-  bool is_success = true;
-
   uint16_t i2cAddress = (uint16_t)msgDeviceUpdateReq->i2c_device_address;
 
   // Loop thru vector of drivers to find the unique address
@@ -295,15 +291,13 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           drivers[i]->updateSensorCO2(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
         default:
-          // TODO: We should be filling `wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR` here instead!
+          _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
           WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
-          return false;
         }
       }
     }
   }
-  // TODO: fill bus response success here instead
-  return is_success;
+  _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 }
 
 /*******************************************************************************/
@@ -311,25 +305,23 @@ bool WipperSnapper_Component_I2C::updateI2CDeviceProperties(
     @brief    Deinitializes and deletes an I2C device driver object.
     @param    msgDeviceDeinitReq
               A decoded I2CDeviceDeinitRequest.
-    @returns True if I2C device is found and de-initialized, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_Component_I2C::deinitI2CDevice(
+void WipperSnapper_Component_I2C::deinitI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
-  bool is_success = false;
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_device_address;
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->sensorAddress() == deviceAddr) {
+      // TODO: We might want to call the deinit methods for the individual driver from here!! This methods simply erases the driver from the vector, but the object should be deleted first..
       drivers.erase(drivers.begin() + i);
-      WS_DEBUG_PRINTLN("Driver de-initialized!");
-      is_success = true;
+      WS_DEBUG_PRINTLN("I2C Device De-initialized!");
     } else {
-      WS_DEBUG_PRINTLN("ERROR: Driver type not found");
+      WS_DEBUG_PRINTLN("ERROR: Deinitialization failure");
+      _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_DEINIT_FAIL;
     }
   }
-  // TODO: Switch to using bus response here, too!
-  return is_success;
+  _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 }
 
 /*******************************************************************************/

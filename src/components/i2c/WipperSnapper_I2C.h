@@ -47,19 +47,17 @@ public:
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool
   initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
-  // TODO: Update Implementation
-  // THIS NEEDS AN UPDATE REQUEST
-  bool updateI2CDeviceProperties(
+
+  void updateI2CDeviceProperties(
       wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq);
-  bool deinitI2CDevice(
+  void deinitI2CDevice(
       wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
 
   void update();
-
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
                         float value, wippersnapper_i2c_v1_SensorType sensorType,
                         uint8_t precision);
-
+  // TODO: We may want to combine these methods...
   bool
   encodeI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
                           uint32_t sensorAddress);
