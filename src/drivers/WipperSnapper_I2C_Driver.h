@@ -16,10 +16,9 @@
 #ifndef WipperSnapper_I2C_Driver_H
 #define WipperSnapper_I2C_Driver_H
 
-#include "Wippersnapper.h"
 #include <Adafruit_Sensor.h>
 
-/** Types of I2C driver, corresponding to Driver_CLASSNAME.h */
+/** Types of I2C drivers, corresponds to Driver_CLASSNAME.h */
 typedef enum {
   UNSPECIFIED, // Unspecified/undefined i2c device driver.
   AHTX0,       // AHTX0 device driver

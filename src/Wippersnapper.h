@@ -84,6 +84,8 @@
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
   { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
   {} ///< Prints debug output

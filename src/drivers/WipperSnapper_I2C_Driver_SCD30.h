@@ -102,17 +102,19 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the SCD30's current CO2 reading.
-      @param    CO2Value
-                  The CO2 value, in ppm.
+      @param    co2Event
+                  Adafruit Sensor event for CO2
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventCO2(float *CO2Value) {
+  bool getEventCO2(sensors_event_t *co2Event) {
     // check if sensor is enabled and data is available
     if (_CO2SensorPeriod != 0 && (!_scd30.dataReady()))
       return false;
-    CO2Value = &_scd30.CO2;
+    // TODO: This is a TEMPORARY HACK, we need to add CO2 type to
+    // adafruit_sensor
+    co2Event->data[0] = _scd30.CO2;
     return true;
   }
 

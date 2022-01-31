@@ -435,8 +435,9 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorAmbientTemperaturePeriodPrv() >
             (*iter)->sensorAmbientTemperaturePeriod()) {
       if ((*iter)->getEventAmbientTemperature(&event)) {
-        // TODO: These "prints" should also reference which driver type/driver #
-        // it is, otherwise we have multiple temp sensors hard to track..
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(event.temperature);
         WS_DEBUG_PRINTLN(" degrees C");
@@ -459,8 +460,9 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorRelativeHumidityPeriodPrv() >
             (*iter)->sensorRelativeHumidityPeriod()) {
       if ((*iter)->getEventRelativeHumidity(&event)) {
-        // TODO: These "prints" should also reference which driver type/driver #
-        // it is, otherwise we have multiple temp sensors hard to track..
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(event.relative_humidity);
         WS_DEBUG_PRINTLN("%RH");
@@ -482,8 +484,9 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorPressurePeriodPrv() >
             (*iter)->sensorPressurePeriod()) {
       if ((*iter)->getEventPressure(&event)) {
-        // TODO: These "prints" should also reference which driver type/driver #
-        // it is, otherwise we have multiple temp sensors hard to track..
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tPressure: ");
         WS_DEBUG_PRINT(event.pressure);
         WS_DEBUG_PRINTLN(" hPa");
@@ -503,19 +506,15 @@ void WipperSnapper_Component_I2C::update() {
     if ((*iter)->sensorCO2Period() != 0L &&
         curTime - (*iter)->sensorCO2PeriodPrv() > (*iter)->sensorCO2Period()) {
       if ((*iter)->getEventCO2(&event)) {
-        // TODO: These "prints" should also reference which driver type/driver #
-        // it is, otherwise we have multiple temp sensors hard to track..
-        WS_DEBUG_PRINT("\tco2: ");
-        // NOTE: Adafruit_Sensor does not officially support co2 readings, so we
-        // pack them into data[] within the driver and access it here
-        // TODO: This is not implemented yet!
-        // WS_DEBUG_PRINT(value.data[0]);
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tCO2: ");
+        WS_DEBUG_PRINT(event.data[0]);
         WS_DEBUG_PRINTLN(" ppm");
 
-        // TODO: This is not implemented yet due to sensor.co2 not being in
-        // Adafruit_Sensor yet pack event data into msg
-        // fillEventMessage(&msgi2cResponse, value.data[0],
-        // wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
         (*iter)->setSensorCO2PeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to obtain CO2 sensor reading!");
@@ -528,8 +527,9 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorAltitudePeriodPrv() >
             (*iter)->sensorAltitudePeriod()) {
       if ((*iter)->getEventAltitude(&event)) {
-        // TODO: These "prints" should also reference which driver type/driver #
-        // it is, otherwise we have multiple temp sensors hard to track..
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tAltitude: ");
         WS_DEBUG_PRINT(event.data[0]);
         WS_DEBUG_PRINTLN(" m");
