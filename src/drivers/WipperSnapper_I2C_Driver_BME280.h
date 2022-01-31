@@ -19,6 +19,8 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_BME280.h>
 
+#define SEALEVELPRESSURE_HPA (1013.25)
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the BME280 temperature
@@ -55,6 +57,7 @@ public:
     _tempSensorPeriod = 0.0L;
     _humidSensorPeriod = 0.0L;
     _pressureSensorPeriod = 0.0L;
+    _altitudeSensorPeriod = 0.0L;
     setDriverType(UNSPECIFIED);
   }
 
@@ -197,6 +200,22 @@ public:
     if (_bme_pressure == NULL)
       return false;
     _bme_pressure->getEvent(pressureEvent);
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads a the BME280's altitude sensor into an event.
+      @param    altitudeEvent
+                Pointer to an adafruit sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventAltitude(sensors_event_t *altitudeEvent) {
+    // TODO: Note, this is a hack into Adafruit_Sensor, we should really add an
+    // altitude sensor type
+    altitudeEvent->data[0] = _bme.readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
 

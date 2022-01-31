@@ -96,6 +96,10 @@ public:
         enableSensorGas();
         setSensorGasPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
+        enableSensorAltitude();
+        setSensorAltitudePeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
       default:
         break;
       }
@@ -594,6 +598,92 @@ public:
   /*******************************************************************************/
   virtual void updateSensorGas(float period) { setSensorGasPeriod(period); }
 
+  /**************************** SENSOR_TYPE: Altitude
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's Altitude sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorAltitude(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's Altitude sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorAltitude() { _altitudeSensorPeriod = 0.0; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the Altitude sensor's period, if
+     set.
+      @returns  Time when the Altitude sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorAltitudePeriod() { return _altitudeSensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the Altitude sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the Altitude
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorAltitudePeriod(float period) {
+    if (period == 0)
+      disableSensorAltitude();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _altitudeSensorPeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the Altitude sensor was queried last.
+      @returns  Time when the Altitude sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorAltitudePeriodPrv() { return _altitudeSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the Altitude sensor was queried.
+      @param    period
+                The time when the Altitude sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorAltitudePeriodPrv(long period) {
+    _altitudeSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a Altitude sensor and converts
+                the reading into the expected SI unit.
+      @param    AltitudeReading
+                Altitude reading, in meters.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventAltitude(sensors_event_t *altitudeEvent) {
+    return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a Altitude sensor.
+      @param    period
+                The time interval at which to return new data from the altitude
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorAltitude(float period) {
+    setSensorAltitudePeriod(period);
+  }
+
   DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
@@ -619,6 +709,10 @@ protected:
       0L; ///< The time period between reading the CO2 sensor's value.
   long _gasSensorPeriodPrv = 0L; ///< The time when the CO2 sensor
                                  ///< was last read.
+  long _altitudeSensorPeriod =
+      0L; ///< The time period between reading the altitude sensor's value.
+  long _altitudeSensorPeriodPrv = 0L; ///< The time when the altitude sensor
+                                      ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
