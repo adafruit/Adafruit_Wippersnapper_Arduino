@@ -24,7 +24,6 @@ typedef enum {
   AHTX0,       // AHTX0 device driver
   DPS310,      // DPS310 device driver
   SCD30,       // SCD30 device driver
-  SCD4X,       // SCD4X device driver
   PM25AQI,     // PM25AQI device driver
   BME280,      // BME280 device driver
   BME680       // BME680 device driver
@@ -582,7 +581,7 @@ public:
   /*!
       @brief    Base implementation - Reads a gas sensor and converts
                 the reading into the expected SI unit.
-      @param    gasReading
+      @param    gas_resistance
                 Gas resistor (ohms) reading.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
@@ -664,7 +663,7 @@ public:
   /*!
       @brief    Base implementation - Reads a Altitude sensor and converts
                 the reading into the expected SI unit.
-      @param    AltitudeReading
+      @param    altitudeEvent
                 Altitude reading, in meters.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.

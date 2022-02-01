@@ -120,13 +120,13 @@ public:
   /*!
       @brief    Reads the BME680's gas sensor and converts
                 the reading into the expected SI unit.
-      @param    gasReading
+      @param    gas_resistance
                 Gas resistor (ohms) reading.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventGas(uint32_t gas_resistance;) {
+  bool getEventGas(uint32_t gas_resistance) {
     if (!bme->performReading())
       return false;
     gas_resistance = _bme.gas_resistance / 1000.0;
