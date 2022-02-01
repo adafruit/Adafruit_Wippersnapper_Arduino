@@ -19,7 +19,7 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_BME280.h>
 
-#define SEALEVELPRESSURE_HPA (1013.25)
+#define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
 /**************************************************************************/
 /*!
