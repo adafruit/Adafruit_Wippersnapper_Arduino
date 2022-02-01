@@ -234,8 +234,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD30!");
       return false;
     }
-    WS_DEBUG_PRINTLN("msgDeviceInitReq->i2c_device_properties_count");
-    WS_DEBUG_PRINTLN(msgDeviceInitReq->i2c_device_properties_count);
     _scd30->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd30);
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
@@ -275,7 +273,6 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
       // Update the properties of each driver
       for (int j = 0; j < msgDeviceUpdateReq->i2c_device_properties_count;
            j++) {
-        // test
         switch (msgDeviceUpdateReq->i2c_device_properties[j].sensor_type) {
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
           drivers[i]->updateSensorAmbientTemperature(
@@ -292,13 +289,16 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
           drivers[i]->updateSensorCO2(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
           drivers[i]->updateSensorAltitude(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
         default:
           _busStatusResponse =
               wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
           WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
+          break;
         }
       }
     }
@@ -436,7 +436,7 @@ void WipperSnapper_Component_I2C::update() {
 
     // AMBIENT_TEMPERATURE sensor
     curTime = millis();
-    
+
     WS_DEBUG_PRINT("sensorAmbientTemperaturePeriod: ");
     WS_DEBUG_PRINTLN((*iter)->sensorAmbientTemperaturePeriod());
 

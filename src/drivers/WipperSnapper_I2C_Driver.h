@@ -91,14 +91,17 @@ public:
         enableSensorCO2();
         setSensorCO2Period(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
         enableSensorGas();
         setSensorGasPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
         enableSensorAltitude();
         setSensorAltitudePeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       default:
         break;
       }
@@ -145,7 +148,7 @@ public:
       @brief    Disables the device's CO2 sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorCO2() { _CO2SensorPeriod = 0.0; }
+  virtual void disableSensorCO2() { _CO2SensorPeriod = 0.0L; }
 
   /*******************************************************************************/
   /*!
@@ -228,7 +231,7 @@ public:
       @brief    Disables the device's temperature sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorAmbientTemperature() { _tempSensorPeriod = 0.0; }
+  virtual void disableSensorAmbientTemperature() { _tempSensorPeriod = 0.0L; }
 
   /*********************************************************************************/
   /*!
@@ -248,7 +251,7 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorAmbientTemperaturePeriod(float period) {
-    if (period == 0) {
+    if (period == 0.0) {
       disableSensorAmbientTemperature();
       return;
     }
@@ -330,7 +333,7 @@ public:
       @brief    Disables the device's relative humidity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorRelativeHumidity() { _humidSensorPeriod = 0.0; }
+  virtual void disableSensorRelativeHumidity() { _humidSensorPeriod = 0.0L; }
 
   /*********************************************************************************/
   /*!
@@ -350,7 +353,7 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorRelativeHumidityPeriod(float period) {
-    if (period == 0) {
+    if (period == 0.0) {
       disableSensorAmbientTemperature();
       return;
     }
@@ -432,7 +435,7 @@ public:
       @brief    Disables the device's pressure sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorPressure() { _pressureSensorPeriod = 0.0; }
+  virtual void disableSensorPressure() { _pressureSensorPeriod = 0.0L; }
 
   /*********************************************************************************/
   /*!
@@ -452,7 +455,7 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorPressurePeriod(float period) {
-    if (period == 0)
+    if (period == 0.0)
       disableSensorPressure();
     // Period is in seconds, cast it to long and convert it to milliseconds
     _pressureSensorPeriod = (long)period * 1000;
@@ -530,7 +533,7 @@ public:
       @brief    Disables the device's gas sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorGas() { _gasSensorPeriod = 0.0; }
+  virtual void disableSensorGas() { _gasSensorPeriod = 0.0L; }
 
   /*********************************************************************************/
   /*!
@@ -549,7 +552,7 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorGasPeriod(float period) {
-    if (period == 0)
+    if (period == 0.0)
       disableSensorGas();
     // Period is in seconds, cast it to long and convert it to milliseconds
     _gasSensorPeriod = (long)period * 1000;
@@ -611,7 +614,7 @@ public:
       @brief    Disables the device's Altitude sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorAltitude() { _altitudeSensorPeriod = 0.0; }
+  virtual void disableSensorAltitude() { _altitudeSensorPeriod = 0.0L; }
 
   /*********************************************************************************/
   /*!
