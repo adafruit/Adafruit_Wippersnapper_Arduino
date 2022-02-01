@@ -234,6 +234,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD30!");
       return false;
     }
+    WS_DEBUG_PRINTLN("msgDeviceInitReq->i2c_device_properties_count");
+    WS_DEBUG_PRINTLN(msgDeviceInitReq->i2c_device_properties_count);
     _scd30->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd30);
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
@@ -289,6 +291,9 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
           drivers[i]->updateSensorCO2(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
+          drivers[i]->updateSensorAltitude(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
         default:
           _busStatusResponse =
@@ -431,6 +436,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // AMBIENT_TEMPERATURE sensor
     curTime = millis();
+    
+    WS_DEBUG_PRINT("sensorAmbientTemperaturePeriod: ");
+    WS_DEBUG_PRINTLN((*iter)->sensorAmbientTemperaturePeriod());
+
     if ((*iter)->sensorAmbientTemperaturePeriod() != 0L &&
         curTime - (*iter)->sensorAmbientTemperaturePeriodPrv() >
             (*iter)->sensorAmbientTemperaturePeriod()) {
@@ -456,6 +465,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // RELATIVE_HUMIDITY sensor
     curTime = millis();
+
+    WS_DEBUG_PRINT("sensorRelativeHumidityPeriod: ");
+    WS_DEBUG_PRINTLN((*iter)->sensorRelativeHumidityPeriod());
+
     if ((*iter)->sensorRelativeHumidityPeriod() != 0L &&
         curTime - (*iter)->sensorRelativeHumidityPeriodPrv() >
             (*iter)->sensorRelativeHumidityPeriod()) {
@@ -480,6 +493,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // PRESSURE sensor
     curTime = millis();
+
+    WS_DEBUG_PRINT("sensorPressurePeriod: ");
+    WS_DEBUG_PRINTLN((*iter)->sensorPressurePeriod());
+
     if ((*iter)->sensorPressurePeriod() != 0L &&
         curTime - (*iter)->sensorPressurePeriodPrv() >
             (*iter)->sensorPressurePeriod()) {
@@ -503,6 +520,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // CO2 sensor
     curTime = millis();
+
+    WS_DEBUG_PRINT("sensorCO2Period: ");
+    WS_DEBUG_PRINTLN((*iter)->sensorCO2Period());
+
     if ((*iter)->sensorCO2Period() != 0L &&
         curTime - (*iter)->sensorCO2PeriodPrv() > (*iter)->sensorCO2Period()) {
       if ((*iter)->getEventCO2(&event)) {
@@ -523,6 +544,10 @@ void WipperSnapper_Component_I2C::update() {
 
     // Altitude sensor
     curTime = millis();
+
+    WS_DEBUG_PRINT("sensorAltitudePeriod: ");
+    WS_DEBUG_PRINTLN((*iter)->sensorAltitudePeriod());
+
     if ((*iter)->sensorAltitudePeriod() != 0L &&
         curTime - (*iter)->sensorAltitudePeriodPrv() >
             (*iter)->sensorAltitudePeriod()) {

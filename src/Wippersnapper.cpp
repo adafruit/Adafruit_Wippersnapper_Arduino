@@ -724,6 +724,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Fill address
     msgi2cResponse.payload.resp_i2c_device_update.i2c_device_address =
         msgI2CDeviceUpdateRequest.i2c_device_address;
+    msgi2cResponse.payload.resp_i2c_device_update.bus_response = WS._i2cPort0->getBusStatus();
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {

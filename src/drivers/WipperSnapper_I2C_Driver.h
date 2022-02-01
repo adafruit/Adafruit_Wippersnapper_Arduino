@@ -156,7 +156,7 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorCO2Period(float period) {
-    if (period == 0) {
+    if (period == 0.0) {
       disableSensorCO2();
       return;
     }
