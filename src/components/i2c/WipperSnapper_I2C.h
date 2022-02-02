@@ -57,9 +57,9 @@ public:
                         float value, wippersnapper_i2c_v1_SensorType sensorType,
                         uint8_t precision);
 
-  bool
-  encodePublishI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
-                          uint32_t sensorAddress);
+  bool encodePublishI2CDeviceEventMsg(
+      wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+      uint32_t sensorAddress);
 
 private:
   bool _isInit = false;
