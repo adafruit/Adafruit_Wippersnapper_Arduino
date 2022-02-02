@@ -56,12 +56,10 @@ public:
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
                         float value, wippersnapper_i2c_v1_SensorType sensorType,
                         uint8_t precision);
-  // TODO: We may want to combine these methods...
+
   bool
-  encodeI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+  encodePublishI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
                           uint32_t sensorAddress);
-  bool
-  publishI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse);
 
 private:
   bool _isInit = false;

@@ -485,7 +485,7 @@ bool encodeI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
 /******************************************************************************************/
 /*!
     @brief    Initializes an I2C bus component
-    @param    msgi2cResponse
+    @param    msgInitRequest
               A pointer to an i2c bus initialization message.
     @param    i2cPort
               Desired I2C port to initialize.
@@ -551,7 +551,7 @@ bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
   WS._i2cPort0->initI2CDevice(&msgI2CDeviceInitRequest);
 
   // Fill device's address and the initialization status
-  // TODO: The filling should be done within the method though..?
+  // TODO: The filling should be done within the method though?
   msgi2cResponse.payload.resp_i2c_device_init.i2c_device_address =
       msgI2CDeviceInitRequest.i2c_device_address;
   msgi2cResponse.payload.resp_i2c_device_init.bus_response =

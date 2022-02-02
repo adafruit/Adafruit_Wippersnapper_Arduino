@@ -334,9 +334,10 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
     @returns  True if message encoded successfully, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_Component_I2C::encodeI2CDeviceEventMsg(
+bool WipperSnapper_Component_I2C::encodePublishI2CDeviceEventMsg(
     wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
     uint32_t sensorAddress) {
+  // Encode I2CResponse msg
   msgi2cResponse->payload.resp_i2c_device_event.sensor_address = sensorAddress;
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
   pb_ostream_t ostream =
@@ -347,20 +348,8 @@ bool WipperSnapper_Component_I2C::encodeI2CDeviceEventMsg(
         "ERROR: Unable to encode I2C device event response message!");
     return false;
   }
-  return true;
-}
 
-/*******************************************************************************/
-/*!
-    @brief    Publishes an I2C sensor device's signal message.
-    @param    msgi2cResponse
-              Pointer to an I2CResponse signal message.
-    @returns  True if message published to the broker successfully,
-                False otherwise.
-*/
-/*******************************************************************************/
-bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg(
-    wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
+  // Publish I2CResponse msg
   size_t msgSz;
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       msgi2cResponse);
@@ -544,15 +533,10 @@ void WipperSnapper_Component_I2C::update() {
     if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count == 0)
       continue;
 
-    // Encode I2CDeviceEvent message
-    if (!encodeI2CDeviceEventMsg(&msgi2cResponse, (*iter)->sensorAddress())) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to encode I2CDeviceEvent!");
-      continue;
-    }
-
-    // Publish I2CDeviceEvent
-    if (!publishI2CDeviceEventMsg(&msgi2cResponse)) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to publish sensor event");
+    // Encode and publish I2CDeviceEvent message
+    if (!encodePublishI2CDeviceEventMsg(&msgi2cResponse,
+                                        (*iter)->sensorAddress())) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to encode and publish I2CDeviceEvent!");
       continue;
     }
   }
