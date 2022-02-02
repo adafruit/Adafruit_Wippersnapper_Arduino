@@ -25,7 +25,7 @@ typedef enum {
   DPS310,      // DPS310 device driver
   SCD30,       // SCD30 device driver
   PM25AQI,     // PM25AQI device driver
-  BME280      // BME280 device driver
+  BME280       // BME280 device driver
 } DriverType_t;
 
 /**************************************************************************/

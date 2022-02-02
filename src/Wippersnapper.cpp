@@ -562,6 +562,8 @@ bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
     return false;
   }
 
+  // Publish a response for the I2C device
+  publishI2CResponse(&msgi2cResponse);
   return true;
 }
 
@@ -651,7 +653,9 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequests");
       is_success = false;
     }
-
+    // return so we don't publish an empty message, we already published within
+    // cbDecodeI2CDeviceInitRequestList() for each device
+    return is_success;
   } else if (field->tag ==
              wippersnapper_signal_v1_I2CRequest_req_i2c_device_init_tag) {
     WS_DEBUG_PRINTLN("I2C Device Init Request Found!");
