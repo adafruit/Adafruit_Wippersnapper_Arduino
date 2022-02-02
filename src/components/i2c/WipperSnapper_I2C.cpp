@@ -141,7 +141,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
   // those that respond.
-  WS_DEBUG_PRINT("EXEC: I2C Scan");
+  WS_DEBUG_PRINTLN("EXEC: I2C Scan");
   for (address = 0x08; address < 0x7F; address++) {
     _i2c->beginTransmission(address);
     endTransmissionRC = _i2c->endTransmission();
