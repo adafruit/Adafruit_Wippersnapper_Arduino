@@ -756,6 +756,11 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 
     // Deinitialize I2C device
     WS._i2cPort0->deinitI2CDevice(&msgI2CDeviceDeinitRequest);
+    // Fill deinit response
+    msgi2cResponse.payload.resp_i2c_device_deinit.i2c_device_address =
+        msgI2CDeviceDeinitRequest.i2c_device_address;
+    msgi2cResponse.payload.resp_i2c_device_deinit.bus_response =
+        WS._i2cPort0->getBusStatus();
 
     // Encode response
     if (!encodeI2CResponse(&msgi2cResponse)) {
