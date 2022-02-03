@@ -352,7 +352,7 @@ public:
   /*******************************************************************************/
   virtual void setSensorRelativeHumidityPeriod(float period) {
     if (period == 0.0) {
-      disableSensorAmbientTemperature();
+      disableSensorRelativeHumidity();
       return;
     }
     // Period is in seconds, cast it to long and convert it to milliseconds

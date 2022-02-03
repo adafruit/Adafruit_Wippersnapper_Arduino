@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -93,44 +93,6 @@ public:
   void disableSensorRelativeHumidity() {
     _aht_humidity = NULL; // TODO: change to nullptr instead!
     _humidSensorPeriod = 0L;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of an ambient temperature
-                  sensor, provided sensor_period.
-      @param    period
-                Sensor's period.
-  */
-  /*******************************************************************************/
-  void updateSensorAmbientTemperature(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorAmbientTemperature();
-    // enable a previously disabled sensor
-    if (period > 0 && _aht_temp == NULL)
-      enableSensorAmbientTemperature();
-
-    setSensorAmbientTemperaturePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a relative humidity sensor.
-      @param    period
-                The time interval at which to return new data from the humidity
-                sensor.
-  */
-  /*******************************************************************************/
-  void updateSensorRelativeHumidity(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorRelativeHumidity();
-    // enable a previously disabled sensor
-    if (period > 0 && _aht_humidity == NULL)
-      enableSensorRelativeHumidity();
-
-    setSensorRelativeHumidityPeriod(period);
   }
 
   /*******************************************************************************/
