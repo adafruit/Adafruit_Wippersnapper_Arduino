@@ -24,7 +24,6 @@
 #include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
-#include "drivers/WipperSnapper_I2C_Driver_SCD4X.h"
 
 #define I2C_TIMEOUT_MS 50 ///< Default I2C timeout, in milliseconds.
 
@@ -47,24 +46,20 @@ public:
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool
   initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
-  // TODO: Update Implementation
-  // THIS NEEDS AN UPDATE REQUEST
-  bool updateI2CDeviceProperties(
+
+  void updateI2CDeviceProperties(
       wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq);
-  bool deinitI2CDevice(
+  void deinitI2CDevice(
       wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
 
   void update();
-
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
                         float value, wippersnapper_i2c_v1_SensorType sensorType,
                         uint8_t precision);
 
-  bool
-  encodeI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
-                          uint32_t sensorAddress);
-  bool
-  publishI2CDeviceEventMsg(wippersnapper_signal_v1_I2CResponse *msgi2cResponse);
+  bool encodePublishI2CDeviceEventMsg(
+      wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+      uint32_t sensorAddress);
 
 private:
   bool _isInit = false;
@@ -76,7 +71,6 @@ private:
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
-  WipperSnapper_I2C_Driver_SCD4X *_scd4x = nullptr;
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
 };
 extern Wippersnapper WS;

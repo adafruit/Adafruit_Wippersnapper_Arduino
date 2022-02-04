@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -62,22 +62,26 @@ public:
       @brief    Enables the AHTX0's temperature sensor.
   */
   /*******************************************************************************/
-  void enableTemperatureSensor() { _aht_temp = _aht.getTemperatureSensor(); }
+  void enableSensorAmbientTemperature() {
+    _aht_temp = _aht.getTemperatureSensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Enables the AHTX0's humidity sensor.
   */
   /*******************************************************************************/
-  void enableHumiditySensor() { _aht_humidity = _aht.getHumiditySensor(); }
+  void enableSensorRelativeHumidity() {
+    _aht_humidity = _aht.getHumiditySensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Disables the AHTX0's temperature sensor.
   */
   /*******************************************************************************/
-  void disableTemperatureSensor() {
-    _aht_temp = NULL;
+  void disableSensorAmbientTemperature() {
+    _aht_temp = NULL; // TODO: change to nullptr instead!
     _tempSensorPeriod = 0L;
   }
 
@@ -86,8 +90,8 @@ public:
       @brief    Disables the AHTX0's humidity sensor.
   */
   /*******************************************************************************/
-  void disableHumiditySensor() {
-    _aht_humidity = NULL;
+  void disableSensorRelativeHumidity() {
+    _aht_humidity = NULL; // TODO: change to nullptr instead!
     _humidSensorPeriod = 0L;
   }
 
@@ -100,7 +104,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getTemp(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     // update temp, if sensor enabled
     if (_aht_temp != NULL) {
       _aht_temp->getEvent(tempEvent);
@@ -118,7 +122,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getHumid(sensors_event_t *humidEvent) {
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // update humidity, if sensor enabled
     if (_aht_humidity != NULL) {
       _aht_humidity->getEvent(humidEvent);

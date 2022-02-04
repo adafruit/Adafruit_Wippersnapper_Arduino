@@ -63,7 +63,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.22" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.23" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -84,6 +84,8 @@
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
   { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
   {} ///< Prints debug output
@@ -149,6 +151,7 @@ typedef enum {
 
 #define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
+// TODO: Redundant, we should reference keepalive_interval_ms and just do math
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   4000 ///< Session keepalive interval time, in milliseconds

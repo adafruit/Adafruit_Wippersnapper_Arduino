@@ -19,6 +19,8 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_BME280.h>
 
+#define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the BME280 temperature
@@ -55,6 +57,7 @@ public:
     _tempSensorPeriod = 0.0L;
     _humidSensorPeriod = 0.0L;
     _pressureSensorPeriod = 0.0L;
+    _altitudeSensorPeriod = 0.0L;
     setDriverType(UNSPECIFIED);
   }
 
@@ -63,28 +66,32 @@ public:
       @brief    Enables the BME280's temperature sensor.
   */
   /*******************************************************************************/
-  void enableTemperatureSensor() { _bme_temp = _bme.getTemperatureSensor(); }
+  void enableSensorAmbientTemperature() {
+    _bme_temp = _bme.getTemperatureSensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Enables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void enableHumiditySensor() { _bme_humidity = _bme.getHumiditySensor(); }
+  void enableSensorRelativeHumidity() {
+    _bme_humidity = _bme.getHumiditySensor();
+  }
 
   /*******************************************************************************/
   /*!
       @brief    Enables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void enablePressureSensor() { _bme_pressure = _bme.getPressureSensor(); }
+  void enableSensorPressure() { _bme_pressure = _bme.getPressureSensor(); }
 
   /*******************************************************************************/
   /*!
       @brief    Disables the BME280's temperature sensor.
   */
   /*******************************************************************************/
-  void disableTemperatureSensor() {
+  void disableSensorAmbientTemperature() {
     _bme_temp = NULL;
     _tempSensorPeriod = 0.0;
   }
@@ -94,7 +101,7 @@ public:
       @brief    Disables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void disableHumiditySensor() {
+  void disableSensorRelativeHumidity() {
     _bme_humidity = NULL;
     _humidSensorPeriod = 0.0;
   }
@@ -104,9 +111,62 @@ public:
       @brief    Disables the BME280's pressure sensor.
   */
   /*******************************************************************************/
-  void disablePressureSensor() {
+  void disableSensorPressure() {
     _bme_pressure = NULL;
     _pressureSensorPeriod = 0.0;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a pressure sensor.
+      @param    period
+                The time interval at which to return new data from the pressure
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorPressure(float period) {
+    // enable a previously disabled sensor
+    if (period > 0 && _bme_pressure == NULL)
+      enableSensorPressure();
+    setSensorPressurePeriod(period);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of an ambient temperature
+                  sensor, provided sensor_period.
+      @param    period
+                Sensor's period.
+  */
+  /*******************************************************************************/
+  void updateSensorAmbientTemperature(float period) {
+    // disable the sensor
+    if (period == 0)
+      disableSensorAmbientTemperature();
+    // enable a previously disabled sensor
+    if (period > 0 && _bme_temp == NULL)
+      enableSensorAmbientTemperature();
+
+    setSensorAmbientTemperaturePeriod(period);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a relative humidity sensor.
+      @param    period
+                The time interval at which to return new data from the humidity
+                sensor.
+  */
+  /*******************************************************************************/
+  void updateSensorRelativeHumidity(float period) {
+    // disable the sensor
+    if (period == 0)
+      disableSensorRelativeHumidity();
+    // enable a previously disabled sensor
+    if (period > 0 && _bme_humidity == NULL)
+      enableSensorRelativeHumidity();
+
+    setSensorRelativeHumidityPeriod(period);
   }
 
   /*******************************************************************************/
@@ -118,7 +178,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getTemp(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     if (_bme_temp == NULL)
       return false;
     _bme_temp->getEvent(tempEvent);
@@ -134,7 +194,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getHumid(sensors_event_t *humidEvent) {
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     if (_bme_humidity == NULL)
       return false;
     _bme_humidity->getEvent(humidEvent);
@@ -151,10 +211,26 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getPressure(sensors_event_t *pressureEvent) {
+  bool getEventPressure(sensors_event_t *pressureEvent) {
     if (_bme_pressure == NULL)
       return false;
     _bme_pressure->getEvent(pressureEvent);
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads a the BME280's altitude sensor into an event.
+      @param    altitudeEvent
+                Pointer to an adafruit sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventAltitude(sensors_event_t *altitudeEvent) {
+    // TODO: Note, this is a hack into Adafruit_Sensor, we should really add an
+    // altitude sensor type
+    altitudeEvent->data[0] = _bme.readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
 
