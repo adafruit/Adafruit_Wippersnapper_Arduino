@@ -2,6 +2,7 @@ var searchData=
 [
   ['ws_5fdebug',['WS_DEBUG',['../_wippersnapper_8h.html#a588e957b4cb40edf5d7ce01584a1793e',1,'Wippersnapper.h']]],
   ['ws_5fdebug_5fprint',['WS_DEBUG_PRINT',['../_wippersnapper_8h.html#a4b57776de6f8948ef3dc51df4d35e0d3',1,'Wippersnapper.h']]],
+  ['ws_5fdebug_5fprinthex',['WS_DEBUG_PRINTHEX',['../_wippersnapper_8h.html#a217ae461d78158c231756891179debb6',1,'Wippersnapper.h']]],
   ['ws_5fdebug_5fprintln',['WS_DEBUG_PRINTLN',['../_wippersnapper_8h.html#ad2a23384400df93a7df6062b0975a04d',1,'Wippersnapper.h']]],
   ['ws_5fkeepalive_5finterval',['WS_KEEPALIVE_INTERVAL',['../_wippersnapper_8h.html#ab12e6ab2ab9c4e528e26e645397c707c',1,'Wippersnapper.h']]],
   ['ws_5fkeepalive_5finterval_5fms',['WS_KEEPALIVE_INTERVAL_MS',['../_wippersnapper_8h.html#a0915836cfab6a06783749f8d3c72324b',1,'Wippersnapper.h']]],

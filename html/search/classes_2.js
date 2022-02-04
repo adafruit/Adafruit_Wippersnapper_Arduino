@@ -10,6 +10,5 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fbme280',['WipperSnapper_I2C_Driver_BME280',['../class_wipper_snapper___i2_c___driver___b_m_e280.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fdps310',['WipperSnapper_I2C_Driver_DPS310',['../class_wipper_snapper___i2_c___driver___d_p_s310.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fscd30',['WipperSnapper_I2C_Driver_SCD30',['../class_wipper_snapper___i2_c___driver___s_c_d30.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5fscd4x',['WipperSnapper_I2C_Driver_SCD4X',['../class_wipper_snapper___i2_c___driver___s_c_d4_x.html',1,'']]],
   ['wippersnapper_5fwifinina',['Wippersnapper_WIFININA',['../class_wippersnapper___w_i_f_i_n_i_n_a.html',1,'']]]
 ];

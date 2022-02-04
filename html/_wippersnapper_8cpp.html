@@ -91,6 +91,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ac626c8c36ad03f06e38b263e4e79287a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ac626c8c36ad03f06e38b263e4e79287a">encodeI2CResponse</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse)</td></tr>
 <tr class="memdesc:ac626c8c36ad03f06e38b263e4e79287a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an wippersnapper_signal_v1_I2CResponse message.  <a href="#ac626c8c36ad03f06e38b263e4e79287a">More...</a><br /></td></tr>
 <tr class="separator:ac626c8c36ad03f06e38b263e4e79287a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bf599ce0a2501b5e12be07891208947"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a0bf599ce0a2501b5e12be07891208947">initializeI2CBus</a> (wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest, int i2cPort)</td></tr>
+<tr class="memdesc:a0bf599ce0a2501b5e12be07891208947"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an I2C bus component.  <a href="#a0bf599ce0a2501b5e12be07891208947">More...</a><br /></td></tr>
+<tr class="separator:a0bf599ce0a2501b5e12be07891208947"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a847c2a4449caffd9e61983089a72a3ed"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a847c2a4449caffd9e61983089a72a3ed">cbDecodeI2CDeviceInitRequestList</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:a847c2a4449caffd9e61983089a72a3ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a list of I2C Device Initialization messages.  <a href="#a847c2a4449caffd9e61983089a72a3ed">More...</a><br /></td></tr>
+<tr class="separator:a847c2a4449caffd9e61983089a72a3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e5ac2f9d4114ef875e1c0d283b94763"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a6e5ac2f9d4114ef875e1c0d283b94763">cbDecodeSignalRequestI2C</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
 <tr class="memdesc:a6e5ac2f9d4114ef875e1c0d283b94763"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes an I2C signal request message and executes the callback based on the message's tag. If successful, publishes an I2C signal response back to the broker.  <a href="#a6e5ac2f9d4114ef875e1c0d283b94763">More...</a><br /></td></tr>
 <tr class="separator:a6e5ac2f9d4114ef875e1c0d283b94763"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -340,6 +346,89 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if encoded successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a0bf599ce0a2501b5e12be07891208947"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bf599ce0a2501b5e12be07891208947">&#9670;&nbsp;</a></span>initializeI2CBus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool initializeI2CBus </td>
+          <td>(</td>
+          <td class="paramtype">wippersnapper_i2c_v1_I2CBusInitRequest&#160;</td>
+          <td class="paramname"><em>msgInitRequest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>i2cPort</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initializes an I2C bus component. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msgInitRequest</td><td>A pointer to an i2c bus initialization message. </td></tr>
+    <tr><td class="paramname">i2cPort</td><td>Desired I2C port to initialize. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if initialized successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a847c2a4449caffd9e61983089a72a3ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a847c2a4449caffd9e61983089a72a3ed">&#9670;&nbsp;</a></span>cbDecodeI2CDeviceInitRequestList()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbDecodeI2CDeviceInitRequestList </td>
+          <td>(</td>
+          <td class="paramtype">pb_istream_t *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const pb_field_t *&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void **&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decodes a list of I2C Device Initialization messages. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>Incoming data stream from buffer. </td></tr>
+    <tr><td class="paramname">field</td><td>Protobuf message's tag type. </td></tr>
+    <tr><td class="paramname">arg</td><td>Optional arguments from pb_decode calling function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if decoded successfully, False otherwise. </dd></dl>
 
 </div>
 </div>

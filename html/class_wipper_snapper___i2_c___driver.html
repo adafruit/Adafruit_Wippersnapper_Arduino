@@ -82,147 +82,195 @@ Inheritance diagram for WipperSnapper_I2C_Driver:</div>
 <area href="class_wipper_snapper___i2_c___driver___b_m_e280.html" title="Class that provides a sensor driver for the BME280 temperature and humidity sensor. " alt="WipperSnapper_I2C_Driver_BME280" shape="rect" coords="234,56,458,80"/>
 <area href="class_wipper_snapper___i2_c___driver___d_p_s310.html" title="Class that provides a sensor driver for the DPS310 barometric pressure sensor. " alt="WipperSnapper_I2C_Driver_DPS310" shape="rect" coords="468,56,692,80"/>
 <area href="class_wipper_snapper___i2_c___driver___s_c_d30.html" title="Class that provides a driver interface for the SCD30 sensor. " alt="WipperSnapper_I2C_Driver_SCD30" shape="rect" coords="702,56,926,80"/>
-<area href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html" title="Class that provides a driver interface for the SCD30 sensor. " alt="WipperSnapper_I2C_Driver_SCD4X" shape="rect" coords="936,56,1160,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a34f401dabad7d305c770136f83b71878"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a34f401dabad7d305c770136f83b71878">WipperSnapper_I2C_Driver</a> (TwoWire *_i2c, uint16_t sensorAddress)</td></tr>
+<tr class="memitem:a34f401dabad7d305c770136f83b71878"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a34f401dabad7d305c770136f83b71878">WipperSnapper_I2C_Driver</a> (TwoWire *_i2c, uint16_t <a class="el" href="class_wipper_snapper___i2_c___driver.html#a5a5936e4d7eee2e21b72d256fedf1694">sensorAddress</a>)</td></tr>
 <tr class="memdesc:a34f401dabad7d305c770136f83b71878"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for an I2C sensor.  <a href="#a34f401dabad7d305c770136f83b71878">More...</a><br /></td></tr>
 <tr class="separator:a34f401dabad7d305c770136f83b71878"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bc2b4e05f37d05738c154da391acb2e"><td class="memItemLeft" align="right" valign="top"><a id="a5bc2b4e05f37d05738c154da391acb2e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5bc2b4e05f37d05738c154da391acb2e">~WipperSnapper_I2C_Driver</a> ()</td></tr>
 <tr class="memdesc:a5bc2b4e05f37d05738c154da391acb2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for an I2C sensor. <br /></td></tr>
 <tr class="separator:a5bc2b4e05f37d05738c154da391acb2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9008f6e73fc9b0505ceb3b753849f86d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a9008f6e73fc9b0505ceb3b753849f86d">getInitialized</a> ()</td></tr>
-<tr class="memdesc:a9008f6e73fc9b0505ceb3b753849f86d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the initialization status of an I2C driver.  <a href="#a9008f6e73fc9b0505ceb3b753849f86d">More...</a><br /></td></tr>
-<tr class="separator:a9008f6e73fc9b0505ceb3b753849f86d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae308df40dc9a3ae9a081e5cc595ad9da"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae308df40dc9a3ae9a081e5cc595ad9da">getSensorAddress</a> ()</td></tr>
-<tr class="memdesc:ae308df40dc9a3ae9a081e5cc595ad9da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C device's address.  <a href="#ae308df40dc9a3ae9a081e5cc595ad9da">More...</a><br /></td></tr>
-<tr class="separator:ae308df40dc9a3ae9a081e5cc595ad9da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86ede95ee6f5495739c16a3cf47a8c5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a86ede95ee6f5495739c16a3cf47a8c5a">configureDriver</a> (wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq)</td></tr>
+<tr class="memdesc:a86ede95ee6f5495739c16a3cf47a8c5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses an I2CDeviceInitRequest message to configure the sensors belonging to the driver.  <a href="#a86ede95ee6f5495739c16a3cf47a8c5a">More...</a><br /></td></tr>
+<tr class="separator:a86ede95ee6f5495739c16a3cf47a8c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5221855537a1daeebd31ff5d530dd8a4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5221855537a1daeebd31ff5d530dd8a4">isInitialized</a> ()</td></tr>
+<tr class="memdesc:a5221855537a1daeebd31ff5d530dd8a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the initialization status of an I2C driver.  <a href="#a5221855537a1daeebd31ff5d530dd8a4">More...</a><br /></td></tr>
+<tr class="separator:a5221855537a1daeebd31ff5d530dd8a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a5936e4d7eee2e21b72d256fedf1694"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5a5936e4d7eee2e21b72d256fedf1694">sensorAddress</a> ()</td></tr>
+<tr class="memdesc:a5a5936e4d7eee2e21b72d256fedf1694"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C device's address.  <a href="#a5a5936e4d7eee2e21b72d256fedf1694">More...</a><br /></td></tr>
+<tr class="separator:a5a5936e4d7eee2e21b72d256fedf1694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5edcae640b5231c164d1ff37235051d5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5edcae640b5231c164d1ff37235051d5">setDriverType</a> (<a class="el" href="_wipper_snapper___i2_c___driver_8h.html#a66a2de23f80608959fb901d48f2c9cc5">DriverType_t</a> type)</td></tr>
-<tr class="memdesc:a5edcae640b5231c164d1ff37235051d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C device driver's type (corresponds to class name)  <a href="#a5edcae640b5231c164d1ff37235051d5">More...</a><br /></td></tr>
+<tr class="memdesc:a5edcae640b5231c164d1ff37235051d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the device driver's DriverType property.  <a href="#a5edcae640b5231c164d1ff37235051d5">More...</a><br /></td></tr>
 <tr class="separator:a5edcae640b5231c164d1ff37235051d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a232a82ef237f0243a8d7375a574c4daf"><td class="memItemLeft" align="right" valign="top"><a id="a232a82ef237f0243a8d7375a574c4daf"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a232a82ef237f0243a8d7375a574c4daf">enableTemperatureSensor</a> ()</td></tr>
-<tr class="memdesc:a232a82ef237f0243a8d7375a574c4daf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's temperature sensor, if it exists. <br /></td></tr>
-<tr class="separator:a232a82ef237f0243a8d7375a574c4daf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a753e54a1c52d9272d24f7ae8fb4c391b"><td class="memItemLeft" align="right" valign="top"><a id="a753e54a1c52d9272d24f7ae8fb4c391b"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a753e54a1c52d9272d24f7ae8fb4c391b">disableTemperatureSensor</a> ()</td></tr>
-<tr class="memdesc:a753e54a1c52d9272d24f7ae8fb4c391b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's temperature sensor, if it exists. <br /></td></tr>
-<tr class="separator:a753e54a1c52d9272d24f7ae8fb4c391b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1484ebde447275d1c4217c3f47e8bd44"><td class="memItemLeft" align="right" valign="top"><a id="a1484ebde447275d1c4217c3f47e8bd44"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a1484ebde447275d1c4217c3f47e8bd44">enableHumiditySensor</a> ()</td></tr>
-<tr class="memdesc:a1484ebde447275d1c4217c3f47e8bd44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's humidity sensor, if it exists. <br /></td></tr>
-<tr class="separator:a1484ebde447275d1c4217c3f47e8bd44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca970b2a074cb8256b93e1f32b04e47c"><td class="memItemLeft" align="right" valign="top"><a id="aca970b2a074cb8256b93e1f32b04e47c"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aca970b2a074cb8256b93e1f32b04e47c">disableHumiditySensor</a> ()</td></tr>
-<tr class="memdesc:aca970b2a074cb8256b93e1f32b04e47c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's temperature sensor, if it exists. <br /></td></tr>
-<tr class="separator:aca970b2a074cb8256b93e1f32b04e47c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a879469359b0949d30bce5eebe9cb4157"><td class="memItemLeft" align="right" valign="top"><a id="a879469359b0949d30bce5eebe9cb4157"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a879469359b0949d30bce5eebe9cb4157">enablePressureSensor</a> ()</td></tr>
-<tr class="memdesc:a879469359b0949d30bce5eebe9cb4157"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's pressure sensor, if it exists. <br /></td></tr>
-<tr class="separator:a879469359b0949d30bce5eebe9cb4157"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a88e54790a68e100b61e2f0e0240c9dbc"><td class="memItemLeft" align="right" valign="top"><a id="a88e54790a68e100b61e2f0e0240c9dbc"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a88e54790a68e100b61e2f0e0240c9dbc">disablePressureSensor</a> ()</td></tr>
-<tr class="memdesc:a88e54790a68e100b61e2f0e0240c9dbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's pressure sensor, if it exists. <br /></td></tr>
-<tr class="separator:a88e54790a68e100b61e2f0e0240c9dbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d6304d2dd7388d8008350bed6aacad3"><td class="memItemLeft" align="right" valign="top"><a id="a8d6304d2dd7388d8008350bed6aacad3"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a8d6304d2dd7388d8008350bed6aacad3">enableCO2Sensor</a> ()</td></tr>
-<tr class="memdesc:a8d6304d2dd7388d8008350bed6aacad3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's CO2 sensor, if it exists. <br /></td></tr>
-<tr class="separator:a8d6304d2dd7388d8008350bed6aacad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8db3e8b0406a057ad1334cf60dc23ccf"><td class="memItemLeft" align="right" valign="top"><a id="a8db3e8b0406a057ad1334cf60dc23ccf"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a8db3e8b0406a057ad1334cf60dc23ccf">disableCO2Sensor</a> ()</td></tr>
-<tr class="memdesc:a8db3e8b0406a057ad1334cf60dc23ccf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's CO2 sensor, if it exists. <br /></td></tr>
-<tr class="separator:a8db3e8b0406a057ad1334cf60dc23ccf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2610fd2913c2a62f6ce607109d6d947a"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2610fd2913c2a62f6ce607109d6d947a">getTempSensorPeriod</a> ()</td></tr>
-<tr class="memdesc:a2610fd2913c2a62f6ce607109d6d947a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the humidity sensor's period, if set.  <a href="#a2610fd2913c2a62f6ce607109d6d947a">More...</a><br /></td></tr>
-<tr class="separator:a2610fd2913c2a62f6ce607109d6d947a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5c912d211c29d556520b653ee20eebe"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aa5c912d211c29d556520b653ee20eebe">setTemperatureSensorPeriod</a> (float tempPeriod)</td></tr>
-<tr class="memdesc:aa5c912d211c29d556520b653ee20eebe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the temperature sensor's return frequency.  <a href="#aa5c912d211c29d556520b653ee20eebe">More...</a><br /></td></tr>
-<tr class="separator:aa5c912d211c29d556520b653ee20eebe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a505db247164f3fe41b5e4b40cbec2c32"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a505db247164f3fe41b5e4b40cbec2c32">getTempSensorPeriodPrv</a> ()</td></tr>
-<tr class="memdesc:a505db247164f3fe41b5e4b40cbec2c32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the temperature sensor was queried last.  <a href="#a505db247164f3fe41b5e4b40cbec2c32">More...</a><br /></td></tr>
-<tr class="separator:a505db247164f3fe41b5e4b40cbec2c32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2cb53f832083683ce83789c806e803ce"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2cb53f832083683ce83789c806e803ce">setTemperatureSensorPeriodPrv</a> (long tempPeriodPrv)</td></tr>
-<tr class="memdesc:a2cb53f832083683ce83789c806e803ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the temperature sensor was queried.  <a href="#a2cb53f832083683ce83789c806e803ce">More...</a><br /></td></tr>
-<tr class="separator:a2cb53f832083683ce83789c806e803ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a227acdfd0a233e4df05ab40a9cbe1b8f"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a227acdfd0a233e4df05ab40a9cbe1b8f">getTemp</a> (sensors_event_t *tempEvent)</td></tr>
-<tr class="memdesc:a227acdfd0a233e4df05ab40a9cbe1b8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a temperature sensor. Expects value to return in the proper SI unit.  <a href="#a227acdfd0a233e4df05ab40a9cbe1b8f">More...</a><br /></td></tr>
-<tr class="separator:a227acdfd0a233e4df05ab40a9cbe1b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa657569b40f79784269fae880eaf2abb"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aa657569b40f79784269fae880eaf2abb">getTemp</a> (float *tempEvent)</td></tr>
-<tr class="memdesc:aa657569b40f79784269fae880eaf2abb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a temperature sensor. Expects value to return in the proper SI unit.  <a href="#aa657569b40f79784269fae880eaf2abb">More...</a><br /></td></tr>
-<tr class="separator:aa657569b40f79784269fae880eaf2abb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae07de7682309bd75cb969a2688df3072"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae07de7682309bd75cb969a2688df3072">getHumidSensorPeriod</a> ()</td></tr>
-<tr class="memdesc:ae07de7682309bd75cb969a2688df3072"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the humidity sensor's period, if set.  <a href="#ae07de7682309bd75cb969a2688df3072">More...</a><br /></td></tr>
-<tr class="separator:ae07de7682309bd75cb969a2688df3072"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99944b63f323f2aad12928caeef98586"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a99944b63f323f2aad12928caeef98586">setHumiditySensorPeriod</a> (float humidPeriod)</td></tr>
-<tr class="memdesc:a99944b63f323f2aad12928caeef98586"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the humidity sensor's return frequency.  <a href="#a99944b63f323f2aad12928caeef98586">More...</a><br /></td></tr>
-<tr class="separator:a99944b63f323f2aad12928caeef98586"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9770640bd155d047aa5c620718417fab"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a9770640bd155d047aa5c620718417fab">getHumidSensorPeriodPrv</a> ()</td></tr>
-<tr class="memdesc:a9770640bd155d047aa5c620718417fab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the humidity sensor was queried last.  <a href="#a9770640bd155d047aa5c620718417fab">More...</a><br /></td></tr>
-<tr class="separator:a9770640bd155d047aa5c620718417fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70dafa8a793f8d1d2035e644edd42c8f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a70dafa8a793f8d1d2035e644edd42c8f">setHumidSensorPeriodPrv</a> (long humidPeriodPrv)</td></tr>
-<tr class="memdesc:a70dafa8a793f8d1d2035e644edd42c8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the temperature sensor was queried.  <a href="#a70dafa8a793f8d1d2035e644edd42c8f">More...</a><br /></td></tr>
-<tr class="separator:a70dafa8a793f8d1d2035e644edd42c8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac9e3fab2e63186bc9f4a4288bbcf9e2"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aac9e3fab2e63186bc9f4a4288bbcf9e2">getHumid</a> (sensors_event_t *humidEvent)</td></tr>
-<tr class="memdesc:aac9e3fab2e63186bc9f4a4288bbcf9e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a humidity sensor and converts the reading into the expected SI unit.  <a href="#aac9e3fab2e63186bc9f4a4288bbcf9e2">More...</a><br /></td></tr>
-<tr class="separator:aac9e3fab2e63186bc9f4a4288bbcf9e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5afe32eceff796da1c65274a5273da18"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5afe32eceff796da1c65274a5273da18">getHumid</a> (float *humidEvent)</td></tr>
-<tr class="memdesc:a5afe32eceff796da1c65274a5273da18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a humidity sensor and converts the reading into the expected SI unit.  <a href="#a5afe32eceff796da1c65274a5273da18">More...</a><br /></td></tr>
-<tr class="separator:a5afe32eceff796da1c65274a5273da18"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf66cb1350dc52ec18096a2b6ca08eaa"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#acf66cb1350dc52ec18096a2b6ca08eaa">getPressureSensorPeriod</a> ()</td></tr>
-<tr class="memdesc:acf66cb1350dc52ec18096a2b6ca08eaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the pressure sensor's period, if set.  <a href="#acf66cb1350dc52ec18096a2b6ca08eaa">More...</a><br /></td></tr>
-<tr class="separator:acf66cb1350dc52ec18096a2b6ca08eaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a72ea0c9aed1cf4f88a7bea7b86c5dc44"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a72ea0c9aed1cf4f88a7bea7b86c5dc44">setPressureSensorPeriod</a> (float pressurePeriod)</td></tr>
-<tr class="memdesc:a72ea0c9aed1cf4f88a7bea7b86c5dc44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the pressure sensor's return frequency.  <a href="#a72ea0c9aed1cf4f88a7bea7b86c5dc44">More...</a><br /></td></tr>
-<tr class="separator:a72ea0c9aed1cf4f88a7bea7b86c5dc44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b25f6addee4e82b8306108fe55097de"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a6b25f6addee4e82b8306108fe55097de">getPressureSensorPeriodPrv</a> ()</td></tr>
-<tr class="memdesc:a6b25f6addee4e82b8306108fe55097de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the pressure sensor was queried last.  <a href="#a6b25f6addee4e82b8306108fe55097de">More...</a><br /></td></tr>
-<tr class="separator:a6b25f6addee4e82b8306108fe55097de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace96ae6d50a3114d21879c3c383b5cf8"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ace96ae6d50a3114d21879c3c383b5cf8">getPressure</a> (sensors_event_t *pressureEvent)</td></tr>
-<tr class="memdesc:ace96ae6d50a3114d21879c3c383b5cf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a pressure sensor and converts the reading into the expected SI unit.  <a href="#ace96ae6d50a3114d21879c3c383b5cf8">More...</a><br /></td></tr>
-<tr class="separator:ace96ae6d50a3114d21879c3c383b5cf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a141d978a511d792a215bbab149c8dc47"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a141d978a511d792a215bbab149c8dc47">getCO2SensorPeriod</a> ()</td></tr>
-<tr class="memdesc:a141d978a511d792a215bbab149c8dc47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the gas sensor's period, if set.  <a href="#a141d978a511d792a215bbab149c8dc47">More...</a><br /></td></tr>
-<tr class="separator:a141d978a511d792a215bbab149c8dc47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fb0dadf9af29f71dcdf3340e8bd9a71"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2fb0dadf9af29f71dcdf3340e8bd9a71">setCO2SensorPeriod</a> (float CO2Period)</td></tr>
-<tr class="memdesc:a2fb0dadf9af29f71dcdf3340e8bd9a71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the CO2 sensor's return frequency.  <a href="#a2fb0dadf9af29f71dcdf3340e8bd9a71">More...</a><br /></td></tr>
-<tr class="separator:a2fb0dadf9af29f71dcdf3340e8bd9a71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a08024e5532122f39affd653ac790ec"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2a08024e5532122f39affd653ac790ec">getCO2SensorPeriodPrv</a> ()</td></tr>
-<tr class="memdesc:a2a08024e5532122f39affd653ac790ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the CO2 sensor was queried last.  <a href="#a2a08024e5532122f39affd653ac790ec">More...</a><br /></td></tr>
-<tr class="separator:a2a08024e5532122f39affd653ac790ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d766435c3a5efcaabd28c805beda079"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a1d766435c3a5efcaabd28c805beda079">getCO2</a> (float *CO2Value)</td></tr>
-<tr class="memdesc:a1d766435c3a5efcaabd28c805beda079"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a CO2 sensor.  <a href="#a1d766435c3a5efcaabd28c805beda079">More...</a><br /></td></tr>
-<tr class="separator:a1d766435c3a5efcaabd28c805beda079"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24b30049aa590bfef0099275db062074"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a24b30049aa590bfef0099275db062074">setPM10STDPeriod</a> (float pm10Period)</td></tr>
-<tr class="memdesc:a24b30049aa590bfef0099275db062074"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the PM10 sensor's return frequency.  <a href="#a24b30049aa590bfef0099275db062074">More...</a><br /></td></tr>
-<tr class="separator:a24b30049aa590bfef0099275db062074"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a612aac1d26b9905d5828c28dbea91055"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a612aac1d26b9905d5828c28dbea91055">getPM10STDSensorPeriod</a> ()</td></tr>
-<tr class="memdesc:a612aac1d26b9905d5828c28dbea91055"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the PM sensor's period, if set.  <a href="#a612aac1d26b9905d5828c28dbea91055">More...</a><br /></td></tr>
-<tr class="separator:a612aac1d26b9905d5828c28dbea91055"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab035074177542e7aaac8bc3cdf66b931"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ab035074177542e7aaac8bc3cdf66b931">getPM10STDSensorPeriodPrv</a> ()</td></tr>
-<tr class="memdesc:ab035074177542e7aaac8bc3cdf66b931"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the PM sensor was queried last.  <a href="#ab035074177542e7aaac8bc3cdf66b931">More...</a><br /></td></tr>
-<tr class="separator:ab035074177542e7aaac8bc3cdf66b931"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa186a5b5a2d8c90760b7d91b98e23169"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aa186a5b5a2d8c90760b7d91b98e23169">setPM25STDPeriod</a> (float pm25Period)</td></tr>
-<tr class="memdesc:aa186a5b5a2d8c90760b7d91b98e23169"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the 25 sensor's return frequency.  <a href="#aa186a5b5a2d8c90760b7d91b98e23169">More...</a><br /></td></tr>
-<tr class="separator:aa186a5b5a2d8c90760b7d91b98e23169"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb1faad0d47706da7152bb6b78187fd4"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#acb1faad0d47706da7152bb6b78187fd4">getPM25STDSensorPeriod</a> ()</td></tr>
-<tr class="memdesc:acb1faad0d47706da7152bb6b78187fd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the PM sensor's period, if set.  <a href="#acb1faad0d47706da7152bb6b78187fd4">More...</a><br /></td></tr>
-<tr class="separator:acb1faad0d47706da7152bb6b78187fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2c5495b15941842af8306d3f117f3a0"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ad2c5495b15941842af8306d3f117f3a0">getPM25STDSensorPeriodPrv</a> ()</td></tr>
-<tr class="memdesc:ad2c5495b15941842af8306d3f117f3a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the PM sensor was queried last.  <a href="#ad2c5495b15941842af8306d3f117f3a0">More...</a><br /></td></tr>
-<tr class="separator:ad2c5495b15941842af8306d3f117f3a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb5d3d7ac25204304aeacb37bb0b346d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#abb5d3d7ac25204304aeacb37bb0b346d">setPM100STDPeriod</a> (float pm100Period)</td></tr>
-<tr class="memdesc:abb5d3d7ac25204304aeacb37bb0b346d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the PM100 sensor's return frequency.  <a href="#abb5d3d7ac25204304aeacb37bb0b346d">More...</a><br /></td></tr>
-<tr class="separator:abb5d3d7ac25204304aeacb37bb0b346d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdfa46d99481c385c9f344d9e46ee50e"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#acdfa46d99481c385c9f344d9e46ee50e">getPM100STDSensorPeriod</a> ()</td></tr>
-<tr class="memdesc:acdfa46d99481c385c9f344d9e46ee50e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the PM sensor's period, if set.  <a href="#acdfa46d99481c385c9f344d9e46ee50e">More...</a><br /></td></tr>
-<tr class="separator:acdfa46d99481c385c9f344d9e46ee50e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:affc35ed8f61a28a908042b3f2fb76b47"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#affc35ed8f61a28a908042b3f2fb76b47">getPM100STDSensorPeriodPrv</a> ()</td></tr>
-<tr class="memdesc:affc35ed8f61a28a908042b3f2fb76b47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the PM sensor was queried last.  <a href="#affc35ed8f61a28a908042b3f2fb76b47">More...</a><br /></td></tr>
-<tr class="separator:affc35ed8f61a28a908042b3f2fb76b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43c57f53b5c319716148099c886915f5"><td class="memItemLeft" align="right" valign="top"><a id="a43c57f53b5c319716148099c886915f5"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a43c57f53b5c319716148099c886915f5">enableSensorCO2</a> ()</td></tr>
+<tr class="memdesc:a43c57f53b5c319716148099c886915f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's CO2 sensor, if it exists. <br /></td></tr>
+<tr class="separator:a43c57f53b5c319716148099c886915f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16395cd56302a29e5ff6d3cdc789f82c"><td class="memItemLeft" align="right" valign="top"><a id="a16395cd56302a29e5ff6d3cdc789f82c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a16395cd56302a29e5ff6d3cdc789f82c">disableSensorCO2</a> ()</td></tr>
+<tr class="memdesc:a16395cd56302a29e5ff6d3cdc789f82c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's CO2 sensor, if it exists. <br /></td></tr>
+<tr class="separator:a16395cd56302a29e5ff6d3cdc789f82c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3b8e83da9d2a54269b4ddb376d331af"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae3b8e83da9d2a54269b4ddb376d331af">setSensorCO2Period</a> (float period)</td></tr>
+<tr class="memdesc:ae3b8e83da9d2a54269b4ddb376d331af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the co2 sensor's return frequency.  <a href="#ae3b8e83da9d2a54269b4ddb376d331af">More...</a><br /></td></tr>
+<tr class="separator:ae3b8e83da9d2a54269b4ddb376d331af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c4cb0660937f1e1c17eac87622d5e03"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a9c4cb0660937f1e1c17eac87622d5e03">updateSensorCO2</a> (float period)</td></tr>
+<tr class="memdesc:a9c4cb0660937f1e1c17eac87622d5e03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a CO2 sensor.  <a href="#a9c4cb0660937f1e1c17eac87622d5e03">More...</a><br /></td></tr>
+<tr class="separator:a9c4cb0660937f1e1c17eac87622d5e03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9da3293efc9c10f25644ffdc5ef4df12"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a9da3293efc9c10f25644ffdc5ef4df12">sensorCO2Period</a> ()</td></tr>
+<tr class="memdesc:a9da3293efc9c10f25644ffdc5ef4df12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the co2 sensor's period, if set.  <a href="#a9da3293efc9c10f25644ffdc5ef4df12">More...</a><br /></td></tr>
+<tr class="separator:a9da3293efc9c10f25644ffdc5ef4df12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac17ffd54288ef7f83d9ebad0be8049e0"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ac17ffd54288ef7f83d9ebad0be8049e0">sensorCO2PeriodPrv</a> ()</td></tr>
+<tr class="memdesc:ac17ffd54288ef7f83d9ebad0be8049e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the co2 sensor was queried last.  <a href="#ac17ffd54288ef7f83d9ebad0be8049e0">More...</a><br /></td></tr>
+<tr class="separator:ac17ffd54288ef7f83d9ebad0be8049e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18cd7e458e4d2e605f3812be47221407"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a18cd7e458e4d2e605f3812be47221407">setSensorCO2PeriodPrv</a> (long period)</td></tr>
+<tr class="memdesc:a18cd7e458e4d2e605f3812be47221407"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the co2 sensor was queried.  <a href="#a18cd7e458e4d2e605f3812be47221407">More...</a><br /></td></tr>
+<tr class="separator:a18cd7e458e4d2e605f3812be47221407"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7575cd2c725d2cb6d5ac683bbc7b8cda"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7575cd2c725d2cb6d5ac683bbc7b8cda">getEventCO2</a> (sensors_event_t *co2Event)</td></tr>
+<tr class="memdesc:a7575cd2c725d2cb6d5ac683bbc7b8cda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a sensor's CO2 value.  <a href="#a7575cd2c725d2cb6d5ac683bbc7b8cda">More...</a><br /></td></tr>
+<tr class="separator:a7575cd2c725d2cb6d5ac683bbc7b8cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba58a8b1ca0977acf5589a6394851ee4"><td class="memItemLeft" align="right" valign="top"><a id="aba58a8b1ca0977acf5589a6394851ee4"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aba58a8b1ca0977acf5589a6394851ee4">enableSensorAmbientTemperature</a> ()</td></tr>
+<tr class="memdesc:aba58a8b1ca0977acf5589a6394851ee4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's temperature sensor, if it exists. <br /></td></tr>
+<tr class="separator:aba58a8b1ca0977acf5589a6394851ee4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa73f07260f83a1b4a5cde8e78a268aad"><td class="memItemLeft" align="right" valign="top"><a id="aa73f07260f83a1b4a5cde8e78a268aad"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aa73f07260f83a1b4a5cde8e78a268aad">disableSensorAmbientTemperature</a> ()</td></tr>
+<tr class="memdesc:aa73f07260f83a1b4a5cde8e78a268aad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's temperature sensor, if it exists. <br /></td></tr>
+<tr class="separator:aa73f07260f83a1b4a5cde8e78a268aad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8654d93df09231acbce0b1146b9e8445"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a8654d93df09231acbce0b1146b9e8445">sensorAmbientTemperaturePeriod</a> ()</td></tr>
+<tr class="memdesc:a8654d93df09231acbce0b1146b9e8445"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the humidity sensor's period, if set.  <a href="#a8654d93df09231acbce0b1146b9e8445">More...</a><br /></td></tr>
+<tr class="separator:a8654d93df09231acbce0b1146b9e8445"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56e7952de953be3f3e658420dd664d0f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a56e7952de953be3f3e658420dd664d0f">setSensorAmbientTemperaturePeriod</a> (float period)</td></tr>
+<tr class="memdesc:a56e7952de953be3f3e658420dd664d0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the temperature sensor's return frequency.  <a href="#a56e7952de953be3f3e658420dd664d0f">More...</a><br /></td></tr>
+<tr class="separator:a56e7952de953be3f3e658420dd664d0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94fa6ea3f5c94d9f96141041fa1e093e"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a94fa6ea3f5c94d9f96141041fa1e093e">sensorAmbientTemperaturePeriodPrv</a> ()</td></tr>
+<tr class="memdesc:a94fa6ea3f5c94d9f96141041fa1e093e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the temperature sensor was queried last.  <a href="#a94fa6ea3f5c94d9f96141041fa1e093e">More...</a><br /></td></tr>
+<tr class="separator:a94fa6ea3f5c94d9f96141041fa1e093e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22126c849b7703fd4c9d140a0ba9eaf1"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a22126c849b7703fd4c9d140a0ba9eaf1">setSensorAmbientTemperaturePeriodPrv</a> (long periodPrv)</td></tr>
+<tr class="memdesc:a22126c849b7703fd4c9d140a0ba9eaf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the temperature sensor was queried.  <a href="#a22126c849b7703fd4c9d140a0ba9eaf1">More...</a><br /></td></tr>
+<tr class="separator:a22126c849b7703fd4c9d140a0ba9eaf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d6b3805505db3244ca000609c55cc57"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a6d6b3805505db3244ca000609c55cc57">getEventAmbientTemperature</a> (sensors_event_t *tempEvent)</td></tr>
+<tr class="memdesc:a6d6b3805505db3244ca000609c55cc57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a temperature sensor. Expects value to return in the proper SI unit.  <a href="#a6d6b3805505db3244ca000609c55cc57">More...</a><br /></td></tr>
+<tr class="separator:a6d6b3805505db3244ca000609c55cc57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77b02e3461db5916f25eed78995c7c6e"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a77b02e3461db5916f25eed78995c7c6e">getEventAmbientTemperature</a> (float tempEvent)</td></tr>
+<tr class="memdesc:a77b02e3461db5916f25eed78995c7c6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a temperature sensor. Expects value to return in the proper SI unit.  <a href="#a77b02e3461db5916f25eed78995c7c6e">More...</a><br /></td></tr>
+<tr class="separator:a77b02e3461db5916f25eed78995c7c6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a300295b71d66520b7dac03dc062ca3fc"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a300295b71d66520b7dac03dc062ca3fc">updateSensorAmbientTemperature</a> (float period)</td></tr>
+<tr class="memdesc:a300295b71d66520b7dac03dc062ca3fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Update the properties of a temperature sensor, provided sensor_period.  <a href="#a300295b71d66520b7dac03dc062ca3fc">More...</a><br /></td></tr>
+<tr class="separator:a300295b71d66520b7dac03dc062ca3fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13aa5740f9cb2a163a8fdc348b76a984"><td class="memItemLeft" align="right" valign="top"><a id="a13aa5740f9cb2a163a8fdc348b76a984"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a13aa5740f9cb2a163a8fdc348b76a984">enableSensorRelativeHumidity</a> ()</td></tr>
+<tr class="memdesc:a13aa5740f9cb2a163a8fdc348b76a984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's relative humidity sensor, if it exists. <br /></td></tr>
+<tr class="separator:a13aa5740f9cb2a163a8fdc348b76a984"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf9768a71ff638ae3da51a5d76cd93c0"><td class="memItemLeft" align="right" valign="top"><a id="abf9768a71ff638ae3da51a5d76cd93c0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#abf9768a71ff638ae3da51a5d76cd93c0">disableSensorRelativeHumidity</a> ()</td></tr>
+<tr class="memdesc:abf9768a71ff638ae3da51a5d76cd93c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's relative humidity sensor, if it exists. <br /></td></tr>
+<tr class="separator:abf9768a71ff638ae3da51a5d76cd93c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57a5631e1b1fea4b87ea6b247a7c6d3e"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a57a5631e1b1fea4b87ea6b247a7c6d3e">sensorRelativeHumidityPeriod</a> ()</td></tr>
+<tr class="memdesc:a57a5631e1b1fea4b87ea6b247a7c6d3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the humidity sensor's period, if set.  <a href="#a57a5631e1b1fea4b87ea6b247a7c6d3e">More...</a><br /></td></tr>
+<tr class="separator:a57a5631e1b1fea4b87ea6b247a7c6d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e99563f0eb6223f3bdff01f05587898"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2e99563f0eb6223f3bdff01f05587898">setSensorRelativeHumidityPeriod</a> (float period)</td></tr>
+<tr class="memdesc:a2e99563f0eb6223f3bdff01f05587898"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the humidity sensor's return frequency.  <a href="#a2e99563f0eb6223f3bdff01f05587898">More...</a><br /></td></tr>
+<tr class="separator:a2e99563f0eb6223f3bdff01f05587898"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18809e6268beb7a5ac387e8a97a4160e"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a18809e6268beb7a5ac387e8a97a4160e">sensorRelativeHumidityPeriodPrv</a> ()</td></tr>
+<tr class="memdesc:a18809e6268beb7a5ac387e8a97a4160e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the humidity sensor was queried last.  <a href="#a18809e6268beb7a5ac387e8a97a4160e">More...</a><br /></td></tr>
+<tr class="separator:a18809e6268beb7a5ac387e8a97a4160e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e7ad656d5562af7ce05a8f61fba4a78"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2e7ad656d5562af7ce05a8f61fba4a78">setSensorRelativeHumidityPeriodPrv</a> (long periodPrv)</td></tr>
+<tr class="memdesc:a2e7ad656d5562af7ce05a8f61fba4a78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the temperature sensor was queried.  <a href="#a2e7ad656d5562af7ce05a8f61fba4a78">More...</a><br /></td></tr>
+<tr class="separator:a2e7ad656d5562af7ce05a8f61fba4a78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64254b7895801dc14e8d792e7d997f0f"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a64254b7895801dc14e8d792e7d997f0f">getEventRelativeHumidity</a> (sensors_event_t *humidEvent)</td></tr>
+<tr class="memdesc:a64254b7895801dc14e8d792e7d997f0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a humidity sensor and converts the reading into the expected SI unit.  <a href="#a64254b7895801dc14e8d792e7d997f0f">More...</a><br /></td></tr>
+<tr class="separator:a64254b7895801dc14e8d792e7d997f0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d03568a276aab8ab4ecf8e40b790857"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a8d03568a276aab8ab4ecf8e40b790857">getEventRelativeHumidity</a> (float humidEvent)</td></tr>
+<tr class="memdesc:a8d03568a276aab8ab4ecf8e40b790857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a humidity sensor and converts the reading into the expected SI unit.  <a href="#a8d03568a276aab8ab4ecf8e40b790857">More...</a><br /></td></tr>
+<tr class="separator:a8d03568a276aab8ab4ecf8e40b790857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3a550152e8b0dc27cd85dace0423b0e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ad3a550152e8b0dc27cd85dace0423b0e">updateSensorRelativeHumidity</a> (float period)</td></tr>
+<tr class="memdesc:ad3a550152e8b0dc27cd85dace0423b0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a relative humidity sensor.  <a href="#ad3a550152e8b0dc27cd85dace0423b0e">More...</a><br /></td></tr>
+<tr class="separator:ad3a550152e8b0dc27cd85dace0423b0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef4f0526616d391e919287a7c10e6ee0"><td class="memItemLeft" align="right" valign="top"><a id="aef4f0526616d391e919287a7c10e6ee0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aef4f0526616d391e919287a7c10e6ee0">enableSensorPressure</a> ()</td></tr>
+<tr class="memdesc:aef4f0526616d391e919287a7c10e6ee0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's pressure sensor, if it exists. <br /></td></tr>
+<tr class="separator:aef4f0526616d391e919287a7c10e6ee0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa36b6e30db9cf31ed11591bb156e22b3"><td class="memItemLeft" align="right" valign="top"><a id="aa36b6e30db9cf31ed11591bb156e22b3"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aa36b6e30db9cf31ed11591bb156e22b3">disableSensorPressure</a> ()</td></tr>
+<tr class="memdesc:aa36b6e30db9cf31ed11591bb156e22b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's pressure sensor, if it exists. <br /></td></tr>
+<tr class="separator:aa36b6e30db9cf31ed11591bb156e22b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a455c028915997a234212b6ff1f65278e"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a455c028915997a234212b6ff1f65278e">sensorPressurePeriod</a> ()</td></tr>
+<tr class="memdesc:a455c028915997a234212b6ff1f65278e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the pressure sensor's period, if set.  <a href="#a455c028915997a234212b6ff1f65278e">More...</a><br /></td></tr>
+<tr class="separator:a455c028915997a234212b6ff1f65278e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbaa47fb34d75ab12cde50b44ffc276a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#abbaa47fb34d75ab12cde50b44ffc276a">setSensorPressurePeriod</a> (float period)</td></tr>
+<tr class="memdesc:abbaa47fb34d75ab12cde50b44ffc276a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the pressure sensor's return frequency.  <a href="#abbaa47fb34d75ab12cde50b44ffc276a">More...</a><br /></td></tr>
+<tr class="separator:abbaa47fb34d75ab12cde50b44ffc276a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5edffbe21e581125caa5a75cad203151"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5edffbe21e581125caa5a75cad203151">sensorPressurePeriodPrv</a> ()</td></tr>
+<tr class="memdesc:a5edffbe21e581125caa5a75cad203151"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the pressure sensor was queried last.  <a href="#a5edffbe21e581125caa5a75cad203151">More...</a><br /></td></tr>
+<tr class="separator:a5edffbe21e581125caa5a75cad203151"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03e7c58c3d449921894d103e4ae03dff"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a03e7c58c3d449921894d103e4ae03dff">setSensorPressurePeriodPrv</a> (long period)</td></tr>
+<tr class="memdesc:a03e7c58c3d449921894d103e4ae03dff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the pressure sensor was queried.  <a href="#a03e7c58c3d449921894d103e4ae03dff">More...</a><br /></td></tr>
+<tr class="separator:a03e7c58c3d449921894d103e4ae03dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a2da3fae0d97872416c24066720276d"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7a2da3fae0d97872416c24066720276d">getEventPressure</a> (sensors_event_t *pressureEvent)</td></tr>
+<tr class="memdesc:a7a2da3fae0d97872416c24066720276d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a pressure sensor and converts the reading into the expected SI unit.  <a href="#a7a2da3fae0d97872416c24066720276d">More...</a><br /></td></tr>
+<tr class="separator:a7a2da3fae0d97872416c24066720276d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb44f2e2842bc8e95893803881f2a366"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#adb44f2e2842bc8e95893803881f2a366">getEventPressure</a> (float pressureEvent)</td></tr>
+<tr class="memdesc:adb44f2e2842bc8e95893803881f2a366"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a pressure sensor and converts the reading into the expected SI unit.  <a href="#adb44f2e2842bc8e95893803881f2a366">More...</a><br /></td></tr>
+<tr class="separator:adb44f2e2842bc8e95893803881f2a366"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8254158680473e48bec71ee63cb87cd8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a8254158680473e48bec71ee63cb87cd8">updateSensorPressure</a> (float period)</td></tr>
+<tr class="memdesc:a8254158680473e48bec71ee63cb87cd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a pressure sensor.  <a href="#a8254158680473e48bec71ee63cb87cd8">More...</a><br /></td></tr>
+<tr class="separator:a8254158680473e48bec71ee63cb87cd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a084e2080e1db1827c695e77d165ee4da"><td class="memItemLeft" align="right" valign="top"><a id="a084e2080e1db1827c695e77d165ee4da"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a084e2080e1db1827c695e77d165ee4da">enableSensorGas</a> ()</td></tr>
+<tr class="memdesc:a084e2080e1db1827c695e77d165ee4da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's gas sensor, if it exists. <br /></td></tr>
+<tr class="separator:a084e2080e1db1827c695e77d165ee4da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc0163f653a4944cb1cc30b7007636bc"><td class="memItemLeft" align="right" valign="top"><a id="adc0163f653a4944cb1cc30b7007636bc"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#adc0163f653a4944cb1cc30b7007636bc">disableSensorGas</a> ()</td></tr>
+<tr class="memdesc:adc0163f653a4944cb1cc30b7007636bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's gas sensor, if it exists. <br /></td></tr>
+<tr class="separator:adc0163f653a4944cb1cc30b7007636bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4245d92e080c283033114e7e167c607d"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a4245d92e080c283033114e7e167c607d">sensorGasPeriod</a> ()</td></tr>
+<tr class="memdesc:a4245d92e080c283033114e7e167c607d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the gas sensor's period, if set.  <a href="#a4245d92e080c283033114e7e167c607d">More...</a><br /></td></tr>
+<tr class="separator:a4245d92e080c283033114e7e167c607d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3aaba53a7c1a8a855103b37c5788012"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aa3aaba53a7c1a8a855103b37c5788012">setSensorGasPeriod</a> (float period)</td></tr>
+<tr class="memdesc:aa3aaba53a7c1a8a855103b37c5788012"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the gas sensor's return frequency.  <a href="#aa3aaba53a7c1a8a855103b37c5788012">More...</a><br /></td></tr>
+<tr class="separator:aa3aaba53a7c1a8a855103b37c5788012"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2272682f92a148ec63a395c19266f3eb"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2272682f92a148ec63a395c19266f3eb">sensorGasPeriodPrv</a> ()</td></tr>
+<tr class="memdesc:a2272682f92a148ec63a395c19266f3eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the gas sensor was queried last.  <a href="#a2272682f92a148ec63a395c19266f3eb">More...</a><br /></td></tr>
+<tr class="separator:a2272682f92a148ec63a395c19266f3eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54c26d7e6557eee6a57b405e3b8ae92c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a54c26d7e6557eee6a57b405e3b8ae92c">setSensorGasPeriodPrv</a> (long period)</td></tr>
+<tr class="memdesc:a54c26d7e6557eee6a57b405e3b8ae92c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the gas sensor was queried.  <a href="#a54c26d7e6557eee6a57b405e3b8ae92c">More...</a><br /></td></tr>
+<tr class="separator:a54c26d7e6557eee6a57b405e3b8ae92c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc46f8c0fa29919fd0594fea0a687ad5"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#acc46f8c0fa29919fd0594fea0a687ad5">getEventGas</a> (uint32_t gas_resistance)</td></tr>
+<tr class="memdesc:acc46f8c0fa29919fd0594fea0a687ad5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a gas sensor and converts the reading into the expected SI unit.  <a href="#acc46f8c0fa29919fd0594fea0a687ad5">More...</a><br /></td></tr>
+<tr class="separator:acc46f8c0fa29919fd0594fea0a687ad5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62fd1a7eb05b994fa7d7acf18922c5fd"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a62fd1a7eb05b994fa7d7acf18922c5fd">updateSensorGas</a> (float period)</td></tr>
+<tr class="memdesc:a62fd1a7eb05b994fa7d7acf18922c5fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a gas sensor.  <a href="#a62fd1a7eb05b994fa7d7acf18922c5fd">More...</a><br /></td></tr>
+<tr class="separator:a62fd1a7eb05b994fa7d7acf18922c5fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebafa539cbe109dd9b4683a5a64c17f4"><td class="memItemLeft" align="right" valign="top"><a id="aebafa539cbe109dd9b4683a5a64c17f4"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aebafa539cbe109dd9b4683a5a64c17f4">enableSensorAltitude</a> ()</td></tr>
+<tr class="memdesc:aebafa539cbe109dd9b4683a5a64c17f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's Altitude sensor, if it exists. <br /></td></tr>
+<tr class="separator:aebafa539cbe109dd9b4683a5a64c17f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7436dfc1c4c2d60abbc8301d635e246d"><td class="memItemLeft" align="right" valign="top"><a id="a7436dfc1c4c2d60abbc8301d635e246d"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7436dfc1c4c2d60abbc8301d635e246d">disableSensorAltitude</a> ()</td></tr>
+<tr class="memdesc:a7436dfc1c4c2d60abbc8301d635e246d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's Altitude sensor, if it exists. <br /></td></tr>
+<tr class="separator:a7436dfc1c4c2d60abbc8301d635e246d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafd39c3fb7e8f2edbc085012d3513aa0"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aafd39c3fb7e8f2edbc085012d3513aa0">sensorAltitudePeriod</a> ()</td></tr>
+<tr class="memdesc:aafd39c3fb7e8f2edbc085012d3513aa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the Altitude sensor's period, if set.  <a href="#aafd39c3fb7e8f2edbc085012d3513aa0">More...</a><br /></td></tr>
+<tr class="separator:aafd39c3fb7e8f2edbc085012d3513aa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae457c2bc83ac98b0c16a9d7c861a7a19"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae457c2bc83ac98b0c16a9d7c861a7a19">setSensorAltitudePeriod</a> (float period)</td></tr>
+<tr class="memdesc:ae457c2bc83ac98b0c16a9d7c861a7a19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the Altitude sensor's return frequency.  <a href="#ae457c2bc83ac98b0c16a9d7c861a7a19">More...</a><br /></td></tr>
+<tr class="separator:ae457c2bc83ac98b0c16a9d7c861a7a19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60250078546ddad17fdb1531e94b895c"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a60250078546ddad17fdb1531e94b895c">sensorAltitudePeriodPrv</a> ()</td></tr>
+<tr class="memdesc:a60250078546ddad17fdb1531e94b895c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the Altitude sensor was queried last.  <a href="#a60250078546ddad17fdb1531e94b895c">More...</a><br /></td></tr>
+<tr class="separator:a60250078546ddad17fdb1531e94b895c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7fd39911d1fa8ef911cd56a7ef46859"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ad7fd39911d1fa8ef911cd56a7ef46859">setSensorAltitudePeriodPrv</a> (long period)</td></tr>
+<tr class="memdesc:ad7fd39911d1fa8ef911cd56a7ef46859"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the Altitude sensor was queried.  <a href="#ad7fd39911d1fa8ef911cd56a7ef46859">More...</a><br /></td></tr>
+<tr class="separator:ad7fd39911d1fa8ef911cd56a7ef46859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a4596c2fe21aff2da04923f56b7f5a5"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a9a4596c2fe21aff2da04923f56b7f5a5">getEventAltitude</a> (sensors_event_t *altitudeEvent)</td></tr>
+<tr class="memdesc:a9a4596c2fe21aff2da04923f56b7f5a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a Altitude sensor and converts the reading into the expected SI unit.  <a href="#a9a4596c2fe21aff2da04923f56b7f5a5">More...</a><br /></td></tr>
+<tr class="separator:a9a4596c2fe21aff2da04923f56b7f5a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acacb9e18123956905c7f0c7125e80543"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#acacb9e18123956905c7f0c7125e80543">updateSensorAltitude</a> (float period)</td></tr>
+<tr class="memdesc:acacb9e18123956905c7f0c7125e80543"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a Altitude sensor.  <a href="#acacb9e18123956905c7f0c7125e80543">More...</a><br /></td></tr>
+<tr class="separator:acacb9e18123956905c7f0c7125e80543"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -260,24 +308,16 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="separator:a5abe2283cf41155b99c33a30536a6d43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1957aa4b7e8e9d6ac0947e465b2703ee"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a1957aa4b7e8e9d6ac0947e465b2703ee">_CO2SensorPeriodPrv</a> = 0L</td></tr>
 <tr class="separator:a1957aa4b7e8e9d6ac0947e465b2703ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac009ca3fe0937cc3bdcf197cd3160c6c"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ac009ca3fe0937cc3bdcf197cd3160c6c">_pm10STDPeriod</a></td></tr>
-<tr class="memdesc:ac009ca3fe0937cc3bdcf197cd3160c6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time between reading the PM1.0 sensor's value.  <a href="#ac009ca3fe0937cc3bdcf197cd3160c6c">More...</a><br /></td></tr>
-<tr class="separator:ac009ca3fe0937cc3bdcf197cd3160c6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af8eef73e525abe094bbbff7624dea8f8"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#af8eef73e525abe094bbbff7624dea8f8">_pm10STDPeriodPrv</a></td></tr>
-<tr class="memdesc:af8eef73e525abe094bbbff7624dea8f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time when the PM1.0 sensor was last read.  <a href="#af8eef73e525abe094bbbff7624dea8f8">More...</a><br /></td></tr>
-<tr class="separator:af8eef73e525abe094bbbff7624dea8f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1630a2d80b7b0bef9ebb14a5c54669d"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ac1630a2d80b7b0bef9ebb14a5c54669d">_pm25STDPeriod</a></td></tr>
-<tr class="memdesc:ac1630a2d80b7b0bef9ebb14a5c54669d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time between reading the PM2.5 sensor's value.  <a href="#ac1630a2d80b7b0bef9ebb14a5c54669d">More...</a><br /></td></tr>
-<tr class="separator:ac1630a2d80b7b0bef9ebb14a5c54669d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86201b7ff47bf7633ec2ac44ae8e3eda"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a86201b7ff47bf7633ec2ac44ae8e3eda">_pm25STDPeriodPrv</a></td></tr>
-<tr class="memdesc:a86201b7ff47bf7633ec2ac44ae8e3eda"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time when the PM2.5 sensor was last read.  <a href="#a86201b7ff47bf7633ec2ac44ae8e3eda">More...</a><br /></td></tr>
-<tr class="separator:a86201b7ff47bf7633ec2ac44ae8e3eda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c2c9ae364c9ccabf3d06f7fb3daa80f"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a3c2c9ae364c9ccabf3d06f7fb3daa80f">_pm100STDPeriod</a></td></tr>
-<tr class="memdesc:a3c2c9ae364c9ccabf3d06f7fb3daa80f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time between reading the PM10.0 sensor's value.  <a href="#a3c2c9ae364c9ccabf3d06f7fb3daa80f">More...</a><br /></td></tr>
-<tr class="separator:a3c2c9ae364c9ccabf3d06f7fb3daa80f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae7a98f93db39dc7cf7a5b4a87036ce7"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aae7a98f93db39dc7cf7a5b4a87036ce7">_pm100STDPeriodPrv</a></td></tr>
-<tr class="memdesc:aae7a98f93db39dc7cf7a5b4a87036ce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time when the PM10.0 sensor was last read.  <a href="#aae7a98f93db39dc7cf7a5b4a87036ce7">More...</a><br /></td></tr>
-<tr class="separator:aae7a98f93db39dc7cf7a5b4a87036ce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a995fbcd591c0a3dc4ea0c3ed6688c7"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a6a995fbcd591c0a3dc4ea0c3ed6688c7">_gasSensorPeriod</a></td></tr>
+<tr class="memdesc:a6a995fbcd591c0a3dc4ea0c3ed6688c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time period between reading the CO2 sensor's value.  <a href="#a6a995fbcd591c0a3dc4ea0c3ed6688c7">More...</a><br /></td></tr>
+<tr class="separator:a6a995fbcd591c0a3dc4ea0c3ed6688c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67e02bf254b221a555cae38694cce532"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a67e02bf254b221a555cae38694cce532">_gasSensorPeriodPrv</a> = 0L</td></tr>
+<tr class="separator:a67e02bf254b221a555cae38694cce532"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a484c851cf58b5983f34809399e287c28"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a484c851cf58b5983f34809399e287c28">_altitudeSensorPeriod</a></td></tr>
+<tr class="memdesc:a484c851cf58b5983f34809399e287c28"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time period between reading the altitude sensor's value.  <a href="#a484c851cf58b5983f34809399e287c28">More...</a><br /></td></tr>
+<tr class="separator:a484c851cf58b5983f34809399e287c28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cc483550c8bd4eee9d4f8455c603fbe"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a6cc483550c8bd4eee9d4f8455c603fbe">_altitudeSensorPeriodPrv</a> = 0L</td></tr>
+<tr class="separator:a6cc483550c8bd4eee9d4f8455c603fbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for I2C Drivers. </p>
@@ -328,8 +368,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a9008f6e73fc9b0505ceb3b753849f86d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9008f6e73fc9b0505ceb3b753849f86d">&#9670;&nbsp;</a></span>getInitialized()</h2>
+<a id="a86ede95ee6f5495739c16a3cf47a8c5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86ede95ee6f5495739c16a3cf47a8c5a">&#9670;&nbsp;</a></span>configureDriver()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -338,7 +378,41 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver::getInitialized </td>
+          <td class="memname">void WipperSnapper_I2C_Driver::configureDriver </td>
+          <td>(</td>
+          <td class="paramtype">wippersnapper_i2c_v1_I2CDeviceInitRequest *&#160;</td>
+          <td class="paramname"><em>msgDeviceInitReq</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Uses an I2CDeviceInitRequest message to configure the sensors belonging to the driver. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msgDeviceInitReq</td><td>I2CDeviceInitRequest containing a list of I2C device properties. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5221855537a1daeebd31ff5d530dd8a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5221855537a1daeebd31ff5d530dd8a4">&#9670;&nbsp;</a></span>isInitialized()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_I2C_Driver::isInitialized </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -356,8 +430,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="ae308df40dc9a3ae9a081e5cc595ad9da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae308df40dc9a3ae9a081e5cc595ad9da">&#9670;&nbsp;</a></span>getSensorAddress()</h2>
+<a id="a5a5936e4d7eee2e21b72d256fedf1694"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a5936e4d7eee2e21b72d256fedf1694">&#9670;&nbsp;</a></span>sensorAddress()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -366,7 +440,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t WipperSnapper_I2C_Driver::getSensorAddress </td>
+          <td class="memname">uint16_t WipperSnapper_I2C_Driver::sensorAddress </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -408,19 +482,18 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Gets the I2C device driver's type (corresponds to class name) </p>
-<dl class="section return"><dt>Returns</dt><dd>The type of I2C driver in-use.</dd></dl>
-<p>Sets the I2C device driver's type. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Sets the device driver's DriverType property. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">type</td><td>test </td></tr>
+    <tr><td class="paramname">type</td><td>I2C device driver type </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a2610fd2913c2a62f6ce607109d6d947a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2610fd2913c2a62f6ce607109d6d947a">&#9670;&nbsp;</a></span>getTempSensorPeriod()</h2>
+<a id="ae3b8e83da9d2a54269b4ddb376d331af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3b8e83da9d2a54269b4ddb376d331af">&#9670;&nbsp;</a></span>setSensorCO2Period()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -429,7 +502,202 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getTempSensorPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorCO2Period </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the co2 sensor's return frequency. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the co2 sensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a9c4cb0660937f1e1c17eac87622d5e03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c4cb0660937f1e1c17eac87622d5e03">&#9670;&nbsp;</a></span>updateSensorCO2()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::updateSensorCO2 </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Updates the properties of a CO2 sensor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the CO2 sensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a9da3293efc9c10f25644ffdc5ef4df12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9da3293efc9c10f25644ffdc5ef4df12">&#9670;&nbsp;</a></span>sensorCO2Period()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorCO2Period </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Returns the co2 sensor's period, if set. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the co2 sensor should be polled, in seconds. </dd></dl>
+
+</div>
+</div>
+<a id="ac17ffd54288ef7f83d9ebad0be8049e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac17ffd54288ef7f83d9ebad0be8049e0">&#9670;&nbsp;</a></span>sensorCO2PeriodPrv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorCO2PeriodPrv </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Returns the previous time interval at which the co2 sensor was queried last. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the co2 sensor was last queried, in seconds. </dd></dl>
+
+</div>
+</div>
+<a id="a18cd7e458e4d2e605f3812be47221407"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18cd7e458e4d2e605f3812be47221407">&#9670;&nbsp;</a></span>setSensorCO2PeriodPrv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorCO2PeriodPrv </td>
+          <td>(</td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets a timestamp for when the co2 sensor was queried. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time when the co2 sensor was queried last. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7575cd2c725d2cb6d5ac683bbc7b8cda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7575cd2c725d2cb6d5ac683bbc7b8cda">&#9670;&nbsp;</a></span>getEventCO2()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventCO2 </td>
+          <td>(</td>
+          <td class="paramtype">sensors_event_t *&#160;</td>
+          <td class="paramname"><em>co2Event</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets a sensor's CO2 value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">co2Event</td><td>The CO2 value, in ppm. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor value was obtained successfully, False otherwise. </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#a0d0b0d1bfdfc533785270c617392cd2b">WipperSnapper_I2C_Driver_SCD30</a>.</p>
+
+</div>
+</div>
+<a id="a8654d93df09231acbce0b1146b9e8445"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8654d93df09231acbce0b1146b9e8445">&#9670;&nbsp;</a></span>sensorAmbientTemperaturePeriod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorAmbientTemperaturePeriod </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -447,8 +715,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="aa5c912d211c29d556520b653ee20eebe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa5c912d211c29d556520b653ee20eebe">&#9670;&nbsp;</a></span>setTemperatureSensorPeriod()</h2>
+<a id="a56e7952de953be3f3e658420dd664d0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56e7952de953be3f3e658420dd664d0f">&#9670;&nbsp;</a></span>setSensorAmbientTemperaturePeriod()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -457,10 +725,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void WipperSnapper_I2C_Driver::setTemperatureSensorPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorAmbientTemperaturePeriod </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>tempPeriod</em></td><td>)</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -474,15 +742,15 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Set the temperature sensor's return frequency. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">tempPeriod</td><td>The time interval at which to return new data from the temperature sensor. </td></tr>
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the temperature sensor. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a505db247164f3fe41b5e4b40cbec2c32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a505db247164f3fe41b5e4b40cbec2c32">&#9670;&nbsp;</a></span>getTempSensorPeriodPrv()</h2>
+<a id="a94fa6ea3f5c94d9f96141041fa1e093e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94fa6ea3f5c94d9f96141041fa1e093e">&#9670;&nbsp;</a></span>sensorAmbientTemperaturePeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -491,7 +759,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getTempSensorPeriodPrv </td>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorAmbientTemperaturePeriodPrv </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -509,8 +777,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="a2cb53f832083683ce83789c806e803ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2cb53f832083683ce83789c806e803ce">&#9670;&nbsp;</a></span>setTemperatureSensorPeriodPrv()</h2>
+<a id="a22126c849b7703fd4c9d140a0ba9eaf1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22126c849b7703fd4c9d140a0ba9eaf1">&#9670;&nbsp;</a></span>setSensorAmbientTemperaturePeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -519,10 +787,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void WipperSnapper_I2C_Driver::setTemperatureSensorPeriodPrv </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorAmbientTemperaturePeriodPrv </td>
           <td>(</td>
           <td class="paramtype">long&#160;</td>
-          <td class="paramname"><em>tempPeriodPrv</em></td><td>)</td>
+          <td class="paramname"><em>periodPrv</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -536,15 +804,15 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Sets a timestamp for when the temperature sensor was queried. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">tempPeriodPrv</td><td>The time when the temperature sensor was queried last. </td></tr>
+    <tr><td class="paramname">periodPrv</td><td>The time when the temperature sensor was queried last. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a227acdfd0a233e4df05ab40a9cbe1b8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a227acdfd0a233e4df05ab40a9cbe1b8f">&#9670;&nbsp;</a></span>getTemp() <span class="overload">[1/2]</span></h2>
+<a id="a6d6b3805505db3244ca000609c55cc57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d6b3805505db3244ca000609c55cc57">&#9670;&nbsp;</a></span>getEventAmbientTemperature() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -553,7 +821,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getTemp </td>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventAmbientTemperature </td>
           <td>(</td>
           <td class="paramtype">sensors_event_t *&#160;</td>
           <td class="paramname"><em>tempEvent</em></td><td>)</td>
@@ -576,12 +844,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#af296d8b344fb2a4f21b88c1385725ddb">WipperSnapper_I2C_Driver_BME280</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#acfacd2c91f893c8b292b4d5026cccaf8">WipperSnapper_I2C_Driver_DPS310</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___a_h_t_x0.html#ace2f276648093134a13f0edd071d1258">WipperSnapper_I2C_Driver_AHTX0</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#a468632f6c7f41cb4aab009d025544d6a">WipperSnapper_I2C_Driver_SCD30</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#a939759c811ebfa572f304651f3176ac7">WipperSnapper_I2C_Driver_BME280</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#a982e771a3a504abccfb46961b69517be">WipperSnapper_I2C_Driver_DPS310</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___a_h_t_x0.html#add6919a8caf022c016c80773b35dedaf">WipperSnapper_I2C_Driver_AHTX0</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#a8818d399d9ee38af5359921556b48f64">WipperSnapper_I2C_Driver_SCD30</a>.</p>
 
 </div>
 </div>
-<a id="aa657569b40f79784269fae880eaf2abb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa657569b40f79784269fae880eaf2abb">&#9670;&nbsp;</a></span>getTemp() <span class="overload">[2/2]</span></h2>
+<a id="a77b02e3461db5916f25eed78995c7c6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77b02e3461db5916f25eed78995c7c6e">&#9670;&nbsp;</a></span>getEventAmbientTemperature() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -590,9 +858,9 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getTemp </td>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventAmbientTemperature </td>
           <td>(</td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">float&#160;</td>
           <td class="paramname"><em>tempEvent</em></td><td>)</td>
           <td></td>
         </tr>
@@ -613,12 +881,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a69657e1d441bd6a9a69ed13635a2c60e">WipperSnapper_I2C_Driver_SCD4X</a>.</p>
-
 </div>
 </div>
-<a id="ae07de7682309bd75cb969a2688df3072"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae07de7682309bd75cb969a2688df3072">&#9670;&nbsp;</a></span>getHumidSensorPeriod()</h2>
+<a id="a300295b71d66520b7dac03dc062ca3fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a300295b71d66520b7dac03dc062ca3fc">&#9670;&nbsp;</a></span>updateSensorAmbientTemperature()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -627,7 +893,43 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getHumidSensorPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::updateSensorAmbientTemperature </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Update the properties of a temperature sensor, provided sensor_period. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>Sensor's period. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#ab04c8596a5bde46ca08feb9fce5928f2">WipperSnapper_I2C_Driver_BME280</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#af44c964a88577540d7e004a75175a698">WipperSnapper_I2C_Driver_DPS310</a>.</p>
+
+</div>
+</div>
+<a id="a57a5631e1b1fea4b87ea6b247a7c6d3e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57a5631e1b1fea4b87ea6b247a7c6d3e">&#9670;&nbsp;</a></span>sensorRelativeHumidityPeriod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorRelativeHumidityPeriod </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -645,8 +947,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="a99944b63f323f2aad12928caeef98586"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a99944b63f323f2aad12928caeef98586">&#9670;&nbsp;</a></span>setHumiditySensorPeriod()</h2>
+<a id="a2e99563f0eb6223f3bdff01f05587898"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e99563f0eb6223f3bdff01f05587898">&#9670;&nbsp;</a></span>setSensorRelativeHumidityPeriod()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -655,16 +957,16 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setHumiditySensorPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorRelativeHumidityPeriod </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>humidPeriod</em></td><td>)</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -672,15 +974,15 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Set the humidity sensor's return frequency. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">humidPeriod</td><td>The time interval at which to return new data from the humidity sensor. </td></tr>
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the humidity sensor. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a9770640bd155d047aa5c620718417fab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9770640bd155d047aa5c620718417fab">&#9670;&nbsp;</a></span>getHumidSensorPeriodPrv()</h2>
+<a id="a18809e6268beb7a5ac387e8a97a4160e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18809e6268beb7a5ac387e8a97a4160e">&#9670;&nbsp;</a></span>sensorRelativeHumidityPeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -689,7 +991,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getHumidSensorPeriodPrv </td>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorRelativeHumidityPeriodPrv </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -707,8 +1009,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="a70dafa8a793f8d1d2035e644edd42c8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70dafa8a793f8d1d2035e644edd42c8f">&#9670;&nbsp;</a></span>setHumidSensorPeriodPrv()</h2>
+<a id="a2e7ad656d5562af7ce05a8f61fba4a78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e7ad656d5562af7ce05a8f61fba4a78">&#9670;&nbsp;</a></span>setSensorRelativeHumidityPeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -717,10 +1019,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void WipperSnapper_I2C_Driver::setHumidSensorPeriodPrv </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorRelativeHumidityPeriodPrv </td>
           <td>(</td>
           <td class="paramtype">long&#160;</td>
-          <td class="paramname"><em>humidPeriodPrv</em></td><td>)</td>
+          <td class="paramname"><em>periodPrv</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -734,15 +1036,15 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Sets a timestamp for when the temperature sensor was queried. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">humidPeriodPrv</td><td>The time when the temperature sensor was queried last. </td></tr>
+    <tr><td class="paramname">periodPrv</td><td>The time when the temperature sensor was queried last. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="aac9e3fab2e63186bc9f4a4288bbcf9e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac9e3fab2e63186bc9f4a4288bbcf9e2">&#9670;&nbsp;</a></span>getHumid() <span class="overload">[1/2]</span></h2>
+<a id="a64254b7895801dc14e8d792e7d997f0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64254b7895801dc14e8d792e7d997f0f">&#9670;&nbsp;</a></span>getEventRelativeHumidity() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -751,7 +1053,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getHumid </td>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventRelativeHumidity </td>
           <td>(</td>
           <td class="paramtype">sensors_event_t *&#160;</td>
           <td class="paramname"><em>humidEvent</em></td><td>)</td>
@@ -774,12 +1076,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#a6ed9e45a6be03a07b2159bdbe28af4bd">WipperSnapper_I2C_Driver_BME280</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___a_h_t_x0.html#aabb5acc0482a271ab339954f9334baa8">WipperSnapper_I2C_Driver_AHTX0</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#a29e6043183696bfbe4e0866256d7c19f">WipperSnapper_I2C_Driver_SCD30</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#ae865c5c2bc7aaa759ceacb56f93c6997">WipperSnapper_I2C_Driver_BME280</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___a_h_t_x0.html#a829041ed0eaaac49819872de32640f66">WipperSnapper_I2C_Driver_AHTX0</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#ad591fdc0ecfa2697177a0a86db68884f">WipperSnapper_I2C_Driver_SCD30</a>.</p>
 
 </div>
 </div>
-<a id="a5afe32eceff796da1c65274a5273da18"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5afe32eceff796da1c65274a5273da18">&#9670;&nbsp;</a></span>getHumid() <span class="overload">[2/2]</span></h2>
+<a id="a8d03568a276aab8ab4ecf8e40b790857"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d03568a276aab8ab4ecf8e40b790857">&#9670;&nbsp;</a></span>getEventRelativeHumidity() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -788,9 +1090,9 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getHumid </td>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventRelativeHumidity </td>
           <td>(</td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">float&#160;</td>
           <td class="paramname"><em>humidEvent</em></td><td>)</td>
           <td></td>
         </tr>
@@ -811,12 +1113,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a34c174351df35d9642220ddaccad4754">WipperSnapper_I2C_Driver_SCD4X</a>.</p>
-
 </div>
 </div>
-<a id="acf66cb1350dc52ec18096a2b6ca08eaa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acf66cb1350dc52ec18096a2b6ca08eaa">&#9670;&nbsp;</a></span>getPressureSensorPeriod()</h2>
+<a id="ad3a550152e8b0dc27cd85dace0423b0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3a550152e8b0dc27cd85dace0423b0e">&#9670;&nbsp;</a></span>updateSensorRelativeHumidity()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -825,7 +1125,43 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPressureSensorPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::updateSensorRelativeHumidity </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Updates the properties of a relative humidity sensor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the humidity sensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#ad4d311d9ef00568f50bb24e8408f0bdc">WipperSnapper_I2C_Driver_BME280</a>.</p>
+
+</div>
+</div>
+<a id="a455c028915997a234212b6ff1f65278e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a455c028915997a234212b6ff1f65278e">&#9670;&nbsp;</a></span>sensorPressurePeriod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorPressurePeriod </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -843,8 +1179,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="a72ea0c9aed1cf4f88a7bea7b86c5dc44"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a72ea0c9aed1cf4f88a7bea7b86c5dc44">&#9670;&nbsp;</a></span>setPressureSensorPeriod()</h2>
+<a id="abbaa47fb34d75ab12cde50b44ffc276a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbaa47fb34d75ab12cde50b44ffc276a">&#9670;&nbsp;</a></span>setSensorPressurePeriod()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -853,16 +1189,16 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setPressureSensorPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorPressurePeriod </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>pressurePeriod</em></td><td>)</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -870,15 +1206,15 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Set the pressure sensor's return frequency. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pressurePeriod</td><td>The time interval at which to return new data from the pressure sensor. </td></tr>
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the pressure sensor. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a6b25f6addee4e82b8306108fe55097de"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b25f6addee4e82b8306108fe55097de">&#9670;&nbsp;</a></span>getPressureSensorPeriodPrv()</h2>
+<a id="a5edffbe21e581125caa5a75cad203151"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5edffbe21e581125caa5a75cad203151">&#9670;&nbsp;</a></span>sensorPressurePeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -887,7 +1223,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPressureSensorPeriodPrv </td>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorPressurePeriodPrv </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -905,8 +1241,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="ace96ae6d50a3114d21879c3c383b5cf8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace96ae6d50a3114d21879c3c383b5cf8">&#9670;&nbsp;</a></span>getPressure()</h2>
+<a id="a03e7c58c3d449921894d103e4ae03dff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03e7c58c3d449921894d103e4ae03dff">&#9670;&nbsp;</a></span>setSensorPressurePeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -915,7 +1251,41 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getPressure </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorPressurePeriodPrv </td>
+          <td>(</td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets a timestamp for when the pressure sensor was queried. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time when the pressure sensor was queried last. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7a2da3fae0d97872416c24066720276d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a2da3fae0d97872416c24066720276d">&#9670;&nbsp;</a></span>getEventPressure() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventPressure </td>
           <td>(</td>
           <td class="paramtype">sensors_event_t *&#160;</td>
           <td class="paramname"><em>pressureEvent</em></td><td>)</td>
@@ -938,12 +1308,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#ac6c960beb03054a2180a0e2b31eed19f">WipperSnapper_I2C_Driver_BME280</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#aaf2be692d7f293194a3c27031f3b820f">WipperSnapper_I2C_Driver_DPS310</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#a58e26c19effac4be6d41c199f154b0b8">WipperSnapper_I2C_Driver_BME280</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#ae289e008f8c00825470d8612923e382f">WipperSnapper_I2C_Driver_DPS310</a>.</p>
 
 </div>
 </div>
-<a id="a141d978a511d792a215bbab149c8dc47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a141d978a511d792a215bbab149c8dc47">&#9670;&nbsp;</a></span>getCO2SensorPeriod()</h2>
+<a id="adb44f2e2842bc8e95893803881f2a366"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb44f2e2842bc8e95893803881f2a366">&#9670;&nbsp;</a></span>getEventPressure() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -952,7 +1322,78 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getCO2SensorPeriod </td>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventPressure </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>pressureEvent</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Reads a pressure sensor and converts the reading into the expected SI unit. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pressureEvent</td><td>A pressure value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a8254158680473e48bec71ee63cb87cd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8254158680473e48bec71ee63cb87cd8">&#9670;&nbsp;</a></span>updateSensorPressure()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::updateSensorPressure </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Updates the properties of a pressure sensor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the pressure sensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#a20483f02e7dc603875eddee132ba84ff">WipperSnapper_I2C_Driver_DPS310</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#a32af05d182292ccda5618ef8049e27b1">WipperSnapper_I2C_Driver_BME280</a>.</p>
+
+</div>
+</div>
+<a id="a4245d92e080c283033114e7e167c607d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4245d92e080c283033114e7e167c607d">&#9670;&nbsp;</a></span>sensorGasPeriod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorGasPeriod </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -966,12 +1407,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </div><div class="memdoc">
 
 <p>Base implementation - Returns the gas sensor's period, if set. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the CO2 sensor should be polled, in seconds. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Time when the Gas sensor should be polled, in seconds. </dd></dl>
 
 </div>
 </div>
-<a id="a2fb0dadf9af29f71dcdf3340e8bd9a71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2fb0dadf9af29f71dcdf3340e8bd9a71">&#9670;&nbsp;</a></span>setCO2SensorPeriod()</h2>
+<a id="aa3aaba53a7c1a8a855103b37c5788012"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3aaba53a7c1a8a855103b37c5788012">&#9670;&nbsp;</a></span>setSensorGasPeriod()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -980,32 +1421,32 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setCO2SensorPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorGasPeriod </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>CO2Period</em></td><td>)</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Set the CO2 sensor's return frequency. </p>
+<p>Set the gas sensor's return frequency. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">CO2Period</td><td>The time interval at which to return new data from the CO2 sensor. </td></tr>
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the Gas sensor. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a2a08024e5532122f39affd653ac790ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a08024e5532122f39affd653ac790ec">&#9670;&nbsp;</a></span>getCO2SensorPeriodPrv()</h2>
+<a id="a2272682f92a148ec63a395c19266f3eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2272682f92a148ec63a395c19266f3eb">&#9670;&nbsp;</a></span>sensorGasPeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1014,7 +1455,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getCO2SensorPeriodPrv </td>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorGasPeriodPrv </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -1027,13 +1468,13 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Base implementation - Returns the previous time interval at which the CO2 sensor was queried last. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the CO2 sensor was last queried, in seconds. </dd></dl>
+<p>Base implementation - Returns the previous time interval at which the gas sensor was queried last. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the gas sensor was last queried, in seconds. </dd></dl>
 
 </div>
 </div>
-<a id="a1d766435c3a5efcaabd28c805beda079"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1d766435c3a5efcaabd28c805beda079">&#9670;&nbsp;</a></span>getCO2()</h2>
+<a id="a54c26d7e6557eee6a57b405e3b8ae92c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54c26d7e6557eee6a57b405e3b8ae92c">&#9670;&nbsp;</a></span>setSensorGasPeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1042,10 +1483,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getCO2 </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorGasPeriodPrv </td>
           <td>(</td>
-          <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>CO2Value</em></td><td>)</td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1056,21 +1497,18 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Base implementation - Reads a CO2 sensor. </p>
+<p>Sets a timestamp for when the gas sensor was queried. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">CO2Value</td><td>The CO2 value, in ppm. </td></tr>
+    <tr><td class="paramname">period</td><td>The time when the gas sensor was queried last. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the sensor value was obtained successfully, False otherwise. </dd></dl>
-
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#afd9f39d5e9184d7208ce3eff6c7fd752">WipperSnapper_I2C_Driver_SCD4X</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#a524079a4c9c75fbdf2e25424764fb598">WipperSnapper_I2C_Driver_SCD30</a>.</p>
 
 </div>
 </div>
-<a id="a24b30049aa590bfef0099275db062074"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a24b30049aa590bfef0099275db062074">&#9670;&nbsp;</a></span>setPM10STDPeriod()</h2>
+<a id="acc46f8c0fa29919fd0594fea0a687ad5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc46f8c0fa29919fd0594fea0a687ad5">&#9670;&nbsp;</a></span>getEventGas()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1079,32 +1517,67 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setPM10STDPeriod </td>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventGas </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>gas_resistance</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Reads a gas sensor and converts the reading into the expected SI unit. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">gas_resistance</td><td>Gas resistor (ohms) reading. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a62fd1a7eb05b994fa7d7acf18922c5fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62fd1a7eb05b994fa7d7acf18922c5fd">&#9670;&nbsp;</a></span>updateSensorGas()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::updateSensorGas </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>pm10Period</em></td><td>)</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Set the PM10 sensor's return frequency. </p>
+<p>Updates the properties of a gas sensor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pm10Period</td><td>The time interval at which to return new data from the PM sensor. </td></tr>
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the Gas sensor. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a612aac1d26b9905d5828c28dbea91055"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a612aac1d26b9905d5828c28dbea91055">&#9670;&nbsp;</a></span>getPM10STDSensorPeriod()</h2>
+<a id="aafd39c3fb7e8f2edbc085012d3513aa0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aafd39c3fb7e8f2edbc085012d3513aa0">&#9670;&nbsp;</a></span>sensorAltitudePeriod()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1113,7 +1586,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPM10STDSensorPeriod </td>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorAltitudePeriod </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -1126,13 +1599,13 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Base implementation - Returns the PM sensor's period, if set. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the PM sensor should be polled, in seconds. </dd></dl>
+<p>Base implementation - Returns the Altitude sensor's period, if set. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the Altitude sensor should be polled, in seconds. </dd></dl>
 
 </div>
 </div>
-<a id="ab035074177542e7aaac8bc3cdf66b931"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab035074177542e7aaac8bc3cdf66b931">&#9670;&nbsp;</a></span>getPM10STDSensorPeriodPrv()</h2>
+<a id="ae457c2bc83ac98b0c16a9d7c861a7a19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae457c2bc83ac98b0c16a9d7c861a7a19">&#9670;&nbsp;</a></span>setSensorAltitudePeriod()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1141,60 +1614,32 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPM10STDSensorPeriodPrv </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Base implementation - Returns the previous time interval at which the PM sensor was queried last. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the PM sensor was last queried, in seconds. </dd></dl>
-
-</div>
-</div>
-<a id="aa186a5b5a2d8c90760b7d91b98e23169"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa186a5b5a2d8c90760b7d91b98e23169">&#9670;&nbsp;</a></span>setPM25STDPeriod()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setPM25STDPeriod </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorAltitudePeriod </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>pm25Period</em></td><td>)</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Set the 25 sensor's return frequency. </p>
+<p>Set the Altitude sensor's return frequency. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pm25Period</td><td>The time interval at which to return new data from the PM sensor. </td></tr>
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the Altitude sensor. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="acb1faad0d47706da7152bb6b78187fd4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acb1faad0d47706da7152bb6b78187fd4">&#9670;&nbsp;</a></span>getPM25STDSensorPeriod()</h2>
+<a id="a60250078546ddad17fdb1531e94b895c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60250078546ddad17fdb1531e94b895c">&#9670;&nbsp;</a></span>sensorAltitudePeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1203,7 +1648,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPM25STDSensorPeriod </td>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorAltitudePeriodPrv </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -1216,13 +1661,13 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Base implementation - Returns the PM sensor's period, if set. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the PM sensor should be polled, in seconds. </dd></dl>
+<p>Base implementation - Returns the previous time interval at which the Altitude sensor was queried last. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the Altitude sensor was last queried, in seconds. </dd></dl>
 
 </div>
 </div>
-<a id="ad2c5495b15941842af8306d3f117f3a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2c5495b15941842af8306d3f117f3a0">&#9670;&nbsp;</a></span>getPM25STDSensorPeriodPrv()</h2>
+<a id="ad7fd39911d1fa8ef911cd56a7ef46859"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7fd39911d1fa8ef911cd56a7ef46859">&#9670;&nbsp;</a></span>setSensorAltitudePeriodPrv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1231,9 +1676,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPM25STDSensorPeriodPrv </td>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorAltitudePeriodPrv </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1244,13 +1690,18 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Base implementation - Returns the previous time interval at which the PM sensor was queried last. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the PM sensor was last queried, in seconds. </dd></dl>
+<p>Sets a timestamp for when the Altitude sensor was queried. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time when the Altitude sensor was queried last. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="abb5d3d7ac25204304aeacb37bb0b346d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb5d3d7ac25204304aeacb37bb0b346d">&#9670;&nbsp;</a></span>setPM100STDPeriod()</h2>
+<a id="a9a4596c2fe21aff2da04923f56b7f5a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a4596c2fe21aff2da04923f56b7f5a5">&#9670;&nbsp;</a></span>getEventAltitude()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1259,83 +1710,64 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setPM100STDPeriod </td>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventAltitude </td>
+          <td>(</td>
+          <td class="paramtype">sensors_event_t *&#160;</td>
+          <td class="paramname"><em>altitudeEvent</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Reads a Altitude sensor and converts the reading into the expected SI unit. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">altitudeEvent</td><td>Altitude reading, in meters. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#aa69f5a0b330f75479b5090eaeb7719f4">WipperSnapper_I2C_Driver_BME280</a>.</p>
+
+</div>
+</div>
+<a id="acacb9e18123956905c7f0c7125e80543"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acacb9e18123956905c7f0c7125e80543">&#9670;&nbsp;</a></span>updateSensorAltitude()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::updateSensorAltitude </td>
           <td>(</td>
           <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>pm100Period</em></td><td>)</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Set the PM100 sensor's return frequency. </p>
+<p>Updates the properties of a Altitude sensor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pm100Period</td><td>The time interval at which to return new data from the PM sensor. </td></tr>
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the altitude sensor. </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="acdfa46d99481c385c9f344d9e46ee50e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acdfa46d99481c385c9f344d9e46ee50e">&#9670;&nbsp;</a></span>getPM100STDSensorPeriod()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPM100STDSensorPeriod </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Base implementation - Returns the PM sensor's period, if set. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the PM sensor should be polled, in seconds. </dd></dl>
-
-</div>
-</div>
-<a id="affc35ed8f61a28a908042b3f2fb76b47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#affc35ed8f61a28a908042b3f2fb76b47">&#9670;&nbsp;</a></span>getPM100STDSensorPeriodPrv()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual long WipperSnapper_I2C_Driver::getPM100STDSensorPeriodPrv </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Base implementation - Returns the previous time interval at which the PM sensor was queried last. </p>
-<dl class="section return"><dt>Returns</dt><dd>Time when the PM sensor was last queried, in seconds. </dd></dl>
 
 </div>
 </div>
@@ -1552,8 +1984,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="ac009ca3fe0937cc3bdcf197cd3160c6c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac009ca3fe0937cc3bdcf197cd3160c6c">&#9670;&nbsp;</a></span>_pm10STDPeriod</h2>
+<a id="a6a995fbcd591c0a3dc4ea0c3ed6688c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a995fbcd591c0a3dc4ea0c3ed6688c7">&#9670;&nbsp;</a></span>_gasSensorPeriod</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1562,7 +1994,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">long WipperSnapper_I2C_Driver::_pm10STDPeriod</td>
+          <td class="memname">long WipperSnapper_I2C_Driver::_gasSensorPeriod</td>
         </tr>
       </table>
   </td>
@@ -1572,12 +2004,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      0L</div></div><!-- fragment -->
-<p>The time between reading the PM1.0 sensor's value. </p>
+<p>The time period between reading the CO2 sensor's value. </p>
 
 </div>
 </div>
-<a id="af8eef73e525abe094bbbff7624dea8f8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af8eef73e525abe094bbbff7624dea8f8">&#9670;&nbsp;</a></span>_pm10STDPeriodPrv</h2>
+<a id="a67e02bf254b221a555cae38694cce532"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a67e02bf254b221a555cae38694cce532">&#9670;&nbsp;</a></span>_gasSensorPeriodPrv</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1586,7 +2018,30 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">long WipperSnapper_I2C_Driver::_pm10STDPeriodPrv</td>
+          <td class="memname">long WipperSnapper_I2C_Driver::_gasSensorPeriodPrv = 0L</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The time when the CO2 sensor was last read. </p>
+
+</div>
+</div>
+<a id="a484c851cf58b5983f34809399e287c28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a484c851cf58b5983f34809399e287c28">&#9670;&nbsp;</a></span>_altitudeSensorPeriod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">long WipperSnapper_I2C_Driver::_altitudeSensorPeriod</td>
         </tr>
       </table>
   </td>
@@ -1596,36 +2051,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      0L</div></div><!-- fragment -->
-<p>The time when the PM1.0 sensor was last read. </p>
+<p>The time period between reading the altitude sensor's value. </p>
 
 </div>
 </div>
-<a id="ac1630a2d80b7b0bef9ebb14a5c54669d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1630a2d80b7b0bef9ebb14a5c54669d">&#9670;&nbsp;</a></span>_pm25STDPeriod</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">long WipperSnapper_I2C_Driver::_pm25STDPeriod</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      0L</div></div><!-- fragment -->
-<p>The time between reading the PM2.5 sensor's value. </p>
-
-</div>
-</div>
-<a id="a86201b7ff47bf7633ec2ac44ae8e3eda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a86201b7ff47bf7633ec2ac44ae8e3eda">&#9670;&nbsp;</a></span>_pm25STDPeriodPrv</h2>
+<a id="a6cc483550c8bd4eee9d4f8455c603fbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6cc483550c8bd4eee9d4f8455c603fbe">&#9670;&nbsp;</a></span>_altitudeSensorPeriodPrv</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1634,7 +2065,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">long WipperSnapper_I2C_Driver::_pm25STDPeriodPrv</td>
+          <td class="memname">long WipperSnapper_I2C_Driver::_altitudeSensorPeriodPrv = 0L</td>
         </tr>
       </table>
   </td>
@@ -1643,56 +2074,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      0L</div></div><!-- fragment -->
-<p>The time when the PM2.5 sensor was last read. </p>
-
-</div>
-</div>
-<a id="a3c2c9ae364c9ccabf3d06f7fb3daa80f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c2c9ae364c9ccabf3d06f7fb3daa80f">&#9670;&nbsp;</a></span>_pm100STDPeriod</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">long WipperSnapper_I2C_Driver::_pm100STDPeriod</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      0L</div></div><!-- fragment -->
-<p>The time between reading the PM10.0 sensor's value. </p>
-
-</div>
-</div>
-<a id="aae7a98f93db39dc7cf7a5b4a87036ce7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae7a98f93db39dc7cf7a5b4a87036ce7">&#9670;&nbsp;</a></span>_pm100STDPeriodPrv</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">long WipperSnapper_I2C_Driver::_pm100STDPeriodPrv</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      0L</div></div><!-- fragment -->
-<p>The time when the PM10.0 sensor was last read. </p>
+<p>The time when the altitude sensor was last read. </p>
 
 </div>
 </div>

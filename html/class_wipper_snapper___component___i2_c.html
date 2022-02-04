@@ -92,12 +92,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abf276df7870551bab8283381c6ca55df"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#abf276df7870551bab8283381c6ca55df">initI2CDevice</a> (wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq)</td></tr>
 <tr class="memdesc:abf276df7870551bab8283381c6ca55df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes I2C device driver.  <a href="#abf276df7870551bab8283381c6ca55df">More...</a><br /></td></tr>
 <tr class="separator:abf276df7870551bab8283381c6ca55df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2960f131d786139a64400e309520497f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a2960f131d786139a64400e309520497f">updateI2CDeviceProperties</a> (wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq)</td></tr>
-<tr class="memdesc:a2960f131d786139a64400e309520497f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of an I2C device driver.  <a href="#a2960f131d786139a64400e309520497f">More...</a><br /></td></tr>
-<tr class="separator:a2960f131d786139a64400e309520497f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4699aa12693873b23955342e05ea80a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#aa4699aa12693873b23955342e05ea80a">deinitI2CDevice</a> (wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq)</td></tr>
-<tr class="memdesc:aa4699aa12693873b23955342e05ea80a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitializes and deletes an I2C device driver object.  <a href="#aa4699aa12693873b23955342e05ea80a">More...</a><br /></td></tr>
-<tr class="separator:aa4699aa12693873b23955342e05ea80a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01ee8d15b69a2f064a95d3a343bdfcfc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a01ee8d15b69a2f064a95d3a343bdfcfc">updateI2CDeviceProperties</a> (wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq)</td></tr>
+<tr class="memdesc:a01ee8d15b69a2f064a95d3a343bdfcfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of an I2C device driver.  <a href="#a01ee8d15b69a2f064a95d3a343bdfcfc">More...</a><br /></td></tr>
+<tr class="separator:a01ee8d15b69a2f064a95d3a343bdfcfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40896953a986ff414b0711ac0430a104"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a40896953a986ff414b0711ac0430a104">deinitI2CDevice</a> (wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq)</td></tr>
+<tr class="memdesc:a40896953a986ff414b0711ac0430a104"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitializes and deletes an I2C device driver object.  <a href="#a40896953a986ff414b0711ac0430a104">More...</a><br /></td></tr>
+<tr class="separator:a40896953a986ff414b0711ac0430a104"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="memItemLeft" align="right" valign="top"><a id="a1ea4a4a30e5486e4fee944ad54b6ca3d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a1ea4a4a30e5486e4fee944ad54b6ca3d">update</a> ()</td></tr>
 <tr class="memdesc:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queries all I2C device drivers for new values. Fills and sends an I2CSensorEvent with the sensor event data. <br /></td></tr>
@@ -105,12 +105,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a7378adb2c39ba21f088b32fd76452b1c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a7378adb2c39ba21f088b32fd76452b1c">fillEventMessage</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value, wippersnapper_i2c_v1_SensorType sensorType, uint8_t precision)</td></tr>
 <tr class="memdesc:a7378adb2c39ba21f088b32fd76452b1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills a sensor_event message with the sensor's value and type.  <a href="#a7378adb2c39ba21f088b32fd76452b1c">More...</a><br /></td></tr>
 <tr class="separator:a7378adb2c39ba21f088b32fd76452b1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27af2910e9e478fc70ce1164b58d682d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a27af2910e9e478fc70ce1164b58d682d">encodeI2CDeviceEventMsg</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse, uint32_t sensorAddress)</td></tr>
-<tr class="memdesc:a27af2910e9e478fc70ce1164b58d682d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an I2C sensor device's signal message.  <a href="#a27af2910e9e478fc70ce1164b58d682d">More...</a><br /></td></tr>
-<tr class="separator:a27af2910e9e478fc70ce1164b58d682d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9d47c3fff1edc1b2945774386225cd3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#aa9d47c3fff1edc1b2945774386225cd3">publishI2CDeviceEventMsg</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse)</td></tr>
-<tr class="memdesc:aa9d47c3fff1edc1b2945774386225cd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publishes an I2C sensor device's signal message.  <a href="#aa9d47c3fff1edc1b2945774386225cd3">More...</a><br /></td></tr>
-<tr class="separator:aa9d47c3fff1edc1b2945774386225cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c40ebfc762f7d8278486644708f2f00"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a8c40ebfc762f7d8278486644708f2f00">encodePublishI2CDeviceEventMsg</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse, uint32_t sensorAddress)</td></tr>
+<tr class="memdesc:a8c40ebfc762f7d8278486644708f2f00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an I2C sensor device's signal message.  <a href="#a8c40ebfc762f7d8278486644708f2f00">More...</a><br /></td></tr>
+<tr class="separator:a8c40ebfc762f7d8278486644708f2f00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that provides an interface with the I2C bus. </p>
@@ -229,14 +226,14 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a2960f131d786139a64400e309520497f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2960f131d786139a64400e309520497f">&#9670;&nbsp;</a></span>updateI2CDeviceProperties()</h2>
+<a id="a01ee8d15b69a2f064a95d3a343bdfcfc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01ee8d15b69a2f064a95d3a343bdfcfc">&#9670;&nbsp;</a></span>updateI2CDeviceProperties()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_Component_I2C::updateI2CDeviceProperties </td>
+          <td class="memname">void WipperSnapper_Component_I2C::updateI2CDeviceProperties </td>
           <td>(</td>
           <td class="paramtype">wippersnapper_i2c_v1_I2CDeviceUpdateRequest *&#160;</td>
           <td class="paramname"><em>msgDeviceUpdateReq</em></td><td>)</td>
@@ -252,18 +249,17 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the I2C device is was successfully updated, False otherwise. </dd></dl>
 
 </div>
 </div>
-<a id="aa4699aa12693873b23955342e05ea80a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa4699aa12693873b23955342e05ea80a">&#9670;&nbsp;</a></span>deinitI2CDevice()</h2>
+<a id="a40896953a986ff414b0711ac0430a104"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40896953a986ff414b0711ac0430a104">&#9670;&nbsp;</a></span>deinitI2CDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_Component_I2C::deinitI2CDevice </td>
+          <td class="memname">void WipperSnapper_Component_I2C::deinitI2CDevice </td>
           <td>(</td>
           <td class="paramtype">wippersnapper_i2c_v1_I2CDeviceDeinitRequest *&#160;</td>
           <td class="paramname"><em>msgDeviceDeinitReq</em></td><td>)</td>
@@ -279,7 +275,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if I2C device is found and de-initialized, False otherwise. </dd></dl>
 
 </div>
 </div>
@@ -334,14 +329,14 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a27af2910e9e478fc70ce1164b58d682d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27af2910e9e478fc70ce1164b58d682d">&#9670;&nbsp;</a></span>encodeI2CDeviceEventMsg()</h2>
+<a id="a8c40ebfc762f7d8278486644708f2f00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c40ebfc762f7d8278486644708f2f00">&#9670;&nbsp;</a></span>encodePublishI2CDeviceEventMsg()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_Component_I2C::encodeI2CDeviceEventMsg </td>
+          <td class="memname">bool WipperSnapper_Component_I2C::encodePublishI2CDeviceEventMsg </td>
           <td>(</td>
           <td class="paramtype">wippersnapper_signal_v1_I2CResponse *&#160;</td>
           <td class="paramname"><em>msgi2cResponse</em>, </td>
@@ -369,33 +364,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if message encoded successfully, False otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="aa9d47c3fff1edc1b2945774386225cd3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa9d47c3fff1edc1b2945774386225cd3">&#9670;&nbsp;</a></span>publishI2CDeviceEventMsg()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool WipperSnapper_Component_I2C::publishI2CDeviceEventMsg </td>
-          <td>(</td>
-          <td class="paramtype">wippersnapper_signal_v1_I2CResponse *&#160;</td>
-          <td class="paramname"><em>msgi2cResponse</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Publishes an I2C sensor device's signal message. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">msgi2cResponse</td><td>Pointer to an I2CResponse signal message. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if message published to the broker successfully, False otherwise. </dd></dl>
 
 </div>
 </div>
