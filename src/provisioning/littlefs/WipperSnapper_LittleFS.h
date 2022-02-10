@@ -1,13 +1,13 @@
 /*!
  * @file Wippersnapper_LittleFS.h
  *
- * Wippersnapper LittleFS
+ * Interfaces with LittleFS filesystem for ESP32, ESP8266 platforms.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -25,8 +25,7 @@ class Wippersnapper;
 
 /***************************************************************************/
 /*!
-    @brief  Class that handles WipperSnapper's LittleFS filesystem for
-            platforms without native USB (such as ESP32, ESP8266).
+    @brief  Class that handles WipperSnapper's LittleFS filesystem.
 */
 /***************************************************************************/
 class WipperSnapper_LittleFS {

@@ -1,13 +1,13 @@
 /*!
  * @file Wippersnapper_LittleFS.cpp
  *
- * Interacts with littleFS filesystem for non-native USB platforms.
+ * Interfaces with LittleFS filesystem for ESP32, ESP8266 platforms.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -15,7 +15,12 @@
 
 #include "WipperSnapper_LittleFS.h"
 
-// ctor
+/**************************************************************************/
+/*!
+    @brief    Attempts to set up and initialize a pre-existing LittleFS
+              filesystem.
+*/
+/**************************************************************************/
 WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
@@ -25,26 +30,31 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
       ;
   }
 
-  // Check if `secrets.json` file exists on FS
-  if (!LittleFS.exists("/secrets.json")) {
-    WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem!");
-    WS.setStatusLEDColor(RED);
-    while (1)
-      ;
-  }
 }
 
-// dtor
+/**************************************************************************/
+/*!
+    @brief    Destructor for LittleFS
+*/
+/**************************************************************************/
 WipperSnapper_LittleFS::~WipperSnapper_LittleFS() {
   LittleFS.end();
 }
 
 /**************************************************************************/
 /*!
-    @brief    Parses a secrets.json file on the flash filesystem.
+    @brief    Locates, opens and parses the WipperSnapper secrets file
+              on the LittleFS filesystem.
 */
 /**************************************************************************/
 void WipperSnapper_LittleFS::parseSecrets() {
+
+  // Check if `secrets.json` file exists on FS
+  if (!LittleFS.exists("/secrets.json")) {
+    WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem - did you upload credentials?");
+    fsHalt();
+  }
+
   // open file for parsing
   File secretsFile = LittleFS.open("/secrets.json", "r");
   if (!secretsFile) {
@@ -63,41 +73,51 @@ void WipperSnapper_LittleFS::parseSecrets() {
   // Get IO username from JSON
   const char *io_username = _doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_username == nullptr)
+  if (io_username == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: io_username not set!");
     fsHalt();
-  // set application's IO username
+  }
+  // Set IO username
   WS._username = io_username;
 
   // Get IO key from JSON
   const char *io_key = _doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_key == nullptr)
+  if (io_key == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: io_key not set!");
     fsHalt();
-  // Set applicaiton's IO key
+  }
+  // Set IO key
   WS._key = io_key;
 
   // Parse SSID
   const char *network_type_wifi_native_network_ssid =
       _doc["network_type_wifi_native"]["network_ssid"];
-  if (network_type_wifi_native_network_ssid == nullptr)
+  if (network_type_wifi_native_network_ssid == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: network_ssid not set!");
     fsHalt();
+  }
+  // set SSID
+  WS._network_ssid = network_type_wifi_native_network_ssid;
 
   // Parse SSID password
   const char *network_type_wifi_native_network_password = _doc["network_type_wifi_native"]["network_password"];
   // validation
-  if (network_type_wifi_native_network_password == nullptr)
+  if (network_type_wifi_native_network_password == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: network_password not set!");
     fsHalt();
-
-  // Set WiFi configuration with parsed values
-  WS._network_ssid = network_type_wifi_native_network_ssid;
+  }
+  // set password
   WS._network_pass = network_type_wifi_native_network_password;
 
-  // close the tempFile
+  // close the file
   secretsFile.close();
 
   // clear the document and release all memory from the memory pool
   _doc.clear();
 
+  // stop LittleFS, we no longer need it
+  LittleFS.end();
 }
 
 void WipperSnapper_LittleFS::fsHalt() {
