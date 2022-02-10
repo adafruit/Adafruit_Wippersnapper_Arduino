@@ -79,9 +79,6 @@ void Wippersnapper::provision() {
 #ifdef USE_TINYUSB
   _fileSystem = new Wippersnapper_FS();
   _fileSystem->parseSecrets();
-#elif defined(USE_NVS)
-  _nvs = new Wippersnapper_ESP32_nvs();
-  _nvs->parseSecrets();
 #elif defined(USE_LITTLEFS)
   _littleFS = new WipperSnapper_LittleFS();
   _littleFS->parseSecrets();

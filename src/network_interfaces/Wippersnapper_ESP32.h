@@ -71,8 +71,7 @@ public:
 
   /**********************************************************/
   /*!
-  @brief  Sets the WiFi client's ssid and password from the
-            esp32's nvs.
+  @brief  Sets the WiFi client's ssid and password.
   */
   /**********************************************************/
   void set_ssid_pass() {
