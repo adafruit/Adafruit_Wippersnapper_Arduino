@@ -37,8 +37,8 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
 
 #if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
   // Invert Feather ESP32-S2 pin power for I2C
-  pinMode(PIN_I2C_POWER_INVERTED, OUTPUT);
-  digitalWrite(PIN_I2C_POWER_INVERTED, LOW);
+  pinMode(PIN_I2C_POWER, OUTPUT);
+  digitalWrite(PIN_I2C_POWER, LOW);
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
   // Power the AP2112 regulator
   // TODO: Remove when fixed by latest BSP release
