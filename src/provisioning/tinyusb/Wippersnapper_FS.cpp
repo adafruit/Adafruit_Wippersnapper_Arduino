@@ -102,8 +102,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
 */
 /************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {
-  io_username = NULL;
-  io_key = NULL;
+  //io_username = NULL;
+  //io_key = NULL;
 }
 
 /**************************************************************************/
@@ -358,10 +358,6 @@ void Wippersnapper_FS::parseSecrets() {
     writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
     fsHalt();
   }
-<<<<<<< HEAD
-  // set application key
-=======
->>>>>>> adafruit/master
   WS._key = io_key;
 
   // next, we detect the network interface from the `secrets.json`
