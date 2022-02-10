@@ -15,6 +15,8 @@
 
 #include "WipperSnapper_LittleFS.h"
 
+#if defined(ARDUINO_FEATHER_ESP32) || defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+
 /**************************************************************************/
 /*!
     @brief    Attempts to set up and initialize a pre-existing LittleFS
@@ -127,3 +129,4 @@ void WipperSnapper_LittleFS::fsHalt() {
     yield();
   }
 }
+#endif

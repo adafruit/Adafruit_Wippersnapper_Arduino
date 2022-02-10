@@ -53,10 +53,11 @@
 #include "Adafruit_SleepyDog.h"
 #endif
 
-// Provisioning FS
 #if defined(USE_TINYUSB)
     #include "provisioning/tinyusb/Wippersnapper_FS.h"
-#elif defined(USE_LITTLEFS)
+#endif
+
+#if defined(USE_LITTLEFS)
     #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
 
