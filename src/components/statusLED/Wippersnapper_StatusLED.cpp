@@ -50,7 +50,13 @@ bool Wippersnapper::statusLEDInit() {
 // some hardware requires the NEOPIXEL_POWER pin to be enabled.
 #ifdef NEEDS_STATUS_NEOPIXEL_POWER
   pinMode(NEOPIXEL_POWER, OUTPUT);
+#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+  digitalWrite(NEOPIXEL_POWER, HIGH);
+#else
   digitalWrite(NEOPIXEL_POWER, LOW);
+#endif
 #endif
 
 #ifdef USE_STATUS_DOTSTAR

@@ -29,9 +29,7 @@ class Wippersnapper_ESP32_nvs {
 public:
   Wippersnapper_ESP32_nvs();
   ~Wippersnapper_ESP32_nvs();
-
-  bool validateNVSConfig();
-  bool setNVSConfig();
+  void parseSecrets();
 
   Preferences nvs; ///< Provides access to ESP32's Non-Volatile Storage
 
@@ -40,6 +38,7 @@ private:
   String _ssidPass;
   String _aioUser;
   String _aioPass;
+  String _aioURL;
 };
 
 extern Wippersnapper WS;

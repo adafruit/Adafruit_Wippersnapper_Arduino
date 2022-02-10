@@ -97,21 +97,18 @@ public:
   @brief  Initializes the MQTT client
   @param  clientID
           MQTT client identifier
-  @param  useStaging
-          True to use the Adafruit.io staging broker,
-            False otherwise.
   */
   /********************************************************/
-  void setupMQTTClient(const char *clientID, bool useStaging = false) {
-    if (useStaging == true) {
-      _mqttBrokerURL = "io.adafruit.us";
-      _mqtt_client->setCACert(_aio_root_ca_staging);
-    } else {
-      _mqttBrokerURL = "io.adafruit.com";
+  void setupMQTTClient(const char *clientID) {
+    if (WS._mqttBrokerURL == nullptr) {
+      WS._mqttBrokerURL = "io.adafruit.com";
       _mqtt_client->setCACert(_aio_root_ca_prod);
+    } else {
+      _mqtt_client->setCACert(_aio_root_ca_staging);
     }
+
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, _mqttBrokerURL, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
   }
 
@@ -220,13 +217,7 @@ protected:
       delay(100);
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
-      delay(100);
-    }
-
-    // wait for a connection to be established
-    long startRetry = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
-      // do nothing, busy loop during the timeout
+      delay(5000);
     }
   }
 

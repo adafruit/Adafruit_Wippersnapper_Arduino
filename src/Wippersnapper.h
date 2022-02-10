@@ -64,7 +64,7 @@
 
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.16" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.24" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -85,6 +85,8 @@
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
   { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
   {} ///< Prints debug output
@@ -150,6 +152,7 @@ typedef enum {
 
 #define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
+// TODO: Redundant, we should reference keepalive_interval_ms and just do math
 #define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   4000 ///< Session keepalive interval time, in milliseconds
@@ -188,22 +191,22 @@ public:
       false; ///< True if status LED is using the status dotstar
   bool lockStatusLED = false; ///< True if status LED is using the built-in LED
 
-
+  virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
 
   virtual void _connect();
   virtual void _disconnect();
-  void connect(bool useStagingBroker = false);
+  void connect();
   void disconnect();
 
   virtual void setUID();
-  virtual void setupMQTTClient(const char *clientID, bool useStaging);
+  virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
   ws_board_status_t getBoardStatus();
 
-  bool buildWSTopics(bool useStagingBroker);
+  bool buildWSTopics();
   void subscribeWSTopics();
   bool buildErrorTopics();
   void subscribeErrorTopics();
@@ -279,7 +282,8 @@ public:
   const char *_boardId;     /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
 
-  uint16_t _mqtt_port = 8883; /*!< MQTT Broker URL */
+  const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
+  uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
 
   // AIO credentials
   const char *_username = NULL; /*!< Adafruit IO username */

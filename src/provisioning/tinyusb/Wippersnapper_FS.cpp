@@ -12,7 +12,12 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) || defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+#if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
+    defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
+    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -277,7 +282,10 @@ void Wippersnapper_FS::createConfigFileSkel() {
   secretsFile.flush();
 // platform-dependent changes
 #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
-    defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+    defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
   secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_"
                     "ssid\":\"YOUR_WIFI_SSID_");
 #elif defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
@@ -340,7 +348,6 @@ void Wippersnapper_FS::parseSecrets() {
         "effect");
     fsHalt();
   }
-  // set application username
   WS._username = io_username;
 
   // Get io key
@@ -351,7 +358,10 @@ void Wippersnapper_FS::parseSecrets() {
     writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
     fsHalt();
   }
+<<<<<<< HEAD
   // set application key
+=======
+>>>>>>> adafruit/master
   WS._key = io_key;
 
   // next, we detect the network interface from the `secrets.json`
@@ -436,6 +446,9 @@ void Wippersnapper_FS::parseSecrets() {
         "ERROR: Network interface not detected in secrets.json file.");
     fsHalt();
   }
+
+  // Optional, Set the IO URL
+  WS._mqttBrokerURL = doc["io_url"];
 
   // clear the document and release all memory from the memory pool
   doc.clear();
