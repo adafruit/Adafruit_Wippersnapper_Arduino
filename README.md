@@ -19,6 +19,7 @@ If you're new to WipperSnapper, we suggest reading through the [Quickstart: Adaf
 ## Supported Platforms
 The following platforms are supported by Adafruit IO WipperSnapper
 * ATMEL-SAMD
+* ESP8266     
 * ESP32
 * ESP32-S2
 
