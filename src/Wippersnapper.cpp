@@ -815,8 +815,6 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     @brief    Handles MQTT messages on signal topic until timeout.
     @param    outgoingSignalMsg
                 Empty signal message struct.
-    @param    pinMode
-                Pin's input type.
     @param    pinName
                 Name of pin.
     @param    pinVal

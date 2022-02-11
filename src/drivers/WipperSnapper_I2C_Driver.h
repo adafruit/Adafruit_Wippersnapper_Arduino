@@ -39,8 +39,6 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an I2C sensor.
-      @param    _i2c
-                Instance of the I2C object.
       @param    sensorAddress
                 7-bit device address.
   */
