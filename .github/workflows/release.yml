@@ -220,7 +220,6 @@ jobs:
     - name: list build artifacts
       run : |
             ls
-            ls build/*
             ls examples/*
     - name: Rename build artifacts to reflect the platform name
       run: |
