@@ -102,9 +102,9 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a1ea4a4a30e5486e4fee944ad54b6ca3d">update</a> ()</td></tr>
 <tr class="memdesc:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queries all I2C device drivers for new values. Fills and sends an I2CSensorEvent with the sensor event data. <br /></td></tr>
 <tr class="separator:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7378adb2c39ba21f088b32fd76452b1c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a7378adb2c39ba21f088b32fd76452b1c">fillEventMessage</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value, wippersnapper_i2c_v1_SensorType sensorType, uint8_t precision)</td></tr>
-<tr class="memdesc:a7378adb2c39ba21f088b32fd76452b1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills a sensor_event message with the sensor's value and type.  <a href="#a7378adb2c39ba21f088b32fd76452b1c">More...</a><br /></td></tr>
-<tr class="separator:a7378adb2c39ba21f088b32fd76452b1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85c0bb433ab661de67889ef12070c51b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a85c0bb433ab661de67889ef12070c51b">fillEventMessage</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value, wippersnapper_i2c_v1_SensorType sensorType)</td></tr>
+<tr class="memdesc:a85c0bb433ab661de67889ef12070c51b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills a sensor_event message with the sensor's value and type.  <a href="#a85c0bb433ab661de67889ef12070c51b">More...</a><br /></td></tr>
+<tr class="separator:a85c0bb433ab661de67889ef12070c51b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c40ebfc762f7d8278486644708f2f00"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a8c40ebfc762f7d8278486644708f2f00">encodePublishI2CDeviceEventMsg</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse, uint32_t sensorAddress)</td></tr>
 <tr class="memdesc:a8c40ebfc762f7d8278486644708f2f00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an I2C sensor device's signal message.  <a href="#a8c40ebfc762f7d8278486644708f2f00">More...</a><br /></td></tr>
 <tr class="separator:a8c40ebfc762f7d8278486644708f2f00"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -278,8 +278,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a7378adb2c39ba21f088b32fd76452b1c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7378adb2c39ba21f088b32fd76452b1c">&#9670;&nbsp;</a></span>fillEventMessage()</h2>
+<a id="a85c0bb433ab661de67889ef12070c51b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85c0bb433ab661de67889ef12070c51b">&#9670;&nbsp;</a></span>fillEventMessage()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -300,13 +300,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">wippersnapper_i2c_v1_SensorType&#160;</td>
-          <td class="paramname"><em>sensorType</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>precision</em> = <code>2</code>&#160;</td>
+          <td class="paramname"><em>sensorType</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -322,7 +316,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
     <tr><td class="paramname">msgi2cResponse</td><td>A pointer to the signal's I2CResponse message. </td></tr>
     <tr><td class="paramname">value</td><td>The value read by the sensor. </td></tr>
     <tr><td class="paramname">sensorType</td><td>The SI unit represented by the sensor's value. </td></tr>
-    <tr><td class="paramname">precision</td><td>The amount of decimal points to round to. </td></tr>
   </table>
   </dd>
 </dl>

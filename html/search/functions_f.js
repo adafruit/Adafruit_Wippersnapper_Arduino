@@ -1,14 +1,13 @@
 var searchData=
 [
-  ['_7ewippersnapper',['~Wippersnapper',['../class_wippersnapper.html#ae260960e9f57883bf2e3ff884480cf8f',1,'Wippersnapper']]],
-  ['_7ewippersnapper_5fairlift',['~Wippersnapper_AIRLIFT',['../class_wippersnapper___a_i_r_l_i_f_t.html#a3bb9fcb5014eec558e2f9664bf3c0900',1,'Wippersnapper_AIRLIFT']]],
-  ['_7ewippersnapper_5fanalogio',['~Wippersnapper_AnalogIO',['../class_wippersnapper___analog_i_o.html#a03ba1a3c9a207a8c28f3e875841f6dce',1,'Wippersnapper_AnalogIO']]],
-  ['_7ewippersnapper_5fcomponent_5fi2c',['~WipperSnapper_Component_I2C',['../class_wipper_snapper___component___i2_c.html#ab2bebfb333680e689fe5c1999815ceab',1,'WipperSnapper_Component_I2C']]],
-  ['_7ewippersnapper_5fdigitalgpio',['~Wippersnapper_DigitalGPIO',['../class_wippersnapper___digital_g_p_i_o.html#a66fce803e94dc5b130517bf67b246b45',1,'Wippersnapper_DigitalGPIO']]],
-  ['_7ewippersnapper_5fi2c_5fdriver',['~WipperSnapper_I2C_Driver',['../class_wipper_snapper___i2_c___driver.html#a5bc2b4e05f37d05738c154da391acb2e',1,'WipperSnapper_I2C_Driver']]],
-  ['_7ewippersnapper_5fi2c_5fdriver_5fahtx0',['~WipperSnapper_I2C_Driver_AHTX0',['../class_wipper_snapper___i2_c___driver___a_h_t_x0.html#a40b6a05904856c7ca11578824f8529e1',1,'WipperSnapper_I2C_Driver_AHTX0']]],
-  ['_7ewippersnapper_5fi2c_5fdriver_5fbme280',['~WipperSnapper_I2C_Driver_BME280',['../class_wipper_snapper___i2_c___driver___b_m_e280.html#adde8260cc03228c82bc94e4b1c6af276',1,'WipperSnapper_I2C_Driver_BME280']]],
-  ['_7ewippersnapper_5fi2c_5fdriver_5fdps310',['~WipperSnapper_I2C_Driver_DPS310',['../class_wipper_snapper___i2_c___driver___d_p_s310.html#a27d23f45d47316fd510b49fe0654bdb8',1,'WipperSnapper_I2C_Driver_DPS310']]],
-  ['_7ewippersnapper_5fi2c_5fdriver_5fscd30',['~WipperSnapper_I2C_Driver_SCD30',['../class_wipper_snapper___i2_c___driver___s_c_d30.html#a14c83f33973347f0bf4e08fb9605bd3b',1,'WipperSnapper_I2C_Driver_SCD30']]],
-  ['_7ewippersnapper_5fwifinina',['~Wippersnapper_WIFININA',['../class_wippersnapper___w_i_f_i_n_i_n_a.html#a3b0e76c06bba9199b97ad4ee925e0a50',1,'Wippersnapper_WIFININA']]]
+  ['wippersnapper_5fairlift',['Wippersnapper_AIRLIFT',['../class_wippersnapper___a_i_r_l_i_f_t.html#a14b2a97f47f2b02afec4a25d9cd8dc65',1,'Wippersnapper_AIRLIFT']]],
+  ['wippersnapper_5fanalogio',['Wippersnapper_AnalogIO',['../class_wippersnapper___analog_i_o.html#acf6e217c3a4917ff6d98fd35af1fc6fe',1,'Wippersnapper_AnalogIO']]],
+  ['wippersnapper_5fcomponent_5fi2c',['WipperSnapper_Component_I2C',['../class_wipper_snapper___component___i2_c.html#a82f3e2f3220c8cf33903d9bbd158e688',1,'WipperSnapper_Component_I2C']]],
+  ['wippersnapper_5fdigitalgpio',['Wippersnapper_DigitalGPIO',['../class_wippersnapper___digital_g_p_i_o.html#a6e2665cb084fd7b11933fe0f6d194d39',1,'Wippersnapper_DigitalGPIO']]],
+  ['wippersnapper_5fi2c_5fdriver',['WipperSnapper_I2C_Driver',['../class_wipper_snapper___i2_c___driver.html#ab68da89eb8621fa888207d6bbed664c2',1,'WipperSnapper_I2C_Driver']]],
+  ['wippersnapper_5fi2c_5fdriver_5fahtx0',['WipperSnapper_I2C_Driver_AHTX0',['../class_wipper_snapper___i2_c___driver___a_h_t_x0.html#a5586c2ff8a3ca0b02caa4bd50de72515',1,'WipperSnapper_I2C_Driver_AHTX0']]],
+  ['wippersnapper_5fi2c_5fdriver_5fbme280',['WipperSnapper_I2C_Driver_BME280',['../class_wipper_snapper___i2_c___driver___b_m_e280.html#a89a905666c3025eb751908ac42511f96',1,'WipperSnapper_I2C_Driver_BME280']]],
+  ['wippersnapper_5fi2c_5fdriver_5fdps310',['WipperSnapper_I2C_Driver_DPS310',['../class_wipper_snapper___i2_c___driver___d_p_s310.html#a697ee14989f03dd84106f001709474fa',1,'WipperSnapper_I2C_Driver_DPS310']]],
+  ['wippersnapper_5fi2c_5fdriver_5fscd30',['WipperSnapper_I2C_Driver_SCD30',['../class_wipper_snapper___i2_c___driver___s_c_d30.html#aa6a9fe9084bcc472a5352a84de93fa99',1,'WipperSnapper_I2C_Driver_SCD30']]],
+  ['wippersnapper_5fwifinina',['Wippersnapper_WIFININA',['../class_wippersnapper___w_i_f_i_n_i_n_a.html#a788d21129715868932c6526d08e52b90',1,'Wippersnapper_WIFININA']]]
 ];
