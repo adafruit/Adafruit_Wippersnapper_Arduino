@@ -15,10 +15,10 @@
 #ifndef WIPPERSNAPPER_LITTLEFS_H
 #define WIPPERSNAPPER_LITTLEFS_H
 
+#include "Wippersnapper.h"
+#include <ArduinoJson.h>
 #include <FS.h>
 #include <LittleFS.h>
-#include <ArduinoJson.h>
-#include "Wippersnapper.h"
 
 // forward decl.
 class Wippersnapper;
@@ -35,6 +35,7 @@ public:
 
   void parseSecrets();
   void fsHalt();
+
 private:
   // NOTE: calculated capacity with maximum
   // length of usernames/passwords/tokens

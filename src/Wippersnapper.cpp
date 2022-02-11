@@ -133,7 +133,7 @@ void Wippersnapper::setUID() {
               A unique client identifier string.
 */
 /****************************************************************************/
-void Wippersnapper::setupMQTTClient(const char */*clientID*/) {
+void Wippersnapper::setupMQTTClient(const char * /*clientID*/) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -157,7 +157,8 @@ ws_status_t Wippersnapper::networkStatus() {
               Your wireless network's password.
 */
 /****************************************************************************/
-void Wippersnapper::set_ssid_pass(const char */*ssid*/, const char */*ssidPassword*/) {
+void Wippersnapper::set_ssid_pass(const char * /*ssid*/,
+                                  const char * /*ssidPassword*/) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -1495,7 +1496,6 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
 
-
 /**************************************************************************/
 /*!
     @brief    Checks validity of WipperSnapper application credentials.
@@ -1504,13 +1504,15 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 */
 /**************************************************************************/
 bool validateAppCreds() {
-    // Check if null
-    if (WS._username == 0 || WS._key == 0 || WS._network_ssid == 0 || WS._network_pass == 0)
-        return false;
-    // Check credential length
-    if (strlen(WS._username) == 0 || strlen(WS._key) == 0 || strlen(WS._network_ssid) == 0 || strlen(WS._network_pass) == 0)
-        return false;
-    return true;
+  // Check if null
+  if (WS._username == 0 || WS._key == 0 || WS._network_ssid == 0 ||
+      WS._network_pass == 0)
+    return false;
+  // Check credential length
+  if (strlen(WS._username) == 0 || strlen(WS._key) == 0 ||
+      strlen(WS._network_ssid) == 0 || strlen(WS._network_pass) == 0)
+    return false;
+  return true;
 }
 
 /**************************************************************************/

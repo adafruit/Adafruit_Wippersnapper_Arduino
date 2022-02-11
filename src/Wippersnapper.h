@@ -54,13 +54,12 @@
 #endif
 
 #if defined(USE_TINYUSB)
-    #include "provisioning/tinyusb/Wippersnapper_FS.h"
+#include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
 
 #if defined(USE_LITTLEFS)
-    #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
+#include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
-
 
 #define WS_VERSION                                                             \
   "1.0.0-beta.24" ///< WipperSnapper app. version (semver-formatted)
@@ -271,13 +270,14 @@ public:
 
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
-  Wippersnapper_FS *_fileSystem;           ///< Instance of Filesystem (native USB)
-  WipperSnapper_LittleFS *_littleFS;       ///< Instance of LittleFS Filesystem (non-native USB)
+  Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
+  WipperSnapper_LittleFS
+      *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
 
-  uint8_t _uid[6];          /*!< Unique network iface identifier */
-  char sUID[13];            /*!< Unique network iface identifier */
-  const char *_boardId;     /*!< Adafruit IO+ board string */
-  Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
+  uint8_t _uid[6];      /*!< Unique network iface identifier */
+  char sUID[13];        /*!< Unique network iface identifier */
+  const char *_boardId; /*!< Adafruit IO+ board string */
+  Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
@@ -292,12 +292,13 @@ public:
 
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
-  char *_topic_description = NULL; /*!< MQTT topic for the device description  */
-  char *_topic_signal_device = NULL; /*!< Device->Wprsnpr messages */
-  char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device to a
-                                   broker. */
-  char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a broker to a
-                                     device. */
+  char *_topic_description =
+      NULL; /*!< MQTT topic for the device description  */
+  char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
+  char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
+                                   to a broker. */
+  char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
+                                     broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -311,7 +312,7 @@ public:
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
 
-  bool pinCfgCompleted = false;   /*!< Did initial pin sync complete? */
+  bool pinCfgCompleted = false; /*!< Did initial pin sync complete? */
 
 private:
   void _init();
@@ -330,17 +331,18 @@ protected:
   char *_device_uid;     /*!< Unique device identifier  */
 
   // MQTT topics
-  char *_topic_description_status = NULL; /*!< MQTT subtopic carrying the description
-                                      status resp. from the broker */
-  char *_topic_description_status_complete = NULL; /*!< MQTT topic carrying the ACK
-                                               signal from the device to the
+  char *_topic_description_status =
+      NULL; /*!< MQTT subtopic carrying the description
+        status resp. from the broker */
+  char *_topic_description_status_complete = NULL; /*!< MQTT topic carrying the
+                                               ACK signal from the device to the
                                                broker after registration */
-  char *
-      _topic_device_pin_config_complete = NULL; /*!< MQTT topic carrying the ACK signal
-                                            from the device to the broker after
-                                            hardware configuration */
-  char *_topic_signal_brkr = NULL;              /*!< Wprsnpr->Device messages */
-  char *_err_topic = NULL;      /*!< Adafruit IO MQTT error message topic. */
+  char *_topic_device_pin_config_complete =
+      NULL;                        /*!< MQTT topic carrying the ACK signal
+                               from the device to the broker after
+                               hardware configuration */
+  char *_topic_signal_brkr = NULL; /*!< Wprsnpr->Device messages */
+  char *_err_topic = NULL;         /*!< Adafruit IO MQTT error message topic. */
   char *_throttle_topic = NULL; /*!< Adafruit IO MQTT throttle message topic. */
 
   Adafruit_MQTT_Subscribe
@@ -351,7 +353,6 @@ protected:
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
-
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

@@ -29,7 +29,6 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
     while (1)
       ;
   }
-
 }
 
 /**************************************************************************/
@@ -37,9 +36,7 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
     @brief    Destructor for LittleFS
 */
 /**************************************************************************/
-WipperSnapper_LittleFS::~WipperSnapper_LittleFS() {
-  LittleFS.end();
-}
+WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
 
 /**************************************************************************/
 /*!
@@ -51,7 +48,8 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
-    WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem - did you upload credentials?");
+    WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem - did you "
+                     "upload credentials?");
     fsHalt();
   }
 
@@ -101,7 +99,8 @@ void WipperSnapper_LittleFS::parseSecrets() {
   WS._network_ssid = network_type_wifi_native_network_ssid;
 
   // Parse SSID password
-  const char *network_type_wifi_native_network_password = _doc["network_type_wifi_native"]["network_password"];
+  const char *network_type_wifi_native_network_password =
+      _doc["network_type_wifi_native"]["network_password"];
   // validation
   if (network_type_wifi_native_network_password == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: network_password not set!");
