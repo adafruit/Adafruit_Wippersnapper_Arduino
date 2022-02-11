@@ -47,23 +47,22 @@
 // Note: These might be better off in their respective wrappers
 #include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
-#include <ArduinoJson.h>
 #include <SPI.h>
 
 #ifndef ESP8266
 #include "Adafruit_SleepyDog.h"
 #endif
 
-#ifdef USE_TINYUSB
+#if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
 
-#ifdef USE_NVS
-#include "provisioning/Wippersnapper_ESP32_nvs.h"
+#if defined(USE_LITTLEFS)
+#include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.23" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.24" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -162,7 +161,7 @@ typedef enum {
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
-class Wippersnapper_ESP32_nvs;
+class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
 
 /**************************************************************************/
@@ -243,8 +242,7 @@ public:
   // Encodes a pin event message
   bool
   encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-                 wippersnapper_pin_v1_Mode pinMode, uint8_t pinName,
-                 int pinVal);
+                 uint8_t pinName, int pinVal);
 
   // Pin configure message
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
@@ -272,32 +270,35 @@ public:
 
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
-  Wippersnapper_FS *_fileSystem;           ///< Instance of filesystem class
-  Wippersnapper_ESP32_nvs *_nvs;           ///< Instance of nvs
+  Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
+  WipperSnapper_LittleFS
+      *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
 
-  uint8_t _uid[6];          /*!< Unique network iface identifier */
-  char sUID[13];            /*!< Unique network iface identifier */
-  const char *_boardId;     /*!< Adafruit IO+ board string */
-  Adafruit_MQTT *_mqtt;     /*!< Reference to Adafruit_MQTT, _mqtt. */
-  char *_topic_description; /*!< MQTT topic for the device description  */
+  uint8_t _uid[6];      /*!< Unique network iface identifier */
+  char sUID[13];        /*!< Unique network iface identifier */
+  const char *_boardId; /*!< Adafruit IO+ board string */
+  Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
 
   // AIO credentials
-  const char *_username; /*!< Adafruit IO username */
-  const char *_key;      /*!< Adafruit IO key */
+  const char *_username = NULL; /*!< Adafruit IO username */
+  const char *_key = NULL;      /*!< Adafruit IO key */
 
   // WiFi credentials
-  const char *_network_ssid; /*!< WiFi network SSID */
-  const char *_network_pass; /*!< WiFi network password*/
+  const char *_network_ssid = NULL; /*!< WiFi network SSID */
+  const char *_network_pass = NULL; /*!< WiFi network password*/
 
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
-  char *_topic_signal_device; /*!< Device->Wprsnpr messages */
-
-  char *_topic_signal_i2c_brkr; /*!< Topic carries messages from a device to a
-                                   broker. */
+  char *_topic_description =
+      NULL; /*!< MQTT topic for the device description  */
+  char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
+  char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
+                                   to a broker. */
+  char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
+                                     broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -310,9 +311,8 @@ public:
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
-  char *_topic_signal_i2c_device; /*!< Topic carries messages from a broker to a
-                                     device. */
-  bool pinCfgCompleted = false;   /*!< Did initial pin sync complete? */
+
+  bool pinCfgCompleted = false; /*!< Did initial pin sync complete? */
 
 private:
   void _init();
@@ -331,16 +331,19 @@ protected:
   char *_device_uid;     /*!< Unique device identifier  */
 
   // MQTT topics
-  char *_topic_description_status; /*!< MQTT subtopic carrying the description
-                                      status resp. from the broker */
-  char *_topic_description_status_complete; /*!< MQTT topic carrying the ACK
-                                               signal from the device to the
+  char *_topic_description_status =
+      NULL; /*!< MQTT subtopic carrying the description
+        status resp. from the broker */
+  char *_topic_description_status_complete = NULL; /*!< MQTT topic carrying the
+                                               ACK signal from the device to the
                                                broker after registration */
-  char *
-      _topic_device_pin_config_complete; /*!< MQTT topic carrying the ACK signal
-                                            from the device to the broker after
-                                            hardware configuration */
-  char *_topic_signal_brkr;              /*!< Wprsnpr->Device messages */
+  char *_topic_device_pin_config_complete =
+      NULL;                        /*!< MQTT topic carrying the ACK signal
+                               from the device to the broker after
+                               hardware configuration */
+  char *_topic_signal_brkr = NULL; /*!< Wprsnpr->Device messages */
+  char *_err_topic = NULL;         /*!< Adafruit IO MQTT error message topic. */
+  char *_throttle_topic = NULL; /*!< Adafruit IO MQTT throttle message topic. */
 
   Adafruit_MQTT_Subscribe
       *_topic_description_sub; /*!< Subscription for registration topic. */
@@ -351,8 +354,6 @@ protected:
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
 
-  char *_err_topic;      /*!< Adafruit IO MQTT error message topic. */
-  char *_throttle_topic; /*!< Adafruit IO MQTT throttle message topic. */
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
   Adafruit_MQTT_Subscribe

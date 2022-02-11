@@ -37,8 +37,8 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
 
 #if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
   // Invert Feather ESP32-S2 pin power for I2C
-  pinMode(PIN_I2C_POWER_INVERTED, OUTPUT);
-  digitalWrite(PIN_I2C_POWER_INVERTED, LOW);
+  pinMode(7, OUTPUT);
+  digitalWrite(7, LOW);
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
   // Power the AP2112 regulator
   // TODO: Remove when fixed by latest BSP release
@@ -379,13 +379,11 @@ bool WipperSnapper_Component_I2C::encodePublishI2CDeviceEventMsg(
               The value read by the sensor.
     @param    sensorType
               The SI unit represented by the sensor's value.
-    @param    precision
-              The amount of decimal points to round to.
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::fillEventMessage(
     wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value,
-    wippersnapper_i2c_v1_SensorType sensorType, uint8_t precision = 2) {
+    wippersnapper_i2c_v1_SensorType sensorType) {
   // fill sensor value
   msgi2cResponse->payload.resp_i2c_device_event
       .sensor_event[msgi2cResponse->payload.resp_i2c_device_event

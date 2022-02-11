@@ -156,6 +156,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
+
   # NOTE: This does NOT release artifacts, it only builds
   build-samd-non-fs:
     name: Build WipperSnapper SAMD (NO-TINYUSB)
@@ -219,7 +220,7 @@ jobs:
 
   clang_and_doxy:
     runs-on: ubuntu-latest
-    needs: [build-samd, build-esp32, build-esp32s2]
+    needs: [build-samd, build-esp32, build-esp32s2, build-esp8266]
     steps:
     - uses: actions/setup-python@v1
       with:

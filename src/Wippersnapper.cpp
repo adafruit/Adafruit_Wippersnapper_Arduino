@@ -79,9 +79,9 @@ void Wippersnapper::provision() {
 #ifdef USE_TINYUSB
   _fileSystem = new Wippersnapper_FS();
   _fileSystem->parseSecrets();
-#elif defined(USE_NVS)
-  _nvs = new Wippersnapper_ESP32_nvs();
-  _nvs->parseSecrets();
+#elif defined(USE_LITTLEFS)
+  _littleFS = new WipperSnapper_LittleFS();
+  _littleFS->parseSecrets();
 #else
   set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
@@ -133,7 +133,7 @@ void Wippersnapper::setUID() {
               A unique client identifier string.
 */
 /****************************************************************************/
-void Wippersnapper::setupMQTTClient(const char *clientID) {
+void Wippersnapper::setupMQTTClient(const char * /*clientID*/) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -157,7 +157,8 @@ ws_status_t Wippersnapper::networkStatus() {
               Your wireless network's password.
 */
 /****************************************************************************/
-void Wippersnapper::set_ssid_pass(const char *ssid, const char *ssidPassword) {
+void Wippersnapper::set_ssid_pass(const char * /*ssid*/,
+                                  const char * /*ssidPassword*/) {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -814,8 +815,6 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     @brief    Handles MQTT messages on signal topic until timeout.
     @param    outgoingSignalMsg
                 Empty signal message struct.
-    @param    pinMode
-                Pin's input type.
     @param    pinName
                 Name of pin.
     @param    pinVal
@@ -825,7 +824,7 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 /****************************************************************************/
 bool Wippersnapper::encodePinEvent(
     wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-    wippersnapper_pin_v1_Mode pinMode, uint8_t pinName, int pinVal) {
+    uint8_t pinName, int pinVal) {
   bool is_success = true;
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
@@ -1059,6 +1058,12 @@ void Wippersnapper::subscribeErrorTopics() {
 /**************************************************************************/
 bool Wippersnapper::buildWSTopics() {
   bool is_success = true;
+
+  // Validate that we've correctly pulled configuration keys from the FS
+  if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL ||
+      WS._network_pass == NULL)
+    return false;
+
   // Get UID from the network iface
   setUID();
   // Move the top 3 bytes from the UID
@@ -1127,18 +1132,17 @@ bool Wippersnapper::buildWSTopics() {
       strlen(TOPIC_I2C) + 1);
 
   // Create global registration topic
-  if (WS._topic_description) {
+  if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
     strcat(WS._topic_description, TOPIC_INFO);
     strcat(WS._topic_description, "status");
   } else { // malloc failed
-    WS._topic_description = 0;
     is_success = false;
   }
 
   // Create registration status topic
-  if (WS._topic_description_status) {
+  if (WS._topic_description_status != NULL) {
     strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
     strcat(WS._topic_description_status, _device_uid);
@@ -1146,12 +1150,11 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description_status, "status");
     strcat(WS._topic_description_status, "/broker");
   } else { // malloc failed
-    WS._topic_description_status = 0;
     is_success = false;
   }
 
   // Create registration status complete topic
-  if (WS._topic_description_status_complete) {
+  if (WS._topic_description_status_complete != NULL) {
     strcpy(WS._topic_description_status_complete, WS._username);
     strcat(WS._topic_description_status_complete, "/wprsnpr/");
     strcat(WS._topic_description_status_complete, _device_uid);
@@ -1159,48 +1162,44 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description_status_complete, "status");
     strcat(WS._topic_description_status_complete, "/device/complete");
   } else { // malloc failed
-    WS._topic_description_status_complete = 0;
     is_success = false;
   }
 
   // Create device-to-broker signal topic
-  if (WS._topic_signal_device) {
+  if (WS._topic_signal_device != NULL) {
     strcpy(WS._topic_signal_device, WS._username);
     strcat(WS._topic_signal_device, "/wprsnpr/");
     strcat(WS._topic_signal_device, _device_uid);
     strcat(WS._topic_signal_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_device, "device");
   } else { // malloc failed
-    WS._topic_signal_device = 0;
     is_success = false;
   }
 
   // Create device-to-broker signal topic
-  if (WS._topic_device_pin_config_complete) {
+  if (WS._topic_device_pin_config_complete != NULL) {
     strcpy(WS._topic_device_pin_config_complete, WS._username);
     strcat(WS._topic_device_pin_config_complete, "/wprsnpr/");
     strcat(WS._topic_device_pin_config_complete, _device_uid);
     strcat(WS._topic_device_pin_config_complete, TOPIC_SIGNALS);
     strcat(WS._topic_device_pin_config_complete, "device/pinConfigComplete");
   } else { // malloc failed
-    WS._topic_device_pin_config_complete = 0;
     is_success = false;
   }
 
   // Create broker-to-device signal topic
-  if (WS._topic_signal_brkr) {
+  if (WS._topic_signal_brkr != NULL) {
     strcpy(WS._topic_signal_brkr, WS._username);
     strcat(WS._topic_signal_brkr, "/wprsnpr/");
     strcat(WS._topic_signal_brkr, _device_uid);
     strcat(WS._topic_signal_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_brkr, "broker");
   } else { // malloc failed
-    WS._topic_signal_brkr = 0;
     is_success = false;
   }
 
   // Create device-to-broker i2c signal topic
-  if (WS._topic_signal_i2c_brkr) {
+  if (WS._topic_signal_i2c_brkr != NULL) {
     strcpy(WS._topic_signal_i2c_brkr, WS._username);
     strcat(WS._topic_signal_i2c_brkr, TOPIC_WS);
     strcat(WS._topic_signal_i2c_brkr, _device_uid);
@@ -1208,12 +1207,11 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_brkr, "broker");
     strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
   } else { // malloc failed
-    WS._topic_signal_i2c_brkr = 0;
     is_success = false;
   }
 
   // Create broker-to-device i2c signal topic
-  if (WS._topic_signal_i2c_device) {
+  if (WS._topic_signal_i2c_device != NULL) {
     strcpy(WS._topic_signal_i2c_device, WS._username);
     strcat(WS._topic_signal_i2c_device, TOPIC_WS);
     strcat(WS._topic_signal_i2c_device, _device_uid);
@@ -1221,7 +1219,6 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_device, "device");
     strcat(WS._topic_signal_i2c_device, TOPIC_I2C);
   } else { // malloc failed
-    WS._topic_signal_i2c_device = 0;
     is_success = false;
   }
 
@@ -1316,6 +1313,7 @@ void Wippersnapper::runNetFSM() {
         // attempt to connect
         WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
+        WS.feedWDT();
         delay(1000);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
@@ -1498,6 +1496,25 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 
 /**************************************************************************/
 /*!
+    @brief    Checks validity of WipperSnapper application credentials.
+    @returns  True if WipperSnapper application credentials exist
+                and are valid, False otherwise.
+*/
+/**************************************************************************/
+bool validateAppCreds() {
+  // Check if null
+  if (WS._username == 0 || WS._key == 0 || WS._network_ssid == 0 ||
+      WS._network_pass == 0)
+    return false;
+  // Check credential length
+  if (strlen(WS._username) == 0 || strlen(WS._key) == 0 ||
+      strlen(WS._network_ssid) == 0 || strlen(WS._network_pass) == 0)
+    return false;
+  return true;
+}
+
+/**************************************************************************/
+/*!
     @brief    Connects to Adafruit IO+ Wippersnapper broker.
 */
 /**************************************************************************/
@@ -1505,10 +1522,11 @@ void Wippersnapper::connect() {
   // enable WDT
   WS.enableWDT(WS_WDT_TIMEOUT);
 
-  // TODO!
-  // not sure we need to track these...
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
+
+  if (!validateAppCreds())
+    haltError("Unable to validate application credentials.");
 
   // build MQTT topics for WipperSnapper and subscribe
   if (!buildWSTopics()) {
@@ -1521,6 +1539,8 @@ void Wippersnapper::connect() {
   subscribeWSTopics();
   subscribeErrorTopics();
 
+  // Connect to Network
+  WS_DEBUG_PRINTLN("Running Network FSM...");
   // Run the network fsm
   runNetFSM();
   WS.feedWDT();

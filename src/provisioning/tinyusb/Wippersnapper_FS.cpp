@@ -1,7 +1,7 @@
 /*!
  * @file Wippersnapper_FS.cpp
  *
- * Wippersnapper Filesystem
+ * Wippersnapper TinyUSB Filesystem
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -102,8 +102,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
 */
 /************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {
-  io_username = NULL;
-  io_key = NULL;
+  //io_username = NULL;
+  //io_key = NULL;
 }
 
 /**************************************************************************/
@@ -329,7 +329,7 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Get io username
-  io_username = doc["io_username"];
+  const char * io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
@@ -351,7 +351,7 @@ void Wippersnapper_FS::parseSecrets() {
   WS._username = io_username;
 
   // Get io key
-  io_key = doc["io_key"];
+  const char *io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");

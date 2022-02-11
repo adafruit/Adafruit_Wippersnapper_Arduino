@@ -17,27 +17,18 @@
 #ifndef WIPPERSNAPPER_ESP8266_H
 #define WIPPERSNAPPER_ESP8266_H
 
-#ifdef ESP8266
-
+#ifdef ARDUINO_ARCH_ESP8266
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "ESP8266WiFi.h"
-#include "WiFiClientSecure.h"
 #include "Wippersnapper.h"
 
-#ifdef USE_STAGING
-// Adafruit IO Staging SSL Fingerprint
-// Fingerprint for io.adafruit.us staging server
-#define WS_SSL_FINGERPRINT                                                     \
-  "CE DC 02 4C B1 1C AE 26 62 EE 55 64 9E 14 F5 A8 3C 45 AE 6E"
-#else
-#define WS_SSL_FINGERPRINT                                                     \
-  "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF" ///< Latest
-                                                                ///< Adafruit IO
-                                                                ///< SSL
-                                                                ///< Fingerprint
-#endif
+static const char *fingerprint PROGMEM =
+    "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF";
+static const char *fingerprint_staging PROGMEM =
+    "A0 A4 61 E0 D6 F8 94 FF FA C1 F2 DC 09 23 72 E1 "
+    "CC 23 CD 64"; ///< AIO Staging SSL Fingerprint
 
 extern Wippersnapper WS;
 
@@ -63,15 +54,10 @@ public:
           Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266(const char *aioUsername, const char *aioKey,
-                        const char *netSSID, const char *netPass)
-      : Wippersnapper() {
-    _ssid = netSSID;
-    _pass = netPass;
-    _username = aioUsername;
-    _key = aioKey;
-    _mqtt_client = new WiFiClientSecure;
-    _mqtt_client->setFingerprint(WS_SSL_FINGERPRINT);
+  Wippersnapper_ESP8266() : Wippersnapper() {
+    _ssid = 0;
+    _pass = 0;
+    _wifi_client = new WiFiClientSecure;
   }
 
   /**************************************************************************/
@@ -80,8 +66,8 @@ public:
   */
   /**************************************************************************/
   ~Wippersnapper_ESP8266() {
-    if (_mqtt_client)
-      delete _mqtt_client;
+    if (_wifi_client)
+      delete _wifi_client;
     if (_mqtt)
       delete _mqtt;
   }
@@ -98,6 +84,17 @@ public:
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
     _pass = ssidPassword;
+  }
+
+  /**********************************************************/
+  /*!
+  @brief  Sets the WiFi client's ssid and password from the
+            ESP8266's LittleFS.
+  */
+  /**********************************************************/
+  void set_ssid_pass() {
+    _ssid = WS._network_ssid;
+    _pass = WS._network_pass;
   }
 
   /********************************************************/
@@ -119,9 +116,11 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqttBrokerURL = "io.adafruit.com";
+    _mqttBrokerURL = "io.adafruit.com";
+    _wifi_client->setFingerprint(fingerprint);
+
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_wifi_client, _mqttBrokerURL, _mqtt_port,
                                  clientID, WS._username, WS._key);
   }
 
@@ -153,11 +152,11 @@ public:
   const char *connectionType() { return "ESP8266"; }
 
 protected:
-  const char *_ssid;
-  const char *_pass;
-  const char *_mqttBrokerURL;
+  const char *_ssid = NULL;
+  const char *_pass = NULL;
+  const char *_mqttBrokerURL = NULL;
   uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  WiFiClientSecure *_mqtt_client;
+  WiFiClientSecure *_wifi_client;
 
   /**************************************************************************/
   /*!
@@ -165,13 +164,25 @@ protected:
   */
   /**************************************************************************/
   void _connect() {
-    if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID;
-    } else {
-      delay(1000);
-      WiFi.begin(_ssid, _pass);
-      delay(2000);
-      _status = WS_NET_DISCONNECTED;
+
+    if (WiFi.status() == WL_CONNECTED)
+      return;
+
+    // Attempt connection
+    _disconnect();
+    delay(100);
+    // ESP8266 MUST be in STA mode to avoid device acting as client/server
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(_ssid, _pass);
+    _status = WS_NET_DISCONNECTED;
+    delay(100);
+
+    // wait for a connection to be established
+    long startRetry = millis();
+    WS_DEBUG_PRINTLN("CONNECTING");
+    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
+      // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
+      yield();
     }
   }
 
@@ -182,9 +193,9 @@ protected:
   /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
-    delay(300);
+    delay(500);
   }
 };
 
-#endif // ESP8266 Arduino
+#endif // ARDUINO_ARCH_ESP8266
 #endif // WIPPERSNAPPER_ESP8266_H

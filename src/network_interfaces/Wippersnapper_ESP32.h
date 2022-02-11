@@ -23,8 +23,7 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
-#include "WiFiClientSecure.h"
-#include <WiFi.h>
+#include <WiFiClientSecure.h>
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -72,8 +71,7 @@ public:
 
   /**********************************************************/
   /*!
-  @brief  Sets the WiFi client's ssid and password from the
-            esp32's nvs.
+  @brief  Sets the WiFi client's ssid and password.
   */
   /**********************************************************/
   void set_ssid_pass() {
@@ -94,7 +92,7 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Initializes the MQTT client.
+  @brief  Initializes the MQTT client
   @param  clientID
           MQTT client identifier
   */

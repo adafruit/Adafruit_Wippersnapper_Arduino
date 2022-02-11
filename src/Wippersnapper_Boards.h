@@ -59,7 +59,6 @@
 #define NEEDS_STATUS_NEOPIXEL_POWER
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
-#define PIN_I2C_POWER_INVERTED 7
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
 #define BOARD_ID "adafruit-feather-esp32s2-tft"
 #define USE_TINYUSB
@@ -75,17 +74,18 @@
 #define NEEDS_STATUS_NEOPIXEL_POWER
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
-#elif defined(ARDUINO_ARCH_ESP8266)
+#elif defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
 #define USB_VID 0xEA60
 #define USB_PID 0x10C4
 #define BOARD_ID "adafruit-huzzah-8266"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
+#define USE_LITTLEFS
 #elif defined(ARDUINO_FEATHER_ESP32)
 #define BOARD_ID "adafruit-huzzah-32"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
-#define USE_NVS
+#define USE_LITTLEFS
 #elif defined(ARDUINO_SAMD_NANO_33_IOT)
 #define BOARD_ID "nano-33-iot"
 #define USE_STATUS_LED

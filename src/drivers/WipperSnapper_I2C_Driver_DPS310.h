@@ -49,7 +49,7 @@ public:
       @brief    Destructor for an DPS310 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_DPS310() {
+  virtual ~WipperSnapper_I2C_Driver_DPS310() {
     _dps_temp = NULL;
     _tempSensorPeriod = 0L;
     _dps_pressure = NULL;

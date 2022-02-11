@@ -39,13 +39,11 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an I2C sensor.
-      @param    _i2c
-                Instance of the I2C object.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver(TwoWire *_i2c, uint16_t sensorAddress) {
+  WipperSnapper_I2C_Driver(TwoWire *, uint16_t sensorAddress) {
     _sensorAddress = sensorAddress;
   }
 
