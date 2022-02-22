@@ -203,7 +203,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
   if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
     _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
-    if (!_ahtx0->isInitialized) {
+    if (!_ahtx0->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize AHTX0 chip!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
@@ -214,7 +214,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_ahtx0);
   } else if (strcmp("bme280", msgDeviceInitReq->i2c_device_name) == 0) {
     _bme280 = new WipperSnapper_I2C_Driver_BME280(this->_i2c, i2cAddress);
-    if (!_bme280->isInitialized) {
+    if (!_bme280->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize BME280!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
@@ -225,7 +225,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("BME280 Initialized Successfully!");
   } else if (strcmp("dps310", msgDeviceInitReq->i2c_device_name) == 0) {
     _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
-    if (!_dps310->isInitialized) {
+    if (!_dps310->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize DPS310!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
@@ -236,7 +236,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("DPS310 Initialized Successfully!");
   } else if (strcmp("scd30", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd30 = new WipperSnapper_I2C_Driver_SCD30(this->_i2c, i2cAddress);
-    if (!_scd30->isInitialized) {
+    if (!_scd30->isInitialized()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD30!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;

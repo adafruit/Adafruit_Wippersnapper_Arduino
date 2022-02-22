@@ -655,9 +655,11 @@ public:
     setSensorAltitudePeriod(period);
   }
 
-  uint16_t sensorAddress;  ///< The I2C driver's unique I2C address.
-  bool isInitialized; ///< Whether the I2C driver was successfully initialized
+  uint16_t sensorAddress;     ///< The I2C device's unique I2C address.
+
 protected:
+  bool _isInitialized = false; ///< True if the I2C device was initialized
+                               ///< successfully, False otherwise.
   long _tempSensorPeriod =
       0L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =
