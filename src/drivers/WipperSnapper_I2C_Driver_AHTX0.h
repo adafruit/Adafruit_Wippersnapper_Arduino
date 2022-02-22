@@ -40,7 +40,7 @@ public:
   WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
     sensorAddress = sensorAddress;
-    _isInitialized = _aht.begin(_i2c);
+    isInitialized = _aht.begin(_i2c);
   }
 
   /*******************************************************************************/
