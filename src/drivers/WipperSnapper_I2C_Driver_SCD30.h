@@ -38,7 +38,6 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_SCD30(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(SCD30);
     _sensorAddress = sensorAddress;
     _isInitialized = _scd30.begin((uint8_t)_sensorAddress, _i2c);
   }
@@ -52,7 +51,6 @@ public:
     _tempSensorPeriod = 0L;
     _pressureSensorPeriod = 0L;
     _CO2SensorPeriod = 0L;
-    setDriverType(UNSPECIFIED);
   }
 
   /*******************************************************************************/

@@ -18,16 +18,6 @@
 
 #include <Adafruit_Sensor.h>
 
-/** Types of I2C drivers, corresponds to Driver_CLASSNAME.h */
-typedef enum {
-  UNSPECIFIED, // Unspecified/undefined i2c device driver.
-  AHTX0,       // AHTX0 device driver
-  DPS310,      // DPS310 device driver
-  SCD30,       // SCD30 device driver
-  PM25AQI,     // PM25AQI device driver
-  BME280       // BME280 device driver
-} DriverType_t;
-
 /**************************************************************************/
 /*!
     @brief  Base class for I2C Drivers.
@@ -120,15 +110,6 @@ public:
   */
   /*******************************************************************************/
   uint16_t sensorAddress() { return _sensorAddress; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets the device driver's DriverType property.
-      @param    type
-                I2C device driver type
-  */
-  /*******************************************************************************/
-  void setDriverType(DriverType_t type) { driverType = type; }
 
   /****************************** SENSOR_TYPE: CO2
    * *******************************/
@@ -682,7 +663,6 @@ public:
     setSensorAltitudePeriod(period);
   }
 
-  DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.

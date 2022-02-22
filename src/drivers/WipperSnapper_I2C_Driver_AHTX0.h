@@ -39,7 +39,6 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(AHTX0); // sets the type of I2C_Driver
     _sensorAddress = sensorAddress;
     _isInitialized = _aht.begin(_i2c);
   }
@@ -54,7 +53,6 @@ public:
     _tempSensorPeriod = 0L;
     _aht_humidity = NULL;
     _humidSensorPeriod = 0L;
-    setDriverType(UNSPECIFIED);
   }
 
   /*******************************************************************************/

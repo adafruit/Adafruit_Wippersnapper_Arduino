@@ -41,7 +41,6 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_BME280(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(BME280); // sets the type of I2C_Driver
     _isInitialized = _bme.begin(sensorAddress, _i2c);
   }
 
@@ -58,7 +57,6 @@ public:
     _humidSensorPeriod = 0.0L;
     _pressureSensorPeriod = 0.0L;
     _altitudeSensorPeriod = 0.0L;
-    setDriverType(UNSPECIFIED);
   }
 
   /*******************************************************************************/

@@ -39,7 +39,6 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_DPS310(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(DPS310);
     _sensorAddress = sensorAddress;
     _isInitialized = _dps310.begin_I2C((uint8_t)_sensorAddress, _i2c);
   }
@@ -54,7 +53,6 @@ public:
     _tempSensorPeriod = 0L;
     _dps_pressure = NULL;
     _pressureSensorPeriod = 0L;
-    setDriverType(UNSPECIFIED);
   }
 
   /*******************************************************************************/
