@@ -41,6 +41,7 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_BME280(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
+    setI2CAddress(sensorAddress);
     _isInitialized = _bme.begin(sensorAddress, _i2c);
   }
 

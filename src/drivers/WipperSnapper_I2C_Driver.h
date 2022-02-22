@@ -105,11 +105,20 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Sets the I2C device's address.
+      @param    i2cAddress
+                The I2C device's unique address.
+  */
+  /*******************************************************************************/
+  void setI2CAddress(uint16_t i2cAddress) { _sensorAddress = i2cAddress; }
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the I2C device's address.
       @returns  The I2C device's unique i2c address.
   */
   /*******************************************************************************/
-  uint16_t sensorAddress() { return _sensorAddress; }
+  uint16_t getI2CAddress() { return _sensorAddress; }
 
   /****************************** SENSOR_TYPE: CO2
    * *******************************/
