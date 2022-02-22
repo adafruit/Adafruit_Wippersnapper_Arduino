@@ -95,14 +95,6 @@ public:
     }
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the initialization status of an I2C driver.
-      @returns  True if I2C device is initialized successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool isInitialized() { return _isInitialized; }
-
   /****************************** SENSOR_TYPE: CO2
    * *******************************/
   /*******************************************************************************/
