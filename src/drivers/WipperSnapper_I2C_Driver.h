@@ -34,7 +34,7 @@ public:
   */
   /*******************************************************************************/
   WipperSnapper_I2C_Driver(TwoWire *, uint16_t sensorAddress) {
-    _sensorAddress = sensorAddress;
+    sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -42,7 +42,7 @@ public:
       @brief    Destructor for an I2C sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver() { _sensorAddress = 0; }
+  ~WipperSnapper_I2C_Driver() { sensorAddress = 0; }
 
   /*******************************************************************************/
   /*!
@@ -102,14 +102,6 @@ public:
   */
   /*******************************************************************************/
   bool isInitialized() { return _isInitialized; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the I2C device's address.
-      @returns  The I2C device's unique i2c address.
-  */
-  /*******************************************************************************/
-  uint16_t sensorAddress() { return _sensorAddress; }
 
   /****************************** SENSOR_TYPE: CO2
    * *******************************/
@@ -663,10 +655,11 @@ public:
     setSensorAltitudePeriod(period);
   }
 
+  uint16_t sensorAddress;     ///< The I2C device's unique I2C address.
+
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.
-  uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
   long _tempSensorPeriod =
       0L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =

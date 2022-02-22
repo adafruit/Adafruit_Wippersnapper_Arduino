@@ -268,7 +268,7 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
 
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
-    if (drivers[i]->sensorAddress() == i2cAddress) {
+    if (drivers[i]->sensorAddress == i2cAddress) {
       // Update the properties of each driver
       for (int j = 0; j < msgDeviceUpdateReq->i2c_device_properties_count;
            j++) {
@@ -317,7 +317,7 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_device_address;
   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
-    if (drivers[i]->sensorAddress() == deviceAddr) {
+    if (drivers[i]->sensorAddress == deviceAddr) {
       // TODO: We might want to call the deinit methods for the individual
       // driver from here!! This methods simply erases the driver from the
       // vector, but the object should be deleted first..
@@ -427,7 +427,7 @@ void WipperSnapper_Component_I2C::update() {
             (*iter)->sensorAmbientTemperaturePeriod()) {
       if ((*iter)->getEventAmbientTemperature(&event)) {
         WS_DEBUG_PRINT("Sensor 0x");
-        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress);
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(event.temperature);
@@ -452,7 +452,7 @@ void WipperSnapper_Component_I2C::update() {
             (*iter)->sensorRelativeHumidityPeriod()) {
       if ((*iter)->getEventRelativeHumidity(&event)) {
         WS_DEBUG_PRINT("Sensor 0x");
-        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress);
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tHumidity: ");
         WS_DEBUG_PRINT(event.relative_humidity);
@@ -476,7 +476,7 @@ void WipperSnapper_Component_I2C::update() {
             (*iter)->sensorPressurePeriod()) {
       if ((*iter)->getEventPressure(&event)) {
         WS_DEBUG_PRINT("Sensor 0x");
-        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress);
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tPressure: ");
         WS_DEBUG_PRINT(event.pressure);
@@ -498,7 +498,7 @@ void WipperSnapper_Component_I2C::update() {
         curTime - (*iter)->sensorCO2PeriodPrv() > (*iter)->sensorCO2Period()) {
       if ((*iter)->getEventCO2(&event)) {
         WS_DEBUG_PRINT("Sensor 0x");
-        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress);
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tCO2: ");
         WS_DEBUG_PRINT(event.data[0]);
@@ -519,7 +519,7 @@ void WipperSnapper_Component_I2C::update() {
             (*iter)->sensorAltitudePeriod()) {
       if ((*iter)->getEventAltitude(&event)) {
         WS_DEBUG_PRINT("Sensor 0x");
-        WS_DEBUG_PRINTHEX((*iter)->sensorAddress());
+        WS_DEBUG_PRINTHEX((*iter)->sensorAddress);
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tAltitude: ");
         WS_DEBUG_PRINT(event.data[0]);
@@ -541,7 +541,7 @@ void WipperSnapper_Component_I2C::update() {
 
     // Encode and publish I2CDeviceEvent message
     if (!encodePublishI2CDeviceEventMsg(&msgi2cResponse,
-                                        (*iter)->sensorAddress())) {
+                                        (*iter)->sensorAddress)) {
       WS_DEBUG_PRINTLN("ERROR: Failed to encode and publish I2CDeviceEvent!");
       continue;
     }
