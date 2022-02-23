@@ -316,6 +316,11 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_device_address;
 
   std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
+  WS_DEBUG_PRINT("Addrs: ");
+  for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
+      WS_DEBUG_PRINTLN((*iter)->getI2CAddress());
+  }
+
   for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
       if ((*iter)->getI2CAddress() == deviceAddr) {
           // https://www.fluentcpp.com/2018/09/18/how-to-remove-pointers-from-a-vector-in-cpp/
@@ -326,7 +331,12 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
           WS_DEBUG_PRINTLN("I2C Device De-initialized!");
       }
   }
-  
+
+  WS_DEBUG_PRINT("Addrs: ");
+  for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
+      WS_DEBUG_PRINTLN((*iter)->getI2CAddress());
+  }
+
 /*   // Loop thru vector of drivers to find the unique address
   for (int i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getI2CAddress() == deviceAddr) {
