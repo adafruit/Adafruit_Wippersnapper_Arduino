@@ -317,14 +317,20 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
   std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
 
   for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
-      if ((*iter)->getI2CAddress() == deviceAddr) {
-          // Delete the object that iter points to
-          delete *iter;
-          // Erase–remove iter ptr from driver vector
-          *iter = nullptr;
-          drivers.erase(std::remove(drivers.begin(), drivers.end(), nullptr), drivers.end());
-          WS_DEBUG_PRINTLN("I2C Device De-initialized!");
-      }
+    if ((*iter)->getI2CAddress() == deviceAddr) {
+      // Delete the object that iter points to
+      delete *iter;
+// ESP-IDF, Erase–remove iter ptr from driver vector
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+      *iter = nullptr;
+      drivers.erase(remove(drivers.begin(), drivers.end(), nullptr),
+                    drivers.end());
+#else
+      // Arduino can not erase-remove, erase only
+      drivers.erase(iter);
+#endif
+      WS_DEBUG_PRINTLN("I2C Device De-initialized!");
+    }
   }
   _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 }
