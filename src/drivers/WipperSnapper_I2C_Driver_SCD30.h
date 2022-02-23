@@ -38,9 +38,9 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_SCD30(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(SCD30);
-    _sensorAddress = sensorAddress;
-    _isInitialized = _scd30.begin((uint8_t)_sensorAddress, _i2c);
+    setI2CAddress(sensorAddress);
+    _scd30 = new Adafruit_SCD30();
+    _isInitialized = _scd30->begin((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
@@ -48,12 +48,7 @@ public:
       @brief    Destructor for an SCD30 sensor.
   */
   /*******************************************************************************/
-  virtual ~WipperSnapper_I2C_Driver_SCD30() {
-    _tempSensorPeriod = 0L;
-    _pressureSensorPeriod = 0L;
-    _CO2SensorPeriod = 0L;
-    setDriverType(UNSPECIFIED);
-  }
+  ~WipperSnapper_I2C_Driver_SCD30() { delete _scd30; }
 
   /*******************************************************************************/
   /*!
@@ -66,12 +61,12 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
-    if (_tempSensorPeriod != 0 && (!_scd30.dataReady()))
+    if (_tempSensorPeriod != 0 && (!_scd30->dataReady()))
       return false;
 
     // attempt to get temperature data
     sensors_event_t humidEvent;
-    if (!_scd30.getEvent(&humidEvent, tempEvent))
+    if (!_scd30->getEvent(&humidEvent, tempEvent))
       return false;
 
     return true;
@@ -88,12 +83,12 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
-    if (_humidSensorPeriod != 0 && (!_scd30.dataReady()))
+    if (_humidSensorPeriod != 0 && (!_scd30->dataReady()))
       return false;
 
     // attempt to get temperature data
     sensors_event_t tempEvent;
-    if (!_scd30.getEvent(humidEvent, &tempEvent))
+    if (!_scd30->getEvent(humidEvent, &tempEvent))
       return false;
 
     return true;
@@ -110,16 +105,16 @@ public:
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
     // check if sensor is enabled and data is available
-    if (_CO2SensorPeriod != 0 && (!_scd30.dataReady()))
+    if (_CO2SensorPeriod != 0 && (!_scd30->dataReady()))
       return false;
     // TODO: This is a TEMPORARY HACK, we need to add CO2 type to
     // adafruit_sensor
-    co2Event->data[0] = _scd30.CO2;
+    co2Event->data[0] = _scd30->CO2;
     return true;
   }
 
 protected:
-  Adafruit_SCD30 _scd30; ///< SCD30 driver object
+  Adafruit_SCD30 *_scd30; ///< SCD30 driver object
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD30

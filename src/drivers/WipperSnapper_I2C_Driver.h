@@ -18,16 +18,6 @@
 
 #include <Adafruit_Sensor.h>
 
-/** Types of I2C drivers, corresponds to Driver_CLASSNAME.h */
-typedef enum {
-  UNSPECIFIED, // Unspecified/undefined i2c device driver.
-  AHTX0,       // AHTX0 device driver
-  DPS310,      // DPS310 device driver
-  SCD30,       // SCD30 device driver
-  PM25AQI,     // PM25AQI device driver
-  BME280       // BME280 device driver
-} DriverType_t;
-
 /**************************************************************************/
 /*!
     @brief  Base class for I2C Drivers.
@@ -115,20 +105,20 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Sets the I2C device's address.
+      @param    i2cAddress
+                The I2C device's unique address.
+  */
+  /*******************************************************************************/
+  void setI2CAddress(uint16_t i2cAddress) { _sensorAddress = i2cAddress; }
+
+  /*******************************************************************************/
+  /*!
       @brief    Gets the I2C device's address.
       @returns  The I2C device's unique i2c address.
   */
   /*******************************************************************************/
-  uint16_t sensorAddress() { return _sensorAddress; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets the device driver's DriverType property.
-      @param    type
-                I2C device driver type
-  */
-  /*******************************************************************************/
-  void setDriverType(DriverType_t type) { driverType = type; }
+  uint16_t getI2CAddress() { return _sensorAddress; }
 
   /****************************** SENSOR_TYPE: CO2
    * *******************************/
@@ -682,7 +672,6 @@ public:
     setSensorAltitudePeriod(period);
   }
 
-  DriverType_t driverType = UNSPECIFIED; ///< The type of I2C driver.
 protected:
   bool _isInitialized = false; ///< True if the I2C device was initialized
                                ///< successfully, False otherwise.

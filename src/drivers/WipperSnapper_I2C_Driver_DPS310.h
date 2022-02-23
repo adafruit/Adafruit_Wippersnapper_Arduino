@@ -39,9 +39,9 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_DPS310(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(DPS310);
-    _sensorAddress = sensorAddress;
-    _isInitialized = _dps310.begin_I2C((uint8_t)_sensorAddress, _i2c);
+    setI2CAddress(sensorAddress);
+    _dps310 = new Adafruit_DPS310();
+    _isInitialized = _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
@@ -49,13 +49,7 @@ public:
       @brief    Destructor for an DPS310 sensor.
   */
   /*******************************************************************************/
-  virtual ~WipperSnapper_I2C_Driver_DPS310() {
-    _dps_temp = NULL;
-    _tempSensorPeriod = 0L;
-    _dps_pressure = NULL;
-    _pressureSensorPeriod = 0L;
-    setDriverType(UNSPECIFIED);
-  }
+  ~WipperSnapper_I2C_Driver_DPS310() { delete _dps310; }
 
   /*******************************************************************************/
   /*!
@@ -64,8 +58,8 @@ public:
   */
   /*******************************************************************************/
   void enableSensorAmbientTemperature() {
-    _dps310.configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_temp = _dps310.getTemperatureSensor();
+    _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps_temp = _dps310->getTemperatureSensor();
   }
 
   /*******************************************************************************/
@@ -74,8 +68,8 @@ public:
   */
   /*******************************************************************************/
   void enableSensorPressure() {
-    _dps310.configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_pressure = _dps310.getPressureSensor();
+    _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps_pressure = _dps310->getPressureSensor();
   }
 
   /*******************************************************************************/
@@ -146,7 +140,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    if (_dps_temp != NULL && _dps310.temperatureAvailable()) {
+    if (_dps_temp != NULL && _dps310->temperatureAvailable()) {
       _dps_temp->getEvent(tempEvent);
       return true;
     }
@@ -163,7 +157,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_dps_pressure != NULL && _dps310.pressureAvailable()) {
+    if (_dps_pressure != NULL && _dps310->pressureAvailable()) {
       _dps_pressure->getEvent(pressureEvent);
       return true;
     }
@@ -171,7 +165,7 @@ public:
   }
 
 protected:
-  Adafruit_DPS310 _dps310; ///< DPS310 driver object
+  Adafruit_DPS310 *_dps310; ///< DPS310 driver object
   Adafruit_Sensor *_dps_temp =
       NULL; ///< Holds data for the DPS310's temperature sensor
   Adafruit_Sensor *_dps_pressure =

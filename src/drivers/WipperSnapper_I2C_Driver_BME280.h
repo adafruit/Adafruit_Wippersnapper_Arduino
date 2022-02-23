@@ -41,8 +41,9 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_BME280(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setDriverType(BME280); // sets the type of I2C_Driver
-    _isInitialized = _bme.begin(sensorAddress, _i2c);
+    setI2CAddress(sensorAddress);
+    _bme = new Adafruit_BME280();
+    _isInitialized = _bme->begin(sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
@@ -50,16 +51,7 @@ public:
       @brief    Destructor for an BME280 sensor.
   */
   /*******************************************************************************/
-  virtual ~WipperSnapper_I2C_Driver_BME280() {
-    _bme_temp = NULL;
-    _bme_humidity = NULL;
-    _bme_pressure = NULL;
-    _tempSensorPeriod = 0.0L;
-    _humidSensorPeriod = 0.0L;
-    _pressureSensorPeriod = 0.0L;
-    _altitudeSensorPeriod = 0.0L;
-    setDriverType(UNSPECIFIED);
-  }
+  ~WipperSnapper_I2C_Driver_BME280() { delete _bme; }
 
   /*******************************************************************************/
   /*!
@@ -67,7 +59,7 @@ public:
   */
   /*******************************************************************************/
   void enableSensorAmbientTemperature() {
-    _bme_temp = _bme.getTemperatureSensor();
+    _bme_temp = _bme->getTemperatureSensor();
   }
 
   /*******************************************************************************/
@@ -76,7 +68,7 @@ public:
   */
   /*******************************************************************************/
   void enableSensorRelativeHumidity() {
-    _bme_humidity = _bme.getHumiditySensor();
+    _bme_humidity = _bme->getHumiditySensor();
   }
 
   /*******************************************************************************/
@@ -84,7 +76,7 @@ public:
       @brief    Enables the BME280's humidity sensor.
   */
   /*******************************************************************************/
-  void enableSensorPressure() { _bme_pressure = _bme.getPressureSensor(); }
+  void enableSensorPressure() { _bme_pressure = _bme->getPressureSensor(); }
 
   /*******************************************************************************/
   /*!
@@ -230,12 +222,12 @@ public:
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     // TODO: Note, this is a hack into Adafruit_Sensor, we should really add an
     // altitude sensor type
-    altitudeEvent->data[0] = _bme.readAltitude(SEALEVELPRESSURE_HPA);
+    altitudeEvent->data[0] = _bme->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
 
 protected:
-  Adafruit_BME280 _bme; ///< BME280  object
+  Adafruit_BME280 *_bme; ///< BME280  object
   Adafruit_Sensor *_bme_temp =
       NULL; ///< Ptr to an adafruit_sensor representing the temperature
   Adafruit_Sensor *_bme_pressure =
