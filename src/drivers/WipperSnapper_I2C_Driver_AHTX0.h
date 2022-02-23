@@ -40,19 +40,12 @@ public:
   WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
     setI2CAddress(sensorAddress);
-    _isInitialized = _aht.begin(_i2c);
+    _aht = new Adafruit_AHTX0();
+    _isInitialized = _aht->begin(_i2c);
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Destructor for an AHTX0 sensor.
-  */
-  /*******************************************************************************/
   virtual ~WipperSnapper_I2C_Driver_AHTX0() {
-    _aht_temp = NULL;
-    _tempSensorPeriod = 0L;
-    _aht_humidity = NULL;
-    _humidSensorPeriod = 0L;
+    delete _aht;
   }
 
   /*******************************************************************************/
@@ -61,7 +54,7 @@ public:
   */
   /*******************************************************************************/
   void enableSensorAmbientTemperature() {
-    _aht_temp = _aht.getTemperatureSensor();
+    _aht_temp = _aht->getTemperatureSensor();
   }
 
   /*******************************************************************************/
@@ -70,7 +63,7 @@ public:
   */
   /*******************************************************************************/
   void enableSensorRelativeHumidity() {
-    _aht_humidity = _aht.getHumiditySensor();
+    _aht_humidity = _aht->getHumiditySensor();
   }
 
   /*******************************************************************************/
@@ -130,7 +123,7 @@ public:
   }
 
 protected:
-  Adafruit_AHTX0 _aht; ///< AHTX0 driver object
+  Adafruit_AHTX0 *_aht; ///< Pointer to an AHTX0 object
   Adafruit_Sensor *_aht_temp =
       NULL; ///< Holds data for the AHTX0's temperature sensor
   Adafruit_Sensor *_aht_humidity =
