@@ -200,8 +200,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
   WS_DEBUG_PRINTLN("Attempting to initialize an I2C device...");
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
-  WS_DEBUG_PRINT("FREE HEAP: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
     _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
     if (!_ahtx0->isInitialized()) {
@@ -253,8 +251,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     return false;
   }
   _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
-  WS_DEBUG_PRINT("FREE HEAP: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   return true;
 }
 
@@ -332,8 +328,6 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_DEINIT_FAIL;
     }
   }
-  WS_DEBUG_PRINT("FREE HEAP: ");
-  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 }
 
