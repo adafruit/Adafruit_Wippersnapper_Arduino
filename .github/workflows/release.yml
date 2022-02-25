@@ -27,6 +27,7 @@ jobs:
           files: |
                   wippersnapper.*.uf2
                   wippersnapper.*.bin
+                  wippersnapper.*.zip
 
   build-esp32s2:
     name: Build WipperSnapper ESP32-S2
@@ -223,12 +224,17 @@ jobs:
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
-    - name: upload build artifacts
+            mv examples/*/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
+            mv examples/*/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
+    - name: Zip build artifacts
+      run : |
+            zip -r examples/*/build/*/wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip examples/*/build/*/Wippersnapper_demo/*
+    - name: upload build artifacts zip
       uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
-            wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+            examples/*/build/*/wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
 
   clang_and_doxy:
