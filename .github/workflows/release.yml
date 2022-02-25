@@ -228,13 +228,13 @@ jobs:
             mv examples/*/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
     - name: Zip build artifacts
       run : |
-            zip -r examples/*/build/*/wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip examples/*/build/*/Wippersnapper_demo/*
+            zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
     - name: upload build artifacts zip
       uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
-            examples/*/build/*/wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
+            wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
 
   clang_and_doxy:
