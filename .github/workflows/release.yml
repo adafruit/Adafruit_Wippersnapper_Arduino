@@ -107,13 +107,20 @@ jobs:
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/Wippersnapper_demo/build/esp32.esp32.*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
-    - name: upload build artifacts
+            mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+            mv examples/*/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
+            mv examples/*/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
+            mv examples/*/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
+            mv examples/*/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
+    - name: Zip build artifacts
+      run : |
+            zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
+    - name: upload build artifacts zip
       uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
-            wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
-
+            wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
   build-samd:
     name: Build WipperSnapper SAMD
