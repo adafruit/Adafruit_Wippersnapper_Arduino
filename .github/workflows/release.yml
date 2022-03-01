@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["esp32"]
+        arduino-platform: ["esp32", "feather_esp32_v2"]
     steps:
     - uses: actions/setup-python@v1
       with:
