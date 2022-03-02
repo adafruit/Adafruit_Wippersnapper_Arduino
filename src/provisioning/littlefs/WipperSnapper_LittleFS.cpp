@@ -12,7 +12,9 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_FEATHER_ESP32) || defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
+#if defined(ARDUINO_FEATHER_ESP32) ||                                          \
+    defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) ||                                \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
 #include "WipperSnapper_LittleFS.h"
 
 /**************************************************************************/
