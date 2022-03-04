@@ -60,7 +60,6 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_wipper_snapper___i2_c___driver-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -87,7 +86,7 @@ Inheritance diagram for WipperSnapper_I2C_Driver:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab68da89eb8621fa888207d6bbed664c2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ab68da89eb8621fa888207d6bbed664c2">WipperSnapper_I2C_Driver</a> (TwoWire *, uint16_t <a class="el" href="class_wipper_snapper___i2_c___driver.html#a5a5936e4d7eee2e21b72d256fedf1694">sensorAddress</a>)</td></tr>
+<tr class="memitem:ab68da89eb8621fa888207d6bbed664c2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ab68da89eb8621fa888207d6bbed664c2">WipperSnapper_I2C_Driver</a> (TwoWire *, uint16_t sensorAddress)</td></tr>
 <tr class="memdesc:ab68da89eb8621fa888207d6bbed664c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for an I2C sensor.  <a href="#ab68da89eb8621fa888207d6bbed664c2">More...</a><br /></td></tr>
 <tr class="separator:ab68da89eb8621fa888207d6bbed664c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bc2b4e05f37d05738c154da391acb2e"><td class="memItemLeft" align="right" valign="top"><a id="a5bc2b4e05f37d05738c154da391acb2e"></a>
@@ -100,12 +99,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5221855537a1daeebd31ff5d530dd8a4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5221855537a1daeebd31ff5d530dd8a4">isInitialized</a> ()</td></tr>
 <tr class="memdesc:a5221855537a1daeebd31ff5d530dd8a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the initialization status of an I2C driver.  <a href="#a5221855537a1daeebd31ff5d530dd8a4">More...</a><br /></td></tr>
 <tr class="separator:a5221855537a1daeebd31ff5d530dd8a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a5936e4d7eee2e21b72d256fedf1694"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5a5936e4d7eee2e21b72d256fedf1694">sensorAddress</a> ()</td></tr>
-<tr class="memdesc:a5a5936e4d7eee2e21b72d256fedf1694"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C device's address.  <a href="#a5a5936e4d7eee2e21b72d256fedf1694">More...</a><br /></td></tr>
-<tr class="separator:a5a5936e4d7eee2e21b72d256fedf1694"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5edcae640b5231c164d1ff37235051d5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5edcae640b5231c164d1ff37235051d5">setDriverType</a> (<a class="el" href="_wipper_snapper___i2_c___driver_8h.html#a66a2de23f80608959fb901d48f2c9cc5">DriverType_t</a> type)</td></tr>
-<tr class="memdesc:a5edcae640b5231c164d1ff37235051d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the device driver's DriverType property.  <a href="#a5edcae640b5231c164d1ff37235051d5">More...</a><br /></td></tr>
-<tr class="separator:a5edcae640b5231c164d1ff37235051d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae61240ed8985fed7374f15d3c019d648"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae61240ed8985fed7374f15d3c019d648">setI2CAddress</a> (uint16_t i2cAddress)</td></tr>
+<tr class="memdesc:ae61240ed8985fed7374f15d3c019d648"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the I2C device's address.  <a href="#ae61240ed8985fed7374f15d3c019d648">More...</a><br /></td></tr>
+<tr class="separator:ae61240ed8985fed7374f15d3c019d648"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef9934f4bbcf8faee9a9ce4371ae5988"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aef9934f4bbcf8faee9a9ce4371ae5988">getI2CAddress</a> ()</td></tr>
+<tr class="memdesc:aef9934f4bbcf8faee9a9ce4371ae5988"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C device's address.  <a href="#aef9934f4bbcf8faee9a9ce4371ae5988">More...</a><br /></td></tr>
+<tr class="separator:aef9934f4bbcf8faee9a9ce4371ae5988"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43c57f53b5c319716148099c886915f5"><td class="memItemLeft" align="right" valign="top"><a id="a43c57f53b5c319716148099c886915f5"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a43c57f53b5c319716148099c886915f5">enableSensorCO2</a> ()</td></tr>
 <tr class="memdesc:a43c57f53b5c319716148099c886915f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's CO2 sensor, if it exists. <br /></td></tr>
@@ -272,13 +271,6 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memdesc:acacb9e18123956905c7f0c7125e80543"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a Altitude sensor.  <a href="#acacb9e18123956905c7f0c7125e80543">More...</a><br /></td></tr>
 <tr class="separator:acacb9e18123956905c7f0c7125e80543"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a4a684f7f2eab33ac8a4093fe3b4e5322"><td class="memItemLeft" align="right" valign="top"><a id="a4a684f7f2eab33ac8a4093fe3b4e5322"></a>
-<a class="el" href="_wipper_snapper___i2_c___driver_8h.html#a66a2de23f80608959fb901d48f2c9cc5">DriverType_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a4a684f7f2eab33ac8a4093fe3b4e5322">driverType</a> = UNSPECIFIED</td></tr>
-<tr class="memdesc:a4a684f7f2eab33ac8a4093fe3b4e5322"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of I2C driver. <br /></td></tr>
-<tr class="separator:a4a684f7f2eab33ac8a4093fe3b4e5322"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a85c296e306989d20c327c9cae78c99d6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a85c296e306989d20c327c9cae78c99d6">_isInitialized</a> = false</td></tr>
@@ -429,8 +421,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="a5a5936e4d7eee2e21b72d256fedf1694"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5a5936e4d7eee2e21b72d256fedf1694">&#9670;&nbsp;</a></span>sensorAddress()</h2>
+<a id="ae61240ed8985fed7374f15d3c019d648"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae61240ed8985fed7374f15d3c019d648">&#9670;&nbsp;</a></span>setI2CAddress()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -439,7 +431,41 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t WipperSnapper_I2C_Driver::sensorAddress </td>
+          <td class="memname">void WipperSnapper_I2C_Driver::setI2CAddress </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>i2cAddress</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the I2C device's address. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">i2cAddress</td><td>The I2C device's unique address. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aef9934f4bbcf8faee9a9ce4371ae5988"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef9934f4bbcf8faee9a9ce4371ae5988">&#9670;&nbsp;</a></span>getI2CAddress()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t WipperSnapper_I2C_Driver::getI2CAddress </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -454,40 +480,6 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 <p>Gets the I2C device's address. </p>
 <dl class="section return"><dt>Returns</dt><dd>The I2C device's unique i2c address. </dd></dl>
-
-</div>
-</div>
-<a id="a5edcae640b5231c164d1ff37235051d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5edcae640b5231c164d1ff37235051d5">&#9670;&nbsp;</a></span>setDriverType()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setDriverType </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="_wipper_snapper___i2_c___driver_8h.html#a66a2de23f80608959fb901d48f2c9cc5">DriverType_t</a>&#160;</td>
-          <td class="paramname"><em>type</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Sets the device driver's DriverType property. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">type</td><td>I2C device driver type </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>

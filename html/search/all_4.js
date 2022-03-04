@@ -15,7 +15,5 @@ var searchData=
   ['disablesensorgas',['disableSensorGas',['../class_wipper_snapper___i2_c___driver.html#adc0163f653a4944cb1cc30b7007636bc',1,'WipperSnapper_I2C_Driver']]],
   ['disablesensorpressure',['disableSensorPressure',['../class_wipper_snapper___i2_c___driver.html#aa36b6e30db9cf31ed11591bb156e22b3',1,'WipperSnapper_I2C_Driver::disableSensorPressure()'],['../class_wipper_snapper___i2_c___driver___b_m_e280.html#a22d9de165d428b485d35943a6784e92e',1,'WipperSnapper_I2C_Driver_BME280::disableSensorPressure()'],['../class_wipper_snapper___i2_c___driver___d_p_s310.html#aeb571e76f9fdeec937bfe7ea053c803c',1,'WipperSnapper_I2C_Driver_DPS310::disableSensorPressure()']]],
   ['disablesensorrelativehumidity',['disableSensorRelativeHumidity',['../class_wipper_snapper___i2_c___driver.html#abf9768a71ff638ae3da51a5d76cd93c0',1,'WipperSnapper_I2C_Driver::disableSensorRelativeHumidity()'],['../class_wipper_snapper___i2_c___driver___a_h_t_x0.html#aae830612bcea311bc9b76eecdac937ca',1,'WipperSnapper_I2C_Driver_AHTX0::disableSensorRelativeHumidity()'],['../class_wipper_snapper___i2_c___driver___b_m_e280.html#a4c01b4ea204b6c0e2e3cf8ddf9e55ae4',1,'WipperSnapper_I2C_Driver_BME280::disableSensorRelativeHumidity()']]],
-  ['disconnect',['disconnect',['../class_wippersnapper.html#ac5a3bd86f73d2cbe07b4ae587a3fa2ce',1,'Wippersnapper']]],
-  ['drivertype',['driverType',['../class_wipper_snapper___i2_c___driver.html#a4a684f7f2eab33ac8a4093fe3b4e5322',1,'WipperSnapper_I2C_Driver']]],
-  ['drivertype_5ft',['DriverType_t',['../_wipper_snapper___i2_c___driver_8h.html#a66a2de23f80608959fb901d48f2c9cc5',1,'WipperSnapper_I2C_Driver.h']]]
+  ['disconnect',['disconnect',['../class_wippersnapper.html#ac5a3bd86f73d2cbe07b4ae587a3fa2ce',1,'Wippersnapper']]]
 ];

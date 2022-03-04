@@ -2,7 +2,6 @@ var searchData=
 [
   ['scanaddresses',['scanAddresses',['../class_wipper_snapper___component___i2_c.html#a19937e439840bb1586721fbf975bbccc',1,'WipperSnapper_Component_I2C']]],
   ['sealevelpressure_5fhpa',['SEALEVELPRESSURE_HPA',['../_wipper_snapper___i2_c___driver___b_m_e280_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'WipperSnapper_I2C_Driver_BME280.h']]],
-  ['sensoraddress',['sensorAddress',['../class_wipper_snapper___i2_c___driver.html#a5a5936e4d7eee2e21b72d256fedf1694',1,'WipperSnapper_I2C_Driver']]],
   ['sensoraltitudeperiod',['sensorAltitudePeriod',['../class_wipper_snapper___i2_c___driver.html#aafd39c3fb7e8f2edbc085012d3513aa0',1,'WipperSnapper_I2C_Driver']]],
   ['sensoraltitudeperiodprv',['sensorAltitudePeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a60250078546ddad17fdb1531e94b895c',1,'WipperSnapper_I2C_Driver']]],
   ['sensorambienttemperatureperiod',['sensorAmbientTemperaturePeriod',['../class_wipper_snapper___i2_c___driver.html#a8654d93df09231acbce0b1146b9e8445',1,'WipperSnapper_I2C_Driver']]],
@@ -21,7 +20,7 @@ var searchData=
   ['set_5fwifi',['set_wifi',['../class_wippersnapper___a_i_r_l_i_f_t.html#aab1d7de6deaed143f3cbdaf85ec46294',1,'Wippersnapper_AIRLIFT::set_wifi()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#aeb13046386ec0dd146153fec95845eea',1,'Wippersnapper_WIFININA::set_wifi()']]],
   ['setadcresolution',['setADCResolution',['../class_wippersnapper___analog_i_o.html#a883d16afad81abb3b8fe6398427580cb',1,'Wippersnapper_AnalogIO']]],
   ['setaref',['setAref',['../class_wippersnapper___analog_i_o.html#ae715f810b324c90bca4d4bc2dbccb408',1,'Wippersnapper_AnalogIO']]],
-  ['setdrivertype',['setDriverType',['../class_wipper_snapper___i2_c___driver.html#a5edcae640b5231c164d1ff37235051d5',1,'WipperSnapper_I2C_Driver']]],
+  ['seti2caddress',['setI2CAddress',['../class_wipper_snapper___i2_c___driver.html#ae61240ed8985fed7374f15d3c019d648',1,'WipperSnapper_I2C_Driver']]],
   ['setsensoraltitudeperiod',['setSensorAltitudePeriod',['../class_wipper_snapper___i2_c___driver.html#ae457c2bc83ac98b0c16a9d7c861a7a19',1,'WipperSnapper_I2C_Driver']]],
   ['setsensoraltitudeperiodprv',['setSensorAltitudePeriodPrv',['../class_wipper_snapper___i2_c___driver.html#ad7fd39911d1fa8ef911cd56a7ef46859',1,'WipperSnapper_I2C_Driver']]],
   ['setsensorambienttemperatureperiod',['setSensorAmbientTemperaturePeriod',['../class_wipper_snapper___i2_c___driver.html#a56e7952de953be3f3e658420dd664d0f',1,'WipperSnapper_I2C_Driver']]],

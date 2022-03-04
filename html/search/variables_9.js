@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['throttlemessage',['throttleMessage',['../class_wippersnapper.html#a4143bb10fd2cc88f19c79cfc61cbf16f',1,'Wippersnapper']]],
-  ['throttletime',['throttleTime',['../class_wippersnapper.html#a192df644cf517a81649fe5a4f8b32d4b',1,'Wippersnapper']]],
-  ['totaldigitalpins',['totalDigitalPins',['../class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6',1,'Wippersnapper']]]
+  ['ws',['WS',['../_wippersnapper___analog_i_o_8h.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wippersnapper___digital_g_p_i_o_8h.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wipper_snapper___i2_c_8h.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wippersnapper___register_8cpp.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wippersnapper___status_l_e_d_8cpp.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wippersnapper___a_i_r_l_i_f_t_8h.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wippersnapper___w_i_f_i_n_i_n_a_8h.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wippersnapper_8cpp.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp'],['../_wippersnapper_8h.html#ae26e6d0526376ae51cce14cce3148855',1,'WS():&#160;Wippersnapper.cpp']]]
 ];

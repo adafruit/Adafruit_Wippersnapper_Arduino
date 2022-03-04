@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['readmode',['readMode',['../structanalog_input_pin.html#a1711479c493472ba42aa40ff7e27808a',1,'analogInputPin']]]
+  ['suid',['sUID',['../class_wippersnapper.html#af14c0ae10d0fd58619add280acf6c461',1,'Wippersnapper']]]
 ];
