@@ -126,7 +126,7 @@ jobs:
       if: steps.check_files.outputs.files_exists == 'true'
       run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
 
-    -- name: boot_app0 file from esp32 source bsp
+    - name: boot_app0 file from esp32 source bsp
       if: steps.check_files.outputs.files_exists == 'false'
       run: mv /home/runner/Arduino/hardware/espressif/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
 
