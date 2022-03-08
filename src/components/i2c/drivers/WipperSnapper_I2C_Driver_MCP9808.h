@@ -6,7 +6,8 @@
 
 class WipperSnapper_I2C_Driver_MCP9808 : public WipperSnapper_I2C_Driver {
 public:
-  WipperSnapper_I2C_Driver_MCP9808(TwoWire *_i2c, uint16_t sensorAddress) : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
+  WipperSnapper_I2C_Driver_MCP9808(TwoWire *_i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
     // Called when a MCP9808 component is created
     setI2CAddress(sensorAddress); // sets the driver's I2C address
     _mcp9808 = new Adafruit_MCP9808();
@@ -14,8 +15,8 @@ public:
   }
 
   ~WipperSnapper_I2C_Driver_MCP9808() {
-      // Called when a MCP9808 component is deleted.
-      delete _mcp9808;
+    // Called when a MCP9808 component is deleted.
+    delete _mcp9808;
   }
 
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
