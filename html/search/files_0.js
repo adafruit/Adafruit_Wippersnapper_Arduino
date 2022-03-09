@@ -16,6 +16,7 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fahtx0_2eh',['WipperSnapper_I2C_Driver_AHTX0.h',['../_wipper_snapper___i2_c___driver___a_h_t_x0_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fbme280_2eh',['WipperSnapper_I2C_Driver_BME280.h',['../_wipper_snapper___i2_c___driver___b_m_e280_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fdps310_2eh',['WipperSnapper_I2C_Driver_DPS310.h',['../_wipper_snapper___i2_c___driver___d_p_s310_8h.html',1,'']]],
+  ['wippersnapper_5fi2c_5fdriver_5fmcp9808_2eh',['WipperSnapper_I2C_Driver_MCP9808.h',['../_wipper_snapper___i2_c___driver___m_c_p9808_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fscd30_2eh',['WipperSnapper_I2C_Driver_SCD30.h',['../_wipper_snapper___i2_c___driver___s_c_d30_8h.html',1,'']]],
   ['wippersnapper_5fnetworking_2eh',['Wippersnapper_Networking.h',['../_wippersnapper___networking_8h.html',1,'']]],
   ['wippersnapper_5fregister_2ecpp',['Wippersnapper_Register.cpp',['../_wippersnapper___register_8cpp.html',1,'']]],

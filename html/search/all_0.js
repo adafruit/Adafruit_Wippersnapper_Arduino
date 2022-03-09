@@ -45,6 +45,7 @@ var searchData=
   ['_5fkey',['_key',['../class_wippersnapper.html#aac70eead5aa5a98fe062dcebefc6c0b6',1,'Wippersnapper']]],
   ['_5flast_5fmqtt_5fconnect',['_last_mqtt_connect',['../class_wippersnapper.html#ad91ea7ed5595bd655f0a8719a7216a45',1,'Wippersnapper']]],
   ['_5flittlefs',['_littleFS',['../class_wippersnapper.html#a98a40aae300a312aa87f4480d18a4c14',1,'Wippersnapper']]],
+  ['_5fmcp9808',['_mcp9808',['../class_wipper_snapper___i2_c___driver___m_c_p9808.html#ae1bfe59f7f1dffa6e4716f90104d4b57',1,'WipperSnapper_I2C_Driver_MCP9808']]],
   ['_5fmqtt',['_mqtt',['../class_wippersnapper.html#a4aae92d295fa7740aef1bd6e45a13349',1,'Wippersnapper']]],
   ['_5fmqtt_5fclient',['_mqtt_client',['../class_wippersnapper___a_i_r_l_i_f_t.html#af56696c5a407755fb5a998747250f116',1,'Wippersnapper_AIRLIFT::_mqtt_client()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#af1e950739e88ebe968346be3a6d54c57',1,'Wippersnapper_WIFININA::_mqtt_client()']]],
   ['_5fmqtt_5fport',['_mqtt_port',['../class_wippersnapper.html#a13a4074ad97215f51d4fa76b65052b76',1,'Wippersnapper']]],

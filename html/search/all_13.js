@@ -25,6 +25,8 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fbme280_2eh',['WipperSnapper_I2C_Driver_BME280.h',['../_wipper_snapper___i2_c___driver___b_m_e280_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fdps310',['WipperSnapper_I2C_Driver_DPS310',['../class_wipper_snapper___i2_c___driver___d_p_s310.html',1,'WipperSnapper_I2C_Driver_DPS310'],['../class_wipper_snapper___i2_c___driver___d_p_s310.html#a697ee14989f03dd84106f001709474fa',1,'WipperSnapper_I2C_Driver_DPS310::WipperSnapper_I2C_Driver_DPS310()']]],
   ['wippersnapper_5fi2c_5fdriver_5fdps310_2eh',['WipperSnapper_I2C_Driver_DPS310.h',['../_wipper_snapper___i2_c___driver___d_p_s310_8h.html',1,'']]],
+  ['wippersnapper_5fi2c_5fdriver_5fmcp9808',['WipperSnapper_I2C_Driver_MCP9808',['../class_wipper_snapper___i2_c___driver___m_c_p9808.html',1,'WipperSnapper_I2C_Driver_MCP9808'],['../class_wipper_snapper___i2_c___driver___m_c_p9808.html#abdd78237a91ec576b074f3600686cae1',1,'WipperSnapper_I2C_Driver_MCP9808::WipperSnapper_I2C_Driver_MCP9808()']]],
+  ['wippersnapper_5fi2c_5fdriver_5fmcp9808_2eh',['WipperSnapper_I2C_Driver_MCP9808.h',['../_wipper_snapper___i2_c___driver___m_c_p9808_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fscd30',['WipperSnapper_I2C_Driver_SCD30',['../class_wipper_snapper___i2_c___driver___s_c_d30.html',1,'WipperSnapper_I2C_Driver_SCD30'],['../class_wipper_snapper___i2_c___driver___s_c_d30.html#aa6a9fe9084bcc472a5352a84de93fa99',1,'WipperSnapper_I2C_Driver_SCD30::WipperSnapper_I2C_Driver_SCD30()']]],
   ['wippersnapper_5fi2c_5fdriver_5fscd30_2eh',['WipperSnapper_I2C_Driver_SCD30.h',['../_wipper_snapper___i2_c___driver___s_c_d30_8h.html',1,'']]],
   ['wippersnapper_5fnetworking_2eh',['Wippersnapper_Networking.h',['../_wippersnapper___networking_8h.html',1,'']]],
