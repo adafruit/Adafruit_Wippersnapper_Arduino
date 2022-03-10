@@ -54,11 +54,16 @@ public:
           Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266() : Wippersnapper() {
-    _ssid = 0;
-    _pass = 0;
+  Wippersnapper_ESP8266(const char *aioUsername, const char *aioKey,
+                         const char *netSSID, const char *netPass) : Wippersnapper()
+ {
+    _ssid = netSSID;
+    _pass = netPass;
+    _username = aioUsername;
+    _key = aioKey;
     _wifi_client = new WiFiClientSecure;
   }
+
 
   /**************************************************************************/
   /*!
