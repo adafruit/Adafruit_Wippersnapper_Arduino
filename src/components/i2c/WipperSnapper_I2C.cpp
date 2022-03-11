@@ -255,6 +255,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _mcp9808->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mcp9808);
     WS_DEBUG_PRINTLN("MCP9808 Initialized Successfully!");
+  } else if (strcmp("mcp9601", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mcp9601 = new WipperSnapper_I2C_Driver_MCP9601(this->_i2c, i2cAddress);
+    if (!_mcp9601->isInitialized()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MCP9601!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mcp9601->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mcp9601);
+    WS_DEBUG_PRINTLN("MCP9601 Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -285,6 +296,10 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
         switch (msgDeviceUpdateReq->i2c_device_properties[j].sensor_type) {
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
           drivers[i]->updateSensorAmbientTemperature(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+          drivers[i]->updateSensorObjectTemp(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
@@ -456,6 +471,31 @@ void WipperSnapper_Component_I2C::update() {
       } else {
         WS_DEBUG_PRINTLN(
             "ERROR: Failed to get ambient temperature sensor reading!");
+      }
+    }
+
+    // AMBIENT_TEMPERATURE sensor
+    curTime = millis();
+    if ((*iter)->sensorObjectTempPeriod() != 0L &&
+        curTime - (*iter)->sensorObjectTempPeriodPrv() >
+            (*iter)->sensorObjectTempPeriod()) {
+      if ((*iter)->getEventObjectTemp(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tTemperature: ");
+        WS_DEBUG_PRINT(event.temperature);
+        WS_DEBUG_PRINTLN(" degrees C");
+
+        // pack event data into msg
+        fillEventMessage(
+            &msgi2cResponse, event.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE);
+
+        (*iter)->setSensorObjectTempPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to get object temperature sensor reading!");
       }
     }
 

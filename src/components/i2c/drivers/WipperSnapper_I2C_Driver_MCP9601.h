@@ -69,15 +69,37 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    uint8_t status = mcp.getStatus();
-    if (status & MCP9601_STATUS_OPENCIRCUIT) { 
+    uint8_t status = _MCP9601->getStatus();
+    if (status & MCP9601_STATUS_OPENCIRCUIT) {
       return; // don't continue, since there's no thermocouple
     }
-    if (status & MCP9601_STATUS_SHORTCIRCUIT) { 
+    if (status & MCP9601_STATUS_SHORTCIRCUIT) {
       return; // don't continue, since the sensor is not working
     }
 
-    tempEvent->temperature = mcp->readAmbient();
+    tempEvent->temperature = _MCP9601->readAmbient();
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the MCP9601's current object temperature (thermocouple).
+      @param    objectTempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the object temperature was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventObjectTemp(sensors_event_t *objectTempEvent) {
+    uint8_t status = _MCP9601->getStatus();
+    if (status & MCP9601_STATUS_OPENCIRCUIT) {
+      return false; // don't continue, since there's no thermocouple
+    }
+    if (status & MCP9601_STATUS_SHORTCIRCUIT) {
+      return false; // don't continue, since the sensor is not working
+    }
+
+    objectTempEvent->temperature = _MCP9601->readThermocouple();
     return true;
   }
 
