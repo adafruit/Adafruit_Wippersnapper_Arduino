@@ -39,7 +39,7 @@ public:
     // Called when a MCP9601 component is created
     setI2CAddress(sensorAddress); // sets the driver's I2C address
     _MCP9601 = new Adafruit_MCP9601();
-    _isInitialized = _MCP9601->begin();
+    _isInitialized = _MCP9601->begin((uint8_t)sensorAddress);
 
     if (_isInitialized) {
       _MCP9601->setADCresolution(MCP9600_ADCRESOLUTION_18);
@@ -71,10 +71,10 @@ public:
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     uint8_t status = _MCP9601->getStatus();
     if (status & MCP9601_STATUS_OPENCIRCUIT) {
-      return; // don't continue, since there's no thermocouple
+      return false; // don't continue, since there's no thermocouple
     }
     if (status & MCP9601_STATUS_SHORTCIRCUIT) {
-      return; // don't continue, since the sensor is not working
+      return false; // don't continue, since the sensor is not working
     }
 
     tempEvent->temperature = _MCP9601->readAmbient();

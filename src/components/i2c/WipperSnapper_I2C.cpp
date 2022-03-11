@@ -65,13 +65,14 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
 // Initialize I2C bus
 #if defined(ARDUINO_ARCH_ESP32)
     _i2c = new TwoWire(msgInitRequest->i2c_port_number);
-    if (!_i2c->begin(msgInitRequest->i2c_pin_sda,
-                     msgInitRequest->i2c_pin_scl)) {
+    if (!_i2c->begin((int)msgInitRequest->i2c_pin_sda,
+                     (int)msgInitRequest->i2c_pin_scl)) {
       _isInit = false; // if the peripheral was configured incorrectly
     } else {
       _isInit = true; // if the peripheral was configured incorrectly
     }
-    _i2c->setClock(msgInitRequest->i2c_frequency);
+    //_i2c->setClock(msgInitRequest->i2c_frequency);
+    _i2c->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
     _i2c = new TwoWire();
     _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
