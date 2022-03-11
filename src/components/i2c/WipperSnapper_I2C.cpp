@@ -71,12 +71,11 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     } else {
       _isInit = true; // if the peripheral was configured incorrectly
     }
-    //_i2c->setClock(msgInitRequest->i2c_frequency);
     _i2c->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
     _i2c = new TwoWire();
     _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
-    _i2c->setClock(msgInitRequest->i2c_frequency);
+    _i2c->setClock(50000);
     _isInit = true;
 #else
     // SAMD
