@@ -80,29 +80,27 @@ Inheritance diagram for WipperSnapper_I2C_Driver:</div>
 <area href="class_wipper_snapper___i2_c___driver___a_h_t_x0.html" title="Class that provides a sensor driver for the AHTX0 temperature and humidity sensor. " alt="WipperSnapper_I2C_Driver_AHTX0" shape="rect" coords="0,56,232,80"/>
 <area href="class_wipper_snapper___i2_c___driver___b_m_e280.html" title="Class that provides a sensor driver for the BME280 temperature and humidity sensor. " alt="WipperSnapper_I2C_Driver_BME280" shape="rect" coords="242,56,474,80"/>
 <area href="class_wipper_snapper___i2_c___driver___d_p_s310.html" title="Class that provides a sensor driver for the DPS310 barometric pressure sensor. " alt="WipperSnapper_I2C_Driver_DPS310" shape="rect" coords="484,56,716,80"/>
-<area href="class_wipper_snapper___i2_c___driver___m_c_p9808.html" title="Class that provides a driver interface for a MCP9808 sensor. " alt="WipperSnapper_I2C_Driver_MCP9808" shape="rect" coords="726,56,958,80"/>
-<area href="class_wipper_snapper___i2_c___driver___s_c_d30.html" title="Class that provides a driver interface for the SCD30 sensor. " alt="WipperSnapper_I2C_Driver_SCD30" shape="rect" coords="968,56,1200,80"/>
+<area href="class_wipper_snapper___i2_c___driver___m_c_p9601.html" title="Class that provides a driver interface for a MCP9601 sensor. " alt="WipperSnapper_I2C_Driver_MCP9601" shape="rect" coords="726,56,958,80"/>
+<area href="class_wipper_snapper___i2_c___driver___m_c_p9808.html" title="Class that provides a driver interface for a MCP9808 sensor. " alt="WipperSnapper_I2C_Driver_MCP9808" shape="rect" coords="968,56,1200,80"/>
+<area href="class_wipper_snapper___i2_c___driver___s_c_d30.html" title="Class that provides a driver interface for the SCD30 sensor. " alt="WipperSnapper_I2C_Driver_SCD30" shape="rect" coords="1210,56,1442,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab68da89eb8621fa888207d6bbed664c2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ab68da89eb8621fa888207d6bbed664c2">WipperSnapper_I2C_Driver</a> (TwoWire *, uint16_t sensorAddress)</td></tr>
-<tr class="memdesc:ab68da89eb8621fa888207d6bbed664c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for an I2C sensor.  <a href="#ab68da89eb8621fa888207d6bbed664c2">More...</a><br /></td></tr>
-<tr class="separator:ab68da89eb8621fa888207d6bbed664c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30b911b9c628a709810653e7c073b509"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a30b911b9c628a709810653e7c073b509">WipperSnapper_I2C_Driver</a> (TwoWire *i2c, uint16_t sensorAddress)</td></tr>
+<tr class="memdesc:a30b911b9c628a709810653e7c073b509"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instanciates an I2C sensor.  <a href="#a30b911b9c628a709810653e7c073b509">More...</a><br /></td></tr>
+<tr class="separator:a30b911b9c628a709810653e7c073b509"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bc2b4e05f37d05738c154da391acb2e"><td class="memItemLeft" align="right" valign="top"><a id="a5bc2b4e05f37d05738c154da391acb2e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5bc2b4e05f37d05738c154da391acb2e">~WipperSnapper_I2C_Driver</a> ()</td></tr>
 <tr class="memdesc:a5bc2b4e05f37d05738c154da391acb2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for an I2C sensor. <br /></td></tr>
 <tr class="separator:a5bc2b4e05f37d05738c154da391acb2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5039680b612fa873f0744b36532452d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#af5039680b612fa873f0744b36532452d">begin</a> ()</td></tr>
+<tr class="memdesc:af5039680b612fa873f0744b36532452d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the I2C sensor and begins I2C.  <a href="#af5039680b612fa873f0744b36532452d">More...</a><br /></td></tr>
+<tr class="separator:af5039680b612fa873f0744b36532452d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86ede95ee6f5495739c16a3cf47a8c5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a86ede95ee6f5495739c16a3cf47a8c5a">configureDriver</a> (wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq)</td></tr>
 <tr class="memdesc:a86ede95ee6f5495739c16a3cf47a8c5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uses an I2CDeviceInitRequest message to configure the sensors belonging to the driver.  <a href="#a86ede95ee6f5495739c16a3cf47a8c5a">More...</a><br /></td></tr>
 <tr class="separator:a86ede95ee6f5495739c16a3cf47a8c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5221855537a1daeebd31ff5d530dd8a4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a5221855537a1daeebd31ff5d530dd8a4">isInitialized</a> ()</td></tr>
-<tr class="memdesc:a5221855537a1daeebd31ff5d530dd8a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the initialization status of an I2C driver.  <a href="#a5221855537a1daeebd31ff5d530dd8a4">More...</a><br /></td></tr>
-<tr class="separator:a5221855537a1daeebd31ff5d530dd8a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae61240ed8985fed7374f15d3c019d648"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae61240ed8985fed7374f15d3c019d648">setI2CAddress</a> (uint16_t i2cAddress)</td></tr>
-<tr class="memdesc:ae61240ed8985fed7374f15d3c019d648"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the I2C device's address.  <a href="#ae61240ed8985fed7374f15d3c019d648">More...</a><br /></td></tr>
-<tr class="separator:ae61240ed8985fed7374f15d3c019d648"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef9934f4bbcf8faee9a9ce4371ae5988"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#aef9934f4bbcf8faee9a9ce4371ae5988">getI2CAddress</a> ()</td></tr>
 <tr class="memdesc:aef9934f4bbcf8faee9a9ce4371ae5988"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the I2C device's address.  <a href="#aef9934f4bbcf8faee9a9ce4371ae5988">More...</a><br /></td></tr>
 <tr class="separator:aef9934f4bbcf8faee9a9ce4371ae5988"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -271,14 +269,42 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memitem:acacb9e18123956905c7f0c7125e80543"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#acacb9e18123956905c7f0c7125e80543">updateSensorAltitude</a> (float period)</td></tr>
 <tr class="memdesc:acacb9e18123956905c7f0c7125e80543"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a Altitude sensor.  <a href="#acacb9e18123956905c7f0c7125e80543">More...</a><br /></td></tr>
 <tr class="separator:acacb9e18123956905c7f0c7125e80543"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91d3a9f06f9d7af53a822550c755bc7a"><td class="memItemLeft" align="right" valign="top"><a id="a91d3a9f06f9d7af53a822550c755bc7a"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a91d3a9f06f9d7af53a822550c755bc7a">enableSensorObjectTemp</a> ()</td></tr>
+<tr class="memdesc:a91d3a9f06f9d7af53a822550c755bc7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enables the device's object temperature sensor, if it exists. <br /></td></tr>
+<tr class="separator:a91d3a9f06f9d7af53a822550c755bc7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c25f2ec38f670ea5e68f64c00590a49"><td class="memItemLeft" align="right" valign="top"><a id="a7c25f2ec38f670ea5e68f64c00590a49"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7c25f2ec38f670ea5e68f64c00590a49">disableSensorObjectTemp</a> ()</td></tr>
+<tr class="memdesc:a7c25f2ec38f670ea5e68f64c00590a49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables the device's object temperature sensor, if it exists. <br /></td></tr>
+<tr class="separator:a7c25f2ec38f670ea5e68f64c00590a49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45ef9b2184ecf2b348bc4b532a4ebc39"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a45ef9b2184ecf2b348bc4b532a4ebc39">sensorObjectTempPeriod</a> ()</td></tr>
+<tr class="memdesc:a45ef9b2184ecf2b348bc4b532a4ebc39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the object temperature sensor's period, if set.  <a href="#a45ef9b2184ecf2b348bc4b532a4ebc39">More...</a><br /></td></tr>
+<tr class="separator:a45ef9b2184ecf2b348bc4b532a4ebc39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ad4507f18c7e895fb492d97fb18667b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7ad4507f18c7e895fb492d97fb18667b">setSensorObjectTempPeriod</a> (float period)</td></tr>
+<tr class="memdesc:a7ad4507f18c7e895fb492d97fb18667b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the object temperature sensor's return frequency.  <a href="#a7ad4507f18c7e895fb492d97fb18667b">More...</a><br /></td></tr>
+<tr class="separator:a7ad4507f18c7e895fb492d97fb18667b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab48d7c490797bf77ade43c1857f727fe"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ab48d7c490797bf77ade43c1857f727fe">sensorObjectTempPeriodPrv</a> ()</td></tr>
+<tr class="memdesc:ab48d7c490797bf77ade43c1857f727fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the previous time interval at which the object temperature sensor was queried last.  <a href="#ab48d7c490797bf77ade43c1857f727fe">More...</a><br /></td></tr>
+<tr class="separator:ab48d7c490797bf77ade43c1857f727fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a6d787a8c8cfae758f6d0aa29d62ae3"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a4a6d787a8c8cfae758f6d0aa29d62ae3">setSensorObjectTempPeriodPrv</a> (long period)</td></tr>
+<tr class="memdesc:a4a6d787a8c8cfae758f6d0aa29d62ae3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the object temperature sensor was queried.  <a href="#a4a6d787a8c8cfae758f6d0aa29d62ae3">More...</a><br /></td></tr>
+<tr class="separator:a4a6d787a8c8cfae758f6d0aa29d62ae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae13af4c9959dc822e9b1c62d772e0c40"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#ae13af4c9959dc822e9b1c62d772e0c40">getEventObjectTemp</a> (sensors_event_t *objectTempEvent)</td></tr>
+<tr class="memdesc:ae13af4c9959dc822e9b1c62d772e0c40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a object temperature sensor and converts the reading into the expected SI unit.  <a href="#ae13af4c9959dc822e9b1c62d772e0c40">More...</a><br /></td></tr>
+<tr class="separator:ae13af4c9959dc822e9b1c62d772e0c40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adec31158c70c6f445b62fe42397c2411"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#adec31158c70c6f445b62fe42397c2411">updateSensorObjectTemp</a> (float period)</td></tr>
+<tr class="memdesc:adec31158c70c6f445b62fe42397c2411"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the properties of a object temperature sensor.  <a href="#adec31158c70c6f445b62fe42397c2411">More...</a><br /></td></tr>
+<tr class="separator:adec31158c70c6f445b62fe42397c2411"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a85c296e306989d20c327c9cae78c99d6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a85c296e306989d20c327c9cae78c99d6">_isInitialized</a> = false</td></tr>
-<tr class="separator:a85c296e306989d20c327c9cae78c99d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7800f657301fd3d4b3babad46d95c91f"><td class="memItemLeft" align="right" valign="top"><a id="a7800f657301fd3d4b3babad46d95c91f"></a>
+TwoWire *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7800f657301fd3d4b3babad46d95c91f">_i2c</a></td></tr>
+<tr class="memdesc:a7800f657301fd3d4b3babad46d95c91f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the I2C driver's Wire object. <br /></td></tr>
+<tr class="separator:a7800f657301fd3d4b3babad46d95c91f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a504fa3d1869f741dbb46a8e5f5f5e281"><td class="memItemLeft" align="right" valign="top"><a id="a504fa3d1869f741dbb46a8e5f5f5e281"></a>
 uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a504fa3d1869f741dbb46a8e5f5f5e281">_sensorAddress</a></td></tr>
-<tr class="memdesc:a504fa3d1869f741dbb46a8e5f5f5e281"><td class="mdescLeft">&#160;</td><td class="mdescRight">The I2C device's unique I2C address. <br /></td></tr>
+<tr class="memdesc:a504fa3d1869f741dbb46a8e5f5f5e281"><td class="mdescLeft">&#160;</td><td class="mdescRight">The I2C driver's unique I2C address. <br /></td></tr>
 <tr class="separator:a504fa3d1869f741dbb46a8e5f5f5e281"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ddb9ead2070d976dae7866788345eff"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2ddb9ead2070d976dae7866788345eff">_tempSensorPeriod</a></td></tr>
 <tr class="memdesc:a2ddb9ead2070d976dae7866788345eff"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time period between reading the temperature sensor's value.  <a href="#a2ddb9ead2070d976dae7866788345eff">More...</a><br /></td></tr>
@@ -311,12 +337,16 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="separator:a484c851cf58b5983f34809399e287c28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6cc483550c8bd4eee9d4f8455c603fbe"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a6cc483550c8bd4eee9d4f8455c603fbe">_altitudeSensorPeriodPrv</a> = 0L</td></tr>
 <tr class="separator:a6cc483550c8bd4eee9d4f8455c603fbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d7e58b7a4a7ff699704a32129f7a9c3"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a8d7e58b7a4a7ff699704a32129f7a9c3">_objectTempSensorPeriod</a> = 0L</td></tr>
+<tr class="separator:a8d7e58b7a4a7ff699704a32129f7a9c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a738f4988bef3af61be5d6c07076a8ea4"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a738f4988bef3af61be5d6c07076a8ea4">_objectTempSensorPeriodPrv</a> = 0L</td></tr>
+<tr class="separator:a738f4988bef3af61be5d6c07076a8ea4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for I2C Drivers. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ab68da89eb8621fa888207d6bbed664c2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab68da89eb8621fa888207d6bbed664c2">&#9670;&nbsp;</a></span>WipperSnapper_I2C_Driver()</h2>
+<a id="a30b911b9c628a709810653e7c073b509"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30b911b9c628a709810653e7c073b509">&#9670;&nbsp;</a></span>WipperSnapper_I2C_Driver()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -328,7 +358,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
           <td class="memname">WipperSnapper_I2C_Driver::WipperSnapper_I2C_Driver </td>
           <td>(</td>
           <td class="paramtype">TwoWire *&#160;</td>
-          <td class="paramname">, </td>
+          <td class="paramname"><em>i2c</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -349,10 +379,11 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Constructor for an I2C sensor. </p>
+<p>Instanciates an I2C sensor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">sensorAddress</td><td>7-bit device address. </td></tr>
+    <tr><td class="paramname">i2c</td><td>The I2C hardware interface, default is Wire. </td></tr>
+    <tr><td class="paramname">sensorAddress</td><td>The I2C sensor's unique address. </td></tr>
   </table>
   </dd>
 </dl>
@@ -360,6 +391,34 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="af5039680b612fa873f0744b36532452d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5039680b612fa873f0744b36532452d">&#9670;&nbsp;</a></span>begin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_I2C_Driver::begin </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes the I2C sensor and begins I2C. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if initialized successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="a86ede95ee6f5495739c16a3cf47a8c5a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a86ede95ee6f5495739c16a3cf47a8c5a">&#9670;&nbsp;</a></span>configureDriver()</h2>
 
@@ -388,68 +447,6 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">msgDeviceInitReq</td><td>I2CDeviceInitRequest containing a list of I2C device properties. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a5221855537a1daeebd31ff5d530dd8a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5221855537a1daeebd31ff5d530dd8a4">&#9670;&nbsp;</a></span>isInitialized()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver::isInitialized </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets the initialization status of an I2C driver. </p>
-<dl class="section return"><dt>Returns</dt><dd>True if I2C device is initialized successfully, False otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="ae61240ed8985fed7374f15d3c019d648"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae61240ed8985fed7374f15d3c019d648">&#9670;&nbsp;</a></span>setI2CAddress()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void WipperSnapper_I2C_Driver::setI2CAddress </td>
-          <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>i2cAddress</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Sets the I2C device's address. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">i2cAddress</td><td>The I2C device's unique address. </td></tr>
   </table>
   </dd>
 </dl>
@@ -836,7 +833,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#a939759c811ebfa572f304651f3176ac7">WipperSnapper_I2C_Driver_BME280</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#a982e771a3a504abccfb46961b69517be">WipperSnapper_I2C_Driver_DPS310</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___a_h_t_x0.html#add6919a8caf022c016c80773b35dedaf">WipperSnapper_I2C_Driver_AHTX0</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___m_c_p9808.html#a0a340e304fc33d094b54f4039f983c78">WipperSnapper_I2C_Driver_MCP9808</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#a8818d399d9ee38af5359921556b48f64">WipperSnapper_I2C_Driver_SCD30</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___b_m_e280.html#a939759c811ebfa572f304651f3176ac7">WipperSnapper_I2C_Driver_BME280</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___d_p_s310.html#a982e771a3a504abccfb46961b69517be">WipperSnapper_I2C_Driver_DPS310</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___a_h_t_x0.html#add6919a8caf022c016c80773b35dedaf">WipperSnapper_I2C_Driver_AHTX0</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___m_c_p9601.html#acccca9452da2bca444a3856bb0ed4c88">WipperSnapper_I2C_Driver_MCP9601</a>, <a class="el" href="class_wipper_snapper___i2_c___driver___m_c_p9808.html#a0a340e304fc33d094b54f4039f983c78">WipperSnapper_I2C_Driver_MCP9808</a>, and <a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d30.html#a8818d399d9ee38af5359921556b48f64">WipperSnapper_I2C_Driver_SCD30</a>.</p>
 
 </div>
 </div>
@@ -1763,9 +1760,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a85c296e306989d20c327c9cae78c99d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85c296e306989d20c327c9cae78c99d6">&#9670;&nbsp;</a></span>_isInitialized</h2>
+<a id="a45ef9b2184ecf2b348bc4b532a4ebc39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45ef9b2184ecf2b348bc4b532a4ebc39">&#9670;&nbsp;</a></span>sensorObjectTempPeriod()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1774,19 +1770,192 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver::_isInitialized = false</td>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorObjectTempPeriod </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>True if the I2C device was initialized successfully, False otherwise. </p>
+
+<p>Base implementation - Returns the object temperature sensor's period, if set. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the object temperature sensor should be polled, in seconds. </dd></dl>
 
 </div>
 </div>
+<a id="a7ad4507f18c7e895fb492d97fb18667b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ad4507f18c7e895fb492d97fb18667b">&#9670;&nbsp;</a></span>setSensorObjectTempPeriod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorObjectTempPeriod </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the object temperature sensor's return frequency. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the object temperature sensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab48d7c490797bf77ade43c1857f727fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab48d7c490797bf77ade43c1857f727fe">&#9670;&nbsp;</a></span>sensorObjectTempPeriodPrv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual long WipperSnapper_I2C_Driver::sensorObjectTempPeriodPrv </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Returns the previous time interval at which the object temperature sensor was queried last. </p>
+<dl class="section return"><dt>Returns</dt><dd>Time when the object temperature sensor was last queried, in seconds. </dd></dl>
+
+</div>
+</div>
+<a id="a4a6d787a8c8cfae758f6d0aa29d62ae3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a6d787a8c8cfae758f6d0aa29d62ae3">&#9670;&nbsp;</a></span>setSensorObjectTempPeriodPrv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::setSensorObjectTempPeriodPrv </td>
+          <td>(</td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets a timestamp for when the object temperature sensor was queried. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time when the object temperature sensor was queried last. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae13af4c9959dc822e9b1c62d772e0c40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae13af4c9959dc822e9b1c62d772e0c40">&#9670;&nbsp;</a></span>getEventObjectTemp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool WipperSnapper_I2C_Driver::getEventObjectTemp </td>
+          <td>(</td>
+          <td class="paramtype">sensors_event_t *&#160;</td>
+          <td class="paramname"><em>objectTempEvent</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Base implementation - Reads a object temperature sensor and converts the reading into the expected SI unit. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">objectTempEvent</td><td>object temperature sensor reading, in meters. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_wipper_snapper___i2_c___driver___m_c_p9601.html#ab243fb2485868d05d7c0a57d07daf54d">WipperSnapper_I2C_Driver_MCP9601</a>.</p>
+
+</div>
+</div>
+<a id="adec31158c70c6f445b62fe42397c2411"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adec31158c70c6f445b62fe42397c2411">&#9670;&nbsp;</a></span>updateSensorObjectTemp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void WipperSnapper_I2C_Driver::updateSensorObjectTemp </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>period</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Updates the properties of a object temperature sensor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">period</td><td>The time interval at which to return new data from the object temperature sensor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
 <a id="a2ddb9ead2070d976dae7866788345eff"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2ddb9ead2070d976dae7866788345eff">&#9670;&nbsp;</a></span>_tempSensorPeriod</h2>
 
@@ -2067,6 +2236,52 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 <p>The time when the altitude sensor was last read. </p>
+
+</div>
+</div>
+<a id="a8d7e58b7a4a7ff699704a32129f7a9c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d7e58b7a4a7ff699704a32129f7a9c3">&#9670;&nbsp;</a></span>_objectTempSensorPeriod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">long WipperSnapper_I2C_Driver::_objectTempSensorPeriod = 0L</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The time period between reading the object temperature sensor's value. </p>
+
+</div>
+</div>
+<a id="a738f4988bef3af61be5d6c07076a8ea4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a738f4988bef3af61be5d6c07076a8ea4">&#9670;&nbsp;</a></span>_objectTempSensorPeriodPrv</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">long WipperSnapper_I2C_Driver::_objectTempSensorPeriodPrv = 0L</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The time when the object temperature sensor was last read. </p>
 
 </div>
 </div>
