@@ -28,25 +28,16 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for a MCP9601 sensor.
-      @param    _i2c
+      @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 The 7-bit I2C address of the sensor.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_MCP9601(TwoWire *_i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    // Called when a MCP9601 component is created
-    setI2CAddress(sensorAddress); // sets the driver's I2C address
-    _MCP9601 = new Adafruit_MCP9601();
-    _isInitialized = _MCP9601->begin((uint8_t)sensorAddress);
-
-    if (_isInitialized) {
-      _MCP9601->setADCresolution(MCP9600_ADCRESOLUTION_18);
-      _MCP9601->setThermocoupleType(MCP9600_TYPE_K);
-      _MCP9601->setFilterCoefficient(3);
-      _MCP9601->enable(true);
-    }
+  WipperSnapper_I2C_Driver_MCP9601(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -57,6 +48,30 @@ public:
   ~WipperSnapper_I2C_Driver_MCP9601() {
     // Called when a MCP9601 component is deleted.
     delete _MCP9601;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the MCP9601 sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _MCP9601 = new Adafruit_MCP9601();
+    if (!_MCP9601->begin((uint8_t)_sensorAddress))
+      return false;
+
+    // Configure MCP9601's settings
+    // Set resolution
+    _MCP9601->setADCresolution(MCP9600_ADCRESOLUTION_18);
+    // Set thermocouple type (NOTE: We do not have advanced settings in WS, set
+    // to 'K'-type for now)
+    _MCP9601->setThermocoupleType(MCP9600_TYPE_K);
+    // Set filter coefficient
+    _MCP9601->setFilterCoefficient(3);
+    // Enable sensor
+    _MCP9601->enable(true);
+    return true;
   }
 
   /*******************************************************************************/

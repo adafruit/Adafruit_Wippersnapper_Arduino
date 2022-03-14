@@ -256,7 +256,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("MCP9808 Initialized Successfully!");
   } else if (strcmp("mcp9601", msgDeviceInitReq->i2c_device_name) == 0) {
     _mcp9601 = new WipperSnapper_I2C_Driver_MCP9601(this->_i2c, i2cAddress);
-    if (!_mcp9601->isInitialized()) {
+    if (!_mcp9601->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize MCP9601!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
