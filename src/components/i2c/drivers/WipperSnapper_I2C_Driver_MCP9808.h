@@ -28,18 +28,16 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for a MCP9808 sensor.
-      @param    _i2c
+      @param    i2c
                 The I2C interface.
       @param    sensorAddress
-                The 7-bit I2C address of the sensor.
+                7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_MCP9808(TwoWire *_i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    // Called when a MCP9808 component is created
-    setI2CAddress(sensorAddress); // sets the driver's I2C address
-    _mcp9808 = new Adafruit_MCP9808();
-    _isInitialized = _mcp9808->begin();
+  WipperSnapper_I2C_Driver_MCP9808(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -50,6 +48,18 @@ public:
   ~WipperSnapper_I2C_Driver_MCP9808() {
     // Called when a MCP9808 component is deleted.
     delete _mcp9808;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the MCP9808 sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _mcp9808 = new Adafruit_MCP9808();
+    bool isInit = _mcp9808->begin((uint8_t)_sensorAddress, _i2c);
+    return isInit;
   }
 
   /*******************************************************************************/
