@@ -33,17 +33,16 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an BME280 sensor.
-      @param    _i2c
+      @param    i2c
                 The I2C interface.
       @param    sensorAddress
-                The 7-bit I2C address of the BME280 sensor.
+                7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_BME280(TwoWire *_i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setI2CAddress(sensorAddress);
-    _bme = new Adafruit_BME280();
-    _isInitialized = _bme->begin(sensorAddress, _i2c);
+  WipperSnapper_I2C_Driver_BME280(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -52,6 +51,18 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_BME280() { delete _bme; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the BME280 sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _bme = new Adafruit_BME280();
+    bool isInit = _bme->begin(_sensorAddress, _i2c);
+    return isInit;
+  }
 
   /*******************************************************************************/
   /*!

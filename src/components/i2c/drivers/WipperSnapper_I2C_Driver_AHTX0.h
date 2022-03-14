@@ -31,17 +31,16 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an AHTX0 sensor.
-      @param    _i2c
+      @param    i2c
                 The I2C interface.
       @param    sensorAddress
-                The 7-bit I2C address of the AHTX0 sensor.
+                7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_AHTX0(TwoWire *_i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setI2CAddress(sensorAddress);
-    _aht = new Adafruit_AHTX0();
-    _isInitialized = _aht->begin(_i2c);
+  WipperSnapper_I2C_Driver_AHTX0(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -50,6 +49,19 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_AHTX0() { delete _aht; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the AHTX0 sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _aht = new Adafruit_AHTX0();
+    bool isInit = _aht->begin(_i2c, (int32_t)_sensorAddress);
+    return isInit;
+  }
 
   /*******************************************************************************/
   /*!

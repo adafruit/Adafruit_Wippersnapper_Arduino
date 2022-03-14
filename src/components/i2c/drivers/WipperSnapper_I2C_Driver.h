@@ -17,6 +17,7 @@
 #define WipperSnapper_I2C_Driver_H
 
 #include <Adafruit_Sensor.h>
+#include <Arduino.h>
 
 /**************************************************************************/
 /*!
@@ -28,13 +29,16 @@ class WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an I2C sensor.
+      @brief    Instanciates an I2C sensor.
+      @param    i2c
+                The I2C hardware interface, default is Wire.
       @param    sensorAddress
-                7-bit device address.
+                The I2C sensor's unique address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver(TwoWire *, uint16_t sensorAddress) {
-    _sensorAddress = sensorAddress;
+  WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress;
   }
 
   /*******************************************************************************/
@@ -43,6 +47,14 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver() { _sensorAddress = 0; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the I2C sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() { return false; }
 
   /*******************************************************************************/
   /*!
@@ -98,23 +110,6 @@ public:
       ++propertyIdx;
     }
   }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the initialization status of an I2C driver.
-      @returns  True if I2C device is initialized successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool isInitialized() { return _isInitialized; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets the I2C device's address.
-      @param    i2cAddress
-                The I2C device's unique address.
-  */
-  /*******************************************************************************/
-  void setI2CAddress(uint16_t i2cAddress) { _sensorAddress = i2cAddress; }
 
   /*******************************************************************************/
   /*!
@@ -768,9 +763,8 @@ public:
   }
 
 protected:
-  bool _isInitialized = false; ///< True if the I2C device was initialized
-                               ///< successfully, False otherwise.
-  uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
+  TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
+  uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
   long _tempSensorPeriod =
       0L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =
