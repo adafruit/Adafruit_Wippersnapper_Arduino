@@ -45,7 +45,7 @@ public:
       @brief    Destructor for an TSL2591 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_TSL2591() { delete _TSL2591; }
+  ~WipperSnapper_I2C_Driver_TSL2591() { delete _tsl; }
 
   /*******************************************************************************/
   /*!
@@ -62,8 +62,8 @@ public:
     // Configure TSL2591 sensor
     // Note: This driver uses the default configuration from
     // https://github.com/adafruit/Adafruit_TSL2591_Library/blob/master/examples/tsl2591/tsl2591.ino
-    tsl.setGain(TSL2591_GAIN_MED);                // 25x gain
-    tsl.setTiming(TSL2591_INTEGRATIONTIME_300MS); // 300ms integration time
+    _tsl->setGain(TSL2591_GAIN_MED);                // 25x gain
+    _tsl->setTiming(TSL2591_INTEGRATIONTIME_300MS); // 300ms integration time
     return true;
   }
 
@@ -79,7 +79,7 @@ public:
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event
-    _tsl->getEvent(&lightEvent);
+    _tsl->getEvent(lightEvent);
 
     // If lightEvent->light = 0 lux the sensor is probably saturated and no
     // reliable data could be generated! or if lightEvent->light is +/-
