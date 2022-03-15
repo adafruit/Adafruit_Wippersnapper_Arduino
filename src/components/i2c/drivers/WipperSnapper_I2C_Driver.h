@@ -815,9 +815,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorLightPeriodPrv() {
-    return _lightSensorPeriodPrv;
-  }
+  virtual long SensorLightPeriodPrv() { return _lightSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -835,15 +833,13 @@ public:
   /*!
       @brief    Base implementation - Reads a object light sensor and
                 converts the reading into the expected SI unit.
-      @param    objectLightEvent
+      @param    lightEvent
                 Light sensor reading, in meters.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventLight(sensors_event_t *objectLightEvent) {
-    return false;
-  }
+  virtual bool getEventLight(sensors_event_t *lightEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -853,9 +849,7 @@ public:
                 light sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorLight(float period) {
-    setSensorLightPeriod(period);
-  }
+  virtual void updateSensorLight(float period) { setSensorLightPeriod(period); }
 
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object

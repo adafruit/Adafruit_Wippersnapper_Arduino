@@ -45,9 +45,7 @@ public:
       @brief    Destructor for an TSL2591 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_TSL2591() {
-    delete _TSL2591;
-  }
+  ~WipperSnapper_I2C_Driver_TSL2591() { delete _TSL2591; }
 
   /*******************************************************************************/
   /*!
@@ -60,14 +58,38 @@ public:
     // Attempt to initialize TSL2591
     if (!_tsl->begin())
       return false;
-    
+
     // Configure TSL2591 sensor
-    // Note: This driver uses the default configuration from https://github.com/adafruit/Adafruit_TSL2591_Library/blob/master/examples/tsl2591/tsl2591.ino
+    // Note: This driver uses the default configuration from
+    // https://github.com/adafruit/Adafruit_TSL2591_Library/blob/master/examples/tsl2591/tsl2591.ino
     tsl.setGain(TSL2591_GAIN_MED);                // 25x gain
     tsl.setTiming(TSL2591_INTEGRATIONTIME_300MS); // 300ms integration time
     return true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Performs a light sensor read using the Adafruit
+                Unified Sensor API.
+      @param    lightEvent
+                Light sensor reading, in lux.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventLight(sensors_event_t *lightEvent) {
+    // Get sensor event
+    _tsl->getEvent(&lightEvent);
+
+    // If lightEvent->light = 0 lux the sensor is probably saturated and no
+    // reliable data could be generated! or if lightEvent->light is +/-
+    // 4294967040 there was a float over/underflow
+    if ((lightEvent->light == 0) | (lightEvent->light > 4294966000.0) |
+        (lightEvent->light < -4294966000.0))
+      return false;
+
+    return true;
+  }
 
 protected:
   Adafruit_TSL2591 *_tsl; ///< Pointer to TSL2591 light sensor object
