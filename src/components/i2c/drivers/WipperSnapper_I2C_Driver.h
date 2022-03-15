@@ -104,6 +104,10 @@ public:
         enableSensorObjectTemp();
         setSensorObjectTempPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
+        enableSensorLight();
+        setSensorLightPeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
       default:
         break;
       }
@@ -762,6 +766,97 @@ public:
     setSensorObjectTempPeriod(period);
   }
 
+  /**************************** SENSOR_TYPE: LIGHT
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's object light sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorLight(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's object light sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorLight() { _lightSensorPeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object light sensor's
+     period, if set.
+      @returns  Time when the object light sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorLightPeriod() { return _lightSensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the object light sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+                object light sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorLightPeriod(float period) {
+    if (period == 0)
+      disableSensorLight();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _lightSensorPeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the light sensor was queried last.
+      @returns  Time when the light sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long SensorLightPeriodPrv() {
+    return _lightSensorPeriodPrv;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the light sensor
+                was queried.
+      @param    period
+                The time when the light sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorLightPeriodPrv(long period) {
+    _lightSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object light sensor and
+                converts the reading into the expected SI unit.
+      @param    objectLightEvent
+                Light sensor reading, in meters.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventLight(sensors_event_t *objectLightEvent) {
+    return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a object light sensor.
+      @param    period
+                The time interval at which to return new data from the
+                light sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorLight(float period) {
+    setSensorLightPeriod(period);
+  }
+
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -793,6 +888,10 @@ protected:
                                         ///< object temperature sensor's value.
   long _objectTempSensorPeriodPrv = 0L; ///< The time when the object
                                         ///< temperature sensor was last read.
+  long _lightSensorPeriod = 0L;         ///< The time period between reading the
+                                        ///< light sensor's value.
+  long _lightSensorPeriodPrv = 0L;      ///< The time when the light sensor
+                                        ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
