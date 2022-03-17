@@ -77,17 +77,17 @@
 #elif defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
 #define USB_VID 0xEA60
 #define USB_PID 0x10C4
-#define BOARD_ID "feather_esp8266"
+#define BOARD_ID "feather-esp8266"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #define USE_LITTLEFS
 #elif defined(ARDUINO_FEATHER_ESP32)
-#define BOARD_ID "feather_esp32"
+#define BOARD_ID "feather-esp32"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #define USE_LITTLEFS
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
-#define BOARD_ID "feather_esp32_v2_daily"
+#define BOARD_ID "feather-esp32-v2-daily"
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN NEOPIXEL_PIN
 #define STATUS_NEOPIXEL_NUM 1
