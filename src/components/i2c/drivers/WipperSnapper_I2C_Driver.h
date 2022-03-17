@@ -17,6 +17,7 @@
 #define WipperSnapper_I2C_Driver_H
 
 #include <Adafruit_Sensor.h>
+#include <Arduino.h>
 
 /**************************************************************************/
 /*!
@@ -28,13 +29,16 @@ class WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an I2C sensor.
+      @brief    Instanciates an I2C sensor.
+      @param    i2c
+                The I2C hardware interface, default is Wire.
       @param    sensorAddress
-                7-bit device address.
+                The I2C sensor's unique address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver(TwoWire *, uint16_t sensorAddress) {
-    _sensorAddress = sensorAddress;
+  WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress;
   }
 
   /*******************************************************************************/
@@ -43,6 +47,14 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver() { _sensorAddress = 0; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the I2C sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() { return false; }
 
   /*******************************************************************************/
   /*!
@@ -88,29 +100,16 @@ public:
         setSensorAltitudePeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+        enableSensorObjectTemp();
+        setSensorObjectTempPeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
       default:
         break;
       }
       ++propertyIdx;
     }
   }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the initialization status of an I2C driver.
-      @returns  True if I2C device is initialized successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool isInitialized() { return _isInitialized; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets the I2C device's address.
-      @param    i2cAddress
-                The I2C device's unique address.
-  */
-  /*******************************************************************************/
-  void setI2CAddress(uint16_t i2cAddress) { _sensorAddress = i2cAddress; }
 
   /*******************************************************************************/
   /*!
@@ -672,10 +671,100 @@ public:
     setSensorAltitudePeriod(period);
   }
 
+  /**************************** SENSOR_TYPE: Object_Temperature
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's object temperature sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorObjectTemp(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's object temperature sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorObjectTemp() { _objectTempSensorPeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object temperature sensor's
+     period, if set.
+      @returns  Time when the object temperature sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorObjectTempPeriod() { return _objectTempSensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the object temperature sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+                object temperature sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorObjectTempPeriod(float period) {
+    if (period == 0)
+      disableSensorObjectTemp();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _objectTempSensorPeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the object temperature sensor was queried last.
+      @returns  Time when the object temperature sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorObjectTempPeriodPrv() {
+    return _objectTempSensorPeriodPrv;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the object temperature sensor
+                was queried.
+      @param    period
+                The time when the object temperature sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorObjectTempPeriodPrv(long period) {
+    _objectTempSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object temperature sensor and
+                converts the reading into the expected SI unit.
+      @param    objectTempEvent
+                object temperature sensor reading, in meters.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) {
+    return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a object temperature sensor.
+      @param    period
+                The time interval at which to return new data from the
+                object temperature sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorObjectTemp(float period) {
+    setSensorObjectTempPeriod(period);
+  }
+
 protected:
-  bool _isInitialized = false; ///< True if the I2C device was initialized
-                               ///< successfully, False otherwise.
-  uint16_t _sensorAddress;     ///< The I2C device's unique I2C address.
+  TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
+  uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
   long _tempSensorPeriod =
       0L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =
@@ -698,8 +787,12 @@ protected:
                                  ///< was last read.
   long _altitudeSensorPeriod =
       0L; ///< The time period between reading the altitude sensor's value.
-  long _altitudeSensorPeriodPrv = 0L; ///< The time when the altitude sensor
-                                      ///< was last read.
+  long _altitudeSensorPeriodPrv = 0L;   ///< The time when the altitude sensor
+                                        ///< was last read.
+  long _objectTempSensorPeriod = 0L;    ///< The time period between reading the
+                                        ///< object temperature sensor's value.
+  long _objectTempSensorPeriodPrv = 0L; ///< The time when the object
+                                        ///< temperature sensor was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

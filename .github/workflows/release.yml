@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["esp32", "feather_esp32_v2_daily"]
+        arduino-platform: ["feather_esp32", "feather_esp32_v2_daily"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -111,6 +111,21 @@ jobs:
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
+
+    - name: Check boot_app0 file existence (esp32 built from core, not-source)
+      id: check_files
+      uses: andstor/file-existence-action@v1
+      with:
+        files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
+
+    - name: boot_app0 file from arduino-cli core
+      if: steps.check_files.outputs.files_exists == 'true'
+      run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
+
+    - name: boot_app0 file from esp32 source bsp
+      if: steps.check_files.outputs.files_exists == 'false'
+      run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
+
     - name: Zip build artifacts
       run : |
             zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
@@ -201,7 +216,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["esp8266"]
+        arduino-platform: ["feather_esp8266"]
     steps:
     - uses: actions/setup-python@v1
       with:
