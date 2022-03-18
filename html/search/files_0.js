@@ -19,6 +19,7 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fmcp9601_2eh',['WipperSnapper_I2C_Driver_MCP9601.h',['../_wipper_snapper___i2_c___driver___m_c_p9601_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fmcp9808_2eh',['WipperSnapper_I2C_Driver_MCP9808.h',['../_wipper_snapper___i2_c___driver___m_c_p9808_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fscd30_2eh',['WipperSnapper_I2C_Driver_SCD30.h',['../_wipper_snapper___i2_c___driver___s_c_d30_8h.html',1,'']]],
+  ['wippersnapper_5fi2c_5fdriver_5ftsl2591_2eh',['WipperSnapper_I2C_Driver_TSL2591.h',['../_wipper_snapper___i2_c___driver___t_s_l2591_8h.html',1,'']]],
   ['wippersnapper_5fnetworking_2eh',['Wippersnapper_Networking.h',['../_wippersnapper___networking_8h.html',1,'']]],
   ['wippersnapper_5fregister_2ecpp',['Wippersnapper_Register.cpp',['../_wippersnapper___register_8cpp.html',1,'']]],
   ['wippersnapper_5fstatusled_2ecpp',['Wippersnapper_StatusLED.cpp',['../_wippersnapper___status_l_e_d_8cpp.html',1,'']]],

@@ -44,6 +44,8 @@ var searchData=
   ['_5fisi2cport1init',['_isI2CPort1Init',['../class_wippersnapper.html#a486962cdb0c74670b8888497695b3987',1,'Wippersnapper']]],
   ['_5fkey',['_key',['../class_wippersnapper.html#aac70eead5aa5a98fe062dcebefc6c0b6',1,'Wippersnapper']]],
   ['_5flast_5fmqtt_5fconnect',['_last_mqtt_connect',['../class_wippersnapper.html#ad91ea7ed5595bd655f0a8719a7216a45',1,'Wippersnapper']]],
+  ['_5flightsensorperiod',['_lightSensorPeriod',['../class_wipper_snapper___i2_c___driver.html#a1a29ff8c5adbaf776728c6970822b303',1,'WipperSnapper_I2C_Driver']]],
+  ['_5flightsensorperiodprv',['_lightSensorPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a9c8b2b397c7e5b34e0e72e0d7c088f55',1,'WipperSnapper_I2C_Driver']]],
   ['_5flittlefs',['_littleFS',['../class_wippersnapper.html#a98a40aae300a312aa87f4480d18a4c14',1,'Wippersnapper']]],
   ['_5fmcp9601',['_MCP9601',['../class_wipper_snapper___i2_c___driver___m_c_p9601.html#a722af1a6288e1289250330065a4a85a6',1,'WipperSnapper_I2C_Driver_MCP9601']]],
   ['_5fmcp9808',['_mcp9808',['../class_wipper_snapper___i2_c___driver___m_c_p9808.html#ae1bfe59f7f1dffa6e4716f90104d4b57',1,'WipperSnapper_I2C_Driver_MCP9808']]],
@@ -83,6 +85,7 @@ var searchData=
   ['_5ftopic_5fsignal_5fi2c_5fbrkr',['_topic_signal_i2c_brkr',['../class_wippersnapper.html#a697a73c42f195234d4b1043cd31742f8',1,'Wippersnapper']]],
   ['_5ftopic_5fsignal_5fi2c_5fdevice',['_topic_signal_i2c_device',['../class_wippersnapper.html#a666524aedd9e7c2d2349f77b5c70d179',1,'Wippersnapper']]],
   ['_5ftopic_5fsignal_5fi2c_5fsub',['_topic_signal_i2c_sub',['../class_wippersnapper.html#aad2d8a69238e2019579af498634b5510',1,'Wippersnapper']]],
+  ['_5ftsl',['_tsl',['../class_wipper_snapper___i2_c___driver___t_s_l2591.html#a6559aae3f63d8a83528a6e7382e86bf0',1,'WipperSnapper_I2C_Driver_TSL2591']]],
   ['_5fuid',['_uid',['../class_wippersnapper.html#aeffbbf027549646e2c70f7703a0593a1',1,'Wippersnapper']]],
   ['_5fusername',['_username',['../class_wippersnapper.html#a9380123bb67437ece953f46e32bad6fe',1,'Wippersnapper']]],
   ['_5fwifi',['_wifi',['../class_wippersnapper___a_i_r_l_i_f_t.html#a583121d8e9177c59463b815ceac98ea6',1,'Wippersnapper_AIRLIFT::_wifi()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#a0543a08ce2fdf662678eb69a9f6145ee',1,'Wippersnapper_WIFININA::_wifi()']]]
