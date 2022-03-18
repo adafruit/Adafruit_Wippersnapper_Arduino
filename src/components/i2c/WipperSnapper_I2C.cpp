@@ -265,6 +265,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _mcp9601->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mcp9601);
     WS_DEBUG_PRINTLN("MCP9601 Initialized Successfully!");
+  } else if (strcmp("tsl2591", msgDeviceInitReq->i2c_device_name) == 0) {
+    _tsl2591 = new WipperSnapper_I2C_Driver_TSL2591(this->_i2c, i2cAddress);
+    if (!_tsl2591->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize TSL2591!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _tsl2591->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_tsl2591);
+    WS_DEBUG_PRINTLN("TSL2591 Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -315,6 +326,10 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
           drivers[i]->updateSensorAltitude(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
+          drivers[i]->updateSensorLight(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         default:
@@ -473,7 +488,7 @@ void WipperSnapper_Component_I2C::update() {
       }
     }
 
-    // AMBIENT_TEMPERATURE sensor
+    // OBJECT_TEMPERATURE sensor
     curTime = millis();
     if ((*iter)->sensorObjectTempPeriod() != 0L &&
         curTime - (*iter)->sensorObjectTempPeriodPrv() >
@@ -585,6 +600,29 @@ void WipperSnapper_Component_I2C::update() {
         (*iter)->setSensorAltitudePeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get altitude sensor reading!");
+      }
+    }
+
+    // Light sensor
+    curTime = millis();
+    if ((*iter)->sensorLightPeriod() != 0L &&
+        curTime - (*iter)->SensorLightPeriodPrv() >
+            (*iter)->sensorLightPeriod()) {
+      if ((*iter)->getEventLight(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tLight: ");
+        WS_DEBUG_PRINT(event.light);
+        WS_DEBUG_PRINTLN(" lux");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.light,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT);
+
+        (*iter)->setSensorLightPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get light sensor reading!");
       }
     }
 
