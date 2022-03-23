@@ -30,17 +30,16 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for a SCD30 sensor.
-      @param    _i2c
+      @param    i2c
                 The I2C interface.
       @param    sensorAddress
-                The 7-bit I2C address of the sensor.
+                7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_SCD30(TwoWire *_i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setI2CAddress(sensorAddress);
-    _scd30 = new Adafruit_SCD30();
-    _isInitialized = _scd30->begin((uint8_t)_sensorAddress, _i2c);
+  WipperSnapper_I2C_Driver_SCD30(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -49,6 +48,18 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_SCD30() { delete _scd30; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the SCD30 sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _scd30 = new Adafruit_SCD30();
+    bool isInit = _scd30->begin((uint8_t)_sensorAddress, _i2c);
+    return isInit;
+  }
 
   /*******************************************************************************/
   /*!

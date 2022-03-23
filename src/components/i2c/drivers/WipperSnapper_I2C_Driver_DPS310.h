@@ -31,17 +31,16 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for a DPS310 sensor.
-      @param    _i2c
+      @param    i2c
                 The I2C interface.
       @param    sensorAddress
-                The 7-bit I2C address of the sensor.
+                7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_DPS310(TwoWire *_i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(_i2c, sensorAddress) {
-    setI2CAddress(sensorAddress);
-    _dps310 = new Adafruit_DPS310();
-    _isInitialized = _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c);
+  WipperSnapper_I2C_Driver_DPS310(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -50,6 +49,18 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_DPS310() { delete _dps310; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the DPS310 sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _dps310 = new Adafruit_DPS310();
+    bool isInit = _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c);
+    return isInit;
+  }
 
   /*******************************************************************************/
   /*!

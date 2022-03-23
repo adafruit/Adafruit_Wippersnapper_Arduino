@@ -23,7 +23,10 @@
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
+#include "drivers/WipperSnapper_I2C_Driver_MCP9601.h"
+#include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
+#include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
 
 #define I2C_TIMEOUT_MS 50 ///< Default I2C timeout, in milliseconds.
 
@@ -72,6 +75,9 @@ private:
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
+  WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
+  WipperSnapper_I2C_Driver_MCP9601 *_mcp9601 = nullptr;
+  WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
 };
 extern Wippersnapper WS;
 

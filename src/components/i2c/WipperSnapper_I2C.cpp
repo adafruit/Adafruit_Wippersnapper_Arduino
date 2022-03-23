@@ -65,17 +65,17 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
 // Initialize I2C bus
 #if defined(ARDUINO_ARCH_ESP32)
     _i2c = new TwoWire(msgInitRequest->i2c_port_number);
-    if (!_i2c->begin(msgInitRequest->i2c_pin_sda,
-                     msgInitRequest->i2c_pin_scl)) {
+    if (!_i2c->begin((int)msgInitRequest->i2c_pin_sda,
+                     (int)msgInitRequest->i2c_pin_scl)) {
       _isInit = false; // if the peripheral was configured incorrectly
     } else {
       _isInit = true; // if the peripheral was configured incorrectly
     }
-    _i2c->setClock(msgInitRequest->i2c_frequency);
+    _i2c->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
     _i2c = new TwoWire();
     _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
-    _i2c->setClock(msgInitRequest->i2c_frequency);
+    _i2c->setClock(50000);
     _isInit = true;
 #else
     // SAMD
@@ -202,18 +202,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
   if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
     _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
-    if (!_ahtx0->isInitialized()) {
+    if (!_ahtx0->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize AHTX0 chip!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
     }
-    WS_DEBUG_PRINTLN("AHTX0 Initialized Successfully!");
     _ahtx0->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ahtx0);
   } else if (strcmp("bme280", msgDeviceInitReq->i2c_device_name) == 0) {
     _bme280 = new WipperSnapper_I2C_Driver_BME280(this->_i2c, i2cAddress);
-    if (!_bme280->isInitialized()) {
+    if (!_bme280->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize BME280!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
@@ -224,7 +223,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("BME280 Initialized Successfully!");
   } else if (strcmp("dps310", msgDeviceInitReq->i2c_device_name) == 0) {
     _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
-    if (!_dps310->isInitialized()) {
+    if (!_dps310->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize DPS310!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
@@ -235,7 +234,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("DPS310 Initialized Successfully!");
   } else if (strcmp("scd30", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd30 = new WipperSnapper_I2C_Driver_SCD30(this->_i2c, i2cAddress);
-    if (!_scd30->isInitialized()) {
+    if (!_scd30->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD30!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
@@ -244,6 +243,39 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd30->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd30);
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
+  } else if (strcmp("mcp9808", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mcp9808 = new WipperSnapper_I2C_Driver_MCP9808(this->_i2c, i2cAddress);
+    if (!_mcp9808->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MCP9808!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mcp9808->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mcp9808);
+    WS_DEBUG_PRINTLN("MCP9808 Initialized Successfully!");
+  } else if (strcmp("mcp9601", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mcp9601 = new WipperSnapper_I2C_Driver_MCP9601(this->_i2c, i2cAddress);
+    if (!_mcp9601->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MCP9601!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mcp9601->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mcp9601);
+    WS_DEBUG_PRINTLN("MCP9601 Initialized Successfully!");
+  } else if (strcmp("tsl2591", msgDeviceInitReq->i2c_device_name) == 0) {
+    _tsl2591 = new WipperSnapper_I2C_Driver_TSL2591(this->_i2c, i2cAddress);
+    if (!_tsl2591->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize TSL2591!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _tsl2591->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_tsl2591);
+    WS_DEBUG_PRINTLN("TSL2591 Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -276,6 +308,10 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           drivers[i]->updateSensorAmbientTemperature(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+          drivers[i]->updateSensorObjectTemp(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
           drivers[i]->updateSensorRelativeHumidity(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
@@ -290,6 +326,10 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
           drivers[i]->updateSensorAltitude(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
+          drivers[i]->updateSensorLight(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         default:
@@ -448,6 +488,31 @@ void WipperSnapper_Component_I2C::update() {
       }
     }
 
+    // OBJECT_TEMPERATURE sensor
+    curTime = millis();
+    if ((*iter)->sensorObjectTempPeriod() != 0L &&
+        curTime - (*iter)->sensorObjectTempPeriodPrv() >
+            (*iter)->sensorObjectTempPeriod()) {
+      if ((*iter)->getEventObjectTemp(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tTemperature: ");
+        WS_DEBUG_PRINT(event.temperature);
+        WS_DEBUG_PRINTLN(" degrees C");
+
+        // pack event data into msg
+        fillEventMessage(
+            &msgi2cResponse, event.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE);
+
+        (*iter)->setSensorObjectTempPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to get object temperature sensor reading!");
+      }
+    }
+
     // RELATIVE_HUMIDITY sensor
     curTime = millis();
     if ((*iter)->sensorRelativeHumidityPeriod() != 0L &&
@@ -535,6 +600,29 @@ void WipperSnapper_Component_I2C::update() {
         (*iter)->setSensorAltitudePeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get altitude sensor reading!");
+      }
+    }
+
+    // Light sensor
+    curTime = millis();
+    if ((*iter)->sensorLightPeriod() != 0L &&
+        curTime - (*iter)->SensorLightPeriodPrv() >
+            (*iter)->sensorLightPeriod()) {
+      if ((*iter)->getEventLight(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tLight: ");
+        WS_DEBUG_PRINT(event.light);
+        WS_DEBUG_PRINTLN(" lux");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.light,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT);
+
+        (*iter)->setSensorLightPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get light sensor reading!");
       }
     }
 
