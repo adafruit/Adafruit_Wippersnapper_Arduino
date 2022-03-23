@@ -1,15 +1,19 @@
-name: Call a reusable workflow
+# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2022
+#
+# SPDX-License-Identifier: MIT
+name: WipperSnapper Release CI Caller
 
 on:
+  # TODO: Remove below
   pull_request:
   release:
 
 jobs:
   call-workflow-build:
-    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@069d3abcf8cf64e298a6af72187dbe9a4d15f621
+    uses: ./.github/workflows/build-clang-doxy.yml
     secrets:
       token: ${{ secrets.TOKEN }}
 
   call-workflow-release:
     needs: call-workflow-build
-    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-reusable.yml@069d3abcf8cf64e298a6af72187dbe9a4d15f621
+    uses: ./.github/workflows/release-reusable.yml@069d3abcf8cf64e298a6af72187dbe9a4d15f621
