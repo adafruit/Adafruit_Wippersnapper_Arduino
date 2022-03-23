@@ -13,8 +13,8 @@ jobs:
     steps:
       - name: Download build artifacts from build-platform steps
         uses: actions/download-artifact@v2
-        with:
-          name: build-files
+#        with:
+#          name: build-files
       - name: List Files
         run: ls
       - name: Upload Assets to the GitHub Release
