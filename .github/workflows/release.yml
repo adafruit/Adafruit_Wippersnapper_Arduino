@@ -5,4 +5,4 @@ on:
 
 jobs:
   call-workflow-build-clang-doxy:
-    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@v1
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
