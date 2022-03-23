@@ -7,5 +7,5 @@ on:
 jobs:
   call-workflow-build:
     uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
-    with:
-      token: ${{ secrets.token }}
+    secrets:
+      token: ${{ secrets.TOKEN }}
