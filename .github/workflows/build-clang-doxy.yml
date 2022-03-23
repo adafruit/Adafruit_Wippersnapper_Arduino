@@ -4,7 +4,6 @@
 name: WipperSnapper Build CI
 
 on:
-  pull_request:
   workflow_call:
     secrets:
       token:
