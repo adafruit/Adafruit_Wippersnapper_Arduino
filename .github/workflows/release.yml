@@ -4,5 +4,8 @@ on:
   pull_request:
 
 jobs:
-  call-workflow-build-clang-doxy:
+  call-workflow-build:
     uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
+
+  call-workflow-release:
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-reusable.yml@main
