@@ -10,7 +10,6 @@ jobs:
   release-wippersnapper:
     name: Release WipperSnapper
     runs-on: ubuntu-latest
-    needs: clang_and_doxy
     steps:
       - name: Download build artifacts from build-platform steps
         uses: actions/download-artifact@v2
