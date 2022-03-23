@@ -9,3 +9,7 @@ jobs:
     uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
     secrets:
       token: ${{ secrets.TOKEN }}
+
+  call-workflow-release:
+    needs: call-workflow-build
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-reusable.yml@main
