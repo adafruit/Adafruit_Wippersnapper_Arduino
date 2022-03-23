@@ -10,10 +10,10 @@ on:
 
 jobs:
   call-workflow-build:
-    uses: ./.github/workflows/build-clang-doxy.yml
+    uses: ./.github/workflows/build-clang-doxy.yml@main
     secrets:
       token: ${{ secrets.TOKEN }}
 
   call-workflow-release:
     needs: call-workflow-build
-    uses: ./.github/workflows/release-reusable.yml@069d3abcf8cf64e298a6af72187dbe9a4d15f621
+    uses: ./.github/workflows/release-reusable.yml@main
