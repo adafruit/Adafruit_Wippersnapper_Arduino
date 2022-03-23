@@ -9,7 +9,6 @@ on:
 jobs:
   release-wippersnapper:
     name: Release WipperSnapper
-    runs-on: ubuntu-latest
     steps:
       - name: Download build artifacts from build-platform steps
         uses: actions/download-artifact@v2
