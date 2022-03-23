@@ -6,10 +6,10 @@ on:
 
 jobs:
   call-workflow-build:
-    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@069d3abcf8cf64e298a6af72187dbe9a4d15f621
     secrets:
       token: ${{ secrets.TOKEN }}
 
   call-workflow-release:
     needs: call-workflow-build
-    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-reusable.yml@main
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-reusable.yml@069d3abcf8cf64e298a6af72187dbe9a4d15f621
