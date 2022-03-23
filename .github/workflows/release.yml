@@ -5,6 +5,4 @@ on:
 
 jobs:
   call-workflow-build-clang-doxy:
-    uses: ./github/workflows/build-clang-doxy.yml@v1
-  call-workflow-release-assets:
-    uses: ./github/workflows/release-reusable.yml@v1
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy@v1
