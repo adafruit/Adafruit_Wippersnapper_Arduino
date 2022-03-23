@@ -6,6 +6,5 @@ on:
 jobs:
   call-workflow-build-clang-doxy:
     uses: ./github/workflows/build-clang-doxy.yml
-
   call-workflow-release-assets:
     uses: ./github/workflows/release-reusable.yml
