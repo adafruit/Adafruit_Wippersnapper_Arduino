@@ -10,10 +10,10 @@ on:
 
 jobs:
   call-workflow-build:
-    uses: ./.github/workflows/build-clang-doxy.yml@main
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@workflow-reusable-2
     secrets:
       token: ${{ secrets.TOKEN }}
 
   call-workflow-release:
     needs: call-workflow-build
-    uses: ./.github/workflows/release-reusable.yml@main
+    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-reusable.yml@workflow-reusable-2
