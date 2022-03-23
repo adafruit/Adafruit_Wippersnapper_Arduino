@@ -2,7 +2,10 @@ name: Call a reusable workflow
 
 on:
   pull_request:
+  release:
 
 jobs:
   call-workflow-build:
     uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
+    with:
+      token: ${{ secrets.token }}
