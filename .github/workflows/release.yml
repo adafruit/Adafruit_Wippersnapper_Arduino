@@ -11,5 +11,5 @@ jobs:
       token: ${{ secrets.TOKEN }}
 
   call-workflow-release:
-    needs: call-workflow-build
+    #needs: call-workflow-build
     uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-reusable.yml@main
