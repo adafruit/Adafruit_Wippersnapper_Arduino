@@ -5,7 +5,10 @@ name: WipperSnapper Build CI
 
 on:
   pull_request:
-
+  workflow_call:
+    secrets:
+      token:
+        required: true
 
 jobs:
   build-esp32s2:
