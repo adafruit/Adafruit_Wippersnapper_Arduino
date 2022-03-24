@@ -4,7 +4,7 @@
 name: WipperSnapper Release CI
 
 on:
-  workflow_call
+  workflow_call:
 
 jobs:
   release-wippersnapper:
