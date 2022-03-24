@@ -4,9 +4,7 @@
 name: WipperSnapper Build CI
 
 on:
-  # TODO:
-  # PUT THIS BACK: pull_request:
-  # for testing only,
+  pull_request:
   workflow_call:
     secrets:
       token:
