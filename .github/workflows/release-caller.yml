@@ -5,6 +5,7 @@ name: WipperSnapper Release Workflow
 
 on:
   release:
+    types: [published]
 
 jobs:
   call-workflow-build:
