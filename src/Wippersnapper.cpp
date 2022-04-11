@@ -74,6 +74,9 @@ Wippersnapper::~Wippersnapper() {
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
+  // Get MAC address from network interface
+  getMacAddr();
+
   // init. LED for status signaling
   statusLEDInit();
 #ifdef USE_TINYUSB
@@ -87,8 +90,6 @@ void Wippersnapper::provision() {
 #endif
 
   set_ssid_pass();
-  // Get MAC address from network interface
-  getMacAddr();
 }
 
 /**************************************************************************/
@@ -1066,27 +1067,22 @@ bool Wippersnapper::buildWSTopics() {
       WS._network_pass == NULL)
     return false;
 
-  // TODO: Validate that we've filled the MAC address
-
-  // UID Manipulation, TODO refactor?
+  // Create device unique identifier
   // Move the top 3 bytes from the UID
   for (int i = 5; i > 2; i--) {
     WS._macAddr[6 - 1 - i] = WS._macAddr[i];
   }
   snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
            WS._macAddr[1], WS._macAddr[2]);
-
-  // Get board ID from _Boards.h
+  // Set device UID
   WS._boardId = BOARD_ID;
-
-  // Set client UID
   _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
                                strlen(WS._boardId) + strlen(WS.sUID));
   strcpy(_device_uid, "io-wipper-");
   strcat(_device_uid, WS._boardId);
   strcat(_device_uid, WS.sUID);
 
-  // Create MQTT client object
+  // Initialize MQTT client
   setupMQTTClient(_device_uid);
 
   // Global registration topic
@@ -1265,7 +1261,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
-  _fileSystem->writeErrorToBootOut(error.c_str());
+  _fileSystem->writeToBootOut(error.c_str());
 #endif
   // Signal and hang forever
   while (1) {
@@ -1533,7 +1529,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
 
-  WS_DEBUG_PRINT("Adafruit IO User: ");
+  WS_DEBUG_PRINT("Adafruit.io User: ");
   WS_DEBUG_PRINTLN(WS._username);
 
   WS_DEBUG_PRINT("WiFi Network: ");

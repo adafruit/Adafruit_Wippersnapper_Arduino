@@ -15,13 +15,13 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#include "ArduinoJson.h"
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
+#include "ArduinoJson.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h"
 #include "fatfs/diskio.h"
+#include "fatfs/ff.h"
 
 #include "Wippersnapper.h"
 
@@ -53,7 +53,7 @@ public:
   bool configFileExists();
   void createConfigFileSkel();
   bool createBootFile();
-  void writeErrorToBootOut(PGM_P str);
+  void writeToBootOut(PGM_P str);
   void fsHalt();
 
   void parseSecrets();

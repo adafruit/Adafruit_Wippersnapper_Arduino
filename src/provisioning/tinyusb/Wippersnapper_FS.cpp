@@ -102,8 +102,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
 */
 /************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {
-  //io_username = NULL;
-  //io_key = NULL;
+  // io_username = NULL;
+  // io_key = NULL;
 }
 
 /**************************************************************************/
@@ -264,8 +264,11 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("Firmware Version: ");
     bootFile.println(WS_VERSION);
 
-    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
-    bootFile.print("MAC Address: "); bootFile.println(sMAC);
+    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
+            WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
+            WS._macAddr[5]);
+    bootFile.print("MAC Address: ");
+    bootFile.println(sMAC);
 
     bootFile.flush();
     bootFile.close();
@@ -314,7 +317,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
       "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
   secretsFile.flush();
   secretsFile.close();
-  writeErrorToBootOut(
+  writeToBootOut(
       "* Please edit the secrets.json file. Then, reset your board.");
 }
 
@@ -338,17 +341,17 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
 
-    writeErrorToBootOut("ERROR: deserializeJson() failed with code");
-    writeErrorToBootOut(err.c_str());
+    writeToBootOut("ERROR: deserializeJson() failed with code");
+    writeToBootOut(err.c_str());
     fsHalt();
   }
 
   // Get io username
-  const char * io_username = doc["io_username"];
+  const char *io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
-    writeErrorToBootOut("ERROR: invalid io_username value in secrets.json!");
+    writeToBootOut("ERROR: invalid io_username value in secrets.json!");
     while (1) {
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
       yield();
@@ -357,7 +360,7 @@ void Wippersnapper_FS::parseSecrets() {
 
   // check if username is from templated json
   if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
-    writeErrorToBootOut(
+    writeToBootOut(
         "* ERROR: Default username found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
         "effect");
@@ -365,12 +368,15 @@ void Wippersnapper_FS::parseSecrets() {
   }
   WS._username = io_username;
 
+  writeToBootOut("Adafruit.io Username: ");
+  writeToBootOut(WS._username);
+
   // Get io key
   const char *io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
-    writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
+    writeToBootOut("ERROR: invalid io_key value in secrets.json!");
     fsHalt();
   }
   WS._key = io_key;
@@ -394,7 +400,7 @@ void Wippersnapper_FS::parseSecrets() {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
-      writeErrorToBootOut(
+      writeToBootOut(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
           "secrets.json!");
       fsHalt();
@@ -402,8 +408,8 @@ void Wippersnapper_FS::parseSecrets() {
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_airlift"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
-      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
-                          "the secrets.json file and reset the board");
+      writeToBootOut("Default SSID found in secrets.json, please edit "
+                     "the secrets.json file and reset the board");
       fsHalt();
     }
 
@@ -430,7 +436,7 @@ void Wippersnapper_FS::parseSecrets() {
       WS_DEBUG_PRINTLN(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
-      writeErrorToBootOut(
+      writeToBootOut(
           "ERROR: invalid network_type_wifi_native_network_password value in "
           "secrets.json!");
       fsHalt();
@@ -438,8 +444,8 @@ void Wippersnapper_FS::parseSecrets() {
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_native"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
-      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
-                          "the secrets.json file and reset the board");
+      writeToBootOut("Default SSID found in secrets.json, please edit "
+                     "the secrets.json file and reset the board");
       fsHalt();
     }
 
@@ -453,10 +459,13 @@ void Wippersnapper_FS::parseSecrets() {
   if (!setNetwork) {
     WS_DEBUG_PRINTLN(
         "ERROR: Network interface not detected in secrets.json file.");
-    writeErrorToBootOut(
+    writeToBootOut(
         "ERROR: Network interface not detected in secrets.json file.");
     fsHalt();
   }
+
+  writeToBootOut("WiFi Network: ");
+  writeToBootOut(WS._network_ssid);
 
   // Optional, Set the IO URL
   WS._mqttBrokerURL = doc["io_url"];
@@ -475,7 +484,7 @@ void Wippersnapper_FS::parseSecrets() {
                 PROGMEM string.
 */
 /**************************************************************************/
-void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
+void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
