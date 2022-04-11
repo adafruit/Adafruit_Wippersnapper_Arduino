@@ -249,9 +249,24 @@ void Wippersnapper_FS::eraseBootFile() {
 /**************************************************************************/
 bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
+  char sMAC[18] = {0};
+
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
+    bootFile.println("Adafruit.io WipperSnapper");
+
+    bootFile.print("Firmware Version: ");
     bootFile.println(WS_VERSION);
+
+    bootFile.print("Board ID: ");
+    bootFile.println(BOARD_ID);
+
+    bootFile.print("Firmware Version: ");
+    bootFile.println(WS_VERSION);
+
+    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
+    bootFile.print("MAC Address: "); bootFile.println(sMAC);
+
     bootFile.flush();
     bootFile.close();
     is_success = true;

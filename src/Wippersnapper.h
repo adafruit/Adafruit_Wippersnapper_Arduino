@@ -274,7 +274,7 @@ public:
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
 
-  uint8_t _macAddr[6];      /*!< Unique network iface identifier */
+  uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
   const char *_boardId; /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */

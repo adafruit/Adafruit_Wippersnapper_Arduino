@@ -1065,7 +1065,7 @@ bool Wippersnapper::buildWSTopics() {
   if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL ||
       WS._network_pass == NULL)
     return false;
-  
+
   // TODO: Validate that we've filled the MAC address
 
   // UID Manipulation, TODO refactor?
@@ -1073,8 +1073,8 @@ bool Wippersnapper::buildWSTopics() {
   for (int i = 5; i > 2; i--) {
     WS._macAddr[6 - 1 - i] = WS._macAddr[i];
   }
-  snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0], WS._macAddr[1],
-           WS._macAddr[2]);
+  snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
+           WS._macAddr[1], WS._macAddr[2]);
 
   // Get board ID from _Boards.h
   WS._boardId = BOARD_ID;
@@ -1523,17 +1523,27 @@ bool validateAppCreds() {
 /**************************************************************************/
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
-  
+
   // Print all identifiers to the debug log
   WS_DEBUG_PRINTLN("-------Device Information-------");
-  WS_DEBUG_PRINT("Firmware Version: "); WS_DEBUG_PRINTLN(WS_VERSION);
-  WS_DEBUG_PRINT("Board ID: "); WS_DEBUG_PRINTLN(BOARD_ID);
-  WS_DEBUG_PRINT("Adafruit IO User: "); WS_DEBUG_PRINTLN(WS._username);
-  WS_DEBUG_PRINT("WiFi Network: "); WS_DEBUG_PRINTLN(WS._network_ssid);
+
+  WS_DEBUG_PRINT("Firmware Version: ");
+  WS_DEBUG_PRINTLN(WS_VERSION);
+
+  WS_DEBUG_PRINT("Board ID: ");
+  WS_DEBUG_PRINTLN(BOARD_ID);
+
+  WS_DEBUG_PRINT("Adafruit IO User: ");
+  WS_DEBUG_PRINTLN(WS._username);
+
+  WS_DEBUG_PRINT("WiFi Network: ");
+  WS_DEBUG_PRINTLN(WS._network_ssid);
 
   char sMAC[18] = {0};
-  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
-  WS_DEBUG_PRINT("MAC Address: "); WS_DEBUG_PRINTLN(sMAC);
+  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
+          WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
+  WS_DEBUG_PRINT("MAC Address: ");
+  WS_DEBUG_PRINTLN(sMAC);
   WS_DEBUG_PRINTLN("-------------------------------");
 
   // enable WDT
