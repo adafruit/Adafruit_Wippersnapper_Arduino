@@ -315,7 +315,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
   secretsFile.flush();
   secretsFile.close();
   writeToBootOut(
-      "* Please edit the secrets.json file. Then, reset your board.");
+      "* Please edit the secrets.json file. Then, reset your board.\n");
 }
 
 /**************************************************************************/
@@ -338,7 +338,7 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
 
-    writeToBootOut("ERROR: deserializeJson() failed with code");
+    writeToBootOut("ERROR: deserializeJson() failed with code\n");
     writeToBootOut(err.c_str());
     fsHalt();
   }
@@ -348,7 +348,7 @@ void Wippersnapper_FS::parseSecrets() {
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
-    writeToBootOut("ERROR: invalid io_username value in secrets.json!");
+    writeToBootOut("ERROR: invalid io_username value in secrets.json!\n");
     while (1) {
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
       yield();
@@ -360,20 +360,21 @@ void Wippersnapper_FS::parseSecrets() {
     writeToBootOut(
         "* ERROR: Default username found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
-        "effect");
+        "effect\n");
     fsHalt();
   }
   WS._username = io_username;
 
   writeToBootOut("Adafruit.io Username: ");
   writeToBootOut(WS._username);
+  writeToBootOut("\n");
 
   // Get io key
   const char *io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
-    writeToBootOut("ERROR: invalid io_key value in secrets.json!");
+    writeToBootOut("ERROR: invalid io_key value in secrets.json!\n");
     fsHalt();
   }
   WS._key = io_key;
@@ -399,14 +400,14 @@ void Wippersnapper_FS::parseSecrets() {
           "secrets.json!");
       writeToBootOut(
           "ERROR: invalid network_type_wifi_airlift_network_password value in "
-          "secrets.json!");
+          "secrets.json!\n");
       fsHalt();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_airlift"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeToBootOut("Default SSID found in secrets.json, please edit "
-                     "the secrets.json file and reset the board");
+                     "the secrets.json file and reset the board\n");
       fsHalt();
     }
 
@@ -435,14 +436,14 @@ void Wippersnapper_FS::parseSecrets() {
           "secrets.json!");
       writeToBootOut(
           "ERROR: invalid network_type_wifi_native_network_password value in "
-          "secrets.json!");
+          "secrets.json!\n");
       fsHalt();
     }
     // check if SSID is from template (not entered)
     if (doc["network_type_wifi_native"]["network_password"] ==
         "YOUR_WIFI_SSID_HERE") {
       writeToBootOut("Default SSID found in secrets.json, please edit "
-                     "the secrets.json file and reset the board");
+                     "the secrets.json file and reset the board\n");
       fsHalt();
     }
 
@@ -457,12 +458,13 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINTLN(
         "ERROR: Network interface not detected in secrets.json file.");
     writeToBootOut(
-        "ERROR: Network interface not detected in secrets.json file.");
+        "ERROR: Network interface not detected in secrets.json file.\n");
     fsHalt();
   }
 
   writeToBootOut("WiFi Network: ");
   writeToBootOut(WS._network_ssid);
+  writeToBootOut("\n");
 
   // Optional, Set the IO URL
   WS._mqttBrokerURL = doc["io_url"];
@@ -485,7 +487,7 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
-    bootFile.println(str);
+    bootFile.print(str);
     bootFile.flush();
     bootFile.close();
   } else {
