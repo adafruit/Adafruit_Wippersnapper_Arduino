@@ -261,9 +261,6 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("Board ID: ");
     bootFile.println(BOARD_ID);
 
-    bootFile.print("Firmware Version: ");
-    bootFile.println(WS_VERSION);
-
     sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
             WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
             WS._macAddr[5]);
