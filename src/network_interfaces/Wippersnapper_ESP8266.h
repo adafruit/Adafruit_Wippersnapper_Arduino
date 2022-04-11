@@ -103,9 +103,9 @@ public:
   @note   For the ESP8266, the UID is the MAC address.
   */
   /********************************************************/
-  void setUID() {
+  void getMacAddr() {
     WiFi.macAddress(mac);
-    memcpy(WS._uid, mac, sizeof(mac));
+    memcpy(WS._macAddr, mac, sizeof(mac));
   }
 
   /*******************************************************************/
