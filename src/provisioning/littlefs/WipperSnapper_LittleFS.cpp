@@ -111,6 +111,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
   // set password
   WS._network_pass = network_type_wifi_native_network_password;
 
+  // Optionally set the Adafruit.io URL
+  WS._mqttBrokerURL = doc["io_url"];
+
   // close the file
   secretsFile.close();
 
