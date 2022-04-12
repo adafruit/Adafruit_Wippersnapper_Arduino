@@ -87,7 +87,7 @@
 #define STATUS_LED_PIN 13
 #define USE_LITTLEFS
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
-#define BOARD_ID "feather-esp32-v2-daily"
+#define BOARD_ID "feather-esp32-v2"
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
