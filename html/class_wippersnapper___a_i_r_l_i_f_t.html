@@ -108,9 +108,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:accdf5d5a8cf24ff783816d901a75249f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#accdf5d5a8cf24ff783816d901a75249f">firmwareCheck</a> ()</td></tr>
 <tr class="memdesc:accdf5d5a8cf24ff783816d901a75249f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks the version of an ESP32 module running nina-fw.  <a href="#accdf5d5a8cf24ff783816d901a75249f">More...</a><br /></td></tr>
 <tr class="separator:accdf5d5a8cf24ff783816d901a75249f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d44f58fb144e3bd4138726629650d10"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a6d44f58fb144e3bd4138726629650d10">setUID</a> ()</td></tr>
-<tr class="memdesc:a6d44f58fb144e3bd4138726629650d10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ESP32's unique client identifier.  <a href="#a6d44f58fb144e3bd4138726629650d10">More...</a><br /></td></tr>
-<tr class="separator:a6d44f58fb144e3bd4138726629650d10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8967a619a24f16975b98069a052317e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ab8967a619a24f16975b98069a052317e">getMacAddr</a> ()</td></tr>
+<tr class="memdesc:ab8967a619a24f16975b98069a052317e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ESP32's unique client identifier.  <a href="#ab8967a619a24f16975b98069a052317e">More...</a><br /></td></tr>
+<tr class="separator:ab8967a619a24f16975b98069a052317e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac05433b076a739d94e07222d926a0045"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">setupMQTTClient</a> (const char *clientID)</td></tr>
 <tr class="memdesc:ac05433b076a739d94e07222d926a0045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the MQTT client.  <a href="#ac05433b076a739d94e07222d926a0045">More...</a><br /></td></tr>
 <tr class="separator:ac05433b076a739d94e07222d926a0045"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -249,8 +249,6 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a7c519ff51e3b6fec56d75739d0c73e32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0029272a949f541ea26a19d27a9b52c8"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a0029272a949f541ea26a19d27a9b52c8">_fv</a></td></tr>
 <tr class="separator:a0029272a949f541ea26a19d27a9b52c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2929944ebbbf30c1c62952a186e17ab1"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a2929944ebbbf30c1c62952a186e17ab1">mac</a> [6]</td></tr>
-<tr class="separator:a2929944ebbbf30c1c62952a186e17ab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0fb6f803b4a9f81d9a4b15ffa46a9ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ae0fb6f803b4a9f81d9a4b15ffa46a9ee">_ssPin</a> = -1</td></tr>
 <tr class="separator:ae0fb6f803b4a9f81d9a4b15ffa46a9ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c93d59fddf8da9c3d1399da59a04312"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a3c93d59fddf8da9c3d1399da59a04312">_ackPin</a> = -1</td></tr>
@@ -358,8 +356,8 @@ Wippersnapper_FS *&#160;</td><td class="memItemRight" valign="bottom"><a class="
 WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a98a40aae300a312aa87f4480d18a4c14">_littleFS</a></td></tr>
 <tr class="memdesc:a98a40aae300a312aa87f4480d18a4c14 inherit pub_attribs_class_wippersnapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of LittleFS Filesystem (non-native USB) <br /></td></tr>
 <tr class="separator:a98a40aae300a312aa87f4480d18a4c14 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeffbbf027549646e2c70f7703a0593a1 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aeffbbf027549646e2c70f7703a0593a1">_uid</a> [6]</td></tr>
-<tr class="separator:aeffbbf027549646e2c70f7703a0593a1 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c0144ecf93d8650ac79676f7775f48a inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a1c0144ecf93d8650ac79676f7775f48a">_macAddr</a> [6]</td></tr>
+<tr class="separator:a1c0144ecf93d8650ac79676f7775f48a inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af14c0ae10d0fd58619add280acf6c461 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#af14c0ae10d0fd58619add280acf6c461">sUID</a> [13]</td></tr>
 <tr class="separator:af14c0ae10d0fd58619add280acf6c461 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6457c3bdf6c7a89d3503d7776f11c09b inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a6457c3bdf6c7a89d3503d7776f11c09b">_boardId</a></td></tr>
@@ -570,8 +568,8 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 
 </div>
 </div>
-<a id="a6d44f58fb144e3bd4138726629650d10"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6d44f58fb144e3bd4138726629650d10">&#9670;&nbsp;</a></span>setUID()</h2>
+<a id="ab8967a619a24f16975b98069a052317e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8967a619a24f16975b98069a052317e">&#9670;&nbsp;</a></span>getMacAddr()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -580,7 +578,7 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void Wippersnapper_AIRLIFT::setUID </td>
+          <td class="memname">void Wippersnapper_AIRLIFT::getMacAddr </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -596,7 +594,7 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 <p>Gets the ESP32's unique client identifier. </p>
 <dl class="section note"><dt>Note</dt><dd>For the ESP32, the UID is the MAC address. </dd></dl>
 
-<p>Reimplemented from <a class="el" href="class_wippersnapper.html#a741a2b9cde176cb8c18d558fca2fa3b5">Wippersnapper</a>.</p>
+<p>Reimplemented from <a class="el" href="class_wippersnapper.html#a1034172df196bc9db1f5e390c785c0f8">Wippersnapper</a>.</p>
 
 </div>
 </div>
@@ -784,29 +782,6 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 </table>
 </div><div class="memdoc">
 <p>nina-fw firmware version. </p>
-
-</div>
-</div>
-<a id="a2929944ebbbf30c1c62952a186e17ab1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2929944ebbbf30c1c62952a186e17ab1">&#9670;&nbsp;</a></span>mac</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint8_t Wippersnapper_AIRLIFT::mac[6]</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= {0x00, 0x00, 0x00,</div><div class="line">                    0x00, 0x00, 0x00}</div></div><!-- fragment --><p>ESP32 interface's MAC address. </p>
 
 </div>
 </div>

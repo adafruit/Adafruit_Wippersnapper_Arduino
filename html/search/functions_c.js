@@ -40,7 +40,6 @@ var searchData=
   ['setsensorrelativehumidityperiod',['setSensorRelativeHumidityPeriod',['../class_wipper_snapper___i2_c___driver.html#a2e99563f0eb6223f3bdff01f05587898',1,'WipperSnapper_I2C_Driver']]],
   ['setsensorrelativehumidityperiodprv',['setSensorRelativeHumidityPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a2e7ad656d5562af7ce05a8f61fba4a78',1,'WipperSnapper_I2C_Driver']]],
   ['setstatusledcolor',['setStatusLEDColor',['../class_wippersnapper.html#a4433b0f8093d02770fb7b81adb9478bc',1,'Wippersnapper']]],
-  ['setuid',['setUID',['../class_wippersnapper___a_i_r_l_i_f_t.html#a6d44f58fb144e3bd4138726629650d10',1,'Wippersnapper_AIRLIFT::setUID()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#a9429dc1dd1cd388c2a53423bd6802c94',1,'Wippersnapper_WIFININA::setUID()'],['../class_wippersnapper.html#a741a2b9cde176cb8c18d558fca2fa3b5',1,'Wippersnapper::setUID()']]],
   ['setupmqttclient',['setupMQTTClient',['../class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045',1,'Wippersnapper_AIRLIFT::setupMQTTClient()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#af93ea859ff730b169c2ff1bfec455e11',1,'Wippersnapper_WIFININA::setupMQTTClient()'],['../class_wippersnapper.html#a95627d13a469876e0aefb8a120a18732',1,'Wippersnapper::setupMQTTClient()']]],
   ['statusledblink',['statusLEDBlink',['../class_wippersnapper.html#a87a70aebcc7459fb338e195d6b3f7b63',1,'Wippersnapper']]],
   ['statusleddeinit',['statusLEDDeinit',['../class_wippersnapper.html#a258144a4711ed7f452f0484680f436e1',1,'Wippersnapper']]],
