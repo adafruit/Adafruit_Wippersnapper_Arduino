@@ -6,6 +6,9 @@ name: WipperSnapper Release Workflow
 on:
   release:
     types: [published]
+    secrets:
+      GH_REPO_TOKEN:
+        required: true
 
 jobs:
   call-workflow-build:
