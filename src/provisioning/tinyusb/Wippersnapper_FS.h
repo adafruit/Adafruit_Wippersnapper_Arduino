@@ -23,6 +23,7 @@
 #include "fatfs/ff.h"
 #include "fatfs/diskio.h"
 
+
 #include "Wippersnapper.h"
 
 // forward decl.
@@ -53,7 +54,7 @@ public:
   bool configFileExists();
   void createConfigFileSkel();
   bool createBootFile();
-  void writeErrorToBootOut(PGM_P str);
+  void writeToBootOut(PGM_P str);
   void fsHalt();
 
   void parseSecrets();

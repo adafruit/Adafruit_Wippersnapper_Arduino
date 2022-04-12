@@ -62,7 +62,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.29" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.30" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -197,7 +197,7 @@ public:
   void connect();
   void disconnect();
 
-  virtual void setUID();
+  virtual void getMacAddr();
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
@@ -274,7 +274,7 @@ public:
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
 
-  uint8_t _uid[6];      /*!< Unique network iface identifier */
+  uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
   const char *_boardId; /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
