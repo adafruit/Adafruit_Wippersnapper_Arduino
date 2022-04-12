@@ -9,10 +9,10 @@ on:
 
 jobs:
   call-workflow-build:
-    uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@workflow-reusable-2
+    uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
     secrets:
       token: ${{ secrets.TOKEN }}
 
   call-workflow-release:
     needs: call-workflow-build
-    uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/release-callee.yml@workflow-reusable-2
+    uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/release-callee.yml@main
