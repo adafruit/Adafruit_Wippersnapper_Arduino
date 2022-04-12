@@ -7,7 +7,7 @@ on:
   pull_request:
   workflow_call:
     secrets:
-      token:
+      GH_REPO_TOKEN:
         required: true
 
 jobs:
