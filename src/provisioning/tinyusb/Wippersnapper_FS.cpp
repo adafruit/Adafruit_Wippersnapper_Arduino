@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -17,7 +17,7 @@
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) || \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
@@ -301,7 +301,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
     defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) || \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
   secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_"
                     "ssid\":\"YOUR_WIFI_SSID_");
