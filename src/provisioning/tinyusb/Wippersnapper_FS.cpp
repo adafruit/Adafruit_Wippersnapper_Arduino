@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -17,7 +17,8 @@
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -28,7 +29,7 @@ Adafruit_FlashTransport_QSPI flashTransport;
 #elif defined(EXTERNAL_FLASH_USE_SPI)
 Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
                                            EXTERNAL_FLASH_USE_SPI);
-#elif CONFIG_IDF_TARGET_ESP32S2
+#elif defined(ARDUINO_ARCH_ESP32)
 // ESP32-S2 uses same flash device that stores code.
 // Therefore there is no need to specify the SPI and SS
 Adafruit_FlashTransport_ESP32 flashTransport;
@@ -300,7 +301,8 @@ void Wippersnapper_FS::createConfigFileSkel() {
     defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
   secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_"
                     "ssid\":\"YOUR_WIFI_SSID_");
 #elif defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)

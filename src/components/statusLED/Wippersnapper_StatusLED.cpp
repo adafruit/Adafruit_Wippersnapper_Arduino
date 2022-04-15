@@ -52,7 +52,8 @@ bool Wippersnapper::statusLEDInit() {
   pinMode(NEOPIXEL_POWER, OUTPUT);
 #if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
   digitalWrite(NEOPIXEL_POWER, HIGH);
 #else
   digitalWrite(NEOPIXEL_POWER, LOW);
