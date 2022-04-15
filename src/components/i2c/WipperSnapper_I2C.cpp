@@ -35,7 +35,7 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
   WS_DEBUG_PRINT("\tFrequency (Hz): ");
   WS_DEBUG_PRINTLN(msgInitRequest->i2c_frequency);
 
-#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
+#if defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
   // turn on the I2C power by setting pin to opposite of 'rest state'
   pinMode(PIN_I2C_POWER, INPUT);
   delay(1);
