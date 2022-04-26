@@ -380,8 +380,7 @@ void Wippersnapper_FS::parseSecrets() {
 
   // TODO: Remove the following check in future versions
   // Check if network type is native WiFi
-  network_type_wifi_ssid =
-      doc["network_type_wifi_native"]["network_ssid"];
+  network_type_wifi_ssid = doc["network_type_wifi_native"]["network_ssid"];
   if (network_type_wifi_ssid != nullptr) {
     WS._network_ssid = network_type_wifi_ssid;
   }
@@ -424,7 +423,8 @@ void Wippersnapper_FS::parseSecrets() {
 
   // TODO: Remove the following check in future versions
   // Check if network type is native WiFi
-  network_type_wifi_password = doc["network_type_wifi_native"]["network_password"];
+  network_type_wifi_password =
+      doc["network_type_wifi_native"]["network_password"];
   if (network_type_wifi_password != nullptr) {
     WS._network_pass = network_type_wifi_password;
   }
