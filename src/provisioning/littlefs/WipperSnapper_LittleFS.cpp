@@ -122,7 +122,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
 
   // Parse WiFi network password
-  *network_type_wifi_password = _doc["network_type_wifi"]["network_password"];
+  network_type_wifi_password = _doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_password != nullptr) {
     WS._network_pass = network_type_wifi_password;
   }
