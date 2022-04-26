@@ -48,7 +48,7 @@ bool Wippersnapper::statusLEDInit() {
 #endif
 
 // Some boards use a NEOPIXEL_POWER pin to set the power
-#if defined(NEOPIXEL_POWER) || defined(NEOPIXEL_POWER)
+#if defined(NEOPIXEL_POWER)
   pinMode(NEOPIXEL_POWER, OUTPUT);
   digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
 #endif
