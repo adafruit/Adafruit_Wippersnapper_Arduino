@@ -15,14 +15,13 @@
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
-#include "ArduinoJson.h"
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
+#include "ArduinoJson.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h"
+#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
-
 
 #include "Wippersnapper.h"
 
@@ -58,9 +57,6 @@ public:
   void fsHalt();
 
   void parseSecrets();
-
-  bool setNetwork; /*!< True if a network interface type was set up, False
-                      otherwise. */
 
   // NOTE: calculated capacity with maximum
   // length of usernames/passwords/tokens
