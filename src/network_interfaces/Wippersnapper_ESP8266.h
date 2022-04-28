@@ -103,9 +103,10 @@ public:
   @note   For the ESP8266, the UID is the MAC address.
   */
   /********************************************************/
-  void setUID() {
+  void getMacAddr() {
+    uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WS._uid, mac, sizeof(mac));
+    memcpy(WS._macAddr, mac, sizeof(mac));
   }
 
   /*******************************************************************/
@@ -155,7 +156,6 @@ protected:
   const char *_ssid = NULL;
   const char *_pass = NULL;
   const char *_mqttBrokerURL = NULL;
-  uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   WiFiClientSecure *_wifi_client;
 
   /**************************************************************************/

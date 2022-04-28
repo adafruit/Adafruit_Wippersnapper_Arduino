@@ -148,9 +148,10 @@ public:
   @note   For the ESP32, the UID is the MAC address.
   */
   /********************************************************/
-  void setUID() {
+  void getMacAddr() {
+    uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WS._uid, mac, sizeof(mac));
+    memcpy(WS._macAddr, mac, sizeof(mac));
   }
 
   /********************************************************/
@@ -197,17 +198,15 @@ public:
   const char *connectionType() { return "AIRLIFT"; }
 
 protected:
-  const char *_ssid;          /*!< Network SSID. */
-  const char *_pass;          /*!< Network password. */
-  const char *_mqttBrokerURL; /*!< MQTT broker URL. */
-  String _fv;                 /*!< nina-fw firmware version. */
-  uint8_t mac[6] = {0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00}; /*!< ESP32 interface's MAC address. */
-  int _ssPin = -1;                     /*!< SPI S.S. pin. */
-  int _ackPin = -1;                    /*!< SPI ACK pin. */
-  int _rstPin = -1;                    /*!< SPI RST pin. */
-  int _gpio0Pin = -1;                  /*!< SPI GPIO0 pin, unused. */
-  WiFiSSLClient *_mqtt_client;         /*!< Instance of a secure WiFi client. */
+  const char *_ssid;           /*!< Network SSID. */
+  const char *_pass;           /*!< Network password. */
+  const char *_mqttBrokerURL;  /*!< MQTT broker URL. */
+  String _fv;                  /*!< nina-fw firmware version. */
+  int _ssPin = -1;             /*!< SPI S.S. pin. */
+  int _ackPin = -1;            /*!< SPI ACK pin. */
+  int _rstPin = -1;            /*!< SPI RST pin. */
+  int _gpio0Pin = -1;          /*!< SPI GPIO0 pin, unused. */
+  WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the AirLift. */
 
   /**************************************************************************/

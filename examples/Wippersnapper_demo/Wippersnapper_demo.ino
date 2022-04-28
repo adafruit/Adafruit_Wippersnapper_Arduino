@@ -9,7 +9,7 @@
 // Please support Adafruit and open source hardware by purchasing
 // products from Adafruit!
 //
-// Brent Rubell for Adafruit Industries, 2021
+// Brent Rubell for Adafruit Industries, 2021-2022
 //
 // All text above must be included in any redistribution.
 

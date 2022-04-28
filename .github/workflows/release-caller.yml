@@ -5,13 +5,17 @@ name: WipperSnapper Release Workflow
 
 on:
   release:
+    types: [published]
+    secrets:
+      GH_REPO_TOKEN:
+        required: true
 
 jobs:
   call-workflow-build:
-    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@workflow-reusable-2
+    uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
     secrets:
-      token: ${{ secrets.TOKEN }}
+      GH_REPO_TOKEN: ${{ secrets.GH_REPO_TOKEN }}
 
   call-workflow-release:
     needs: call-workflow-build
-    uses: brentru/Adafruit_Wippersnapper_Arduino/.github/workflows/release-callee.yml@workflow-reusable-2
+    uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/release-callee.yml@main

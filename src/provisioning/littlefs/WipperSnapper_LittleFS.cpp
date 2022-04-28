@@ -91,25 +91,50 @@ void WipperSnapper_LittleFS::parseSecrets() {
   WS._key = io_key;
 
   // Parse SSID
-  const char *network_type_wifi_native_network_ssid =
+
+  // TODO: Remove the following check in future versions
+  // Check if network type is native WiFi
+  const char *network_type_wifi_ssid =
       _doc["network_type_wifi_native"]["network_ssid"];
-  if (network_type_wifi_native_network_ssid == nullptr) {
+  if (network_type_wifi_ssid != nullptr) {
+    WS._network_ssid = network_type_wifi_ssid;
+  }
+
+  // Check if network type is WiFi
+  network_type_wifi_ssid = _doc["network_type_wifi"]["network_ssid"];
+  if (network_type_wifi_ssid != nullptr) {
+    WS._network_ssid = network_type_wifi_ssid;
+  }
+
+  if (WS._network_ssid == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: network_ssid not set!");
     fsHalt();
   }
-  // set SSID
-  WS._network_ssid = network_type_wifi_native_network_ssid;
 
   // Parse SSID password
-  const char *network_type_wifi_native_network_password =
+
+  // TODO: Remove on next release
+  // Parse WiFi network password, native
+  const char *network_type_wifi_password =
       _doc["network_type_wifi_native"]["network_password"];
-  // validation
-  if (network_type_wifi_native_network_password == nullptr) {
+  if (network_type_wifi_password != nullptr) {
+    WS._network_pass = network_type_wifi_password;
+  }
+
+  // Parse WiFi network password
+  network_type_wifi_password = _doc["network_type_wifi"]["network_password"];
+  if (network_type_wifi_password != nullptr) {
+    WS._network_pass = network_type_wifi_password;
+  }
+
+  // error check WiFi network password
+  if (WS._network_pass == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: network_password not set!");
     fsHalt();
   }
-  // set password
-  WS._network_pass = network_type_wifi_native_network_password;
+
+  // Optionally set the Adafruit.io URL
+  WS._mqttBrokerURL = _doc["io_url"];
 
   // close the file
   secretsFile.close();

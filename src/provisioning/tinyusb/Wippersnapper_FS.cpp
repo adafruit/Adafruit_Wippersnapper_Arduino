@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -17,7 +17,8 @@
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -28,7 +29,7 @@ Adafruit_FlashTransport_QSPI flashTransport;
 #elif defined(EXTERNAL_FLASH_USE_SPI)
 Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
                                            EXTERNAL_FLASH_USE_SPI);
-#elif CONFIG_IDF_TARGET_ESP32S2
+#elif defined(ARDUINO_ARCH_ESP32)
 // ESP32-S2 uses same flash device that stores code.
 // Therefore there is no need to specify the SPI and SS
 Adafruit_FlashTransport_ESP32 flashTransport;
@@ -102,8 +103,8 @@ Wippersnapper_FS::Wippersnapper_FS() {
 */
 /************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {
-  //io_username = NULL;
-  //io_key = NULL;
+  // io_username = NULL;
+  // io_key = NULL;
 }
 
 /**************************************************************************/
@@ -249,9 +250,24 @@ void Wippersnapper_FS::eraseBootFile() {
 /**************************************************************************/
 bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
+  char sMAC[18] = {0};
+
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
+    bootFile.println("Adafruit.io WipperSnapper");
+
+    bootFile.print("Firmware Version: ");
     bootFile.println(WS_VERSION);
+
+    bootFile.print("Board ID: ");
+    bootFile.println(BOARD_ID);
+
+    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
+            WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
+            WS._macAddr[5]);
+    bootFile.print("MAC Address: ");
+    bootFile.println(sMAC);
+
     bootFile.flush();
     bootFile.close();
     is_success = true;
@@ -280,27 +296,15 @@ void Wippersnapper_FS::createConfigFileSkel() {
   secretsFile.print("{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_"
                     "key\":\"YOUR_IO_KEY_");
   secretsFile.flush();
-// platform-dependent changes
-#if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
-    defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
-    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
-  secretsFile.print("HERE\",\n\t\"network_type_wifi_native\":{\n\t\t\"network_"
+  secretsFile.print("HERE\",\n\t\"network_type_wifi\":{\n\t\t\"network_"
                     "ssid\":\"YOUR_WIFI_SSID_");
-#elif defined(ADAFRUIT_PYPORTAL) || defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
-  secretsFile.print("HERE\",\n\t\"network_type_wifi_airlift\":{\n\t\t\"network_"
-                    "ssid\":\"YOUR_WIFI_SSID_");
-#else
-  secretsFile.println("!!! ERROR: undefined board !!!");
-#endif
   secretsFile.flush();
   secretsFile.print(
       "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
   secretsFile.flush();
   secretsFile.close();
-  writeErrorToBootOut(
-      "* Please edit the secrets.json file. Then, reset your board.");
+  writeToBootOut(
+      "* Please edit the secrets.json file. Then, reset your board.\n");
 }
 
 /**************************************************************************/
@@ -309,7 +313,6 @@ void Wippersnapper_FS::createConfigFileSkel() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::parseSecrets() {
-  setNetwork = false;
   // open file for parsing
   File secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
@@ -323,17 +326,17 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
 
-    writeErrorToBootOut("ERROR: deserializeJson() failed with code");
-    writeErrorToBootOut(err.c_str());
+    writeToBootOut("ERROR: deserializeJson() failed with code\n");
+    writeToBootOut(err.c_str());
     fsHalt();
   }
 
   // Get io username
-  const char * io_username = doc["io_username"];
+  const char *io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
-    writeErrorToBootOut("ERROR: invalid io_username value in secrets.json!");
+    writeToBootOut("ERROR: invalid io_username value in secrets.json!\n");
     while (1) {
       WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
       yield();
@@ -342,106 +345,114 @@ void Wippersnapper_FS::parseSecrets() {
 
   // check if username is from templated json
   if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
-    writeErrorToBootOut(
+    writeToBootOut(
         "* ERROR: Default username found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
-        "effect");
+        "effect\n");
     fsHalt();
   }
   WS._username = io_username;
+
+  writeToBootOut("Adafruit.io Username: ");
+  writeToBootOut(WS._username);
+  writeToBootOut("\n");
 
   // Get io key
   const char *io_key = doc["io_key"];
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
-    writeErrorToBootOut("ERROR: invalid io_key value in secrets.json!");
+    writeToBootOut("ERROR: invalid io_key value in secrets.json!\n");
     fsHalt();
   }
   WS._key = io_key;
 
-  // next, we detect the network interface from the `secrets.json`
-  WS_DEBUG_PRINTLN("Attempting to find network interface...");
-  // Check if type is WiFi (AirLift)
-  const char *network_type_wifi_airlift_network_ssid =
+  // Parse WiFi Network SSID
+  // TODO: The following lines allow backwards-compatibiity for older
+  // secrets.json files, added in b32
+  // TODO: Remove the following check in future versions
+  // Check if network type is AirLift WiFi
+  const char *network_type_wifi_ssid =
       doc["network_type_wifi_airlift"]["network_ssid"];
-  if (network_type_wifi_airlift_network_ssid == nullptr) {
-    WS_DEBUG_PRINTLN(
-        "Network interface is not airlift type, checking next type...");
-  } else {
-    WS_DEBUG_PRINTLN("Network Interface Found: AirLift ESP32 Co-Processor");
-    WS_DEBUG_PRINTLN("Setting network:");
-    // Parse network password
-    const char *network_type_wifi_airlift_network_password =
-        doc["network_type_wifi_airlift"]["network_password"];
-    // validation
-    if (network_type_wifi_airlift_network_password == nullptr) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: invalid network_type_wifi_airlift_network_password value in "
-          "secrets.json!");
-      writeErrorToBootOut(
-          "ERROR: invalid network_type_wifi_airlift_network_password value in "
-          "secrets.json!");
-      fsHalt();
-    }
-    // check if SSID is from template (not entered)
-    if (doc["network_type_wifi_airlift"]["network_password"] ==
-        "YOUR_WIFI_SSID_HERE") {
-      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
-                          "the secrets.json file and reset the board");
-      fsHalt();
-    }
-
-    // Set WiFi configuration with parsed values
-    WS._network_ssid = network_type_wifi_airlift_network_ssid;
-    WS._network_pass = network_type_wifi_airlift_network_password;
-    setNetwork = true;
+  if (network_type_wifi_ssid != nullptr) {
+    WS._network_ssid = network_type_wifi_ssid;
   }
 
-  // Check if type is WiFi (Native - ESP32-S2, ESP32)
-  const char *network_type_wifi_native_network_ssid =
-      doc["network_type_wifi_native"]["network_ssid"];
-  if (network_type_wifi_native_network_ssid == nullptr) {
-    WS_DEBUG_PRINTLN(
-        "Network interface is not native WiFi, checking next type...");
-  } else {
-    WS_DEBUG_PRINTLN("Network Interface Found: Native WiFi (ESP32S2, ESP32)");
-    WS_DEBUG_PRINTLN("Setting network:");
-    // Parse network password
-    const char *network_type_wifi_native_network_password =
-        doc["network_type_wifi_native"]["network_password"];
-    // validation
-    if (network_type_wifi_native_network_password == nullptr) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: invalid network_type_wifi_native_network_password value in "
-          "secrets.json!");
-      writeErrorToBootOut(
-          "ERROR: invalid network_type_wifi_native_network_password value in "
-          "secrets.json!");
-      fsHalt();
-    }
-    // check if SSID is from template (not entered)
-    if (doc["network_type_wifi_native"]["network_password"] ==
-        "YOUR_WIFI_SSID_HERE") {
-      writeErrorToBootOut("Default SSID found in secrets.json, please edit "
-                          "the secrets.json file and reset the board");
-      fsHalt();
-    }
-
-    // Set WiFi configuration with parsed values
-    WS._network_ssid = network_type_wifi_native_network_ssid;
-    WS._network_pass = network_type_wifi_native_network_password;
-    setNetwork = true;
+  // TODO: Remove the following check in future versions
+  // Check if network type is native WiFi
+  network_type_wifi_ssid = doc["network_type_wifi_native"]["network_ssid"];
+  if (network_type_wifi_ssid != nullptr) {
+    WS._network_ssid = network_type_wifi_ssid;
+  }
+  // Check if network type is WiFi
+  network_type_wifi_ssid = doc["network_type_wifi"]["network_ssid"];
+  if (network_type_wifi_ssid != nullptr) {
+    WS._network_ssid = network_type_wifi_ssid;
   }
 
-  // Was a network_type detected in the configuration file?
-  if (!setNetwork) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Network interface not detected in secrets.json file.");
-    writeErrorToBootOut(
-        "ERROR: Network interface not detected in secrets.json file.");
+  // error check against default values [ArduinoJSON, 3.3.3]
+  if (WS._network_ssid == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: invalid network_ssid value in secrets.json!");
+    writeToBootOut("ERROR: invalid network_ssid value in secrets.json!\n");
+    while (1) {
+      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      yield();
+    }
+  }
+
+  // error check if SSID is the from templated json
+  if (WS._network_ssid == "YOUR_WIFI_SSID_HERE") {
+    writeToBootOut(
+        "* ERROR: Default SSID found in secrets.json, please edit "
+        "the secrets.json file and reset the board for the changes to take "
+        "effect\n");
     fsHalt();
   }
+
+  // Parse WiFi Network Password
+  // TODO: The following lines allow backwards-compatibiity for older
+  // secrets.json files, added in b32
+
+  // TODO: Remove the following check in future versions
+  // Check if network type is AirLift WiFi
+  const char *network_type_wifi_password =
+      doc["network_type_wifi_airlift"]["network_password"];
+  if (network_type_wifi_password != nullptr) {
+    WS._network_pass = network_type_wifi_password;
+  }
+
+  // TODO: Remove the following check in future versions
+  // Check if network type is native WiFi
+  network_type_wifi_password =
+      doc["network_type_wifi_native"]["network_password"];
+  if (network_type_wifi_password != nullptr) {
+    WS._network_pass = network_type_wifi_password;
+  }
+
+  // Check if network type is WiFi
+  network_type_wifi_password = doc["network_type_wifi"]["network_password"];
+  if (network_type_wifi_password != nullptr) {
+    WS._network_pass = network_type_wifi_password;
+  }
+
+  // error check against default values [ArduinoJSON, 3.3.3]
+  if (WS._network_pass == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: invalid network_type_wifi_password value in "
+                     "secrets.json!");
+    writeToBootOut("ERROR: invalid network_type_wifi_password value in "
+                   "secrets.json!\n");
+    fsHalt();
+  }
+  // error check if wifi password is from template
+  if (WS._network_pass == "YOUR_WIFI_PASS_HERE") {
+    writeToBootOut("Default SSID found in secrets.json, please edit "
+                   "the secrets.json file and reset the board\n");
+    fsHalt();
+  }
+
+  writeToBootOut("WiFi Network: ");
+  writeToBootOut(WS._network_ssid);
+  writeToBootOut("\n");
 
   // Optional, Set the IO URL
   WS._mqttBrokerURL = doc["io_url"];
@@ -460,11 +471,11 @@ void Wippersnapper_FS::parseSecrets() {
                 PROGMEM string.
 */
 /**************************************************************************/
-void Wippersnapper_FS::writeErrorToBootOut(PGM_P str) {
+void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
   File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
-    bootFile.println(str);
+    bootFile.print(str);
     bootFile.flush();
     bootFile.close();
   } else {
