@@ -17,57 +17,57 @@
 #define ADAFRUIT_WIPPERSNAPPER_BOARDS_H
 
 #if defined(ADAFRUIT_PYPORTAL)
-#define BOARD_ID "adafruit-pyportal-m4"
+#define BOARD_ID "pyportal-tinyusb"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 2
 #define STATUS_NEOPIXEL_NUM 1
 #elif defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
-#define BOARD_ID "adafruit-metro-m4-airliftlite"
+#define BOARD_ID "metro-m4-airliftlite-tinyusb"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 40
 #define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_FUNHOUSE_ESP32S2)
-#define BOARD_ID "adafruit-funhouse-esp32s2"
+#define BOARD_ID "funhouse"
 #define USE_TINYUSB
 #define USE_STATUS_DOTSTAR
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK
 #define STATUS_DOTSTAR_NUM 5
 #elif defined(ARDUINO_METRO_ESP32S2)
-#define BOARD_ID "adafruit-metro-esp32s2"
+#define BOARD_ID "metroesp32s2"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 45
 #define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_MAGTAG29_ESP32S2)
-#define BOARD_ID "adafruit-magtag-esp32s2"
+#define BOARD_ID "magtag"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 1
 #define STATUS_NEOPIXEL_NUM 4
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
-#define BOARD_ID "adafruit-feather-esp32s2"
+#define BOARD_ID "feather-esp32s2"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
-#define BOARD_ID "adafruit-feather-esp32s2-tft"
+#define BOARD_ID "feather-esp32s2-tft"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
 #define PIN_I2C_POWER_INVERTED 7
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
-#define BOARD_ID "adafruit-feather-esp32s3"
+#define BOARD_ID "feather-esp32s3"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2)
-#define BOARD_ID "adafruit-qtpy-esp32s2"
+#define BOARD_ID "qtpy-esp32s2"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
@@ -83,7 +83,7 @@
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
-#define BOARD_ID "feather-esp32-v2-daily"
+#define BOARD_ID "feather-esp32-v2"
 #define USE_LITTLEFS
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
@@ -93,7 +93,7 @@
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
 #elif defined(ARDUINO_SAMD_MKRWIFI1010)
-#define BOARD_ID "mkr-wifi-1010"
+#define BOARD_ID "mkrwifi1010"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 6
 #else
