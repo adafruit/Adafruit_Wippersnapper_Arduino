@@ -14,7 +14,8 @@
  */
 #if defined(ARDUINO_FEATHER_ESP32) ||                                          \
     defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) ||                                \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO)
 #include "WipperSnapper_LittleFS.h"
 
 /**************************************************************************/
