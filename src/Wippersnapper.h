@@ -28,7 +28,6 @@
 #include <pb.h>
 
 #include <wippersnapper/description/v1/description.pb.h> // description.proto
-#include <wippersnapper/pin/v1/pin.pb.h>                 // pin.proto
 #include <wippersnapper/signal/v1/signal.pb.h>           // signal.proto
 
 // Wippersnapper API Helpers
@@ -39,6 +38,7 @@
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/i2c/WipperSnapper_I2C.h"
+#include "components/ds18x20/WipperSnapper_DS18X20.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
