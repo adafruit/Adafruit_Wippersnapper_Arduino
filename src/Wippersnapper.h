@@ -303,6 +303,10 @@ public:
                                    to a broker. */
   char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
+  char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from a device
+                                   to a broker. */
+  char *_topic_signal_ds18_device = NULL; /*!< Topic carries ds18x20 messages from a
+                                     broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -357,6 +361,8 @@ protected:
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

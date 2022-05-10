@@ -44,7 +44,9 @@ public:
   WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq);
   ~WipperSnapper_DS18X20();
 
+  int32_t getPin();
   void update();
+
 
 private:
   int32_t _sensorPin;

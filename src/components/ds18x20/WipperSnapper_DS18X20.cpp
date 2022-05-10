@@ -41,6 +41,10 @@ WipperSnapper_DS18X20::~WipperSnapper_DS18X20() {
   // TODO
 }
 
+int32_t WipperSnapper_DS18X20::getPin() {
+    return _sensorPin;
+}
+
 /*************************************************************/
 /*!
     @brief    TODO for a WipperSnapper DS18X20 component.
@@ -49,3 +53,5 @@ WipperSnapper_DS18X20::~WipperSnapper_DS18X20() {
 void WipperSnapper_DS18X20::update() {
   // TODO
 }
+
+

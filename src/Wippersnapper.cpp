@@ -770,33 +770,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
-  } else if (field->tag ==
-             wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
-    WS_DEBUG_PRINTLN("NEW COMMAND: Ds18x20 Init");
-    WS_DEBUG_PRINTLN("I2C Device LIST Init Request Found!");
-
-    // decode message
-    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDs18x20InitRequest = wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
-                   &msgDs18x20InitRequest)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode msgDs18x20InitRequest message.");
-      return false; // fail out if we can't decode
-    }
-
-    // Do we already have a 1-wire bus object on the requested pin?
-
-    // create new DS18X20 object
-    WipperSnapper_DS18X20 newDs18(&msgDs18x20InitRequest);
-    // add to vect
-
-    // Empty response to fill out
-    // TODO!
-
-    // Encode response
-    // TODO!
-  }
-  else {
+  } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     return false; // fail out, we didn't encode anything to publish
   }
@@ -837,6 +811,20 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
                  &WS.msgSignalI2C))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+}
+
+void cbSignalDSReq(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+
+
 }
 
 /****************************************************************************/
@@ -1156,6 +1144,18 @@ bool Wippersnapper::buildWSTopics() {
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
 
+  // Topic for ds18x20 commands from device to broker
+  WS._topic_signal_ds18_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+      strlen("ds18x20") + 1);
+
+  // Topic for ds18x20 commands from broker to broker
+  WS._topic_signal_ds18_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+      strlen("ds18x20") + 1);
+
   // Create global registration topic
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
@@ -1247,6 +1247,30 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Create device-to-broker ds18x20 topic
+  if (WS._topic_signal_ds18_brkr != NULL) {
+    strcpy(WS._topic_signal_ds18_brkr, WS._username);
+    strcat(WS._topic_signal_ds18_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_ds18_brkr, _device_uid);
+    strcat(WS._topic_signal_ds18_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_ds18_brkr, "broker");
+    strcat(WS._topic_signal_ds18_brkr, "ds18x20");
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Create broker-to-device ds18x20 topic
+  if (WS._topic_signal_ds18_device != NULL) {
+    strcpy(WS._topic_signal_ds18_device, WS._username);
+    strcat(WS._topic_signal_ds18_device, TOPIC_WS);
+    strcat(WS._topic_signal_ds18_device, _device_uid);
+    strcat(WS._topic_signal_ds18_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_ds18_device, "device");
+    strcat(WS._topic_signal_ds18_device, "ds18x20");
+  } else { // malloc failed
+    is_success = false;
+  }
+
   return is_success;
 }
 
@@ -1267,6 +1291,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
+
+  // Subscribe to signal's ds18x20 sub-topic
+  _topic_signal_ds18_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr , 1);
+  WS._mqtt->subscribe(_topic_signal_ds18_sub);
+  _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
 
   // Subscribe to registration status topic
   _topic_description_sub =
