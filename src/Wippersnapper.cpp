@@ -770,7 +770,33 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
-  } else {
+  } else if (field->tag ==
+             wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
+    WS_DEBUG_PRINTLN("NEW COMMAND: Ds18x20 Init");
+    WS_DEBUG_PRINTLN("I2C Device LIST Init Request Found!");
+
+    // decode message
+    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDs18x20InitRequest = wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
+                   &msgDs18x20InitRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode msgDs18x20InitRequest message.");
+      return false; // fail out if we can't decode
+    }
+
+    // Do we already have a 1-wire bus object on the requested pin?
+
+    // create new DS18X20 object
+    WipperSnapper_DS18X20 newDs18(&msgDs18x20InitRequest);
+    // add to vect
+
+    // Empty response to fill out
+    // TODO!
+
+    // Encode response
+    // TODO!
+  }
+  else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     return false; // fail out, we didn't encode anything to publish
   }

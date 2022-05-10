@@ -18,13 +18,18 @@
 
 /*************************************************************/
 /*!
-    @brief    Creates a new WipperSnapper DS18X20 component.
+    @brief    Creates a new WipperSnapper Ds18x20 component.
     @param    msgInitRequest
-              The I2C initialization request message.
+              The Ds18x20 initialization request message.
 */
 /*************************************************************/
 WipperSnapper_DS18X20::WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq) {
     // TODO
+
+    // Set sensor resolution
+    _resolution = msgDs18x20InitReq->sensor_resolution;
+    // Set sensor period
+    _sensorPeriod = msgDs18x20InitReq->sensor_period * 1000;
 }
 
 /*************************************************************/
@@ -33,5 +38,14 @@ WipperSnapper_DS18X20::WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20Ini
 */
 /*************************************************************/
 WipperSnapper_DS18X20::~WipperSnapper_DS18X20() {
+  // TODO
+}
+
+/*************************************************************/
+/*!
+    @brief    TODO for a WipperSnapper DS18X20 component.
+*/
+/*************************************************************/
+void WipperSnapper_DS18X20::update() {
   // TODO
 }

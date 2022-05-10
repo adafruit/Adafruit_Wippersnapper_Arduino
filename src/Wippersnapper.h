@@ -163,6 +163,7 @@ class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
+class WipperSnapper_DS18X20;
 
 /**************************************************************************/
 /*!
@@ -258,6 +259,9 @@ public:
       false; ///< True if I2C port 0 has been initialized, False otherwise.
   bool _isI2CPort1Init =
       false; ///< True if I2C port 1 has been initialized, False otherwise.
+
+  // DS18X20
+  std::vector<WipperSnapper_DS18X20> _ds18x20Components;
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */

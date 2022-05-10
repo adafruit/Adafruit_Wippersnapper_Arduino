@@ -44,10 +44,14 @@ public:
   WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq);
   ~WipperSnapper_DS18X20();
 
-private:
-  uint8_t _resolution; /*!< Sensor resolution (9, 10, 11, or 12 bits) */
+  void update();
 
+private:
+  int32_t _sensorPin;
+  uint8_t _resolution; /*!< Sensor resolution (9, 10, 11, or 12 bits). */
+  long _sensorPeriod; /*!< Time between sensor reads, in milliseconds. */
 };
+
 extern Wippersnapper WS;
 
 #endif // WIPPERSNAPPER_DS18X20_H
