@@ -261,7 +261,7 @@ public:
       false; ///< True if I2C port 1 has been initialized, False otherwise.
 
   // DS18X20
-  std::vector<WipperSnapper_DS18X20> _ds18x20Components;
+  std::vector<WipperSnapper_DS18X20> _ds18x20Components; /*!< Vector containing WipperSnapper_DS18X20 instances */
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */

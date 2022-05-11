@@ -20,8 +20,9 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 // PaulStoffregen OneWire is incompatable with arduino-esp32 v2.0.1
-// see: https://github.com/PaulStoffregen/OneWire/issues/112 and https://github.com/espressif/arduino-esp32/issues
-#include <OneWireNg.h> 
+// see: https://github.com/PaulStoffregen/OneWire/issues/112 and
+// https://github.com/espressif/arduino-esp32/issues
+#include <OneWireNg.h>
 #elif
 // Non-arduino-esp32 arch. should use PaulStoffregen OneWire
 #include <OneWire.h>
@@ -41,23 +42,25 @@ class Wippersnapper;
 /**************************************************************************/
 class WipperSnapper_DS18X20 {
 public:
-  WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq);
+  WipperSnapper_DS18X20(
+      wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq);
   ~WipperSnapper_DS18X20();
 
   bool begin();
 
   uint8_t getResolution();
-  uint8_t* getAddress();
+  uint8_t *getAddress();
   int32_t getPin();
   void update();
 
 private:
-  OneWire* _wire;         /*!< Pointer to OneWire instance. */
-  DallasTemperature* _ds; /*!< Pointer to DallasTemperature instance. */
+  OneWire *_wire;               /*!< Pointer to OneWire instance. */
+  DallasTemperature *_ds;       /*!< Pointer to DallasTemperature instance. */
   DeviceAddress _sensorAddress; /*!< Sensor's unique 64-bit identifier. */
-  int32_t _sensorPin;     /*!< Pin used for OneWire bus. */
-  uint8_t _resolution;    /*!< Sensor resolution (9, 10, 11, or 12 bits). */
-  long _sensorPeriod;     /*!< Time between sensor reads, in milliseconds. */
+  int32_t _sensorPin;           /*!< Pin used for OneWire bus. */
+  uint8_t _resolution;   /*!< Sensor resolution (9, 10, 11, or 12 bits). */
+  long _sensorPeriod;    /*!< Time between sensor reads, in milliseconds. */
+  long _sensorPeriodPrv; /*!< Last time the sensor was read, in milliseconds. */
 };
 
 extern Wippersnapper WS;

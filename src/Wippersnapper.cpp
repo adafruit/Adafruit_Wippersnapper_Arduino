@@ -813,23 +813,26 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 }
 
-
 bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  if (field->tag == wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
+  if (field->tag ==
+      wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
     WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
     // decode init message
-    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDs18x20InitRequest = wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
+    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDs18x20InitRequest =
+        wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
                    &msgDs18x20InitRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode msgDs18x20InitRequest.");
       return false; // fail out if we can't decode
     }
     // new empty response message
-    wippersnapper_ds18x20_v1_Ds18x20InitResponse msgDsInitResp = wippersnapper_ds18x20_v1_Ds18x20InitResponse_init_zero;
+    wippersnapper_ds18x20_v1_Ds18x20InitResponse msgDsInitResp =
+        wippersnapper_ds18x20_v1_Ds18x20InitResponse_init_zero;
 
     // Do we already have a 1-wire bus object on the requested pin?
     for (int i = 0; i < WS._ds18x20Components.size(); i++) {
-      if (WS._ds18x20Components.at(i).getPin() == msgDs18x20InitRequest.onewire_pin) {
+      if (WS._ds18x20Components.at(i).getPin() ==
+          msgDs18x20InitRequest.onewire_pin) {
         WS_DEBUG_PRINTLN("ERROR: Already have 1-Wire bus on requested pin!");
         return false;
       }
@@ -849,10 +852,12 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       WS._ds18x20Components.push_back(newDs18);
 
     // TODO: Fill signal msg response wrapper
-  } else if (field->tag == wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
+  } else if (field->tag ==
+             wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
     WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
     // decode de-init message
-    wippersnapper_ds18x20_v1_Ds18x20DeInitRequest msgDs18x20DeInitRequest = wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_init_zero;
+    wippersnapper_ds18x20_v1_Ds18x20DeInitRequest msgDs18x20DeInitRequest =
+        wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_fields,
                    &msgDs18x20DeInitRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode msgDs18x20DeInitRequest.");
@@ -861,9 +866,10 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
     // TODO: Remove object from vector and delete it
     for (int i = 0; i < WS._ds18x20Components.size(); i++) {
-      if (WS._ds18x20Components.at(i).getPin() == msgDs18x20DeInitRequest.onewire_pin) {
+      if (WS._ds18x20Components.at(i).getPin() ==
+          msgDs18x20DeInitRequest.onewire_pin) {
         // Remove object from vector
-        WS._ds18x20Components.erase(WS._ds18x20Components.begin()+i);
+        WS._ds18x20Components.erase(WS._ds18x20Components.begin() + i);
       }
     }
 
@@ -1369,7 +1375,7 @@ void Wippersnapper::subscribeWSTopics() {
 
   // Subscribe to signal's ds18x20 sub-topic
   _topic_signal_ds18_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr , 1);
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_ds18_sub);
   _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
 
@@ -1790,6 +1796,11 @@ ws_status_t Wippersnapper::run() {
   if (WS._isI2CPort0Init)
     WS._i2cPort0->update();
   WS.feedWDT();
+
+  // Process DSx sensor events
+  for (int i = 0; i < WS._ds18x20Components.size(); i++) {
+    WS._ds18x20Components.at(i).update();
+  }
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

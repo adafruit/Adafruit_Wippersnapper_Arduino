@@ -19,23 +19,25 @@
 /*************************************************************/
 /*!
     @brief    Creates a new WipperSnapper Ds18x20 component.
-    @param    msgInitRequest
+    @param    msgDs18x20InitReq
               The Ds18x20 initialization request message.
 */
 /*************************************************************/
-WipperSnapper_DS18X20::WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq) {
-    // Set sensor pin
-    _sensorPin = msgDs18x20InitReq->onewire_pin;
-    // Initialize OneWire instance
-    _wire = new OneWire();
+WipperSnapper_DS18X20::WipperSnapper_DS18X20(
+    wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq) {
+  // Set sensor pin
+  _sensorPin = msgDs18x20InitReq->onewire_pin;
 
-    // Initialize DallasTemperature instance
-    _ds = new DallasTemperature(_wire);
+  // Initialize OneWire instance
+  _wire = new OneWire();
 
-    // Set sensor properties
-    _resolution = msgDs18x20InitReq->sensor_resolution;
-    // TODO: May want to look at this
-    _sensorPeriod = msgDs18x20InitReq->sensor_period * 1000;
+  // Initialize DallasTemperature instance
+  _ds = new DallasTemperature(_wire);
+
+  // Set sensor resolution
+  _resolution = msgDs18x20InitReq->sensor_resolution;
+  // Set sensor period, in milliseconds
+  _sensorPeriod = (long)msgDs18x20InitReq->sensor_period * 1000;
 }
 
 /*************************************************************/
@@ -61,7 +63,8 @@ bool WipperSnapper_DS18X20::begin() {
   if (!_ds->getAddress(_sensorAddress, 0))
     return false;
 
-  // Check if address is within the family of sensors the Arduino-Temperature-Control-Library supports
+  // Check if address is within the family of sensors the
+  // Arduino-Temperature-Control-Library supports
   if (!_ds->validFamily(_sensorAddress))
     return false;
 
@@ -77,9 +80,7 @@ bool WipperSnapper_DS18X20::begin() {
     @returns  The OneWire pin.
 */
 /*************************************************************/
-int32_t WipperSnapper_DS18X20::getPin() {
-    return _sensorPin;
-}
+int32_t WipperSnapper_DS18X20::getPin() { return _sensorPin; }
 
 /*************************************************************/
 /*!
@@ -88,7 +89,7 @@ int32_t WipperSnapper_DS18X20::getPin() {
     @returns  The sensor's address.
 */
 /*************************************************************/
-uint8_t* WipperSnapper_DS18X20::getAddress() {
+uint8_t *WipperSnapper_DS18X20::getAddress() {
   _ds->getAddress(_sensorAddress, 0);
   return _sensorAddress;
 }
@@ -111,27 +112,54 @@ uint8_t WipperSnapper_DS18X20::getResolution() {
 /*************************************************************/
 void WipperSnapper_DS18X20::update() {
 
-  // TODO: Check if sensor period time elapsed
+  // Check if sensor period time has not yet elapsed
+  long curTime = millis();
+  if (!(curTime - _sensorPeriodPrv > _sensorPeriod))
+    return;
 
   // Request temperature from 1-wire bus
-  _ds.requestTemperatures();
+  _ds->requestTemperatures();
   // Get temperature from sensor at idx 0 on 1-wire bus
   float tempC = _ds->getTempC(_sensorAddress);
-  
+
   // Sensor is disconnected from 1-wire bus
   if (tempC == DEVICE_DISCONNECTED_C) {
     WS_DEBUG_PRINTLN("ERROR OBTAINING TEMPERATURE FROM DS18X20");
     return;
   }
 
-  // Create a wippersnapper_ds18x20_v1_Ds18x20DeviceEvent message
-  wippersnapper_signal_v1_Ds18x20Response msgDS18Resp = wippersnapper_signal_v1_Ds18x20Response_init_zero;
-  msgDS18Resp.which_payload = wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
+  // Create a new sensor_event
+  wippersnapper_signal_v1_Ds18x20Response msgDS18Resp =
+      wippersnapper_signal_v1_Ds18x20Response_init_zero;
+  msgDS18Resp.which_payload =
+      wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
   msgDS18Resp.payload.resp_ds18x20_event.has_sensor_event = true;
   msgDS18Resp.payload.resp_ds18x20_event.onewire_pin = _sensorPin;
-  msgDS18Resp.payload.resp_ds18x20_event.sensor_event.type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
+  msgDS18Resp.payload.resp_ds18x20_event.sensor_event.type =
+      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
   msgDS18Resp.payload.resp_ds18x20_event.sensor_event.value = tempC;
 
-  // Encode reading
+  // Encode sensor_event
+  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+  pb_ostream_t ostream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
+                 &msgDS18Resp)) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to encode DS18 device event response message!");
+    return;
+  }
 
+  // Publish sensor_event
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
+                      &msgDS18Resp);
+  WS_DEBUG_PRINT("PUBLISHING -> DS Event...");
+  if (!WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing,
+                         msgSz, 1)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish!");
+    return;
+  };
+  WS_DEBUG_PRINTLN("PUBLISHED!");
+  _sensorPeriodPrv = millis(); // set period
 }
