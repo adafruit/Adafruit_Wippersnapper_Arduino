@@ -27,8 +27,8 @@
 #include <OneWire.h>
 #endif
 
+#include <Adafruit_Sensor.h>
 #include <DallasTemperature.h>
-
 
 // forward decl.
 class Wippersnapper;

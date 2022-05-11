@@ -110,7 +110,28 @@ uint8_t WipperSnapper_DS18X20::getResolution() {
 */
 /*************************************************************/
 void WipperSnapper_DS18X20::update() {
-  // TODO
+
+  // TODO: Check if sensor period time elapsed
+
+  // Request temperature from 1-wire bus
+  _ds.requestTemperatures();
+  // Get temperature from sensor at idx 0 on 1-wire bus
+  float tempC = _ds->getTempC(_sensorAddress);
+  
+  // Sensor is disconnected from 1-wire bus
+  if (tempC == DEVICE_DISCONNECTED_C) {
+    WS_DEBUG_PRINTLN("ERROR OBTAINING TEMPERATURE FROM DS18X20");
+    return;
+  }
+
+  // Create a wippersnapper_ds18x20_v1_Ds18x20DeviceEvent message
+  wippersnapper_signal_v1_Ds18x20Response msgDS18Resp = wippersnapper_signal_v1_Ds18x20Response_init_zero;
+  msgDS18Resp.which_payload = wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
+  msgDS18Resp.payload.resp_ds18x20_event.has_sensor_event = true;
+  msgDS18Resp.payload.resp_ds18x20_event.onewire_pin = _sensorPin;
+  msgDS18Resp.payload.resp_ds18x20_event.sensor_event.type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
+  msgDS18Resp.payload.resp_ds18x20_event.sensor_event.value = tempC;
+
+  // Encode reading
+
 }
-
-
