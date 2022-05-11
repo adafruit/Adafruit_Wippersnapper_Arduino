@@ -24,11 +24,17 @@
 */
 /*************************************************************/
 WipperSnapper_DS18X20::WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq) {
-    // TODO
+    // Set sensor pin
+    _sensorPin = msgDs18x20InitReq->onewire_pin;
+    // Initialize OneWire instance
+    _wire = new OneWire();
 
-    // Set sensor resolution
+    // Initialize DallasTemperature instance
+    _ds = new DallasTemperature(_wire);
+
+    // Set sensor properties
     _resolution = msgDs18x20InitReq->sensor_resolution;
-    // Set sensor period
+    // TODO: May want to look at this
     _sensorPeriod = msgDs18x20InitReq->sensor_period * 1000;
 }
 
@@ -41,8 +47,32 @@ WipperSnapper_DS18X20::~WipperSnapper_DS18X20() {
   // TODO
 }
 
+bool WipperSnapper_DS18X20::begin() {
+  // Attempt to get address from DS sensor at index 0
+  if (!_ds->getAddress(_sensorAddress, 0))
+    return false;
+
+  // Check if address is within the family of sensors the Arduino-Temperature-Control-Library supports
+  if (!_ds->validFamily(_sensorAddress))
+    return false;
+
+  // Attempt to set DS sensor's resolution
+  _ds->setResolution(_sensorAddress, _resolution);
+
+  return true;
+}
+
 int32_t WipperSnapper_DS18X20::getPin() {
     return _sensorPin;
+}
+
+uint8_t* WipperSnapper_DS18X20::getAddress() {
+  _ds->getAddress(_sensorAddress, 0);
+  return _sensorAddress;
+}
+
+uint8_t WipperSnapper_DS18X20::getResolution() {
+  return _ds->getResolution(_sensorAddress);
 }
 
 /*************************************************************/

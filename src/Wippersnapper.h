@@ -316,6 +316,10 @@ public:
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
 
+  // ds signal msg
+  wippersnapper_signal_v1_Ds18x20Request msgSignalDS =
+      wippersnapper_signal_v1_Ds18x20Request_init_zero; ///< DS request message wrapper
+
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */

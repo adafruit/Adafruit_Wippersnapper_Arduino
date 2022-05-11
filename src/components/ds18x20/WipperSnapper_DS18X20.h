@@ -44,14 +44,20 @@ public:
   WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq);
   ~WipperSnapper_DS18X20();
 
+  bool begin();
+
+  uint8_t getResolution();
+  uint8_t* getAddress();
   int32_t getPin();
   void update();
 
-
 private:
-  int32_t _sensorPin;
-  uint8_t _resolution; /*!< Sensor resolution (9, 10, 11, or 12 bits). */
-  long _sensorPeriod; /*!< Time between sensor reads, in milliseconds. */
+  OneWire* _wire;         /*!< Pointer to OneWire instance. */
+  DallasTemperature* _ds; /*!< Pointer to DallasTemperature instance. */
+  DeviceAddress _sensorAddress; /*!< Sensor's unique 64-bit identifier. */
+  int32_t _sensorPin;     /*!< Pin used for OneWire bus. */
+  uint8_t _resolution;    /*!< Sensor resolution (9, 10, 11, or 12 bits). */
+  long _sensorPeriod;     /*!< Time between sensor reads, in milliseconds. */
 };
 
 extern Wippersnapper WS;

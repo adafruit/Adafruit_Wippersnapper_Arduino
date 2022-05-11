@@ -813,6 +813,63 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 }
 
+
+bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  if (field->tag == wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
+    WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
+    // decode init message
+    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDs18x20InitRequest = wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
+                   &msgDs18x20InitRequest)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode msgDs18x20InitRequest.");
+      return false; // fail out if we can't decode
+    }
+    // new empty response message
+    wippersnapper_ds18x20_v1_Ds18x20InitResponse msgDsInitResp = wippersnapper_ds18x20_v1_Ds18x20InitResponse_init_zero;
+
+    // Do we already have a 1-wire bus object on the requested pin?
+    for (int i = 0; i < WS._ds18x20Components.size(); i++) {
+      if (WS._ds18x20Components.at(i).getPin() == msgDs18x20InitRequest.onewire_pin) {
+        msgDsInitResp.is_initialized = false;
+      }
+    }
+
+    if (msgDsInitResp.is_initialized != false) {
+      // create new DS18X20 object and add it to the vector
+      WipperSnapper_DS18X20 newDs18(&msgDs18x20InitRequest);
+      WS._ds18x20Components.push_back(newDs18);
+    }
+
+    // TODO: Fill signal msg response wrapper
+  } else if (field->tag == wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
+    WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
+    // decode de-init message
+    wippersnapper_ds18x20_v1_Ds18x20DeInitRequest msgDs18x20DeInitRequest = wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_fields,
+                   &msgDs18x20DeInitRequest)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode msgDs18x20DeInitRequest.");
+      return false; // fail out if we can't decode
+    }
+
+    // TODO: Remove object from vector and delete it
+    for (int i = 0; i < WS._ds18x20Components.size(); i++) {
+      if (WS._ds18x20Components.at(i).getPin() == msgDs18x20DeInitRequest.onewire_pin) {
+        // Remove object from vector
+        WS._ds18x20Components.erase(WS._ds18x20Components.begin()+i);
+      }
+    }
+
+    // TODO: Fill signal msg response wrapper
+
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: DS Message type not found!");
+    return false;
+  }
+  // TODO
+  // Publish DSResp broker
+  return true;
+}
+
 void cbSignalDSReq(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
   WS_DEBUG_PRINT(len);
@@ -823,8 +880,18 @@ void cbSignalDSReq(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
+  // Zero-out existing I2C signal msg.
+  WS.msgSignalDS = wippersnapper_signal_v1_Ds18x20Request_init_zero;
 
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgSignalDS.cb_payload.funcs.decode = cbDecodeDsMsg;
 
+  // Decode DS signal request
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_Ds18x20Request_fields,
+                 &WS.msgSignalDS))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode DS message");
 }
 
 /****************************************************************************/
