@@ -830,15 +830,23 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // Do we already have a 1-wire bus object on the requested pin?
     for (int i = 0; i < WS._ds18x20Components.size(); i++) {
       if (WS._ds18x20Components.at(i).getPin() == msgDs18x20InitRequest.onewire_pin) {
-        msgDsInitResp.is_initialized = false;
+        WS_DEBUG_PRINTLN("ERROR: Already have 1-Wire bus on requested pin!");
+        return false;
       }
     }
 
-    if (msgDsInitResp.is_initialized != false) {
-      // create new DS18X20 object and add it to the vector
-      WipperSnapper_DS18X20 newDs18(&msgDs18x20InitRequest);
-      WS._ds18x20Components.push_back(newDs18);
+    // Create new ds18x20
+    WipperSnapper_DS18X20 newDs18(&msgDs18x20InitRequest);
+
+    // attempt to initialize sensor
+    if (!newDs18.begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to initialize DS18x20 Sensor!");
+      msgDsInitResp.is_initialized = false;
     }
+
+    // If we initialized successfully, add object to vector
+    if (msgDsInitResp.is_initialized)
+      WS._ds18x20Components.push_back(newDs18);
 
     // TODO: Fill signal msg response wrapper
   } else if (field->tag == wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {

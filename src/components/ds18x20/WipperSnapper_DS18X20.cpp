@@ -44,9 +44,18 @@ WipperSnapper_DS18X20::WipperSnapper_DS18X20(wippersnapper_ds18x20_v1_Ds18x20Ini
 */
 /*************************************************************/
 WipperSnapper_DS18X20::~WipperSnapper_DS18X20() {
-  // TODO
+  delete _ds;
+  delete _wire;
 }
 
+/*************************************************************/
+/*!
+    @brief    Attempts to initialize a DS18X20 sensor.
+    @returns  True if a sensor address was found and the
+              sensor address is supported by the
+              arduino-temperature-control library.
+*/
+/*************************************************************/
 bool WipperSnapper_DS18X20::begin() {
   // Attempt to get address from DS sensor at index 0
   if (!_ds->getAddress(_sensorAddress, 0))
@@ -62,22 +71,42 @@ bool WipperSnapper_DS18X20::begin() {
   return true;
 }
 
+/*************************************************************/
+/*!
+    @brief    Gets the pin used by the OneWire bus.
+    @returns  The OneWire pin.
+*/
+/*************************************************************/
 int32_t WipperSnapper_DS18X20::getPin() {
     return _sensorPin;
 }
 
+/*************************************************************/
+/*!
+    @brief    Gets the address of the 0th sensor idx on the
+              1-wire bus.
+    @returns  The sensor's address.
+*/
+/*************************************************************/
 uint8_t* WipperSnapper_DS18X20::getAddress() {
   _ds->getAddress(_sensorAddress, 0);
   return _sensorAddress;
 }
 
+/*************************************************************/
+/*!
+    @brief    Gets the resolution of the 0th sensor on the
+              1-wire bus.
+    @returns  The sensor's resolution
+*/
+/*************************************************************/
 uint8_t WipperSnapper_DS18X20::getResolution() {
   return _ds->getResolution(_sensorAddress);
 }
 
 /*************************************************************/
 /*!
-    @brief    TODO for a WipperSnapper DS18X20 component.
+    @brief    Obtains a temperature...
 */
 /*************************************************************/
 void WipperSnapper_DS18X20::update() {
