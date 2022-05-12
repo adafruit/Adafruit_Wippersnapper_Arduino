@@ -814,6 +814,10 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 }
 
 bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  // new empty response message
+  wippersnapper_signal_v1_Ds18x20Response msgDSResponse =
+      wippersnapper_signal_v1_Ds18x20Response_init_zero;
+
   if (field->tag ==
       wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
     WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
@@ -825,9 +829,6 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode msgDs18x20InitRequest.");
       return false; // fail out if we can't decode
     }
-    // new empty response message
-    wippersnapper_ds18x20_v1_Ds18x20InitResponse msgDsInitResp =
-        wippersnapper_ds18x20_v1_Ds18x20InitResponse_init_zero;
 
     // Do we already have a 1-wire bus object on the requested pin?
     for (int i = 0; i < WS._ds18x20Components.size(); i++) {
@@ -844,14 +845,18 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // attempt to initialize sensor
     if (!newDs18.begin()) {
       WS_DEBUG_PRINTLN("ERROR: Unable to initialize DS18x20 Sensor!");
-      msgDsInitResp.is_initialized = false;
+      msgDSResponse.payload.resp_ds18x20_init.is_initialized = false;
+    } else {
+      msgDSResponse.payload.resp_ds18x20_init.is_initialized = true;
     }
 
     // If we initialized successfully, add object to vector
-    if (msgDsInitResp.is_initialized)
+    if (msgDSResponse.payload.resp_ds18x20_init.is_initialized)
       WS._ds18x20Components.push_back(newDs18);
 
-    // TODO: Fill signal msg response wrapper
+    // fill response payload type
+    msgDSResponse.which_payload =
+        wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_init_tag;
   } else if (field->tag ==
              wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
     WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
@@ -864,23 +869,44 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       return false; // fail out if we can't decode
     }
 
-    // TODO: Remove object from vector and delete it
+    // fill response message payload type
+    msgDSResponse.which_payload =
+        wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_deinit_tag;
+    msgDSResponse.payload.resp_ds18x20_deinit.is_de_init = false;
+
+    // search for ds pin within ds component vector
     for (int i = 0; i < WS._ds18x20Components.size(); i++) {
       if (WS._ds18x20Components.at(i).getPin() ==
           msgDs18x20DeInitRequest.onewire_pin) {
-        // Remove object from vector
         WS._ds18x20Components.erase(WS._ds18x20Components.begin() + i);
+        msgDSResponse.payload.resp_ds18x20_deinit.is_de_init = true;
       }
     }
-
-    // TODO: Fill signal msg response wrapper
 
   } else {
     WS_DEBUG_PRINTLN("ERROR: DS Message type not found!");
     return false;
   }
-  // TODO
-  // Publish DSResp broker
+
+  // Encode response message
+  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+  pb_ostream_t ostream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
+                 &msgDSResponse)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode DS response message!");
+    return false;
+  }
+
+  // Publish response message to broker
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
+                      &msgDSResponse);
+  WS_DEBUG_PRINT("Publishing Message: DS Response...");
+  WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz,
+                    1);
+  WS_DEBUG_PRINTLN("Published!");
+
   return true;
 }
 
