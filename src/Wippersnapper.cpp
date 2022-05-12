@@ -813,6 +813,20 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a Dallas Sensor (DS) signal request message and executes the
+              callback based on the message's tag. Publishes a DS response back to
+              the broker.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+/******************************************************************************************/
 bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   // new empty response message
   wippersnapper_signal_v1_Ds18x20Response msgDSResponse =
@@ -910,8 +924,18 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when DallasSensor (DS) signal sub-topic receives a
+              new message and attempts to decode the message.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
 void cbSignalDSReq(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-DS]: ");
   WS_DEBUG_PRINT(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
