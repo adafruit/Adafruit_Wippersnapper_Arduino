@@ -815,9 +815,9 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 
 /******************************************************************************************/
 /*!
-    @brief    Decodes a Dallas Sensor (DS) signal request message and executes the
-              callback based on the message's tag. Publishes a DS response back to
-              the broker.
+    @brief    Decodes a Dallas Sensor (DS) signal request message and executes
+   the callback based on the message's tag. Publishes a DS response back to the
+   broker.
     @param    stream
               Incoming data stream from buffer.
     @param    field

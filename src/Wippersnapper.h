@@ -37,8 +37,8 @@
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
-#include "components/i2c/WipperSnapper_I2C.h"
 #include "components/ds18x20/WipperSnapper_DS18X20.h"
+#include "components/i2c/WipperSnapper_I2C.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -261,7 +261,9 @@ public:
       false; ///< True if I2C port 1 has been initialized, False otherwise.
 
   // DS18X20
-  std::vector<WipperSnapper_DS18X20> _ds18x20Components; /*!< Vector containing WipperSnapper_DS18X20 instances */
+  std::vector<WipperSnapper_DS18X20>
+      _ds18x20Components; /*!< Vector containing WipperSnapper_DS18X20 instances
+                           */
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
@@ -303,10 +305,10 @@ public:
                                    to a broker. */
   char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
-  char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from a device
-                                   to a broker. */
-  char *_topic_signal_ds18_device = NULL; /*!< Topic carries ds18x20 messages from a
-                                     broker to a device. */
+  char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
+                                   a device to a broker. */
+  char *_topic_signal_ds18_device = NULL; /*!< Topic carries ds18x20 messages
+                                     from a broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -318,7 +320,8 @@ public:
 
   // ds signal msg
   wippersnapper_signal_v1_Ds18x20Request msgSignalDS =
-      wippersnapper_signal_v1_Ds18x20Request_init_zero; ///< DS request message wrapper
+      wippersnapper_signal_v1_Ds18x20Request_init_zero; ///< DS request message
+                                                        ///< wrapper
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
