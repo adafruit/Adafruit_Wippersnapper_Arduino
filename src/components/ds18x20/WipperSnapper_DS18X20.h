@@ -23,7 +23,7 @@
 // see: https://github.com/PaulStoffregen/OneWire/issues/112 and
 // https://github.com/espressif/arduino-esp32/issues
 #include <OneWireNg.h>
-#elif
+#else
 // Non-arduino-esp32 arch. should use PaulStoffregen OneWire
 #include <OneWire.h>
 #endif
