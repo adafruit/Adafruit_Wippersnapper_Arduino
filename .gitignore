@@ -43,3 +43,5 @@ html/*
 src/.vscode/settings.json
 
 .DS_STORE
+
+examples/Wippersnapper_demo/build/

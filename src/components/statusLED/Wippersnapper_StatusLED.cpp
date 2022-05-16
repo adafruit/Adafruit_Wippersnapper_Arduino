@@ -135,22 +135,45 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 #endif
 }
 
-void Wippersnapper::statusLEDPulse() {
-  setStatusLEDColor(GREEN);
-  // pulse 3x
-  for (int i = 0; i < 3; i++) {
+/****************************************************************************/
+/*!
+    @brief    Fades the status LED.
+    @param    color
+              The specific color to fade the status LED.
+    @param    numFades
+              The amount of time to fade/pulse the status LED.
+*/
+/****************************************************************************/
+void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
+  setStatusLEDColor(color);
+  // pulse numFades times
+  for (int i = 0; i < numFades; i++) {
     for (int i = 50; i <= 200; i += 5) {
+#if defined(USE_STATUS_NEOPIXEL)
       statusPixel->setBrightness(i);
       statusPixel->show();
+#elif USE_STATUS_DOTSTAR
+      statusPixelDotStar->setBrightness(i);
+      statusPixelDotStar->show();
+#else
+      analogWrite(STATUS_LED_PIN, i);
+#endif
       delay(10);
     }
     for (int i = 200; i >= 50; i -= 5) {
+#if defined(USE_STATUS_NEOPIXEL)
       statusPixel->setBrightness(i);
       statusPixel->show();
+#elif USE_STATUS_DOTSTAR
+      statusPixelDotStar->setBrightness(i);
+      statusPixelDotStar->show();
+#else
+      analogWrite(STATUS_LED_PIN, i);
+#endif
       delay(10);
     }
   }
-
+  // reset status LED
   setStatusLEDColor(BLACK);
 }
 

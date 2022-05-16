@@ -1574,7 +1574,6 @@ void Wippersnapper::connect() {
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
-  setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard()) {
     haltError("Unable to register with WipperSnapper.");
   }
@@ -1593,11 +1592,9 @@ void Wippersnapper::connect() {
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
+  statusLEDFade(GREEN, 3);
 
   // Run application
-  // TODO: Pulse LED green
-  statusLEDPulse();
-  // statusLEDBlink(WS_LED_STATUS_CONNECTED);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
 }
