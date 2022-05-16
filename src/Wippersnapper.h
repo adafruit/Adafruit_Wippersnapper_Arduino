@@ -182,6 +182,7 @@ public:
   void statusLEDDeinit();
   void setStatusLEDColor(uint32_t color);
   void statusLEDBlink(ws_led_status_t statusState);
+  void statusLEDPulse();
   bool lockStatusNeoPixel =
       false; ///< True if status LED is using the status neopixel
   bool lockStatusDotStar =

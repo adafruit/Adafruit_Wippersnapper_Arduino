@@ -1289,6 +1289,7 @@ void Wippersnapper::runNetFSM() {
       // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
         fsmNetwork = FSM_NET_CONNECTED;
+        // TODO: Pulse green?
         return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
@@ -1307,20 +1308,22 @@ void Wippersnapper::runNetFSM() {
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        setStatusLEDColor(LED_NET_CONNECT);
+        // blink before we connect
+        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
         WS.feedWDT();
         // attempt to connect
         WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
         WS.feedWDT();
-        delay(1000);
+        // blink to simulate a delay to allow wifi connection to process
+        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
-        setStatusLEDColor(BLACK);
         maxAttempts--;
       }
       // Validate connection
+      // TODO: This should have a corresponding error LED status
       if (networkStatus() != WS_NET_CONNECTED)
         haltError("ERROR: Unable to connect to WiFi, rebooting soon...");
       fsmNetwork = FSM_NET_CHECK_NETWORK;
@@ -1331,18 +1334,19 @@ void Wippersnapper::runNetFSM() {
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        setStatusLEDColor(LED_IO_CONNECT);
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
         }
-        setStatusLEDColor(BLACK);
         WS_DEBUG_PRINTLN(
-            "Unable to connect to Adafruit IO MQTT, retrying in 5 seconds...");
-        delay(5000);
+            "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        delay(2500);
         maxAttempts--;
       }
+      // TODO: This should have a corresponding error LED state, too!
       if (fsmNetwork != FSM_NET_CHECK_MQTT)
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...");
@@ -1567,7 +1571,6 @@ void Wippersnapper::connect() {
   // Run the network fsm
   runNetFSM();
   WS.feedWDT();
-  setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
@@ -1592,7 +1595,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // Run application
-  statusLEDBlink(WS_LED_STATUS_CONNECTED);
+  // TODO: Pulse LED green
+  statusLEDPulse();
+  // statusLEDBlink(WS_LED_STATUS_CONNECTED);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
 }

@@ -135,6 +135,25 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 #endif
 }
 
+void Wippersnapper::statusLEDPulse() {
+  setStatusLEDColor(GREEN);
+  // pulse 3x
+  for (int i = 0; i < 3; i++) {
+    for (int i = 50; i < 200; i++) {
+      statusPixel->setBrightness(i);
+      statusPixel->show();
+      delay(10);
+    }
+    for (int i = 199; i < 50; i++) {
+      statusPixel->setBrightness(i);
+      statusPixel->show();
+      delay(10);
+    }
+  }
+
+  setStatusLEDColor(BLACK);
+}
+
 /****************************************************************************/
 /*!
     @brief    Blinks a status LED a specific color depending on
@@ -149,30 +168,42 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
     return;
 #endif
 
-  int blinkNum = 0;
+  int blinkNum = 3;
   uint32_t ledBlinkColor;
-  if (statusState == WS_LED_STATUS_KAT) {
-    blinkNum = 1;
+
+  switch (statusState) {
+  case WS_LED_STATUS_KAT:
     ledBlinkColor = LED_CONNECTED;
-  } else if (statusState == WS_LED_STATUS_ERROR) {
-    blinkNum = 2;
+    break;
+  case WS_LED_STATUS_ERROR:
     ledBlinkColor = LED_ERROR;
-  } else if (statusState == WS_LED_STATUS_CONNECTED) {
-    blinkNum = 3;
-    ledBlinkColor = LED_CONNECTED;
-  } else if (statusState == WS_LED_STATUS_FS_WRITE) {
-    blinkNum = 4;
+    break;
+  case WS_LED_STATUS_WIFI_CONNECTING:
     ledBlinkColor = YELLOW;
-  } else {
-    blinkNum = 0;
+    break;
+  case WS_LED_STATUS_MQTT_CONNECTING:
+    ledBlinkColor = BLUE;
+    break;
+  case WS_LED_STATUS_WAITING_FOR_REG_MSG:
+    blinkNum = 3;
+    ledBlinkColor = PINK;
+    break;
+  case WS_LED_STATUS_CONNECTED:
+    ledBlinkColor = LED_CONNECTED;
+    break;
+  case WS_LED_STATUS_FS_WRITE:
+    ledBlinkColor = YELLOW;
+    break;
+  default:
     ledBlinkColor = BLACK;
+    break;
   }
 
   while (blinkNum > 0) {
     setStatusLEDColor(ledBlinkColor);
-    delay(250);
+    delay(150);
     setStatusLEDColor(BLACK);
-    delay(250);
+    delay(150);
     blinkNum--;
   }
 }
