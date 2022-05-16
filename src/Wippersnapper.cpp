@@ -1289,7 +1289,6 @@ void Wippersnapper::runNetFSM() {
       // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
         fsmNetwork = FSM_NET_CONNECTED;
-        // TODO: Pulse green?
         return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
@@ -1346,7 +1345,6 @@ void Wippersnapper::runNetFSM() {
         delay(2500);
         maxAttempts--;
       }
-      // TODO: This should have a corresponding error LED state, too!
       if (fsmNetwork != FSM_NET_CHECK_MQTT)
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
@@ -1368,8 +1366,7 @@ void Wippersnapper::runNetFSM() {
               The desired color to blink.
 */
 /**************************************************************************/
-void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor =
-                                                WS_LED_STATUS_ERROR_RUNTIME) {
+void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
   for (;;) {

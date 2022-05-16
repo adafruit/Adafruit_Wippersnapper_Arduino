@@ -181,7 +181,7 @@ public:
   bool statusLEDInit();
   void statusLEDDeinit();
   void setStatusLEDColor(uint32_t color);
-  void statusLEDBlink(ws_led_status_t statusState, bool blinkFast);
+  void statusLEDBlink(ws_led_status_t statusState, bool blinkFast = false);
   void statusLEDFade(uint32_t color, int numFades);
 
   bool lockStatusNeoPixel =
@@ -233,7 +233,8 @@ public:
   void feedWDT();
 
   // Error handling helpers
-  void haltError(String error, ws_led_status_t ledStatusColor);
+  void haltError(String error,
+                 ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
   void errorWriteHang(String error);
 
   // MQTT topic callbacks //

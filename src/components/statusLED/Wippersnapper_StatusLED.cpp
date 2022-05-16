@@ -183,10 +183,12 @@ void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
               the hardware's state.
     @param    statusState
               Hardware's status state.
+    @param    blinkFast
+              Blink the LED for 100ms instead of default 300ms.
 */
 /****************************************************************************/
 void Wippersnapper::statusLEDBlink(ws_led_status_t statusState,
-                                   bool blinkFast = false) {
+                                   bool blinkFast) {
   int blinkNum;
   uint32_t ledBlinkColor;
 
@@ -196,9 +198,9 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState,
 #endif
 
   // are we going to blink slowly (connecting) or quickly (error)?
-  long delayTime = 500;
-  if blinkFast
-    delayTime = 50;
+  long delayTime = 300;
+  if (blinkFast)
+    delayTime = 100;
 
   // what color are we goign to blink?
   switch (statusState) {
@@ -226,7 +228,7 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState,
   }
 
   // blink!
-  int blinkNum = 3;
+  blinkNum = 3;
   while (blinkNum > 0) {
     setStatusLEDColor(ledBlinkColor);
     delay(delayTime);
