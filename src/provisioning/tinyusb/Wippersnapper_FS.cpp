@@ -491,7 +491,7 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt() {
   while (1) {
-    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE, true);
     delay(1000);
     yield();
   }
