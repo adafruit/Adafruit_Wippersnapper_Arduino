@@ -139,12 +139,12 @@ void Wippersnapper::statusLEDPulse() {
   setStatusLEDColor(GREEN);
   // pulse 3x
   for (int i = 0; i < 3; i++) {
-    for (int i = 50; i < 200; i++) {
+    for (int i = 50; i <= 200; i += 5) {
       statusPixel->setBrightness(i);
       statusPixel->show();
       delay(10);
     }
-    for (int i = 199; i < 50; i++) {
+    for (int i = 200; i >= 50; i -= 5) {
       statusPixel->setBrightness(i);
       statusPixel->show();
       delay(10);
