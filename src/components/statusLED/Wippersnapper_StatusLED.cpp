@@ -185,34 +185,37 @@ void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
               Hardware's status state.
 */
 /****************************************************************************/
-void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
+void Wippersnapper::statusLEDBlink(ws_led_status_t statusState,
+                                   bool blinkFast = false) {
+  int blinkNum;
+  uint32_t ledBlinkColor;
+
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return;
 #endif
 
-  int blinkNum = 3;
-  uint32_t ledBlinkColor;
+  // are we going to blink slowly (connecting) or quickly (error)?
+  long delayTime = 500;
+  if blinkFast
+    delayTime = 50;
 
+  // what color are we goign to blink?
   switch (statusState) {
   case WS_LED_STATUS_KAT:
-    ledBlinkColor = LED_CONNECTED;
+    ledBlinkColor = GREEN;
     break;
-  case WS_LED_STATUS_ERROR:
-    ledBlinkColor = LED_ERROR;
+  case WS_LED_STATUS_ERROR_RUNTIME:
+    ledBlinkColor = RED;
     break;
   case WS_LED_STATUS_WIFI_CONNECTING:
-    ledBlinkColor = YELLOW;
+    ledBlinkColor = AMBER;
     break;
   case WS_LED_STATUS_MQTT_CONNECTING:
     ledBlinkColor = BLUE;
     break;
   case WS_LED_STATUS_WAITING_FOR_REG_MSG:
-    blinkNum = 3;
     ledBlinkColor = PINK;
-    break;
-  case WS_LED_STATUS_CONNECTED:
-    ledBlinkColor = LED_CONNECTED;
     break;
   case WS_LED_STATUS_FS_WRITE:
     ledBlinkColor = YELLOW;
@@ -222,11 +225,13 @@ void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
     break;
   }
 
+  // blink!
+  int blinkNum = 3;
   while (blinkNum > 0) {
     setStatusLEDColor(ledBlinkColor);
-    delay(150);
+    delay(delayTime);
     setStatusLEDColor(BLACK);
-    delay(150);
+    delay(delayTime);
     blinkNum--;
   }
 }

@@ -20,6 +20,7 @@
 #define BLACK 0x000000  ///< Black (as a uint32)
 #define PINK 0xFF00FF   ///< Pink (as a uint32)
 #define BLUE 0x0000FF   ///< Blue (as a uint32)
+#define AMBER 0xFFBF00  ///< Amber (as a uint32)
 
 // colors for each status state
 #define LED_NET_CONNECT PINK      ///< Network connection state
@@ -38,7 +39,6 @@ typedef enum {
   WS_LED_STATUS_WIFI_CONNECTING,
   WS_LED_STATUS_MQTT_CONNECTING,
   WS_LED_STATUS_WAITING_FOR_REG_MSG,
-  WS_LED_STATUS_CONNECTED,
   WS_LED_STATUS_KAT,
-  WS_LED_STATUS_ERROR,
+  WS_LED_STATUS_ERROR_RUNTIME,
 } ws_led_status_t;

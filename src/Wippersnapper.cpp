@@ -1252,7 +1252,7 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 /*!
     @brief    Writes an error message to the serial and the filesystem,
-                blinks WS_LED_STATUS_ERROR pattern and hangs.
+                blinks WS_LED_STATUS_ERROR_RUNTIME pattern and hangs.
     @param    error
               The error message to write to the serial and filesystem.
 */
@@ -1266,7 +1266,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Signal and hang forever
   while (1) {
     WS.feedWDT();
-    WS.statusLEDBlink(WS_LED_STATUS_ERROR);
+    WS.statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
   }
 }
@@ -1323,9 +1323,9 @@ void Wippersnapper::runNetFSM() {
         maxAttempts--;
       }
       // Validate connection
-      // TODO: This should have a corresponding error LED status
       if (networkStatus() != WS_NET_CONNECTED)
-        haltError("ERROR: Unable to connect to WiFi, rebooting soon...");
+        haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
+                  WS_LED_STATUS_WIFI_CONNECTING);
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
@@ -1349,7 +1349,8 @@ void Wippersnapper::runNetFSM() {
       // TODO: This should have a corresponding error LED state, too!
       if (fsmNetwork != FSM_NET_CHECK_MQTT)
         haltError(
-            "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...");
+            "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
+            WS_LED_STATUS_MQTT_CONNECTING);
       break;
     default:
       break;
@@ -1363,13 +1364,16 @@ void Wippersnapper::runNetFSM() {
               the WDT bites.
     @param    error
               The desired error to print to serial.
+    @param    ledStatusColor
+              The desired color to blink.
 */
 /**************************************************************************/
-void Wippersnapper::haltError(String error) {
+void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor =
+                                                WS_LED_STATUS_ERROR_RUNTIME) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
-  setStatusLEDColor(LED_ERROR);
   for (;;) {
+    statusLEDBlink(ledStatusColor, true);
     // let the WDT fail out and reset!
     delay(100);
   }
