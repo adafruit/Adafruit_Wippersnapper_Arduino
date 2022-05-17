@@ -34,6 +34,7 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
+#include "components/statusLED/Wippersnapper_StatusLED.h"
 
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -176,13 +177,6 @@ public:
   virtual ~Wippersnapper();
 
   void provision();
-
-  // Status LED
-  bool statusLEDInit();
-  void statusLEDDeinit();
-  void setStatusLEDColor(uint32_t color);
-  void statusLEDBlink(ws_led_status_t statusState, bool blinkFast = false);
-  void statusLEDFade(uint32_t color, int numFades);
 
   bool lockStatusNeoPixel =
       false; ///< True if status LED is using the status neopixel

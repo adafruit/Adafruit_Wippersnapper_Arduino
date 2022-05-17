@@ -1266,7 +1266,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Signal and hang forever
   while (1) {
     WS.feedWDT();
-    WS.statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
+    statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
   }
 }

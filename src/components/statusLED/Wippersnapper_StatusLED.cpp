@@ -13,27 +13,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#include "Wippersnapper.h"
-// Use LEDC for ESP32 arch so we can PWM
-#ifdef ARDUINO_ARCH_ESP32
-// use first channel of 16 channels (started from zero)
-#define LEDC_CHANNEL_0 0
-// use 12 bit precission for LEDC timer
-#define LEDC_TIMER_12_BIT 12
-// use 5000 Hz as a LEDC base frequency
-#define LEDC_BASE_FREQ 5000
-#endif
-
-#ifdef USE_STATUS_NEOPIXEL
-Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
-    STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
-#endif
-
-#ifdef USE_STATUS_DOTSTAR
-Adafruit_DotStar *statusPixelDotStar =
-    new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
-                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
-#endif
+#include "Wippersnapper_StatusLED.h"
 
 extern Wippersnapper WS;
 /****************************************************************************/
@@ -43,7 +23,7 @@ extern Wippersnapper WS;
                 in-use.
 */
 /****************************************************************************/
-bool Wippersnapper::statusLEDInit() {
+bool statusLEDInit() {
   bool is_success = false;
 
 #ifdef USE_STATUS_NEOPIXEL
@@ -86,7 +66,7 @@ bool Wippersnapper::statusLEDInit() {
     @brief    De-initializes status LED. The usingStatus flag is also reset.
 */
 /****************************************************************************/
-void Wippersnapper::statusLEDDeinit() {
+void statusLEDDeinit() {
 #ifdef USE_STATUS_NEOPIXEL
   statusPixel->clear();
   statusPixel->show(); // turn off
@@ -114,7 +94,7 @@ void Wippersnapper::statusLEDDeinit() {
               Desired RGB color.
 */
 /****************************************************************************/
-void Wippersnapper::setStatusLEDColor(uint32_t color) {
+void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_NEOPIXEL
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
@@ -153,7 +133,7 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
               The amount of time to fade/pulse the status LED.
 */
 /****************************************************************************/
-void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
+void statusLEDFade(uint32_t color, int numFades = 3) {
   setStatusLEDColor(color);
 
 // attach LEDC pin
@@ -215,7 +195,7 @@ void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
               Blink the LED for 100ms instead of default 300ms.
 */
 /****************************************************************************/
-void Wippersnapper::statusLEDBlink(ws_led_status_t statusState,
+void statusLEDBlink(ws_led_status_t statusState,
                                    bool blinkFast) {
   int blinkNum;
   uint32_t ledBlinkColor;
