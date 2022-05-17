@@ -33,8 +33,8 @@
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
-#include "components/statusLED/Wippersnapper_StatusLED.h"
 #include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
+#include "components/statusLED/Wippersnapper_StatusLED.h"
 
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"

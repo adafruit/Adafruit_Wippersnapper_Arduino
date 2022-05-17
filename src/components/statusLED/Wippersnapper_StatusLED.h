@@ -29,6 +29,22 @@
 #define LEDC_BASE_FREQ 5000
 #endif
 
+#define RED 0xFF0000    ///< Red (as a uint32)
+#define CYAN 0x00FFFF   ///< Cyan (as a uint32)
+#define YELLOW 0xFFFF00 ///< Yellow (as a uint32)
+#define GREEN 0x00A300  ///< Green (as a uint32)
+#define BLACK 0x000000  ///< Black (as a uint32)
+#define PINK 0xFF00FF   ///< Pink (as a uint32)
+#define BLUE 0x0000FF   ///< Blue (as a uint32)
+#define AMBER 0xFFBF00  ///< Amber (as a uint32)
+
+// colors for each status state
+#define LED_NET_CONNECT PINK      ///< Network connection state
+#define LED_IO_CONNECT BLUE       ///< MQTT broker connection state
+#define LED_IO_REGISTER_HW YELLOW ///< Hardware registration state
+#define LED_CONNECTED GREEN       ///< Successful registration state
+#define LED_ERROR RED             ///< Error state
+
 // Status LED
 bool statusLEDInit();
 void statusLEDDeinit();
