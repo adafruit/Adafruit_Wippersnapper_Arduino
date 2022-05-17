@@ -231,9 +231,11 @@ void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
     ledBlinkColor = RED;
     break;
   case WS_LED_STATUS_WIFI_CONNECTING:
+    blinkNum = 4; // delay(1200)
     ledBlinkColor = AMBER;
     break;
   case WS_LED_STATUS_MQTT_CONNECTING:
+    blinkNum = 4; // delay(1200)
     ledBlinkColor = BLUE;
     break;
   case WS_LED_STATUS_WAITING_FOR_REG_MSG:
