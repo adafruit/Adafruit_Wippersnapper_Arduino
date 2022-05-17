@@ -29,12 +29,11 @@
 #define LEDC_BASE_FREQ 5000
 #endif
 
-
-  // Status LED
-  bool statusLEDInit();
-  void statusLEDDeinit();
-  void setStatusLEDColor(uint32_t color);
-  void statusLEDBlink(ws_led_status_t statusState, bool blinkFast = false);
-  void statusLEDFade(uint32_t color, int numFades);
+// Status LED
+bool statusLEDInit();
+void statusLEDDeinit();
+void setStatusLEDColor(uint32_t color);
+void statusLEDBlink(ws_led_status_t statusState, bool blinkFast = false);
+void statusLEDFade(uint32_t color, int numFades);
 
 #endif // WIPPERSNAPPER_STATUSLED_H

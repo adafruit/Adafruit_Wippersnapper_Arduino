@@ -207,8 +207,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
               Blink the LED for 100ms instead of default 300ms.
 */
 /****************************************************************************/
-void statusLEDBlink(ws_led_status_t statusState,
-                                   bool blinkFast) {
+void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
   int blinkNum;
   uint32_t ledBlinkColor;
 
