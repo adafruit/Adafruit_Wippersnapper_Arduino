@@ -15,7 +15,6 @@
  */
 #ifndef WIPPERSNAPPER_STATUSLED_H
 #define WIPPERSNAPPER_STATUSLED_H
-#include "Wippersnapper.h"
 #include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
 
@@ -28,6 +27,20 @@
 // use 5000 Hz as a LEDC base frequency
 #define LEDC_BASE_FREQ 5000
 #endif
+
+#define STATUS_LED_KAT_BLINK_TIME                                              \
+  120000 ///< How often to blink the status LED while run() executes, if not
+         ///< in-use
+
+/** Defines the Wippersnapper status LED states */
+typedef enum ws_led_status_t {
+  WS_LED_STATUS_FS_WRITE,
+  WS_LED_STATUS_WIFI_CONNECTING,
+  WS_LED_STATUS_MQTT_CONNECTING,
+  WS_LED_STATUS_WAITING_FOR_REG_MSG,
+  WS_LED_STATUS_ERROR_RUNTIME,
+  WS_LED_STATUS_KAT,
+} ws_led_status_t;
 
 #define RED 0xFF0000    ///< Red (as a uint32)
 #define CYAN 0x00FFFF   ///< Cyan (as a uint32)

@@ -14,6 +14,7 @@
  *
  */
 #include "Wippersnapper_StatusLED.h"
+#include "Wippersnapper.h"
 
 extern Wippersnapper WS;
 
