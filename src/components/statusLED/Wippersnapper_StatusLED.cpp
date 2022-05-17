@@ -161,7 +161,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 #if defined(USE_STATUS_NEOPIXEL)
       statusPixel->setBrightness(i);
       statusPixel->show();
-#elif USE_STATUS_DOTSTAR
+#elif defined(USE_STATUS_DOTSTAR)
       statusPixelDotStar->setBrightness(i);
       statusPixelDotStar->show();
 #elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
@@ -176,7 +176,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 #if defined(USE_STATUS_NEOPIXEL)
       statusPixel->setBrightness(i);
       statusPixel->show();
-#elif USE_STATUS_DOTSTAR
+#elif defined(USE_STATUS_DOTSTAR)
       statusPixelDotStar->setBrightness(i);
       statusPixelDotStar->show();
 #elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
