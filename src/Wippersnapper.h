@@ -46,8 +46,6 @@
 #include "Arduino.h"       // Wiring
 
 // Note: These might be better off in their respective wrappers
-#include <Adafruit_DotStar.h>
-#include <Adafruit_NeoPixel.h>
 #include <SPI.h>
 
 #ifndef ESP8266

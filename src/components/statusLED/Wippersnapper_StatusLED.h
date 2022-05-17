@@ -16,6 +16,8 @@
 #ifndef WIPPERSNAPPER_STATUSLED_H
 #define WIPPERSNAPPER_STATUSLED_H
 #include "Wippersnapper.h"
+#include <Adafruit_DotStar.h>
+#include <Adafruit_NeoPixel.h>
 
 // Use LEDC for ESP32 arch so we can PWM
 #ifdef ARDUINO_ARCH_ESP32
@@ -27,16 +29,6 @@
 #define LEDC_BASE_FREQ 5000
 #endif
 
-#ifdef USE_STATUS_NEOPIXEL
-Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
-    STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
-#endif
-
-#ifdef USE_STATUS_DOTSTAR
-Adafruit_DotStar *statusPixelDotStar =
-    new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
-                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
-#endif
 
   // Status LED
   bool statusLEDInit();

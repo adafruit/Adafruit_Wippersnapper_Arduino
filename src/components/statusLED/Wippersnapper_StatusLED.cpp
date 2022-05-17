@@ -16,6 +16,18 @@
 #include "Wippersnapper_StatusLED.h"
 
 extern Wippersnapper WS;
+
+#ifdef USE_STATUS_NEOPIXEL
+Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
+    STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+#endif
+
+#ifdef USE_STATUS_DOTSTAR
+Adafruit_DotStar *statusPixelDotStar =
+    new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
+                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
+#endif
+
 /****************************************************************************/
 /*!
     @brief    Initializes board-specific status LED.
