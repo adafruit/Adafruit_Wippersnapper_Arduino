@@ -14,6 +14,15 @@
  *
  */
 #include "Wippersnapper.h"
+// Use LEDC for ESP32 arch so we can PWM
+#ifdef ARDUINO_ARCH_ESP32
+// use first channel of 16 channels (started from zero)
+#define LEDC_CHANNEL_0 0
+// use 12 bit precission for LEDC timer
+#define LEDC_TIMER_12_BIT 12
+// use 5000 Hz as a LEDC base frequency
+#define LEDC_BASE_FREQ 5000
+#endif
 
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
@@ -146,6 +155,13 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 /****************************************************************************/
 void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
   setStatusLEDColor(color);
+
+// attach LEDC pin
+#if defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+  ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
+  ledcAttachPin(STATUS_LED_PIN, LEDC_CHANNEL_0);
+#endif
+
   // pulse numFades times
   for (int i = 0; i < numFades; i++) {
     for (int i = 50; i <= 200; i += 5) {
@@ -155,11 +171,14 @@ void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
 #elif USE_STATUS_DOTSTAR
       statusPixelDotStar->setBrightness(i);
       statusPixelDotStar->show();
+#elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+      ledcWrite(LEDC_CHANNEL_0, i);
 #else
       analogWrite(STATUS_LED_PIN, i);
 #endif
       delay(10);
     }
+
     for (int i = 200; i >= 50; i -= 5) {
 #if defined(USE_STATUS_NEOPIXEL)
       statusPixel->setBrightness(i);
@@ -167,13 +186,22 @@ void Wippersnapper::statusLEDFade(uint32_t color, int numFades = 3) {
 #elif USE_STATUS_DOTSTAR
       statusPixelDotStar->setBrightness(i);
       statusPixelDotStar->show();
+#elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+      ledcWrite(LEDC_CHANNEL_0, i);
 #else
       analogWrite(STATUS_LED_PIN, i);
 #endif
       delay(10);
     }
   }
-  // reset status LED
+
+// detach LEDC pin and reset its pinMode
+#if defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+  ledcDetachPin(STATUS_LED_PIN);
+  pinMode(STATUS_LED_PIN, OUTPUT);
+#endif
+
+  // clear status LED color
   setStatusLEDColor(BLACK);
 }
 
