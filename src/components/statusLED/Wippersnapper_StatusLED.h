@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_StatusLED.cpp
+ * @file Wippersnapper_StatusLED.h
  *
  * Interfaces for the Wippersnapper status indicator LED/NeoPixel/Dotstar/RGB
  * LED.
@@ -33,7 +33,8 @@
 bool statusLEDInit();
 void statusLEDDeinit();
 void setStatusLEDColor(uint32_t color);
-void statusLEDBlink(ws_led_status_t statusState, bool blinkFast = false);
+void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME,
+                    bool blinkFast = false);
 void statusLEDFade(uint32_t color, int numFades);
 
 #endif // WIPPERSNAPPER_STATUSLED_H
