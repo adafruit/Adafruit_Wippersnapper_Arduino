@@ -15,6 +15,17 @@
  */
 #include "Wippersnapper_StatusLED.h"
 
+#ifdef USE_STATUS_NEOPIXEL
+Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
+    STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+#endif
+
+#ifdef USE_STATUS_DOTSTAR
+Adafruit_DotStar *statusPixelDotStar =
+    new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
+                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
+#endif
+
 extern Wippersnapper WS;
 /****************************************************************************/
 /*!
@@ -195,8 +206,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
               Blink the LED for 100ms instead of default 300ms.
 */
 /****************************************************************************/
-void statusLEDBlink(ws_led_status_t statusState,
-                                   bool blinkFast) {
+void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
   int blinkNum;
   uint32_t ledBlinkColor;
 
