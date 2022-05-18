@@ -822,6 +822,8 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
       wippersnapper_signal_v1_PixelRequest_req_pixels_create_tag) {
     WS_DEBUG_PRINTLN("Tag Found: Create new pixel");
 
+    // empty create pixel message
+
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_update_tag) {
     // TODO!
@@ -834,7 +836,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
   } else {
     is_success = false;
   }
-  return is_success
+  return is_success;
 }
 
 void cbPixelsMsg(char *data, uint16_t len) {
@@ -1308,10 +1310,10 @@ void Wippersnapper::subscribeWSTopics() {
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
   // Subscribe to signal's addr. pixel sub-topic
-  _topic_signal_pixels_broker =
+  _mqtt_pixels_broker =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_broker, 1);
-  WS._mqtt->subscribe(_topic_signal_pixels_broker);
-  _topic_signal_pixels_broker->setCallback(cbPixelsMsg);
+  WS._mqtt->subscribe(_mqtt_pixels_broker);
+  _mqtt_pixels_broker->setCallback(cbPixelsMsg);
 
   // Subscribe to registration status topic
   _topic_description_sub =

@@ -360,13 +360,10 @@ protected:
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_signal_pixels_broker /*!< Subscribes to signal's addr. pixel
+      *_mqtt_pixels_broker; /*!< Subscribes to signal's addr. pixel
                                       sub-topic. */
 
-                                       Adafruit_MQTT_Subscribe
-                                           *_err_sub; /*!< Subscription to
-                                                         Adafruit IO Error
-                                                         topic. */
+    Adafruit_MQTT_Subscribe *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
   Adafruit_MQTT_Subscribe
       *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
 

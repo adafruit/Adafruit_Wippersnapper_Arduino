@@ -45,9 +45,8 @@ public:
   void fillDotStar();
 
 private:
-  // !!!TODO!!!
-  // vector of pixel driver
-  // vector of dotstar driver
+  std::vector<Adafruit_NeoPixel> neopixels; ///< List of neopixels
+  std::vector<Adafruit_DotStar> dotstars; ///< List of neopixels
 };
 extern Wippersnapper WS;
 
