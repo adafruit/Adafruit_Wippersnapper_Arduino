@@ -19,13 +19,17 @@ WipperSnapper_Pixels::WipperSnapper_Pixels() {}
 
 WipperSnapper_Pixels::~WipperSnapper_Pixels() {}
 
-void WipperSnapper_Pixels::addPixel() {}
+void WipperSnapper_Pixels::addPixel(
+    wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate) {}
 
-void WipperSnapper_Pixels::updatePixel() {}
+void WipperSnapper_Pixels::updatePixel(
+    wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate) {}
 
-void WipperSnapper_Pixels::deletePixel() {}
+void WipperSnapper_Pixels::deletePixel(
+    wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete) {}
 
-void WipperSnapper_Pixels::fillPixel() {}
+void WipperSnapper_Pixels::fillPixel(
+    wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll) {}
 
 // NeoPixel Driver
 void WipperSnapper_Pixels::addNeoPixel() {}

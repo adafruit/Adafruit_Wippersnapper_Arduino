@@ -27,10 +27,14 @@ class WipperSnapper_Pixels {
 public:
   WipperSnapper_Pixels();
   ~WipperSnapper_Pixels();
-  void addPixel();    // high-level, PixelsCreate
-  void updatePixel(); // high-level, PixelsUpdate
-  void deletePixel(); // high-level, PixelsDelete
-  void fillPixel();   // high-level, PixelsFillAll
+  void addPixel(wippersnapper_pixels_v1_PixelsCreate
+                    msgPixelsCreate); // high-level, PixelsCreate
+  void updatePixel(wippersnapper_pixels_v1_PixelsUpdate
+                       msgPixelsUpdate); // high-level, PixelsUpdate
+  void deletePixel(wippersnapper_pixels_v1_PixelsDelete
+                       msgPixelsDelete); // high-level, PixelsDelete
+  void fillPixel(wippersnapper_pixels_v1_PixelsFillAll
+                     msgPixelsFillAll); // high-level, PixelsFillAll
 
   // NeoPixel Driver
   void addNeoPixel();
@@ -45,8 +49,8 @@ public:
   void fillDotStar();
 
 private:
-  std::vector<Adafruit_NeoPixel> neopixels; ///< List of neopixels
-  std::vector<Adafruit_DotStar> dotstars; ///< List of neopixels
+  // std::vector<Adafruit_NeoPixel> neopixels; ///< List of neopixels
+  // std::vector<Adafruit_DotStar> dotstars; ///< List of neopixels
 };
 extern Wippersnapper WS;
 

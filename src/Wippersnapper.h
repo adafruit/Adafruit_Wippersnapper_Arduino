@@ -39,6 +39,7 @@
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/i2c/WipperSnapper_I2C.h"
+#include "components/pixels/WipperSnapper_Pixels.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -164,6 +165,7 @@ class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
+class WipperSnapper_Pixels;
 
 /**************************************************************************/
 /*!
@@ -259,6 +261,8 @@ public:
       false; ///< True if I2C port 0 has been initialized, False otherwise.
   bool _isI2CPort1Init =
       false; ///< True if I2C port 1 has been initialized, False otherwise.
+  // Pixels
+  WipperSnapper_Pixels *_pixels = NULL;
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
@@ -359,11 +363,11 @@ protected:
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
-  Adafruit_MQTT_Subscribe
-      *_mqtt_pixels_broker; /*!< Subscribes to signal's addr. pixel
-                                      sub-topic. */
+  Adafruit_MQTT_Subscribe *_mqtt_pixels_broker; /*!< Subscribes to signal's
+                                                   addr. pixel sub-topic. */
 
-    Adafruit_MQTT_Subscribe *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
+  Adafruit_MQTT_Subscribe
+      *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
   Adafruit_MQTT_Subscribe
       *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
 

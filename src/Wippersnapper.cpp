@@ -820,19 +820,28 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
 
   if (field->tag ==
       wippersnapper_signal_v1_PixelRequest_req_pixels_create_tag) {
-    WS_DEBUG_PRINTLN("Tag Found: Create new pixel");
-
-    // empty create pixel message
-
+    WS_DEBUG_PRINTLN("Tag Found: Create new pixels");
+    wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate =
+        wippersnapper_pixels_v1_PixelsCreate_init_zero;
+    WS._pixels->addPixel(msgPixelsCreate);
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_update_tag) {
-    // TODO!
+    WS_DEBUG_PRINTLN("Tag Found: Update pixels");
+    wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate =
+        wippersnapper_pixels_v1_PixelsUpdate_init_zero;
+    WS._pixels->updatePixel(msgPixelsUpdate)
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_delete_tag) {
-    // TODO!
+    WS_DEBUG_PRINTLN("Tag Found: Delete pixels");
+    wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete =
+        wippersnapper_pixels_v1_PixelsDelete_init_zero;
+    WS._pixels->deletePixel(msgPixelsDelete)
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_fill_all_tag) {
-    // TODO!
+    WS_DEBUG_PRINTLN("Tag Found: Update all pixels");
+    wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll =
+        wippersnapper_pixels_v1_PixelsFillAll_init_zero;
+    WS._pixels->fillPixel(msgPixelsFillAll);
   } else {
     is_success = false;
   }
@@ -1662,6 +1671,10 @@ void Wippersnapper::connect() {
   WS.feedWDT();
   runNetFSM();
   publishPinConfigComplete();
+
+  // Init. pixels class
+  WS._pixels = new WipperSnapper_Pixels();
+
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // Run application
