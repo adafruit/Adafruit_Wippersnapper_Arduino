@@ -48,18 +48,18 @@ void WipperSnapper_Pixels::fillPixel(
 void WipperSnapper_Pixels::addNeoPixel(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
     wippersnapper_pixels_v1_NeoPixelInit neoPixelInitMsg) {
-  // call NeoPixel constructor
-  int16_t pixelNum = pixelsNum;
+
   // TODO: This is using default neoPixelType constructor, parse out from
   // neopixelinitmsg!
+  // Initialize NeoPixel
   _neopixel = new Adafruit_NeoPixel((int16_t)pixelsNum,
                                     (int16_t)neoPixelInitMsg.neo_pixel_pin);
   _neopixel->begin();
   _neopixel->setBrightness((uint8_t)pixelsBrightness);
 
-  // push back to vector
-  // TODO
+  neopixels.push_back(_neopixel);
 }
+
 void WipperSnapper_Pixels::updateNeoPixel() {}
 void WipperSnapper_Pixels::deleteNeoPixel() {}
 void WipperSnapper_Pixels::fillNeoPixel() {}

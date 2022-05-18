@@ -51,9 +51,9 @@ public:
   void fillDotStar();
 
 private:
-  // std::vector<Adafruit_NeoPixel> neopixels; ///< List of neopixels
+  Adafruit_NeoPixel *_neopixel;               ///< Pointer to a neopixel object
+  std::vector<Adafruit_NeoPixel *> neopixels; ///< List of neopixels
   // std::vector<Adafruit_DotStar> dotstars; ///< List of neopixels
-  Adafruit_NeoPixel *_neopixel; ///< Pointer to a neopixel object
 };
 extern Wippersnapper WS;
 
