@@ -829,13 +829,13 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("Tag Found: Update pixels");
     wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate =
         wippersnapper_pixels_v1_PixelsUpdate_init_zero;
-    WS._pixels->updatePixel(msgPixelsUpdate)
+    WS._pixels->updatePixel(msgPixelsUpdate);
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_delete_tag) {
     WS_DEBUG_PRINTLN("Tag Found: Delete pixels");
     wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete =
         wippersnapper_pixels_v1_PixelsDelete_init_zero;
-    WS._pixels->deletePixel(msgPixelsDelete)
+    WS._pixels->deletePixel(msgPixelsDelete);
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_fill_all_tag) {
     WS_DEBUG_PRINTLN("Tag Found: Update all pixels");
