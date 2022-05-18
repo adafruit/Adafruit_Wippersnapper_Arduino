@@ -14,3 +14,27 @@
  */
 
 #include "WipperSnapper_Pixels.h"
+
+WipperSnapper_Pixels::WipperSnapper_Pixels() {}
+
+WipperSnapper_Pixels::~WipperSnapper_Pixels() {}
+
+void WipperSnapper_Pixels::addPixel() {}
+
+void WipperSnapper_Pixels::updatePixel() {}
+
+void WipperSnapper_Pixels::deletePixel() {}
+
+void WipperSnapper_Pixels::fillPixel() {}
+
+// NeoPixel Driver
+void WipperSnapper_Pixels::addNeoPixel() {}
+void WipperSnapper_Pixels::updateNeoPixel() {}
+void WipperSnapper_Pixels::deleteNeoPixel() {}
+void WipperSnapper_Pixels::fillNeoPixel() {}
+
+// DotStar Driver
+void WipperSnapper_Pixels::addDotStar() {}
+void WipperSnapper_Pixels::updateDotStar() {}
+void WipperSnapper_Pixels::deleteDotStar() {}
+void WipperSnapper_Pixels::fillDotStar() {}

@@ -73,6 +73,7 @@
 #define TOPIC_INFO "/info/"       ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
+#define TOPIC_PIXELS "/pixels/"   ///< Addr. pixels sub-topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -297,7 +298,9 @@ public:
   char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
   char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
                                    to a broker. */
-  char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
+  char *_topic_signal_i2c_device = NULL;    /*!< Topic carries messages from a
+                                        broker to a device. */
+  char *_topic_signal_pixels_broker = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
@@ -307,6 +310,9 @@ public:
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
+  wippersnapper_signal_v1_PixelRequest msgSignalPixels =
+      wippersnapper_signal_v1_PixelRequest_init_zero; ///< Pixel request message
+                                                      ///< wrapper
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -353,9 +359,14 @@ protected:
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
-
   Adafruit_MQTT_Subscribe
-      *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
+      *_topic_signal_pixels_broker /*!< Subscribes to signal's addr. pixel
+                                      sub-topic. */
+
+                                       Adafruit_MQTT_Subscribe
+                                           *_err_sub; /*!< Subscription to
+                                                         Adafruit IO Error
+                                                         topic. */
   Adafruit_MQTT_Subscribe
       *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
 

@@ -813,6 +813,54 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 }
 
+bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
+                       void **arg) {
+  WS_DEBUG_PRINTLN("cbDecodePixelsMsg");
+  bool is_success = true;
+
+  if (field->tag ==
+      wippersnapper_signal_v1_PixelRequest_req_pixels_create_tag) {
+    WS_DEBUG_PRINTLN("Tag Found: Create new pixel");
+
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PixelRequest_req_pixels_update_tag) {
+    // TODO!
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PixelRequest_req_pixels_delete_tag) {
+    // TODO!
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PixelRequest_req_pixels_fill_all_tag) {
+    // TODO!
+  } else {
+    is_success = false;
+  }
+  return is_success
+}
+
+void cbPixelsMsg(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-Pixels]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Zero-out existing I2C signal msg.
+  WS.msgSignalPixels = wippersnapper_signal_v1_PixelRequest_init_zero;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgSignalPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
+
+  // Decode I2C signal request
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_PixelRequest_fields,
+                 &WS.msgSignalPixels))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode Pixels signal message");
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -1118,17 +1166,22 @@ bool Wippersnapper::buildWSTopics() {
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
-  // Topic for i2c signals from device to broker
+  // Topic for i2c signals from broker to dev ice
   WS._topic_signal_i2c_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
       strlen(TOPIC_I2C) + 1);
 
-  // Topic for i2c signals from broker to device
+  // Topic for i2c signals from device to broker
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
+
+  WS._topic_signal_pixels_broker = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen(TOPIC_PIXELS) +
+      strlen("broker") + 1);
 
   // Create global registration topic
   if (WS._topic_description != NULL) {
@@ -1221,6 +1274,18 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Create broker-to-device pixels signal topic
+  if (WS._topic_signal_pixels_broker != NULL) {
+    strcpy(WS._topic_signal_pixels_broker, WS._username);
+    strcat(WS._topic_signal_pixels_broker, TOPIC_WS);
+    strcat(WS._topic_signal_pixels_broker, _device_uid);
+    strcat(WS._topic_signal_pixels_broker, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_pixels_broker, "broker");
+    strcat(WS._topic_signal_pixels_broker, TOPIC_PIXELS);
+  } else { // malloc failed
+    is_success = false;
+  }
+
   return is_success;
 }
 
@@ -1241,6 +1306,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
+
+  // Subscribe to signal's addr. pixel sub-topic
+  _topic_signal_pixels_broker =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_broker, 1);
+  WS._mqtt->subscribe(_topic_signal_pixels_broker);
+  _topic_signal_pixels_broker->setCallback(cbPixelsMsg);
 
   // Subscribe to registration status topic
   _topic_description_sub =

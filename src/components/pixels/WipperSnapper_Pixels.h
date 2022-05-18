@@ -17,7 +17,6 @@
 
 #include "Wippersnapper.h"
 
-
 /**************************************************************************/
 /*!
     @brief  Class that provides an interface w/addressable pixel
@@ -28,22 +27,22 @@ class WipperSnapper_Pixels {
 public:
   WipperSnapper_Pixels();
   ~WipperSnapper_Pixels();
-  addPixel(); // high-level, PixelsCreate
-  updatePixel(); // high-level, PixelsUpdate
-  deletePixel(); // high-level, PixelsDelete
-  fillPixel(); // high-level, PixelsFillAll
+  void addPixel();    // high-level, PixelsCreate
+  void updatePixel(); // high-level, PixelsUpdate
+  void deletePixel(); // high-level, PixelsDelete
+  void fillPixel();   // high-level, PixelsFillAll
 
   // NeoPixel Driver
-  addNeoPixel();
-  updateNeoPixel();
-  deleteNeoPixel();
-  fillNeoPixel();
+  void addNeoPixel();
+  void updateNeoPixel();
+  void deleteNeoPixel();
+  void fillNeoPixel();
 
   // DotStar Driver
-  addDotStar();
-  updateDotStar();
-  deleteDotStar();
-  fillDotStar();
+  void addDotStar();
+  void updateDotStar();
+  void deleteDotStar();
+  void fillDotStar();
 
 private:
   // !!!TODO!!!
