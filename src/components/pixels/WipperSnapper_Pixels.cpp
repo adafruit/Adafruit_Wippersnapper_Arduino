@@ -50,7 +50,9 @@ void WipperSnapper_Pixels::deletePixel(
 
 void WipperSnapper_Pixels::fillPixel(
     wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll) {
-  // TODO!
+  if (msgPixelsFillAll.has_neo_pixel_config) {
+    fillNeoPixel(msgPixelsFillAll.color, msgPixelsFillAll.neo_pixel_config);
+  }
 }
 
 // NeoPixel Driver
@@ -113,7 +115,16 @@ void WipperSnapper_Pixels::deleteNeoPixel(
   }
 }
 
-void WipperSnapper_Pixels::fillNeoPixel() {}
+void WipperSnapper_Pixels::fillNeoPixel(
+    uint32_t pixelColor,
+    wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
+  // fill NeoPixel with one color, if object exists
+  for (int i = 0; i < _neopixels.size(); i++) {
+    if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
+      _neopixels.at(i)->fill(pixelColor);
+    }
+  }
+}
 
 // DotStar Driver
 void WipperSnapper_Pixels::addDotStar() {}
