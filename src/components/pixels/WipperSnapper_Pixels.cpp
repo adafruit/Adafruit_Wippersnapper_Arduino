@@ -15,10 +15,28 @@
 
 #include "WipperSnapper_Pixels.h"
 
+/*******************************************************************************/
+/*!
+    @brief    Constructor for Pixels component.
+*/
+/*******************************************************************************/
 WipperSnapper_Pixels::WipperSnapper_Pixels() {}
 
+/*******************************************************************************/
+/*!
+    @brief    Destructor for Pixels component.
+*/
+/*******************************************************************************/
 WipperSnapper_Pixels::~WipperSnapper_Pixels() {}
 
+/************************************************************************************/
+/*!
+    @brief    Initializes a new addressable pixel object, either DotStar or
+   NeoPixel.
+    @param    msgPixelsCreate
+              A PixelsCreate message.
+*/
+/***********************************************************************************/
 void WipperSnapper_Pixels::addPixel(
     wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate) {
   msgPixelsCreate.pixel_num;
@@ -33,6 +51,13 @@ void WipperSnapper_Pixels::addPixel(
   }
 }
 
+/************************************************************************************/
+/*!
+    @brief    Updates the configuration of an addressable pixel object.
+    @param    msgPixelsUpdate
+              A PixelUpdate message.
+*/
+/***********************************************************************************/
 void WipperSnapper_Pixels::updatePixel(
     wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate) {
   if (msgPixelsUpdate.has_neo_pixel_config) {
@@ -41,6 +66,13 @@ void WipperSnapper_Pixels::updatePixel(
   }
 }
 
+/***********************************************************************/
+/*!
+    @brief    Deletes an existing addressable pixel object, if exists.
+    @param    msgPixelsDelete
+              A PixelsDelete message.
+*/
+/**********************************************************************/
 void WipperSnapper_Pixels::deletePixel(
     wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete) {
   if (msgPixelsDelete.has_neo_pixel_config) {
@@ -48,6 +80,13 @@ void WipperSnapper_Pixels::deletePixel(
   }
 }
 
+/************************************************************************************/
+/*!
+    @brief    Fills the color of an addressable pixel object.
+    @param    msgPixelsFillAll
+              A PixelsFillAll message.
+*/
+/***********************************************************************************/
 void WipperSnapper_Pixels::fillPixel(
     wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll) {
   if (msgPixelsFillAll.has_neo_pixel_config) {
@@ -55,7 +94,17 @@ void WipperSnapper_Pixels::fillPixel(
   }
 }
 
-// NeoPixel Driver
+/************************************************************************************/
+/*!
+    @brief    Initializes a new NeoPixel object
+    @param    pixelsNum
+              The number of pixels in the NeoPixel strip.
+    @param    pixelsBrightness
+              The pixel strip's brightness.
+    @param    neoPixelInitMsg
+              A NeoPixelInit message.
+*/
+/***********************************************************************************/
 void WipperSnapper_Pixels::addNeoPixel(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
     wippersnapper_pixels_v1_NeoPixelInit neoPixelInitMsg) {
@@ -91,6 +140,15 @@ void WipperSnapper_Pixels::addNeoPixel(
   _neopixels.push_back(_neopixel);
 }
 
+/************************************************************************************/
+/*!
+    @brief    Updates the configuration of NeoPixel object.
+    @param    pixelBrightness
+              The pixel strip's brightness.
+    @param    msgNeoPixelConfig
+              A NeoPixel configuration message.
+*/
+/***********************************************************************************/
 void WipperSnapper_Pixels::updateNeoPixel(
     int8_t pixelBrightness,
     wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
@@ -105,6 +163,13 @@ void WipperSnapper_Pixels::updateNeoPixel(
   }
 }
 
+/************************************************************************************/
+/*!
+    @brief    Deletes a NeoPixel object, if exists.
+    @param    msgNeoPixelConfig
+              A NeoPixel configuration message.
+*/
+/***********************************************************************************/
 void WipperSnapper_Pixels::deleteNeoPixel(
     wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
   // delete NeoPixel, if exists
@@ -115,6 +180,15 @@ void WipperSnapper_Pixels::deleteNeoPixel(
   }
 }
 
+/************************************************************************************/
+/*!
+    @brief    Fills the color of a NeoPixel strip.
+    @param    pixelColor
+              The desired color to fill a NeoPixel strip.
+    @param    msgNeoPixelConfig
+              A NeoPixel configuration message.
+*/
+/***********************************************************************************/
 void WipperSnapper_Pixels::fillNeoPixel(
     uint32_t pixelColor,
     wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
