@@ -48,12 +48,32 @@ void WipperSnapper_Pixels::fillPixel(
 void WipperSnapper_Pixels::addNeoPixel(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
     wippersnapper_pixels_v1_NeoPixelInit neoPixelInitMsg) {
+  // Configure neoPixelType
+  uint16_t neoType;
+  if (neoPixelInitMsg.neo_pixel_type ==
+      wippersnapper_pixels_v1_NeoPixelType_NEO_PIXEL_TYPE_RGB) {
+    neoType = NEO_RGB + NEO_KHZ800;
+  } else if (neoPixelInitMsg.neo_pixel_type ==
+             wippersnapper_pixels_v1_NeoPixelType_NEO_PIXEL_TYPE_GRB) {
+    neoType = NEO_GRB + NEO_KHZ800;
+  } else if (neoPixelInitMsg.neo_pixel_type ==
+             wippersnapper_pixels_v1_NeoPixelType_NEO_PIXEL_TYPE_RGBW) {
+    neoType = NEO_RGBW + NEO_KHZ800;
+  }
 
-  // TODO: This is using default neoPixelType constructor, parse out from
-  // neopixelinitmsg!
+  if (neoPixelInitMsg.neo_pixel_speed ==
+      wippersnapper_pixels_v1_NeoPixelSpeed_NEO_PIXEL_SPEED_KHZ800) {
+    neoType += NEO_KHZ800;
+  } else if (neoPixelInitMsg.neo_pixel_speed ==
+             wippersnapper_pixels_v1_NeoPixelSpeed_NEO_PIXEL_SPEED_KHZ400) {
+    neoType += NEO_KHZ400;
+  } else {
+    neoType += NEO_KHZ800; // default
+  }
+
   // Initialize NeoPixel
-  _neopixel = new Adafruit_NeoPixel((int16_t)pixelsNum,
-                                    (int16_t)neoPixelInitMsg.neo_pixel_pin);
+  _neopixel = new Adafruit_NeoPixel(
+      (int16_t)pixelsNum, (int16_t)neoPixelInitMsg.neo_pixel_pin, neoType);
   _neopixel->begin();
   _neopixel->setBrightness((uint8_t)pixelsBrightness);
 
