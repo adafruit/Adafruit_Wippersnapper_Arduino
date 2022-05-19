@@ -36,7 +36,13 @@ void WipperSnapper_Pixels::addPixel(
 }
 
 void WipperSnapper_Pixels::updatePixel(
-    wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate) {}
+    wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate) {
+  if (msgPixelsUpdate.pixel_type ==
+      wippersnapper_pixels_v1_PixelType_PIXEL_TYPE_NEOPIXEL) {
+    updateNeoPixel((uint8_t)msgPixelsUpdate.pixel_brightness,
+                   msgPixelsUpdate.neo_pixel_config);
+  }
+}
 
 void WipperSnapper_Pixels::deletePixel(
     wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete) {}
@@ -76,11 +82,23 @@ void WipperSnapper_Pixels::addNeoPixel(
       (int16_t)pixelsNum, (int16_t)neoPixelInitMsg.neo_pixel_pin, neoType);
   _neopixel->begin();
   _neopixel->setBrightness((uint8_t)pixelsBrightness);
-
-  neopixels.push_back(_neopixel);
+  // Add to vector
+  _neopixels.push_back(_neopixel);
 }
 
-void WipperSnapper_Pixels::updateNeoPixel() {}
+void WipperSnapper_Pixels::updateNeoPixel(
+    int8_t pixelBrightness,
+    wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
+  for (int i = 0; i < _neopixels.size(); i++) {
+    if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
+      // did we update the brightness?
+      if (_neopixels.at(i)->getBrightness() != pixelBrightness) {
+        _neopixels.at(i)->setBrightness(pixelBrightness);
+      }
+    }
+  }
+}
+
 void WipperSnapper_Pixels::deleteNeoPixel() {}
 void WipperSnapper_Pixels::fillNeoPixel() {}
 

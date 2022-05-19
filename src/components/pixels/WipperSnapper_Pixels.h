@@ -40,7 +40,8 @@ public:
   // NeoPixel Driver
   void addNeoPixel(uint32_t pixelsNum, uint32_t pixelsBrightness,
                    wippersnapper_pixels_v1_NeoPixelInit neoPixelInitMsg);
-  void updateNeoPixel();
+  void updateNeoPixel(int8_t pixelBrightness,
+                      wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig);
   void deleteNeoPixel();
   void fillNeoPixel();
 
@@ -51,8 +52,8 @@ public:
   void fillDotStar();
 
 private:
-  Adafruit_NeoPixel *_neopixel;               ///< Pointer to a neopixel object
-  std::vector<Adafruit_NeoPixel *> neopixels; ///< List of neopixels
+  Adafruit_NeoPixel *_neopixel;                ///< Pointer to a neopixel object
+  std::vector<Adafruit_NeoPixel *> _neopixels; ///< List of neopixels
   // std::vector<Adafruit_DotStar> dotstars; ///< List of neopixels
 };
 extern Wippersnapper WS;
