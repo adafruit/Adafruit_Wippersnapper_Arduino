@@ -23,12 +23,10 @@ void WipperSnapper_Pixels::addPixel(
     wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate) {
   msgPixelsCreate.pixel_num;
   msgPixelsCreate.pixel_brightness;
-  if (msgPixelsCreate.pixel_type ==
-      wippersnapper_pixels_v1_PixelType_PIXEL_TYPE_NEOPIXEL) {
+  if (msgPixelsCreate.has_neo_pixel_init) {
     addNeoPixel(msgPixelsCreate.pixel_num, msgPixelsCreate.pixel_brightness,
                 msgPixelsCreate.neo_pixel_init);
-  } else if (msgPixelsCreate.pixel_type ==
-             wippersnapper_pixels_v1_PixelType_PIXEL_TYPE_DOTSTAR) {
+  } else if (msgPixelsCreate.has_dot_star_init) {
     /* code */
   } else {
     // ERROR!
@@ -37,18 +35,23 @@ void WipperSnapper_Pixels::addPixel(
 
 void WipperSnapper_Pixels::updatePixel(
     wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate) {
-  if (msgPixelsUpdate.pixel_type ==
-      wippersnapper_pixels_v1_PixelType_PIXEL_TYPE_NEOPIXEL) {
+  if (msgPixelsUpdate.has_neo_pixel_config) {
     updateNeoPixel((uint8_t)msgPixelsUpdate.pixel_brightness,
                    msgPixelsUpdate.neo_pixel_config);
   }
 }
 
 void WipperSnapper_Pixels::deletePixel(
-    wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete) {}
+    wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete) {
+  if (msgPixelsDelete.has_neo_pixel_config) {
+    deleteNeoPixel(msgPixelsDelete.neo_pixel_config);
+  }
+}
 
 void WipperSnapper_Pixels::fillPixel(
-    wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll) {}
+    wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll) {
+  // TODO!
+}
 
 // NeoPixel Driver
 void WipperSnapper_Pixels::addNeoPixel(
@@ -89,9 +92,10 @@ void WipperSnapper_Pixels::addNeoPixel(
 void WipperSnapper_Pixels::updateNeoPixel(
     int8_t pixelBrightness,
     wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
+  // update NeoPixel, if exists
   for (int i = 0; i < _neopixels.size(); i++) {
     if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
-      // did we update the brightness?
+      // did we update the brightness on WipperSnapper Web?
       if (_neopixels.at(i)->getBrightness() != pixelBrightness) {
         _neopixels.at(i)->setBrightness(pixelBrightness);
       }
@@ -99,7 +103,16 @@ void WipperSnapper_Pixels::updateNeoPixel(
   }
 }
 
-void WipperSnapper_Pixels::deleteNeoPixel() {}
+void WipperSnapper_Pixels::deleteNeoPixel(
+    wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
+  // delete NeoPixel, if exists
+  for (int i = 0; i < _neopixels.size(); i++) {
+    if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
+      _neopixels.erase(_neopixels.begin() + i);
+    }
+  }
+}
+
 void WipperSnapper_Pixels::fillNeoPixel() {}
 
 // DotStar Driver

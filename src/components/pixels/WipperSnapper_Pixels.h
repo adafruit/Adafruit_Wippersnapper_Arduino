@@ -42,7 +42,7 @@ public:
                    wippersnapper_pixels_v1_NeoPixelInit neoPixelInitMsg);
   void updateNeoPixel(int8_t pixelBrightness,
                       wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig);
-  void deleteNeoPixel();
+  void deleteNeoPixel(wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig);
   void fillNeoPixel();
 
   // DotStar Driver
