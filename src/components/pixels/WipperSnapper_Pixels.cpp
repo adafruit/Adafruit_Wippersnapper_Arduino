@@ -45,7 +45,8 @@ void WipperSnapper_Pixels::addPixel(
     addNeoPixel(msgPixelsCreate.pixel_num, msgPixelsCreate.pixel_brightness,
                 msgPixelsCreate.neo_pixel_init);
   } else if (msgPixelsCreate.has_dot_star_init) {
-    /* code */
+    addDotStar(msgPixelsCreate.pixel_num, msgPixelsCreate.pixel_brightness,
+               msgPixelsCreate.dot_star_init);
   } else {
     // ERROR!
   }
@@ -201,7 +202,22 @@ void WipperSnapper_Pixels::fillNeoPixel(
 }
 
 // DotStar Driver
-void WipperSnapper_Pixels::addDotStar() {}
+void WipperSnapper_Pixels::addDotStar(
+    uint32_t pixelsNum, uint32_t pixelsBrightness,
+    wippersnapper_pixels_v1_DotStarInit msgDotStarConfig) {
+  // init dotstar driver
+  if (!msgDotStarConfig.use_hardware_spi)
+    _dotstar = new Adafruit_DotStar(
+        (uint16_t)pixelsNum, (uint8_t)msgDotStarConfig.pin_data,
+        (uint8_t)msgDotStarConfig.pin_clock); // todo: add ordering param
+  else
+    _dotstar = new Adafruit_DotStar((uint16_t)pixelsNum); // TODO: Add ordering
+  _dotstar->begin();
+  _dotstar->setBrightness((uint8_t)pixelsBrightness);
+  // push ptr to driver into vec.
+  _dotstars.push_back(_dotstar);
+}
+
 void WipperSnapper_Pixels::updateDotStar() {}
 void WipperSnapper_Pixels::deleteDotStar() {}
 void WipperSnapper_Pixels::fillDotStar() {}
