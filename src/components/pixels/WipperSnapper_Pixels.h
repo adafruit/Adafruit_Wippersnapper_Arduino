@@ -49,7 +49,7 @@ public:
   // DotStar Driver
   void addDotStar(uint32_t pixelsNum, uint32_t pixelsBrightness,
                   wippersnapper_pixels_v1_DotStarInit msgDotStarConfig);
-  void updateDotStar();
+  void updateDotStar(int8_t pixelBrightness, wippersnapper_pixels_v1_DotStarInit msgDotStarConfi);
   void deleteDotStar();
   void fillDotStar();
 

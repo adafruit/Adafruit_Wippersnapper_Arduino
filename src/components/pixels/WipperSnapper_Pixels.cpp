@@ -48,7 +48,7 @@ void WipperSnapper_Pixels::addPixel(
     addDotStar(msgPixelsCreate.pixel_num, msgPixelsCreate.pixel_brightness,
                msgPixelsCreate.dot_star_init);
   } else {
-    // ERROR!
+    // ERROR TODO
   }
 }
 
@@ -64,6 +64,9 @@ void WipperSnapper_Pixels::updatePixel(
   if (msgPixelsUpdate.has_neo_pixel_config) {
     updateNeoPixel((uint8_t)msgPixelsUpdate.pixel_brightness,
                    msgPixelsUpdate.neo_pixel_config);
+  } else if (msgPixelsUpdate.has_dot_star_config) {
+    updateDotStar((uint8_t)msgPixelsUpdate.pixel_brightness,
+                   msgPixelsUpdate.dot_star_config);
   }
 }
 
@@ -213,11 +216,18 @@ void WipperSnapper_Pixels::addDotStar(
   else
     _dotstar = new Adafruit_DotStar((uint16_t)pixelsNum); // TODO: Add ordering
   _dotstar->begin();
+  _dotstar->clear();
   _dotstar->setBrightness((uint8_t)pixelsBrightness);
   // push ptr to driver into vec.
   _dotstars.push_back(_dotstar);
 }
 
-void WipperSnapper_Pixels::updateDotStar() {}
+void WipperSnapper_Pixels::updateDotStar(int8_t pixelBrightness,
+    wippersnapper_pixels_v1_DotStarInit msgDotStarConfig) {
+      // TODO: How do we address them? They aren't pin-based like neopixel?
+      // 1:1 mapping?
+}
+
+
 void WipperSnapper_Pixels::deleteDotStar() {}
 void WipperSnapper_Pixels::fillDotStar() {}
