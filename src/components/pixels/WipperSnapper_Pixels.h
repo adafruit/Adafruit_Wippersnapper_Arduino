@@ -39,17 +39,18 @@ public:
 
   // NeoPixel Driver
   void addNeoPixel(uint32_t pixelsNum, uint32_t pixelsBrightness,
-                   wippersnapper_pixels_v1_NeoPixelInit neoPixelInitMsg);
+                   wippersnapper_pixels_v1_NeoPixelConfig neoPixelInitMsg);
   void updateNeoPixel(int8_t pixelBrightness,
-                      wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig);
-  void deleteNeoPixel(wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig);
+                      wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
+  void deleteNeoPixel(wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
   void fillNeoPixel(uint32_t pixelColor,
-                    wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig);
+                    wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
 
   // DotStar Driver
   void addDotStar(uint32_t pixelsNum, uint32_t pixelsBrightness,
-                  wippersnapper_pixels_v1_DotStarInit msgDotStarConfig);
-  void updateDotStar(int8_t pixelBrightness, wippersnapper_pixels_v1_DotStarInit msgDotStarConfi);
+                  wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
+  void updateDotStar(int8_t pixelBrightness,
+                     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfi);
   void deleteDotStar();
   void fillDotStar();
 

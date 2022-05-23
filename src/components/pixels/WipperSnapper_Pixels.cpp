@@ -66,7 +66,7 @@ void WipperSnapper_Pixels::updatePixel(
                    msgPixelsUpdate.neo_pixel_config);
   } else if (msgPixelsUpdate.has_dot_star_config) {
     updateDotStar((uint8_t)msgPixelsUpdate.pixel_brightness,
-                   msgPixelsUpdate.dot_star_config);
+                  msgPixelsUpdate.dot_star_config);
   }
 }
 
@@ -111,7 +111,7 @@ void WipperSnapper_Pixels::fillPixel(
 /***********************************************************************************/
 void WipperSnapper_Pixels::addNeoPixel(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
-    wippersnapper_pixels_v1_NeoPixelInit neoPixelInitMsg) {
+    wippersnapper_pixels_v1_NeoPixelConfig neoPixelInitMsg) {
   // Configure neoPixelType
   uint16_t neoType;
   if (neoPixelInitMsg.neo_pixel_type ==
@@ -155,7 +155,7 @@ void WipperSnapper_Pixels::addNeoPixel(
 /***********************************************************************************/
 void WipperSnapper_Pixels::updateNeoPixel(
     int8_t pixelBrightness,
-    wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
+    wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig) {
   // update NeoPixel, if exists
   for (int i = 0; i < _neopixels.size(); i++) {
     if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
@@ -175,7 +175,7 @@ void WipperSnapper_Pixels::updateNeoPixel(
 */
 /***********************************************************************************/
 void WipperSnapper_Pixels::deleteNeoPixel(
-    wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
+    wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig) {
   // delete NeoPixel, if exists
   for (int i = 0; i < _neopixels.size(); i++) {
     if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
@@ -195,7 +195,7 @@ void WipperSnapper_Pixels::deleteNeoPixel(
 /***********************************************************************************/
 void WipperSnapper_Pixels::fillNeoPixel(
     uint32_t pixelColor,
-    wippersnapper_pixels_v1_NeoPixelInit msgNeoPixelConfig) {
+    wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig) {
   // fill NeoPixel with one color, if object exists
   for (int i = 0; i < _neopixels.size(); i++) {
     if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
@@ -207,7 +207,7 @@ void WipperSnapper_Pixels::fillNeoPixel(
 // DotStar Driver
 void WipperSnapper_Pixels::addDotStar(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
-    wippersnapper_pixels_v1_DotStarInit msgDotStarConfig) {
+    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
   // init dotstar driver
   if (!msgDotStarConfig.use_hardware_spi)
     _dotstar = new Adafruit_DotStar(
@@ -222,12 +222,12 @@ void WipperSnapper_Pixels::addDotStar(
   _dotstars.push_back(_dotstar);
 }
 
-void WipperSnapper_Pixels::updateDotStar(int8_t pixelBrightness,
-    wippersnapper_pixels_v1_DotStarInit msgDotStarConfig) {
-      // TODO: How do we address them? They aren't pin-based like neopixel?
-      // 1:1 mapping?
+void WipperSnapper_Pixels::updateDotStar(
+    int8_t pixelBrightness,
+    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
+  // TODO: How do we address them? They aren't pin-based like neopixel?
+  // 1:1 mapping?
 }
-
 
 void WipperSnapper_Pixels::deleteDotStar() {}
 void WipperSnapper_Pixels::fillDotStar() {}
