@@ -818,6 +818,9 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
   WS_DEBUG_PRINTLN("cbDecodePixelsMsg");
   bool is_success = true;
 
+  // TODO: These all now return, hook this in
+  // and look for other TODOs
+
   if (field->tag ==
       wippersnapper_signal_v1_PixelRequest_req_pixels_create_tag) {
     WS_DEBUG_PRINTLN("Tag Found: Create new pixels");

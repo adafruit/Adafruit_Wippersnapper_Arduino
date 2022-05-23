@@ -28,31 +28,32 @@ class WipperSnapper_Pixels {
 public:
   WipperSnapper_Pixels();
   ~WipperSnapper_Pixels();
-  void addPixel(wippersnapper_pixels_v1_PixelsCreate
+  bool addPixel(wippersnapper_pixels_v1_PixelsCreate
                     msgPixelsCreate); // high-level, PixelsCreate
-  void updatePixel(wippersnapper_pixels_v1_PixelsUpdate
+  bool updatePixel(wippersnapper_pixels_v1_PixelsUpdate
                        msgPixelsUpdate); // high-level, PixelsUpdate
-  void deletePixel(wippersnapper_pixels_v1_PixelsDelete
+  bool deletePixel(wippersnapper_pixels_v1_PixelsDelete
                        msgPixelsDelete); // high-level, PixelsDelete
-  void fillPixel(wippersnapper_pixels_v1_PixelsFillAll
+  bool fillPixel(wippersnapper_pixels_v1_PixelsFillAll
                      msgPixelsFillAll); // high-level, PixelsFillAll
 
   // NeoPixel Driver
-  void addNeoPixel(uint32_t pixelsNum, uint32_t pixelsBrightness,
+  bool addNeoPixel(uint32_t pixelsNum, uint32_t pixelsBrightness,
                    wippersnapper_pixels_v1_NeoPixelConfig neoPixelInitMsg);
-  void updateNeoPixel(int8_t pixelBrightness,
+  bool updateNeoPixel(int8_t pixelBrightness,
                       wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
-  void deleteNeoPixel(wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
-  void fillNeoPixel(uint32_t pixelColor,
+  bool deleteNeoPixel(wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
+  bool fillNeoPixel(uint32_t pixelColor,
                     wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
 
   // DotStar Driver
-  void addDotStar(uint32_t pixelsNum, uint32_t pixelsBrightness,
+  bool addDotStar(uint32_t pixelsNum, uint32_t pixelsBrightness,
                   wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
-  void updateDotStar(int8_t pixelBrightness,
-                     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfi);
-  void deleteDotStar();
-  void fillDotStar();
+  bool updateDotStar(int8_t pixelBrightness,
+                     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
+  bool deleteDotStar(wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
+  bool fillDotStar(uint32_t pixelColor,
+                   wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
 
 private:
   Adafruit_NeoPixel *_neopixel = nullptr; ///< Pointer to a neopixel object

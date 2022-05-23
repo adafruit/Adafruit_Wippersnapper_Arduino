@@ -37,7 +37,7 @@ WipperSnapper_Pixels::~WipperSnapper_Pixels() {}
               A PixelsCreate message.
 */
 /***********************************************************************************/
-void WipperSnapper_Pixels::addPixel(
+bool WipperSnapper_Pixels::addPixel(
     wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate) {
   msgPixelsCreate.pixel_num;
   msgPixelsCreate.pixel_brightness;
@@ -48,8 +48,9 @@ void WipperSnapper_Pixels::addPixel(
     addDotStar(msgPixelsCreate.pixel_num, msgPixelsCreate.pixel_brightness,
                msgPixelsCreate.dot_star_init);
   } else {
-    // ERROR TODO
+    return false;
   }
+  return true;
 }
 
 /************************************************************************************/
@@ -59,7 +60,7 @@ void WipperSnapper_Pixels::addPixel(
               A PixelUpdate message.
 */
 /***********************************************************************************/
-void WipperSnapper_Pixels::updatePixel(
+bool WipperSnapper_Pixels::updatePixel(
     wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate) {
   if (msgPixelsUpdate.has_neo_pixel_config) {
     updateNeoPixel((uint8_t)msgPixelsUpdate.pixel_brightness,
@@ -67,7 +68,10 @@ void WipperSnapper_Pixels::updatePixel(
   } else if (msgPixelsUpdate.has_dot_star_config) {
     updateDotStar((uint8_t)msgPixelsUpdate.pixel_brightness,
                   msgPixelsUpdate.dot_star_config);
+  } else {
+    return false;
   }
+  return true;
 }
 
 /***********************************************************************/
@@ -77,11 +81,16 @@ void WipperSnapper_Pixels::updatePixel(
               A PixelsDelete message.
 */
 /**********************************************************************/
-void WipperSnapper_Pixels::deletePixel(
+bool WipperSnapper_Pixels::deletePixel(
     wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete) {
   if (msgPixelsDelete.has_neo_pixel_config) {
-    deleteNeoPixel(msgPixelsDelete.neo_pixel_config);
+    return deleteNeoPixel(msgPixelsDelete.neo_pixel_config);
+  } else if (msgPixelsDelete.has_dot_star_config) {
+    return deleteDotStar(msgPixelsDelete.dot_star_config);
+  } else {
+    return false;
   }
+  return true;
 }
 
 /************************************************************************************/
@@ -91,11 +100,16 @@ void WipperSnapper_Pixels::deletePixel(
               A PixelsFillAll message.
 */
 /***********************************************************************************/
-void WipperSnapper_Pixels::fillPixel(
+bool WipperSnapper_Pixels::fillPixel(
     wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll) {
   if (msgPixelsFillAll.has_neo_pixel_config) {
     fillNeoPixel(msgPixelsFillAll.color, msgPixelsFillAll.neo_pixel_config);
+  } else if (msgPixelsFillAll.has_dot_star_config) {
+    fillDotStar(msgPixelsFillAll.color, msgPixelsFillAll.dot_star_config);
+  } else {
+    return false;
   }
+  return true;
 }
 
 /************************************************************************************/
@@ -109,7 +123,7 @@ void WipperSnapper_Pixels::fillPixel(
               A NeoPixelInit message.
 */
 /***********************************************************************************/
-void WipperSnapper_Pixels::addNeoPixel(
+bool WipperSnapper_Pixels::addNeoPixel(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
     wippersnapper_pixels_v1_NeoPixelConfig neoPixelInitMsg) {
   // Configure neoPixelType
@@ -123,6 +137,8 @@ void WipperSnapper_Pixels::addNeoPixel(
   } else if (neoPixelInitMsg.neo_pixel_type ==
              wippersnapper_pixels_v1_NeoPixelType_NEO_PIXEL_TYPE_RGBW) {
     neoType = NEO_RGBW + NEO_KHZ800;
+  } else {
+    return false;
   }
 
   if (neoPixelInitMsg.neo_pixel_speed ==
@@ -142,6 +158,7 @@ void WipperSnapper_Pixels::addNeoPixel(
   _neopixel->setBrightness((uint8_t)pixelsBrightness);
   // Add to vector
   _neopixels.push_back(_neopixel);
+  return true;
 }
 
 /************************************************************************************/
@@ -153,18 +170,18 @@ void WipperSnapper_Pixels::addNeoPixel(
               A NeoPixel configuration message.
 */
 /***********************************************************************************/
-void WipperSnapper_Pixels::updateNeoPixel(
+bool WipperSnapper_Pixels::updateNeoPixel(
     int8_t pixelBrightness,
     wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig) {
   // update NeoPixel, if exists
   for (int i = 0; i < _neopixels.size(); i++) {
     if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
-      // did we update the brightness on WipperSnapper Web?
-      if (_neopixels.at(i)->getBrightness() != pixelBrightness) {
-        _neopixels.at(i)->setBrightness(pixelBrightness);
-      }
+      _neopixels.at(i)->setBrightness(pixelBrightness);
+      _neopixels.at(i)->show();
+      return true;
     }
   }
+  return false;
 }
 
 /************************************************************************************/
@@ -174,14 +191,16 @@ void WipperSnapper_Pixels::updateNeoPixel(
               A NeoPixel configuration message.
 */
 /***********************************************************************************/
-void WipperSnapper_Pixels::deleteNeoPixel(
+bool WipperSnapper_Pixels::deleteNeoPixel(
     wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig) {
   // delete NeoPixel, if exists
   for (int i = 0; i < _neopixels.size(); i++) {
     if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
       _neopixels.erase(_neopixels.begin() + i);
+      return true;
     }
   }
+  return false;
 }
 
 /************************************************************************************/
@@ -193,19 +212,22 @@ void WipperSnapper_Pixels::deleteNeoPixel(
               A NeoPixel configuration message.
 */
 /***********************************************************************************/
-void WipperSnapper_Pixels::fillNeoPixel(
+bool WipperSnapper_Pixels::fillNeoPixel(
     uint32_t pixelColor,
     wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig) {
   // fill NeoPixel with one color, if object exists
   for (int i = 0; i < _neopixels.size(); i++) {
     if (_neopixels.at(i)->getPin() == (int8_t)msgNeoPixelConfig.neo_pixel_pin) {
       _neopixels.at(i)->fill(pixelColor);
+      _neopixels.at(i)->show();
+      return true;
     }
   }
+  return false;
 }
 
 // DotStar Driver
-void WipperSnapper_Pixels::addDotStar(
+bool WipperSnapper_Pixels::addDotStar(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
   // init dotstar driver
@@ -220,14 +242,45 @@ void WipperSnapper_Pixels::addDotStar(
   _dotstar->setBrightness((uint8_t)pixelsBrightness);
   // push ptr to driver into vec.
   _dotstars.push_back(_dotstar);
+  return true;
 }
 
-void WipperSnapper_Pixels::updateDotStar(
+bool WipperSnapper_Pixels::updateDotStar(
     int8_t pixelBrightness,
     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
-  // TODO: How do we address them? They aren't pin-based like neopixel?
-  // 1:1 mapping?
+  // Update DotStar, if exists
+  for (int i = 0; i < _dotstars.size(); i++) {
+    if (_dotstars.at(i)->numPixels() == (int8_t)msgDotStarConfig.pixel_num) {
+      _dotstars.at(i)->setBrightness(pixelBrightness);
+      _dotstars.at(i)->show();
+      return true;
+    }
+  }
+  return false;
 }
 
-void WipperSnapper_Pixels::deleteDotStar() {}
-void WipperSnapper_Pixels::fillDotStar() {}
+bool WipperSnapper_Pixels::deleteDotStar(
+    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
+  // Delete DotStar, if exists
+  for (int i = 0; i < _dotstars.size(); i++) {
+    if (_dotstars.at(i)->numPixels() == (int8_t)msgDotStarConfig.pixel_num) {
+      _dotstars.erase(_dotstars.begin() + i);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool WipperSnapper_Pixels::fillDotStar(
+    uint32_t pixelColor,
+    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
+  // Fill DotStar strip, if exists
+  for (int i = 0; i < _dotstars.size(); i++) {
+    if (_dotstars.at(i)->numPixels() == (int8_t)msgDotStarConfig.pixel_num) {
+      _dotstars.at(i)->fill(pixelColor);
+      _dotstars.at(i)->show();
+      return true;
+    }
+  }
+  return false;
+}
