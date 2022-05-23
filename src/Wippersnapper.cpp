@@ -815,37 +815,46 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 
 bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
                        void **arg) {
-  WS_DEBUG_PRINTLN("cbDecodePixelsMsg");
+  WS_DEBUG_PRINTLN("Decoding Pixels message...");
   bool is_success = true;
-
-  // TODO: These all now return, hook this in
-  // and look for other TODOs
-
   if (field->tag ==
       wippersnapper_signal_v1_PixelRequest_req_pixels_create_tag) {
     WS_DEBUG_PRINTLN("Tag Found: Create new pixels");
     wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate =
         wippersnapper_pixels_v1_PixelsCreate_init_zero;
-    WS._pixels->addPixel(msgPixelsCreate);
+    if (!WS._pixels->addPixel(msgPixelsCreate)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to add new pixel strand!");
+      is_success = false;
+    }
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_update_tag) {
     WS_DEBUG_PRINTLN("Tag Found: Update pixels");
     wippersnapper_pixels_v1_PixelsUpdate msgPixelsUpdate =
         wippersnapper_pixels_v1_PixelsUpdate_init_zero;
-    WS._pixels->updatePixel(msgPixelsUpdate);
+    if (!WS._pixels->updatePixel(msgPixelsUpdate)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to update pixel strand!");
+      is_success = false;
+    }
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_delete_tag) {
     WS_DEBUG_PRINTLN("Tag Found: Delete pixels");
     wippersnapper_pixels_v1_PixelsDelete msgPixelsDelete =
         wippersnapper_pixels_v1_PixelsDelete_init_zero;
-    WS._pixels->deletePixel(msgPixelsDelete);
+    if (!WS._pixels->deletePixel(msgPixelsDelete)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to delete pixel strand");
+      is_success = false;
+    }
   } else if (field->tag ==
              wippersnapper_signal_v1_PixelRequest_req_pixels_fill_all_tag) {
-    WS_DEBUG_PRINTLN("Tag Found: Update all pixels");
+    WS_DEBUG_PRINTLN("Tag Found: Fill all pixels");
     wippersnapper_pixels_v1_PixelsFillAll msgPixelsFillAll =
         wippersnapper_pixels_v1_PixelsFillAll_init_zero;
-    WS._pixels->fillPixel(msgPixelsFillAll);
+    if (!WS._pixels->fillPixel(msgPixelsFillAll)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to fill pixel strand");
+      is_success = false;
+    }
   } else {
+    WS_DEBUG_PRINTLN("ERROR: Failed to find Pixel msg. tag!");
     is_success = false;
   }
   return is_success;
