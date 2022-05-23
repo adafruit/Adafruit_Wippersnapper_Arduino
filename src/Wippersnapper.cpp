@@ -813,6 +813,20 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes an pixel signal request message and executes a
+              callback function based on the message's tag.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if message was decoded and the callback was successfully
+   executed, False otherwise.
+*/
+/******************************************************************************************/
 bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
                        void **arg) {
   WS_DEBUG_PRINTLN("Decoding Pixels message...");
@@ -860,6 +874,16 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
   return is_success;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when broker responds to a device's publish across
+              the pixels topic.
+    @param    data
+              Data from MQTT broker.
+    @param    len
+              Length of data received from MQTT broker.
+*/
+/**************************************************************************/
 void cbPixelsMsg(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-Pixels]: ");
   WS_DEBUG_PRINT(len);
@@ -877,7 +901,7 @@ void cbPixelsMsg(char *data, uint16_t len) {
   // each oneof payload field once the field tag is known
   WS.msgSignalPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
 
-  // Decode I2C signal request
+  // Decode pixel signal request
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
   if (!pb_decode(&istream, wippersnapper_signal_v1_PixelRequest_fields,
                  &WS.msgSignalPixels))

@@ -35,6 +35,7 @@ WipperSnapper_Pixels::~WipperSnapper_Pixels() {}
    NeoPixel.
     @param    msgPixelsCreate
               A PixelsCreate message.
+    @return   True if Pixel strip added, False otherwise.
 */
 /***********************************************************************************/
 bool WipperSnapper_Pixels::addPixel(
@@ -58,6 +59,7 @@ bool WipperSnapper_Pixels::addPixel(
     @brief    Updates the configuration of an addressable pixel object.
     @param    msgPixelsUpdate
               A PixelUpdate message.
+    @return   True if Pixel strip updated, False otherwise.
 */
 /***********************************************************************************/
 bool WipperSnapper_Pixels::updatePixel(
@@ -79,6 +81,7 @@ bool WipperSnapper_Pixels::updatePixel(
     @brief    Deletes an existing addressable pixel object, if exists.
     @param    msgPixelsDelete
               A PixelsDelete message.
+    @return   True if NeoPixel strip deleted, False otherwise.
 */
 /**********************************************************************/
 bool WipperSnapper_Pixels::deletePixel(
@@ -98,6 +101,7 @@ bool WipperSnapper_Pixels::deletePixel(
     @brief    Fills the color of an addressable pixel object.
     @param    msgPixelsFillAll
               A PixelsFillAll message.
+    @return   True if Pixel strip filled, False otherwise.
 */
 /***********************************************************************************/
 bool WipperSnapper_Pixels::fillPixel(
@@ -121,6 +125,7 @@ bool WipperSnapper_Pixels::fillPixel(
               The pixel strip's brightness.
     @param    neoPixelInitMsg
               A NeoPixelInit message.
+    @return   True if NeoPixel strip initialized successfully, False otherwise.
 */
 /***********************************************************************************/
 bool WipperSnapper_Pixels::addNeoPixel(
@@ -168,6 +173,7 @@ bool WipperSnapper_Pixels::addNeoPixel(
               The pixel strip's brightness.
     @param    msgNeoPixelConfig
               A NeoPixel configuration message.
+    @return   True if NeoPixel strip found, False otherwise.
 */
 /***********************************************************************************/
 bool WipperSnapper_Pixels::updateNeoPixel(
@@ -189,6 +195,7 @@ bool WipperSnapper_Pixels::updateNeoPixel(
     @brief    Deletes a NeoPixel object, if exists.
     @param    msgNeoPixelConfig
               A NeoPixel configuration message.
+    @return   True if NeoPixel strip found, False otherwise.
 */
 /***********************************************************************************/
 bool WipperSnapper_Pixels::deleteNeoPixel(
@@ -210,6 +217,7 @@ bool WipperSnapper_Pixels::deleteNeoPixel(
               The desired color to fill a NeoPixel strip.
     @param    msgNeoPixelConfig
               A NeoPixel configuration message.
+    @return   True if NeoPixel strip found, False otherwise.
 */
 /***********************************************************************************/
 bool WipperSnapper_Pixels::fillNeoPixel(
@@ -226,7 +234,18 @@ bool WipperSnapper_Pixels::fillNeoPixel(
   return false;
 }
 
-// DotStar Driver
+/************************************************************************************/
+/*!
+    @brief    Initializes a new DotStar object
+    @param    pixelsNum
+              The number of pixels in the DotStar strip.
+    @param    pixelsBrightness
+              The pixel strip's brightness.
+    @param    msgDotStarConfig
+              A DotStar initialization message.
+    @returns  True if initialized successfully, False otherwise.
+*/
+/***********************************************************************************/
 bool WipperSnapper_Pixels::addDotStar(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
@@ -245,6 +264,16 @@ bool WipperSnapper_Pixels::addDotStar(
   return true;
 }
 
+/************************************************************************************/
+/*!
+    @brief    Updates the configuration of a DotStar object.
+    @param    pixelBrightness
+              The pixel strip's brightness.
+    @param    msgDotStarConfig
+              A DotStar configuration message.
+    @returns  True if DotStar updated succesfully, False otherwise.
+*/
+/***********************************************************************************/
 bool WipperSnapper_Pixels::updateDotStar(
     int8_t pixelBrightness,
     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
@@ -259,6 +288,14 @@ bool WipperSnapper_Pixels::updateDotStar(
   return false;
 }
 
+/************************************************************************************/
+/*!
+    @brief    Deletes a DotStar object.
+    @param    msgDotStarConfig
+              A DotStar configuration message.
+    @return   True if DotStar deleted successfully, False otherwise.
+*/
+/***********************************************************************************/
 bool WipperSnapper_Pixels::deleteDotStar(
     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
   // Delete DotStar, if exists
@@ -271,6 +308,16 @@ bool WipperSnapper_Pixels::deleteDotStar(
   return false;
 }
 
+/************************************************************************************/
+/*!
+    @brief    Fills the color of a DotStar strip.
+    @param    pixelColor
+              The desired color to fill a DotStar strip.
+    @param    msgDotStarConfig
+              A DotStar configuration message.
+    @returns  True if DotStar strip was found and filled, False otherwise.
+*/
+/***********************************************************************************/
 bool WipperSnapper_Pixels::fillDotStar(
     uint32_t pixelColor,
     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {

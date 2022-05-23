@@ -261,8 +261,8 @@ public:
       false; ///< True if I2C port 0 has been initialized, False otherwise.
   bool _isI2CPort1Init =
       false; ///< True if I2C port 1 has been initialized, False otherwise.
-  // Pixels
-  WipperSnapper_Pixels *_pixels = NULL;
+
+  WipperSnapper_Pixels *_pixels = NULL; ///< Pointer to a Pixel component.
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
