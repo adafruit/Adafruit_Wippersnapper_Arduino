@@ -14,9 +14,9 @@
  */
 #ifndef WIPPERSNAPPER_PIXELS_H
 #define WIPPERSNAPPER_PIXELS_H
+#include "WipperSnapper_Pixels_Drv_NeoPixel.h"
 #include "Wippersnapper.h"
 #include <Adafruit_DotStar.h>
-#include <Adafruit_NeoPixel.h>
 
 /**************************************************************************/
 /*!
@@ -37,15 +37,6 @@ public:
   bool fillPixel(wippersnapper_pixels_v1_PixelsFillAll
                      msgPixelsFillAll); // high-level, PixelsFillAll
 
-  // NeoPixel Driver
-  bool addNeoPixel(uint32_t pixelsNum, uint32_t pixelsBrightness,
-                   wippersnapper_pixels_v1_NeoPixelConfig neoPixelInitMsg);
-  bool updateNeoPixel(int8_t pixelBrightness,
-                      wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
-  bool deleteNeoPixel(wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
-  bool fillNeoPixel(uint32_t pixelColor,
-                    wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
-
   // DotStar Driver
   bool addDotStar(uint32_t pixelsNum, uint32_t pixelsBrightness,
                   wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
@@ -56,9 +47,7 @@ public:
                    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
 
 private:
-  Adafruit_NeoPixel *_neopixel = nullptr; ///< Pointer to a neopixel object
-  std::vector<Adafruit_NeoPixel *>
-      _neopixels;                       ///< Vector of ptrs to neopixel objects
+  WipperSnapper_Pixels_Drv_NeoPixel _neoDriver;
   Adafruit_DotStar *_dotstar = nullptr; ///< Pointer to a dotstar object
   std::vector<Adafruit_DotStar *>
       _dotstars; ///< Vector of ptrs to dotstar objects
