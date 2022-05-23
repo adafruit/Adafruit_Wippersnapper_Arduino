@@ -61,132 +61,26 @@ public:
   bool begin() {
     _bme = new Adafruit_BME680();
     bool isInit = _bme->begin(_sensorAddress, _i2c);
+    // Set up oversampling and filter initialization
+    _bme->setTemperatureOversampling(BME680_OS_8X);
+    _bme->setHumidityOversampling(BME680_OS_2X);
+    _bme->setPressureOversampling(BME680_OS_4X);
+    _bme->setIIRFilterSize(BME680_FILTER_SIZE_3);
+    _bme->setGasHeater(320, 150); // 320*C for 150 ms
     return isInit;
   }
 
   /*******************************************************************************/
-  /*!
-      @brief    Enables the BME680's temperature sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorAmbientTemperature() {
-    float _bme_temp = _bme->readTemperature();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the BME680's humidity sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorRelativeHumidity() {
-    float _bme_humidity = _bme->readHumidity();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the BME680's pressure sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorPressure() {
-    float _bme_pressure = _bme->readPressure();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the BME680's temperature sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorAmbientTemperature() {
-    _bme_temp = NULL;
-    _tempSensorPeriod = 0.0;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the BME680's humidity sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorRelativeHumidity() {
-    _bme_humidity = NULL;
-    _humidSensorPeriod = 0.0;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the BME680's pressure sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorPressure() {
-    _bme_pressure = NULL;
-    _pressureSensorPeriod = 0.0;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a pressure sensor.
-      @param    period
-                The time interval at which to return new data from the pressure
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorPressure(float period) {
-    // enable a previously disabled sensor
-    if (period > 0 && _bme_pressure == NULL)
-      enableSensorPressure();
-    setSensorPressurePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of an ambient temperature
-                  sensor, provided sensor_period.
-      @param    period
-                Sensor's period.
-  */
-  /*******************************************************************************/
-  void updateSensorAmbientTemperature(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorAmbientTemperature();
-    // enable a previously disabled sensor
-    if (period > 0 && _bme_temp == NULL)
-      enableSensorAmbientTemperature();
-
-    setSensorAmbientTemperaturePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a relative humidity sensor.
-      @param    period
-                The time interval at which to return new data from the humidity
-                sensor.
-  */
-  /*******************************************************************************/
-  void updateSensorRelativeHumidity(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorRelativeHumidity();
-    // enable a previously disabled sensor
-    if (period > 0 && _bme_humidity == NULL)
-      enableSensorRelativeHumidity();
-
-    setSensorRelativeHumidityPeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the BME680's current temperature.
-      @param    tempEvent
-                Pointer to an Adafruit_Sensor event.
-      @returns  True if the temperature was obtained successfully, False
-                otherwise.
-  */
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    if (_bme_temp == NULL)
+    // Sample the bme680's sensors
+    if (! _bme->performReading())
       return false;
-    _bme_temp->getEvent(tempEvent);
+
+    // Pack the sensors_event_t's temperature field
+    // with the bme680's temperature value
+    tempEvent->temperature = _bme->temperature;
+
     return true;
   }
 
@@ -200,9 +94,37 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (_bme_humidity == NULL)
-      return false;
-    _bme_humidity->getEvent(humidEvent);
+  // Sample the bme680's sensors
+  if (! _bme->performReading())
+   return false;
+
+  // Pack the sensors_event_t's humidity field
+  // with the bme680's humidity value
+  humidEvent->relative_humidity = _bme->humidity;
+
+  return true;
+}
+
+/*******************************************************************************/
+ /*!
+     @brief    Reads a gas sensor
+
+     @param    vocEvent
+               Pointer to an Adafruit_Sensor event.
+     @returns  True if the sensor event was obtained successfully, False
+               otherwise.
+ */
+ /*******************************************************************************/
+
+  bool getEventTvoc(sensors_event_t *tvocEvent) {
+    // Sample the bme680's sensors
+    // This is not working
+    if (! _bme->performReading())
+     return false;
+
+    // Pack the sensors_event_t's gas field
+    // with the bme680's gas value
+    tvocEvent->data[0] = _bme->gas_resistance / 1000.0;
     return true;
   }
 
@@ -217,11 +139,15 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_bme_pressure == NULL)
-      return false;
-    _bme_pressure->getEvent(pressureEvent);
-    return true;
-  }
+   // Sample the bme680's sensors
+  if (! _bme->performReading())
+    return false;
+
+  // Pack the sensors_event_t's pressure field
+  // with the bme680's pressure value
+   pressureEvent->pressure = _bme->pressure / 100;
+   return true;
+}
 
   /*******************************************************************************/
   /*!
@@ -241,12 +167,6 @@ public:
 
 protected:
   Adafruit_BME680 *_bme; ///< BME680  object
-  Adafruit_Sensor *_bme_temp =
-      NULL; ///< Ptr to an adafruit_sensor representing the temperature
-  Adafruit_Sensor *_bme_pressure =
-      NULL; ///< Ptr to an adafruit_sensor representing the pressure
-  Adafruit_Sensor *_bme_humidity =
-      NULL; ///< Ptr to an adafruit_sensor representing the humidity
 };
 
 #endif // WipperSnapper_I2C_Driver_BME680
