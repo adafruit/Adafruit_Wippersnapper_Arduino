@@ -14,7 +14,7 @@
  */
 #ifndef WIPPERSNAPPER_PIXELS_H
 #define WIPPERSNAPPER_PIXELS_H
-#include "WipperSnapper_Pixels_Drv_NeoPixel.h"
+#include "drivers/WipperSnapper_Pixels_Drv_NeoPixel.h"
 #include "Wippersnapper.h"
 #include <Adafruit_DotStar.h>
 
