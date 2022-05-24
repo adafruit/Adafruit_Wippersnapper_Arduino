@@ -1,9 +1,36 @@
+/*!
+ * @file WipperSnapper_Pixels_Drv_NeoPixel.cpp
+ *
+ * Component driver for NeoPixels
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
+ *
+ * BSD license, all text here must be included in any redistribution.
+ *
+ */
 #include "WipperSnapper_Pixels_Drv_NeoPixel.h"
 
 WipperSnapper_Pixels_Drv_NeoPixel::WipperSnapper_Pixels_Drv_NeoPixel() {}
 
 WipperSnapper_Pixels_Drv_NeoPixel::~WipperSnapper_Pixels_Drv_NeoPixel() {}
 
+/************************************************************************************/
+/*!
+    @brief    Initializes a new NeoPixel object and adds it to a container of
+              ptrs to NeoPixel objects.
+    @param    pixelsNum
+              The number of pixels in the NeoPixel strip.
+    @param    pixelsBrightness
+              The pixel strip's brightness.
+    @param    neoPixelInitMsg
+              A NeoPixel configuration message.
+    @returns  True if initialized successfully, False otherwise.
+*/
+/***********************************************************************************/
 bool WipperSnapper_Pixels_Drv_NeoPixel::addNeoPixel(
     uint32_t pixelsNum, uint32_t pixelsBrightness,
     wippersnapper_pixels_v1_NeoPixelConfig neoPixelInitMsg) {

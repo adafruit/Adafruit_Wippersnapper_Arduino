@@ -14,9 +14,9 @@
  */
 #ifndef WIPPERSNAPPER_PIXELS_H
 #define WIPPERSNAPPER_PIXELS_H
-#include "drivers/WipperSnapper_Pixels_Drv_NeoPixel.h"
 #include "Wippersnapper.h"
-#include <Adafruit_DotStar.h>
+#include "drivers/WipperSnapper_Pixels_Drv_DotStar.h"
+#include "drivers/WipperSnapper_Pixels_Drv_NeoPixel.h"
 
 /**************************************************************************/
 /*!
@@ -37,20 +37,9 @@ public:
   bool fillPixel(wippersnapper_pixels_v1_PixelsFillAll
                      msgPixelsFillAll); // high-level, PixelsFillAll
 
-  // DotStar Driver
-  bool addDotStar(uint32_t pixelsNum, uint32_t pixelsBrightness,
-                  wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
-  bool updateDotStar(int8_t pixelBrightness,
-                     wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
-  bool deleteDotStar(wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
-  bool fillDotStar(uint32_t pixelColor,
-                   wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
-
 private:
   WipperSnapper_Pixels_Drv_NeoPixel _neoDriver;
-  Adafruit_DotStar *_dotstar = nullptr; ///< Pointer to a dotstar object
-  std::vector<Adafruit_DotStar *>
-      _dotstars; ///< Vector of ptrs to dotstar objects
+  WipperSnapper_Pixels_Drv_DotStar _dotStarDriver;
 };
 extern Wippersnapper WS;
 
