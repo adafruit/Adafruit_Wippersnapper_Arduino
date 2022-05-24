@@ -45,3 +45,4 @@ src/.vscode/settings.json
 .DS_STORE
 
 Doxyfile
+examples/Wippersnapper_demo/build/
