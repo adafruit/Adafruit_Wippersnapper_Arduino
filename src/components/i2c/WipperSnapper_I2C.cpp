@@ -643,6 +643,29 @@ void WipperSnapper_Component_I2C::update() {
       }
     }
 
+    // Gas sensor
+    curTime = millis();
+    if ((*iter)->sensorGasPeriod() != 0L &&
+        curTime - (*iter)->sensorGasPeriodPrv() > (*iter)->_gasSensorPeriod()) {
+      if ((*iter)->getEventGas(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tGas: ");
+        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINTLN(" KOhms");
+
+        // pack event data into msg
+        fillEventMessage(
+            &msgi2cResponse, event.light,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE);
+
+        (*iter)->setSensorGasPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get gas sensor reading!");
+      }
+    }
+
     // Did this driver obtain data from sensors?
     if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count == 0)
       continue;
