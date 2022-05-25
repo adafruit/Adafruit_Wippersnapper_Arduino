@@ -571,13 +571,13 @@ public:
   /*!
       @brief    Base implementation - Reads a gas sensor and converts
                 the reading into the expected SI unit.
-      @param    gas_resistance
+      @param    gasEvent
                 Gas resistor (ohms) reading.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventGas(uint32_t gas_resistance) { return gas_resistance; }
+  virtual bool getEventGas(sensors_event_t *gasEvent) { return false; }
 
   /*******************************************************************************/
   /*!

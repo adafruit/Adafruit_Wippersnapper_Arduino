@@ -74,7 +74,7 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     // Sample the bme680's sensors
-    if (! _bme->performReading())
+    if (!_bme->performReading())
       return false;
 
     // Pack the sensors_event_t's temperature field
@@ -94,37 +94,37 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-  // Sample the bme680's sensors
-  if (! _bme->performReading())
-   return false;
+    // Sample the bme680's sensors
+    if (!_bme->performReading())
+      return false;
 
-  // Pack the sensors_event_t's humidity field
-  // with the bme680's humidity value
-  humidEvent->relative_humidity = _bme->humidity;
+    // Pack the sensors_event_t's humidity field
+    // with the bme680's humidity value
+    humidEvent->relative_humidity = _bme->humidity;
 
-  return true;
-}
+    return true;
+  }
 
-/*******************************************************************************/
- /*!
-     @brief    Reads a gas sensor
+  /*******************************************************************************/
+  /*!
+      @brief    Reads a gas sensor
+      @param    gasEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
 
-     @param    vocEvent
-               Pointer to an Adafruit_Sensor event.
-     @returns  True if the sensor event was obtained successfully, False
-               otherwise.
- */
- /*******************************************************************************/
-
-  bool getEventTvoc(sensors_event_t *tvocEvent) {
+  bool getEventTvoc(sensors_event_t *gasEvent) {
     // Sample the bme680's sensors
     // This is not working
-    if (! _bme->performReading())
-     return false;
+    // br: test?
+    if (!_bme->performReading())
+      return false;
 
     // Pack the sensors_event_t's gas field
     // with the bme680's gas value
-    tvocEvent->data[0] = _bme->gas_resistance / 1000.0;
+    gasEvent->data[0] = _bme->gas_resistance / 1000.0;
     return true;
   }
 
@@ -139,15 +139,15 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-   // Sample the bme680's sensors
-  if (! _bme->performReading())
-    return false;
+    // Sample the bme680's sensors
+    if (!_bme->performReading())
+      return false;
 
-  // Pack the sensors_event_t's pressure field
-  // with the bme680's pressure value
-   pressureEvent->pressure = _bme->pressure / 100;
-   return true;
-}
+    // Pack the sensors_event_t's pressure field
+    // with the bme680's pressure value
+    pressureEvent->pressure = _bme->pressure / 100;
+    return true;
+  }
 
   /*******************************************************************************/
   /*!
