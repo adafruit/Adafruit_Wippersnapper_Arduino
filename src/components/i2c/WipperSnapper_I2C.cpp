@@ -646,7 +646,7 @@ void WipperSnapper_Component_I2C::update() {
     // Gas sensor
     curTime = millis();
     if ((*iter)->sensorGasPeriod() != 0L &&
-        curTime - (*iter)->sensorGasPeriodPrv() > (*iter)->_gasSensorPeriod()) {
+        curTime - (*iter)->sensorGasPeriodPrv() > (*iter)->sensorGasPeriod()) {
       if ((*iter)->getEventGas(&event)) {
         WS_DEBUG_PRINT("Sensor 0x");
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
