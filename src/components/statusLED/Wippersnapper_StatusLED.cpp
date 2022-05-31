@@ -43,28 +43,31 @@ void statusLEDInit() {
 // if they're being used as a component, and de-init'd
 // init. NeoPixel to use as a status LED
 #ifdef USE_STATUS_NEOPIXEL
-    #if defined(NEOPIXEL_I2C_POWER)
-    pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
-    digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
-    #elif defined(NEOPIXEL_POWER)
-    pinMode(NEOPIXEL_POWER, OUTPUT);
-    digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
-    #endif
-    _statusPixelNeo = new Adafruit_NeoPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
-    _statusPixelNeo->begin();
-    _statusPixelNeo->setBrightness(10);
-    _statusPixelNeo->show();
+#if defined(NEOPIXEL_I2C_POWER)
+  pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
+#elif defined(NEOPIXEL_POWER)
+  pinMode(NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
+#endif
+  _statusPixelNeo = new Adafruit_NeoPixel(
+      STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+  _statusPixelNeo->begin();
+  _statusPixelNeo->setBrightness(10);
+  _statusPixelNeo->show();
 #endif
 
 // init. DotStar to use as a status LED
 #ifdef USE_STATUS_DOTSTAR
-    _statusPixelDotStar = new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
-    _statusPixelDotStar->begin();
-    _statusPixelDotStar->setBrightness(5);
-    _statusPixelDotStar->show(); // turn all pixels off
+  _statusPixelDotStar =
+      new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
+                           STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
+  _statusPixelDotStar->begin();
+  _statusPixelDotStar->setBrightness(5);
+  _statusPixelDotStar->show(); // turn all pixels off
 #endif
 
- WS.statusLEDActive = true;
+  WS.statusLEDActive = true;
 }
 
 /****************************************************************************/
@@ -90,9 +93,9 @@ void statusLEDDeinit() {
 #ifdef USE_STATUS_LED
   digitalWrite(STATUS_LED_PIN, 0); // turn off
   pinMode(STATUS_LED_PIN,
-          INPUT);           // "release" for use by setting to input (hi-z)
+          INPUT); // "release" for use by setting to input (hi-z)
 #endif
- WS.statusLEDActive = false;
+  WS.statusLEDActive = false;
 }
 
 /****************************************************************************/
