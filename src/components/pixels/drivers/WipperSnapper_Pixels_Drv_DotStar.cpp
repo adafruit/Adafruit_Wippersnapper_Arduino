@@ -108,26 +108,26 @@ void WipperSnapper_Pixels_Drv_DotStar::deinitDotStars() {
   }
 }
 
-  /************************************************************************************/
-  /*!
-      @brief    Fills the color of a DotStar strip.
-      @param    pixelColor
-                The desired color to fill a DotStar strip.
-      @param    msgDotStarConfig
-                A DotStar configuration message.
-      @returns  True if DotStar strip was found and filled, False otherwise.
-  */
-  /***********************************************************************************/
-  bool WipperSnapper_Pixels_Drv_DotStar::fillDotStar(
-      uint32_t pixelColor,
-      wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
-    // Fill DotStar strip, if exists
-    for (int i = 0; i < _dotstars.size(); i++) {
-      if (_dotstars.at(i)->numPixels() == (int8_t)msgDotStarConfig.pixel_num) {
-        _dotstars.at(i)->fill(pixelColor);
-        _dotstars.at(i)->show();
-        return true;
-      }
+/************************************************************************************/
+/*!
+    @brief    Fills the color of a DotStar strip.
+    @param    pixelColor
+              The desired color to fill a DotStar strip.
+    @param    msgDotStarConfig
+              A DotStar configuration message.
+    @returns  True if DotStar strip was found and filled, False otherwise.
+*/
+/***********************************************************************************/
+bool WipperSnapper_Pixels_Drv_DotStar::fillDotStar(
+    uint32_t pixelColor,
+    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig) {
+  // Fill DotStar strip, if exists
+  for (int i = 0; i < _dotstars.size(); i++) {
+    if (_dotstars.at(i)->numPixels() == (int8_t)msgDotStarConfig.pixel_num) {
+      _dotstars.at(i)->fill(pixelColor);
+      _dotstars.at(i)->show();
+      return true;
     }
-    return false;
   }
+  return false;
+}

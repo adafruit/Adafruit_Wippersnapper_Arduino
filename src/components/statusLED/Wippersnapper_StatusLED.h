@@ -65,5 +65,4 @@ void setStatusLEDColor(uint32_t color);
 void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME,
                     bool blinkFast = false);
 void statusLEDFade(uint32_t color, int numFades);
-
 #endif // WIPPERSNAPPER_STATUSLED_H

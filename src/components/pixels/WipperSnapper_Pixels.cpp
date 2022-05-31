@@ -41,11 +41,17 @@ WipperSnapper_Pixels::~WipperSnapper_Pixels() {}
 bool WipperSnapper_Pixels::addPixel(
     wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate) {
   bool is_success = true;
+
   if (msgPixelsCreate.has_neo_pixel_init) {
+    if (WS.statusLEDActive == true &&
+        msgPixelsCreate.neo_pixel_init.neo_pixel_pin == STATUS_NEOPIXEL_PIN)
+      statusLEDDeinit();
     is_success = _neoDriver.addNeoPixel(msgPixelsCreate.pixel_num,
                                         msgPixelsCreate.pixel_brightness,
                                         msgPixelsCreate.neo_pixel_init);
   } else if (msgPixelsCreate.has_dot_star_init) {
+    if (WS.statusLEDActive = true) // we only support one dotStar strand
+      statusLEDDeinit();
     is_success = _dotStarDriver.addDotStar(msgPixelsCreate.pixel_num,
                                            msgPixelsCreate.pixel_brightness,
                                            msgPixelsCreate.dot_star_init);

@@ -32,7 +32,6 @@ Adafruit_DotStar *_statusPixelDotStar;
 */
 /****************************************************************************/
 void statusLEDInit() {
-
 // init. NeoPixel to use as a status LED
 #ifdef USE_STATUS_NEOPIXEL
     _statusPixelNeo = new Adafruit_NeoPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -59,6 +58,8 @@ void statusLEDInit() {
   pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
   digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
 #endif
+
+ WS.statusLEDActive = true;
 }
 
 /****************************************************************************/
@@ -67,7 +68,6 @@ void statusLEDInit() {
 */
 /****************************************************************************/
 void statusLEDDeinit() {
-
 // de-init NeoPixel
 #ifdef USE_STATUS_NEOPIXEL
   _statusPixelNeo->clear();
@@ -87,6 +87,7 @@ void statusLEDDeinit() {
   pinMode(STATUS_LED_PIN,
           INPUT);           // "release" for use by setting to input (hi-z)
 #endif
+ WS.statusLEDActive = false;
 }
 
 /****************************************************************************/
