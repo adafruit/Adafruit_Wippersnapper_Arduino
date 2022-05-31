@@ -8,12 +8,15 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
  */
+#include "Wippersnapper_StatusLED.h"
 #include "Wippersnapper.h"
+
+extern Wippersnapper WS;
 
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
@@ -26,7 +29,6 @@ Adafruit_DotStar *statusPixelDotStar =
                          STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
 #endif
 
-extern Wippersnapper WS;
 /****************************************************************************/
 /*!
     @brief    Initializes board-specific status LED.
@@ -34,7 +36,7 @@ extern Wippersnapper WS;
                 in-use.
 */
 /****************************************************************************/
-bool Wippersnapper::statusLEDInit() {
+bool statusLEDInit() {
   bool is_success = false;
 
 #ifdef USE_STATUS_NEOPIXEL
@@ -77,7 +79,7 @@ bool Wippersnapper::statusLEDInit() {
     @brief    De-initializes status LED. The usingStatus flag is also reset.
 */
 /****************************************************************************/
-void Wippersnapper::statusLEDDeinit() {
+void statusLEDDeinit() {
 #ifdef USE_STATUS_NEOPIXEL
   statusPixel->clear();
   statusPixel->show(); // turn off
@@ -105,7 +107,7 @@ void Wippersnapper::statusLEDDeinit() {
               Desired RGB color.
 */
 /****************************************************************************/
-void Wippersnapper::setStatusLEDColor(uint32_t color) {
+void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_NEOPIXEL
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
@@ -137,42 +139,123 @@ void Wippersnapper::setStatusLEDColor(uint32_t color) {
 
 /****************************************************************************/
 /*!
+    @brief    Fades the status LED.
+    @param    color
+              The specific color to fade the status LED.
+    @param    numFades
+              The amount of time to fade/pulse the status LED.
+*/
+/****************************************************************************/
+void statusLEDFade(uint32_t color, int numFades = 3) {
+  setStatusLEDColor(color);
+
+// attach LEDC pin
+#if defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+  ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
+  ledcAttachPin(STATUS_LED_PIN, LEDC_CHANNEL_0);
+#endif
+
+  // pulse numFades times
+  for (int i = 0; i < numFades; i++) {
+    for (int i = 50; i <= 200; i += 5) {
+#if defined(USE_STATUS_NEOPIXEL)
+      statusPixel->setBrightness(i);
+      statusPixel->show();
+#elif defined(USE_STATUS_DOTSTAR)
+      statusPixelDotStar->setBrightness(i);
+      statusPixelDotStar->show();
+#elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+      ledcWrite(LEDC_CHANNEL_0, i);
+#else
+      analogWrite(STATUS_LED_PIN, i);
+#endif
+      delay(10);
+    }
+
+    for (int i = 200; i >= 50; i -= 5) {
+#if defined(USE_STATUS_NEOPIXEL)
+      statusPixel->setBrightness(i);
+      statusPixel->show();
+#elif defined(USE_STATUS_DOTSTAR)
+      statusPixelDotStar->setBrightness(i);
+      statusPixelDotStar->show();
+#elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+      ledcWrite(LEDC_CHANNEL_0, i);
+#else
+      analogWrite(STATUS_LED_PIN, i);
+#endif
+      delay(10);
+    }
+  }
+
+// detach LEDC pin and reset its pinMode
+#if defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
+  ledcDetachPin(STATUS_LED_PIN);
+  pinMode(STATUS_LED_PIN, OUTPUT);
+#endif
+
+  // clear status LED color
+  setStatusLEDColor(BLACK);
+}
+
+/****************************************************************************/
+/*!
     @brief    Blinks a status LED a specific color depending on
               the hardware's state.
     @param    statusState
               Hardware's status state.
+    @param    blinkFast
+              Blink the LED for 100ms instead of default 300ms.
 */
 /****************************************************************************/
-void Wippersnapper::statusLEDBlink(ws_led_status_t statusState) {
+void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
+  int blinkNum;
+  uint32_t ledBlinkColor;
+
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return;
 #endif
 
-  int blinkNum = 0;
-  uint32_t ledBlinkColor;
-  if (statusState == WS_LED_STATUS_KAT) {
-    blinkNum = 1;
-    ledBlinkColor = LED_CONNECTED;
-  } else if (statusState == WS_LED_STATUS_ERROR) {
-    blinkNum = 2;
-    ledBlinkColor = LED_ERROR;
-  } else if (statusState == WS_LED_STATUS_CONNECTED) {
-    blinkNum = 3;
-    ledBlinkColor = LED_CONNECTED;
-  } else if (statusState == WS_LED_STATUS_FS_WRITE) {
-    blinkNum = 4;
+  // are we going to blink slowly (connecting) or quickly (error)?
+  long delayTime = 300;
+  if (blinkFast)
+    delayTime = 100;
+
+  // what color are we goign to blink?
+  switch (statusState) {
+  case WS_LED_STATUS_KAT:
+    ledBlinkColor = GREEN;
+    break;
+  case WS_LED_STATUS_ERROR_RUNTIME:
+    ledBlinkColor = RED;
+    break;
+  case WS_LED_STATUS_WIFI_CONNECTING:
+    blinkNum = 4; // delay(1200)
+    ledBlinkColor = AMBER;
+    break;
+  case WS_LED_STATUS_MQTT_CONNECTING:
+    blinkNum = 4; // delay(1200)
+    ledBlinkColor = BLUE;
+    break;
+  case WS_LED_STATUS_WAITING_FOR_REG_MSG:
+    ledBlinkColor = PINK;
+    break;
+  case WS_LED_STATUS_FS_WRITE:
     ledBlinkColor = YELLOW;
-  } else {
-    blinkNum = 0;
+    break;
+  default:
     ledBlinkColor = BLACK;
+    break;
   }
 
+  // blink!
+  blinkNum = 3;
   while (blinkNum > 0) {
     setStatusLEDColor(ledBlinkColor);
-    delay(250);
+    delay(delayTime);
     setStatusLEDColor(BLACK);
-    delay(250);
+    delay(delayTime);
     blinkNum--;
   }
 }

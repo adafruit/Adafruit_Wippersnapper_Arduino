@@ -1252,7 +1252,7 @@ void Wippersnapper::subscribeWSTopics() {
 /**************************************************************************/
 /*!
     @brief    Writes an error message to the serial and the filesystem,
-                blinks WS_LED_STATUS_ERROR pattern and hangs.
+                blinks WS_LED_STATUS_ERROR_RUNTIME pattern and hangs.
     @param    error
               The error message to write to the serial and filesystem.
 */
@@ -1266,7 +1266,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Signal and hang forever
   while (1) {
     WS.feedWDT();
-    WS.statusLEDBlink(WS_LED_STATUS_ERROR);
+    statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
   }
 }
@@ -1307,22 +1307,24 @@ void Wippersnapper::runNetFSM() {
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        setStatusLEDColor(LED_NET_CONNECT);
+        // blink before we connect
+        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
         WS.feedWDT();
         // attempt to connect
         WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
         WS.feedWDT();
-        delay(1000);
+        // blink to simulate a delay to allow wifi connection to process
+        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
-        setStatusLEDColor(BLACK);
         maxAttempts--;
       }
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED)
-        haltError("ERROR: Unable to connect to WiFi, rebooting soon...");
+        haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
+                  WS_LED_STATUS_WIFI_CONNECTING);
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
@@ -1331,21 +1333,22 @@ void Wippersnapper::runNetFSM() {
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        setStatusLEDColor(LED_IO_CONNECT);
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
         }
-        setStatusLEDColor(BLACK);
         WS_DEBUG_PRINTLN(
-            "Unable to connect to Adafruit IO MQTT, retrying in 5 seconds...");
-        delay(5000);
+            "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        delay(1800);
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT)
         haltError(
-            "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...");
+            "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
+            WS_LED_STATUS_MQTT_CONNECTING);
       break;
     default:
       break;
@@ -1359,13 +1362,15 @@ void Wippersnapper::runNetFSM() {
               the WDT bites.
     @param    error
               The desired error to print to serial.
+    @param    ledStatusColor
+              The desired color to blink.
 */
 /**************************************************************************/
-void Wippersnapper::haltError(String error) {
+void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
-  setStatusLEDColor(LED_ERROR);
   for (;;) {
+    statusLEDBlink(ledStatusColor, true);
     // let the WDT fail out and reset!
     delay(100);
   }
@@ -1567,11 +1572,9 @@ void Wippersnapper::connect() {
   // Run the network fsm
   runNetFSM();
   WS.feedWDT();
-  setStatusLEDColor(LED_CONNECTED);
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
-  setStatusLEDColor(LED_IO_REGISTER_HW);
   if (!registerBoard()) {
     haltError("Unable to register with WipperSnapper.");
   }
@@ -1590,9 +1593,9 @@ void Wippersnapper::connect() {
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
+  statusLEDFade(GREEN, 3);
 
   // Run application
-  statusLEDBlink(WS_LED_STATUS_CONNECTED);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
 }

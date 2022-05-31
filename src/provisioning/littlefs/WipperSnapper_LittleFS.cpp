@@ -28,7 +28,7 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
     WS_DEBUG_PRINTLN("ERROR: Failure initializing LittleFS!");
-    WS.setStatusLEDColor(RED);
+    setStatusLEDColor(RED);
     while (1)
       ;
   }
@@ -149,7 +149,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
 void WipperSnapper_LittleFS::fsHalt() {
   while (1) {
-    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    statusLEDBlink(WS_LED_STATUS_FS_WRITE, true);
     delay(1000);
     yield();
   }

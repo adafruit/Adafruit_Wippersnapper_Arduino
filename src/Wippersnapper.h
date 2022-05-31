@@ -9,7 +9,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -33,7 +33,7 @@
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
-#include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
+#include "components/statusLED/Wippersnapper_StatusLED.h"
 
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -45,8 +45,6 @@
 #include "Arduino.h"       // Wiring
 
 // Note: These might be better off in their respective wrappers
-#include <Adafruit_DotStar.h>
-#include <Adafruit_NeoPixel.h>
 #include <SPI.h>
 
 #ifndef ESP8266
@@ -177,11 +175,6 @@ public:
 
   void provision();
 
-  // Status LED
-  bool statusLEDInit();
-  void statusLEDDeinit();
-  void setStatusLEDColor(uint32_t color);
-  void statusLEDBlink(ws_led_status_t statusState);
   bool lockStatusNeoPixel =
       false; ///< True if status LED is using the status neopixel
   bool lockStatusDotStar =
@@ -231,7 +224,8 @@ public:
   void feedWDT();
 
   // Error handling helpers
-  void haltError(String error);
+  void haltError(String error,
+                 ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
   void errorWriteHang(String error);
 
   // MQTT topic callbacks //
