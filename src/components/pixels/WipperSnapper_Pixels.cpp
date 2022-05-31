@@ -42,8 +42,6 @@ bool WipperSnapper_Pixels::addPixel(
     wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate) {
   bool is_success = true;
 
-  // TODO: Releasing NeoPixel/DotStar object which
-  // was the status pin should re-enable status pin... if disabled
   if (msgPixelsCreate.has_neo_pixel_init) {
     if (WS.statusLEDActive == true &&
         msgPixelsCreate.neo_pixel_init.neo_pixel_pin == STATUS_NEOPIXEL_PIN)
@@ -101,8 +99,15 @@ bool WipperSnapper_Pixels::deletePixel(
   bool is_success = true;
   if (msgPixelsDelete.has_neo_pixel_config) {
     is_success = _neoDriver.deleteNeoPixel(msgPixelsDelete.neo_pixel_config);
+    // reuse strand as status LED, if data pin is status LED pin
+    if (WS.statusLEDActive == false &&
+        msgPixelsDelete.neo_pixel_config.neo_pixel_pin == STATUS_NEOPIXEL_PIN)
+      statusLEDInit();
   } else if (msgPixelsDelete.has_dot_star_config) {
     is_success = _dotStarDriver.deleteDotStar(msgPixelsDelete.dot_star_config);
+    // reuse strand as status LED
+    if (WS.statusLEDActive == false)
+      statusLEDInit();
   } else {
     is_success = false;
   }

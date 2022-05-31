@@ -142,8 +142,6 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   if (pinName == STATUS_LED_PIN && !(WS.statusLEDActive))
     statusLEDInit();
 #endif
-
-#endif
 }
 
 /********************************************************************/

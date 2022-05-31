@@ -32,17 +32,28 @@ Adafruit_DotStar *_statusPixelDotStar;
 */
 /****************************************************************************/
 void statusLEDInit() {
+
+// init. monocolor status LED
+#ifdef USE_STATUS_LED
+  pinMode(STATUS_LED_PIN, OUTPUT);
+  digitalWrite(STATUS_LED_PIN, 0);
+#endif
+
+// TODO: NeoPixel and DotStar should first be checked
+// if they're being used as a component, and de-init'd
 // init. NeoPixel to use as a status LED
 #ifdef USE_STATUS_NEOPIXEL
+    #if defined(NEOPIXEL_I2C_POWER)
+    pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+    digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
+    #else if defined(NEOPIXEL_POWER)
+    pinMode(NEOPIXEL_POWER, OUTPUT);
+    digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
+    #endif
     _statusPixelNeo = new Adafruit_NeoPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
     _statusPixelNeo->begin();
     _statusPixelNeo->setBrightness(10);
     _statusPixelNeo->show();
-    #ifdef NEOPIXEL_POWER
-    // Some boards use a NEOPIXEL_POWER pin to power the pixels
-    pinMode(NEOPIXEL_POWER, OUTPUT);
-    digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
-    #endif
 #endif
 
 // init. DotStar to use as a status LED
@@ -51,12 +62,6 @@ void statusLEDInit() {
     _statusPixelDotStar->begin();
     _statusPixelDotStar->setBrightness(5);
     _statusPixelDotStar->show(); // turn all pixels off
-#endif
-
-// init. monocolor status LED
-#ifdef USE_STATUS_LED
-  pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
-  digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
 #endif
 
  WS.statusLEDActive = true;
@@ -201,6 +206,10 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
   int blinkNum;
   uint32_t ledBlinkColor;
+
+  // is the status LED active?
+  if (!WS.statusLEDActive)
+    statusLEDInit();
 
   // are we going to blink slowly (connecting) or quickly (error)?
   long delayTime = 300;
