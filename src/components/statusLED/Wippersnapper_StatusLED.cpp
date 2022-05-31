@@ -207,10 +207,6 @@ void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
   int blinkNum;
   uint32_t ledBlinkColor;
 
-  // is the status LED active?
-  if (!WS.statusLEDActive)
-    statusLEDInit();
-
   // are we going to blink slowly (connecting) or quickly (error)?
   long delayTime = 300;
   if (blinkFast)

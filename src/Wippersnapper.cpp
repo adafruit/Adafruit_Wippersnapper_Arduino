@@ -1418,6 +1418,9 @@ void Wippersnapper::runNetFSM() {
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
+      // Use status LED for signaling
+      if (!WS.statusLEDActive)
+        statusLEDInit();
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
@@ -1487,6 +1490,8 @@ void Wippersnapper::runNetFSM() {
 void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
+  if (!WS.statusLEDActive) // need to use the status LED
+    statusLEDInit();
   for (;;) {
     statusLEDBlink(ledStatusColor, true);
     // let the WDT fail out and reset!

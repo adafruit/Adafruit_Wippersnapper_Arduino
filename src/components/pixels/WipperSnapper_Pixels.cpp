@@ -43,15 +43,19 @@ bool WipperSnapper_Pixels::addPixel(
   bool is_success = true;
 
   if (msgPixelsCreate.has_neo_pixel_init) {
+#ifdef STATUS_NEOPIXEL_PIN
     if (WS.statusLEDActive == true &&
         msgPixelsCreate.neo_pixel_init.neo_pixel_pin == STATUS_NEOPIXEL_PIN)
       statusLEDDeinit();
+#endif
     is_success = _neoDriver.addNeoPixel(msgPixelsCreate.pixel_num,
                                         msgPixelsCreate.pixel_brightness,
                                         msgPixelsCreate.neo_pixel_init);
   } else if (msgPixelsCreate.has_dot_star_init) {
+#ifdef STATUS_DOTSTAR_PIN
     if (WS.statusLEDActive = true) // we only support one dotStar strand
       statusLEDDeinit();
+#endif
     is_success = _dotStarDriver.addDotStar(msgPixelsCreate.pixel_num,
                                            msgPixelsCreate.pixel_brightness,
                                            msgPixelsCreate.dot_star_init);
@@ -99,15 +103,19 @@ bool WipperSnapper_Pixels::deletePixel(
   bool is_success = true;
   if (msgPixelsDelete.has_neo_pixel_config) {
     is_success = _neoDriver.deleteNeoPixel(msgPixelsDelete.neo_pixel_config);
-    // reuse strand as status LED, if data pin is status LED pin
+// reuse strand as status LED, if data pin is status LED pin
+#ifdef STATUS_NEOPIXEL_PIN
     if (WS.statusLEDActive == false &&
         msgPixelsDelete.neo_pixel_config.neo_pixel_pin == STATUS_NEOPIXEL_PIN)
       statusLEDInit();
+#endif
   } else if (msgPixelsDelete.has_dot_star_config) {
     is_success = _dotStarDriver.deleteDotStar(msgPixelsDelete.dot_star_config);
-    // reuse strand as status LED
+// reuse strand as status LED
+#ifdef STATUS_DOTSTAR_PIN
     if (WS.statusLEDActive == false)
       statusLEDInit();
+#endif
   } else {
     is_success = false;
   }
