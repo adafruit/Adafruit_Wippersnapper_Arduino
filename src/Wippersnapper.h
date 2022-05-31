@@ -178,10 +178,6 @@ public:
 
   void provision();
 
-  bool lockStatusNeoPixel =
-      false; ///< True if status LED is using the status neopixel
-  bool lockStatusDotStar =
-      false; ///< True if status LED is using the status dotstar
   bool lockStatusLED = false; ///< True if status LED is using the built-in LED
 
   virtual void set_user_key();

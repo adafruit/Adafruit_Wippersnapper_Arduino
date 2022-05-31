@@ -59,7 +59,7 @@ typedef enum ws_led_status_t {
 #define LED_ERROR RED             ///< Error state
 
 // Status LED
-bool statusLEDInit();
+void statusLEDInit();
 void statusLEDDeinit();
 void setStatusLEDColor(uint32_t color);
 void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME,
