@@ -42,6 +42,8 @@ bool WipperSnapper_Pixels::addPixel(
     wippersnapper_pixels_v1_PixelsCreate msgPixelsCreate) {
   bool is_success = true;
 
+  // TODO: Releasing NeoPixel/DotStar object which
+  // was the status pin should re-enable status pin... if disabled
   if (msgPixelsCreate.has_neo_pixel_init) {
     if (WS.statusLEDActive == true &&
         msgPixelsCreate.neo_pixel_init.neo_pixel_pin == STATUS_NEOPIXEL_PIN)

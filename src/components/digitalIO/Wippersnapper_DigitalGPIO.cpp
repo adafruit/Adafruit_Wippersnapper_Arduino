@@ -62,14 +62,15 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
     uint8_t pinName, float period,
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pull) {
-  if (direction ==
-      wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
 
 #ifdef STATUS_LED_PIN
-    // Use Status LED pin as a digital GPIO component instead
-    if (pinName == STATUS_LED_PIN)
-      statusLEDDeinit();
+  // If in-use, release builtin statusLED
+  if (pinName == STATUS_LED_PIN && WS.statusLEDActive)
+    statusLEDDeinit();
 #endif
+
+  if (direction ==
+      wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
     pinMode(pinName, OUTPUT);
@@ -137,10 +138,11 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   itoa(pinName, cstr, 10);
   pinMode(pinName, INPUT); // hi-z
 
-// if prv. in-use by DIO, release pin back to application
 #ifdef STATUS_LED_PIN
-  if (pinName == STATUS_LED_PIN)
+  if (pinName == STATUS_LED_PIN && !(WS.statusLEDActive))
     statusLEDInit();
+#endif
+
 #endif
 }
 
