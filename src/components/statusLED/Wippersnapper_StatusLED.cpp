@@ -58,7 +58,6 @@ void statusLEDInit() {
 #ifdef USE_STATUS_LED
   pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
   digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
-  WS.lockStatusLED = true;         // set global pin "lock" flag
 #endif
 }
 
@@ -87,7 +86,6 @@ void statusLEDDeinit() {
   digitalWrite(STATUS_LED_PIN, 0); // turn off
   pinMode(STATUS_LED_PIN,
           INPUT);           // "release" for use by setting to input (hi-z)
-  WS.lockStatusLED = false; // un-set global pin "lock" flag
 #endif
 }
 
@@ -202,11 +200,6 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
   int blinkNum;
   uint32_t ledBlinkColor;
-
-#ifdef USE_STATUS_LED
-  if (!WS.lockStatusLED)
-    return;
-#endif
 
   // are we going to blink slowly (connecting) or quickly (error)?
   long delayTime = 300;

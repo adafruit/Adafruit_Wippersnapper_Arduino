@@ -178,8 +178,6 @@ public:
 
   void provision();
 
-  bool lockStatusLED = false; ///< True if status LED is using the built-in LED
-
   virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();

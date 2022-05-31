@@ -66,7 +66,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
 
 #ifdef STATUS_LED_PIN
-    // deinit status led, use it as a dio component instead
+    // Use Status LED pin as a digital GPIO component instead
     if (pinName == STATUS_LED_PIN)
       statusLEDDeinit();
 #endif
