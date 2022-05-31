@@ -134,5 +134,5 @@ void WipperSnapper_Pixels::deInitPixel() {
   if (_neoDriver.isInitialized)
     _neoDriver.deinitNeoPixels();
   if (_dotStarDriver.isInitialized)
-    _dotStarDriver.deInitDotStars();
+    _dotStarDriver.deinitDotStars();
 }

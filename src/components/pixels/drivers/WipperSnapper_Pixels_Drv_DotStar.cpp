@@ -106,6 +106,7 @@ void WipperSnapper_Pixels_Drv_DotStar::deinitDotStars() {
   for (int i = 0; i < _dotstars.size(); i++) {
     _dotstars.erase(_dotstars.begin() + i);
   }
+}
 
   /************************************************************************************/
   /*!
