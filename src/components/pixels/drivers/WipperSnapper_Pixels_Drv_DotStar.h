@@ -38,7 +38,7 @@ public:
   bool fillDotStar(uint32_t pixelColor,
                    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
   void deinitDotStars();
-  bool isInitialized = false;
+  bool isInitialized = false; ///< Has this class been initialized?
 
 private:
   Adafruit_DotStar *_dotstar = nullptr; ///< Pointer to a dotstar object

@@ -238,7 +238,7 @@ public:
   // Pin configure message
   bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
-  bool statusLEDActive = false;
+  bool statusLEDActive = false; ///< Is the board's status LED in-use as a LED?
 
   // I2C
   std::vector<WipperSnapper_Component_I2C *>

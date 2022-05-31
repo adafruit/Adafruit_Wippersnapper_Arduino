@@ -36,7 +36,7 @@ public:
   bool fillNeoPixel(uint32_t pixelColor,
                     wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
   void deinitNeoPixels();
-  bool isInitialized = false;
+  bool isInitialized = false; ///< Has this class been initialized?
 
 private:
   Adafruit_NeoPixel *_neopixel = nullptr; ///< Pointer to a neopixel object
