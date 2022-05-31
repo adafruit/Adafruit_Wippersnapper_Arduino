@@ -37,6 +37,8 @@ public:
   bool deleteDotStar(wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
   bool fillDotStar(uint32_t pixelColor,
                    wippersnapper_pixels_v1_DotStarConfig msgDotStarConfig);
+  void deInitDotStars();
+  bool isInitialized = false;
 
 private:
   Adafruit_DotStar *_dotstar = nullptr; ///< Pointer to a dotstar object

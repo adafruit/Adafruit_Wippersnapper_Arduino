@@ -28,7 +28,6 @@ class WipperSnapper_Pixels_Drv_NeoPixel {
 public:
   WipperSnapper_Pixels_Drv_NeoPixel();
   ~WipperSnapper_Pixels_Drv_NeoPixel();
-
   bool addNeoPixel(uint32_t pixelsNum, uint32_t pixelsBrightness,
                    wippersnapper_pixels_v1_NeoPixelConfig neoPixelInitMsg);
   bool updateNeoPixel(int8_t pixelBrightness,
@@ -36,6 +35,8 @@ public:
   bool deleteNeoPixel(wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
   bool fillNeoPixel(uint32_t pixelColor,
                     wippersnapper_pixels_v1_NeoPixelConfig msgNeoPixelConfig);
+  void deinitNeoPixels();
+  bool isInitialized = false;
 
 private:
   Adafruit_NeoPixel *_neopixel = nullptr; ///< Pointer to a neopixel object

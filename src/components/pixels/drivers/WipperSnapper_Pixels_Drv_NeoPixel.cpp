@@ -14,9 +14,13 @@
  */
 #include "WipperSnapper_Pixels_Drv_NeoPixel.h"
 
-WipperSnapper_Pixels_Drv_NeoPixel::WipperSnapper_Pixels_Drv_NeoPixel() {}
+WipperSnapper_Pixels_Drv_NeoPixel::WipperSnapper_Pixels_Drv_NeoPixel() {
+  isInitialized = true;
+}
 
-WipperSnapper_Pixels_Drv_NeoPixel::~WipperSnapper_Pixels_Drv_NeoPixel() {}
+WipperSnapper_Pixels_Drv_NeoPixel::~WipperSnapper_Pixels_Drv_NeoPixel() {
+  isInitialized = false;
+}
 
 /************************************************************************************/
 /*!
@@ -111,6 +115,16 @@ bool WipperSnapper_Pixels_Drv_NeoPixel::deleteNeoPixel(
     }
   }
   return false;
+}
+
+/************************************************************/
+/*!
+    @brief    Deletes all NeoPixels and releases memory.
+*/
+/***********************************************************/
+void WipperSnapper_Pixels_Drv_NeoPixel::deinitNeoPixels() {
+  for (int i = 0; i < _neopixels.size(); i++)
+    _neopixels.erase(_neopixels.begin() + i);
 }
 
 /************************************************************************************/

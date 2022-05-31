@@ -36,6 +36,7 @@ public:
                        msgPixelsDelete); // high-level, PixelsDelete
   bool fillPixel(wippersnapper_pixels_v1_PixelsFillAll
                      msgPixelsFillAll); // high-level, PixelsFillAll
+  void deInitPixel();
 
 private:
   WipperSnapper_Pixels_Drv_NeoPixel _neoDriver;

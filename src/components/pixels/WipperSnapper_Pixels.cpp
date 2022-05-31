@@ -123,3 +123,16 @@ bool WipperSnapper_Pixels::fillPixel(
   }
   return is_success;
 }
+
+/*********************************************************************/
+/*!
+    @brief    De-initializes a pixel component, releasing it for use
+              as a status pixel.
+*/
+/********************************************************************/
+void WipperSnapper_Pixels::deInitPixel() {
+  if (_neoDriver.isInitialized)
+    _neoDriver.deinitNeoPixels();
+  if (_dotStarDriver.isInitialized)
+    _dotStarDriver.deInitDotStars();
+}
