@@ -46,7 +46,7 @@ void statusLEDInit() {
     #if defined(NEOPIXEL_I2C_POWER)
     pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
     digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
-    #else if defined(NEOPIXEL_POWER)
+    #elif defined(NEOPIXEL_POWER)
     pinMode(NEOPIXEL_POWER, OUTPUT);
     digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
     #endif
@@ -58,7 +58,7 @@ void statusLEDInit() {
 
 // init. DotStar to use as a status LED
 #ifdef USE_STATUS_DOTSTAR
-    _statusPixelDotStar = new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG)
+    _statusPixelDotStar = new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
     _statusPixelDotStar->begin();
     _statusPixelDotStar->setBrightness(5);
     _statusPixelDotStar->show(); // turn all pixels off
