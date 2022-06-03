@@ -227,6 +227,18 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _bme280->configureDriver(msgDeviceInitReq);
     drivers.push_back(_bme280);
     WS_DEBUG_PRINTLN("BME280 Initialized Successfully!");
+  } else if (strcmp("sht4x", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sht4x = new WipperSnapper_I2C_Driver_SHT4x(this->_i2c, i2cAddress);
+    if (!_sht4x->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize SHT4x!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _sht4x->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_sht4x);
+    WS_DEBUG_PRINTLN("SHT4x Initialized Successfully!");
+
   } else if (strcmp("dps310", msgDeviceInitReq->i2c_device_name) == 0) {
     _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
     if (!_dps310->begin()) {
