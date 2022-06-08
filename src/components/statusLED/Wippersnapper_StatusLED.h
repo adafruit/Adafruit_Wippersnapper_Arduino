@@ -62,8 +62,8 @@ typedef enum ws_led_status_t {
 bool statusLEDInit();
 void statusLEDDeinit();
 void setStatusLEDColor(uint32_t color);
-void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME,
-                    bool blinkFast = false);
+void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME);
 void statusLEDFade(uint32_t color, int numFades);
+void statusLEDSolid(ws_led_status_t statusState);
 
 #endif // WIPPERSNAPPER_STATUSLED_H

@@ -201,15 +201,56 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 
 /****************************************************************************/
 /*!
+    @brief    Sets the status LED to a specific color depending on
+              the hardware's state.
+    @param    statusState
+              Hardware's status state.
+*/
+/****************************************************************************/
+void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
+  uint32_t ledColor;
+#ifdef USE_STATUS_LED
+  if (!WS.lockStatusLED)
+    return;
+#endif
+
+  // what color are we goign to blink?
+  switch (statusState) {
+  case WS_LED_STATUS_KAT:
+    ledColor = GREEN;
+    break;
+  case WS_LED_STATUS_ERROR_RUNTIME:
+    ledColor = RED;
+    break;
+  case WS_LED_STATUS_WIFI_CONNECTING:
+    ledColor = AMBER;
+    break;
+  case WS_LED_STATUS_MQTT_CONNECTING:
+    ledColor = BLUE;
+    break;
+  case WS_LED_STATUS_WAITING_FOR_REG_MSG:
+    ledColor = PINK;
+    break;
+  case WS_LED_STATUS_FS_WRITE:
+    ledColor = YELLOW;
+    break;
+  default:
+    ledColor = BLACK;
+    break;
+  }
+
+  setStatusLEDColor(ledColor);
+}
+
+/****************************************************************************/
+/*!
     @brief    Blinks a status LED a specific color depending on
               the hardware's state.
     @param    statusState
               Hardware's status state.
-    @param    blinkFast
-              Blink the LED for 100ms instead of default 300ms.
 */
 /****************************************************************************/
-void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
+void statusLEDBlink(ws_led_status_t statusState) {
   int blinkNum;
   uint32_t ledBlinkColor;
 
@@ -220,8 +261,6 @@ void statusLEDBlink(ws_led_status_t statusState, bool blinkFast) {
 
   // are we going to blink slowly (connecting) or quickly (error)?
   long delayTime = 300;
-  if (blinkFast)
-    delayTime = 100;
 
   // what color are we goign to blink?
   switch (statusState) {
