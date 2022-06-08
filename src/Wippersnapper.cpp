@@ -1074,15 +1074,22 @@ bool Wippersnapper::buildWSTopics() {
   }
   snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
            WS._macAddr[1], WS._macAddr[2]);
-  // Set device UID
+  
+
+  // Set machine_name
   WS._boardId = BOARD_ID;
+  // Conversion to match integer UID sent by encodePubRegistrationReq()
+  int32_t iUID = atoi(WS.sUID);
+  char mac_uid[13];
+  itoa(iUID, mac_uid, 10);
+
   _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
-                               strlen(WS._boardId) + strlen(WS.sUID));
+                               strlen(WS._boardId) + strlen(mac_uid) + 1);
   strcpy(_device_uid, "io-wipper-");
   strcat(_device_uid, WS._boardId);
-  strcat(_device_uid, WS.sUID);
+  strcat(_device_uid,  mac_uid);
 
-  // Initialize MQTT client
+  // Initialize MQTT client with UID as the ClientID
   setupMQTTClient(_device_uid);
 
   // Global registration topic
