@@ -201,20 +201,14 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 
 /****************************************************************************/
 /*!
-    @brief    Sets the status LED to a specific color depending on
-              the hardware's state.
+    @brief    Converts the a ws_led_status_t status state to color.
     @param    statusState
               Hardware's status state.
+    @return   Color as a uint32_t
 */
 /****************************************************************************/
-void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
+uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
   uint32_t ledColor;
-#ifdef USE_STATUS_LED
-  if (!WS.lockStatusLED)
-    return;
-#endif
-
-  // what color are we goign to blink?
   switch (statusState) {
   case WS_LED_STATUS_KAT:
     ledColor = GREEN;
@@ -238,7 +232,23 @@ void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
     ledColor = BLACK;
     break;
   }
+  return ledColor;
+}
 
+/****************************************************************************/
+/*!
+    @brief    Sets the status LED to a specific color depending on
+              the hardware's state.
+    @param    statusState
+              Hardware's status state.
+*/
+/****************************************************************************/
+void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
+#ifdef USE_STATUS_LED
+  if (!WS.lockStatusLED)
+    return;
+#endif
+  uint32_t ledColor = ledStatusStateToColor(statusState);
   setStatusLEDColor(ledColor);
 }
 
@@ -262,39 +272,18 @@ void statusLEDBlink(ws_led_status_t statusState) {
   // are we going to blink slowly (connecting) or quickly (error)?
   long delayTime = 300;
 
-  // what color are we goign to blink?
-  switch (statusState) {
-  case WS_LED_STATUS_KAT:
-    ledBlinkColor = GREEN;
-    break;
-  case WS_LED_STATUS_ERROR_RUNTIME:
-    ledBlinkColor = RED;
-    break;
-  case WS_LED_STATUS_WIFI_CONNECTING:
-    blinkNum = 4; // delay(1200)
-    ledBlinkColor = AMBER;
-    break;
-  case WS_LED_STATUS_MQTT_CONNECTING:
-    blinkNum = 4; // delay(1200)
-    ledBlinkColor = BLUE;
-    break;
-  case WS_LED_STATUS_WAITING_FOR_REG_MSG:
-    ledBlinkColor = PINK;
-    break;
-  case WS_LED_STATUS_FS_WRITE:
-    ledBlinkColor = YELLOW;
-    break;
-  default:
-    ledBlinkColor = BLACK;
-    break;
-  }
-
-  // blink!
+  // set number of times to blink
   blinkNum = 3;
+  if (statusState == WS_LED_STATUS_WIFI_CONNECTING ||
+      statusState == WS_LED_STATUS_MQTT_CONNECTING)
+    blinkNum = 4; // delay(1200)
+  // set blink color
+  uint32_t ledColor = ledStatusStateToColor(statusState);
+
   while (blinkNum > 0) {
-    setStatusLEDColor(ledBlinkColor);
+    setStatusLEDColor(ledColor);
     delay(delayTime);
-    setStatusLEDColor(BLACK);
+    setStatusLEDColor(ledColor);
     delay(delayTime);
     blinkNum--;
   }
