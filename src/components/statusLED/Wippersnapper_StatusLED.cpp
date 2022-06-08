@@ -40,19 +40,20 @@ bool statusLEDInit() {
   bool is_success = false;
 
 #ifdef USE_STATUS_NEOPIXEL
-  if (WS.lockStatusNeoPixel == false) {
-    statusPixel->begin();
-    statusPixel->show(); // turn all pixels off
-    statusPixel->setBrightness(10);
-    WS.lockStatusNeoPixel = true;
-    is_success = true;
-  }
+  if (!WS.lockStatusNeoPixel) {
+#if defined(NEOPIXEL_I2C_POWER)
+    pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+    digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
+#elif defined(NEOPIXEL_POWER)
+    pinMode(NEOPIXEL_POWER, OUTPUT);
+    digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
 #endif
-
-// Some boards use a NEOPIXEL_POWER pin to set the power
-#if defined(NEOPIXEL_POWER)
-  pinMode(NEOPIXEL_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
+    statusPixel = new Adafruit_NeoPixel(
+        STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+    statusPixel->begin();
+    statusPixel->setBrightness(10);
+    statusPixel->show();
+  }
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
