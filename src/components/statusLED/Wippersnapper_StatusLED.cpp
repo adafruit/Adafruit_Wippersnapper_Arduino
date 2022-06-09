@@ -261,30 +261,21 @@ void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
 */
 /****************************************************************************/
 void statusLEDBlink(ws_led_status_t statusState) {
-  int blinkNum;
-  uint32_t ledBlinkColor;
-
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return;
 #endif
 
-  // are we going to blink slowly (connecting) or quickly (error)?
-  long delayTime = 300;
-
   // set number of times to blink
-  blinkNum = 3;
-  if (statusState == WS_LED_STATUS_WIFI_CONNECTING ||
-      statusState == WS_LED_STATUS_MQTT_CONNECTING)
-    blinkNum = 4; // delay(1200)
+  int blinkNum = 5;
   // set blink color
   uint32_t ledColor = ledStatusStateToColor(statusState);
 
   while (blinkNum > 0) {
     setStatusLEDColor(ledColor);
-    delay(delayTime);
-    setStatusLEDColor(ledColor);
-    delay(delayTime);
+    delay(300);
+    setStatusLEDColor(BLACK);
+    delay(300);
     blinkNum--;
   }
 }
