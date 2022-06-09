@@ -51,12 +51,10 @@ static bool checkreturn pb_enc_fixed_length_bytes(pb_ostream_t *stream, const pb
 
 static bool checkreturn buf_write(pb_ostream_t *stream, const pb_byte_t *buf, size_t count)
 {
-    size_t i;
     pb_byte_t *dest = (pb_byte_t*)stream->state;
     stream->state = dest + count;
     
-    for (i = 0; i < count; i++)
-        dest[i] = buf[i];
+    memcpy(dest, buf, count * sizeof(pb_byte_t));
     
     return true;
 }
@@ -65,7 +63,11 @@ pb_ostream_t pb_ostream_from_buffer(pb_byte_t *buf, size_t bufsize)
 {
     pb_ostream_t stream;
 #ifdef PB_BUFFER_ONLY
-    stream.callback = (void*)1; /* Just a marker value */
+    /* In PB_BUFFER_ONLY configuration the callback pointer is just int*.
+     * NULL pointer marks a sizing field, so put a non-NULL value to mark a buffer stream.
+     */
+    static const int marker = 0;
+    stream.callback = &marker;
 #else
     stream.callback = &buf_write;
 #endif
@@ -264,6 +266,15 @@ static bool checkreturn pb_check_proto3_default_value(const pb_field_iter_t *fie
             /* Proto2 optional fields inside proto3 message, or proto3
              * submessage fields. */
             return safe_read_bool(field->pSize) == false;
+        }
+        else if (field->descriptor->default_value)
+        {
+            /* Proto3 messages do not have default values, but proto2 messages
+             * can contain optional fields without has_fields (generator option 'proto3').
+             * In this case they must always be encoded, to make sure that the
+             * non-zero default value is overwritten.
+             */
+            return false;
         }
 
         /* Rest is proto3 singular fields */
@@ -613,8 +624,9 @@ bool checkreturn pb_encode_varint(pb_ostream_t *stream, pb_uint64_t value)
 bool checkreturn pb_encode_svarint(pb_ostream_t *stream, pb_int64_t value)
 {
     pb_uint64_t zigzagged;
+    pb_uint64_t mask = ((pb_uint64_t)-1) >> 1; /* Satisfy clang -fsanitize=integer */
     if (value < 0)
-        zigzagged = ~((pb_uint64_t)value << 1);
+        zigzagged = ~(((pb_uint64_t)value & mask) << 1);
     else
         zigzagged = (pb_uint64_t)value << 1;
     
@@ -623,6 +635,10 @@ bool checkreturn pb_encode_svarint(pb_ostream_t *stream, pb_int64_t value)
 
 bool checkreturn pb_encode_fixed32(pb_ostream_t *stream, const void *value)
 {
+#if defined(PB_LITTLE_ENDIAN_8BIT) && PB_LITTLE_ENDIAN_8BIT == 1
+    /* Fast path if we know that we're on little endian */
+    return pb_write(stream, (const pb_byte_t*)value, 4);
+#else
     uint32_t val = *(const uint32_t*)value;
     pb_byte_t bytes[4];
     bytes[0] = (pb_byte_t)(val & 0xFF);
@@ -630,11 +646,16 @@ bool checkreturn pb_encode_fixed32(pb_ostream_t *stream, const void *value)
     bytes[2] = (pb_byte_t)((val >> 16) & 0xFF);
     bytes[3] = (pb_byte_t)((val >> 24) & 0xFF);
     return pb_write(stream, bytes, 4);
+#endif
 }
 
 #ifndef PB_WITHOUT_64BIT
 bool checkreturn pb_encode_fixed64(pb_ostream_t *stream, const void *value)
 {
+#if defined(PB_LITTLE_ENDIAN_8BIT) && PB_LITTLE_ENDIAN_8BIT == 1
+    /* Fast path if we know that we're on little endian */
+    return pb_write(stream, (const pb_byte_t*)value, 8);
+#else
     uint64_t val = *(const uint64_t*)value;
     pb_byte_t bytes[8];
     bytes[0] = (pb_byte_t)(val & 0xFF);
@@ -646,6 +667,7 @@ bool checkreturn pb_encode_fixed64(pb_ostream_t *stream, const void *value)
     bytes[6] = (pb_byte_t)((val >> 48) & 0xFF);
     bytes[7] = (pb_byte_t)((val >> 56) & 0xFF);
     return pb_write(stream, bytes, 8);
+#endif
 }
 #endif
 
