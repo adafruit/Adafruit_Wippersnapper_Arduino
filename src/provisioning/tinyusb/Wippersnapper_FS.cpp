@@ -20,7 +20,8 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM) ||                       \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
