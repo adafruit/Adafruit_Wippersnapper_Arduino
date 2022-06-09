@@ -1376,7 +1376,7 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
   for (;;) {
-    statusLEDBlink(ledStatusColor, true);
+    statusLEDSolid(ledStatusColor);
     // let the WDT fail out and reset!
     delay(100);
   }

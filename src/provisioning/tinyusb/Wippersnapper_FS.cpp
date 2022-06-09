@@ -340,7 +340,7 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     writeToBootOut("ERROR: invalid io_username value in secrets.json!\n");
     while (1) {
-      statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       yield();
     }
   }
@@ -397,7 +397,7 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINTLN("ERROR: invalid network_ssid value in secrets.json!");
     writeToBootOut("ERROR: invalid network_ssid value in secrets.json!\n");
     while (1) {
-      statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       yield();
     }
   }
@@ -492,7 +492,7 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt() {
   while (1) {
-    statusLEDBlink(WS_LED_STATUS_FS_WRITE, true);
+    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }
