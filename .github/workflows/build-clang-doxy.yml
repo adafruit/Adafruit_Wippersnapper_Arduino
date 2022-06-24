@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-esp32sx:
-    name: Build WipperSnapper ESP32-Sx/Cx
+    name: Build WipperSnapper ESP32-Sx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -22,7 +22,7 @@ jobs:
                            "feather_esp32s2_tft",
                            "feather_esp32s3", "feather_esp32s3_4mbflash_2mbpsram",
                            "feather_esp32s3_tft",
-                           "qtpy_esp32s3", "qtpy_esp32s2", "qtpy_esp32c3"]
+                           "qtpy_esp32s3", "qtpy_esp32s2"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -42,7 +42,7 @@ jobs:
     - name: Install extra Arduino libraries
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
-    - name: Build for ESP32-Sx/Cx
+    - name: Build for ESP32-Sx
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --no_warn
     - name: list
       run : |
@@ -62,12 +62,12 @@ jobs:
 
 
   build-esp32:
-    name: Build WipperSnapper ESP32
+    name: Build WipperSnapper ESP32, ESP32-C3
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["feather_esp32", "feather_esp32_v2", "qtpy_esp32"]
+        arduino-platform: ["feather_esp32", "feather_esp32_v2", "qtpy_esp32", "qtpy_esp32c3"]
     steps:
     - uses: actions/setup-python@v1
       with:
