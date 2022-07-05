@@ -62,12 +62,12 @@ jobs:
 
 
   build-esp32:
-    name: Build WipperSnapper ESP32
+    name: Build WipperSnapper ESP32, ESP32-C3
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["feather_esp32", "feather_esp32_v2", "qtpy_esp32"]
+        arduino-platform: ["feather_esp32", "feather_esp32_v2", "qtpy_esp32", "qtpy_esp32c3"]
     steps:
     - uses: actions/setup-python@v1
       with:
