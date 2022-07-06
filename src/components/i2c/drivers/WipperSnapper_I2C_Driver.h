@@ -38,7 +38,7 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress) {
     _i2c = i2c;
-    _sensorAddress;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -104,10 +104,12 @@ public:
         enableSensorObjectTemp();
         setSensorObjectTempPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
         enableSensorLight();
         setSensorLightPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       default:
         break;
       }

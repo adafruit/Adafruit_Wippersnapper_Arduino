@@ -47,7 +47,7 @@ public:
       @brief    Destructor for an SCD30 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_SCD30() { delete _scd30; }
+  ~WipperSnapper_I2C_Driver_SCD30() { _scd30 = nullptr; }
 
   /*******************************************************************************/
   /*!
