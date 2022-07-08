@@ -35,7 +35,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
