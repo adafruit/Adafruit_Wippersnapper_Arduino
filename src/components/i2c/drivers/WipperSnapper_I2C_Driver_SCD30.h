@@ -42,7 +42,6 @@ public:
     _sensorAddress = sensorAddress;
   }
 
-
   /*******************************************************************************/
   /*!
       @brief    Initializes the SCD30 sensor and begins I2C.

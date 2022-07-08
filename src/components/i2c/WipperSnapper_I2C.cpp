@@ -365,7 +365,7 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
   for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
     if ((*iter)->getI2CAddress() == deviceAddr) {
       // Delete the object that iter points to
-      //delete *iter;
+      // delete *iter;
       *iter = nullptr;
 // ESP-IDF, Erase–remove iter ptr from driver vector
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
