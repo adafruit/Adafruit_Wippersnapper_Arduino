@@ -404,7 +404,7 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // error check if SSID is the from templated json
-  if (WS._network_ssid == "YOUR_WIFI_SSID_HERE") {
+  if (strcmp(WS._network_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
     writeToBootOut(
         "* ERROR: Default SSID found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
@@ -447,7 +447,7 @@ void Wippersnapper_FS::parseSecrets() {
     fsHalt();
   }
   // error check if wifi password is from template
-  if (WS._network_pass == "YOUR_WIFI_PASS_HERE") {
+  if (strcmp(WS._network_pass, "YOUR_WIFI_PASS_HERE") == 0) {
     writeToBootOut("Default SSID found in secrets.json, please edit "
                    "the secrets.json file and reset the board\n");
     fsHalt();
