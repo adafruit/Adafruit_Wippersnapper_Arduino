@@ -5,7 +5,7 @@ Adafruit.io allows you to monitor, interact with, and share your project's data 
 
 Adafruit.io WipperSnapper is the firmware designed to turn any Wi-Fi capable board into an Internet-of-Things (IoT) device. No code required!
 
-WipperSnapper works with multiple microcontroller architectures such as ESP8266, ESP32, ESP32-S2, and ATSAMD51.
+WipperSnapper works with multiple microcontroller architectures such as ESP8266, ESP32, ESP32-S2, ESP32-C3, and ATSAMD51.
 
 You will need a **free** [Adafruit IO](https://io.adafruit.com) account to use WipperSnapper.
 
@@ -24,6 +24,7 @@ The following microcontrollers are supported by Adafruit WipperSnapper:
 * Espressif ESP32
 * Espressif ESP32-S2
 * Espressif ESP32-S3
+* Espressif ESP32-C3
 * Microchip ATSAMD51 + [AirLift WiFi Co-Processor](https://www.adafruit.com/?q=airlift+wifi&sort=BestMatch)
 
 ## Contributing to Adafruit.io and WipperSnapper
