@@ -35,7 +35,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -43,7 +43,7 @@ jobs:
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
     - name: Build for ESP32-Sx
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --no_warn
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: list
       run: |
             ls

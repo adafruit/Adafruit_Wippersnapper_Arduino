@@ -180,6 +180,7 @@ void Wippersnapper::set_ssid_pass() {
     @brief    Configures the device's Adafruit IO credentials. This method
               should be used only if filesystem-backed provisioning is
               not avaliable.
+*/
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
