@@ -396,7 +396,7 @@ jobs:
 
   clang_and_doxy:
     runs-on: ubuntu-latest
-    needs: [build-samd, build-esp32, build-esp32c3, build-esp32sx, build-esp8266, build-samd-non-fs]
+    needs: [build-samd, build-esp32-4M, build-esp32-8M, build-esp32c3, build-esp32sx, build-esp8266, build-samd-non-fs]
     steps:
     - uses: actions/setup-python@v1
       with:
