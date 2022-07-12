@@ -282,7 +282,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _tsl2591->configureDriver(msgDeviceInitReq);
     drivers.push_back(_tsl2591);
     WS_DEBUG_PRINTLN("TSL2591 Initialized Successfully!");
-  }  else if (strcmp("scd40", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("scd40", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd40 = new WipperSnapper_I2C_Driver_SCD40(this->_i2c, i2cAddress);
     if (!_scd40->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD40!");
