@@ -67,6 +67,10 @@ jobs:
       fail-fast: false
       matrix:
         arduino-platform: ["feather_esp32", "qtpy_esp32", "feather_esp32_v2", "qtpy_esp32c3"]
+        include:
+          - offset: 0x1000
+          - offset: 0x0
+            arduino-platform: "qtpy_esp32c3"
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -114,10 +118,6 @@ jobs:
     - name: boot_app0 file from esp32 source bsp
       if: steps.check_files.outputs.files_exists == 'false'
       run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
-    - name: Define Bootloader Offsets
-      id: bootloader_offsets
-      run: |
-        echo "::set-output name=offsetJson::{\"esp32c3\": \"0x0\", \"ESP32\": \"0x1000\" }"
     - name: Get Board Flash Parameters
       id: get_board_json
       run: |
@@ -134,8 +134,7 @@ jobs:
             --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
-            ${{ fromJson(steps.bootloader_offsets.outputs.offsetJson).${{ fromJson(steps.get_board_json.outputs.boardJson).mcuName }} }} \
-            wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
+            ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
             0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
