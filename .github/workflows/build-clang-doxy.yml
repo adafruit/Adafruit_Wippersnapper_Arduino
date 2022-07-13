@@ -103,21 +103,21 @@ jobs:
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
-
     - name: Check boot_app0 file existence (esp32 built from core, not-source)
       id: check_files
       uses: andstor/file-existence-action@v1
       with:
         files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
-
     - name: boot_app0 file from arduino-cli core
       if: steps.check_files.outputs.files_exists == 'true'
       run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
-
     - name: boot_app0 file from esp32 source bsp
       if: steps.check_files.outputs.files_exists == 'false'
       run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
-
+    - name: Define Bootloader Offsets
+      id: bootloader_offsets
+      run: |
+        echo "::set-output name=offsetJson::{\"esp32c3\": \"0x0\", \"ESP32\": \"0x1000\" }"
     - name: Get Board Flash Parameters
       id: get_board_json
       run: |
@@ -127,7 +127,6 @@ jobs:
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
           echo "::set-output name=boardJson::$content"
-
     - name: Create combined binary using Esptool merge_bin
       run: |
           python3 -m esptool --chip esp32 merge_bin \
@@ -135,11 +134,11 @@ jobs:
             --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
-            0x1000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
+            ${{ fromJson(steps.bootloader_offsets.outputs.offsetJson).${{ fromJson(steps.get_board_json.outputs.boardJson).mcuName }} }} \
+            wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
             0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
-
     - name: Zip build artifacts
       run: |
             zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
