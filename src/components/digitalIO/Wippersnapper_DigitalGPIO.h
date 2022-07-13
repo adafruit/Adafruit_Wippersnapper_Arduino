@@ -24,6 +24,7 @@ struct digitalInputPin {
   long period;     ///< Timer interval, in millis, -1 if disabled.
   long prvPeriod;  ///< When timer was previously serviced, in millis
   int prvPinVal;   ///< Previous pin value
+  bool isPullUp;   ///< True if the pin has a pull-up resistor enabled
 };
 
 // forward decl.

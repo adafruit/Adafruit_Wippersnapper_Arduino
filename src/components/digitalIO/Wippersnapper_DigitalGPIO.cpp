@@ -33,6 +33,7 @@ Wippersnapper_DigitalGPIO::Wippersnapper_DigitalGPIO(
     _digital_input_pins[i].period = -1;
     _digital_input_pins[i].prvPeriod = 0L;
     _digital_input_pins[i].prvPinVal = 0;
+    _digital_input_pins[i].isPullUp = false;
   }
 }
 
@@ -62,9 +63,9 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
     uint8_t pinName, float period,
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pull) {
+  bool hasPullup = false;
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_OUTPUT) {
-
 #ifdef STATUS_LED_PIN
     // deinit status led, use it as a dio component instead
     if (pinName == STATUS_LED_PIN)
@@ -82,6 +83,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     if (pull == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
       WS_DEBUG_PRINTLN("with internal pull-up enabled");
       pinMode(pinName, INPUT_PULLUP);
+      hasPullup = true;
     } else {
       pinMode(pinName, INPUT);
       WS_DEBUG_PRINT("\n");
@@ -97,6 +99,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
       if (_digital_input_pins[i].period == -1L) {
         _digital_input_pins[i].pinName = pinName;
         _digital_input_pins[i].period = periodMs;
+        _digital_input_pins[i].isPullUp = hasPullup;
         break;
       }
     }
@@ -154,8 +157,18 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 */
 /********************************************************************/
 int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
-  // Service using arduino `digitalRead`
+  char cstr[16];
+  bool pullPin = false;
+  for (int i = 0; i < _totalDigitalInputPins; i++) {
+    if (_digital_input_pins[i].pinName == pinName) {
+      pullPin = _digital_input_pins[i].isPullUp;
+      break;
+    }
+  }
+  itoa(pinName, cstr, 10);
   int pinVal = digitalRead(pinName);
+  if (pullPin == true)
+    pinVal = !pinVal; // invert for pull-up
   return pinVal;
 }
 
