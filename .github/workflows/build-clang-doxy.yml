@@ -68,8 +68,8 @@ jobs:
       matrix:
         arduino-platform: ["feather_esp32", "qtpy_esp32", "feather_esp32_v2", "qtpy_esp32c3"]
         include:
-          - offset: 0x1000
-          - offset: 0x0
+          - offset: "0x1000"
+          - offset: "0x0"
             arduino-platform: "qtpy_esp32c3"
     steps:
     - uses: actions/setup-python@v1
