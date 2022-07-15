@@ -26,8 +26,8 @@
 #include "drivers/WipperSnapper_I2C_Driver_MCP9601.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
-#include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD40.h"
+#include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
 
 #define I2C_TIMEOUT_MS 50 ///< Default I2C timeout, in milliseconds.
 
