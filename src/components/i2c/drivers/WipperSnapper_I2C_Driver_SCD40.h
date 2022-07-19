@@ -81,14 +81,9 @@ public:
     float temperature;
     float humidity;
     uint16_t error;
-    bool isDataReady = false;
-    error = _scd->getDataReadyFlag(isDataReady);
-    if (_tempSensorPeriod != 0 && error || !isDataReady) {
-      return false;
-    }
 
     error = _scd->readMeasurement(co2, temperature, humidity);
-    if (error || co2 == 0) {
+    if (_tempSensorPeriod != 0 && error || co2 == 0) {
       return false;
     }
 
@@ -111,14 +106,9 @@ public:
     float temperature;
     float humidity;
     uint16_t error;
-    bool isDataReady = false;
-    error = _scd->getDataReadyFlag(isDataReady);
-    if (_humidSensorPeriod != 0 && error || !isDataReady) {
-      return false;
-    }
 
     error = _scd->readMeasurement(co2, temperature, humidity);
-    if (error || co2 == 0) {
+    if (_humidSensorPeriod != 0 && error || co2 == 0) {
       return false;
     }
 
@@ -141,15 +131,12 @@ public:
     float temperature;
     float humidity;
     uint16_t error;
-    bool isDataReady = false;
-    error = _scd->getDataReadyFlag(isDataReady);
-    if (_CO2SensorPeriod != 0 && error || !isDataReady) {
-      return false;
-    }
+
     error = _scd->readMeasurement(co2, temperature, humidity);
-    if (error || co2 == 0) {
+    if (_CO2SensorPeriod != 0 && error || co2 == 0) {
       return false;
     }
+
     // TODO: This is a TEMPORARY HACK, we need to add CO2 type to
     // adafruit_sensor
     co2Event->data[0] = co2;
