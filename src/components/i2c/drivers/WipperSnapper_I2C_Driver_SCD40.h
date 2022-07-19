@@ -83,7 +83,7 @@ public:
     uint16_t error;
 
     error = _scd->readMeasurement(co2, temperature, humidity);
-    if (_tempSensorPeriod != 0 && error || co2 == 0) {
+    if ((_tempSensorPeriod != 0 && error) || co2 == 0) {
       return false;
     }
 
@@ -108,7 +108,7 @@ public:
     uint16_t error;
 
     error = _scd->readMeasurement(co2, temperature, humidity);
-    if (_humidSensorPeriod != 0 && error || co2 == 0) {
+    if ((_humidSensorPeriod != 0 && error) || co2 == 0) {
       return false;
     }
 
@@ -133,7 +133,7 @@ public:
     uint16_t error;
 
     error = _scd->readMeasurement(co2, temperature, humidity);
-    if (_CO2SensorPeriod != 0 && error || co2 == 0) {
+    if ((_CO2SensorPeriod != 0 && error) || co2 == 0) {
       return false;
     }
 
