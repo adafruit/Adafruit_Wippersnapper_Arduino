@@ -293,6 +293,10 @@ public:
                                    to a broker. */
   char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
+  char *_topic_signal_servo_brkr = NULL; /*!< Topic carries messages from a device
+                                   to a broker. */
+  char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
+                                     broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -301,6 +305,9 @@ public:
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
+
+  // servo message
+  wippersnapper_signal_v1_ServoRequest msgServo = wippersnapper_signal_v1_ServoRequest_init_zero;
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -347,6 +354,9 @@ protected:
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
+
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

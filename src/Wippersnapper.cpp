@@ -782,6 +782,41 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 
 /**************************************************************************/
 /*!
+    @brief    Called when the device recieves a new message from the
+              /servo/ topic.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbServoMsg(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Servo]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Zero-out existing servo message
+  WS.msgServo = wippersnapper_signal_v1_ServoRequest_init_zero; 
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  // WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
+  // TODO ^
+
+  // Decode servo message from buffer
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_ServoRequest_fields,
+                 &WS.msgServo))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode servo message");
+}
+
+/**************************************************************************/
+/*!
     @brief    Called when i2c signal sub-topic receives a new message and
               attempts to decode a signal request message.
     @param    data
@@ -1125,17 +1160,27 @@ bool Wippersnapper::buildWSTopics() {
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
-  // Topic for i2c signals from device to broker
+  // Topic for i2c signals from broker to device
   WS._topic_signal_i2c_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
       strlen(TOPIC_I2C) + 1);
 
-  // Topic for i2c signals from broker to device
+  // Topic for i2c signals from device to broker
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
+
+  // Topic for servo messages from broker->device
+  WS._topic_signal_servo_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/servo") + 1);
+
+  // Topic for servo messages from device->broker
+  WS._topic_signal_servo_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/servo") + 1);
 
   // Create global registration topic
   if (WS._topic_description != NULL) {
@@ -1228,6 +1273,28 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Create device-to-broker servo signal topic
+  if (WS._topic_signal_i2c_device != NULL) {
+    strcpy(WS._topic_signal_i2c_device, WS._username);
+    strcat(WS._topic_signal_i2c_device, TOPIC_WS);
+    strcat(WS._topic_signal_i2c_device, _device_uid);
+    strcat(WS._topic_signal_i2c_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_i2c_device, "broker/servo");
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Create broker-to-device i2c signal topic
+  if (WS._topic_signal_i2c_device != NULL) {
+    strcpy(WS._topic_signal_i2c_device, WS._username);
+    strcat(WS._topic_signal_i2c_device, TOPIC_WS);
+    strcat(WS._topic_signal_i2c_device, _device_uid);
+    strcat(WS._topic_signal_i2c_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_i2c_device, "device/servo");
+  } else { // malloc failed
+    is_success = false;
+  }
+
   return is_success;
 }
 
@@ -1248,6 +1315,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
+
+  // Subscribe to servo sub-topic
+  _topic_signal_servo_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_servo_sub);
+  _topic_signal_servo_sub->setCallback(cbServoMsg);
 
   // Subscribe to registration status topic
   _topic_description_sub =
