@@ -1,0 +1,36 @@
+Adafruit.\+io allows you to monitor, interact with, and share your project\textquotesingle{}s data in minutes.
+
+Adafruit.\+io Wipper\+Snapper is the firmware designed to turn any Wi-\/\+Fi capable board into an Internet-\/of-\/\+Things (IoT) device. No code required!
+
+Wipper\+Snapper works with multiple microcontroller architectures such as ESP8266, ESP32, ESP32-\/\+S2, ESP32-\/\+C3, and ATSAMD51.
+
+You will need a {\bfseries{free}} \href{https://io.adafruit.com}{\texttt{ Adafruit IO}} account to use Wipper\+Snapper.
+
+{\bfseries{This software is in beta}} and is actively being developed. Please report bugs via the \href{https://io.adafruit.com/support}{\texttt{ Adafruit IO Support Page}}.\hypertarget{md__r_e_a_d_m_e_autotoc_md1}{}\doxysection{Get Started}\label{md__r_e_a_d_m_e_autotoc_md1}
+\href{https://learn.adafruit.com/quickstart-adafruit-io-wippersnapper}{\texttt{ Learn how to install and use Wipper\+Snapper by following this guide on the Adafruit Learning System -\/ Quick\+Start\+: Adafruit IO Wipper\+Snapper}}.\hypertarget{md__r_e_a_d_m_e_autotoc_md2}{}\doxysubsection{Get Wipper\+Snapper}\label{md__r_e_a_d_m_e_autotoc_md2}
+Pre-\/compiled binaries and UF2 files for supported hardware are provided on the \href{https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/releases}{\texttt{ releases page}} of this repository.\hypertarget{md__r_e_a_d_m_e_autotoc_md3}{}\doxysubsection{Supported Hardware}\label{md__r_e_a_d_m_e_autotoc_md3}
+The following microcontrollers are supported by Adafruit Wipper\+Snapper\+:
+\begin{DoxyItemize}
+\item Espressif ESP8266
+\item Espressif ESP32
+\item Espressif ESP32-\/\+S2
+\item Espressif ESP32-\/\+S3
+\item Espressif ESP32-\/\+C3
+\item Microchip ATSAMD51 + \href{https://www.adafruit.com/?q=airlift+wifi&sort=BestMatch}{\texttt{ Air\+Lift Wi\+Fi Co-\/\+Processor}}
+\end{DoxyItemize}\hypertarget{md__r_e_a_d_m_e_autotoc_md4}{}\doxysubsection{Contributing to Adafruit.\+io and Wipper\+Snapper}\label{md__r_e_a_d_m_e_autotoc_md4}
+If you have a sensor, input, or output you\textquotesingle{}d like to add Adafruit IO support for it -\/ \href{https://learn.adafruit.com/how-to-add-a-new-component-to-adafruit-io-wippersnapper}{\texttt{ we have a guide for contributing a new sensor to Adafruit.\+io and Wipper\+Snapper here}}.
+
+If you have a Wi\+Fi-\/enabled development board with a compatible microcontroller (see\+: \char`\"{}\+Supported Hardware\char`\"{} section above) and would like to add Adafruit IO support for it -\/ \href{https://learn.adafruit.com/how-to-add-a-new-board-to-wippersnapper}{\texttt{ we have a guide for adding a new board to Adafruit.\+io and Wipper\+Snapper here}}.\hypertarget{md__r_e_a_d_m_e_autotoc_md5}{}\doxysubsection{Building Wipper\+Snapper with Arduino}\label{md__r_e_a_d_m_e_autotoc_md5}
+If you would like to build and develop Wipper\+Snapper locally, \href{https://learn.adafruit.com/how-to-add-a-new-board-to-wippersnapper/build-wippersnapper}{\texttt{ we suggest following the steps presented on the guide on this page}}.\hypertarget{md__r_e_a_d_m_e_autotoc_md6}{}\doxysubsection{(\+BETA) Building Wipper\+Snapper with Platform\+IO}\label{md__r_e_a_d_m_e_autotoc_md6}
+We support building and locally testing Wipper\+Snapper with the Platform IO IDE for Visual Studio Code. These instructions are subject to modification.\hypertarget{md__r_e_a_d_m_e_autotoc_md7}{}\doxysubsubsection{Platform IO Build Instructions}\label{md__r_e_a_d_m_e_autotoc_md7}
+
+\begin{DoxyItemize}
+\item Download and install \href{https://code.visualstudio.com}{\texttt{ Microsoft Visual Studio Code}}, Platform\+IO IDE is built on top of it
+\item Follow the instructions on \href{https://platformio.org/install/ide?install=vscode}{\texttt{ platformio\textquotesingle{}s website to install the Platform IO IDE extension}}.
+\item \href{https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository}{\texttt{ Make a local clone}} of the \href{https://github.com/adafruit/Adafruit_Wippersnapper_Arduino}{\texttt{ Adafruit Wipper\+Snapper Arduino repository}} on your computer.
+\item In {\ttfamily platformio.\+ini} file in the root of this repository, find the board you\textquotesingle{}d like to build Wipper\+Snapper for. Change its {\ttfamily upload\+\_\+port} and {\ttfamily monitor\+\_\+port} to match your system.
+\item The {\ttfamily platformio.\+ini} file in the root of this repository includes multiple environments to build Wipper\+Snapper for different boards. In the \href{https://docs.platformio.org/en/stable//integration/ide/vscode.html\#platformio-toolbar}{\texttt{ Platform IO toolbar}}, use the Project environment switcher to switch to the board you\textquotesingle{}d like to upload to.
+\item Open the {\ttfamily examples/\+Wippersnapper\+\_\+demo/\+Wippersnapper\+\_\+demo.\+ino} file.
+\item On the \href{https://docs.platformio.org/en/stable//integration/ide/vscode.html\#platformio-toolbar}{\texttt{ Platform IO toolbar}}, click the build (checkmark) button. If there are no build errors, click the upload (right arrow) button.
+\item Wipper\+Snapper should be uploaded to your board. You may use the Platform\+IO Serial Monitor to view Wipper\+Snapper\textquotesingle{}s debug output. 
+\end{DoxyItemize}
