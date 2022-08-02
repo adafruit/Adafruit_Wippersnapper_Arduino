@@ -923,6 +923,91 @@ public:
     return false;
   }
 
+  /**************************** SENSOR_TYPE: PROXIMITY
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's proximity sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorProximity(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's object light sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorProximity() { _proximitySensorPeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the proximity sensor's
+     period, if set.
+      @returns  Time when the roximity sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorProximityPeriod() { return _proximitySensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the proximity sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+                proximity sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorProximityPeriod(float period) {
+    if (period == 0)
+      disableSensorProximity();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _proximitySensorPeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the proximity sensor was queried last.
+      @returns  Time when the proximity sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long SensorProximityPeriodPrv() { return _proximitySensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the proximity sensor
+                was queried.
+      @param    period
+                The time when the proximity sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorProximityPeriodPrv(long period) {
+    _proximitySensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a proximity sensor and
+                converts the reading into the expected SI unit.
+      @param    proximityEvent
+                Proximity sensor reading, in millimeters.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventProximity(sensors_event_t *proximityEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a proximity sensor.
+      @param    period
+                The time interval at which to return new data from the
+                proimity sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorProximity(float period) { setSensorProximityPeriod(period); }
+
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -990,6 +1075,10 @@ protected:
                                      ///< gas resistance sensor's value.
   long _gasResistancePeriodPrv = 0L; ///< The time when the gas resistance
                                      ///< sensor was last read.
+  long _proximitySensorPeriod = 0L;     ///< The time period between reading the
+                                        ///< proximity sensor's value.
+  long _proximitySensorPeriodPrv = 0L;  ///< The time when the proximity sensor
+                                        ///< was last read.                                        
 };
 
 #endif // WipperSnapper_I2C_Driver_H
