@@ -28,6 +28,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD40.h"
 #include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
+#include "drivers/WipperSnapper_I2C_Driver_VL53L0X.h"
 
 #define I2C_TIMEOUT_MS 50 ///< Default I2C timeout, in milliseconds.
 
@@ -80,6 +81,7 @@ private:
   WipperSnapper_I2C_Driver_MCP9601 *_mcp9601 = nullptr;
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
   WipperSnapper_I2C_Driver_SCD40 *_scd40 = nullptr;
+  WipperSnapper_I2C_Driver_VL53L0X *_vl53l0x = nullptr;
 };
 extern Wippersnapper WS;
 
