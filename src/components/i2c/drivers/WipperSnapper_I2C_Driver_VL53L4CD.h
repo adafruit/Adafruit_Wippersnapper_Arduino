@@ -36,6 +36,18 @@ public:
     delete _vl53l4cd;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes the VL53L4CD sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _vl53l4cd = new VL53L4CD();
+    bool isInit = _vl53l4cd->begin((uint8_t)_sensorAddress, _i2c);
+    return isInit;
+  }
+
   bool getEventProximity(sensors_event_t *proximityEvent) {
     proximityEvent->proximity = _vl53l4cd->VL53L4CD_StartRanging();
     return true;
