@@ -40,6 +40,11 @@
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 
+// ESP32-Specific Driver(s)
+#ifdef ARDUINO_ARCH_ESP32
+#include "components/ledc/WipperSnapper_LEDC.h"
+#endif
+
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
