@@ -51,6 +51,10 @@ Wippersnapper::Wippersnapper() {
   _throttle_topic = 0;
   _err_sub = 0;
   _throttle_sub = 0;
+
+#ifdef ARDUINO_ARCH_ESP32
+  WS._ledc = new WipperSnapper_Component_LEDC();
+#endif
 };
 
 /**************************************************************************/
@@ -780,6 +784,42 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
   return is_success;
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a servo message and dispatches to the servo component.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
+                      void **arg) {
+  bool is_success = true;
+  WS_DEBUG_PRINTLN("Decoding Servo Message...");
+
+  if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_attach_tag) {
+    // TODO: This needs a servo_response_tag to be published back to the broker!
+
+    // Attempt to decode contents of servo_attach message
+    wippersnapper_servo_v1_ServoAttachReq msgServoAttachReq =
+        wippersnapper_servo_v1_ServoAttachReq_init_zero;
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachReq_fields,
+                   &msgServoAttachReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachReq");
+      return false; // fail out if we can't decode the request
+    }
+
+    // TODO!
+  }
+
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief    Called when the device recieves a new message from the
@@ -801,12 +841,12 @@ void cbServoMsg(char *data, uint16_t len) {
   WS.bufSize = len;
 
   // Zero-out existing servo message
-  WS.msgServo = wippersnapper_signal_v1_ServoRequest_init_zero; 
+  wippersnapper_signal_v1_ServoRequest msgServo =
+      wippersnapper_signal_v1_ServoRequest_init_zero;
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
-  // WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
-  // TODO ^
+  WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
 
   // Decode servo message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);

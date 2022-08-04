@@ -167,6 +167,10 @@ class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
 
+#ifdef ARDUINO_ARCH_ESP32
+class WipperSnapper_Component_LEDC;
+#endif
+
 /**************************************************************************/
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
@@ -296,10 +300,10 @@ public:
   char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
   char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
                                    to a broker. */
-  char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
-                                     broker to a device. */
-  char *_topic_signal_servo_brkr = NULL; /*!< Topic carries messages from a device
-                                   to a broker. */
+  char *_topic_signal_i2c_device = NULL;   /*!< Topic carries messages from a
+                                       broker to a device. */
+  char *_topic_signal_servo_brkr = NULL;   /*!< Topic carries messages from a
+                                     device   to a broker. */
   char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
 
@@ -312,7 +316,7 @@ public:
                                                     ///< message
 
   // servo message
-  wippersnapper_signal_v1_ServoRequest msgServo = wippersnapper_signal_v1_ServoRequest_init_zero;
+  wippersnapper_signal_v1_ServoRequest msgServo;
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -362,7 +366,6 @@ protected:
   Adafruit_MQTT_Subscribe
       *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
 
-
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
   Adafruit_MQTT_Subscribe
@@ -370,8 +373,12 @@ protected:
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
-};
 
+// enable LEDC if esp32
+#ifdef ARDUINO_ARCH_ESP32
+  WipperSnapper_Component_LEDC *_ledc = nullptr;
+#endif
+};
 extern Wippersnapper WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H
