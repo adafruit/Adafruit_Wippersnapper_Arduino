@@ -72,7 +72,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    proximityEvent->proximity = _vl53l0x->readRange();
+    proximityEvent->data[0] = _vl53l0x->readRange();
     return true;
   }
 
