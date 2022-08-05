@@ -1,5 +1,6 @@
 #ifndef WipperSnapper_I2C_Driver_VL53L4CD_H
 #define WipperSnapper_I2C_Driver_VL53L4CD_H
+#define SerialPort Serial
 
 #include "WipperSnapper_I2C_Driver.h"
 #include "vl53l4cd_class.h"
