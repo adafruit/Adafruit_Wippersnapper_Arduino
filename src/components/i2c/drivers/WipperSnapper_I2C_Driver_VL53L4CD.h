@@ -43,13 +43,40 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _vl53l4cd = new VL53L4CD();
-    bool isInit = _vl53l4cd->begin((uint8_t)_sensorAddress, _i2c);
-    return isInit;
+    // Configure VL53L4CD satellite component.
+    _vl53l4cd.begin();
+
+    // Switch off VL53L4CD satellite component.
+    _vl53l4cd.VL53L4CD_Off();
+
+    //Initialize VL53L4CD satellite component.
+    _vl53l4cd.InitSensor();
+
+    // Program the highest possible TimingBudget, without enabling the
+    // low power mode. This should give the best accuracy
+    _vl53l4cd.VL53L4CD_SetRangeTiming(200, 0);
+
+    // Start Measurements
+    _vl53l4cd.VL53L4CD_StartRanging();
   }
 
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    proximityEvent->proximity = _vl53l4cd->VL53L4CD_StartRanging();
+    do {
+      status = _vl53l4cd.VL53L4CD_CheckForDataReady(&NewDataReady);
+    } while (!NewDataReady);
+
+    // (Mandatory) Clear HW interrupt to restart measurements
+    _vl53l4cd.VL53L4CD_ClearInterrupt();
+
+    // Read measured distance. RangeStatus = 0 means valid data
+    _vl53l4cd.VL53L4CD_GetResult(&results);
+    snprintf(report, sizeof(report), "Status = %3u, Distance = %5u mm, Signal = %6u kcps/spad\r\n",
+             results.range_status,
+             results.distance_mm,
+             results.signal_per_spad_kcps);
+    SerialPort.print(report);
+
+    proximityEvent->data[0] = results.distance_mm;
     return true;
   }
 
