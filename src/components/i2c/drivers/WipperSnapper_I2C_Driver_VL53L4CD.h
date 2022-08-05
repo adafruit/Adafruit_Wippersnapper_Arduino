@@ -44,23 +44,28 @@ public:
   /*******************************************************************************/
   bool begin() {
     // Configure VL53L4CD satellite component.
-    _vl53l4cd.begin();
+    _vl53l4cd->begin();
 
     // Switch off VL53L4CD satellite component.
-    _vl53l4cd.VL53L4CD_Off();
+    _vl53l4cd->VL53L4CD_Off();
 
     //Initialize VL53L4CD satellite component.
-    _vl53l4cd.InitSensor();
+    _vl53l4cd->InitSensor();
 
     // Program the highest possible TimingBudget, without enabling the
     // low power mode. This should give the best accuracy
-    _vl53l4cd.VL53L4CD_SetRangeTiming(200, 0);
+    _vl53l4cd->VL53L4CD_SetRangeTiming(200, 0);
 
     // Start Measurements
-    _vl53l4cd.VL53L4CD_StartRanging();
+    _vl53l4cd->VL53L4CD_StartRanging();
   }
 
   bool getEventProximity(sensors_event_t *proximityEvent) {
+    uint8_t NewDataReady = 0;
+    VL53L4CD_Result_t results;
+    uint8_t status;
+    char report[64];
+    
     do {
       status = _vl53l4cd.VL53L4CD_CheckForDataReady(&NewDataReady);
     } while (!NewDataReady);
