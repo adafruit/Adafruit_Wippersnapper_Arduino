@@ -1,4 +1,24 @@
-#include "WipperSnapper_LEDC.h"
+/*!
+ * @file ws_ledc.cpp
+ *
+ * This is the documentation for WipperSnapper's LEDC peripheral
+ * management API. It is used by drivers like ledc_servo.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * @section author Author
+ *
+ * Written by Brent Rubell for Adafruit Industries, 2022.
+ *
+ * @section license License
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
+ */
+
+#include "ws_ledc.h"
 
 WipperSnapper_Component_LEDC::WipperSnapper_Component_LEDC() {
   // reset active pins
@@ -32,7 +52,7 @@ uint8_t WipperSnapper_Component_LEDC::attachPin(uint8_t pin, double freq) {
   }
 
   // allocate chanel
-  uint8_t chanNum = allocateChannel(freq);
+  uint8_t chanNum = _allocateChannel(freq);
   if (chanNum == 255)
     return chanNum;
 
@@ -75,7 +95,6 @@ void WipperSnapper_Component_LEDC::detachPin(uint8_t pin) {
   }
 }
 
-// Possibly make these private since never accessed by ifaces, TODO
 /**************************************************************************/
 /*!
     @brief  Allocates a channel and timer.
@@ -84,7 +103,7 @@ void WipperSnapper_Component_LEDC::detachPin(uint8_t pin) {
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t WipperSnapper_Component_LEDC::allocateChannel(double freq) {
+uint8_t WipperSnapper_Component_LEDC::_allocateChannel(double freq) {
   // attempt to allocate an inactive channel
   uint8_t chanNum = 255;
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
@@ -127,6 +146,7 @@ void WipperSnapper_Component_LEDC::setDuty(uint8_t pin, uint32_t duty) {
     }
   }
   // set the channel's duty cycle
+  // debug...
   // Serial.print("Writing duty cycle: ");
   // Serial.print(duty);
   // Serial.print("(%) to channel#: ");

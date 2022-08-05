@@ -42,7 +42,8 @@
 
 // ESP32-Specific Driver(s)
 #ifdef ARDUINO_ARCH_ESP32
-#include "components/ledc/WipperSnapper_LEDC.h"
+#include "components/ledc/drivers/ws_ledc_servo.h"
+#include "components/ledc/ws_ledc.h"
 #endif
 
 // External libraries
@@ -324,6 +325,11 @@ public:
 
   bool pinCfgCompleted = false; /*!< Did initial pin sync complete? */
 
+// enable LEDC if esp32
+#ifdef ARDUINO_ARCH_ESP32
+  WipperSnapper_Component_LEDC *_ledc = nullptr;
+#endif
+
 private:
   void _init();
 
@@ -373,11 +379,6 @@ protected:
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
-
-// enable LEDC if esp32
-#ifdef ARDUINO_ARCH_ESP32
-  WipperSnapper_Component_LEDC *_ledc = nullptr;
-#endif
 };
 extern Wippersnapper WS; ///< Global member variable for callbacks
 

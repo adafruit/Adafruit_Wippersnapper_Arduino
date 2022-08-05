@@ -1,0 +1,1 @@
+These files are drivers that interface directly with WipperSnapper's ESP32 LEDC peripheral manager, `ws_ledc`.

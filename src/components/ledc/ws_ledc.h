@@ -1,5 +1,5 @@
 /*!
- * @file WipperSnapper_LEDC.h
+ * @file ws_ledc.h
  *
  * High-level interface for ESP32's LED Control (LEDC) peripheral,
  * to be used by PWM and Servo drivers.
@@ -34,7 +34,6 @@ typedef struct {
   bool isActive; // True if the ledcPin's timer has been initialized
 } ledcPin_t;
 
-
 // forward decl.
 class Wippersnapper;
 
@@ -49,16 +48,16 @@ class Wippersnapper;
 */
 /**************************************************************************/
 class WipperSnapper_Component_LEDC {
-  public:
-    WipperSnapper_Component_LEDC();
-    ~WipperSnapper_Component_LEDC();
-    uint8_t attachPin(uint8_t pin, double freq); // high-level
-    void detachPin(uint8_t pin); // high-level
-    // Possibly make these private since never accessed by ifaces, TODO
-    uint8_t allocateChannel(double freq);
-    void setDuty(uint8_t pin, uint32_t duty);
-  private:
-    ledcPin_t _ledcPins[MAX_LEDC_PWMS]; ///< Pool of usable LEDC pins
+public:
+  WipperSnapper_Component_LEDC();
+  ~WipperSnapper_Component_LEDC();
+  uint8_t attachPin(uint8_t pin, double freq); // high-level
+  void detachPin(uint8_t pin);                 // high-level
+  void setDuty(uint8_t pin, uint32_t duty);
+
+private:
+  uint8_t _allocateChannel(double freq);
+  ledcPin_t _ledcPins[MAX_LEDC_PWMS]; ///< Pool of usable LEDC pins
 };
 extern Wippersnapper WS;
 
