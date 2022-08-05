@@ -43,8 +43,9 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    // Configure VL53L4CD satellite component.
-    _vl53l4cd->begin();
+    // Initialize serial for output.
+    SerialPort.begin(115200);
+    SerialPort.println("Starting...");
 
     // Switch off VL53L4CD satellite component.
     _vl53l4cd->VL53L4CD_Off();
@@ -58,6 +59,8 @@ public:
 
     // Start Measurements
     _vl53l4cd->VL53L4CD_StartRanging();
+
+    return true;
   }
 
   bool getEventProximity(sensors_event_t *proximityEvent) {
@@ -65,16 +68,17 @@ public:
     VL53L4CD_Result_t results;
     uint8_t status;
     char report[64];
-    
+
     do {
-      status = _vl53l4cd.VL53L4CD_CheckForDataReady(&NewDataReady);
+      status = _vl53l4cd->VL53L4CD_CheckForDataReady(&NewDataReady);
+      return false;
     } while (!NewDataReady);
 
     // (Mandatory) Clear HW interrupt to restart measurements
-    _vl53l4cd.VL53L4CD_ClearInterrupt();
+    _vl53l4cd->VL53L4CD_ClearInterrupt();
 
     // Read measured distance. RangeStatus = 0 means valid data
-    _vl53l4cd.VL53L4CD_GetResult(&results);
+    _vl53l4cd->VL53L4CD_GetResult(&results);
     snprintf(report, sizeof(report), "Status = %3u, Distance = %5u mm, Signal = %6u kcps/spad\r\n",
              results.range_status,
              results.distance_mm,
