@@ -77,10 +77,10 @@ public:
 
     if ((!status) && (NewDataReady != 0)) {
       // (Mandatory) Clear HW interrupt to restart measurements
-      sensor_vl53l4cd_sat.VL53L4CD_ClearInterrupt();
+      sensor_vl53l4cd_sat->VL53L4CD_ClearInterrupt();
 
       // Read measured distance. RangeStatus = 0 means valid data
-      sensor_vl53l4cd_sat.VL53L4CD_GetResult(&results);
+      sensor_vl53l4cd_sat->VL53L4CD_GetResult(&results);
       snprintf(report, sizeof(report), "Status = %3u, Distance = %5u mm, Signal = %6u kcps/spad\r\n",
               results.range_status,
               results.distance_mm,
