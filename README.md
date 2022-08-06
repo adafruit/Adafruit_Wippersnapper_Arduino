@@ -1,4 +1,4 @@
-# Adafruit IO - WipperSnapper Beta ![Build CI](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/actions/workflows/build-clang-doxy.yml/badge.svg)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_Wippersnapper_Arduino/html/index.html)
+# Adafruit IO - WipperSnapper Beta [![Build Status](https://travis-ci.com/afp316/Adafruit_TSL2561.svg?branch=master)](https://travis-ci.com/afp316/Adafruit_TSL2561)
 
 
 Adafruit.io allows you to monitor, interact with, and share your project's data in minutes.
