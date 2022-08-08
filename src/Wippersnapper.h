@@ -43,8 +43,10 @@
 // ESP32-Specific Driver(s)
 #ifdef ARDUINO_ARCH_ESP32
 #include "components/ledc/ws_ledc.h"
-#include "components/ledc/drivers/ws_ledc_servo.h"
+// #include "components/ledc/drivers/ws_ledc_servo.h"
 #endif
+
+#include "components/servo/ws_servo.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -172,6 +174,8 @@ class WipperSnapper_Component_I2C;
 class WipperSnapper_Component_LEDC;
 #endif
 
+class ws_servo;
+
 /**************************************************************************/
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
@@ -277,6 +281,7 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
+  ws_servo *_servoComponent;
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */

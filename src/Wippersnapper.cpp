@@ -1712,9 +1712,16 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // Register components
+  WS_DEBUG_PRINTLN("Registering components...");
   #ifdef ARDUINO_ARCH_ESP32
+  WS_DEBUG_PRINT("LEDC: ");
   WS._ledc = new WipperSnapper_Component_LEDC();
+  WS_DEBUG_PRINTLN("OK!");
   #endif
+
+  WS_DEBUG_PRINT("SERVO: ");
+  WS._servoComponent = new ws_servo();
+  WS_DEBUG_PRINTLN("OK!");
 
   // goto application
   statusLEDFade(GREEN, 3);
