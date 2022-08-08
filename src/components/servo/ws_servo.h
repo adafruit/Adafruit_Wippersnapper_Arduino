@@ -17,12 +17,15 @@
 #ifndef WS_SERVO
 #define WS_SERVO
 
+#include "Wippersnapper.h"
+
 #if defined(ARDUINO_ARCH_ESP32)
 #include "components/ledc/drivers/ws_ledc_servo.h"
 #else
 #include <Servo.h>
 #endif
 
+class Wippersnapper;
 class ws_ledc_servo;
 
 #if defined(ARDUINO_ARCH_ESP32)
@@ -57,5 +60,6 @@ private:
   servoComponent _servos[MAX_SERVO_NUM]; ///< Container of servo objects and
                                          ///< their associated pin #s
 };
+extern Wippersnapper WS;
 
 #endif // WS_SERVO

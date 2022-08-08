@@ -45,6 +45,7 @@ ws_servo::~ws_servo() {
   } */
 }
 
+
 /**************************************************************************/
 /*!
     @brief    Attaches a servo object to a pin.
@@ -58,9 +59,9 @@ ws_servo::~ws_servo() {
 /**************************************************************************/
 bool ws_servo::servo_attach(int pin, int minPulseWidth,
                                       int maxPulseWidth, int freq) {
+  ws_ledc_servo *servo = new ws_ledc_servo();
+  servo->setLEDCDriver(WS._ledc);
 /*   // ESP32-specific
-  ws_esp32_servo *servo = new ws_esp32_servo();
-  servo->setLEDCDriver(&ledcMgr);
 
   // generalized
   uint16_t rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
