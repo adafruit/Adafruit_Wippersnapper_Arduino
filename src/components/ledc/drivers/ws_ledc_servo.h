@@ -18,7 +18,7 @@
 #ifndef WS_ESP32_SERVO
 #define WS_ESP32_SERVO
 
-#include "Wippersnapper.h"
+#include "components/ledc/ws_ledc.h"
 
 // from https://github.com/arduino-libraries/Servo/blob/master/src/Servo.h
 #define MIN_PULSE_WIDTH 544  ///< The shortest pulse sent to a servo
@@ -39,6 +39,8 @@ typedef struct {
   ServoPin_t Pin; ///< Servo properties
 } servo_t;
 
+class WipperSnapper_Component_LEDC;
+
 /************************************************************************************************/
 /*!
     @brief  High-level driver for servos for ESP32/ESP32-Sx/ESP32-Cx. This
@@ -57,11 +59,10 @@ public:
   bool attached();
   void detach();
   void writeMicroseconds(int value);
-
 private:
   servo_t _servo;     ///< ws_ledc_servo object
   int _minPulseWidth; ///< Servo's minimum pulse width, in uS.
   int _maxPulseWidth; ///< Servo's maximum pulse width, in uS.
+  WipperSnapper_Component_LEDC *_ledcMgr;
 };
-extern Wippersnapper WS;
 #endif // WS_ESP32_SERVO

@@ -54,7 +54,6 @@ public:
   uint8_t attachPin(uint8_t pin, double freq); // high-level
   void detachPin(uint8_t pin);                 // high-level
   void setDuty(uint8_t pin, uint32_t duty);
-
 private:
   uint8_t _allocateChannel(double freq);
   ledcPin_t _ledcPins[MAX_LEDC_PWMS]; ///< Pool of usable LEDC pins
