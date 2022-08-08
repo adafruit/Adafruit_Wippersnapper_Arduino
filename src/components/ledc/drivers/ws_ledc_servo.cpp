@@ -40,6 +40,10 @@ ws_ledc_servo::~ws_ledc_servo() {
   detach(); // detach the active pin
 }
 
+void ws_ledc_servo::setLEDCDriver(WipperSnapper_Component_LEDC *ledcManager) {
+    _ledcMgr = ledcManager;
+}
+
 /**************************************************************************/
 /*!
     @brief    Attaches a servo object to a pin.
@@ -53,7 +57,7 @@ ws_ledc_servo::~ws_ledc_servo() {
 uint8_t ws_ledc_servo::attach(int pin, int minPulseWidth, int maxPulseWidth,
                               int servoFreq) {
   // Attempt to attach a pin to ledc channel
-  uint8_t chan = WS._ledc->attachPin((uint8_t)pin, (double)servoFreq);
+  uint8_t chan = _ledcMgr->attachPin((uint8_t)pin, (double)servoFreq);
   if (chan == 255) // error!
     return chan;
   // configure the servo object and assign it to a pin
@@ -71,7 +75,7 @@ uint8_t ws_ledc_servo::attach(int pin, int minPulseWidth, int maxPulseWidth,
 */
 /**************************************************************************/
 void ws_ledc_servo::detach() {
-  WS._ledc->detachPin(_servo.Pin.nbr);
+  _ledcMgr->detachPin(_servo.Pin.nbr);
   _servo.Pin.isActive = false;
 }
 
@@ -108,5 +112,5 @@ void ws_ledc_servo::writeMicroseconds(int value) {
   // 50Hz servo =  20ms pulse_period
   // count = pulse_high_width /((20000/65536))
   uint32_t count = ((double)value / 0.30517578);
-  WS._ledc->setDuty(_servo.Pin.nbr, count);
+  _ledcMgr->setDuty(_servo.Pin.nbr, count);
 }

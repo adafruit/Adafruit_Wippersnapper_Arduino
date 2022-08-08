@@ -53,6 +53,7 @@ class ws_ledc_servo {
 public:
   ws_ledc_servo();
   ~ws_ledc_servo();
+  void setLEDCDriver(WipperSnapper_Component_LEDC *ledcManager);
   // The functions below are compatible with
   // https://github.com/arduino-libraries/Servo/blob/master/src/Servo.h
   uint8_t attach(int pin, int minPulseWidth, int maxPulseWidth, int servoFreq);
