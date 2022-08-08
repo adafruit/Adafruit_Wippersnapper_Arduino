@@ -52,9 +52,6 @@ Wippersnapper::Wippersnapper() {
   _err_sub = 0;
   _throttle_sub = 0;
 
-#ifdef ARDUINO_ARCH_ESP32
-  WS._ledc = new WipperSnapper_Component_LEDC();
-#endif
 };
 
 /**************************************************************************/
@@ -1713,9 +1710,14 @@ void Wippersnapper::connect() {
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
-  statusLEDFade(GREEN, 3);
 
-  // Run application
+  // Register components
+  #ifdef ARDUINO_ARCH_ESP32
+  WS._ledc = new WipperSnapper_Component_LEDC();
+  #endif
+
+  // goto application
+  statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
 }
