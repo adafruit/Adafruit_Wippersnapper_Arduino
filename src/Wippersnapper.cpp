@@ -799,8 +799,8 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
   WS_DEBUG_PRINTLN("Decoding Servo Message...");
 
   if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_attach_tag) {
+    WS_DEBUG_PRINTLN("GOT: Servo Attach");
     // TODO: This needs a servo_response_tag to be published back to the broker!
-
     // Attempt to decode contents of servo_attach message
     wippersnapper_servo_v1_ServoAttachReq msgServoAttachReq =
         wippersnapper_servo_v1_ServoAttachReq_init_zero;
@@ -817,8 +817,16 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
         WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
         attached = false;
     }
-
     // TODO: Pack and send servo attach msg response!
+  } else if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_write_tag) {
+    WS_DEBUG_PRINTLN("GOT: Servo Write");
+    // TODO: perform servo write
+  } else if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_detach_tag) {
+    WS_DEBUG_PRINTLN("GOT: Servo Detach");
+    // TODO: perform servo detach
+  } else {
+    WS_DEBUG_PRINTLN("Unable to decode servo message type!");
+    return false;
   }
 
   return true;

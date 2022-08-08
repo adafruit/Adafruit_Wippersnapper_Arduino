@@ -60,6 +60,7 @@ public:
   bool attached();
   void detach();
   void writeMicroseconds(int value);
+
 private:
   servo_t _servo;     ///< ws_ledc_servo object
   int _minPulseWidth; ///< Servo's minimum pulse width, in uS.

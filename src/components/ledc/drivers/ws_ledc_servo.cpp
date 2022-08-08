@@ -41,7 +41,7 @@ ws_ledc_servo::~ws_ledc_servo() {
 }
 
 void ws_ledc_servo::setLEDCDriver(WipperSnapper_Component_LEDC *ledcManager) {
-    _ledcMgr = ledcManager;
+  _ledcMgr = ledcManager;
 }
 
 /**************************************************************************/

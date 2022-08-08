@@ -19,17 +19,16 @@
  */
 #include "ws_servo.h"
 
-
 /**************************************************************************/
 /*!
     @brief  Constructor
 */
 /**************************************************************************/
 ws_servo::ws_servo() {
-/*   for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    _servos[i].pin = 255;
-    _servos[i].servoObj = nullptr;
-  } */
+  /*   for (int i = 0; i < MAX_SERVO_NUM; i++) {
+      _servos[i].pin = 255;
+      _servos[i].servoObj = nullptr;
+    } */
 }
 
 /**************************************************************************/
@@ -38,13 +37,12 @@ ws_servo::ws_servo() {
 */
 /**************************************************************************/
 ws_servo::~ws_servo() {
-/*   for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    // de-allocate servo pins, if attached
-    if (_servos[i].servoObj->attached())
-      _servos[i].servoObj->detach();
-  } */
+  /*   for (int i = 0; i < MAX_SERVO_NUM; i++) {
+      // de-allocate servo pins, if attached
+      if (_servos[i].servoObj->attached())
+        _servos[i].servoObj->detach();
+    } */
 }
-
 
 /**************************************************************************/
 /*!
@@ -57,12 +55,11 @@ ws_servo::~ws_servo() {
               False otherwise
 */
 /**************************************************************************/
-bool ws_servo::servo_attach(int pin, int minPulseWidth,
-                                      int maxPulseWidth, int freq) {
+bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
+                            int freq) {
   // ESP32-specific
   ws_ledc_servo *servo = new ws_ledc_servo();
   servo->setLEDCDriver(WS._ledc);
-   
 
   // generalized
   uint16_t rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
