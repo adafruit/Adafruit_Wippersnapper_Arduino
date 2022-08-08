@@ -810,8 +810,15 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
           "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachReq");
       return false; // fail out if we can't decode the request
     }
+    // execute servo attach request
+    char *pinName = msgServoAttachReq.servo_pin + 1;
+    bool attached = true;
+    if (! WS._servoComponent->servo_attach(atoi(pinName), msgServoAttachReq.min_pulse_width, msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
+        attached = false;
+    }
 
-    // TODO!
+    // TODO: Pack and send servo attach msg response!
   }
 
   return true;
