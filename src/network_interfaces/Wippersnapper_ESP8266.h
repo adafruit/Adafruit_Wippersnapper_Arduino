@@ -24,11 +24,20 @@
 #include "ESP8266WiFi.h"
 #include "Wippersnapper.h"
 
-static const char *fingerprint PROGMEM =
-    "59 3C 48 0A B1 8B 39 4E 0D 58 50 47 9A 13 55 60 CC A0 1D AF";
-static const char *fingerprint_staging PROGMEM =
-    "A0 A4 61 E0 D6 F8 94 FF FA C1 F2 DC 09 23 72 E1 "
-    "CC 23 CD 64"; ///< AIO Staging SSL Fingerprint
+/* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
+ * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
+ * important  - please switch to using the modern ESP32 (and related models)
+ * instead of the ESP8266 to avoid updating the SSL fingerprint every year.
+ *
+ * If you've read through this and still want to use "Secure MQTT" with your
+ * ESP8266 project, we've left the "WiFiClientSecure" lines commented out. To
+ * use them, uncomment the commented out lines within this file and re-compile
+ * the library.
+ */
+// static const char *fingerprint PROGMEM = "59 3C 48 0A B1 8B 39 4E 0D 58 50 47
+// 9A 13 55 60 CC A0 1D AF"; static const char *fingerprint_staging PROGMEM =
+// "A0 A4 61 E0 D6 F8 94 FF FA C1 F2 DC 09 23 72 E1 CC 23 CD 64"; ///< AIO
+// Staging SSL Fingerprint
 
 extern Wippersnapper WS;
 
@@ -57,7 +66,7 @@ public:
   Wippersnapper_ESP8266() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
-    _wifi_client = new WiFiClientSecure;
+    _wifi_client = new WiFiClient;
   }
 
   /**************************************************************************/
@@ -118,11 +127,14 @@ public:
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
     _mqttBrokerURL = "io.adafruit.com";
-    _wifi_client->setFingerprint(fingerprint);
 
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_wifi_client, _mqttBrokerURL, _mqtt_port,
-                                 clientID, WS._username, WS._key);
+    // Uncomment the following lines to use MQTT/SSL. You will need to
+    // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
+    // new Adafruit_MQTT_Client(_wifi_client, _mqttBrokerURL, _mqtt_port,
+    // clientID, WS._username, WS._key);
+
+    WS._mqtt = new Adafruit_MQTT_Client(_wifi_client, _mqttBrokerURL, 1883,
+                                        clientID, WS._username, WS._key);
   }
 
   /********************************************************/
@@ -156,7 +168,7 @@ protected:
   const char *_ssid = NULL;
   const char *_pass = NULL;
   const char *_mqttBrokerURL = NULL;
-  WiFiClientSecure *_wifi_client;
+  WiFiClient *_wifi_client;
 
   /**************************************************************************/
   /*!
