@@ -25,10 +25,10 @@
 */
 /**************************************************************************/
 ws_servo::ws_servo() {
-  /*   for (int i = 0; i < MAX_SERVO_NUM; i++) {
-      _servos[i].pin = 255;
-      _servos[i].servoObj = nullptr;
-    } */
+  for (int i = 0; i < MAX_SERVO_NUM; i++) {
+    _servos[i].pin = 255;
+    _servos[i].servoObj = nullptr;
+  }
 }
 
 /**************************************************************************/
@@ -37,11 +37,11 @@ ws_servo::ws_servo() {
 */
 /**************************************************************************/
 ws_servo::~ws_servo() {
-  /*   for (int i = 0; i < MAX_SERVO_NUM; i++) {
-      // de-allocate servo pins, if attached
-      if (_servos[i].servoObj->attached())
-        _servos[i].servoObj->detach();
-    } */
+  for (int i = 0; i < MAX_SERVO_NUM; i++) {
+    // de-allocate servo pins, if attached
+    if (_servos[i].servoObj->attached())
+      _servos[i].servoObj->detach();
+  }
 }
 
 /**************************************************************************/
@@ -90,4 +90,20 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
   // call attach pin
   _servos[servoIdx].servoObj->attach(pin, minPulseWidth, maxPulseWidth, freq);
   return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Detaches a servo from a pin, frees a servo object to a pin.
+    @param    pin  Desired GPIO pin.
+*/
+/**************************************************************************/
+void ws_servo::servo_detach(int pin) {
+  for (int i = 0; i < MAX_SERVO_NUM; i++) {
+    if (_servos[i].pin == pin) {
+      _servos[i].pin = 255;
+      _servos[i].servoObj->detach();
+      return;
+    }
+  }
 }

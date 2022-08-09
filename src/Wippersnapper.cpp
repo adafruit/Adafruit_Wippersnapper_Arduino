@@ -51,7 +51,6 @@ Wippersnapper::Wippersnapper() {
   _throttle_topic = 0;
   _err_sub = 0;
   _throttle_sub = 0;
-
 };
 
 /**************************************************************************/
@@ -800,7 +799,6 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
 
   if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_attach_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Attach");
-    // TODO: This needs a servo_response_tag to be published back to the broker!
     // Attempt to decode contents of servo_attach message
     wippersnapper_servo_v1_ServoAttachReq msgServoAttachReq =
         wippersnapper_servo_v1_ServoAttachReq_init_zero;
@@ -811,37 +809,60 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
       return false; // fail out if we can't decode the request
     }
     // execute servo attach request
-    char *pinName = msgServoAttachReq.servo_pin + 1;
+    char *servoPin = msgServoAttachReq.servo_pin + 1;
     bool attached = true;
-    if (! WS._servoComponent->servo_attach(atoi(pinName), msgServoAttachReq.min_pulse_width, msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
-        attached = false;
+    if (!WS._servoComponent->servo_attach(
+            atoi(servoPin), msgServoAttachReq.min_pulse_width,
+            msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
+      attached = false;
     }
 
     // Create and fill a servo response message
     size_t msgSz; // message's encoded size
-    wippersnapper_signal_v1_ServoResp msgServoResp = wippersnapper_signal_v1_ServoResp_init_zero;
-    msgServoResp.which_payload = wippersnapper_signal_v1_ServoResp_servo_attach_resp_tag;
+    wippersnapper_signal_v1_ServoResp msgServoResp =
+        wippersnapper_signal_v1_ServoResp_init_zero;
+    msgServoResp.which_payload =
+        wippersnapper_signal_v1_ServoResp_servo_attach_resp_tag;
     msgServoResp.payload.servo_attach_resp.attach_success = attached;
 
     // Encode and publish response back to broker
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-    if (!pb_encode(&ostream, wippersnapper_signal_v1_ServoResp_fields, &msgServoResp)) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to encode servo response message!");
-        return false;
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                  sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_ServoResp_fields,
+                   &msgServoResp)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode servo response message!");
+      return false;
     }
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResp_fields, &msgServoResp);
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResp_fields,
+                        &msgServoResp);
     WS_DEBUG_PRINT("-> Servo Attach Response...");
-    WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz, 1);
+    WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
+                      1);
     WS_DEBUG_PRINTLN("Published!");
     return true;
-  } else if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_write_tag) {
+  } else if (field->tag ==
+             wippersnapper_signal_v1_ServoRequest_servo_write_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Write");
     // TODO: perform servo write
-  } else if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_detach_tag) {
+  } else if (field->tag ==
+             wippersnapper_signal_v1_ServoRequest_servo_detach_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Detach");
-    // TODO: perform servo detach
+
+    // Attempt to decode contents of servo detach message
+    wippersnapper_servo_v1_ServoDetachReq msgServoDetachReq =
+        wippersnapper_servo_v1_ServoDetachReq_init_zero;
+
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoDetachReq_fields,
+                   &msgServoDetachReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoDetachReq");
+      return false; // fail out if we can't decode the request
+    }
+    // execute servo detach request
+    char *servoPin = msgServoDetachReq.servo_pin + 1;
+    WS._servoComponent->servo_detach(atoi(servoPin));
   } else {
     WS_DEBUG_PRINTLN("Unable to decode servo message type!");
     return false;
@@ -1746,11 +1767,11 @@ void Wippersnapper::connect() {
 
   // Register components
   WS_DEBUG_PRINTLN("Registering components...");
-  #ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_ESP32
   WS_DEBUG_PRINT("LEDC: ");
   WS._ledc = new WipperSnapper_Component_LEDC();
   WS_DEBUG_PRINTLN("OK!");
-  #endif
+#endif
 
   WS_DEBUG_PRINT("SERVO: ");
   WS._servoComponent = new ws_servo();
