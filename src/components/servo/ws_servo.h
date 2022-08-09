@@ -54,8 +54,7 @@ public:
   // TODO: pin, min, max all get replaced by protobuf decoded values
   bool servo_attach(int pin, int minPulseWidth, int maxPulseWidth, int freq);
   void servo_detach(int pin);
-  // void servo_write(int pin, int value);
-
+  void servo_write(int pin, int value);
 private:
   servoComponent _servos[MAX_SERVO_NUM]; ///< Container of servo objects and
                                          ///< their associated pin #s

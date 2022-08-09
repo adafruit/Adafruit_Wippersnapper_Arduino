@@ -107,3 +107,18 @@ void ws_servo::servo_detach(int pin) {
     }
   }
 }
+
+/**************************************************************************/
+/*!
+    @brief    Writes a pulse width to a servo pin.
+    @param    pin    Desired GPIO pin.
+    @param    value  Desired pulse width, in uS.
+*/
+/**************************************************************************/
+void ws_servo::servo_write(int pin, int value) {
+  for (int i = 0; i < MAX_SERVO_NUM; i++) {
+    if (_servos[i].pin == pin) {
+      _servos[i].servoObj->writeMicroseconds(value);
+      return;
+    }
+  }
