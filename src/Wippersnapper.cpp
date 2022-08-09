@@ -817,7 +817,25 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
         WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
         attached = false;
     }
-    // TODO: Pack and send servo attach msg response!
+
+    // Create and fill a servo response message
+    size_t msgSz; // message's encoded size
+    wippersnapper_signal_v1_ServoResp msgServoResp = wippersnapper_signal_v1_ServoResp_init_zero;
+    msgServoResp.which_payload = wippersnapper_signal_v1_ServoResp_servo_attach_resp_tag;
+    msgServoResp.payload.servo_attach_resp.attach_success = attached;
+
+    // Encode and publish response back to broker
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_ServoResp_fields, msgServoResp)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode servo response message!");
+        return false;
+    }
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResp_fields, msgServoResp);
+    WS_DEBUG_PRINT("-> Servo Attach Response...");
+    WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz, 1);
+    WS_DEBUG_PRINTLN("Published!");
+    return true;
   } else if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_write_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Write");
     // TODO: perform servo write
