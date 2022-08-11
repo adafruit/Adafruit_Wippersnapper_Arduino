@@ -322,7 +322,7 @@ public:
                                                     ///< message
 
   // servo message
-  wippersnapper_signal_v1_ServoRequest msgServo;
+  wippersnapper_signal_v1_ServoRequest msgServo; ///< ServoRequest wrapper message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in

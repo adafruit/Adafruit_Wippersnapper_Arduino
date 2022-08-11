@@ -8,15 +8,12 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * @section author Author
- *
  * Written by Brent Rubell for Adafruit Industries, 2022.
  *
  * writeMicroseconds calculation from ESP32Servo
  * https://github.com/madhephaestus/ESP32Servo/blob/master/src/ESP32Servo.cpp
  * Copyright (c) 2017 John K. Bennett.
  *
- * @section license License
  *
  * GNU Lesser General Public License, all text here must be included in any
  * redistribution.

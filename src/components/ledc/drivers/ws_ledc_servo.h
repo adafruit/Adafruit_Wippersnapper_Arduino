@@ -1,5 +1,5 @@
 /*!
- * @file ws_esp32_ledc.h
+ * @file ws_ledc_servo.h
  *
  * Driver for ESP32 servo control using the WipperSnapper
  * LEDC peripheral manager API.

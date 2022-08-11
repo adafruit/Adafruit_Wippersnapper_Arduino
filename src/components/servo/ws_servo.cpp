@@ -1,5 +1,5 @@
 /*!
- * @file ws_component_servo.cpp
+ * @file ws_servo.cpp
  *
  * High-level servo manager interface for WipperSnapper.
  *
@@ -7,12 +7,8 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * @section author Author
  *
  * Written by Brent Rubell for Adafruit Industries, 2022.
- *
- *
- * @section license License
  *
  * MIT license, all text here must be included in any redistribution.
  *

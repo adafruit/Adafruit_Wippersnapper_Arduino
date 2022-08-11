@@ -29,9 +29,9 @@
 
 /** Defines a pin attached to an active LEDC timer group */
 typedef struct {
-  uint8_t pin;   // GPIO pin number
-  uint8_t chan;  // Channel allocated to the pin
-  bool isActive; // True if the ledcPin's timer has been initialized
+  uint8_t pin;   ///< GPIO pin number
+  uint8_t chan;  ///< Channel allocated to the pin
+  bool isActive; ///< True if the ledcPin's timer has been initialized
 } ledcPin_t;
 
 // forward decl.

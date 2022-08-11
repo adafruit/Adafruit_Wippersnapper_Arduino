@@ -1,5 +1,5 @@
 /*!
- * @file ws_component_servo.h
+ * @file ws_servo.h
  *
  * High-level interface for wippersnapper to manage servo objects
  *
