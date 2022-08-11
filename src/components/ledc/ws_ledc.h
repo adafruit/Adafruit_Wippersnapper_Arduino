@@ -51,8 +51,8 @@ class WipperSnapper_Component_LEDC {
 public:
   WipperSnapper_Component_LEDC();
   ~WipperSnapper_Component_LEDC();
-  uint8_t attachPin(uint8_t pin, double freq); // high-level
-  void detachPin(uint8_t pin);                 // high-level
+  uint8_t attachPin(uint8_t pin, double freq);
+  void detachPin(uint8_t pin);
   void setDuty(uint8_t pin, uint32_t duty);
 
 private:

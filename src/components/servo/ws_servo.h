@@ -29,11 +29,13 @@
 
 #if defined(ARDUINO_ARCH_ESP32)
 class ws_ledc_servo;
+/** Servo object for ESP32-servo implementation */
 struct servoComponent {
   ws_ledc_servo *servoObj; ///< Servo object
   uint8_t pin;             ///< Servo's pin number
 };
 #else
+/** Servo object for Generic servo implementation */
 struct servoComponent {
   Servo *servoObj; ///< Servo object
   uint8_t pin;     ///< Servo's pin number
@@ -51,7 +53,6 @@ class ws_servo {
 public:
   ws_servo();
   ~ws_servo();
-  // TODO: pin, min, max all get replaced by protobuf decoded values
   bool servo_attach(int pin, int minPulseWidth, int maxPulseWidth, int freq);
   void servo_detach(int pin);
   void servo_write(int pin, int value);

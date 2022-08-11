@@ -281,7 +281,7 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_servo *_servoComponent;
+  ws_servo *_servoComponent; ///< Instance of servo class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -322,7 +322,8 @@ public:
                                                     ///< message
 
   // servo message
-  wippersnapper_signal_v1_ServoRequest msgServo; ///< ServoRequest wrapper message
+  wippersnapper_signal_v1_ServoRequest
+      msgServo; ///< ServoRequest wrapper message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in

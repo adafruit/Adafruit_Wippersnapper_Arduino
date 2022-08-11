@@ -38,6 +38,12 @@ ws_ledc_servo::~ws_ledc_servo() {
   detach(); // detach the active pin
 }
 
+/**************************************************************************/
+/*!
+    @brief  Sets a LEDC driver for use with servo objects.
+    @param  ledcManager  Pointer to LEDC driver.
+*/
+/**************************************************************************/
 void ws_ledc_servo::setLEDCDriver(WipperSnapper_Component_LEDC *ledcManager) {
   _ledcMgr = ledcManager;
 }
