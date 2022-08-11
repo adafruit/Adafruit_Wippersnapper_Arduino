@@ -57,9 +57,14 @@ ws_servo::~ws_servo() {
 /**************************************************************************/
 bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
                             int freq) {
-  // ESP32-specific
+  #ifdef ARDUINO_ARCH_ESP32
+  // ESP32/x specific implementation
   ws_ledc_servo *servo = new ws_ledc_servo();
   servo->setLEDCDriver(WS._ledc);
+  #else
+  // generic Servo.h
+  Servo *servo = new Servo();
+  #endif
 
   // generalized
   uint16_t rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
@@ -122,3 +127,4 @@ void ws_servo::servo_write(int pin, int value) {
       return;
     }
   }
+}

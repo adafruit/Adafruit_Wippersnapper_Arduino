@@ -794,9 +794,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
 /******************************************************************************************/
 bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
                       void **arg) {
-  bool is_success = true;
   WS_DEBUG_PRINTLN("Decoding Servo Message...");
-
   if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_attach_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Attach");
     // Attempt to decode contents of servo_attach message
@@ -841,7 +839,6 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");
-    return true;
   } else if (field->tag ==
              wippersnapper_signal_v1_ServoRequest_servo_write_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Write");
@@ -865,13 +862,13 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     // Attempt to decode contents of servo detach message
     wippersnapper_servo_v1_ServoDetachReq msgServoDetachReq =
         wippersnapper_servo_v1_ServoDetachReq_init_zero;
-
     if (!pb_decode(stream, wippersnapper_servo_v1_ServoDetachReq_fields,
                    &msgServoDetachReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoDetachReq");
       return false; // fail out if we can't decode the request
     }
+
     // execute servo detach request
     char *servoPin = msgServoDetachReq.servo_pin + 1;
     WS._servoComponent->servo_detach(atoi(servoPin));
@@ -903,8 +900,8 @@ void cbServoMsg(char *data, uint16_t len) {
   WS.bufSize = len;
 
   // Zero-out existing servo message
-  wippersnapper_signal_v1_ServoRequest msgServo =
-      wippersnapper_signal_v1_ServoRequest_init_zero;
+  // wippersnapper_signal_v1_ServoRequest msgServo =
+  // wippersnapper_signal_v1_ServoRequest_init_zero;
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known

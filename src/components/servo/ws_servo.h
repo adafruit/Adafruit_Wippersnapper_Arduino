@@ -25,10 +25,10 @@
 #include <Servo.h>
 #endif
 
-class Wippersnapper;
-class ws_ledc_servo;
+#define MAX_SERVO_NUM 16 ///< Maximum # of servo objects
 
 #if defined(ARDUINO_ARCH_ESP32)
+class ws_ledc_servo;
 struct servoComponent {
   ws_ledc_servo *servoObj; ///< Servo object
   uint8_t pin;             ///< Servo's pin number
@@ -40,7 +40,7 @@ struct servoComponent {
 };
 #endif
 
-#define MAX_SERVO_NUM 16 ///< Maximum # of servo objects
+class Wippersnapper;
 
 /**************************************************************************/
 /*!
