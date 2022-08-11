@@ -20,9 +20,10 @@
 
 // Use LEDC for ESP32 arch so we can PWM
 #ifdef ARDUINO_ARCH_ESP32
-#define LEDC_CHANNEL_0 0      ///< use first channel of 16 channels (started from zero)
+#define LEDC_CHANNEL_0                                                         \
+  0 ///< use first channel of 16 channels (started from zero)
 #define LEDC_TIMER_12_BIT 12 ///< use 12 bit precision for LEDC timer
-#define LEDC_BASE_FREQ 5000 ///< use 5000Hz as a LEDC base frequency
+#define LEDC_BASE_FREQ 5000  ///< use 5000Hz as a LEDC base frequency
 #endif
 
 #define STATUS_LED_KAT_BLINK_TIME                                              \
