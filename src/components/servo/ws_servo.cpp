@@ -97,8 +97,6 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
   _servos[servoIdx].servoObj = servo;
   _servos[servoIdx].pin = pin;
 
-  // call attach pin
-  _servos[servoIdx].servoObj->attach(pin, minPulseWidth, maxPulseWidth, freq);
   return true;
 }
 
