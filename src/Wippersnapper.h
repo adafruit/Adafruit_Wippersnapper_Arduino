@@ -333,7 +333,7 @@ public:
 
 // enable LEDC if esp32
 #ifdef ARDUINO_ARCH_ESP32
-  ws_ledc *_ledc = nullptr;
+  ws_ledc *_ledc = nullptr; ///< Pointer to LEDC object
 #endif
 
 private:

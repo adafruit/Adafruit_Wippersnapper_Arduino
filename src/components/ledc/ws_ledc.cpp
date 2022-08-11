@@ -131,7 +131,7 @@ uint8_t ws_ledc::_allocateChannel(double freq) {
 /*!
     @brief  Sets the duty cycle of a pin
     @param  pin  Desired GPIO pin to write to.
-    @param  freq Desired duty cycle.
+    @param  duty  Desired duty cycle.
 */
 /**************************************************************************/
 void ws_ledc::setDuty(uint8_t pin, uint32_t duty) {

@@ -54,6 +54,7 @@ void ws_ledc_servo::setLEDCDriver(ws_ledc *ledcManager) {
     @param    pin  Desired GPIO pin.
     @param    minPulseWidth  Minimum pulsewidth, in uS.
     @param    maxPulseWidth  Maximum pulsewidth, in uS.
+    @param    servoFreq      Desired servo frequency, in Hz.
     @returns  Channel number if a servo is successfully attached to a pin,
               otherwise 255.
 */
