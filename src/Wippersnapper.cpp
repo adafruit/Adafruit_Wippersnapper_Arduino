@@ -844,7 +844,8 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("GOT: Servo Write");
 
     // Attempt to decode contents of servo write message
-    wippersnapper_servo_v1_ServoWriteReq msgServoWriteReq = wippersnapper_servo_v1_ServoWriteReq_init_zero;
+    wippersnapper_servo_v1_ServoWriteReq msgServoWriteReq =
+        wippersnapper_servo_v1_ServoWriteReq_init_zero;
 
     if (!pb_decode(stream, wippersnapper_servo_v1_ServoWriteReq_fields,
                    &msgServoWriteReq)) {
@@ -854,7 +855,8 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     }
     // execute servo write request
     char *servoPin = msgServoWriteReq.servo_pin + 1;
-    WS._servoComponent->servo_write(atoi(servoPin), (int)msgServoWriteReq.pulse_width);
+    WS._servoComponent->servo_write(atoi(servoPin),
+                                    (int)msgServoWriteReq.pulse_width);
   } else if (field->tag ==
              wippersnapper_signal_v1_ServoRequest_servo_detach_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Detach");

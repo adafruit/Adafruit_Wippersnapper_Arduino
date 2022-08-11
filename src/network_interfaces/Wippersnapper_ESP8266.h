@@ -18,10 +18,10 @@
 #define WIPPERSNAPPER_ESP8266_H
 
 #ifdef ARDUINO_ARCH_ESP8266
-#include "Wippersnapper.h"
-#include "ESP8266WiFi.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
+#include "ESP8266WiFi.h"
+#include "Wippersnapper.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is

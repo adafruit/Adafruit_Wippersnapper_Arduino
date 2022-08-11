@@ -155,4 +155,4 @@ void WipperSnapper_Component_LEDC::setDuty(uint8_t pin, uint32_t duty) {
   ledcWrite(chan, duty);
 }
 
-#endif //ARDUINO_ARCH_ESP32
+#endif // ARDUINO_ARCH_ESP32

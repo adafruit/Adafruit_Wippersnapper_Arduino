@@ -115,4 +115,4 @@ void ws_ledc_servo::writeMicroseconds(int value) {
   uint32_t count = ((double)value / 0.30517578);
   _ledcMgr->setDuty(_servo.Pin.nbr, count);
 }
-#endif //ARDUINO_FEATHER_ESP32
+#endif // ARDUINO_FEATHER_ESP32
