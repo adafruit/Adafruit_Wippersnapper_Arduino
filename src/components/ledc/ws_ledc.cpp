@@ -137,12 +137,8 @@ void WipperSnapper_Component_LEDC::setDuty(uint8_t pin, uint32_t duty) {
       break;
     }
   }
+
   // set the channel's duty cycle
-  // debug...
-  // Serial.print("Writing duty cycle: ");
-  // Serial.print(duty);
-  // Serial.print("(%) to channel#: ");
-  // Serial.println(chan);
   ledcWrite(chan, duty);
 }
 
