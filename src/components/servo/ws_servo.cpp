@@ -66,13 +66,12 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
   Servo *servo = new Servo();
 #endif
 
-  
   uint16_t rc = 255;
-  #ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_ESP32
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
-  #else
+#else
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth);
-  #endif
+#endif
   if (rc == 255)
     return false; // allocation or pin error
 
