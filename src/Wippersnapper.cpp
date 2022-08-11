@@ -901,10 +901,6 @@ void cbServoMsg(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
-  // Zero-out existing servo message
-  // wippersnapper_signal_v1_ServoRequest msgServo =
-  // wippersnapper_signal_v1_ServoRequest_init_zero;
-
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
   WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
