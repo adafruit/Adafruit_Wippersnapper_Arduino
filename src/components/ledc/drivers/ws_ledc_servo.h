@@ -39,7 +39,7 @@ typedef struct {
   ServoPin_t Pin; ///< Servo properties
 } servo_t;
 
-class WipperSnapper_Component_LEDC;
+class ws_ledc;
 
 /************************************************************************************************/
 /*!
@@ -53,7 +53,7 @@ class ws_ledc_servo {
 public:
   ws_ledc_servo();
   ~ws_ledc_servo();
-  void setLEDCDriver(WipperSnapper_Component_LEDC *ledcManager);
+  void setLEDCDriver(ws_ledc *ledcManager);
   // The functions below are compatible with
   // https://github.com/arduino-libraries/Servo/blob/master/src/Servo.h
   uint8_t attach(int pin, int minPulseWidth, int maxPulseWidth, int servoFreq);
@@ -65,6 +65,6 @@ private:
   servo_t _servo;     ///< ws_ledc_servo object
   int _minPulseWidth; ///< Servo's minimum pulse width, in uS.
   int _maxPulseWidth; ///< Servo's maximum pulse width, in uS.
-  WipperSnapper_Component_LEDC *_ledcMgr;
+  ws_ledc *_ledcMgr;
 };
 #endif // WS_ESP32_SERVO

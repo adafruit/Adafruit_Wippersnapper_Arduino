@@ -13,8 +13,8 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifndef WIPPERSNAPPER_COMPONENT_LEDC_H
-#define WIPPERSNAPPER_COMPONENT_LEDC_H
+#ifndef WS_LEDC_H
+#define WS_LEDC_H
 
 #include "Wippersnapper.h"
 
@@ -47,10 +47,10 @@ class Wippersnapper;
             calls.
 */
 /**************************************************************************/
-class WipperSnapper_Component_LEDC {
+class ws_ledc {
 public:
-  WipperSnapper_Component_LEDC();
-  ~WipperSnapper_Component_LEDC();
+  ws_ledc();
+  ~ws_ledc();
   uint8_t attachPin(uint8_t pin, double freq);
   void detachPin(uint8_t pin);
   void setDuty(uint8_t pin, uint32_t duty);
@@ -61,4 +61,4 @@ private:
 };
 extern Wippersnapper WS;
 
-#endif // WIPPERSNAPPER_COMPONENT_LEDC_H
+#endif // ws_ledc_H

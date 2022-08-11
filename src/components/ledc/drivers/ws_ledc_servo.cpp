@@ -44,7 +44,7 @@ ws_ledc_servo::~ws_ledc_servo() {
     @param  ledcManager  Pointer to LEDC driver.
 */
 /**************************************************************************/
-void ws_ledc_servo::setLEDCDriver(WipperSnapper_Component_LEDC *ledcManager) {
+void ws_ledc_servo::setLEDCDriver(ws_ledc *ledcManager) {
   _ledcMgr = ledcManager;
 }
 

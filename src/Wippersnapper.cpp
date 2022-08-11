@@ -1779,7 +1779,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Registering components...");
 #ifdef ARDUINO_ARCH_ESP32
   WS_DEBUG_PRINT("LEDC: ");
-  WS._ledc = new WipperSnapper_Component_LEDC();
+  WS._ledc = new ws_ledc();
   WS_DEBUG_PRINTLN("OK!");
 #endif
 

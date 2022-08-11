@@ -17,14 +17,24 @@
 
 #include "ws_ledc.h"
 
-WipperSnapper_Component_LEDC::WipperSnapper_Component_LEDC() {
+/**************************************************************************/
+/*!
+    @brief  Constructor
+*/
+/**************************************************************************/
+ws_ledc::ws_ledc() {
   // reset active pins
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
     _ledcPins[i].isActive = false;
   }
 }
 
-WipperSnapper_Component_LEDC::~WipperSnapper_Component_LEDC() {
+/**************************************************************************/
+/*!
+    @brief  Destructor
+*/
+/**************************************************************************/
+ws_ledc::~ws_ledc() {
   // detach all active pins and de-allocate them
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
     detachPin(_ledcPins[i].pin);
@@ -41,7 +51,7 @@ WipperSnapper_Component_LEDC::~WipperSnapper_Component_LEDC() {
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t WipperSnapper_Component_LEDC::attachPin(uint8_t pin, double freq) {
+uint8_t ws_ledc::attachPin(uint8_t pin, double freq) {
   // have we already attached this pin?
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
     if (_ledcPins[i].pin == pin)
@@ -68,7 +78,7 @@ uint8_t WipperSnapper_Component_LEDC::attachPin(uint8_t pin, double freq) {
     @param  pin  Desired GPIO pin number.
 */
 /**************************************************************************/
-void WipperSnapper_Component_LEDC::detachPin(uint8_t pin) {
+void ws_ledc::detachPin(uint8_t pin) {
   // de-allocate the pin and the channel
   for (int i = 0; i < sizeof(_ledcPins); i++) {
     if (_ledcPins[i].pin == pin) {
@@ -91,7 +101,7 @@ void WipperSnapper_Component_LEDC::detachPin(uint8_t pin) {
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t WipperSnapper_Component_LEDC::_allocateChannel(double freq) {
+uint8_t ws_ledc::_allocateChannel(double freq) {
   // attempt to allocate an inactive channel
   uint8_t chanNum = 255;
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
@@ -124,7 +134,7 @@ uint8_t WipperSnapper_Component_LEDC::_allocateChannel(double freq) {
     @param  freq Desired duty cycle.
 */
 /**************************************************************************/
-void WipperSnapper_Component_LEDC::setDuty(uint8_t pin, uint32_t duty) {
+void ws_ledc::setDuty(uint8_t pin, uint32_t duty) {
   // find the channel corresponding to the pin
   uint8_t chan = 0;
   for (int i = 0; i < sizeof(_ledcPins); i++) {

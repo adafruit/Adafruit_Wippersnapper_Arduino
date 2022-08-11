@@ -171,7 +171,7 @@ class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
 
 #ifdef ARDUINO_ARCH_ESP32
-class WipperSnapper_Component_LEDC;
+class ws_ledc;
 #endif
 
 class ws_servo;
@@ -333,7 +333,7 @@ public:
 
 // enable LEDC if esp32
 #ifdef ARDUINO_ARCH_ESP32
-  WipperSnapper_Component_LEDC *_ledc = nullptr;
+  ws_ledc *_ledc = nullptr;
 #endif
 
 private:
