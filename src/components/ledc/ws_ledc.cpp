@@ -73,18 +73,6 @@ uint8_t WipperSnapper_Component_LEDC::attachPin(uint8_t pin, double freq) {
 */
 /**************************************************************************/
 void WipperSnapper_Component_LEDC::detachPin(uint8_t pin) {
-  // find the channel corresponding to the pin
-  uint8_t chan;
-  for (int i = 0; i < sizeof(_ledcPins); i++) {
-    if (_ledcPins[i].pin == pin) {
-      chan = _ledcPins[i].chan;
-      break;
-    }
-  }
-
-  // detach the pin
-  ledcDetachPin(pin);
-
   // de-allocate the pin and the channel
   for (int i = 0; i < sizeof(_ledcPins); i++) {
     if (_ledcPins[i].pin == pin) {
@@ -94,6 +82,9 @@ void WipperSnapper_Component_LEDC::detachPin(uint8_t pin) {
       break;
     }
   }
+
+  // detach the pin
+  ledcDetachPin(pin);
 }
 
 /**************************************************************************/
@@ -139,7 +130,7 @@ uint8_t WipperSnapper_Component_LEDC::_allocateChannel(double freq) {
 /**************************************************************************/
 void WipperSnapper_Component_LEDC::setDuty(uint8_t pin, uint32_t duty) {
   // find the channel corresponding to the pin
-  uint8_t chan;
+  uint8_t chan = 0;
   for (int i = 0; i < sizeof(_ledcPins); i++) {
     if (_ledcPins[i].pin == pin) {
       chan = _ledcPins[i].chan;
