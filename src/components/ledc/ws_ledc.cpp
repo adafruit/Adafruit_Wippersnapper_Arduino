@@ -17,7 +17,7 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#if defined(ARDUINO_FEATHER_ESP32)
+#if defined(ARDUINO_ARCH_ESP32)
 
 #include "ws_ledc.h"
 
