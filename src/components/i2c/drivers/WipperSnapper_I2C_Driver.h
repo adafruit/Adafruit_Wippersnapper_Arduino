@@ -110,6 +110,36 @@ public:
         setSensorLightPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
+        enableSensorPM10_STD();
+        setSensorPM10_STD(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
+        enableSensorPM25_STD();
+        setSensorPM25_STD(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
+        enableSensorPM100_STD();
+        setSensorPM100_STD(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV:
+        enableSensorPM10_ENV();
+        setSensorPM10_ENV(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV:
+        enableSensorPM25_ENV();
+        setSensorPM25_ENV(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV:
+        enableSensorPM100_ENV();
+        setSensorPM100_ENV(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       default:
         break;
       }
