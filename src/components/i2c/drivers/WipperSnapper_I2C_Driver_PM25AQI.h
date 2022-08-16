@@ -50,28 +50,12 @@ public:
   /*******************************************************************************/
   bool begin() {
     _pm25 = new Adafruit_PM25AQI(_i2c);
-    if (!aqi.begin_I2C())
+    // Wait one second for sensor to boot up!
+    delay(1000);
+    // connect over i2c
+    if (!_pm25->begin_I2C())
       return false;
 
-    return true;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the PM25's current CO2 reading.
-      @param    co2Event
-                  Adafruit Sensor event for CO2
-      @returns  True if the sensor value was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  bool getEventCO2(sensors_event_t *co2Event) {
-    // check if sensor is enabled and data is available
-    if (_CO2SensorPeriod != 0 && (!_scd->dataReady()))
-      return false;
-    // TODO: This is a TEMPORARY HACK, we need to add CO2 type to
-    // adafruit_sensor
-    co2Event->data[0] = _scd->CO2;
     return true;
   }
 
