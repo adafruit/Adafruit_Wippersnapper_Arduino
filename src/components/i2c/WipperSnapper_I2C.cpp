@@ -304,6 +304,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sht4x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sht4x);
     WS_DEBUG_PRINTLN("SHT4X Initialized Successfully!");
+  } else if (strcmp("pmsa003i", msgDeviceInitReq->i2c_device_name) == 0) {
+    _pm25 = new WipperSnapper_I2C_Driver_PM25(this->_i2c, i2cAddress);
+    if (!_pm25->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize PM2.5 AQI Sensor!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _pm25->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_pm25);
+    WS_DEBUG_PRINTLN("PM2.5 AQI Sensor Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -358,6 +369,18 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
           drivers[i]->updateSensorLight(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
+          drivers[i]->updateSensorPM10_STD(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
+          drivers[i]->updateSensorPM25_STD(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
+          drivers[i]->updateSensorPM100_STD(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         default:
@@ -652,6 +675,75 @@ void WipperSnapper_Component_I2C::update() {
         (*iter)->setSensorLightPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get light sensor reading!");
+      }
+    }
+
+    // PM10_STD sensor
+    curTime = millis();
+    if ((*iter)->sensorPM10_STDPeriod() != 0L &&
+        curTime - (*iter)->SensorPM10_STDPeriodPrv() >
+            (*iter)->sensorPM10_STDPeriod()) {
+      if ((*iter)->getEventPM10_STD(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tPM1.0: ");
+        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINTLN(" ppm");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD);
+
+        (*iter)->setSensorPM10_STDPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get PM1.0 sensor reading!");
+      }
+    }
+
+    // PM25_STD sensor
+    curTime = millis();
+    if ((*iter)->sensorPM25_STDPeriod() != 0L &&
+        curTime - (*iter)->SensorPM25_STDPeriodPrv() >
+            (*iter)->sensorPM25_STDPeriod()) {
+      if ((*iter)->getEventPM25_STD(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tPM2.5: ");
+        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINTLN(" ppm");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD);
+
+        (*iter)->setSensorPM25_STDPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get PM2.5 sensor reading!");
+      }
+    }
+
+    // PM100_STD sensor
+    curTime = millis();
+    if ((*iter)->sensorPM100_STDPeriod() != 0L &&
+        curTime - (*iter)->SensorPM100_STDPeriodPrv() >
+            (*iter)->sensorPM100_STDPeriod()) {
+      if ((*iter)->getEventPM100_STD(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tPM100: ");
+        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINTLN(" ppm");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD);
+
+        (*iter)->setSensorPM100_STDPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get PM10.0 sensor reading!");
       }
     }
 
