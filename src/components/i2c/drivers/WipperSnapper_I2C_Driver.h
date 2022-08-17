@@ -112,17 +112,17 @@ public:
         break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
         enableSensorPM10_STD();
-        setSensorPM10_STD(
+        setSensorPM10_STDPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
         enableSensorPM25_STD();
-        setSensorPM25_STD(
+        setSensorPM25_STDPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
         enableSensorPM100_STD();
-        setSensorPM100_STD(
+        setSensorPM100_STDPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
       default:
@@ -868,6 +868,93 @@ public:
   /*******************************************************************************/
   virtual void updateSensorLight(float period) { setSensorLightPeriod(period); }
 
+  /**************************** SENSOR_TYPE: PM10_STD
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables sensor's pm10 standard readings, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorPM10_STD(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the sensor's pm10 standard readings, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorPM10_STD() { _PM10SensorPeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object pm10 standard sensors'
+     period, if set.
+      @returns  Time when the object pm10 standard sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorPM10_STDPeriod() { return _PM10SensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the object PM10_STD sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+                object PM10_STD sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorPM10_STDPeriod(float period) {
+    if (period == 0)
+      disableSensorPM10_STD();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _PM10SensorPeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the pm10 std. sensor was queried last.
+      @returns  Time when the pm10 std. sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long SensorPM10_STDPeriodPrv() { return _PM10SensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the light sensor
+                was queried.
+      @param    period
+                The time when the light sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorPM10_STDPeriodPrv(long period) {
+    _PM10SensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm25 std. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm25StdEvent
+                pm25 std. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM10_STD(sensors_event_t *pm25StdEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a object's pm25 std. sensor.
+      @param    period
+                The time interval at which to return new data from the
+                pm25 std. sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorPM10_STD(float period) {
+    setSensorPM10_STDPeriod(period);
+  }
+
   /**************************** SENSOR_TYPE: PM25_STD
    * ****************************/
   /*******************************************************************************/
@@ -954,6 +1041,94 @@ public:
   virtual void updateSensorPM25_STD(float period) {
     setSensorPM25_STDPeriod(period);
   }
+
+  /**************************** SENSOR_TYPE: PM100_STD
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables sensor's pm100 standard readings, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorPM100_STD(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the sensor's pm100 standard readings, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorPM100_STD() { _PM100SensorPeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object pm100 standard sensors'
+     period, if set.
+      @returns  Time when the object pm100 standard sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorPM100_STDPeriod() { return _PM100SensorPeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the object PM100_STD sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+                object PM100_STD sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorPM100_STDPeriod(float period) {
+    if (period == 0)
+      disableSensorPM100_STD();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _PM100SensorPeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the pm100 std. sensor was queried last.
+      @returns  Time when the pm100 std. sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long SensorPM100_STDPeriodPrv() { return _PM100SensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the light sensor
+                was queried.
+      @param    period
+                The time when the light sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorPM100_STDPeriodPrv(long period) {
+    _PM100SensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm100 std. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm100StdEvent
+                pm100 std. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a object's pm100 std. sensor.
+      @param    period
+                The time interval at which to return new data from the
+                pm100 std. sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorPM100_STD(float period) {
+    setSensorPM100_STDPeriod(period);
+  }
+
 
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
