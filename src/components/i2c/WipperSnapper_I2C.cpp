@@ -293,6 +293,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd40->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd40);
     WS_DEBUG_PRINTLN("SCD40 Initialized Successfully!");
+  } else if (strcmp("SHT40", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sht4x = new WipperSnapper_I2C_Driver_SHT4X(this->_i2c, i2cAddress);
+    if (!_sht4x->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize sht4x!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _sht4x->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_sht4x);
+    WS_DEBUG_PRINTLN("SHT4X Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
