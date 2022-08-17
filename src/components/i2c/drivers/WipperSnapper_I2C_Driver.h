@@ -933,22 +933,22 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Base implementation - Reads a object pm25 std. sensor and
+      @brief    Base implementation - Reads a object pm10 std. sensor and
                 converts the reading into the expected SI unit.
-      @param    pm25StdEvent
-                pm25 std. sensor reading, in ppm.
+      @param    pm10StdEvent
+                pm10 std. sensor reading, in ppm.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM10_STD(sensors_event_t *pm25StdEvent) { return false; }
+  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
 
   /*******************************************************************************/
   /*!
-      @brief    Updates the properties of a object's pm25 std. sensor.
+      @brief    Updates the properties of a object's pm10 std. sensor.
       @param    period
                 The time interval at which to return new data from the
-                pm25 std. sensor.
+                pm10 std. sensor.
   */
   /*******************************************************************************/
   virtual void updateSensorPM10_STD(float period) {
@@ -1115,7 +1115,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) { return false; }
+  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -1128,7 +1130,6 @@ public:
   virtual void updateSensorPM100_STD(float period) {
     setSensorPM100_STDPeriod(period);
   }
-
 
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object

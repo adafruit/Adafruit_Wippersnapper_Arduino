@@ -644,6 +644,29 @@ void WipperSnapper_Component_I2C::update() {
       }
     }
 
+    // PM10_STD sensor
+    curTime = millis();
+    if ((*iter)->sensorPM10_STDPeriod() != 0L &&
+        curTime - (*iter)->SensorPM10_STDPeriodPrv() >
+            (*iter)->sensorPM10_STDPeriod()) {
+      if ((*iter)->getEventPM10_STD(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tPM1.0: ");
+        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINTLN(" ppm");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD);
+
+        (*iter)->setSensorLightPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get light sensor reading!");
+      }
+    }
+
     // Did this driver obtain data from sensors?
     if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count == 0)
       continue;
