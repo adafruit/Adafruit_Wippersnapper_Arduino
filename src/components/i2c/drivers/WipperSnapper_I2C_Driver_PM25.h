@@ -55,8 +55,8 @@ public:
     // Wait one second for sensor to boot up!
     delay(1000);
 
-    if (! _pm25->begin_I2C(_i2c))
-        return false;
+    if (!_pm25->begin_I2C(_i2c))
+      return false;
 
     return true;
   }
@@ -72,9 +72,9 @@ public:
   /*******************************************************************************/
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
     PM25_AQI_Data data;
-    if (! _pm25->read(&data))
-        return false; // couldn't read data
-    
+    if (!_pm25->read(&data))
+      return false; // couldn't read data
+
     pm10StdEvent->data[0] = (float)data.pm10_standard;
     return true;
   }
@@ -88,10 +88,10 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
+  bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
     PM25_AQI_Data data;
-    if (! _pm25->read(&data))
-        return false; // couldn't read data
+    if (!_pm25->read(&data))
+      return false; // couldn't read data
 
     pm25StdEvent->data[0] = (float)data.pm25_standard;
     return true;
@@ -106,11 +106,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
+  bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
     PM25_AQI_Data data;
-    if (! _pm25->read(&data))
-        return false; // couldn't read data
-    
+    if (!_pm25->read(&data))
+      return false; // couldn't read data
+
     pm100StdEvent->data[0] = (float)data.pm100_standard;
     return true;
   }
