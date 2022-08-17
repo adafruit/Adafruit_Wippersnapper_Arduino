@@ -293,6 +293,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd40->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd40);
     WS_DEBUG_PRINTLN("SCD40 Initialized Successfully!");
+  } else if (strcmp("PMSA003I", msgDeviceInitReq->i2c_device_name) == 0) {
+    _pm25 = new WipperSnapper_I2C_Driver_PM25(this->_i2c, i2cAddress);
+    if (!_pm25->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize PM2.5 AQI Sensor!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _pm25->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_pm25);
+    WS_DEBUG_PRINTLN("PM2.5 AQI Sensor Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -347,6 +358,18 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
           drivers[i]->updateSensorLight(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
+          drivers[i]->updateSensorPM10_STD(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
+          drivers[i]->updateSensorPM25_STD(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
+          drivers[i]->updateSensorPM100_STD(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         default:
