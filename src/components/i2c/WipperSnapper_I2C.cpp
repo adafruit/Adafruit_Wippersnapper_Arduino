@@ -304,7 +304,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sht4x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sht4x);
     WS_DEBUG_PRINTLN("SHT4X Initialized Successfully!");
-    } else if (strcmp("pmsa003i", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("pmsa003i", msgDeviceInitReq->i2c_device_name) == 0) {
     _pm25 = new WipperSnapper_I2C_Driver_PM25(this->_i2c, i2cAddress);
     if (!_pm25->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize PM2.5 AQI Sensor!");
