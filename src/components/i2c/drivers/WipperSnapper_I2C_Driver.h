@@ -1190,7 +1190,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorUnitlessPercentPeriodPrv() {
+  virtual long sensorUnitlessPercentPeriodPrv() {
     return _unitlessPercentPeriodPrv;
   }
 

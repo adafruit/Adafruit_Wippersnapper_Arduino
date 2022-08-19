@@ -394,6 +394,14 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           drivers[i]->updateSensorPM100_STD(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
+          drivers[i]->updateSensorVoltage(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+          drivers[i]->updateSensorUnitlessPercent(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
         default:
           _busStatusResponse =
               wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
@@ -755,6 +763,53 @@ void WipperSnapper_Component_I2C::update() {
         (*iter)->setSensorPM100_STDPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get PM10.0 sensor reading!");
+      }
+    }
+
+    // Voltage sensor
+    curTime = millis();
+    if ((*iter)->sensorVoltagePeriod() != 0L &&
+        curTime - (*iter)->SensorVoltagePeriodPrv() >
+            (*iter)->sensorVoltagePeriod()) {
+      if ((*iter)->getEventVoltage(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tVoltage: ");
+        WS_DEBUG_PRINT(event.voltage);
+        WS_DEBUG_PRINTLN(" v");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.voltage,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE);
+
+        (*iter)->setSensorVoltagePeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get voltage sensor reading!");
+      }
+    }
+
+    // Unitless % sensor
+    curTime = millis();
+    if ((*iter)->sensorUnitlessPercentPeriod() != 0L &&
+        curTime - (*iter)->sensorUnitlessPercentPeriodPrv() >
+            (*iter)->sensorUnitlessPercentPeriod()) {
+      if ((*iter)->getEventUnitlessPercent(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tRead: ");
+        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINTLN(" %");
+
+        // pack event data into msg
+        fillEventMessage(
+            &msgi2cResponse, event.voltage,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT);
+        (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to get unitless-percent sensor reading!");
       }
     }
 
