@@ -1210,8 +1210,8 @@ public:
   /*!
       @brief    Base implementation - Reads a object unitless % std. sensor and
                 converts the reading into the expected SI unit.
-      @param    unitless %StdEvent
-                unitless % std. sensor reading, in ppm.
+      @param    unitlessPercentEvent
+                unitless %  sensor reading.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
