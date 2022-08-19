@@ -129,6 +129,12 @@ public:
         enableSensorUnitlessPercent();
         setSensorUnitlessPercent(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
+        enableSensorVoltage();
+        setSensorVoltage(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       default:
         break;
       }
@@ -1226,6 +1232,90 @@ public:
     setSensorUnitlessPercentPeriod(period);
   }
 
+  /**************************** SENSOR_TYPE: VOLTAGE
+   * ****************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables sensor's voltage readings, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorVoltage(){};
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the sensor's voltage standard readings, if it
+     exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorVoltage() { _voltagePeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the voltage sensor's period.
+      @returns  Time when the object voltage sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorVoltagePeriod() { return _voltagePeriod; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets the voltage sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorVoltagePeriod(float period) {
+    if (period == 0)
+      disableSensorVoltage();
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _voltagePeriod = (long)period * 1000;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the voltage sensor was queried last.
+      @returns  Time when the voltage sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long SensorVoltagePeriodPrv() { return _voltagePeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the voltage sensor was queried.
+      @param    period
+                The time when the voltage sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorVoltagePeriodPrv(long period) {
+    _voltagePeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a voltage sensor and converts the
+                reading into the expected SI unit.
+      @param    voltageEvent
+                voltage sensor reading, in volts.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventVoltage(sensors_event_t *voltageEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a voltage sensor.
+      @param    period
+                A new time interval at which to return new data from the
+                voltage sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorVoltage(float period) {
+    setSensorVoltagePeriod(period);
+  }
+
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -1275,7 +1365,11 @@ protected:
                                         ///< was last read.
   long _unitlessPercentPeriod = 0L;     ///< The time period between reading the
                                         ///< unitless % sensor's value.
-  long _unitlessPercentPeriodPrv = 0L;  ///< The time when the unit % sensor
+  long _unitlessPercentPeriodPrv = 0L;  ///< The time when the unitless % sensor
+                                        ///< was last read.
+  long _voltagePeriod = 0L;             ///< The time period between reading the
+                                        ///< voltage sensor's value.
+  long _voltagePeriodPrv = 0L;          ///< The time when the voltage sensor
                                         ///< was last read.
 };
 
