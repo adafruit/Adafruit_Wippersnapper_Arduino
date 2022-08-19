@@ -46,7 +46,7 @@ public:
       @brief    Destructor for an LC709203F sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_LC709203F() { delete _tsl; }
+  ~WipperSnapper_I2C_Driver_LC709203F() { delete _lc; }
 
   /*******************************************************************************/
   /*!
@@ -55,16 +55,16 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _lc = new Adafruit_LC709203F(_i2c);
-    if (!_lc->begin())
+    _lc = new Adafruit_LC709203F();
+    if (!_lc->begin(_i2c))
       return false;
 
     // Default settings from LC709203F demo:
     // https://github.com/adafruit/Adafruit_LC709203F/blob/master/examples/LC709203F_demo/LC709203F_demo.ino
     // NOTE: in the future, it would be nice if these able to be user-defined!
-    lc->setThermistorB(3950);
-    lc->setPackSize(LC709203F_APA_500MAH);
-    lc->setAlarmVoltage(3.8);
+    _lc->setThermistorB(3950);
+    _lc->setPackSize(LC709203F_APA_500MAH);
+    _lc->setAlarmVoltage(3.8);
     return true;
   }
 
@@ -79,7 +79,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVoltage(sensors_event_t *voltageEvent) {
-    voltageEvent->voltage = lc->cellVoltage();
+    voltageEvent->voltage = _lc->cellVoltage();
     return true;
   }
 
@@ -94,7 +94,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    unitlessPercentEvent->data[0] = lc->cellPercent();
+    unitlessPercentEvent->data[0] = _lc->cellPercent();
     return false;
   }
 

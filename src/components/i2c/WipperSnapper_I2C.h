@@ -23,6 +23,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
+#include "drivers/WipperSnapper_I2C_Driver_LC709203F.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9601.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
@@ -84,6 +85,7 @@ private:
   WipperSnapper_I2C_Driver_SCD40 *_scd40 = nullptr;
   WipperSnapper_I2C_Driver_PM25 *_pm25 = nullptr;
   WipperSnapper_I2C_Driver_SHT4X *_sht4x = nullptr;
+  WipperSnapper_I2C_Driver_LC709203F *_lc = nullptr;
 };
 extern Wippersnapper WS;
 

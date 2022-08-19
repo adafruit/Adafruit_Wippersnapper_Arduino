@@ -315,6 +315,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _pm25->configureDriver(msgDeviceInitReq);
     drivers.push_back(_pm25);
     WS_DEBUG_PRINTLN("PM2.5 AQI Sensor Initialized Successfully!");
+  } else if (strcmp("lc709203f", msgDeviceInitReq->i2c_device_name) == 0) {
+    _lc = new WipperSnapper_I2C_Driver_LC709203F(this->_i2c, i2cAddress);
+    if (!_lc->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize LC709203F Sensor!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _lc->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_lc);
+    WS_DEBUG_PRINTLN("LC709203F Sensor Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =

@@ -127,12 +127,12 @@ public:
         break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
         enableSensorUnitlessPercent();
-        setSensorUnitlessPercent(
+        setSensorUnitlessPercentPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
         enableSensorVoltage();
-        setSensorVoltage(
+        setSensorVoltagePeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
       default:
