@@ -713,11 +713,11 @@ void WipperSnapper_Component_I2C::update() {
         // pack event data into msg
         fillEventMessage(&msgi2cResponse, event.data[0],
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD);
-
-        (*iter)->setSensorPM10_STDPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get PM1.0 sensor reading!");
       }
+      // try again in curTime seconds
+      (*iter)->setSensorPM10_STDPeriodPrv(curTime);
     }
 
     // PM25_STD sensor
@@ -736,11 +736,11 @@ void WipperSnapper_Component_I2C::update() {
         // pack event data into msg
         fillEventMessage(&msgi2cResponse, event.data[0],
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD);
-
-        (*iter)->setSensorPM25_STDPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get PM2.5 sensor reading!");
       }
+      // try again in curTime seconds
+      (*iter)->setSensorPM25_STDPeriodPrv(curTime);
     }
 
     // PM100_STD sensor
@@ -759,11 +759,11 @@ void WipperSnapper_Component_I2C::update() {
         // pack event data into msg
         fillEventMessage(&msgi2cResponse, event.data[0],
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD);
-
-        (*iter)->setSensorPM100_STDPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get PM10.0 sensor reading!");
       }
+      (*iter)->setSensorPM100_STDPeriodPrv(
+          curTime); // try again in curTime seconds
     }
 
     // Voltage sensor
@@ -782,11 +782,11 @@ void WipperSnapper_Component_I2C::update() {
         // pack event data into msg
         fillEventMessage(&msgi2cResponse, event.voltage,
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE);
-
-        (*iter)->setSensorVoltagePeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get voltage sensor reading!");
       }
+      // try again in curTime seconds
+      (*iter)->setSensorVoltagePeriodPrv(curTime);
     }
 
     // Unitless % sensor
@@ -806,11 +806,12 @@ void WipperSnapper_Component_I2C::update() {
         fillEventMessage(
             &msgi2cResponse, event.voltage,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT);
-        (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN(
-            "ERROR: Failed to get unitless-percent sensor reading!");
+            "ERROR: Failed to get unitless percentage sensor reading!");
       }
+      // try again in curTime seconds
+      (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
     }
 
     // Did this driver obtain data from sensors?
