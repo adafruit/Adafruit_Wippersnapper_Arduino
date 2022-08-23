@@ -9,6 +9,8 @@
 /*!
     @brief  Class that provides a driver interface for a HTU31D sensor.
 */
+/**************************************************************************/
+class WipperSnapper_I2C_Driver_HTU31D : public WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
