@@ -139,6 +139,7 @@ public:
         enableSensorRaw();
         setSensorRawPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       default:
         break;
       }
@@ -1334,7 +1335,7 @@ public:
       @brief    Disables the device's Raw sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void disableSensorRaw() { _RawSensorPeriod = 0.0L; }
+  virtual void disableSensorRaw() { _rawSensorPeriod = 0.0L; }
 
   /*******************************************************************************/
   /*!
@@ -1350,7 +1351,7 @@ public:
       return;
     }
     // Period is in seconds, cast it to long and convert it to milliseconds
-    _RawSensorPeriod = (long)period * 1000;
+    _rawSensorPeriod = (long)period * 1000;
   }
 
   /*******************************************************************************/
@@ -1370,7 +1371,7 @@ public:
       @returns  Time when the raw sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRawPeriod() { return _RawSensorPeriod; }
+  virtual long sensorRawPeriod() { return _rawSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -1379,7 +1380,7 @@ public:
       @returns  Time when the raw sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRawPeriodPrv() { return _RawSensorPeriodPrv; }
+  virtual long sensorRawPeriodPrv() { return _rawSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -1389,7 +1390,7 @@ public:
   */
   /*******************************************************************************/
   virtual void setSensorRawPeriodPrv(long period) {
-    _RawSensorPeriodPrv = period;
+    _rawSensorPeriodPrv = period;
   }
 
   /*******************************************************************************/
@@ -1458,9 +1459,9 @@ protected:
                                         ///< voltage sensor's value.
   long _voltagePeriodPrv = 0L;          ///< The time when the voltage sensor
                                         ///< was last read.
-  long _RawSensorPeriod =
+  long _rawSensorPeriod =
       0L; ///< The time period between reading the Raw sensor's value.
-  long _RawSensorPeriodPrv = 0L; ///< The time when the Raw sensor
+  long _rawSensorPeriodPrv = 0L; ///< The time when the Raw sensor
                                  ///< was last read.
 };
 

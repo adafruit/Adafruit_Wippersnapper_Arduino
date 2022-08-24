@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Marcus Wu 2022 for Adafruit Industries.
+ * Copyright (c) Marcus Wu 2022
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -84,7 +84,7 @@ public:
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
     // check if sensor is enabled and data is available
-    if (_RawSensorPeriod != 0) {
+    if (_rawSensorPeriod != 0) {
       return false;
     }
     // TODO: Update this should we add a capacitive moisture type to
