@@ -10,6 +10,7 @@ class WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor : public WipperSnapper_I2C_Dri
     : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
         _i2c = i2c;
         _sensorAddress = sensorAddress;
+        _seesaw = new Adafruit_seesaw(_i2c);
     }
 
     ~WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor() {
@@ -24,12 +25,12 @@ class WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor : public WipperSnapper_I2C_Dri
     /*******************************************************************************/
     bool begin()
     {
-        _seesaw = new Adafruit_seesaw(_i2c);
         return _seesaw->begin(_sensorAddress);
     }
 
     bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
         tempEvent->temperature = _seesaw->getTemp();
+        return true;
     }
 
     bool getEventRaw(sensors_event_t *rawEvent) {
