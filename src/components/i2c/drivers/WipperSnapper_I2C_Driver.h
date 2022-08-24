@@ -1403,7 +1403,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
 
-
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -1459,9 +1458,10 @@ protected:
                                         ///< voltage sensor's value.
   long _voltagePeriodPrv = 0L;          ///< The time when the voltage sensor
                                         ///< was last read.
-  long _RawSensorPeriod = 0L;           ///< The time period between reading the Raw sensor's value.
-  long _RawSensorPeriodPrv = 0L;        ///< The time when the Raw sensor
-                                        ///< was last read.
+  long _RawSensorPeriod =
+      0L; ///< The time period between reading the Raw sensor's value.
+  long _RawSensorPeriodPrv = 0L; ///< The time when the Raw sensor
+                                 ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
