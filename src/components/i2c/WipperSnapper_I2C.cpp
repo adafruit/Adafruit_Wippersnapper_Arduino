@@ -326,6 +326,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _lc->configureDriver(msgDeviceInitReq);
     drivers.push_back(_lc);
     WS_DEBUG_PRINTLN("LC709203F Sensor Initialized Successfully!");
+  } else if (strcmp("STEMMAss", msgDeviceInitReq->i2c_device_name) == 0) {
+    _ss = new WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor(this->_i2c, i2cAddress);
+    if (!_ss->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize STEMMA Soil Sensor!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _ss->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_ss);
+    WS_DEBUG_PRINTLN("STEMMA Soil Sensor Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -400,6 +411,10 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
           break;
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
           drivers[i]->updateSensorUnitlessPercent(
+              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
+          break;
+        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
+          drivers[i]->updateSensorRaw(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;
         default:
@@ -812,6 +827,25 @@ void WipperSnapper_Component_I2C::update() {
       }
       // try again in curTime seconds
       (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
+    }
+
+    // Raw sensor
+    curTime = millis();
+    if ((*iter)->sensorRawPeriod() != 0L &&
+        curTime - (*iter)->sensorRawPeriodPrv() > (*iter)->sensorRawPeriod()) {
+      if ((*iter)->getEventRaw(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tRaw: ");
+        WS_DEBUG_PRINTLN(event.data[0]);
+
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to obtain Raw sensor reading!");
+      }
+      (*iter)->setSensorRawPeriodPrv(curTime);
     }
 
     // Did this driver obtain data from sensors?
