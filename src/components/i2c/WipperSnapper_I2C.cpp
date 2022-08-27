@@ -326,7 +326,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _lc->configureDriver(msgDeviceInitReq);
     drivers.push_back(_lc);
     WS_DEBUG_PRINTLN("LC709203F Sensor Initialized Successfully!");
-  } else if (strcmp("STEMMAss", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("stemma_soil", msgDeviceInitReq->i2c_device_name) == 0) {
     _ss =
         new WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor(this->_i2c, i2cAddress);
     if (!_ss->begin()) {
