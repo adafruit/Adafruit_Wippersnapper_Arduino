@@ -1371,23 +1371,23 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create device-to-broker servo signal topic
-  if (WS._topic_signal_i2c_device != NULL) {
-    strcpy(WS._topic_signal_i2c_device, WS._username);
-    strcat(WS._topic_signal_i2c_device, TOPIC_WS);
-    strcat(WS._topic_signal_i2c_device, _device_uid);
-    strcat(WS._topic_signal_i2c_device, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_i2c_device, "broker/servo");
+  if (WS._topic_signal_servo_brkr != NULL) {
+    strcpy(WS._topic_signal_servo_brkr, WS._username);
+    strcat(WS._topic_signal_servo_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_servo_brkr, _device_uid);
+    strcat(WS._topic_signal_servo_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_servo_brkr, "broker/servo");
   } else { // malloc failed
     is_success = false;
   }
 
-  // Create broker-to-device i2c signal topic
-  if (WS._topic_signal_i2c_device != NULL) {
-    strcpy(WS._topic_signal_i2c_device, WS._username);
-    strcat(WS._topic_signal_i2c_device, TOPIC_WS);
-    strcat(WS._topic_signal_i2c_device, _device_uid);
-    strcat(WS._topic_signal_i2c_device, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_i2c_device, "device/servo");
+  // Create broker-to-device servo signal topic
+  if (WS._topic_signal_servo_device != NULL) {
+    strcpy(WS._topic_signal_servo_device, WS._username);
+    strcat(WS._topic_signal_servo_device, TOPIC_WS);
+    strcat(WS._topic_signal_servo_device, _device_uid);
+    strcat(WS._topic_signal_servo_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_servo_device, "device/servo");
   } else { // malloc failed
     is_success = false;
   }
