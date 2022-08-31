@@ -822,7 +822,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_signal_v1_ServoResponse_init_zero;
     msgServoResp.which_payload =
         wippersnapper_signal_v1_ServoResponse_servo_attach_resp_tag;
-    msgServoResp.payload.servo_attach_resp.attach_success = false;
+    msgServoResp.payload.servo_attach_resp.attach_success = attached;
     strcpy(msgServoResp.payload.servo_attach_resp.servo_pin,
            msgServoAttachReq.servo_pin);
 
