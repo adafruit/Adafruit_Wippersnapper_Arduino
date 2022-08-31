@@ -823,7 +823,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     msgServoResp.which_payload =
         wippersnapper_signal_v1_ServoResp_servo_attach_resp_tag;
     msgServoResp.payload.servo_attach_resp.attach_success = attached;
-    strcpy(msgServoResp.payload.servo_attach_resp.servo_pin, servoPin);
+    strcpy(msgServoResp.payload.servo_attach_resp.servo_pin, msgServoAttachReq.servo_pin);
     //msgServoResp.payload.servo_attach_resp.servo_pin = msgServoAttachReq.servo_pin;
 
     // Encode and publish response back to broker
