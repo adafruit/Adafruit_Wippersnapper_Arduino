@@ -83,13 +83,18 @@ public:
   */
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
-    // check if sensor is enabled and data is available
-    if (_rawSensorPeriod != 0) {
+    uint16_t touchData = _seesaw->touchRead(0);
+
+    // seesaw->touchRead() will return 65535 on a read error
+    // see
+    // https://github.com/adafruit/Adafruit_Seesaw/blob/master/Adafruit_seesaw.cpp
+    if (touchData == 65535) {
       return false;
     }
+
     // TODO: Update this should we add a capacitive moisture type to
     // adafruit_sensor
-    rawEvent->data[0] = (float)_seesaw->touchRead(0);
+    rawEvent->data[0] = (float)touchData;
     return true;
   }
 
