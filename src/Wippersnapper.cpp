@@ -798,12 +798,12 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
   if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_attach_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Attach");
     // Attempt to decode contents of servo_attach message
-    wippersnapper_servo_v1_ServoAttachReq msgServoAttachReq =
-        wippersnapper_servo_v1_ServoAttachReq_init_zero;
-    if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachReq_fields,
+    wippersnapper_servo_v1_ServoAttachRequest msgServoAttachReq =
+        wippersnapper_servo_v1_ServoAttachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachRequest_fields,
                    &msgServoAttachReq)) {
       WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachReq");
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachRequest");
       return false; // fail out if we can't decode the request
     }
     // execute servo attach request
@@ -818,22 +818,22 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
 
     // Create and fill a servo response message
     size_t msgSz; // message's encoded size
-    wippersnapper_signal_v1_ServoResp msgServoResp =
-        wippersnapper_signal_v1_ServoResp_init_zero;
+    wippersnapper_signal_v1_ServoResponse msgServoResp =
+        wippersnapper_signal_v1_ServoResponse_init_zero;
     msgServoResp.which_payload =
-        wippersnapper_signal_v1_ServoResp_servo_attach_resp_tag;
+        wippersnapper_signal_v1_ServoResponse_servo_attach_resp_tag;
     msgServoResp.payload.servo_attach_resp.attach_success = attached;
 
     // Encode and publish response back to broker
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
                                                   sizeof(WS._buffer_outgoing));
-    if (!pb_encode(&ostream, wippersnapper_signal_v1_ServoResp_fields,
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_ServoResponse_fields,
                    &msgServoResp)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode servo response message!");
       return false;
     }
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResp_fields,
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResponse_fields,
                         &msgServoResp);
     WS_DEBUG_PRINT("-> Servo Attach Response...");
     WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
@@ -844,10 +844,10 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("GOT: Servo Write");
 
     // Attempt to decode contents of servo write message
-    wippersnapper_servo_v1_ServoWriteReq msgServoWriteReq =
-        wippersnapper_servo_v1_ServoWriteReq_init_zero;
+    wippersnapper_servo_v1_ServoWriteRequest msgServoWriteReq =
+        wippersnapper_servo_v1_ServoWriteRequest_init_zero;
 
-    if (!pb_decode(stream, wippersnapper_servo_v1_ServoWriteReq_fields,
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoWriteRequest_fields,
                    &msgServoWriteReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoWriteReq");
@@ -862,9 +862,9 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("GOT: Servo Detach");
 
     // Attempt to decode contents of servo detach message
-    wippersnapper_servo_v1_ServoDetachReq msgServoDetachReq =
-        wippersnapper_servo_v1_ServoDetachReq_init_zero;
-    if (!pb_decode(stream, wippersnapper_servo_v1_ServoDetachReq_fields,
+    wippersnapper_servo_v1_ServoDetachRequest msgServoDetachReq =
+        wippersnapper_servo_v1_ServoDetachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoDetachRequest_fields,
                    &msgServoDetachReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoDetachReq");
