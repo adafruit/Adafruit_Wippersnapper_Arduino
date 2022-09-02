@@ -934,6 +934,7 @@ void cbPWMMsg(char *data, uint16_t len) {
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
+  // TODO: Re-enable this
   // WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
 
   // Decode servo message from buffer
@@ -976,6 +977,25 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
                  &WS.msgSignalI2C))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+}
+
+bool cbDecodePWMMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  WS_DEBUG_PRINTLN("Decoding PWM Message...");
+  if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
+    WS_DEBUG_PRINTLN("GOT: PWMAttachRequest");
+
+    // Attempt to decode PWMAttachRequest message
+    wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest =
+        wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachRequest_fields,
+                   &msgServoAttachReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
+      return false; // fail out if we can't decode the request
+    }
+    // TODO: Implement the rest of the handling code once PWM module is pulled
+    // in
+  }
 }
 
 /****************************************************************************/
