@@ -914,6 +914,38 @@ void cbServoMsg(char *data, uint16_t len) {
 
 /**************************************************************************/
 /*!
+    @brief    Called when the device recieves a new message from the
+              /pwm/ topic.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbPWMMsg(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: PWM]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  // WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
+
+  // Decode servo message from buffer
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_PWMRequest_fields,
+                 &WS.msgPWM))
+    ;
+  WS_DEBUG_PRINTLN("ERROR: Unable to decode PWM message");
+}
+
+/**************************************************************************/
+/*!
     @brief    Called when i2c signal sub-topic receives a new message and
               attempts to decode a signal request message.
     @param    data
@@ -1392,6 +1424,35 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
+  // Topic for pwm messages from broker->device
+  WS._topic_signal_pwm_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/pwm") + 1);
+  // Create device-to-broker pwm signal topic
+  if (WS._topic_signal_pwm_brkr != NULL) {
+    strcpy(WS._topic_signal_pwm_brkr, WS._username);
+    strcat(WS._topic_signal_pwm_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_pwm_brkr, _device_uid);
+    strcat(WS._topic_signal_pwm_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_pwm_brkr, "broker/pwm");
+  } else { // malloc failed
+    return false;
+  }
+
+  // Topic for pwm messages from device->broker
+  WS._topic_signal_pwm_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/servo") + 1);
+  if (WS._topic_signal_pwm_device != NULL) {
+    strcpy(WS._topic_signal_pwm_device, WS._username);
+    strcat(WS._topic_signal_pwm_device, TOPIC_WS);
+    strcat(WS._topic_signal_pwm_device, _device_uid);
+    strcat(WS._topic_signal_pwm_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_pwm_device, "device/pwm");
+  } else { // malloc failed
+    return false;
+  }
+
   return true;
 }
 
@@ -1418,6 +1479,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
+
+  // Subscribe to PWM sub-topic
+  _topic_signal_pwm_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_pwm_sub);
+  _topic_signal_pwm_sub->setCallback(cbPWMMsg);
 
   // Subscribe to registration status topic
   _topic_description_sub =
@@ -1719,14 +1786,15 @@ void Wippersnapper::connect() {
   // Initialize MQTT client with device identifer
   setupMQTTClient(_device_uid);
 
-  // build MQTT topics for WipperSnapper and subscribe
+  WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
   if (!buildWSTopics()) {
     haltError("Unable to allocate space for MQTT topics");
   }
   if (!buildErrorTopics()) {
     haltError("Unable to allocate space for MQTT error topics");
   }
-  WS_DEBUG_PRINTLN("Subscribing to MQTT topics...");
+
+  WS_DEBUG_PRINTLN("Subscribing to device's MQTT topics...");
   subscribeWSTopics();
   subscribeErrorTopics();
 

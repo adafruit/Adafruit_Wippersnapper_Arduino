@@ -319,15 +319,14 @@ public:
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
-
-  // i2c signal msg
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
-
-  // servo message
   wippersnapper_signal_v1_ServoRequest
       msgServo; ///< ServoRequest wrapper message
+  wippersnapper_signal_v1_PWMRequest msgPWM =
+      wippersnapper_signal_v1_PWMRequest_init_zero; ///< PWM request wrapper
+                                                    ///< message.
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -371,16 +370,18 @@ protected:
   char *_err_topic = NULL;         /*!< Adafruit IO MQTT error message topic. */
   char *_throttle_topic = NULL; /*!< Adafruit IO MQTT throttle message topic. */
 
+  Adafruit_MQTT_Subscribe *_topic_description_sub; /*!< Subscription callback
+                                                      for registration topic. */
+  Adafruit_MQTT_Publish *_topic_signal_device_pub; /*!< Subscription callback
+                                                      for D2C signal topic. */
+  Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub; /*!< Subscription callback
+                                                      for C2D signal topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_description_sub; /*!< Subscription for registration topic. */
-  Adafruit_MQTT_Publish
-      *_topic_signal_device_pub; /*!< Subscription for D2C signal topic. */
+      *_topic_signal_i2c_sub; /*!< Subscription callback for I2C topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
+      *_topic_signal_servo_sub; /*!< Subscription callback for servo topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
+      *_topic_signal_pwm_sub; /*!< Subscription callback for pwm topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
