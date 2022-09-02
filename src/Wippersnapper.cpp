@@ -1187,6 +1187,54 @@ void Wippersnapper::subscribeErrorTopics() {
 
 /**************************************************************************/
 /*!
+    @brief    Attempts to generate unique device identifier.
+    @returns  True if device identifier generated successfully,
+              False otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper::generateDeviceUID() {
+  // Validate IO configuration from flash
+  if (WS._username == NULL || WS._key == NULL) {
+    WS_DEBUG_PRINTLN("FATAL ERROR: IO Config not detected on device!");
+    return false;
+  }
+
+  // Validate network configuration from flash
+  if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL ||
+      WS._network_pass == NULL) {
+    WS_DEBUG_PRINTLN("FATAL ERROR: Network Config not detected on device!");
+    return false;
+  }
+
+  // Generate device unique identifier
+  // Set machine_name
+  WS._boardId = BOARD_ID;
+  // Move the top 3 bytes from the UID
+  for (int i = 5; i > 2; i--) {
+    WS._macAddr[6 - 1 - i] = WS._macAddr[i];
+  }
+  snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
+           WS._macAddr[1], WS._macAddr[2]);
+  // Conversion to match integer UID sent by encodePubRegistrationReq()
+  char mac_uid[13];
+  itoa(atoi(WS.sUID), mac_uid, 10);
+
+  // Attempt to malloc a the device identifier string
+  _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
+                               strlen(WS._boardId) + strlen(mac_uid) + 1);
+  if (_device_uid == NULL) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to create device uid, Malloc failure");
+    return false;
+  }
+  // Create the device identifier
+  strcpy(_device_uid, "io-wipper-");
+  strcat(_device_uid, WS._boardId);
+  strcat(_device_uid, mac_uid);
+  return true;
+}
+
+/**************************************************************************/
+/*!
     @brief    Generates device-specific Wippersnapper control topics.
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
@@ -1194,35 +1242,6 @@ void Wippersnapper::subscribeErrorTopics() {
 /**************************************************************************/
 bool Wippersnapper::buildWSTopics() {
   bool is_success = true;
-
-  // Validate that we've correctly pulled configuration keys from the FS
-  if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL ||
-      WS._network_pass == NULL)
-    return false;
-
-  // Create device unique identifier
-  // Move the top 3 bytes from the UID
-  for (int i = 5; i > 2; i--) {
-    WS._macAddr[6 - 1 - i] = WS._macAddr[i];
-  }
-  snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
-           WS._macAddr[1], WS._macAddr[2]);
-
-  // Set machine_name
-  WS._boardId = BOARD_ID;
-  // Conversion to match integer UID sent by encodePubRegistrationReq()
-  int32_t iUID = atoi(WS.sUID);
-  char mac_uid[13];
-  itoa(iUID, mac_uid, 10);
-
-  _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
-                               strlen(WS._boardId) + strlen(mac_uid) + 1);
-  strcpy(_device_uid, "io-wipper-");
-  strcat(_device_uid, WS._boardId);
-  strcat(_device_uid, mac_uid);
-
-  // Initialize MQTT client with UID as the ClientID
-  setupMQTTClient(_device_uid);
 
   // Global registration topic
   WS._topic_description =
@@ -1278,6 +1297,16 @@ bool Wippersnapper::buildWSTopics() {
   WS._topic_signal_servo_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/servo") + 1);
+
+  // Topic for servo messages from broker->device
+  WS._topic_signal_pwm_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/pwm") + 1);
+
+  // Topic for servo messages from device->broker
+  WS._topic_signal_pwm_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/pwm") + 1);
 
   // Create global registration topic
   if (WS._topic_description != NULL) {
@@ -1677,25 +1706,6 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 
 /**************************************************************************/
 /*!
-    @brief    Checks validity of WipperSnapper application credentials.
-    @returns  True if WipperSnapper application credentials exist
-                and are valid, False otherwise.
-*/
-/**************************************************************************/
-bool validateAppCreds() {
-  // Check if null
-  if (WS._username == 0 || WS._key == 0 || WS._network_ssid == 0 ||
-      WS._network_pass == 0)
-    return false;
-  // Check credential length
-  if (strlen(WS._username) == 0 || strlen(WS._key) == 0 ||
-      strlen(WS._network_ssid) == 0 || strlen(WS._network_pass) == 0)
-    return false;
-  return true;
-}
-
-/**************************************************************************/
-/*!
     @brief    Connects to Adafruit IO+ Wippersnapper broker.
 */
 /**************************************************************************/
@@ -1730,8 +1740,13 @@ void Wippersnapper::connect() {
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
-  if (!validateAppCreds())
-    haltError("Unable to validate application credentials.");
+  // Generate device identifier
+  if (!generateDeviceUID()) {
+    haltError("Unable to generate Device UID");
+  }
+
+  // Initialize MQTT client with device identifer
+  setupMQTTClient(_device_uid);
 
   // build MQTT topics for WipperSnapper and subscribe
   if (!buildWSTopics()) {

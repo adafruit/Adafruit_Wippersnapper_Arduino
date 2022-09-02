@@ -209,6 +209,7 @@ public:
   virtual ws_status_t networkStatus();
   ws_board_status_t getBoardStatus();
 
+  bool generateDeviceUID();
   bool buildWSTopics();
   void subscribeWSTopics();
   bool buildErrorTopics();
@@ -311,6 +312,10 @@ public:
                                      device   to a broker. */
   char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
+  char *_topic_signal_pwm_brkr =
+      NULL; /*!< Topic carries PWM messages from a device to a broker. */
+  char *_topic_signal_pwm_device =
+      NULL; /*!< Topic carries PWM messages from a broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
