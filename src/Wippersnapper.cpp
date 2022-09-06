@@ -780,6 +780,40 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
   return is_success;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when i2c signal sub-topic receives a new message and
+              attempts to decode a signal request message.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbSignalI2CReq(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Zero-out existing I2C signal msg.
+  WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgSignalI2C.cb_payload.funcs.decode = cbDecodeSignalRequestI2C;
+
+  // Decode I2C signal request
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
+                 &WS.msgSignalI2C))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+}
+
 /******************************************************************************************/
 /*!
     @brief    Decodes a servo message and dispatches to the servo component.
@@ -912,6 +946,71 @@ void cbServoMsg(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode servo message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a servo message and dispatches to the servo component.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool pwmDecodeMsg(pb_istream_t *stream, const pb_field_t *field,
+                      void **arg) {
+  WS_DEBUG_PRINTLN("Decoding Servo Message...");
+  if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
+    WS_DEBUG_PRINTLN("GOT: PWM Pin Attach");
+    // Attempt to decode contents of PWM attach message
+    wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest = wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMAttachRequest_fields,
+                   &msgPWMAttachRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
+      return false; // fail out if we can't decode the request
+    }
+
+    // execute PWM pin attach request
+    char *pwmPin = msgPWMAttachRequest.pin + 1;
+    bool attached = true;
+    // TODO: add this back on WED.
+/*     if (!WS._servoComponent->servo_attach(
+            atoi(servoPin), msgServoAttachReq.min_pulse_width,
+            msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
+      attached = false;
+    } */
+
+    // Create and fill the response message
+    wippersnapper_signal_v1_PWMResponse msgPWMResponse = wippersnapper_signal_v1_PWMResponse_init_zero;
+    msgPWMResponse.which_payload = wippersnapper_signal_v1_PWMResponse_attach_response_tag;
+    msgPWMResponse.payload.attach_response.did_attach = attached;
+    strcpy(msgPWMResponse.payload.attach_response.pin, msgPWMAttachRequest.pin);
+
+    // Encode and publish response back to broker
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                  sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_PWMResponse_fields,
+                   &msgPWMResponse)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode PWM response message!");
+      return false;
+    }
+    size_t msgSz; // message's encoded size
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PWMResponse_fields,
+                        &msgPWMResponse);
+    WS_DEBUG_PRINT("-> PWM Attach Response...");
+    WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz, 1);
+    WS_DEBUG_PRINTLN("Published!");
+  } else {
+    WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
+    return false;
+  }
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief    Called when the device recieves a new message from the
@@ -945,40 +1044,6 @@ void cbPWMMsg(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("ERROR: Unable to decode PWM message");
 }
 
-/**************************************************************************/
-/*!
-    @brief    Called when i2c signal sub-topic receives a new message and
-              attempts to decode a signal request message.
-    @param    data
-              Incoming data from MQTT broker.
-    @param    len
-              Length of incoming data.
-*/
-/**************************************************************************/
-void cbSignalI2CReq(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
-  WS_DEBUG_PRINT(len);
-  WS_DEBUG_PRINTLN(" bytes.");
-  // zero-out current buffer
-  memset(WS._buffer, 0, sizeof(WS._buffer));
-  // copy mqtt data into buffer
-  memcpy(WS._buffer, data, len);
-  WS.bufSize = len;
-
-  // Zero-out existing I2C signal msg.
-  WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
-
-  // Set up the payload callback, which will set up the callbacks for
-  // each oneof payload field once the field tag is known
-  WS.msgSignalI2C.cb_payload.funcs.decode = cbDecodeSignalRequestI2C;
-
-  // Decode I2C signal request
-  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
-                 &WS.msgSignalI2C))
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
-}
-
 bool cbDecodePWMMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   WS_DEBUG_PRINTLN("Decoding PWM Message...");
   if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
@@ -988,7 +1053,7 @@ bool cbDecodePWMMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest =
         wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachRequest_fields,
-                   &msgServoAttachReq)) {
+                   &msgPWMAttachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
       return false; // fail out if we can't decode the request
@@ -996,6 +1061,7 @@ bool cbDecodePWMMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // TODO: Implement the rest of the handling code once PWM module is pulled
     // in
   }
+  return true;
 }
 
 /****************************************************************************/
@@ -1855,6 +1921,10 @@ void Wippersnapper::connect() {
 
   WS_DEBUG_PRINT("SERVO: ");
   WS._servoComponent = new ws_servo();
+  WS_DEBUG_PRINTLN("OK!");
+
+  WS_DEBUG_PRINT("PWM: ");
+  WS._pwmComponent = new ws_pwm();
   WS_DEBUG_PRINTLN("OK!");
 
   // goto application
