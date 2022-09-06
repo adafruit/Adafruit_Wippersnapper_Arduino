@@ -125,7 +125,11 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    _mqttBrokerURL = "io.adafruit.com";
+    if (WS._mqttBrokerURL == nullptr) {
+      WS._mqttBrokerURL = "io.adafruit.com";
+    } else {
+      _mqttBrokerURL = "io.adafruit.us";
+    }
 
     // Uncomment the following lines to use MQTT/SSL. You will need to
     // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
