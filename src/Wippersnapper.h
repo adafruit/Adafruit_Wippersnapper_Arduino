@@ -40,6 +40,13 @@
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 
+// LEDC-Manager, ESP32-only
+#ifdef ARDUINO_ARCH_ESP32
+#include "components/ledc/ws_ledc.h"
+#endif
+
+#include "components/servo/ws_servo.h"
+
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
@@ -60,7 +67,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.46" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.47" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -161,6 +168,12 @@ class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
+
+#ifdef ARDUINO_ARCH_ESP32
+class ws_ledc;
+#endif
+
+class ws_servo;
 
 /**************************************************************************/
 /*!
@@ -267,6 +280,7 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
+  ws_servo *_servoComponent; ///< Instance of servo class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -291,7 +305,11 @@ public:
   char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
   char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
                                    to a broker. */
-  char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
+  char *_topic_signal_i2c_device = NULL;   /*!< Topic carries messages from a
+                                       broker to a device. */
+  char *_topic_signal_servo_brkr = NULL;   /*!< Topic carries messages from a
+                                     device   to a broker. */
+  char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
@@ -302,11 +320,20 @@ public:
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
 
+  // servo message
+  wippersnapper_signal_v1_ServoRequest
+      msgServo; ///< ServoRequest wrapper message
+
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
 
   bool pinCfgCompleted = false; /*!< Did initial pin sync complete? */
+
+// enable LEDC if esp32
+#ifdef ARDUINO_ARCH_ESP32
+  ws_ledc *_ledc = nullptr; ///< Pointer to LEDC object
+#endif
 
 private:
   void _init();
@@ -347,6 +374,8 @@ protected:
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
@@ -356,7 +385,6 @@ protected:
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
 };
-
 extern Wippersnapper WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

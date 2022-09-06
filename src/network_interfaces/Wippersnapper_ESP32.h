@@ -139,12 +139,11 @@ public:
   const char *connectionType() { return "ESP32"; }
 
 protected:
-  const char *_ssid;
-  const char *_pass;
-  const char *_mqttBrokerURL;
-  WiFiClientSecure *_mqtt_client;
+  const char *_ssid;              ///< WiFi SSID
+  const char *_pass;              ///< WiFi password
+  const char *_mqttBrokerURL;     ///< MQTT broker URL
+  WiFiClientSecure *_mqtt_client; ///< Pointer to a secure MQTT client object
 
-  // io.adafruit.us
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
       "MIIEZTCCA02gAwIBAgIQQAF1BIMUpMghjISpDBbN3zANBgkqhkiG9w0BAQsFADA/\n"
@@ -171,9 +170,8 @@ protected:
       "qjBstzLhWVQLGAkXXmNs+5ZnPBxzDJOLxhF2JIbeQAcH5H0tZrUlo5ZYyOqA7s9p\n"
       "O5b85o3AM/OJ+CktFBQtfvBhcJVd9wvlwPsk+uyOy2HI7mNxKKgsBTt375teA2Tw\n"
       "UdHkhVNcsAKX1H7GNNLOEADksd86wuoXvg==\n"
-      "-----END CERTIFICATE-----\n";
+      "-----END CERTIFICATE-----\n"; ///< Root certificate for io.adafruit.us
 
-  // io.adafruit.com
   const char *_aio_root_ca_prod =
       "-----BEGIN CERTIFICATE-----\n"
       "MIIDrzCCApegAwIBAgIQCDvgVpBCRrGhdWrJWZHHSjANBgkqhkiG9w0BAQUFADBh\n"
@@ -196,7 +194,7 @@ protected:
       "PnlUkiaY4IBIqDfv8NZ5YBberOgOzW6sRBc4L0na4UU+Krk2U886UAb3LujEV0ls\n"
       "YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk\n"
       "CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=\n"
-      "-----END CERTIFICATE-----\n";
+      "-----END CERTIFICATE-----\n"; ///< Root certificate for io.adafruit.com
 
   /**************************************************************************/
   /*!

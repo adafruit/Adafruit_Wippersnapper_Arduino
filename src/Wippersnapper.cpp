@@ -780,6 +780,155 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
   return is_success;
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a servo message and dispatches to the servo component.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
+                      void **arg) {
+  WS_DEBUG_PRINTLN("Decoding Servo Message...");
+  if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_attach_tag) {
+    WS_DEBUG_PRINTLN("GOT: Servo Attach");
+    // Attempt to decode contents of servo_attach message
+    wippersnapper_servo_v1_ServoAttachRequest msgServoAttachReq =
+        wippersnapper_servo_v1_ServoAttachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachRequest_fields,
+                   &msgServoAttachReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachRequest");
+      return false; // fail out if we can't decode the request
+    }
+    // execute servo attach request
+    char *servoPin = msgServoAttachReq.servo_pin + 1;
+    bool attached = true;
+    if (!WS._servoComponent->servo_attach(
+            atoi(servoPin), msgServoAttachReq.min_pulse_width,
+            msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
+      attached = false;
+    } else {
+      WS_DEBUG_PRINT("ATTACHED servo w/minPulseWidth: ");
+      WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
+      WS_DEBUG_PRINT(" uS and maxPulseWidth: ");
+      WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
+      WS_DEBUG_PRINT("uS on pin: ");
+      WS_DEBUG_PRINTLN(servoPin);
+    }
+
+    // Create and fill a servo response message
+    size_t msgSz; // message's encoded size
+    wippersnapper_signal_v1_ServoResponse msgServoResp =
+        wippersnapper_signal_v1_ServoResponse_init_zero;
+    msgServoResp.which_payload =
+        wippersnapper_signal_v1_ServoResponse_servo_attach_resp_tag;
+    msgServoResp.payload.servo_attach_resp.attach_success = attached;
+    strcpy(msgServoResp.payload.servo_attach_resp.servo_pin,
+           msgServoAttachReq.servo_pin);
+
+    // Encode and publish response back to broker
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                  sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_ServoResponse_fields,
+                   &msgServoResp)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode servo response message!");
+      return false;
+    }
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResponse_fields,
+                        &msgServoResp);
+    WS_DEBUG_PRINT("-> Servo Attach Response...");
+    WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
+                      1);
+    WS_DEBUG_PRINTLN("Published!");
+  } else if (field->tag ==
+             wippersnapper_signal_v1_ServoRequest_servo_write_tag) {
+    WS_DEBUG_PRINTLN("GOT: Servo Write");
+
+    // Attempt to decode contents of servo write message
+    wippersnapper_servo_v1_ServoWriteRequest msgServoWriteReq =
+        wippersnapper_servo_v1_ServoWriteRequest_init_zero;
+
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoWriteRequest_fields,
+                   &msgServoWriteReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoWriteRequest");
+      return false; // fail out if we can't decode the request
+    }
+    // execute servo write request
+    char *servoPin = msgServoWriteReq.servo_pin + 1;
+
+    WS_DEBUG_PRINT("Writing pulse width of ");
+    WS_DEBUG_PRINT((int)msgServoWriteReq.pulse_width);
+    WS_DEBUG_PRINT("uS to servo on pin#: ");
+    WS_DEBUG_PRINTLN(servoPin);
+
+    WS._servoComponent->servo_write(atoi(servoPin),
+                                    (int)msgServoWriteReq.pulse_width);
+  } else if (field->tag ==
+             wippersnapper_signal_v1_ServoRequest_servo_detach_tag) {
+    WS_DEBUG_PRINTLN("GOT: Servo Detach");
+
+    // Attempt to decode contents of servo detach message
+    wippersnapper_servo_v1_ServoDetachRequest msgServoDetachReq =
+        wippersnapper_servo_v1_ServoDetachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_servo_v1_ServoDetachRequest_fields,
+                   &msgServoDetachReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoDetachRequest");
+      return false; // fail out if we can't decode the request
+    }
+
+    // execute servo detach request
+    char *servoPin = msgServoDetachReq.servo_pin + 1;
+    WS_DEBUG_PRINT("Detaching servo on pin ");
+    WS_DEBUG_PRINTLN(servoPin);
+    WS._servoComponent->servo_detach(atoi(servoPin));
+  } else {
+    WS_DEBUG_PRINTLN("Unable to decode servo message type!");
+    return false;
+  }
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Called when the device recieves a new message from the
+              /servo/ topic.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbServoMsg(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Servo]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
+
+  // Decode servo message from buffer
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_ServoRequest_fields,
+                 &WS.msgServo))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode servo message");
+}
+
 /**************************************************************************/
 /*!
     @brief    Called when i2c signal sub-topic receives a new message and
@@ -1125,17 +1274,27 @@ bool Wippersnapper::buildWSTopics() {
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
 
-  // Topic for i2c signals from device to broker
+  // Topic for i2c signals from broker to device
   WS._topic_signal_i2c_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
       strlen(TOPIC_I2C) + 1);
 
-  // Topic for i2c signals from broker to device
+  // Topic for i2c signals from device to broker
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
+
+  // Topic for servo messages from broker->device
+  WS._topic_signal_servo_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/servo") + 1);
+
+  // Topic for servo messages from device->broker
+  WS._topic_signal_servo_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/servo") + 1);
 
   // Create global registration topic
   if (WS._topic_description != NULL) {
@@ -1228,6 +1387,28 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Create device-to-broker servo signal topic
+  if (WS._topic_signal_servo_brkr != NULL) {
+    strcpy(WS._topic_signal_servo_brkr, WS._username);
+    strcat(WS._topic_signal_servo_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_servo_brkr, _device_uid);
+    strcat(WS._topic_signal_servo_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_servo_brkr, "broker/servo");
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Create broker-to-device servo signal topic
+  if (WS._topic_signal_servo_device != NULL) {
+    strcpy(WS._topic_signal_servo_device, WS._username);
+    strcat(WS._topic_signal_servo_device, TOPIC_WS);
+    strcat(WS._topic_signal_servo_device, _device_uid);
+    strcat(WS._topic_signal_servo_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_servo_device, "device/servo");
+  } else { // malloc failed
+    is_success = false;
+  }
+
   return is_success;
 }
 
@@ -1248,6 +1429,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
+
+  // Subscribe to servo sub-topic
+  _topic_signal_servo_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_servo_sub);
+  _topic_signal_servo_sub->setCallback(cbServoMsg);
 
   // Subscribe to registration status topic
   _topic_description_sub =
@@ -1600,9 +1787,21 @@ void Wippersnapper::connect() {
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
-  statusLEDFade(GREEN, 3);
 
-  // Run application
+  // Register components
+  WS_DEBUG_PRINTLN("Registering components...");
+#ifdef ARDUINO_ARCH_ESP32
+  WS_DEBUG_PRINT("LEDC: ");
+  WS._ledc = new ws_ledc();
+  WS_DEBUG_PRINTLN("OK!");
+#endif
+
+  WS_DEBUG_PRINT("SERVO: ");
+  WS._servoComponent = new ws_servo();
+  WS_DEBUG_PRINTLN("OK!");
+
+  // goto application
+  statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
 }

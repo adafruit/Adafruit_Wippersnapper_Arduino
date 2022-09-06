@@ -20,7 +20,6 @@
 #ifdef ARDUINO_ARCH_ESP8266
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
-#include "Arduino.h"
 #include "ESP8266WiFi.h"
 #include "Wippersnapper.h"
 
@@ -126,7 +125,11 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    _mqttBrokerURL = "io.adafruit.com";
+    if (WS._mqttBrokerURL == nullptr) {
+      WS._mqttBrokerURL = "io.adafruit.com";
+    } else {
+      _mqttBrokerURL = "io.adafruit.us";
+    }
 
     // Uncomment the following lines to use MQTT/SSL. You will need to
     // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
