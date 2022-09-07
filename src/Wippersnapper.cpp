@@ -1058,9 +1058,10 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS_DEBUG_PRINT("Hz to pin ");
     WS_DEBUG_PRINTLN(atoi(pwmPin));
     WS._pwmComponent->writeTone(atoi(pwmPin), msgPWMWriteFreqRequest.frequency);
-  } else if (field->tag == wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Duty Cycle");
-    
+
     // Attempt to decode contents of PWM detach message
     wippersnapper_pwm_v1_PWMWriteDutyCycleRequest msgPWMWriteDutyCycleRequest =
         wippersnapper_pwm_v1_PWMWriteDutyCycleRequest_init_zero;
@@ -1070,10 +1071,10 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                        "wippersnapper_pwm_v1_PWMWriteDutyCycleRequest");
       return false; // fail out if we can't decode the request
     }
-
     // execute PWM duty cycle write request
     char *pwmPin = msgPWMWriteDutyCycleRequest.pin + 1;
-    WS._pwmComponent->writeDutyCycle(atoi(pwmPin), (int) msgPWMWriteDutyCycleRequest.duty_cycle);
+    WS._pwmComponent->writeDutyCycle(
+        atoi(pwmPin), (int)msgPWMWriteDutyCycleRequest.duty_cycle);
   } else {
     WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
     return false;
