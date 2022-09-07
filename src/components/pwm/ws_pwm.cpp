@@ -37,16 +37,26 @@ bool ws_pwm::attach(uint8_t pin, double freq, uint8_t resolution) {
 #ifndef ARDUINO_ARCH_ESP32
   return true; // mock on non-ledc
 #endif
-  // uint8_t rc = _ledcMgr->attachPin(pin, freq, resolution);
-  // uint8_t rc = ledcMgr.attachPin(pin, freq, resolution);
-  // uint8_t rc = WS.
-  // if (rc == LEDC_CH_ERR)
-  //    is_attached = false;
+  uint8_t rc = _ledcMgr->attachPin(pin, freq, resolution);
+  if (rc == LEDC_CH_ERR)
+    is_attached = false;
   return is_attached;
 }
 
+/************************************************/
+/*!
+    @brief  Detaches a PWM pin.
+    @param  pin  Desired GPIO pin.
+*/
+/************************************************/
 void ws_pwm::detach(uint8_t pin) {
-  // TODO
+#if defined(ARDUINO_ARCH_ESP32)
+  // detach pin from LEDC manager
+  _ledcMgr->detachPin(pin);
+#endif
+
+  // "disable" pin's PWM
+  digitalWrite(pin, LOW);
 }
 
 void ws_pwm::writeDutyCycle(uint8_t pin, int dutyCycle) {
