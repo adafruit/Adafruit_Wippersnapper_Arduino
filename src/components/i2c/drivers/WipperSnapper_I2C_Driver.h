@@ -135,6 +135,11 @@ public:
         setSensorVoltagePeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
+        enableSensorRaw();
+        setSensorRawPeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       default:
         break;
       }
@@ -1316,6 +1321,89 @@ public:
     setSensorVoltagePeriod(period);
   }
 
+  /****************************** SENSOR_TYPE: Raw
+   * *******************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's Raw sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorRaw() { return; };
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's Raw sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorRaw() { _rawSensorPeriod = 0.0L; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the raw sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+     raw sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorRawPeriod(float period) {
+    if (period == 0.0) {
+      disableSensorRaw();
+      return;
+    }
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _rawSensorPeriod = (long)period * 1000;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a Raw sensor.
+      @param    period
+                The time interval at which to return new data from the Raw
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorRaw(float period) { setSensorRawPeriod(period); }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the raw sensor's period, if
+     set.
+      @returns  Time when the raw sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorRawPeriod() { return _rawSensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the raw sensor was queried last.
+      @returns  Time when the raw sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorRawPeriodPrv() { return _rawSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the raw sensor was queried.
+      @param    period
+                The time when the raw sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorRawPeriodPrv(long period) {
+    _rawSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets a sensor's Raw value.
+      @param    rawEvent
+                The Raw value.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
+
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -1371,6 +1459,10 @@ protected:
                                         ///< voltage sensor's value.
   long _voltagePeriodPrv = 0L;          ///< The time when the voltage sensor
                                         ///< was last read.
+  long _rawSensorPeriod =
+      0L; ///< The time period between reading the Raw sensor's value.
+  long _rawSensorPeriodPrv = 0L; ///< The time when the Raw sensor
+                                 ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

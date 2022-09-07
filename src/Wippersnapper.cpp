@@ -848,6 +848,13 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
             msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
       attached = false;
+    } else {
+      WS_DEBUG_PRINT("ATTACHED servo w/minPulseWidth: ");
+      WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
+      WS_DEBUG_PRINT(" uS and maxPulseWidth: ");
+      WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
+      WS_DEBUG_PRINT("uS on pin: ");
+      WS_DEBUG_PRINTLN(servoPin);
     }
 
     // Create and fill a servo response message
@@ -857,6 +864,8 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     msgServoResp.which_payload =
         wippersnapper_signal_v1_ServoResponse_servo_attach_resp_tag;
     msgServoResp.payload.servo_attach_resp.attach_success = attached;
+    strcpy(msgServoResp.payload.servo_attach_resp.servo_pin,
+           msgServoAttachReq.servo_pin);
 
     // Encode and publish response back to broker
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
@@ -884,11 +893,17 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_decode(stream, wippersnapper_servo_v1_ServoWriteRequest_fields,
                    &msgServoWriteReq)) {
       WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode wippersnapper_servo_v1_ServoWriteReq");
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoWriteRequest");
       return false; // fail out if we can't decode the request
     }
     // execute servo write request
     char *servoPin = msgServoWriteReq.servo_pin + 1;
+
+    WS_DEBUG_PRINT("Writing pulse width of ");
+    WS_DEBUG_PRINT((int)msgServoWriteReq.pulse_width);
+    WS_DEBUG_PRINT("uS to servo on pin#: ");
+    WS_DEBUG_PRINTLN(servoPin);
+
     WS._servoComponent->servo_write(atoi(servoPin),
                                     (int)msgServoWriteReq.pulse_width);
   } else if (field->tag ==
@@ -901,12 +916,14 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     if (!pb_decode(stream, wippersnapper_servo_v1_ServoDetachRequest_fields,
                    &msgServoDetachReq)) {
       WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode wippersnapper_servo_v1_ServoDetachReq");
+          "ERROR: Could not decode wippersnapper_servo_v1_ServoDetachRequest");
       return false; // fail out if we can't decode the request
     }
 
     // execute servo detach request
     char *servoPin = msgServoDetachReq.servo_pin + 1;
+    WS_DEBUG_PRINT("Detaching servo on pin ");
+    WS_DEBUG_PRINTLN(servoPin);
     WS._servoComponent->servo_detach(atoi(servoPin));
   } else {
     WS_DEBUG_PRINTLN("Unable to decode servo message type!");
