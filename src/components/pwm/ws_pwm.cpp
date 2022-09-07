@@ -32,6 +32,17 @@ ws_pwm::~ws_pwm() {
   // TODO
 }
 
+
+/******************************************************************/
+/*!
+    @brief  Attaches a PWM pin.
+    @param  pin         GPIO pin.
+    @param  freq        PWM frequency, in Hz.
+    @param  resolution  PWM resolution, in bytes.
+    @return True if PWM pin is successfully attached to a timer,
+            otherwise False.
+*/
+/******************************************************************/
 bool ws_pwm::attach(uint8_t pin, double freq, uint8_t resolution) {
   bool is_attached = true;
 #ifndef ARDUINO_ARCH_ESP32
