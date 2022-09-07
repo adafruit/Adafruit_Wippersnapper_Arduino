@@ -1006,6 +1006,21 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");
+  } else if (field->tag == wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
+    WS_DEBUG_PRINTLN("GOT: PWM Pin Detach");
+    // Attempt to decode contents of PWM detach message
+    wippersnapper_pwm_v1_PWMDetachRequest msgPWMDetachRequest =
+        wippersnapper_pwm_v1_PWMDetachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMDetachRequest_fields,
+                   &msgPWMDetachRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_pwm_v1_PWMDetachRequest");
+      return false; // fail out if we can't decode the request
+    }
+
+    // execute PWM pin attach request
+    char *pwmPin = msgPWMDetachRequest.pin + 1;
+    WS._pwmComponent->detach(atoi(pwmPin));
   } else {
     WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
     return false;
