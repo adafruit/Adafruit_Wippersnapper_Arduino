@@ -958,13 +958,13 @@ void cbServoMsg(char *data, uint16_t len) {
     @returns  True if decoded and executed successfully, False otherwise.
 */
 /******************************************************************************************/
-bool pwmDecodeMsg(pb_istream_t *stream, const pb_field_t *field,
-                      void **arg) {
+bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   WS_DEBUG_PRINTLN("Decoding Servo Message...");
   if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Attach");
     // Attempt to decode contents of PWM attach message
-    wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest = wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
+    wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest =
+        wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_pwm_v1_PWMAttachRequest_fields,
                    &msgPWMAttachRequest)) {
       WS_DEBUG_PRINTLN(
@@ -974,18 +974,19 @@ bool pwmDecodeMsg(pb_istream_t *stream, const pb_field_t *field,
 
     // execute PWM pin attach request
     char *pwmPin = msgPWMAttachRequest.pin + 1;
-    bool attached = true;
-    // TODO: add this back on WED.
-/*     if (!WS._servoComponent->servo_attach(
-            atoi(servoPin), msgServoAttachReq.min_pulse_width,
-            msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
+    bool attached = WS._pwmComponent->attach(
+        atoi(pwmPin), (double)msgPWMAttachRequest.frequency,
+        (uint8_t)msgPWMAttachRequest.resolution);
+    if (!attached) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to attach PWM pin");
       attached = false;
-    } */
+    }
 
     // Create and fill the response message
-    wippersnapper_signal_v1_PWMResponse msgPWMResponse = wippersnapper_signal_v1_PWMResponse_init_zero;
-    msgPWMResponse.which_payload = wippersnapper_signal_v1_PWMResponse_attach_response_tag;
+    wippersnapper_signal_v1_PWMResponse msgPWMResponse =
+        wippersnapper_signal_v1_PWMResponse_init_zero;
+    msgPWMResponse.which_payload =
+        wippersnapper_signal_v1_PWMResponse_attach_response_tag;
     msgPWMResponse.payload.attach_response.did_attach = attached;
     strcpy(msgPWMResponse.payload.attach_response.pin, msgPWMAttachRequest.pin);
 
@@ -1002,7 +1003,8 @@ bool pwmDecodeMsg(pb_istream_t *stream, const pb_field_t *field,
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PWMResponse_fields,
                         &msgPWMResponse);
     WS_DEBUG_PRINT("-> PWM Attach Response...");
-    WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz, 1);
+    WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz,
+                      1);
     WS_DEBUG_PRINTLN("Published!");
   } else {
     WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
@@ -1033,8 +1035,7 @@ void cbPWMMsg(char *data, uint16_t len) {
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
-  // TODO: Re-enable this
-  // WS.msgServo.cb_payload.funcs.decode = cbDecodeServoMsg;
+  WS.msgPWM.cb_payload.funcs.decode = cbPWMDecodeMsg;
 
   // Decode servo message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
@@ -1924,7 +1925,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("OK!");
 
   WS_DEBUG_PRINT("PWM: ");
-  WS._pwmComponent = new ws_pwm();
+  WS._pwmComponent = new ws_pwm(WS._ledc);
   WS_DEBUG_PRINTLN("OK!");
 
   // goto application

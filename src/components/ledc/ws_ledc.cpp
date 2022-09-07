@@ -47,20 +47,21 @@ ws_ledc::~ws_ledc() {
     @brief  Allocates a timer + channel for a pin and attaches it.
     @param  pin  Desired GPIO pin number.
     @param  freq Desired timer frequency, in Hz.
-    @return The channel number if the pin was successfully attached,
-            otherwise 255.
+    @param  resolution Desired timer resolution, in bits.
+    @return The channel number if the pin was successfully or already
+            attached, otherwise 255.
 */
 /**************************************************************************/
-uint8_t ws_ledc::attachPin(uint8_t pin, double freq) {
+uint8_t ws_ledc::attachPin(uint8_t pin, double freq, uint8_t resolution) {
   // have we already attached this pin?
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
     if (_ledcPins[i].pin == pin)
-      return 255;
+      return _ledcPins[i].chan;
   }
 
   // allocate chanel
-  uint8_t chanNum = _allocateChannel(freq);
-  if (chanNum == 255)
+  uint8_t chanNum = allocateChannel(freq, resolution);
+  if (chanNum == LEDC_CH_ERR)
     return chanNum;
 
   // attach pin to channel
@@ -68,6 +69,7 @@ uint8_t ws_ledc::attachPin(uint8_t pin, double freq) {
 
   // allocate pin in pool
   _ledcPins[chanNum].pin = pin;
+  _ledcPins[chanNum].chan = chanNum;
 
   return chanNum;
 }
@@ -96,27 +98,20 @@ void ws_ledc::detachPin(uint8_t pin) {
 /**************************************************************************/
 /*!
     @brief  Allocates a channel and timer.
-    @param  freq Desired timer frequency, in Hz.
+    @param  freq       Timer frequency, in Hz.
+    @param  resolution Timer resolution, in bits.
     @return The channel number if the timer was successfully initialized,
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t ws_ledc::_allocateChannel(double freq) {
-  // attempt to allocate an inactive channel
-  uint8_t chanNum = 255;
-  for (int i = 0; i < MAX_LEDC_PWMS; i++) {
-    if (_ledcPins[i].isActive == false) {
-      chanNum = i;
-      break;
-    }
-  }
-
-  // did we fail to allocate?
-  if (chanNum == 255)
-    return 255;
+uint8_t ws_ledc::allocateChannel(double freq, uint8_t resolution = 16) {
+  // obtain an inactive channel number
+  uint8_t chanNum = getInactiveChannel();
+  if (chanNum == LEDC_CH_ERR)
+    return LEDC_CH_ERR; // failed to obtain inactive channel #
 
   // attempt to set up a ledc_timer on the free channel
-  double rc = ledcSetup(uint8_t(chanNum), freq, 16);
+  double rc = ledcSetup(uint8_t(chanNum), freq, resolution);
   if (rc == 0)
     return 255;
 
@@ -125,6 +120,21 @@ uint8_t ws_ledc::_allocateChannel(double freq) {
   _ledcPins[chanNum].isActive = true;
 
   return chanNum;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Returns an inactive LEDC channel number.
+    @returns  Inactive channel number if free, otherwise LEDC_CH_ERR.
+*/
+/**************************************************************************/
+uint8_t ws_ledc::getInactiveChannel() {
+  for (int ch = 0; ch < sizeof(_ledcPins); ch++) {
+    if (_ledcPins[ch].isActive == false) {
+      return ch;
+    }
+  }
+  return LEDC_CH_ERR;
 }
 
 /**************************************************************************/

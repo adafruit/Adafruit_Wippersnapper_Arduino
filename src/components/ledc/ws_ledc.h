@@ -21,6 +21,7 @@
 #include "esp32-hal-ledc.h"
 #include "esp_err.h"
 
+#define LEDC_CH_ERR 255 ///< LEDC channel error
 #define MAX_LEDC_PWMS                                                          \
   16 ///< maximum # of LEDC channels (see: LEDC Chan to Group/Channel/Timer
      ///< Mapping)
@@ -51,12 +52,14 @@ class ws_ledc {
 public:
   ws_ledc();
   ~ws_ledc();
-  uint8_t attachPin(uint8_t pin, double freq);
+  uint8_t attachPin(uint8_t pin, double freq, uint8_t resolution);
   void detachPin(uint8_t pin);
   void setDuty(uint8_t pin, uint32_t duty);
 
 private:
-  uint8_t _allocateChannel(double freq);
+  // TODO uScore
+  uint8_t allocateChannel(double freq, uint8_t resolution);
+  uint8_t getInactiveChannel();
   ledcPin_t _ledcPins[MAX_LEDC_PWMS]; ///< Pool of usable LEDC pins
 };
 extern Wippersnapper WS;

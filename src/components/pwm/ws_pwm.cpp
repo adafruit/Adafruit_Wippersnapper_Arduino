@@ -18,11 +18,10 @@
 /**************************************************************************/
 /*!
     @brief  Constructor
+    @param  ledcManager  Pointer to LEDC driver.
 */
 /**************************************************************************/
-ws_pwm::ws_pwm() {
-    // TODO
-}
+ws_pwm::ws_pwm(ws_ledc *ledcManager) { _ledcMgr = ledcManager; }
 
 /**************************************************************************/
 /*!
@@ -30,26 +29,34 @@ ws_pwm::ws_pwm() {
 */
 /**************************************************************************/
 ws_pwm::~ws_pwm() {
-    // TODO
+  // TODO
 }
 
 bool ws_pwm::attach(uint8_t pin, double freq, uint8_t resolution) {
-    // TODO
-    return true;
+  bool is_attached = true;
+#ifndef ARDUINO_ARCH_ESP32
+  return true; // mock on non-ledc
+#endif
+  // uint8_t rc = _ledcMgr->attachPin(pin, freq, resolution);
+  // uint8_t rc = ledcMgr.attachPin(pin, freq, resolution);
+  // uint8_t rc = WS.
+  // if (rc == LEDC_CH_ERR)
+  //    is_attached = false;
+  return is_attached;
 }
 
 void ws_pwm::detach(uint8_t pin) {
-    // TODO
+  // TODO
 }
 
 void ws_pwm::writeDutyCycle(uint8_t pin, int dutyCycle) {
-    // TODO
+  // TODO
 }
 
 void ws_pwm::writeTone(uint8_t pin, uint32_t freq) {
-    // TODO
+  // TODO
 }
 
 void ws_pwm::noTone(uint8_t pin) {
-    // TODO
+  // TODO
 }

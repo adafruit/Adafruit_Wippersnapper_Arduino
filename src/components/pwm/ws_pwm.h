@@ -17,9 +17,11 @@
 #ifndef WS_PWM
 #define WS_PWM
 
-#include "Wippersnapper.h"
+#include "components/ledc/ws_ledc.h"
 
 class Wippersnapper;
+
+class ws_ledc;
 
 /**************************************************************************/
 /*!
@@ -28,14 +30,18 @@ class Wippersnapper;
 /**************************************************************************/
 class ws_pwm {
 public:
-  ws_pwm();
+  ws_pwm(ws_ledc *ledcManager);
   ~ws_pwm();
+
   bool attach(uint8_t pin, double freq, uint8_t resolution);
   void detach(uint8_t pin);
 
   void writeDutyCycle(uint8_t pin, int dutyCycle);
   void writeTone(uint8_t pin, uint32_t freq);
   void noTone(uint8_t pin);
+
+private:
+  ws_ledc *_ledcMgr; ///< pointer to ws_ledc
 };
 extern Wippersnapper WS;
 
