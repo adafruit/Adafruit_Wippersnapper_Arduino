@@ -57,7 +57,7 @@ public:
 
   void setDuty(uint8_t pin, uint32_t duty);
   void analogWrite(uint8_t pin, int value);
-  // void tone(uint8_t pin, uint32_t freq);
+  void tone(uint8_t pin, uint32_t freq);
 
 private:
   // TODO uScore

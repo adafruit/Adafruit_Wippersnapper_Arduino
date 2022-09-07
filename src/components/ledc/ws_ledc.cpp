@@ -201,4 +201,21 @@ void ws_ledc::setDuty(uint8_t pin, uint32_t duty) {
   ledcWrite(chan, duty);
 }
 
+/**************************************************************************/
+/*!
+    @brief  Writes a square wave with a fixed duty cycle and variable
+            frequency to a pin. Used by piezo buzzers and speakers.
+    @param  pin  The desired pin to write to.
+    @param  freq The frequency of the tone, in Hz.
+*/
+/**************************************************************************/
+void ws_ledc::tone(uint8_t pin, uint32_t freq) {
+  uint8_t ch;
+  ch = getChannel(pin);
+  if (ch == LEDC_CH_ERR) {
+    // Serial.println("ERROR: Pin not previously attached!");
+  }
+  ledcWriteTone(ch, freq);
+}
+
 #endif // ARDUINO_ARCH_ESP32
