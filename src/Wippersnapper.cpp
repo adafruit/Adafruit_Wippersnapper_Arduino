@@ -1006,7 +1006,8 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");
-  } else if (field->tag == wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Detach");
     // Attempt to decode contents of PWM detach message
     wippersnapper_pwm_v1_PWMDetachRequest msgPWMDetachRequest =
