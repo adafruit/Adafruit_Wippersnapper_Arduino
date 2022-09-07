@@ -54,11 +54,15 @@ public:
   ~ws_ledc();
   uint8_t attachPin(uint8_t pin, double freq, uint8_t resolution);
   void detachPin(uint8_t pin);
+
   void setDuty(uint8_t pin, uint32_t duty);
+  void analogWrite(uint8_t pin, int value);
+  // void tone(uint8_t pin, uint32_t freq);
 
 private:
   // TODO uScore
   uint8_t allocateChannel(double freq, uint8_t resolution);
+  uint8_t getChannel(uint8_t pin);
   uint8_t getInactiveChannel();
   ledcPin_t _ledcPins[MAX_LEDC_PWMS]; ///< Pool of usable LEDC pins
 };

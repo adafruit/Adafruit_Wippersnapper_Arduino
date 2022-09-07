@@ -59,8 +59,19 @@ void ws_pwm::detach(uint8_t pin) {
   digitalWrite(pin, LOW);
 }
 
+/******************************************************************/
+/*!
+    @brief  Writes a duty cycle to a pin with a fixed freq of 5kHz
+    @param  pin        GPIO pin to write to.
+    @param  dutyCycle  Desired duty cycle to write to a pin.
+*/
+/******************************************************************/
 void ws_pwm::writeDutyCycle(uint8_t pin, int dutyCycle) {
-  // TODO
+#if defined(ARDUINO_ARCH_ESP32)
+  _ledcMgr->analogWrite(pin, dutyCycle);
+#else
+  analogWrite(pin, dutyCycle)
+#endif
 }
 
 void ws_pwm::writeTone(uint8_t pin, uint32_t freq) {

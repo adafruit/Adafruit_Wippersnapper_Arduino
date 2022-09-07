@@ -44,6 +44,23 @@ ws_ledc::~ws_ledc() {
 
 /**************************************************************************/
 /*!
+    @brief  Checks if a channel has already been allocated for a pin.
+    @param  pin  Desired GPIO pin number.
+    @return The channel number if the pin was successfully or already
+            attached, otherwise LEDC_CH_ERR.
+*/
+/**************************************************************************/
+uint8_t ws_ledc::getChannel(uint8_t pin) {
+  // have we already attached this pin?
+  for (int i = 0; i < MAX_LEDC_PWMS; i++) {
+    if (_ledcPins[i].pin == pin)
+      return _ledcPins[i].chan;
+  }
+  return LEDC_CH_ERR;
+}
+
+/**************************************************************************/
+/*!
     @brief  Allocates a timer + channel for a pin and attaches it.
     @param  pin  Desired GPIO pin number.
     @param  freq Desired timer frequency, in Hz.
@@ -135,6 +152,32 @@ uint8_t ws_ledc::getInactiveChannel() {
     }
   }
   return LEDC_CH_ERR;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Arduino AnalogWrite function, but for ESP32's LEDC.
+    @param  pin  The desired pin to write to.
+    @param  value The duty cycle.
+*/
+/**************************************************************************/
+void ws_ledc::analogWrite(uint8_t pin, int value) {
+  if (value > 255 || value < 0)
+    return;
+
+  uint8_t ch;
+  ch = getChannel(pin);
+  if (ch == LEDC_CH_ERR) {
+    Serial.println("ERROR: Pin not attached to channel");
+    return;
+  }
+
+  // perform duty cycle calculation provided value
+  // (assumes 12-bit resolution, 2^12)
+  uint32_t dutyCycle = (4095 / 255) * min(value, 255);
+
+  // set the duty cycle of the pin
+  setDuty(pin, dutyCycle);
 }
 
 /**************************************************************************/
