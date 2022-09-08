@@ -1108,7 +1108,8 @@ void cbPWMMsg(char *data, uint16_t len) {
 
   // Decode servo message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_PWMRequest_fields, &WS.msgPWM))
+  if (!pb_decode(&istream, wippersnapper_signal_v1_PWMRequest_fields,
+                 &WS.msgPWM))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode PWM message");
 }
 

@@ -45,8 +45,8 @@
 #include "components/ledc/ws_ledc.h"
 #endif
 
-#include "components/servo/ws_servo.h"
 #include "components/pwm/ws_pwm.h"
+#include "components/servo/ws_servo.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -284,7 +284,7 @@ public:
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
   ws_servo *_servoComponent; ///< Instance of servo class
-  ws_pwm *_pwmComponent; ///< Instance of pwm class
+  ws_pwm *_pwmComponent;     ///< Instance of pwm class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
