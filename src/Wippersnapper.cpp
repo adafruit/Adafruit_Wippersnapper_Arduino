@@ -1019,7 +1019,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     size_t msgSz; // message's encoded size
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PWMResponse_fields,
                         &msgPWMResponse);
-    WS_DEBUG_PRINT("-> PWM Attach Response...");
+    WS_DEBUG_PRINT("PUBLISHING: PWM Attach Response...");
     WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");

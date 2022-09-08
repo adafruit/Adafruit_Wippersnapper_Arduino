@@ -84,7 +84,7 @@ void ws_pwm::writeDutyCycle(uint8_t pin, int dutyCycle) {
 #if defined(ARDUINO_ARCH_ESP32)
   _ledcMgr->analogWrite(pin, dutyCycle);
 #else
-  analogWrite(pin, dutyCycle)
+  analogWrite(pin, dutyCycle);
 #endif
 }
 
