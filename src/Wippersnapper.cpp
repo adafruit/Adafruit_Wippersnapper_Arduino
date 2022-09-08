@@ -1113,6 +1113,18 @@ void cbPWMMsg(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode PWM message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a pwm message and dispatches to the pwm component.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+/******************************************************************************************/
 bool cbDecodePWMMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   WS_DEBUG_PRINTLN("Decoding PWM Message...");
   if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
