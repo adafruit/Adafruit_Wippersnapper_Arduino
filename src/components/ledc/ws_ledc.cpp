@@ -50,7 +50,7 @@ ws_ledc::~ws_ledc() {
             attached, otherwise LEDC_CH_ERR.
 */
 /**************************************************************************/
-uint8_t ws_ledc::getChannel(uint8_t pin) {
+uint8_t ws_ledc::_getChannel(uint8_t pin) {
   // have we already attached this pin?
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
     if (_ledcPins[i].pin == pin)
@@ -77,7 +77,7 @@ uint8_t ws_ledc::attachPin(uint8_t pin, double freq, uint8_t resolution) {
   }
 
   // allocate chanel
-  uint8_t chanNum = allocateChannel(freq, resolution);
+  uint8_t chanNum = _allocateChannel(freq, resolution);
   if (chanNum == LEDC_CH_ERR)
     return chanNum;
 
@@ -121,9 +121,9 @@ void ws_ledc::detachPin(uint8_t pin) {
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t ws_ledc::allocateChannel(double freq, uint8_t resolution = 16) {
+uint8_t ws_ledc::_allocateChannel(double freq, uint8_t resolution = 16) {
   // obtain an inactive channel number
-  uint8_t chanNum = getInactiveChannel();
+  uint8_t chanNum = _getInactiveChannel();
   if (chanNum == LEDC_CH_ERR)
     return LEDC_CH_ERR; // failed to obtain inactive channel #
 
@@ -145,7 +145,7 @@ uint8_t ws_ledc::allocateChannel(double freq, uint8_t resolution = 16) {
     @returns  Inactive channel number if free, otherwise LEDC_CH_ERR.
 */
 /**************************************************************************/
-uint8_t ws_ledc::getInactiveChannel() {
+uint8_t ws_ledc::_getInactiveChannel() {
   for (int ch = 0; ch < sizeof(_ledcPins); ch++) {
     if (_ledcPins[ch].isActive == false) {
       return ch;
@@ -166,7 +166,7 @@ void ws_ledc::analogWrite(uint8_t pin, int value) {
     return;
 
   uint8_t ch;
-  ch = getChannel(pin);
+  ch = _getChannel(pin);
   if (ch == LEDC_CH_ERR) {
     Serial.println("ERROR: Pin not attached to channel");
     return;
@@ -211,7 +211,7 @@ void ws_ledc::setDuty(uint8_t pin, uint32_t duty) {
 /**************************************************************************/
 void ws_ledc::tone(uint8_t pin, uint32_t freq) {
   uint8_t ch;
-  ch = getChannel(pin);
+  ch = _getChannel(pin);
   if (ch == LEDC_CH_ERR) {
     // Serial.println("ERROR: Pin not previously attached!");
   }

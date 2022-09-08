@@ -60,10 +60,9 @@ public:
   void tone(uint8_t pin, uint32_t freq);
 
 private:
-  // TODO uScore
-  uint8_t allocateChannel(double freq, uint8_t resolution);
-  uint8_t getChannel(uint8_t pin);
-  uint8_t getInactiveChannel();
+  uint8_t _allocateChannel(double freq, uint8_t resolution);
+  uint8_t _getChannel(uint8_t pin);
+  uint8_t _getInactiveChannel();
   ledcPin_t _ledcPins[MAX_LEDC_PWMS]; ///< Pool of usable LEDC pins
 };
 extern Wippersnapper WS;
