@@ -17,7 +17,14 @@
 
 /**************************************************************************/
 /*!
-    @brief  Constructor
+    @brief  Constructor for non-ESP32 platforms.
+*/
+/**************************************************************************/
+ws_pwm::ws_pwm() {}
+
+/**************************************************************************/
+/*!
+    @brief  Constructor for ESP32 platforms.
     @param  ledcManager  Pointer to LEDC driver.
 */
 /**************************************************************************/
@@ -28,10 +35,7 @@ ws_pwm::ws_pwm(ws_ledc *ledcManager) { _ledcMgr = ledcManager; }
     @brief  Destructor
 */
 /**************************************************************************/
-ws_pwm::~ws_pwm() {
-  // TODO
-}
-
+ws_pwm::~ws_pwm() { _ledcMgr = nullptr; }
 
 /******************************************************************/
 /*!
@@ -45,13 +49,12 @@ ws_pwm::~ws_pwm() {
 /******************************************************************/
 bool ws_pwm::attach(uint8_t pin, double freq, uint8_t resolution) {
   bool is_attached = true;
-#ifndef ARDUINO_ARCH_ESP32
-  return true; // mock on non-ledc
-#endif
+#if defined(ARDUINO_ARCH_ESP32)
   uint8_t rc = _ledcMgr->attachPin(pin, freq, resolution);
   if (rc == LEDC_CH_ERR)
     is_attached = false;
-  return is_attached;
+#endif
+  return is_attached; // always true on non-esp32
 }
 
 /************************************************/

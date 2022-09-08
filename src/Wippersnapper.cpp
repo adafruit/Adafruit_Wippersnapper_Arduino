@@ -1994,7 +1994,11 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("OK!");
 
   WS_DEBUG_PRINT("PWM: ");
+#ifdef ARDUINO_ARCH_ESP32
   WS._pwmComponent = new ws_pwm(WS._ledc);
+#else
+  WS._pwmComponent = new ws_pwm();
+#endif
   WS_DEBUG_PRINTLN("OK!");
 
   // goto application

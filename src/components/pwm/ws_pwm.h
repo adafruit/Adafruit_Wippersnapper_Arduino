@@ -17,10 +17,13 @@
 #ifndef WS_PWM
 #define WS_PWM
 
+#include "Wippersnapper.h"
+
+#ifdef ARDUINO_ARCH_ESP32
 #include "components/ledc/ws_ledc.h"
+#endif
 
 class Wippersnapper;
-
 class ws_ledc;
 
 /**************************************************************************/
@@ -30,6 +33,7 @@ class ws_ledc;
 /**************************************************************************/
 class ws_pwm {
 public:
+  ws_pwm();
   ws_pwm(ws_ledc *ledcManager);
   ~ws_pwm();
   bool attach(uint8_t pin, double freq, uint8_t resolution);
@@ -37,8 +41,9 @@ public:
   void writeDutyCycle(uint8_t pin, int dutyCycle);
   void writeTone(uint8_t pin, uint32_t freq);
   void noTone(uint8_t pin);
+
 private:
-  ws_ledc *_ledcMgr; ///< pointer to ws_ledc
+  ws_ledc *_ledcMgr = nullptr; ///< pointer to ws_ledc
 };
 extern Wippersnapper WS;
 
