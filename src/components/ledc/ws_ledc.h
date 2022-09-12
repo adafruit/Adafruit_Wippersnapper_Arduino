@@ -24,8 +24,6 @@
 #define MAX_LEDC_PWMS                                                          \
   16 ///< maximum # of LEDC channels (see: LEDC Chan to Group/Channel/Timer
      ///< Mapping)
-#define LEDC_RESOLUTION 10 ///< max LEDC resolution
-#define MAX_TIMER_WIDTH 20 ///< max LEDC esp32 timer width
 
 /** Defines a pin attached to an active LEDC timer group */
 typedef struct {
@@ -51,12 +49,12 @@ class ws_ledc {
 public:
   ws_ledc();
   ~ws_ledc();
-  uint8_t attachPin(uint8_t pin, double freq);
+  uint8_t attachPin(uint8_t pin, double freq, uint8_t resolution);
   void detachPin(uint8_t pin);
   void setDuty(uint8_t pin, uint32_t duty);
 
 private:
-  uint8_t _allocateChannel(double freq);
+  uint8_t _allocateChannel(double freq, uint8_t resolution);
   ledcPin_t _ledcPins[MAX_LEDC_PWMS]; ///< Pool of usable LEDC pins
 };
 extern Wippersnapper WS;

@@ -46,12 +46,13 @@ ws_ledc::~ws_ledc() {
 /*!
     @brief  Allocates a timer + channel for a pin and attaches it.
     @param  pin  Desired GPIO pin number.
-    @param  freq Desired timer frequency, in Hz.
+    @param  freq Desired LEDC timer frequency, in Hz.
+    @param  resolution Desired LEDC timer resolution, in bits.
     @return The channel number if the pin was successfully attached,
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t ws_ledc::attachPin(uint8_t pin, double freq) {
+uint8_t ws_ledc::attachPin(uint8_t pin, double freq, uint8_t resolution) {
   // have we already attached this pin?
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
     if (_ledcPins[i].pin == pin)
@@ -59,7 +60,7 @@ uint8_t ws_ledc::attachPin(uint8_t pin, double freq) {
   }
 
   // allocate chanel
-  uint8_t chanNum = _allocateChannel(freq);
+  uint8_t chanNum = _allocateChannel(freq, resolution);
   if (chanNum == 255)
     return chanNum;
 
@@ -96,12 +97,13 @@ void ws_ledc::detachPin(uint8_t pin) {
 /**************************************************************************/
 /*!
     @brief  Allocates a channel and timer.
-    @param  freq Desired timer frequency, in Hz.
+    @param  freq Desired LEDC timer frequency, in Hz.
+    @param  resolution Desired LEDC timer resolution, in bits.
     @return The channel number if the timer was successfully initialized,
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t ws_ledc::_allocateChannel(double freq) {
+uint8_t ws_ledc::_allocateChannel(double freq, uint8_t resolution) {
   // attempt to allocate an inactive channel
   uint8_t chanNum = 255;
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
@@ -116,7 +118,7 @@ uint8_t ws_ledc::_allocateChannel(double freq) {
     return 255;
 
   // attempt to set up a ledc_timer on the free channel
-  double rc = ledcSetup(uint8_t(chanNum), freq , 12);
+  double rc = ledcSetup(uint8_t(chanNum), freq , resolution);
   if (rc == 0)
     return 255;
 
