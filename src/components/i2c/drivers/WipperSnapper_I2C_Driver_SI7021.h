@@ -51,9 +51,8 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _si7021 = new Adafruit_Si7021();
-    _si7021->begin();
-    return true;
+    _si7021 = new Adafruit_Si7021(_i2c);
+    return _si7021->begin();
   }
 
   /*******************************************************************************/
@@ -83,7 +82,7 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
-    
+
     humidEvent->relative_humidity = _si7021->readHumidity();
     return true;
   }
