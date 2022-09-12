@@ -25,8 +25,13 @@
 #define MAX_PULSE_WIDTH 2400 ///< The longest pulse sent to a servo
 #define INVALID_SERVO 255    ///< Flag indicating an invalid servo index
 
-#define DEFAULT_SERVO_FREQ 50    ///< default servo frequency
-#define LEDC_TIMER_WIDTH 12     ///< timer width to request from LEDC manager component, in bits (NOTE: While ESP32x can go up to 16 bit timer width, ESP32-S2 does not work at this resolution. So, for the purposes of keeping this library compatible with multiple ESP32x platforms, the timer width has been scaled down to 10 bits and the calculation adjusted accordingly)
+#define DEFAULT_SERVO_FREQ 50 ///< default servo frequency
+#define LEDC_TIMER_WIDTH                                                       \
+  12 ///< timer width to request from LEDC manager component, in bits (NOTE:
+     ///< While ESP32x can go up to 16 bit timer width, ESP32-S2 does not work
+     ///< at this resolution. So, for the purposes of keeping this library
+     ///< compatible with multiple ESP32x platforms, the timer width has been
+     ///< scaled down to 10 bits and the calculation adjusted accordingly)
 
 /** Defines a servo attached to a pin */
 typedef struct {

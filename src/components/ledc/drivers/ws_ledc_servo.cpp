@@ -62,7 +62,8 @@ void ws_ledc_servo::setLEDCDriver(ws_ledc *ledcManager) {
 uint8_t ws_ledc_servo::attach(int pin, int minPulseWidth, int maxPulseWidth,
                               int servoFreq) {
   // Attempt to attach a pin to ledc channel
-  uint8_t chan = _ledcMgr->attachPin((uint8_t)pin, (double)servoFreq, LEDC_TIMER_WIDTH);
+  uint8_t chan =
+      _ledcMgr->attachPin((uint8_t)pin, (double)servoFreq, LEDC_TIMER_WIDTH);
   if (chan == 255) // error!
     return chan;
   // configure the servo object and assign it to a pin
@@ -114,7 +115,8 @@ void ws_ledc_servo::writeMicroseconds(int value) {
   // https://github.com/madhephaestus/ESP32Servo/blob/master/src/ESP32Servo.cpp
   // count = (pulse_high_width / (pulse_period/2**timer_width))
   // 50Hz servo =  20ms pulse_period
-  uint32_t count = ((double)value / ((double)20000/(double)pow(2, LEDC_TIMER_WIDTH)));
+  uint32_t count =
+      ((double)value / ((double)20000 / (double)pow(2, LEDC_TIMER_WIDTH)));
   _ledcMgr->setDuty(_servo.Pin.nbr, count);
 }
 #endif // ARDUINO_ARCH_ESP32
