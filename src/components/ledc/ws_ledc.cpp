@@ -116,7 +116,7 @@ uint8_t ws_ledc::_allocateChannel(double freq) {
     return 255;
 
   // attempt to set up a ledc_timer on the free channel
-  double rc = ledcSetup(uint8_t(chanNum), freq, 16);
+  double rc = ledcSetup(uint8_t(chanNum), freq , 12);
   if (rc == 0)
     return 255;
 
