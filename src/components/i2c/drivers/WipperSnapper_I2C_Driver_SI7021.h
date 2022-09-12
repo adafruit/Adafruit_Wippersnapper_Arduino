@@ -84,7 +84,7 @@ public:
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
     
-    humidEvent->relative_humidity = _si7021.readHumidity();
+    humidEvent->relative_humidity = _si7021->readHumidity();
     return true;
   }
 
