@@ -67,7 +67,6 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
-    float temperature;
 
     tempEvent->temperature = _si7021->readTemperature();
     return true;
@@ -84,13 +83,18 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
-    float humidity;
     
     humidEvent->relative_humidity = _si7021.readHumidity();
     return true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Destructor for an SI7021 sensor.
+  */
+  /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_SI7021() {
+    // Called when a Si7021 component is deleted.
     delete _si7021;
   }
 
