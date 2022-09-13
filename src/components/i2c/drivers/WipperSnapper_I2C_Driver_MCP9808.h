@@ -58,8 +58,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _mcp9808 = new Adafruit_MCP9808();
-    bool isInit = _mcp9808->begin((uint8_t)_sensorAddress, _i2c);
-    return isInit;
+    return _mcp9808->begin((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/

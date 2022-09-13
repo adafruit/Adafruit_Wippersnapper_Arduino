@@ -1450,7 +1450,9 @@ public:
                 sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorAmbientTempF(float period) { setSensorAmbientTempFPeriod(period); }
+  virtual void updateSensorAmbientTempF(float period) {
+    setSensorAmbientTempFPeriod(period);
+  }
 
   /*********************************************************************************/
   /*!
@@ -1492,12 +1494,13 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getAmbientTempF(sensors_event_t *AmbientTempFEvent) { 
+  virtual bool getAmbientTempF(sensors_event_t *AmbientTempFEvent) {
     // obtain ambient temp. in °C
-    if (! getEventAmbientTemperature(AmbientTempFEvent))
-        return false;
+    if (!getEventAmbientTemperature(AmbientTempFEvent))
+      return false;
     // convert event from °C to °F
-    AmbientTempFEvent->temperature = (AmbientTempFEvent->temperature * 9.0) / 5.0 + 32;
+    AmbientTempFEvent->temperature =
+        (AmbientTempFEvent->temperature * 9.0) / 5.0 + 32;
     return true;
   }
 
@@ -1558,12 +1561,12 @@ protected:
                                         ///< was last read.
   long _rawSensorPeriod =
       0L; ///< The time period between reading the Raw sensor's value.
-  long _rawSensorPeriodPrv = 0L; ///< The time when the Raw sensor
-                                 ///< was last read.
-  long _ambientTempFPeriod =
-      0L; ///< The time period between reading the ambient temp. (degF) sensor's value.
-  long _ambientTempFPeriodPrv = 0L; ///< The time when the ambient temp. (degF) sensor
-                                 ///< was last read.
+  long _rawSensorPeriodPrv = 0L;    ///< The time when the Raw sensor
+                                    ///< was last read.
+  long _ambientTempFPeriod = 0L;    ///< The time period between reading the
+                                    ///< ambient temp. (degF) sensor's value.
+  long _ambientTempFPeriodPrv = 0L; ///< The time when the ambient temp. (degF)
+                                    ///< sensor was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

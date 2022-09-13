@@ -50,8 +50,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _scd = new Adafruit_SCD30();
-    bool isInit = _scd->begin((uint8_t)_sensorAddress, _i2c);
-    return isInit;
+    return _scd->begin((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/

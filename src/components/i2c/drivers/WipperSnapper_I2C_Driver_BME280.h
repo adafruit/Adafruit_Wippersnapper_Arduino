@@ -60,8 +60,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _bme = new Adafruit_BME280();
-    bool isInit = _bme->begin(_sensorAddress, _i2c);
-    return isInit;
+    return _bme->begin(_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
@@ -88,89 +87,6 @@ public:
   */
   /*******************************************************************************/
   void enableSensorPressure() { _bme_pressure = _bme->getPressureSensor(); }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the BME280's temperature sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorAmbientTemperature() {
-    _bme_temp = NULL;
-    _tempSensorPeriod = 0.0;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the BME280's humidity sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorRelativeHumidity() {
-    _bme_humidity = NULL;
-    _humidSensorPeriod = 0.0;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the BME280's pressure sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorPressure() {
-    _bme_pressure = NULL;
-    _pressureSensorPeriod = 0.0;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a pressure sensor.
-      @param    period
-                The time interval at which to return new data from the pressure
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorPressure(float period) {
-    // enable a previously disabled sensor
-    if (period > 0 && _bme_pressure == NULL)
-      enableSensorPressure();
-    setSensorPressurePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of an ambient temperature
-                  sensor, provided sensor_period.
-      @param    period
-                Sensor's period.
-  */
-  /*******************************************************************************/
-  void updateSensorAmbientTemperature(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorAmbientTemperature();
-    // enable a previously disabled sensor
-    if (period > 0 && _bme_temp == NULL)
-      enableSensorAmbientTemperature();
-
-    setSensorAmbientTemperaturePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a relative humidity sensor.
-      @param    period
-                The time interval at which to return new data from the humidity
-                sensor.
-  */
-  /*******************************************************************************/
-  void updateSensorRelativeHumidity(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorRelativeHumidity();
-    // enable a previously disabled sensor
-    if (period > 0 && _bme_humidity == NULL)
-      enableSensorRelativeHumidity();
-
-    setSensorRelativeHumidityPeriod(period);
-  }
 
   /*******************************************************************************/
   /*!

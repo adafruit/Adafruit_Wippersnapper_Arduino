@@ -60,8 +60,8 @@ public:
   bool begin() {
     // attempt
     _aht = new Adafruit_AHTX0();
-    if (! _aht->begin(_i2c, (int32_t)_sensorAddress))
-        return false;
+    if (!_aht->begin(_i2c, (int32_t)_sensorAddress))
+      return false;
 
     // get temperature and humidity sensor
     _aht_temp = _aht->getTemperatureSensor();
@@ -81,7 +81,7 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     // is sensor enabled correctly?
-    if(_aht_temp == NULL)
+    if (_aht_temp == NULL)
       return false;
     // get event
     _aht_temp->getEvent(tempEvent);

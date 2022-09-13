@@ -58,8 +58,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _dps310 = new Adafruit_DPS310();
-    bool isInit = _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c);
-    return isInit;
+    return _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
@@ -85,64 +84,6 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Disables the DPS310's pressure sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorAmbientTemperature() {
-    _dps_temp = NULL;
-    _tempSensorPeriod = 0L;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the DPS310's pressure sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorPressure() {
-    _dps_pressure = NULL;
-    _pressureSensorPeriod = 0L;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of an ambient temperature
-                  sensor, provided sensor_period.
-      @param    period
-                Sensor's period.
-  */
-  /*******************************************************************************/
-  void updateSensorAmbientTemperature(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorAmbientTemperature();
-    // enable a previously disabled sensor
-    if (period > 0 && _dps_temp == NULL)
-      enableSensorAmbientTemperature();
-
-    setSensorAmbientTemperaturePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a pressure sensor.
-      @param    period
-                The time interval at which to return new data from the pressure
-                sensor.
-  */
-  /*******************************************************************************/
-  void updateSensorPressure(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorPressure();
-    // enable a previously disabled sensor
-    if (period > 0 && _dps_pressure == NULL)
-      enableSensorPressure();
-
-    setSensorPressurePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
       @brief    Gets the DPS310's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
@@ -151,11 +92,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    if (_dps_temp != NULL && _dps310->temperatureAvailable()) {
-      _dps_temp->getEvent(tempEvent);
-      return true;
-    }
-    return false;
+    if (_dps_temp == NULL && (!_dps310->temperatureAvailable()))
+      return false;
+
+    _dps_temp->getEvent(tempEvent);
+    return true;
   }
 
   /*******************************************************************************/
@@ -168,11 +109,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_dps_pressure != NULL && _dps310->pressureAvailable()) {
-      _dps_pressure->getEvent(pressureEvent);
-      return true;
-    }
-    return false;
+    if (_dps_pressure == NULL && (!_dps310->pressureAvailable()))
+      return false;
+
+    _dps_pressure->getEvent(pressureEvent);
+    return true;
   }
 
 protected:
