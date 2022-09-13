@@ -106,6 +106,8 @@ public:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
       _ambientTempFPeriod = sensorPeriod;
       break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+      _objectTempFPeriod = sensorPeriod;
     default:
       break;
     }
@@ -997,6 +999,78 @@ public:
     return true;
   }
 
+  /****************************** SENSOR_TYPE: Object Temp (°F)
+   * *******************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's object temperature (°F) sensor, if it
+     exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorObjectTempF() { return; };
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's object temperature (°F) sensor, if it
+     exists.
+  */
+  /*******************************************************************************/
+  virtual void disableSensorObjectTempF() { _objectTempFPeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object temperature (°F)
+     sensor's period, if set.
+      @returns  Time when the object temperature sensor should be polled,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorObjectTempFPeriod() { return _objectTempFPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the object temperature sensor (°F) was queried last.
+      @returns  Time when the object temperature sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorObjectTempFPeriodPrv() { return _objectTempFPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the object temperature sensor (°F)
+                was queried.
+      @param    period
+                The time when the object temperature sensor (°F) was queried
+     last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorObjectTempFPeriodPrv(long period) {
+    _objectTempFPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Helper function to obtain a sensor's object temperature value
+                in °F. Requires `getEventObjectTemp()` to be fully
+                implemented by a driver.
+      @param    objectTempFEvent
+                The object temperature value, in °F.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventObjectTempF(sensors_event_t *objectTempFEvent) {
+    // obtain ambient temp. in °C
+    if (!getEventObjectTemp(objectTempFEvent))
+      return false;
+    // convert event from °C to °F
+    objectTempFEvent->temperature =
+        (objectTempFEvent->temperature * 9.0) / 5.0 + 32;
+    return true;
+  }
+
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -1053,8 +1127,12 @@ protected:
   long _rawSensorPeriodPrv = 0L;    ///< The time when the Raw sensor
                                     ///< was last read.
   long _ambientTempFPeriod = 0L;    ///< The time period between reading the
-                                    ///< ambient temp. (degF) sensor's value.
-  long _ambientTempFPeriodPrv = 0L; ///< The time when the ambient temp. (degF)
+                                    ///< ambient temp. (°F) sensor's value.
+  long _ambientTempFPeriodPrv = 0L; ///< The time when the ambient temp. (°F)
+                                    ///< sensor was last read.
+  long _objectTempFPeriod = 0L;     ///< The time period between reading the
+                                    ///< object temp. (°F) sensor's value.
+  long _objectTempFPeriodPrv = 0L;  ///< The time when the object temp. (°F)
                                     ///< sensor was last read.
 };
 

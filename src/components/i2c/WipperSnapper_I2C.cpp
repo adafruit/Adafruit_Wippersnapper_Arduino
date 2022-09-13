@@ -507,7 +507,7 @@ void WipperSnapper_Component_I2C::update() {
     // Event struct
     sensors_event_t event;
 
-    // AMBIENT_TEMPERATURE sensor
+    // AMBIENT_TEMPERATURE sensor (°C)
     curTime = millis();
     if ((*iter)->sensorAmbientTemperaturePeriod() != 0L &&
         curTime - (*iter)->sensorAmbientTemperaturePeriodPrv() >
@@ -532,7 +532,30 @@ void WipperSnapper_Component_I2C::update() {
       }
     }
 
-    // OBJECT_TEMPERATURE sensor
+    // Ambient Temperature sensor (°F)
+    curTime = millis();
+    if ((*iter)->sensorAmbientTempFPeriod() != 0L &&
+        curTime - (*iter)->sensorAmbientTempFPeriodPrv() >
+            (*iter)->sensorAmbientTemperaturePeriod()) {
+      if ((*iter)->getEventAmbientTemperature(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tAmbient Temp.: ");
+        WS_DEBUG_PRINT(event.temperature);
+        WS_DEBUG_PRINTLN("°F");
+
+        fillEventMessage(
+            &msgi2cResponse, event.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to obtain ambient temp. (°F)) sensor reading!");
+      }
+      (*iter)->setSensorRawPeriodPrv(curTime);
+    }
+
+    // OBJECT_TEMPERATURE sensor (°F)
     curTime = millis();
     if ((*iter)->sensorObjectTempPeriod() != 0L &&
         curTime - (*iter)->sensorObjectTempPeriodPrv() >
@@ -553,7 +576,32 @@ void WipperSnapper_Component_I2C::update() {
         (*iter)->setSensorObjectTempPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN(
-            "ERROR: Failed to get object temperature sensor reading!");
+            "ERROR: Failed to get object temperature sensor (°C) reading!");
+      }
+    }
+
+    // OBJECT_TEMPERATURE sensor (°F)
+    curTime = millis();
+    if ((*iter)->sensorObjectTempFPeriod() != 0L &&
+        curTime - (*iter)->sensorObjectTempFPeriodPrv() >
+            (*iter)->sensorObjectTempFPeriod()) {
+      if ((*iter)->getEventObjectTempF(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tTemperature: ");
+        WS_DEBUG_PRINT(event.temperature);
+        WS_DEBUG_PRINTLN("°F");
+
+        // pack event data into msg
+        fillEventMessage(
+            &msgi2cResponse, event.temperature,
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT);
+
+        (*iter)->setSensorObjectTempPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to get object temperature sensor (°F) reading!");
       }
     }
 
