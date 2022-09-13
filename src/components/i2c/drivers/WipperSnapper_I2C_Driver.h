@@ -56,6 +56,9 @@ public:
   /*******************************************************************************/
   bool begin() { return false; }
 
+  // TODO: consider passing sensor type into enable/disable/set sensor period
+  // calls
+
   /*******************************************************************************/
   /*!
       @brief    Uses an I2CDeviceInitRequest message to configure the sensors
@@ -193,16 +196,6 @@ public:
     _CO2SensorPeriod = (long)period * 1000;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a CO2 sensor.
-      @param    period
-                The time interval at which to return new data from the CO2
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorCO2(float period) { setSensorCO2Period(period); }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the co2 sensor's period, if
@@ -333,18 +326,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventAmbientTemperature(float tempEvent) { return false; }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Update the properties of a temperature
-                  sensor, provided sensor_period.
-      @param    period
-                Sensor's period.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorAmbientTemperature(float period) {
-    setSensorAmbientTemperaturePeriod(period);
-  }
-
   /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
    * ***********************/
   /*******************************************************************************/
@@ -435,18 +416,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventRelativeHumidity(float humidEvent) { return false; }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a relative humidity sensor.
-      @param    period
-                The time interval at which to return new data from the humidity
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorRelativeHumidity(float period) {
-    setSensorRelativeHumidityPeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: PRESSURE
    * ****************************/
   /*******************************************************************************/
@@ -533,18 +502,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventPressure(float pressureEvent) { return false; }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a pressure sensor.
-      @param    period
-                The time interval at which to return new data from the pressure
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorPressure(float period) {
-    setSensorPressurePeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: Gas
    * ****************************/
   /*******************************************************************************/
@@ -615,16 +572,6 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventGas(uint32_t gas_resistance) { return gas_resistance; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a gas sensor.
-      @param    period
-                The time interval at which to return new data from the Gas
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorGas(float period) { setSensorGasPeriod(period); }
 
   /**************************** SENSOR_TYPE: Altitude
    * ****************************/
@@ -698,18 +645,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventAltitude(sensors_event_t *altitudeEvent) {
     return false;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a Altitude sensor.
-      @param    period
-                The time interval at which to return new data from the altitude
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorAltitude(float period) {
-    setSensorAltitudePeriod(period);
   }
 
   /**************************** SENSOR_TYPE: Object_Temperature
@@ -791,18 +726,6 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a object temperature sensor.
-      @param    period
-                The time interval at which to return new data from the
-                object temperature sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorObjectTemp(float period) {
-    setSensorObjectTempPeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: LIGHT
    * ****************************/
   /*******************************************************************************/
@@ -877,16 +800,6 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventLight(sensors_event_t *lightEvent) { return false; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a object light sensor.
-      @param    period
-                The time interval at which to return new data from the
-                light sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorLight(float period) { setSensorLightPeriod(period); }
 
   /**************************** SENSOR_TYPE: PM10_STD
    * ****************************/
@@ -963,18 +876,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a object's pm10 std. sensor.
-      @param    period
-                The time interval at which to return new data from the
-                pm10 std. sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorPM10_STD(float period) {
-    setSensorPM10_STDPeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: PM25_STD
    * ****************************/
   /*******************************************************************************/
@@ -1049,18 +950,6 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) { return false; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a object's pm25 std. sensor.
-      @param    period
-                The time interval at which to return new data from the
-                pm25 std. sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorPM25_STD(float period) {
-    setSensorPM25_STDPeriod(period);
-  }
 
   /**************************** SENSOR_TYPE: PM100_STD
    * ****************************/
@@ -1137,18 +1026,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
     return false;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a object's pm100 std. sensor.
-      @param    period
-                The time interval at which to return new data from the
-                pm100 std. sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorPM100_STD(float period) {
-    setSensorPM100_STDPeriod(period);
   }
 
   /**************************** SENSOR_TYPE: UNITLESS_PERCENT
@@ -1230,18 +1107,6 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a unitless % sensor.
-      @param    period
-                The time interval at which to return new data from the
-                unitless % sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorUnitlessPercent(float period) {
-    setSensorUnitlessPercentPeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: VOLTAGE
    * ****************************/
   /*******************************************************************************/
@@ -1314,18 +1179,6 @@ public:
   /*******************************************************************************/
   virtual bool getEventVoltage(sensors_event_t *voltageEvent) { return false; }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a voltage sensor.
-      @param    period
-                A new time interval at which to return new data from the
-                voltage sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorVoltage(float period) {
-    setSensorVoltagePeriod(period);
-  }
-
   /****************************** SENSOR_TYPE: Raw
    * *******************************/
   /*******************************************************************************/
@@ -1358,16 +1211,6 @@ public:
     // Period is in seconds, cast it to long and convert it to milliseconds
     _rawSensorPeriod = (long)period * 1000;
   }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a Raw sensor.
-      @param    period
-                The time interval at which to return new data from the Raw
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorRaw(float period) { setSensorRawPeriod(period); }
 
   /*********************************************************************************/
   /*!
@@ -1440,18 +1283,6 @@ public:
     }
     // Period is in seconds, cast it to long and convert it to milliseconds
     _ambientTempFPeriod = (long)period * 1000;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a Raw sensor.
-      @param    period
-                The time interval at which to return new data from the Raw
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorAmbientTempF(float period) {
-    setSensorAmbientTempFPeriod(period);
   }
 
   /*********************************************************************************/
