@@ -83,7 +83,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     uint8_t status = _MCP9601->getStatus();
     if (status & MCP9601_STATUS_OPENCIRCUIT) {
       return false; // don't continue, since there's no thermocouple

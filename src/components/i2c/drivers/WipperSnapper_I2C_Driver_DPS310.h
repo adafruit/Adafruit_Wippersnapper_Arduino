@@ -91,7 +91,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     if (_dps_temp == NULL && (!_dps310->temperatureAvailable()))
       return false;
 

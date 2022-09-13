@@ -71,7 +71,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     sensors_event_t humidityEvent;
     // populate temp and humidity objects with fresh data
     if (!_sht4x->getEvent(&humidityEvent, tempEvent))

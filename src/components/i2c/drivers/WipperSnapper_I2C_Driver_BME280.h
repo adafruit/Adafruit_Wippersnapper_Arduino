@@ -97,7 +97,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     if (_bme_temp == NULL)
       return false;
     _bme_temp->getEvent(tempEvent);

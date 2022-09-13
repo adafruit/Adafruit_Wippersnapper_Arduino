@@ -70,7 +70,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     tempEvent->temperature = _mcp9808->readTempC();
     return true;
   }

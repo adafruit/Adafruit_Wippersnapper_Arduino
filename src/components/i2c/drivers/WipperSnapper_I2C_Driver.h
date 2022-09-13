@@ -56,9 +56,15 @@ public:
   /*******************************************************************************/
   bool begin() { return false; }
 
-  // TODO: consider passing sensor type into enable/disable/set sensor period
-  // calls
-
+  /*******************************************************************************/
+  /*!
+      @brief    Sets the sensor's period, provided a
+     wippersnapper_i2c_v1_SensorType.
+      @param    period The period for the sensor to return values within, in
+     seconds.
+      @param    sensorType The type of sensor device.
+  */
+  /*******************************************************************************/
   void setSensorPeriod(float period,
                        wippersnapper_i2c_v1_SensorType sensorType) {
     long sensorPeriod = (long)period * 1000;
@@ -164,7 +170,7 @@ public:
       @returns  Time when the co2 sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorCO2Period() { return _CO2SensorPeriod; }
+  virtual long getSensorCO2Period() { return _CO2SensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -173,7 +179,7 @@ public:
       @returns  Time when the co2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
+  virtual long getSensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -222,7 +228,7 @@ public:
       @returns  Time when the temperature sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAmbientTemperaturePeriod() { return _tempSensorPeriod; }
+  virtual long getSensorAmbientTempPeriod() { return _tempSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -232,9 +238,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAmbientTemperaturePeriodPrv() {
-    return _tempSensorPeriodPrv;
-  }
+  virtual long getSensorAmbientTempPeriodPrv() { return _tempSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -245,7 +249,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorAmbientTemperaturePeriodPrv(long periodPrv) {
+  virtual void setSensorAmbientTempPeriodPrv(long periodPrv) {
     _tempSensorPeriodPrv = periodPrv;
   }
 
@@ -259,9 +263,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    return false;
-  }
+  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
 
   /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
    * ***********************/
@@ -286,7 +288,7 @@ public:
       @returns  Time when the humidity sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRelativeHumidityPeriod() { return _humidSensorPeriod; }
+  virtual long getSensorRelativeHumidityPeriod() { return _humidSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -295,7 +297,7 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRelativeHumidityPeriodPrv() {
+  virtual long getSensorRelativeHumidityPeriodPrv() {
     return _humidSensorPeriodPrv;
   }
 
@@ -347,7 +349,7 @@ public:
       @returns  Time when the pressure sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorPressurePeriod() { return _pressureSensorPeriod; }
+  virtual long getSensorPressurePeriod() { return _pressureSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -356,7 +358,7 @@ public:
       @returns  Time when the pressure sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
+  virtual long getSensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -406,7 +408,7 @@ public:
       @returns  Time when the Altitude sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAltitudePeriod() { return _altitudeSensorPeriod; }
+  virtual long getSensorAltitudePeriod() { return _altitudeSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -415,7 +417,7 @@ public:
       @returns  Time when the Altitude sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAltitudePeriodPrv() { return _altitudeSensorPeriodPrv; }
+  virtual long getSensorAltitudePeriodPrv() { return _altitudeSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -466,7 +468,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorObjectTempPeriod() { return _objectTempSensorPeriod; }
+  virtual long getSensorObjectTempPeriod() { return _objectTempSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -476,7 +478,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorObjectTempPeriodPrv() {
+  virtual long getSensorObjectTempPeriodPrv() {
     return _objectTempSensorPeriodPrv;
   }
 
@@ -530,7 +532,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorLightPeriod() { return _lightSensorPeriod; }
+  virtual long getSensorLightPeriod() { return _lightSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -540,7 +542,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorLightPeriodPrv() { return _lightSensorPeriodPrv; }
+  virtual long getSensorLightPeriodPrv() { return _lightSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -590,7 +592,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorPM10_STDPeriod() { return _PM10SensorPeriod; }
+  virtual long getSensorPM10_STDPeriod() { return _PM10SensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -600,7 +602,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorPM10_STDPeriodPrv() { return _PM10SensorPeriodPrv; }
+  virtual long getSensorPM10_STDPeriodPrv() { return _PM10SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -650,7 +652,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorPM25_STDPeriod() { return _PM25SensorPeriod; }
+  virtual long getSensorPM25_STDPeriod() { return _PM25SensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -660,7 +662,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorPM25_STDPeriodPrv() { return _PM25SensorPeriodPrv; }
+  virtual long getSensorPM25_STDPeriodPrv() { return _PM25SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -710,7 +712,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorPM100_STDPeriod() { return _PM100SensorPeriod; }
+  virtual long getSensorPM100_STDPeriod() { return _PM100SensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -720,7 +722,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorPM100_STDPeriodPrv() { return _PM100SensorPeriodPrv; }
+  virtual long getSensorPM100_STDPeriodPrv() { return _PM100SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -773,7 +775,9 @@ public:
                 seconds.
   */
   /*********************************************************************************/
-  virtual long sensorUnitlessPercentPeriod() { return _unitlessPercentPeriod; }
+  virtual long getSensorUnitlessPercentPeriod() {
+    return _unitlessPercentPeriod;
+  }
 
   /*********************************************************************************/
   /*!
@@ -783,7 +787,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorUnitlessPercentPeriodPrv() {
+  virtual long getSensorUnitlessPercentPeriodPrv() {
     return _unitlessPercentPeriodPrv;
   }
 
@@ -837,7 +841,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorVoltagePeriod() { return _voltagePeriod; }
+  virtual long getSensorVoltagePeriod() { return _voltagePeriod; }
 
   /*********************************************************************************/
   /*!
@@ -846,7 +850,7 @@ public:
       @returns  Time when the voltage sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorVoltagePeriodPrv() { return _voltagePeriodPrv; }
+  virtual long getSensorVoltagePeriodPrv() { return _voltagePeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -894,7 +898,7 @@ public:
       @returns  Time when the raw sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRawPeriod() { return _rawSensorPeriod; }
+  virtual long getSensorRawPeriod() { return _rawSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -903,7 +907,7 @@ public:
       @returns  Time when the raw sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRawPeriodPrv() { return _rawSensorPeriodPrv; }
+  virtual long getSensorRawPeriodPrv() { return _rawSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -953,7 +957,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAmbientTempFPeriod() { return _ambientTempFPeriod; }
+  virtual long getSensorAmbientTempFPeriod() { return _ambientTempFPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -963,7 +967,9 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAmbientTempFPeriodPrv() { return _ambientTempFPeriodPrv; }
+  virtual long getSensorAmbientTempFPeriodPrv() {
+    return _ambientTempFPeriodPrv;
+  }
 
   /*******************************************************************************/
   /*!
@@ -981,7 +987,7 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Helper function to obtain a sensor's ambient temperature value
-                in °F. Requires `getEventAmbientTemperature()` to be fully
+                in °F. Requires `getEventAmbientTemp()` to be fully
                 implemented by a driver.
       @param    AmbientTempFEvent
                 The ambient temperature value, in °F.
@@ -991,7 +997,7 @@ public:
   /*******************************************************************************/
   virtual bool getAmbientTempF(sensors_event_t *AmbientTempFEvent) {
     // obtain ambient temp. in °C
-    if (!getEventAmbientTemperature(AmbientTempFEvent))
+    if (!getEventAmbientTemp(AmbientTempFEvent))
       return false;
     // convert event from °C to °F
     AmbientTempFEvent->temperature =
@@ -1025,7 +1031,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorObjectTempFPeriod() { return _objectTempFPeriod; }
+  virtual long getSensorObjectTempFPeriod() { return _objectTempFPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -1035,7 +1041,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorObjectTempFPeriodPrv() { return _objectTempFPeriodPrv; }
+  virtual long getSensorObjectTempFPeriodPrv() { return _objectTempFPeriodPrv; }
 
   /*******************************************************************************/
   /*!

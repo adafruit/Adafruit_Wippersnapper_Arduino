@@ -79,7 +79,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // is sensor enabled correctly?
     if (_aht_temp == NULL)
       return false;
