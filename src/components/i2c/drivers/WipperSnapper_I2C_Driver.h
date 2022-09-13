@@ -140,6 +140,11 @@ public:
         setSensorRawPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
+      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+        enableSensorRaw();
+        setSensorRawPeriod(
+            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
+        break;
       default:
         break;
       }
@@ -1404,6 +1409,98 @@ public:
   /*******************************************************************************/
   virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
 
+  /****************************** SENSOR_TYPE: Ambient Temp (degF)
+   * *******************************/
+  /*******************************************************************************/
+  /*!
+      @brief    Enables the device's Raw sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void enableSensorAmbientTempF() { return; };
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's Raw sensor, if it exists.
+  */
+  /*******************************************************************************/
+  virtual void disableAmbientTempF() { _ambientTempFPeriod = 0.0L; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set the raw sensor's return frequency.
+      @param    period
+                The time interval at which to return new data from the
+     raw sensor.
+  */
+  /*******************************************************************************/
+  virtual void setSensorAmbientTempFPeriod(float period) {
+    if (period == 0.0) {
+      disableAmbientTempF();
+      return;
+    }
+    // Period is in seconds, cast it to long and convert it to milliseconds
+    _ambientTempFPeriod = (long)period * 1000;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Updates the properties of a Raw sensor.
+      @param    period
+                The time interval at which to return new data from the Raw
+                sensor.
+  */
+  /*******************************************************************************/
+  virtual void updateSensorAmbientTempF(float period) { setSensorAmbientTempFPeriod(period); }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the raw sensor's period, if
+     set.
+      @returns  Time when the raw sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorAmbientTempFPeriod() { return _ambientTempFPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the raw sensor was queried last.
+      @returns  Time when the raw sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long sensorAmbientTempFPeriodPrv() { return _ambientTempFPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the raw sensor was queried.
+      @param    period
+                The time when the raw sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorAmbientTempFPeriodPrv(long period) {
+    _ambientTempFPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Helper function to obtain a sensor's ambient temperature value
+                in °F. Requires `getEventAmbientTemperature()` to be fully
+                implemented by a driver.
+      @param    AmbientTempFEvent
+                The ambient temperature value, in °F.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getAmbientTempF(sensors_event_t *AmbientTempFEvent) { 
+    // obtain ambient temp. in °C
+    if (! getEventAmbientTemperature(AmbientTempFEvent))
+        return false;
+    // convert event from °C to °F
+    AmbientTempFEvent->temperature = (AmbientTempFEvent->temperature * 9.0) / 5.0 + 32;
+    return true;
+  }
+
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -1462,6 +1559,10 @@ protected:
   long _rawSensorPeriod =
       0L; ///< The time period between reading the Raw sensor's value.
   long _rawSensorPeriodPrv = 0L; ///< The time when the Raw sensor
+                                 ///< was last read.
+  long _ambientTempFPeriod =
+      0L; ///< The time period between reading the ambient temp. (degF) sensor's value.
+  long _ambientTempFPeriodPrv = 0L; ///< The time when the ambient temp. (degF) sensor
                                  ///< was last read.
 };
 
