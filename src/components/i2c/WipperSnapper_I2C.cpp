@@ -376,69 +376,14 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
       // Update the properties of each driver
       for (int j = 0; j < msgDeviceUpdateReq->i2c_device_properties_count;
            j++) {
-        switch (msgDeviceUpdateReq->i2c_device_properties[j].sensor_type) {
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-          // TODO: Change to: setSensorPeriod(sensor_type, period)?
-          drivers[i]->setSensorAmbientTemperaturePeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-          drivers[i]->setSensorObjectTempPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-          drivers[i]->setSensorRelativeHumidityPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
-          drivers[i]->setSensorPressurePeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
-          drivers[i]->setSensorCO2Period(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
-          drivers[i]->setSensorAltitudePeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
-          drivers[i]->setSensorLightPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
-          drivers[i]->setSensorPM10_STDPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
-          drivers[i]->setSensorPM25_STDPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
-          drivers[i]->setSensorPM100_STDPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
-          drivers[i]->setSensorVoltagePeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
-          drivers[i]->setSensorUnitlessPercentPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
-          drivers[i]->setSensorRawPeriod(
-              msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
-          break;
-        default:
-          _busStatusResponse =
-              wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
-          WS_DEBUG_PRINTLN("ERROR: Unable to determine sensor_type!");
-          break;
-        }
+        drivers[i]->setSensorPeriod(
+            msgDeviceUpdateReq->i2c_device_properties[j].sensor_period,
+            msgDeviceUpdateReq->i2c_device_properties[j].sensor_type);
       }
     }
   }
+
+  // set response OK
   _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 }
 
