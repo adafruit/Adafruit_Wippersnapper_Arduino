@@ -378,6 +378,7 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
            j++) {
         switch (msgDeviceUpdateReq->i2c_device_properties[j].sensor_type) {
         case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+          // TODO: Change to: setSensorPeriod(sensor_type, period)?
           drivers[i]->setSensorAmbientTemperaturePeriod(
               msgDeviceUpdateReq->i2c_device_properties[j].sensor_period);
           break;

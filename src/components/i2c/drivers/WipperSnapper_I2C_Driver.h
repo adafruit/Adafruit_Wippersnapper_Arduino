@@ -93,11 +93,6 @@ public:
         setSensorCO2Period(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-        enableSensorGas();
-        setSensorGasPeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-        break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
         enableSensorAltitude();
         setSensorAltitudePeriod(
@@ -144,8 +139,8 @@ public:
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
       case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-        enableSensorRaw();
-        setSensorRawPeriod(
+        enableSensorAmbientTempF();
+        setSensorAmbientTempFPeriod(
             msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
         break;
       default:
@@ -236,26 +231,28 @@ public:
   /*******************************************************************************/
   virtual bool getEventCO2(sensors_event_t *co2Event) { return false; }
 
-  /********************** SENSOR_TYPE: AMBIENT TEMPERATURE
+  /********************** SENSOR_TYPE: AMBIENT TEMPERATURE (°C)
    * ***********************/
   /*******************************************************************************/
   /*!
-      @brief    Enables the device's temperature sensor, if it exists.
+      @brief    Enables the device's ambient temperature sensor (°C), if it
+     exists.
   */
   /*******************************************************************************/
   virtual void enableSensorAmbientTemperature() { return; };
 
   /*******************************************************************************/
   /*!
-      @brief    Disables the device's temperature sensor, if it exists.
+      @brief    Disables the device's ambient temperature sensor (°C), if it
+     exists.
   */
   /*******************************************************************************/
   virtual void disableSensorAmbientTemperature() { _tempSensorPeriod = 0.0L; }
 
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the humidity sensor's period, if
-     set.
+      @brief    Base implementation - Returns the ambient temperature (°C)
+     sensor's period, if set.
       @returns  Time when the temperature sensor should be polled, in seconds.
   */
   /*********************************************************************************/
@@ -263,10 +260,10 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Set the temperature sensor's return frequency.
+      @brief    Sets the ambient temperature (°C) sensor's return frequency.
       @param    period
-                The time interval at which to return new data from the
-     temperature sensor.
+                The time interval at which to return new data from the ambient
+                temperature sensor (°C).
   */
   /*******************************************************************************/
   virtual void setSensorAmbientTemperaturePeriod(float period) {
@@ -281,8 +278,9 @@ public:
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the previous time interval at
-     which the temperature sensor was queried last.
-      @returns  Time when the temperature sensor was last queried, in seconds.
+                which the ambient temperature sensor (°C) was queried last.
+      @returns  Time when the ambient temperature sensor (°C) was last queried,
+                in seconds.
   */
   /*********************************************************************************/
   virtual long sensorAmbientTemperaturePeriodPrv() {
@@ -291,9 +289,11 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Sets a timestamp for when the temperature sensor was queried.
+      @brief    Sets a timestamp for when the ambient temperature sensor (°C)
+                was queried.
       @param    periodPrv
-                The time when the temperature sensor was queried last.
+                The time when the ambient temperature sensor (°C) was queried
+     last.
   */
   /*******************************************************************************/
   virtual void setSensorAmbientTemperaturePeriodPrv(long periodPrv) {
@@ -302,8 +302,8 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Base implementation - Reads a temperature sensor. Expects value
-                to return in the proper SI unit.
+      @brief    Base implementation - Reads an ambient temperature sensor (°C).
+                Expects value to return in the proper SI unit.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -313,18 +313,6 @@ public:
   virtual bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     return false;
   }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a temperature sensor. Expects value
-                to return in the proper SI unit.
-      @param    tempEvent
-                Pointer to an temperature value.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventAmbientTemperature(float tempEvent) { return false; }
 
   /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
    * ***********************/
@@ -404,18 +392,6 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a humidity sensor and converts
-                the reading into the expected SI unit.
-      @param    humidEvent
-                Pointer to a humidity value.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventRelativeHumidity(float humidEvent) { return false; }
-
   /**************************** SENSOR_TYPE: PRESSURE
    * ****************************/
   /*******************************************************************************/
@@ -489,89 +465,6 @@ public:
   virtual bool getEventPressure(sensors_event_t *pressureEvent) {
     return false;
   }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a pressure sensor and converts
-                the reading into the expected SI unit.
-      @param    pressureEvent
-                A pressure value
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventPressure(float pressureEvent) { return false; }
-
-  /**************************** SENSOR_TYPE: Gas
-   * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's gas sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorGas(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's gas sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorGas() { _gasSensorPeriod = 0.0L; }
-
-  /*********************************************************************************/
-  /*!
-      @brief    Base implementation - Returns the gas sensor's period, if set.
-      @returns  Time when the Gas sensor should be polled, in seconds.
-  */
-  /*********************************************************************************/
-  virtual long sensorGasPeriod() { return _gasSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the gas sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the Gas
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorGasPeriod(float period) {
-    if (period == 0.0)
-      disableSensorGas();
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _gasSensorPeriod = (long)period * 1000;
-  }
-
-  /*********************************************************************************/
-  /*!
-      @brief    Base implementation - Returns the previous time interval at
-                    which the gas sensor was queried last.
-      @returns  Time when the gas sensor was last queried, in seconds.
-  */
-  /*********************************************************************************/
-  virtual long sensorGasPeriodPrv() { return _gasSensorPeriodPrv; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets a timestamp for when the gas sensor was queried.
-      @param    period
-                The time when the gas sensor was queried last.
-  */
-  /*******************************************************************************/
-  virtual void setSensorGasPeriodPrv(long period) {
-    _gasSensorPeriodPrv = period;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a gas sensor and converts
-                the reading into the expected SI unit.
-      @param    gas_resistance
-                Gas resistor (ohms) reading.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventGas(uint32_t gas_resistance) { return gas_resistance; }
 
   /**************************** SENSOR_TYPE: Altitude
    * ****************************/
@@ -1252,28 +1145,30 @@ public:
   /*******************************************************************************/
   virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
 
-  /****************************** SENSOR_TYPE: Ambient Temp (degF)
+  /****************************** SENSOR_TYPE: Ambient Temp (°F)
    * *******************************/
   /*******************************************************************************/
   /*!
-      @brief    Enables the device's Raw sensor, if it exists.
+      @brief    Enables the device's ambient temperature (°F) sensor, if it
+     exists.
   */
   /*******************************************************************************/
   virtual void enableSensorAmbientTempF() { return; };
 
   /*******************************************************************************/
   /*!
-      @brief    Disables the device's Raw sensor, if it exists.
+      @brief    Disables the device's ambient temperature (°F) sensor, if it
+     exists.
   */
   /*******************************************************************************/
   virtual void disableAmbientTempF() { _ambientTempFPeriod = 0.0L; }
 
   /*******************************************************************************/
   /*!
-      @brief    Set the raw sensor's return frequency.
+      @brief    Set the ambient temperature (°F) sensor's return frequency.
       @param    period
                 The time interval at which to return new data from the
-     raw sensor.
+     ambient temperature (°F) sensor.
   */
   /*******************************************************************************/
   virtual void setSensorAmbientTempFPeriod(float period) {
@@ -1287,9 +1182,10 @@ public:
 
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the raw sensor's period, if
-     set.
-      @returns  Time when the raw sensor should be polled, in seconds.
+      @brief    Base implementation - Returns the ambient temperature (°F)
+     sensor's period, if set.
+      @returns  Time when the ambient temperature sensor should be polled,
+                in seconds.
   */
   /*********************************************************************************/
   virtual long sensorAmbientTempFPeriod() { return _ambientTempFPeriod; }
@@ -1297,17 +1193,20 @@ public:
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the previous time interval at
-                    which the raw sensor was queried last.
-      @returns  Time when the raw sensor was last queried, in seconds.
+                which the ambient temperature sensor (°F) was queried last.
+      @returns  Time when the ambient temperature sensor was last queried,
+                in seconds.
   */
   /*********************************************************************************/
   virtual long sensorAmbientTempFPeriodPrv() { return _ambientTempFPeriodPrv; }
 
   /*******************************************************************************/
   /*!
-      @brief    Sets a timestamp for when the raw sensor was queried.
+      @brief    Sets a timestamp for when the ambient temperature sensor (°F)
+                was queried.
       @param    period
-                The time when the raw sensor was queried last.
+                The time when the ambient temperature sensor (°F) was queried
+     last.
   */
   /*******************************************************************************/
   virtual void setSensorAmbientTempFPeriodPrv(long period) {
@@ -1353,10 +1252,6 @@ protected:
   long _CO2SensorPeriod =
       0L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv = 0L; ///< The time when the CO2 sensor
-                                 ///< was last read.
-  long _gasSensorPeriod =
-      0L; ///< The time period between reading the CO2 sensor's value.
-  long _gasSensorPeriodPrv = 0L; ///< The time when the CO2 sensor
                                  ///< was last read.
   long _altitudeSensorPeriod =
       0L; ///< The time period between reading the altitude sensor's value.
