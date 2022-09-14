@@ -57,29 +57,21 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
+    // initialize DPS310
     _dps310 = new Adafruit_DPS310();
-    return _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c);
-  }
+    if (! _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c))
+      return false;
 
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the DPS310's temperature sensor. Sets highest precision
-                options
-  */
-  /*******************************************************************************/
-  void enableSensorAmbientTemperature() {
+    // init OK, perform sensor configuration
     _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_temp = _dps310->getTemperatureSensor();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the DPS310's pressure sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorPressure() {
     _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps_temp = _dps310->getTemperatureSensor();
     _dps_pressure = _dps310->getPressureSensor();
+    // check if sensors are configured properly
+    if (_dps_temp == NULL || _dps_pressure == NULL)
+      return false;
+
+    return true;
   }
 
   /*******************************************************************************/
@@ -92,7 +84,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (_dps_temp == NULL && (!_dps310->temperatureAvailable()))
+    if (! _dps310->temperatureAvailable())
       return false;
 
     _dps_temp->getEvent(tempEvent);
@@ -109,7 +101,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_dps_pressure == NULL && (!_dps310->pressureAvailable()))
+    if (! _dps310->pressureAvailable())
       return false;
 
     _dps_pressure->getEvent(pressureEvent);

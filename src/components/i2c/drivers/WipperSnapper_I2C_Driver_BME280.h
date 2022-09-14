@@ -60,33 +60,15 @@ public:
   /*******************************************************************************/
   bool begin() {
     _bme = new Adafruit_BME280();
-    return _bme->begin(_sensorAddress, _i2c);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the BME280's temperature sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorAmbientTemperature() {
+    // attempt to initialize BME280
+    if (! _bme->begin(_sensorAddress, _i2c))
+        return false;
+    // configure BME280 device
     _bme_temp = _bme->getTemperatureSensor();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the BME280's humidity sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorRelativeHumidity() {
     _bme_humidity = _bme->getHumiditySensor();
+    _bme_pressure = _bme->getPressureSensor();
+    return true;
   }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the BME280's humidity sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorPressure() { _bme_pressure = _bme->getPressureSensor(); }
 
   /*******************************************************************************/
   /*!

@@ -54,10 +54,9 @@ public:
     if (!_sht4x->begin(_i2c))
       return false;
 
-    // Use HIGH PRECISION
-    _sht4x->setPrecision(SHT4X_HIGH_PRECISION);
-    // default, NO HEATER
-    _sht4x->setHeater(SHT4X_NO_HEATER);
+    // configure SHT4x sensor
+    _sht4x->setPrecision(SHT4X_HIGH_PRECISION); // Use HIGH PRECISION
+    _sht4x->setHeater(SHT4X_NO_HEATER); // default, NO HEATER
 
     return true;
   }

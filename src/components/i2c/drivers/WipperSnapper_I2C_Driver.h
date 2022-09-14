@@ -56,9 +56,10 @@ public:
   /*******************************************************************************/
   bool begin() { return false; }
 
-
   bool sensorAmbientTempPeriodElapsed(long curTime) {
-    if (getSensorAmbientTempPeriod() != 0L && curTime - getSensorAmbientTempPeriodPrv() > getSensorAmbientTempPeriod())
+    if (getSensorAmbientTempPeriod() != 0L &&
+        curTime - getSensorAmbientTempPeriodPrv() >
+            getSensorAmbientTempPeriod())
       return true;
     return false;
   }
@@ -156,20 +157,6 @@ public:
 
   /****************************** SENSOR_TYPE: CO2
    * *******************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's CO2 sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorCO2() { return; };
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's CO2 sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorCO2() { _CO2SensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the co2 sensor's period, if
@@ -212,22 +199,6 @@ public:
 
   /********************** SENSOR_TYPE: AMBIENT TEMPERATURE (°C)
    * ***********************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's ambient temperature sensor (°C), if it
-     exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorAmbientTemperature() { return; };
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's ambient temperature sensor (°C), if it
-     exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorAmbientTemperature() { _tempSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the ambient temperature (°C)
@@ -274,20 +245,6 @@ public:
 
   /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
    * ***********************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's relative humidity sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorRelativeHumidity(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's relative humidity sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorRelativeHumidity() { _humidSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the humidity sensor's period, if
@@ -335,20 +292,6 @@ public:
 
   /**************************** SENSOR_TYPE: PRESSURE
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's pressure sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorPressure(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's pressure sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorPressure() { _pressureSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the pressure sensor's period, if
@@ -394,20 +337,6 @@ public:
 
   /**************************** SENSOR_TYPE: Altitude
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's Altitude sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorAltitude(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's Altitude sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorAltitude() { _altitudeSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the Altitude sensor's period, if
@@ -453,20 +382,6 @@ public:
 
   /**************************** SENSOR_TYPE: Object_Temperature
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's object temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorObjectTemp(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's object temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorObjectTemp() { _objectTempSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object temperature sensor's
@@ -517,20 +432,6 @@ public:
 
   /**************************** SENSOR_TYPE: LIGHT
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's object light sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorLight(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's object light sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorLight() { _lightSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object light sensor's
@@ -577,20 +478,6 @@ public:
 
   /**************************** SENSOR_TYPE: PM10_STD
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables sensor's pm10 standard readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorPM10_STD(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the sensor's pm10 standard readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorPM10_STD() { _PM10SensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object pm10 standard sensors'
@@ -637,20 +524,6 @@ public:
 
   /**************************** SENSOR_TYPE: PM25_STD
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables sensor's pm25 standard readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorPM25_STD(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the sensor's pm25 standard readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorPM25_STD() { _lightSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object pm25 standard sensors'
@@ -697,20 +570,6 @@ public:
 
   /**************************** SENSOR_TYPE: PM100_STD
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables sensor's pm100 standard readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorPM100_STD(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the sensor's pm100 standard readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorPM100_STD() { _PM100SensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object pm100 standard sensors'
@@ -759,21 +618,6 @@ public:
 
   /**************************** SENSOR_TYPE: UNITLESS_PERCENT
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables sensor's unitless % readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorUnitlessPercent(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the sensor's unitless % standard readings, if it
-     exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorUnitlessPercent() { _unitlessPercentPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object unitless % sensor
@@ -826,21 +670,6 @@ public:
 
   /**************************** SENSOR_TYPE: VOLTAGE
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables sensor's voltage readings, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorVoltage(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the sensor's voltage standard readings, if it
-     exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorVoltage() { _voltagePeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the voltage sensor's period.
@@ -884,20 +713,6 @@ public:
 
   /****************************** SENSOR_TYPE: Raw
    * *******************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's Raw sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorRaw() { return; };
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's Raw sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorRaw() { _rawSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the raw sensor's period, if
@@ -940,13 +755,6 @@ public:
 
   /****************************** SENSOR_TYPE: Ambient Temp (°F)
    * *******************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's ambient temperature (°F) sensor, if it
-     exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorAmbientTempF() { return; };
 
   /*******************************************************************************/
   /*!
@@ -1014,22 +822,6 @@ public:
 
   /****************************** SENSOR_TYPE: Object Temp (°F)
    * *******************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's object temperature (°F) sensor, if it
-     exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorObjectTempF() { return; };
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's object temperature (°F) sensor, if it
-     exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorObjectTempF() { _objectTempFPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object temperature (°F)
