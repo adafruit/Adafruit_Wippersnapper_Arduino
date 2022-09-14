@@ -509,7 +509,29 @@ void WipperSnapper_Component_I2C::update() {
 
     // AMBIENT_TEMPERATURE sensor (°C)
     curTime = millis();
-    if ((*iter)->getSensorAmbientTempPeriod() != 0L &&
+
+    if ((*iter)->sensorAmbientTempPeriodElapsed(curTime)) {
+        if ((*iter)->getEventAmbientTemp(&event)) {
+            WS_DEBUG_PRINT("Sensor 0x");
+            WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+            WS_DEBUG_PRINTLN("");
+            WS_DEBUG_PRINT("\tTemperature: ");
+            WS_DEBUG_PRINT(event.temperature);
+            WS_DEBUG_PRINTLN(" degrees C");
+
+            // pack event data into msg
+            fillEventMessage(
+                &msgi2cResponse, event.temperature,
+                wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
+
+            (*iter)->setSensorAmbientTempPeriodPrv(curTime);
+        } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to get ambient temperature sensor reading!");
+        }
+    }
+
+/*     if ((*iter)->getSensorAmbientTempPeriod() != 0L &&
         curTime - (*iter)->getSensorAmbientTempPeriodPrv() >
             (*iter)->getSensorAmbientTempPeriod()) {
       if ((*iter)->getEventAmbientTemp(&event)) {
@@ -530,7 +552,7 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN(
             "ERROR: Failed to get ambient temperature sensor reading!");
       }
-    }
+    } */
 
     // Ambient Temperature sensor (°F)
     curTime = millis();
