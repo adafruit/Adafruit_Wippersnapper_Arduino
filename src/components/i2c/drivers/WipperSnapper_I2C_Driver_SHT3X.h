@@ -1,7 +1,7 @@
 /*!
- * @file WipperSnapper_I2C_Driver_SHT4X.h
+ * @file WipperSnapper_I2C_Driver_SHT3X.h
  *
- * Device driver for the SHT4X Temperature and Humidity Sensor
+ * Device driver for the SHT3X Temperature and Humidity Sensor
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_SHT4X_H
-#define WipperSnapper_I2C_Driver_SHT4X_H
+#ifndef WipperSnapper_I2C_Driver_SHT3X_H
+#define WipperSnapper_I2C_Driver_SHT3X_H
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <SHTSensor.h>
@@ -22,22 +22,22 @@
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for the SHT4X sensor.
+    @brief  Class that provides a driver interface for the SHT3X sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_SHT4X : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_SHT3X : public WipperSnapper_I2C_Driver {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a SHT4X sensor.
+      @brief    Constructor for a SHT3X sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_SHT4X(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_SHT3X(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -45,24 +45,26 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the SHT4X sensor and begins I2C.
+      @brief    Initializes the SHT3X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() {
-    _sht4x = new SHTSensor(SHTSensor::SHT4X);
-    if (!_sht4x->init(*_i2c))
+    if(_sensorAddress==0x44) // if address 0x44 (dec:68), alternative = 0x45
+      _sht3x = new SHTSensor(SHTSensor::SHT3X);
+    else
+      _sht3x = new SHTSensor(SHTSensor::SHT3X_ALT);
+
+    if (!_sht3x->init(*_i2c))
       return false;
 
     // Use HIGH PRECISION - only supported by 3X/4X
-    _sht4x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
-    
-    return true;
+    return _sht3x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the SHT4X's current temperature.
+      @brief    Gets the SHT3X's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -71,15 +73,15 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
     // populate temp and humidity objects with fresh data
-    if (!_sht4x->readSample())
+    if (!_sht3x->readSample())
       return false;
-    tempEvent->temperature = _sht4x->getTemperature();
+    tempEvent->temperature = _sht3x->getTemperature();
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the SHT4X's current relative humidity reading.
+      @brief    Gets the SHT3X's current relative humidity reading.
       @param    humidEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the humidity was obtained successfully, False
@@ -88,14 +90,14 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // populate temp and humidity objects with fresh data
-    if (!_sht4x->readSample())
+    if (!_sht3x->readSample())
       return false;
-    humidEvent->relative_humidity =  _sht4x->getHumidity();
+    humidEvent->relative_humidity =  _sht3x->getHumidity();
     return true;
   }
 
 protected:
-  SHTSensor *_sht4x; ///< SHT4X object
+  SHTSensor *_sht3x; ///< SHT3X object
 };
 
-#endif // WipperSnapper_I2C_Driver_SHT4X
+#endif // WipperSnapper_I2C_Driver_SHT3X
