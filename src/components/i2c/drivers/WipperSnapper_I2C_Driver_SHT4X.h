@@ -17,7 +17,7 @@
 #define WipperSnapper_I2C_Driver_SHT4X_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <Adafruit_SHT4x.h>
+#include <arduino-sht.h>
 #include <Wire.h>
 
 /**************************************************************************/
@@ -50,16 +50,13 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _sht4x = new Adafruit_SHT4x();
-    if (!_sht4x->begin(_i2c))
+    if(_sensorAddress == 0x44)
+    _sht4x = new SHTSensor(SHTSensor::SHT4X);
+    if (!_sht4x->init(_i2c))
       return false;
 
-    // Use HIGH PRECISION
-    _sht4x->setPrecision(SHT4X_HIGH_PRECISION);
-    // default, NO HEATER
-    _sht4x->setHeater(SHT4X_NO_HEATER);
-
-    return true;
+    // Use HIGH PRECISION - only supported by 3X/4X
+    return _sht4x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
   }
 
   /*******************************************************************************/
@@ -72,10 +69,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    sensors_event_t humidityEvent;
     // populate temp and humidity objects with fresh data
-    if (!_sht4x->getEvent(&humidityEvent, tempEvent))
+    if (!_sht4x->readSample())
       return false;
+    &tempEvent->temperature = _sht4x->getTemperature()
     return true;
   }
 
@@ -91,13 +88,14 @@ public:
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     sensors_event_t tempEvent;
     // populate temp and humidity objects with fresh data
-    if (!_sht4x->getEvent(humidEvent, &tempEvent))
+    if (!_sht4x->readSample())
       return false;
+    &humidEvent->relative_humidity = _sht4x->getHumidity();
     return true;
   }
 
 protected:
-  Adafruit_SHT4x *_sht4x; ///< SHT4X object
+  SHTSensor *_sht4x; ///< SHT4X object
 };
 
 #endif // WipperSnapper_I2C_Driver_SHT4X
