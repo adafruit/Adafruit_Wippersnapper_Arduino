@@ -56,14 +56,6 @@ public:
   /*******************************************************************************/
   bool begin() { return false; }
 
-  bool sensorAmbientTempPeriodElapsed(long curTime) {
-    if (getSensorAmbientTempPeriod() != 0L &&
-        curTime - getSensorAmbientTempPeriodPrv() >
-            getSensorAmbientTempPeriod())
-      return true;
-    return false;
-  }
-
   /*******************************************************************************/
   /*!
       @brief    Sets the sensor's period, provided a
