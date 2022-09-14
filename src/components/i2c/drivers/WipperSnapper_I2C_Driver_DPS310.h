@@ -59,7 +59,7 @@ public:
   bool begin() {
     // initialize DPS310
     _dps310 = new Adafruit_DPS310();
-    if (! _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c))
+    if (!_dps310->begin_I2C((uint8_t)_sensorAddress, _i2c))
       return false;
 
     // init OK, perform sensor configuration
@@ -84,7 +84,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (! _dps310->temperatureAvailable())
+    if (!_dps310->temperatureAvailable())
       return false;
 
     _dps_temp->getEvent(tempEvent);
@@ -101,7 +101,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (! _dps310->pressureAvailable())
+    if (!_dps310->pressureAvailable())
       return false;
 
     _dps_pressure->getEvent(pressureEvent);

@@ -61,8 +61,8 @@ public:
   bool begin() {
     _bme = new Adafruit_BME280();
     // attempt to initialize BME280
-    if (! _bme->begin(_sensorAddress, _i2c))
-        return false;
+    if (!_bme->begin(_sensorAddress, _i2c))
+      return false;
     // configure BME280 device
     _bme_temp = _bme->getTemperatureSensor();
     _bme_humidity = _bme->getHumiditySensor();
