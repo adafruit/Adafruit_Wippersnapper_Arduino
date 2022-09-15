@@ -129,7 +129,7 @@ jobs:
           echo "::set-output name=boardJson::$content"
     - name: Create combined binary using Esptool merge_bin
       run: |
-          python3 -m esptool --chip esp32 merge_bin \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
             --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
             --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
