@@ -8,6 +8,8 @@
  * products from Adafruit!
  *
  * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2022. Original code by Marni, 
+ * rewritten to use driver by Sensirion, help from Brent Rubell.
  *
  * MIT license, all text here must be included in any redistribution.
  *
