@@ -304,7 +304,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd40->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd40);
     WS_DEBUG_PRINTLN("SCD40 Initialized Successfully!");
-  } else if (strcmp("SHT40", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("sht40", msgDeviceInitReq->i2c_device_name) == 0) {
     _sht4x = new WipperSnapper_I2C_Driver_SHT4X(this->_i2c, i2cAddress);
     if (!_sht4x->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize sht4x!");
@@ -315,7 +315,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sht4x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sht4x);
     WS_DEBUG_PRINTLN("SHT4X Initialized Successfully!");
-  } else if (strcmp("SHT3X", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("sht3X", msgDeviceInitReq->i2c_device_name) == 0) {
     _sht3x = new WipperSnapper_I2C_Driver_SHT3X(this->_i2c, i2cAddress);
     if (!_sht3x->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize sht3x!");
