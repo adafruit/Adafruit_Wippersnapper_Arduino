@@ -8,7 +8,7 @@
  * products from Adafruit!
  *
  * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
- * Copyright (c) Tyeth Gundry 2022. Original code by Marni, 
+ * Copyright (c) Tyeth Gundry 2022. Original code by Marni,
  * rewritten to use driver by Sensirion, help from Brent Rubell.
  *
  * MIT license, all text here must be included in any redistribution.
@@ -58,7 +58,7 @@ public:
 
     // Use HIGH PRECISION - only supported by 3X/4X
     _sht4x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
-    
+
     return true;
   }
 
@@ -92,7 +92,7 @@ public:
     // populate temp and humidity objects with fresh data
     if (!_sht4x->readSample())
       return false;
-    humidEvent->relative_humidity =  _sht4x->getHumidity();
+    humidEvent->relative_humidity = _sht4x->getHumidity();
     return true;
   }
 

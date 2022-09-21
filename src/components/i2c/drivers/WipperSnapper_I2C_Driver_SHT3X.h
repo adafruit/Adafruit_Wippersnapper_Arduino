@@ -8,7 +8,7 @@
  * products from Adafruit!
  *
  * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
- * Copyright (c) Tyeth Gundry 2022. Original code by Marni, 
+ * Copyright (c) Tyeth Gundry 2022. Original code by Marni,
  * rewritten to use driver by Sensirion, help from Brent Rubell.
  *
  * MIT license, all text here must be included in any redistribution.
@@ -52,7 +52,7 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    if(_sensorAddress==0x44) // if address 0x44 (dec:68), alternative = 0x45
+    if (_sensorAddress == 0x44) // if address 0x44 (dec:68), alternative = 0x45
       _sht3x = new SHTSensor(SHTSensor::SHT3X);
     else
       _sht3x = new SHTSensor(SHTSensor::SHT3X_ALT);
@@ -94,7 +94,7 @@ public:
     // populate temp and humidity objects with fresh data
     if (!_sht3x->readSample())
       return false;
-    humidEvent->relative_humidity =  _sht3x->getHumidity();
+    humidEvent->relative_humidity = _sht3x->getHumidity();
     return true;
   }
 
