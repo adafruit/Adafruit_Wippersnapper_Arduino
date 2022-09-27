@@ -520,7 +520,6 @@ void WipperSnapper_Component_I2C::update() {
 
     // AMBIENT_TEMPERATURE sensor (°C)
     curTime = millis();
-
     if ((*iter)->getSensorAmbientTempPeriod() != 0L &&
         curTime - (*iter)->getSensorAmbientTempPeriodPrv() >
             (*iter)->getSensorAmbientTempPeriod()) {
@@ -548,14 +547,16 @@ void WipperSnapper_Component_I2C::update() {
     curTime = millis();
     if ((*iter)->getSensorAmbientTempFPeriod() != 0L &&
         curTime - (*iter)->getSensorAmbientTempFPeriodPrv() >
-            (*iter)->getSensorAmbientTempPeriod()) {
-      if ((*iter)->getEventAmbientTemp(&event)) {
+            (*iter)->getSensorAmbientTempFPeriod()) {
+      if ((*iter)->getEventAmbientTempF(&event)) {
         WS_DEBUG_PRINT("Sensor 0x");
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tAmbient Temp.: ");
         WS_DEBUG_PRINT(event.temperature);
         WS_DEBUG_PRINTLN("°F");
+
+        (*iter)->setSensorAmbientTempFPeriodPrv(curTime);
 
         fillEventMessage(
             &msgi2cResponse, event.temperature,
@@ -564,10 +565,9 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN(
             "ERROR: Failed to obtain ambient temp. (°F)) sensor reading!");
       }
-      (*iter)->setSensorRawPeriodPrv(curTime);
     }
 
-    // OBJECT_TEMPERATURE sensor (°F)
+    // OBJECT_TEMPERATURE sensor (°C)
     curTime = millis();
     if ((*iter)->getSensorObjectTempPeriod() != 0L &&
         curTime - (*iter)->getSensorObjectTempPeriodPrv() >
@@ -578,7 +578,7 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tTemperature: ");
         WS_DEBUG_PRINT(event.temperature);
-        WS_DEBUG_PRINTLN(" degrees C");
+        WS_DEBUG_PRINTLN("°C");
 
         // pack event data into msg
         fillEventMessage(
@@ -610,7 +610,7 @@ void WipperSnapper_Component_I2C::update() {
             &msgi2cResponse, event.temperature,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT);
 
-        (*iter)->setSensorObjectTempPeriodPrv(curTime);
+        (*iter)->setSensorObjectTempFPeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN(
             "ERROR: Failed to get object temperature sensor (°F) reading!");

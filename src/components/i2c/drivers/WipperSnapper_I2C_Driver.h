@@ -802,7 +802,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getAmbientTempF(sensors_event_t *AmbientTempFEvent) {
+  virtual bool getEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
     // obtain ambient temp. in °C
     if (!getEventAmbientTemp(AmbientTempFEvent))
       return false;
