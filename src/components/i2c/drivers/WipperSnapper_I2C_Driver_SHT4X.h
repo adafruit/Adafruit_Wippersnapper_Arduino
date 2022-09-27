@@ -57,8 +57,7 @@ public:
       return false;
 
     // configure SHT4x sensor
-    _sht4x->setPrecision(SHT4X_HIGH_PRECISION); // Use HIGH PRECISION
-    _sht4x->setHeater(SHT4X_NO_HEATER);         // default, NO HEATER
+    _sht4x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
 
     return true;
   }
