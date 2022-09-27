@@ -46,7 +46,7 @@ bool statusLEDInit() {
     digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
 #elif defined(NEOPIXEL_POWER)
     pinMode(NEOPIXEL_POWER, OUTPUT);
-    digitalWrite(NEOPIXEL_POWER, NEOPIXEL_POWER_ON);
+    digitalWrite(NEOPIXEL_POWER, HIGH);
 #endif
     statusPixel = new Adafruit_NeoPixel(
         STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
