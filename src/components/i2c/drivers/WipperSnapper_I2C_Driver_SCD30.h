@@ -50,8 +50,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _scd = new Adafruit_SCD30();
-    bool isInit = _scd->begin((uint8_t)_sensorAddress, _i2c);
-    return isInit;
+    return _scd->begin((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
@@ -63,7 +62,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
     if (_tempSensorPeriod != 0 && (!_scd->dataReady()))
       return false;

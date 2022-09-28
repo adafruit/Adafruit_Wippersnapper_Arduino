@@ -58,47 +58,16 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
+    // attempt
     _aht = new Adafruit_AHTX0();
-    bool isInit = _aht->begin(_i2c, (int32_t)_sensorAddress);
-    return isInit;
-  }
+    if (!_aht->begin(_i2c, (int32_t)_sensorAddress))
+      return false;
 
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the AHTX0's temperature sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorAmbientTemperature() {
+    // get temperature and humidity sensor
     _aht_temp = _aht->getTemperatureSensor();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the AHTX0's humidity sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorRelativeHumidity() {
     _aht_humidity = _aht->getHumiditySensor();
-  }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the AHTX0's temperature sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorAmbientTemperature() {
-    _aht_temp = NULL; // TODO: change to nullptr instead!
-    _tempSensorPeriod = 0L;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the AHTX0's humidity sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorRelativeHumidity() {
-    _aht_humidity = NULL; // TODO: change to nullptr instead!
-    _humidSensorPeriod = 0L;
+    return true;
   }
 
   /*******************************************************************************/
@@ -110,13 +79,13 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    // update temp, if sensor enabled
-    if (_aht_temp != NULL) {
-      _aht_temp->getEvent(tempEvent);
-      return true;
-    }
-    return false;
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    // is sensor enabled correctly?
+    if (_aht_temp == NULL)
+      return false;
+    // get event
+    _aht_temp->getEvent(tempEvent);
+    return true;
   }
 
   /*******************************************************************************/
@@ -129,12 +98,12 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    // update humidity, if sensor enabled
-    if (_aht_humidity != NULL) {
-      _aht_humidity->getEvent(humidEvent);
-      return true;
-    }
-    return false;
+    // is sensor enabled correctly?
+    if (_aht_humidity == NULL)
+      return false;
+    // get humidity
+    _aht_humidity->getEvent(humidEvent);
+    return true;
   }
 
 protected:

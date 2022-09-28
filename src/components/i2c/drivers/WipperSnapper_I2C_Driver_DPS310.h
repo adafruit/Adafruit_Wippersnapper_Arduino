@@ -57,88 +57,21 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
+    // initialize DPS310
     _dps310 = new Adafruit_DPS310();
-    bool isInit = _dps310->begin_I2C((uint8_t)_sensorAddress, _i2c);
-    return isInit;
-  }
+    if (!_dps310->begin_I2C((uint8_t)_sensorAddress, _i2c))
+      return false;
 
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the DPS310's temperature sensor. Sets highest precision
-                options
-  */
-  /*******************************************************************************/
-  void enableSensorAmbientTemperature() {
+    // init OK, perform sensor configuration
     _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
-    _dps_temp = _dps310->getTemperatureSensor();
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the DPS310's pressure sensor.
-  */
-  /*******************************************************************************/
-  void enableSensorPressure() {
     _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps_temp = _dps310->getTemperatureSensor();
     _dps_pressure = _dps310->getPressureSensor();
-  }
+    // check if sensors are configured properly
+    if (_dps_temp == NULL || _dps_pressure == NULL)
+      return false;
 
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the DPS310's pressure sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorAmbientTemperature() {
-    _dps_temp = NULL;
-    _tempSensorPeriod = 0L;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the DPS310's pressure sensor.
-  */
-  /*******************************************************************************/
-  void disableSensorPressure() {
-    _dps_pressure = NULL;
-    _pressureSensorPeriod = 0L;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of an ambient temperature
-                  sensor, provided sensor_period.
-      @param    period
-                Sensor's period.
-  */
-  /*******************************************************************************/
-  void updateSensorAmbientTemperature(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorAmbientTemperature();
-    // enable a previously disabled sensor
-    if (period > 0 && _dps_temp == NULL)
-      enableSensorAmbientTemperature();
-
-    setSensorAmbientTemperaturePeriod(period);
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a pressure sensor.
-      @param    period
-                The time interval at which to return new data from the pressure
-                sensor.
-  */
-  /*******************************************************************************/
-  void updateSensorPressure(float period) {
-    // disable the sensor
-    if (period == 0)
-      disableSensorPressure();
-    // enable a previously disabled sensor
-    if (period > 0 && _dps_pressure == NULL)
-      enableSensorPressure();
-
-    setSensorPressurePeriod(period);
+    return true;
   }
 
   /*******************************************************************************/
@@ -150,12 +83,12 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    if (_dps_temp != NULL && _dps310->temperatureAvailable()) {
-      _dps_temp->getEvent(tempEvent);
-      return true;
-    }
-    return false;
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    if (!_dps310->temperatureAvailable())
+      return false;
+
+    _dps_temp->getEvent(tempEvent);
+    return true;
   }
 
   /*******************************************************************************/
@@ -168,11 +101,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_dps_pressure != NULL && _dps310->pressureAvailable()) {
-      _dps_pressure->getEvent(pressureEvent);
-      return true;
-    }
-    return false;
+    if (!_dps310->pressureAvailable())
+      return false;
+
+    _dps_pressure->getEvent(pressureEvent);
+    return true;
   }
 
 protected:

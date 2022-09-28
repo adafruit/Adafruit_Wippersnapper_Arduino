@@ -56,7 +56,7 @@ public:
     if (!_sht4x->init(*_i2c))
       return false;
 
-    // Use HIGH PRECISION - only supported by 3X/4X
+    // configure SHT4x sensor
     _sht4x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
 
     return true;
@@ -71,7 +71,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // populate temp and humidity objects with fresh data
     if (!_sht4x->readSample())
       return false;
