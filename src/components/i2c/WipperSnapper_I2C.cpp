@@ -326,6 +326,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sht3x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sht3x);
     WS_DEBUG_PRINTLN("SHT3X Initialized Successfully!");
+  } else if (strcmp("shtc3", msgDeviceInitReq->i2c_device_name) == 0) {
+    _shtc3 = new WipperSnapper_I2C_Driver_SHTC3(this->_i2c, i2cAddress);
+    if (!_shtc3->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize SHTC3!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _shtc3->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_shtc3);
+    WS_DEBUG_PRINTLN("SHTC3 Initialized Successfully!");
   } else if (strcmp("pmsa003i", msgDeviceInitReq->i2c_device_name) == 0) {
     _pm25 = new WipperSnapper_I2C_Driver_PM25(this->_i2c, i2cAddress);
     if (!_pm25->begin()) {

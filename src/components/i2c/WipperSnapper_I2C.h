@@ -29,6 +29,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD40.h"
+#include "drivers/WipperSnapper_I2C_Driver_SHTC3.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT3X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT4X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SI7021.h"
@@ -90,6 +91,7 @@ private:
   WipperSnapper_I2C_Driver_SI7021 *_si7021 = nullptr;
   WipperSnapper_I2C_Driver_SHT4X *_sht4x = nullptr;
   WipperSnapper_I2C_Driver_SHT3X *_sht3x = nullptr;
+  WipperSnapper_I2C_Driver_SHTC3 *_shtc3 = nullptr;
   WipperSnapper_I2C_Driver_LC709203F *_lc = nullptr;
   WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor *_ss = nullptr;
 };
