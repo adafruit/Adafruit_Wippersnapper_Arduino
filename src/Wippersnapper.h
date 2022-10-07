@@ -37,7 +37,6 @@
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
-#include "components/ds18x20/WipperSnapper_DS18X20.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 
 // LEDC-Manager, ESP32-only
@@ -46,6 +45,7 @@
 #endif
 
 #include "components/servo/ws_servo.h"
+#include "components/ds18x20/ws_ds18x20.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -168,7 +168,7 @@ class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
-class WipperSnapper_DS18X20;
+class ws_ds18x20;
 
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
@@ -266,11 +266,6 @@ public:
       false; ///< True if I2C port 0 has been initialized, False otherwise.
   bool _isI2CPort1Init =
       false; ///< True if I2C port 1 has been initialized, False otherwise.
-
-  // DS18X20
-  std::vector<WipperSnapper_DS18X20>
-      _ds18x20Components; /*!< Vector containing WipperSnapper_DS18X20 instances
-                           */
 
   uint8_t _buffer[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
                                                 payload */
