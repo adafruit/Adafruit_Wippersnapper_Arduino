@@ -38,7 +38,7 @@ public:
   /*******************************************************************************/
   WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress) {
     _i2c = i2c;
-    _sensorAddress;
+    _sensorAddress = sensorAddress;
   }
 
   /*******************************************************************************/
@@ -58,6 +58,69 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Sets the sensor's period, provided a
+     wippersnapper_i2c_v1_SensorType.
+      @param    period The period for the sensor to return values within, in
+     seconds.
+      @param    sensorType The type of sensor device.
+  */
+  /*******************************************************************************/
+  void setSensorPeriod(float period,
+                       wippersnapper_i2c_v1_SensorType sensorType) {
+    long sensorPeriod = (long)period * 1000;
+
+    switch (sensorType) {
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+      _tempSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+      _humidSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
+      _pressureSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
+      _CO2SensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
+      _altitudeSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+      _objectTempSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
+      _lightSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
+      _PM10SensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
+      _PM25SensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
+      _PM100SensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+      _unitlessPercentPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
+      _voltagePeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
+      _rawSensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+      _ambientTempFPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+      _objectTempFPeriod = sensorPeriod;
+    default:
+      break;
+    }
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Uses an I2CDeviceInitRequest message to configure the sensors
                   belonging to the driver.
       @param    msgDeviceInitReq
@@ -66,51 +129,12 @@ public:
   /*******************************************************************************/
   void
   configureDriver(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
-    int propertyIdx = 0;
+    int propertyIdx = 0; // contains the amount of i2c sensors in the
+                         // msgDeviceInitReq to configure
     while (propertyIdx < msgDeviceInitReq->i2c_device_properties_count) {
-      switch (
-          msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_type) {
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-        enableSensorAmbientTemperature();
-        setSensorAmbientTemperaturePeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-        break;
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-        enableSensorRelativeHumidity();
-        setSensorRelativeHumidityPeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-        break;
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
-        enableSensorPressure();
-        setSensorPressurePeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-        break;
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
-        enableSensorCO2();
-        setSensorCO2Period(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-        break;
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-        enableSensorGas();
-        setSensorGasPeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-        break;
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
-        enableSensorAltitude();
-        setSensorAltitudePeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-        break;
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-        enableSensorObjectTemp();
-        setSensorObjectTempPeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-      case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
-        enableSensorLight();
-        setSensorLightPeriod(
-            msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period);
-      default:
-        break;
-      }
+      setSensorPeriod(
+          msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period,
+          msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_type);
       ++propertyIdx;
     }
   }
@@ -125,47 +149,6 @@ public:
 
   /****************************** SENSOR_TYPE: CO2
    * *******************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's CO2 sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorCO2() { return; };
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's CO2 sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorCO2() { _CO2SensorPeriod = 0.0L; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the co2 sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the
-     co2 sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorCO2Period(float period) {
-    if (period == 0.0) {
-      disableSensorCO2();
-      return;
-    }
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _CO2SensorPeriod = (long)period * 1000;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a CO2 sensor.
-      @param    period
-                The time interval at which to return new data from the CO2
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorCO2(float period) { setSensorCO2Period(period); }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the co2 sensor's period, if
@@ -173,7 +156,7 @@ public:
       @returns  Time when the co2 sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorCO2Period() { return _CO2SensorPeriod; }
+  virtual long getSensorCO2Period() { return _CO2SensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -182,7 +165,7 @@ public:
       @returns  Time when the co2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
+  virtual long getSensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -206,124 +189,54 @@ public:
   /*******************************************************************************/
   virtual bool getEventCO2(sensors_event_t *co2Event) { return false; }
 
-  /********************** SENSOR_TYPE: AMBIENT TEMPERATURE
+  /********************** SENSOR_TYPE: AMBIENT TEMPERATURE (°C)
    * ***********************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorAmbientTemperature() { return; };
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorAmbientTemperature() { _tempSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
-      @brief    Base implementation - Returns the humidity sensor's period, if
-     set.
+      @brief    Base implementation - Returns the ambient temperature (°C)
+     sensor's period, if set.
       @returns  Time when the temperature sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAmbientTemperaturePeriod() { return _tempSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the temperature sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the
-     temperature sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorAmbientTemperaturePeriod(float period) {
-    if (period == 0.0) {
-      disableSensorAmbientTemperature();
-      return;
-    }
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _tempSensorPeriod = (long)period * 1000;
-  }
+  virtual long getSensorAmbientTempPeriod() { return _tempSensorPeriod; }
 
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the previous time interval at
-     which the temperature sensor was queried last.
-      @returns  Time when the temperature sensor was last queried, in seconds.
+                which the ambient temperature sensor (°C) was queried last.
+      @returns  Time when the ambient temperature sensor (°C) was last queried,
+                in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAmbientTemperaturePeriodPrv() {
-    return _tempSensorPeriodPrv;
-  }
+  virtual long getSensorAmbientTempPeriodPrv() { return _tempSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
-      @brief    Sets a timestamp for when the temperature sensor was queried.
+      @brief    Sets a timestamp for when the ambient temperature sensor (°C)
+                was queried.
       @param    periodPrv
-                The time when the temperature sensor was queried last.
+                The time when the ambient temperature sensor (°C) was queried
+     last.
   */
   /*******************************************************************************/
-  virtual void setSensorAmbientTemperaturePeriodPrv(long periodPrv) {
+  virtual void setSensorAmbientTempPeriodPrv(long periodPrv) {
     _tempSensorPeriodPrv = periodPrv;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Base implementation - Reads a temperature sensor. Expects value
-                to return in the proper SI unit.
+      @brief    Base implementation - Reads an ambient temperature sensor (°C).
+                Expects value to return in the proper SI unit.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
-    return false;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a temperature sensor. Expects value
-                to return in the proper SI unit.
-      @param    tempEvent
-                Pointer to an temperature value.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventAmbientTemperature(float tempEvent) { return false; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Update the properties of a temperature
-                  sensor, provided sensor_period.
-      @param    period
-                Sensor's period.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorAmbientTemperature(float period) {
-    setSensorAmbientTemperaturePeriod(period);
-  }
+  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
 
   /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
    * ***********************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's relative humidity sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorRelativeHumidity(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's relative humidity sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorRelativeHumidity() { _humidSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the humidity sensor's period, if
@@ -331,24 +244,7 @@ public:
       @returns  Time when the humidity sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRelativeHumidityPeriod() { return _humidSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the humidity sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the humidity
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorRelativeHumidityPeriod(float period) {
-    if (period == 0.0) {
-      disableSensorRelativeHumidity();
-      return;
-    }
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _humidSensorPeriod = (long)period * 1000;
-  }
+  virtual long getSensorRelativeHumidityPeriod() { return _humidSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -357,7 +253,7 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorRelativeHumidityPeriodPrv() {
+  virtual long getSensorRelativeHumidityPeriodPrv() {
     return _humidSensorPeriodPrv;
   }
 
@@ -386,46 +282,8 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a humidity sensor and converts
-                the reading into the expected SI unit.
-      @param    humidEvent
-                Pointer to a humidity value.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventRelativeHumidity(float humidEvent) { return false; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a relative humidity sensor.
-      @param    period
-                The time interval at which to return new data from the humidity
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorRelativeHumidity(float period) {
-    setSensorRelativeHumidityPeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: PRESSURE
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's pressure sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorPressure(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's pressure sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorPressure() { _pressureSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the pressure sensor's period, if
@@ -433,22 +291,7 @@ public:
       @returns  Time when the pressure sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorPressurePeriod() { return _pressureSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the pressure sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the pressure
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorPressurePeriod(float period) {
-    if (period == 0.0)
-      disableSensorPressure();
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _pressureSensorPeriod = (long)period * 1000;
-  }
+  virtual long getSensorPressurePeriod() { return _pressureSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -457,7 +300,7 @@ public:
       @returns  Time when the pressure sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
+  virtual long getSensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -484,127 +327,8 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a pressure sensor and converts
-                the reading into the expected SI unit.
-      @param    pressureEvent
-                A pressure value
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventPressure(float pressureEvent) { return false; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a pressure sensor.
-      @param    period
-                The time interval at which to return new data from the pressure
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorPressure(float period) {
-    setSensorPressurePeriod(period);
-  }
-
-  /**************************** SENSOR_TYPE: Gas
-   * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's gas sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorGas(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's gas sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorGas() { _gasSensorPeriod = 0.0L; }
-
-  /*********************************************************************************/
-  /*!
-      @brief    Base implementation - Returns the gas sensor's period, if set.
-      @returns  Time when the Gas sensor should be polled, in seconds.
-  */
-  /*********************************************************************************/
-  virtual long sensorGasPeriod() { return _gasSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the gas sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the Gas
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorGasPeriod(float period) {
-    if (period == 0.0)
-      disableSensorGas();
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _gasSensorPeriod = (long)period * 1000;
-  }
-
-  /*********************************************************************************/
-  /*!
-      @brief    Base implementation - Returns the previous time interval at
-                    which the gas sensor was queried last.
-      @returns  Time when the gas sensor was last queried, in seconds.
-  */
-  /*********************************************************************************/
-  virtual long sensorGasPeriodPrv() { return _gasSensorPeriodPrv; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Sets a timestamp for when the gas sensor was queried.
-      @param    period
-                The time when the gas sensor was queried last.
-  */
-  /*******************************************************************************/
-  virtual void setSensorGasPeriodPrv(long period) {
-    _gasSensorPeriodPrv = period;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Base implementation - Reads a gas sensor and converts
-                the reading into the expected SI unit.
-      @param    gas_resistance
-                Gas resistor (ohms) reading.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  virtual bool getEventGas(uint32_t gas_resistance) { return gas_resistance; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a gas sensor.
-      @param    period
-                The time interval at which to return new data from the Gas
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorGas(float period) { setSensorGasPeriod(period); }
-
   /**************************** SENSOR_TYPE: Altitude
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's Altitude sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorAltitude(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's Altitude sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorAltitude() { _altitudeSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the Altitude sensor's period, if
@@ -612,22 +336,7 @@ public:
       @returns  Time when the Altitude sensor should be polled, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAltitudePeriod() { return _altitudeSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the Altitude sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the Altitude
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorAltitudePeriod(float period) {
-    if (period == 0)
-      disableSensorAltitude();
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _altitudeSensorPeriod = (long)period * 1000;
-  }
+  virtual long getSensorAltitudePeriod() { return _altitudeSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -636,7 +345,7 @@ public:
       @returns  Time when the Altitude sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorAltitudePeriodPrv() { return _altitudeSensorPeriodPrv; }
+  virtual long getSensorAltitudePeriodPrv() { return _altitudeSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -663,34 +372,8 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a Altitude sensor.
-      @param    period
-                The time interval at which to return new data from the altitude
-                sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorAltitude(float period) {
-    setSensorAltitudePeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: Object_Temperature
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's object temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorObjectTemp(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's object temperature sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorObjectTemp() { _objectTempSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object temperature sensor's
@@ -699,22 +382,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorObjectTempPeriod() { return _objectTempSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the object temperature sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the
-                object temperature sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorObjectTempPeriod(float period) {
-    if (period == 0)
-      disableSensorObjectTemp();
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _objectTempSensorPeriod = (long)period * 1000;
-  }
+  virtual long getSensorObjectTempPeriod() { return _objectTempSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -724,7 +392,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long sensorObjectTempPeriodPrv() {
+  virtual long getSensorObjectTempPeriodPrv() {
     return _objectTempSensorPeriodPrv;
   }
 
@@ -754,34 +422,8 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Updates the properties of a object temperature sensor.
-      @param    period
-                The time interval at which to return new data from the
-                object temperature sensor.
-  */
-  /*******************************************************************************/
-  virtual void updateSensorObjectTemp(float period) {
-    setSensorObjectTempPeriod(period);
-  }
-
   /**************************** SENSOR_TYPE: LIGHT
    * ****************************/
-  /*******************************************************************************/
-  /*!
-      @brief    Enables the device's object light sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void enableSensorLight(){};
-
-  /*******************************************************************************/
-  /*!
-      @brief    Disables the device's object light sensor, if it exists.
-  */
-  /*******************************************************************************/
-  virtual void disableSensorLight() { _lightSensorPeriod = 0.0L; }
-
   /*********************************************************************************/
   /*!
       @brief    Base implementation - Returns the object light sensor's
@@ -790,22 +432,7 @@ public:
      seconds.
   */
   /*********************************************************************************/
-  virtual long sensorLightPeriod() { return _lightSensorPeriod; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Set the object light sensor's return frequency.
-      @param    period
-                The time interval at which to return new data from the
-                object light sensor.
-  */
-  /*******************************************************************************/
-  virtual void setSensorLightPeriod(float period) {
-    if (period == 0)
-      disableSensorLight();
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _lightSensorPeriod = (long)period * 1000;
-  }
+  virtual long getSensorLightPeriod() { return _lightSensorPeriod; }
 
   /*********************************************************************************/
   /*!
@@ -815,7 +442,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorLightPeriodPrv() { return _lightSensorPeriodPrv; }
+  virtual long getSensorLightPeriodPrv() { return _lightSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -841,15 +468,405 @@ public:
   /*******************************************************************************/
   virtual bool getEventLight(sensors_event_t *lightEvent) { return false; }
 
+  /**************************** SENSOR_TYPE: PM10_STD
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object pm10 standard sensors'
+     period, if set.
+      @returns  Time when the object pm10 standard sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorPM10_STDPeriod() { return _PM10SensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the pm10 std. sensor was queried last.
+      @returns  Time when the pm10 std. sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorPM10_STDPeriodPrv() { return _PM10SensorPeriodPrv; }
+
   /*******************************************************************************/
   /*!
-      @brief    Updates the properties of a object light sensor.
+      @brief    Sets a timestamp for when the light sensor
+                was queried.
       @param    period
-                The time interval at which to return new data from the
-                light sensor.
+                The time when the light sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void updateSensorLight(float period) { setSensorLightPeriod(period); }
+  virtual void setSensorPM10_STDPeriodPrv(long period) {
+    _PM10SensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm10 std. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm10StdEvent
+                pm10 std. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
+
+  /**************************** SENSOR_TYPE: PM25_STD
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object pm25 standard sensors'
+     period, if set.
+      @returns  Time when the object pm25 standard sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorPM25_STDPeriod() { return _PM25SensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the pm25 std. sensor was queried last.
+      @returns  Time when the pm25 std. sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorPM25_STDPeriodPrv() { return _PM25SensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the light sensor
+                was queried.
+      @param    period
+                The time when the light sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorPM25_STDPeriodPrv(long period) {
+    _PM25SensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm25 std. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm25StdEvent
+                pm25 std. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) { return false; }
+
+  /**************************** SENSOR_TYPE: PM100_STD
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object pm100 standard sensors'
+     period, if set.
+      @returns  Time when the object pm100 standard sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorPM100_STDPeriod() { return _PM100SensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the pm100 std. sensor was queried last.
+      @returns  Time when the pm100 std. sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorPM100_STDPeriodPrv() { return _PM100SensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the light sensor
+                was queried.
+      @param    period
+                The time when the light sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorPM100_STDPeriodPrv(long period) {
+    _PM100SensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm100 std. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm100StdEvent
+                pm100 std. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
+    return false;
+  }
+
+  /**************************** SENSOR_TYPE: UNITLESS_PERCENT
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object unitless % sensor
+                period, if set.
+      @returns  Time when the object unitless % sensor should be polled, in
+                seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorUnitlessPercentPeriod() {
+    return _unitlessPercentPeriod;
+  }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the unitless % sensor was queried last.
+      @returns  Time when the unitless % sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorUnitlessPercentPeriodPrv() {
+    return _unitlessPercentPeriodPrv;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the unitless % sensor
+                was queried.
+      @param    period
+                The time when the unitless % sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorUnitlessPercentPeriodPrv(long period) {
+    _unitlessPercentPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object unitless % std. sensor and
+                converts the reading into the expected SI unit.
+      @param    unitlessPercentEvent
+                unitless %  sensor reading.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
+    return false;
+  }
+
+  /**************************** SENSOR_TYPE: VOLTAGE
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the voltage sensor's period.
+      @returns  Time when the object voltage sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorVoltagePeriod() { return _voltagePeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the voltage sensor was queried last.
+      @returns  Time when the voltage sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorVoltagePeriodPrv() { return _voltagePeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the voltage sensor was queried.
+      @param    period
+                The time when the voltage sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorVoltagePeriodPrv(long period) {
+    _voltagePeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a voltage sensor and converts the
+                reading into the expected SI unit.
+      @param    voltageEvent
+                voltage sensor reading, in volts.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventVoltage(sensors_event_t *voltageEvent) { return false; }
+
+  /****************************** SENSOR_TYPE: Raw
+   * *******************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the raw sensor's period, if
+     set.
+      @returns  Time when the raw sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorRawPeriod() { return _rawSensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the raw sensor was queried last.
+      @returns  Time when the raw sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorRawPeriodPrv() { return _rawSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the raw sensor was queried.
+      @param    period
+                The time when the raw sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorRawPeriodPrv(long period) {
+    _rawSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets a sensor's Raw value.
+      @param    rawEvent
+                The Raw value.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
+
+  /****************************** SENSOR_TYPE: Ambient Temp (°F)
+   * *******************************/
+
+  /*******************************************************************************/
+  /*!
+      @brief    Disables the device's ambient temperature (°F) sensor, if it
+     exists.
+  */
+  /*******************************************************************************/
+  virtual void disableAmbientTempF() { _ambientTempFPeriod = 0.0L; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the ambient temperature (°F)
+     sensor's period, if set.
+      @returns  Time when the ambient temperature sensor should be polled,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorAmbientTempFPeriod() { return _ambientTempFPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the ambient temperature sensor (°F) was queried last.
+      @returns  Time when the ambient temperature sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorAmbientTempFPeriodPrv() {
+    return _ambientTempFPeriodPrv;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the ambient temperature sensor (°F)
+                was queried.
+      @param    period
+                The time when the ambient temperature sensor (°F) was queried
+     last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorAmbientTempFPeriodPrv(long period) {
+    _ambientTempFPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Helper function to obtain a sensor's ambient temperature value
+                in °F. Requires `getEventAmbientTemp()` to be fully
+                implemented by a driver.
+      @param    AmbientTempFEvent
+                The ambient temperature value, in °F.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
+    // obtain ambient temp. in °C
+    if (!getEventAmbientTemp(AmbientTempFEvent))
+      return false;
+    // convert event from °C to °F
+    AmbientTempFEvent->temperature =
+        (AmbientTempFEvent->temperature * 9.0) / 5.0 + 32;
+    return true;
+  }
+
+  /****************************** SENSOR_TYPE: Object Temp (°F)
+   * *******************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the object temperature (°F)
+     sensor's period, if set.
+      @returns  Time when the object temperature sensor should be polled,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorObjectTempFPeriod() { return _objectTempFPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the object temperature sensor (°F) was queried last.
+      @returns  Time when the object temperature sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorObjectTempFPeriodPrv() { return _objectTempFPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the object temperature sensor (°F)
+                was queried.
+      @param    period
+                The time when the object temperature sensor (°F) was queried
+     last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorObjectTempFPeriodPrv(long period) {
+    _objectTempFPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Helper function to obtain a sensor's object temperature value
+                in °F. Requires `getEventObjectTemp()` to be fully
+                implemented by a driver.
+      @param    objectTempFEvent
+                The object temperature value, in °F.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventObjectTempF(sensors_event_t *objectTempFEvent) {
+    // obtain ambient temp. in °C
+    if (!getEventObjectTemp(objectTempFEvent))
+      return false;
+    // convert event from °C to °F
+    objectTempFEvent->temperature =
+        (objectTempFEvent->temperature * 9.0) / 5.0 + 32.0;
+    return true;
+  }
 
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
@@ -870,10 +887,6 @@ protected:
       0L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv = 0L; ///< The time when the CO2 sensor
                                  ///< was last read.
-  long _gasSensorPeriod =
-      0L; ///< The time period between reading the CO2 sensor's value.
-  long _gasSensorPeriodPrv = 0L; ///< The time when the CO2 sensor
-                                 ///< was last read.
   long _altitudeSensorPeriod =
       0L; ///< The time period between reading the altitude sensor's value.
   long _altitudeSensorPeriodPrv = 0L;   ///< The time when the altitude sensor
@@ -886,6 +899,38 @@ protected:
                                         ///< light sensor's value.
   long _lightSensorPeriodPrv = 0L;      ///< The time when the light sensor
                                         ///< was last read.
+  long _PM10SensorPeriod = 0L;          ///< The time period between reading the
+                                        ///< pm25 sensor's value.
+  long _PM10SensorPeriodPrv = 0L;       ///< The time when the pm25 sensor
+                                        ///< was last read.
+  long _PM25SensorPeriod = 0L;          ///< The time period between reading the
+                                        ///< pm25 sensor's value.
+  long _PM25SensorPeriodPrv = 0L;       ///< The time when the pm25 sensor
+                                        ///< was last read.
+  long _PM100SensorPeriod = 0L;         ///< The time period between reading the
+                                        ///< pm100_std sensor's value.
+  long _PM100SensorPeriodPrv = 0L;      ///< The time when the pm100_std sensor
+                                        ///< was last read.
+  long _unitlessPercentPeriod = 0L;     ///< The time period between reading the
+                                        ///< unitless % sensor's value.
+  long _unitlessPercentPeriodPrv = 0L;  ///< The time when the unitless % sensor
+                                        ///< was last read.
+  long _voltagePeriod = 0L;             ///< The time period between reading the
+                                        ///< voltage sensor's value.
+  long _voltagePeriodPrv = 0L;          ///< The time when the voltage sensor
+                                        ///< was last read.
+  long _rawSensorPeriod =
+      0L; ///< The time period between reading the Raw sensor's value.
+  long _rawSensorPeriodPrv = 0L;    ///< The time when the Raw sensor
+                                    ///< was last read.
+  long _ambientTempFPeriod = 0L;    ///< The time period between reading the
+                                    ///< ambient temp. (°F) sensor's value.
+  long _ambientTempFPeriodPrv = 0L; ///< The time when the ambient temp. (°F)
+                                    ///< sensor was last read.
+  long _objectTempFPeriod = 0L;     ///< The time period between reading the
+                                    ///< object temp. (°F) sensor's value.
+  long _objectTempFPeriodPrv = 0L;  ///< The time when the object temp. (°F)
+                                    ///< sensor was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H

@@ -77,6 +77,7 @@ public:
       @brief    Configures the device's Adafruit IO credentials. This method
                 should be used only if filesystem-backed provisioning is
                 not avaliable.
+  */
   /****************************************************************************/
   void set_user_key() {
     WS._username = _username;

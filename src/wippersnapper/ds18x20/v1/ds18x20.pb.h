@@ -15,6 +15,7 @@ typedef struct _wippersnapper_ds18x20_v1_Ds18x20DeInitRequest {
     int32_t onewire_pin;
 } wippersnapper_ds18x20_v1_Ds18x20DeInitRequest;
 
+
 typedef struct _wippersnapper_ds18x20_v1_Ds18x20DeInitResponse {
     bool is_de_init;
 } wippersnapper_ds18x20_v1_Ds18x20DeInitResponse;
@@ -33,6 +34,7 @@ typedef struct _wippersnapper_ds18x20_v1_Ds18x20InitRequest {
 
 typedef struct _wippersnapper_ds18x20_v1_Ds18x20InitResponse {
     bool is_initialized;
+    int32_t onewire_pin;
 } wippersnapper_ds18x20_v1_Ds18x20InitResponse;
 
 
@@ -55,12 +57,7 @@ extern "C" {
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_onewire_pin_tag 1
 #define wippersnapper_ds18x20_v1_Ds18x20DeInitResponse_is_de_init_tag 1
-#define wippersnapper_ds18x20_v1_Ds18x20DeviceEvent_onewire_pin_tag 1
-#define wippersnapper_ds18x20_v1_Ds18x20DeviceEvent_sensor_event_tag 2
-#define wippersnapper_ds18x20_v1_Ds18x20InitRequest_onewire_pin_tag 1
-#define wippersnapper_ds18x20_v1_Ds18x20InitRequest_sensor_period_tag 2
-#define wippersnapper_ds18x20_v1_Ds18x20InitRequest_sensor_resolution_tag 3
-#define wippersnapper_ds18x20_v1_Ds18x20InitResponse_is_initialized_tag 1
+#define wippersnapper_ds18x20_v1_Ds18x20InitResponse_onewire_pin_tag 2
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_ds18x20_v1_Ds18x20InitRequest_FIELDLIST(X, a) \
@@ -71,6 +68,7 @@ X(a, STATIC,   SINGULAR, INT32,    sensor_resolution,   3)
 #define wippersnapper_ds18x20_v1_Ds18x20InitRequest_DEFAULT NULL
 
 #define wippersnapper_ds18x20_v1_Ds18x20InitResponse_FIELDLIST(X, a) \
+
 X(a, STATIC,   SINGULAR, BOOL,     is_initialized,    1)
 #define wippersnapper_ds18x20_v1_Ds18x20InitResponse_CALLBACK NULL
 #define wippersnapper_ds18x20_v1_Ds18x20InitResponse_DEFAULT NULL
@@ -80,10 +78,12 @@ X(a, STATIC,   SINGULAR, INT32,    onewire_pin,       1)
 #define wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_CALLBACK NULL
 #define wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_DEFAULT NULL
 
+
 #define wippersnapper_ds18x20_v1_Ds18x20DeInitResponse_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, BOOL,     is_de_init,        1)
 #define wippersnapper_ds18x20_v1_Ds18x20DeInitResponse_CALLBACK NULL
 #define wippersnapper_ds18x20_v1_Ds18x20DeInitResponse_DEFAULT NULL
+
 
 #define wippersnapper_ds18x20_v1_Ds18x20DeviceEvent_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    onewire_pin,       1) \

@@ -9,7 +9,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2022 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -32,7 +32,7 @@
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
-#include "components/statusLED/Wippersnapper_StatusLED_Colors.h"
+#include "components/statusLED/Wippersnapper_StatusLED.h"
 
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -40,13 +40,18 @@
 #include "components/ds18x20/WipperSnapper_DS18X20.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 
+// LEDC-Manager, ESP32-only
+#ifdef ARDUINO_ARCH_ESP32
+#include "components/ledc/ws_ledc.h"
+#endif
+
+#include "components/servo/ws_servo.h"
+
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
 
 // Note: These might be better off in their respective wrappers
-#include <Adafruit_DotStar.h>
-#include <Adafruit_NeoPixel.h>
 #include <SPI.h>
 
 #ifndef ESP8266
@@ -62,7 +67,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.34" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.51" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -165,6 +170,12 @@ class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
 class WipperSnapper_DS18X20;
 
+#ifdef ARDUINO_ARCH_ESP32
+class ws_ledc;
+#endif
+
+class ws_servo;
+
 /**************************************************************************/
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
@@ -178,11 +189,6 @@ public:
 
   void provision();
 
-  // Status LED
-  bool statusLEDInit();
-  void statusLEDDeinit();
-  void setStatusLEDColor(uint32_t color);
-  void statusLEDBlink(ws_led_status_t statusState);
   bool lockStatusNeoPixel =
       false; ///< True if status LED is using the status neopixel
   bool lockStatusDotStar =
@@ -232,7 +238,8 @@ public:
   void feedWDT();
 
   // Error handling helpers
-  void haltError(String error);
+  void haltError(String error,
+                 ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
   void errorWriteHang(String error);
 
   // MQTT topic callbacks //
@@ -279,6 +286,7 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
+  ws_servo *_servoComponent; ///< Instance of servo class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -303,7 +311,11 @@ public:
   char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
   char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
                                    to a broker. */
-  char *_topic_signal_i2c_device = NULL; /*!< Topic carries messages from a
+  char *_topic_signal_i2c_device = NULL;   /*!< Topic carries messages from a
+                                       broker to a device. */
+  char *_topic_signal_servo_brkr = NULL;   /*!< Topic carries messages from a
+                                     device   to a broker. */
+  char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
   char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
                                    a device to a broker. */
@@ -318,16 +330,27 @@ public:
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
 
+
   // ds signal msg
   wippersnapper_signal_v1_Ds18x20Request msgSignalDS =
       wippersnapper_signal_v1_Ds18x20Request_init_zero; ///< DS request message
                                                         ///< wrapper
+
+  // servo message
+  wippersnapper_signal_v1_ServoRequest
+      msgServo; ///< ServoRequest wrapper message
+
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
 
   bool pinCfgCompleted = false; /*!< Did initial pin sync complete? */
+
+// enable LEDC if esp32
+#ifdef ARDUINO_ARCH_ESP32
+  ws_ledc *_ledc = nullptr; ///< Pointer to LEDC object
+#endif
 
 private:
   void _init();
@@ -369,7 +392,10 @@ protected:
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
   Adafruit_MQTT_Subscribe
+
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
+      *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
+
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
@@ -379,7 +405,6 @@ protected:
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
 };
-
 extern Wippersnapper WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H

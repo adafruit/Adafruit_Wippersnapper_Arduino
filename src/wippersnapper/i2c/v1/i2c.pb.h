@@ -49,7 +49,12 @@ typedef enum _wippersnapper_i2c_v1_SensorType {
     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV = 24,
     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2 = 25,
     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE = 26,
-    wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE = 27
+    wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE = 27,
+    wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LUX = 28,
+    wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2 = 29,
+    wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT = 30,
+    wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT = 31,
+    wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT = 32
 } wippersnapper_i2c_v1_SensorType;
 
 /* Struct definitions */
@@ -146,8 +151,8 @@ typedef struct _wippersnapper_i2c_v1_I2CDeviceUpdateRequest {
 #define _wippersnapper_i2c_v1_BusResponse_ARRAYSIZE ((wippersnapper_i2c_v1_BusResponse)(wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_DEINIT_FAIL+1))
 
 #define _wippersnapper_i2c_v1_SensorType_MIN wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNSPECIFIED
-#define _wippersnapper_i2c_v1_SensorType_MAX wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE
-#define _wippersnapper_i2c_v1_SensorType_ARRAYSIZE ((wippersnapper_i2c_v1_SensorType)(wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE+1))
+#define _wippersnapper_i2c_v1_SensorType_MAX wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT
+#define _wippersnapper_i2c_v1_SensorType_ARRAYSIZE ((wippersnapper_i2c_v1_SensorType)(wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT+1))
 
 
 #ifdef __cplusplus

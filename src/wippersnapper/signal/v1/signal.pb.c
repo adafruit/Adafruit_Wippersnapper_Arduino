@@ -18,10 +18,22 @@ PB_BIND(wippersnapper_signal_v1_I2CRequest, wippersnapper_signal_v1_I2CRequest, 
 PB_BIND(wippersnapper_signal_v1_I2CResponse, wippersnapper_signal_v1_I2CResponse, 2)
 
 
+PB_BIND(wippersnapper_signal_v1_ServoRequest, wippersnapper_signal_v1_ServoRequest, AUTO)
+
+
+PB_BIND(wippersnapper_signal_v1_ServoResponse, wippersnapper_signal_v1_ServoResponse, AUTO)
+
+
 PB_BIND(wippersnapper_signal_v1_CreateSignalRequest, wippersnapper_signal_v1_CreateSignalRequest, AUTO)
 
 
 PB_BIND(wippersnapper_signal_v1_SignalResponse, wippersnapper_signal_v1_SignalResponse, AUTO)
+
+
+PB_BIND(wippersnapper_signal_v1_PWMRequest, wippersnapper_signal_v1_PWMRequest, AUTO)
+
+
+PB_BIND(wippersnapper_signal_v1_PWMResponse, wippersnapper_signal_v1_PWMResponse, AUTO)
 
 
 

@@ -19,7 +19,9 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM) ||                       \
-    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM)
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -85,7 +87,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // filesystem
   if (!initFilesystem()) {
     WS_DEBUG_PRINTLN("ERROR Initializing Filesystem");
-    WS.setStatusLEDColor(RED);
+    setStatusLEDColor(RED);
     while (1)
       ;
   }
@@ -287,7 +289,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
   // open for writing, create a new file if one doesnt exist
   File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (!secretsFile) {
-    WS.setStatusLEDColor(RED);
+    setStatusLEDColor(RED);
     while (1)
       yield();
   }
@@ -339,7 +341,7 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     writeToBootOut("ERROR: invalid io_username value in secrets.json!\n");
     while (1) {
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       yield();
     }
   }
@@ -396,13 +398,13 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINTLN("ERROR: invalid network_ssid value in secrets.json!");
     writeToBootOut("ERROR: invalid network_ssid value in secrets.json!\n");
     while (1) {
-      WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+      statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       yield();
     }
   }
 
   // error check if SSID is the from templated json
-  if (WS._network_ssid == "YOUR_WIFI_SSID_HERE") {
+  if (strcmp(WS._network_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
     writeToBootOut(
         "* ERROR: Default SSID found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
@@ -445,7 +447,7 @@ void Wippersnapper_FS::parseSecrets() {
     fsHalt();
   }
   // error check if wifi password is from template
-  if (WS._network_pass == "YOUR_WIFI_PASS_HERE") {
+  if (strcmp(WS._network_pass, "YOUR_WIFI_PASS_HERE") == 0) {
     writeToBootOut("Default SSID found in secrets.json, please edit "
                    "the secrets.json file and reset the board\n");
     fsHalt();
@@ -491,7 +493,7 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt() {
   while (1) {
-    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }

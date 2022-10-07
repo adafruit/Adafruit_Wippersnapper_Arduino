@@ -15,7 +15,8 @@
 #if defined(ARDUINO_FEATHER_ESP32) ||                                          \
     defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) ||                                \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
-    defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO)
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
 #include "WipperSnapper_LittleFS.h"
 
 /**************************************************************************/
@@ -28,7 +29,7 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
     WS_DEBUG_PRINTLN("ERROR: Failure initializing LittleFS!");
-    WS.setStatusLEDColor(RED);
+    setStatusLEDColor(RED);
     while (1)
       ;
   }
@@ -149,7 +150,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
 void WipperSnapper_LittleFS::fsHalt() {
   while (1) {
-    WS.statusLEDBlink(WS_LED_STATUS_FS_WRITE);
+    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }
