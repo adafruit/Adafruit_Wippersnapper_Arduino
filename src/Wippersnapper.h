@@ -392,8 +392,8 @@ protected:
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
   Adafruit_MQTT_Subscribe
-
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
+  Adafruit_MQTT_Subscribe
       *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
 
 
