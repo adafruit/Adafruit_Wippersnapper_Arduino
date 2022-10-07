@@ -44,8 +44,8 @@
 #include "components/ledc/ws_ledc.h"
 #endif
 
-#include "components/servo/ws_servo.h"
 #include "components/ds18x20/ws_ds18x20.h"
+#include "components/servo/ws_servo.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -168,13 +168,11 @@ class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
-class ws_ds18x20;
-
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
 #endif
-
 class ws_servo;
+class ws_ds18x20;
 
 /**************************************************************************/
 /*!
@@ -281,7 +279,8 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_servo *_servoComponent; ///< Instance of servo class
+  ws_servo *_servoComponent;     ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -325,7 +324,6 @@ public:
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
 
-
   // ds signal msg
   wippersnapper_signal_v1_Ds18x20Request msgSignalDS =
       wippersnapper_signal_v1_Ds18x20Request_init_zero; ///< DS request message
@@ -334,7 +332,6 @@ public:
   // servo message
   wippersnapper_signal_v1_ServoRequest
       msgServo; ///< ServoRequest wrapper message
-
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -390,7 +387,6 @@ protected:
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
-
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

@@ -1007,13 +1007,13 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
   // Publish response message to broker
   // TODO: This should be moved within the component itself??
-/*   size_t msgSz;
-  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
-                      &msgDSResponse);
-  WS_DEBUG_PRINT("Publishing Message: DS Response...");
-  WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz,
-                    1);
-  WS_DEBUG_PRINTLN("Published!"); */
+  /*   size_t msgSz;
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
+                        &msgDSResponse);
+    WS_DEBUG_PRINT("Publishing Message: DS Response...");
+    WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz,
+                      1);
+    WS_DEBUG_PRINTLN("Published!"); */
 
   return true;
 }
@@ -1375,7 +1375,6 @@ bool Wippersnapper::buildWSTopics() {
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
 
-
   // Topic for ds18x20 commands from device to broker
   WS._topic_signal_ds18_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
@@ -1397,7 +1396,6 @@ bool Wippersnapper::buildWSTopics() {
   WS._topic_signal_servo_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/servo") + 1);
-
 
   // Create global registration topic
   if (WS._topic_description != NULL) {
@@ -1490,7 +1488,6 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
-
   // Create device-to-broker ds18x20 topic
   if (WS._topic_signal_ds18_brkr != NULL) {
     strcpy(WS._topic_signal_ds18_brkr, WS._username);
@@ -1513,7 +1510,6 @@ bool Wippersnapper::buildWSTopics() {
   } else { // malloc failed
     is_success = false;
   }
-
 
   // Create broker-to-device ds18x20 topic
   if (WS._topic_signal_ds18_device != NULL) {
@@ -1559,7 +1555,6 @@ void Wippersnapper::subscribeWSTopics() {
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
-
   // Subscribe to signal's ds18x20 sub-topic
   _topic_signal_ds18_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
@@ -1571,7 +1566,6 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
-
 
   // Subscribe to registration status topic
   _topic_description_sub =
@@ -2006,10 +2000,8 @@ ws_status_t Wippersnapper::run() {
     WS._i2cPort0->update();
   WS.feedWDT();
 
-  // Process DSx sensor events
-  for (int i = 0; i < WS._ds18x20Components.size(); i++) {
-    WS._ds18x20Components.at(i).update();
-  }
+  // Process DS18x20 sensor events
+  // TODO
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
