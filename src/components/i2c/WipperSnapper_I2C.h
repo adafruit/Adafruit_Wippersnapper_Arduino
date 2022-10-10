@@ -34,6 +34,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_SI7021.h"
 #include "drivers/WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor.h"
 #include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
+#include "drivers/WipperSnapper_I2C_Driver_VEML7700.h"
 
 #define I2C_TIMEOUT_MS 50 ///< Default I2C timeout, in milliseconds.
 
@@ -85,6 +86,7 @@ private:
   WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
   WipperSnapper_I2C_Driver_MCP9601 *_mcp9601 = nullptr;
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
+  WipperSnapper_I2C_Driver_VEML7700 *_veml7700 = nullptr;
   WipperSnapper_I2C_Driver_SCD40 *_scd40 = nullptr;
   WipperSnapper_I2C_Driver_PM25 *_pm25 = nullptr;
   WipperSnapper_I2C_Driver_SI7021 *_si7021 = nullptr;
