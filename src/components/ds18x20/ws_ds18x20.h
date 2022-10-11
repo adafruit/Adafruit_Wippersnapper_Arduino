@@ -18,14 +18,14 @@
 
 #include "Wippersnapper.h"
 
-#include <DallasTemperature.h>
 #include <Adafruit_Sensor.h>
+#include <DallasTemperature.h>
 
 /** DS18x20 Object */
 struct ds18x20Obj {
   OneWire *oneWire;
   DallasTemperature *dallasTempObj;
-  DeviceAddress *dallasTempAddr;
+  DeviceAddress dallasTempAddr;
 };
 
 // forward decl.

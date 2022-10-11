@@ -965,8 +965,8 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 
 /******************************************************************************************/
 /*!
-    @brief    Decodes a Dallas Sensor (ds18x20) signal request message and executes
-              the callback based on the message's tag.
+    @brief    Decodes a Dallas Sensor (ds18x20) signal request message and
+   executes the callback based on the message's tag.
     @param    stream
               Incoming data stream from buffer.
     @param    field
@@ -976,22 +976,25 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     @returns  True if decoded successfully, False otherwise.
 */
 /******************************************************************************************/
-bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
+                        void **arg) {
   if (field->tag ==
       wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
     WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
 
     // Attempt to decode contents of DS18x20 message
-    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDS18xInitReq = wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
+    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDS18xInitReq =
+        wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
 
-    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields, &msgDS18xInitReq)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode wippersnapper_ds18x20_v1_Ds18x20InitRequest");
+    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
+                   &msgDS18xInitReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode "
+                       "wippersnapper_ds18x20_v1_Ds18x20InitRequest");
       return false; // fail out if we can't decode the request
     }
     WS_DEBUG_PRINTLN("Adding DS18x20 Component...");
-    if (! WS._ds18x20Component->addDS18x20(&msgDS18xInitReq))
-        return false;
+    if (!WS._ds18x20Component->addDS18x20(&msgDS18xInitReq))
+      return false;
   } else if (field->tag ==
              wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
     WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
@@ -1025,7 +1028,7 @@ void cbSignalDSReq(char *data, uint16_t len) {
   WS.bufSize = len;
 
   // Zero-out existing I2C signal msg.
-  WS.msgSignalDS = wippersnapper_signal_v1_Ds18x20Request_init_zero;
+  // WS.msgSignalDS = wippersnapper_signal_v1_Ds18x20Request_init_zero;
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
