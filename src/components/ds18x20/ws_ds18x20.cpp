@@ -46,6 +46,13 @@ bool ws_ds18x20::addDS18x20(
   if (newObj->dallasTempObj->getAddress(newObj->dallasTempAddr, 0)) {
     // attempt to set sensor resolution
     newObj->dallasTempObj->setResolution(msgDs18x20InitReq->sensor_resolution);
+    // copy the device's sensor properties
+    for (int i = 0; i < msgDs18x20InitReq->i2c_device_properties_count; i++) {
+      newObj->sensorPropeties[i].sensor_type =
+          msgDs18x20InitReq->i2c_device_properties[i].sensor_type;
+      newObj->sensorPropeties[i].sensor_period =
+          msgDs18x20InitReq->i2c_device_properties[i].sensor_period;
+    }
     // add the new ds18x20 driver to vec.
     ds18xDrivers.push_back(newObj);
     is_success = true;

@@ -26,6 +26,7 @@ struct ds18x20Obj {
   OneWire *oneWire;
   DallasTemperature *dallasTempObj;
   DeviceAddress dallasTempAddr;
+  wippersnapper_i2c_v1_I2CDeviceSensorProperties sensorPropeties[2];
 };
 
 // forward decl.
