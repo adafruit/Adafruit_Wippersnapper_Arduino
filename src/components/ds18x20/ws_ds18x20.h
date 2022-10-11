@@ -17,7 +17,16 @@
 #define WIPPERSNAPPER_DS18X20_H
 
 #include "Wippersnapper.h"
-// #include "driver/ws_ds18x20_driver.h"
+
+#include <DallasTemperature.h>
+#include <Adafruit_Sensor.h>
+
+/** DS18x20 Object */
+struct ds18x20Obj {
+  OneWire *oneWire;
+  DallasTemperature *dallasTempObj;
+  DeviceAddress *dallasTempAddr;
+};
 
 // forward decl.
 class Wippersnapper;
@@ -40,7 +49,7 @@ public:
   void update();
 
 private:
-  // TODO
+  std::vector<ds18x20Obj *> ds18Drivers; ///< List of ds18x drivers
 };
 extern Wippersnapper WS;
 

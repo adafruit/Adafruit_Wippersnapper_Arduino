@@ -965,9 +965,8 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 
 /******************************************************************************************/
 /*!
-    @brief    Decodes a Dallas Sensor (DS) signal request message and executes
-   the callback based on the message's tag. Publishes a DS response back to the
-   broker.
+    @brief    Decodes a Dallas Sensor (ds18x20) signal request message and executes
+              the callback based on the message's tag.
     @param    stream
               Incoming data stream from buffer.
     @param    field
@@ -977,15 +976,22 @@ void cbSignalI2CReq(char *data, uint16_t len) {
     @returns  True if decoded successfully, False otherwise.
 */
 /******************************************************************************************/
-bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  // new empty response message
-  wippersnapper_signal_v1_Ds18x20Response msgDSResponse =
-      wippersnapper_signal_v1_Ds18x20Response_init_zero;
-
+bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   if (field->tag ==
       wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
     WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
-    // TODO
+
+    // Attempt to decode contents of DS18x20 message
+    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDS18xInitReq = wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
+
+    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields, &msgDS18xInitReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_ds18x20_v1_Ds18x20InitRequest");
+      return false; // fail out if we can't decode the request
+    }
+    WS_DEBUG_PRINTLN("Adding DS18x20 Component...");
+    if (! WS._ds18x20Component->addDS18x20(&msgDS18xInitReq))
+        return false;
   } else if (field->tag ==
              wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
     WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
@@ -994,26 +1000,6 @@ bool cbDecodeDsMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS_DEBUG_PRINTLN("ERROR: DS Message type not found!");
     return false;
   }
-
-  // Encode response message
-  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-  pb_ostream_t ostream =
-      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
-                 &msgDSResponse)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode DS response message!");
-    return false;
-  }
-
-  // Publish response message to broker
-  // TODO: This should be moved within the component itself??
-  /*   size_t msgSz;
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
-                        &msgDSResponse);
-    WS_DEBUG_PRINT("Publishing Message: DS Response...");
-    WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz,
-                      1);
-    WS_DEBUG_PRINTLN("Published!"); */
 
   return true;
 }
@@ -1043,7 +1029,7 @@ void cbSignalDSReq(char *data, uint16_t len) {
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
-  WS.msgSignalDS.cb_payload.funcs.decode = cbDecodeDsMsg;
+  WS.msgSignalDS.cb_payload.funcs.decode = cbDecodeDs18x20Msg;
 
   // Decode DS signal request
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
@@ -1920,7 +1906,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // Register components
-  WS_DEBUG_PRINTLN("Registering components...");
+  WS_DEBUG_PRINTLN("Initializing component instances...");
 #ifdef ARDUINO_ARCH_ESP32
   WS_DEBUG_PRINT("LEDC: ");
   WS._ledc = new ws_ledc();
@@ -1929,6 +1915,10 @@ void Wippersnapper::connect() {
 
   WS_DEBUG_PRINT("SERVO: ");
   WS._servoComponent = new ws_servo();
+  WS_DEBUG_PRINTLN("OK!");
+
+  WS_DEBUG_PRINT("DS18x20: ");
+  WS._ds18x20Component = new ws_ds18x20();
   WS_DEBUG_PRINTLN("OK!");
 
   // goto application

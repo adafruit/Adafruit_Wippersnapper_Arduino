@@ -34,7 +34,10 @@ ws_ds18x20::~ws_ds18x20() {
 }
 
 bool ws_ds18x20::addDS18x20(wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq) {
-// TODO!
+
+// unpack
+msgDs18x20InitReq->onewire_pin = 
+
 return true;
 }
 
