@@ -23,10 +23,14 @@
 
 /** DS18x20 Object */
 struct ds18x20Obj {
-  OneWire *oneWire;
-  DallasTemperature *dallasTempObj;
-  DeviceAddress dallasTempAddr;
-  wippersnapper_i2c_v1_I2CDeviceSensorProperties sensorPropeties[2];
+  OneWire *
+      oneWire; ///< Pointer to an OneWire bus used by a DallasTemperature object
+  char onewire_pin[5]; ///< Pin utilized by the OneWire bus, used for addressing
+  DallasTemperature
+      *dallasTempObj; ///< Pointer to a DallasTemperature sensor object
+  DeviceAddress dallasTempAddr; ///< Temperature sensor's address
+  wippersnapper_i2c_v1_I2CDeviceSensorProperties
+      sensorPropeties[2]; ///< DS sensor type(s) and period
 };
 
 // forward decl.

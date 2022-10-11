@@ -30,6 +30,17 @@ ws_ds18x20::ws_ds18x20() {}
 /*************************************************************/
 ws_ds18x20::~ws_ds18x20() {}
 
+/********************************************************************/
+/*!
+    @brief    Initializes a DS18x20 sensor using a
+              configuration sent by the broker and adds it to a
+              vector of ds18x20 sensor drivers.
+    @param    msgDs18x20InitReq
+              Message containing configuration data for a
+              ds18x20 sensor.
+    @returns  True if initialized successfully, False otherwise.
+*/
+/********************************************************************/
 bool ws_ds18x20::addDS18x20(
     wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq) {
   bool is_success = false;
@@ -47,12 +58,15 @@ bool ws_ds18x20::addDS18x20(
     // attempt to set sensor resolution
     newObj->dallasTempObj->setResolution(msgDs18x20InitReq->sensor_resolution);
     // copy the device's sensor properties
+    // TODO: Make sure this works, it's a new idea and untested :)
     for (int i = 0; i < msgDs18x20InitReq->i2c_device_properties_count; i++) {
       newObj->sensorPropeties[i].sensor_type =
           msgDs18x20InitReq->i2c_device_properties[i].sensor_type;
       newObj->sensorPropeties[i].sensor_period =
           msgDs18x20InitReq->i2c_device_properties[i].sensor_period;
     }
+    // set pin
+    strcpy(newObj->onewire_pin, msgDs18x20InitReq->onewire_pin);
     // add the new ds18x20 driver to vec.
     ds18xDrivers.push_back(newObj);
     is_success = true;
@@ -62,7 +76,6 @@ bool ws_ds18x20::addDS18x20(
 
   // fill and publish the initialization response back to the broker
   size_t msgSz; // message's encoded size
-
   wippersnapper_signal_v1_Ds18x20Response msgInitResp =
       wippersnapper_signal_v1_Ds18x20Response_init_zero;
   msgInitResp.which_payload =
@@ -90,14 +103,34 @@ bool ws_ds18x20::addDS18x20(
   return is_success;
 }
 
+/********************************************************************/
+/*!
+    @brief    De-initializes a DS18x20 sensor and releases its
+              pin and resources.
+    @param    msgDS18x20DeinitReq
+              Message containing configuration data for a
+              ds18x20 sensor.
+*/
+/********************************************************************/
 void ws_ds18x20::deleteDS18x20(
     wippersnapper_ds18x20_v1_Ds18x20DeInitRequest *msgDS18x20DeinitReq) {
-  // TODO!
+  // Loop thru vector of drivers to find the unique address
+  for (int idx = 0; idx < ds18xDrivers.size(); idx++) {
+    if (ds18xDrivers[idx]->onewire_pin == msgDS18x20DeinitReq->onewire_pin) {
+      delete ds18xDrivers[idx]
+          ->dallasTempObj; // delete dallas temp instance on pin
+      delete ds18xDrivers[idx]
+          ->oneWire; // delete OneWire instance on pin and release pin for reuse
+      ds18xDrivers.erase(ds18xDrivers.begin() +
+                         idx); // erase vector and re-allocate
+    }
+  }
 }
 
 /*************************************************************/
 /*!
-    @brief    Obtains a temperature...
+    @brief    Iterates through each ds18x20 sensor and
+              reports data (if period expired) to Adafruit IO.
 */
 /*************************************************************/
 void ws_ds18x20::update() {
