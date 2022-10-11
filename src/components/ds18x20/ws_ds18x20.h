@@ -49,7 +49,7 @@ public:
   void update();
 
 private:
-  std::vector<ds18x20Obj *> ds18Drivers; ///< List of ds18x drivers
+  std::vector<ds18x20Obj *> ds18xDrivers; ///< List of ds18x drivers
 };
 extern Wippersnapper WS;
 

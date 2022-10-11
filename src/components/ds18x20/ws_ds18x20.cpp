@@ -36,20 +36,49 @@ bool ws_ds18x20::addDS18x20(
   // unpack into usable variables
   char *oneWirePin = msgDs18x20InitReq->onewire_pin + 1;
   int pin = atoi(oneWirePin);
+
   // init. new ds18x20 object
   ds18x20Obj *newObj = new ds18x20Obj();
   newObj->oneWire = new OneWire(atoi(oneWirePin));
   newObj->dallasTempObj = new DallasTemperature(newObj->oneWire);
-
   newObj->dallasTempObj->begin();
   // attempt to obtain sensor address
-  if (!newObj->dallasTempObj->getAddress(newObj->dallasTempAddr, 0)) {
+  if (newObj->dallasTempObj->getAddress(newObj->dallasTempAddr, 0)) {
+    // attempt to set sensor resolution
+    newObj->dallasTempObj->setResolution(msgDs18x20InitReq->sensor_resolution);
+    // add the new ds18x20 driver to vec.
+    ds18xDrivers.push_back(newObj);
+    is_success = true;
+  } else {
     WS_DEBUG_PRINTLN("Failed to obtain DSx sensor address");
-    return false;
   }
 
-  // attempt to set sensor resolution
-  newObj->dallasTempObj->setResolution(msgDs18x20InitReq->sensor_resolution);
+  // fill and publish the initialization response back to the broker
+  size_t msgSz; // message's encoded size
+
+  wippersnapper_signal_v1_Ds18x20Response msgInitResp =
+      wippersnapper_signal_v1_Ds18x20Response_init_zero;
+  msgInitResp.which_payload =
+      wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_init_tag;
+  msgInitResp.payload.resp_ds18x20_init.is_initialized = is_success;
+  strcpy(msgInitResp.payload.resp_ds18x20_init.onewire_pin,
+         msgDs18x20InitReq->onewire_pin);
+
+  // Encode and publish response back to broker
+  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+  pb_ostream_t ostream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
+                 &msgInitResp)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode msg_init response message!");
+    return false;
+  }
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
+                      &msgInitResp);
+  WS_DEBUG_PRINT("-> DS18x Init Response...");
+  WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz,
+                    1);
+  WS_DEBUG_PRINTLN("Published!");
 
   return is_success;
 }
