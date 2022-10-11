@@ -72,7 +72,7 @@ public:
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event
-    lightEvent->light = _veml->autoLux();
+    lightEvent->light = _veml->readLux(VEML_LUX_AUTO);
 
     return true;
   }
