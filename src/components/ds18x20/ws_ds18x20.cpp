@@ -144,8 +144,11 @@ void ws_ds18x20::deleteDS18x20(
 */
 /*************************************************************/
 void ws_ds18x20::update() {
-  long curTime; // used for holding the millis() value
+  // return immediately if no drivers have been initialized
+  if (_ds18xDrivers.size() == 0)
+    return;
 
+  long curTime; // used for holding the millis() value
   std::vector<ds18x20Obj *>::iterator iter, end;
   for (iter = _ds18xDrivers.begin(), end = _ds18xDrivers.end(); iter != end;
        ++iter) {

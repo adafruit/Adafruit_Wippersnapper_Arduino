@@ -981,7 +981,6 @@ bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
   if (field->tag ==
       wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
     WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
-
     // Attempt to decode contents of DS18x20 message
     wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDS18xInitReq =
         wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
@@ -999,7 +998,6 @@ bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
   } else if (field->tag ==
              wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
     WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
-
     // Attempt to decode contents of message
     wippersnapper_ds18x20_v1_Ds18x20DeInitRequest msgDS18xDeInitReq =
         wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_init_zero;
@@ -1015,7 +1013,6 @@ bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("ERROR: DS Message type not found!");
     return false;
   }
-
   return true;
 }
 
@@ -2006,7 +2003,7 @@ ws_status_t Wippersnapper::run() {
   WS.feedWDT();
 
   // Process DS18x20 sensor events
-  // TODO
+  WS._ds18x20Component->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
