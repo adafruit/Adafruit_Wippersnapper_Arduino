@@ -149,16 +149,29 @@ void ws_ds18x20::update() {
   std::vector<ds18x20Obj *>::iterator iter, end;
   for (iter = _ds18xDrivers.begin(), end = _ds18xDrivers.end(); iter != end;
        ++iter) {
+
+    // Create an empty DS18x20 event message and set tag
+    wippersnapper_signal_v1_Ds18x20Response msgDS18x20Response =  wippersnapper_signal_v1_Ds18x20Response_init_zero;
+    msgDS18x20Response.which_payload = wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
+
+    // Poll each sensor type, if period has elapsed
     for (int i = 0; i < (*iter)->sensorPropertiesCount; i++) {
       curTime = millis();
       if (curTime - (*iter)->sensorPeriodPrv >
           (*iter)->sensorProperties[i].sensor_period) {
-        // attempt to take temperature reading (°C)
+        // poll temperature sensor
         float tempC = (*iter)->dallasTempObj->getTempC((*iter)->dallasTempAddr);
+
+
+
+
+
         // check and pack based on sensorType
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
           // TODO: pack value and sensor type
+          
+          // msgDS18x20Response.payload.resp_ds18x20_event.sensor_event
         } else if (
             (*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
