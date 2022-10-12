@@ -52,12 +52,10 @@ ws_ds18x20::~ws_ds18x20() {
 bool ws_ds18x20::addDS18x20(
     wippersnapper_ds18x20_v1_Ds18x20InitRequest *msgDs18x20InitReq) {
   bool is_success = false;
-  // unpack into usable variables
-  char *oneWirePin = msgDs18x20InitReq->onewire_pin + 1;
-  int pin = atoi(oneWirePin);
 
   // init. new ds18x20 object
   ds18x20Obj *newObj = new ds18x20Obj();
+  char *oneWirePin = msgDs18x20InitReq->onewire_pin + 1;
   newObj->oneWire = new OneWire(atoi(oneWirePin));
   newObj->dallasTempObj = new DallasTemperature(newObj->oneWire);
   newObj->dallasTempObj->begin();
@@ -178,11 +176,10 @@ void ws_ds18x20::update() {
         }
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
-          float tempF = (*iter)->dallasTempObj->toFahrenheit(tempC);
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
               wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
-              tempF;
+              (*iter)->dallasTempObj->toFahrenheit(tempC);
         }
 
         // prep sensor event data for sending to IO
