@@ -43,7 +43,7 @@ jobs:
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
         rm -rf /home/runner/Arduino/libraries/OneWire
-        git clone -- quiet https://github.com/PaulStoffregen/OneWire.git
+        git clone --quiet https://github.com/PaulStoffregen/OneWire.git
     - name: Build for ESP32-Sx
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: list
@@ -98,7 +98,7 @@ jobs:
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
         rm -rf /home/runner/Arduino/libraries/OneWire
-        git clone -- quiet https://github.com/PaulStoffregen/OneWire.git
+        git clone --quiet https://github.com/PaulStoffregen/OneWire.git
     - name: Install Dependencies
       run: |
         pip3 install esptool
