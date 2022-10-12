@@ -29,7 +29,7 @@ struct ds18x20Obj {
   DallasTemperature
       *dallasTempObj; ///< Pointer to a DallasTemperature sensor object
   DeviceAddress dallasTempAddr; ///< Temperature sensor's address
-  int sensorPropertiesCount;
+  int sensorPropertiesCount;    ///< Tracks # of sensorProperties
   wippersnapper_i2c_v1_I2CDeviceSensorProperties sensorProperties[2] =
       wippersnapper_i2c_v1_I2CDeviceSensorProperties_init_zero; ///< DS sensor
                                                                 ///< type(s)

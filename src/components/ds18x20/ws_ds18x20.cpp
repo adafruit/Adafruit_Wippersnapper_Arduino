@@ -150,9 +150,13 @@ void ws_ds18x20::update() {
   for (iter = _ds18xDrivers.begin(), end = _ds18xDrivers.end(); iter != end;
        ++iter) {
 
-    // Create an empty DS18x20 event message and set tag
-    wippersnapper_signal_v1_Ds18x20Response msgDS18x20Response =  wippersnapper_signal_v1_Ds18x20Response_init_zero;
-    msgDS18x20Response.which_payload = wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
+    // Create an empty DS18x20 event signal message and configure
+    wippersnapper_signal_v1_Ds18x20Response msgDS18x20Response =
+        wippersnapper_signal_v1_Ds18x20Response_init_zero;
+    msgDS18x20Response.which_payload =
+        wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
+    msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count =
+        (*iter)->sensorPropertiesCount;
 
     // Poll each sensor type, if period has elapsed
     for (int i = 0; i < (*iter)->sensorPropertiesCount; i++) {
@@ -161,33 +165,51 @@ void ws_ds18x20::update() {
           (*iter)->sensorProperties[i].sensor_period) {
         // poll temperature sensor
         float tempC = (*iter)->dallasTempObj->getTempC((*iter)->dallasTempAddr);
-
-
-
-
-
         // check and pack based on sensorType
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
-          // TODO: pack value and sensor type
-          
-          // msgDS18x20Response.payload.resp_ds18x20_event.sensor_event
-        } else if (
-            (*iter)->sensorProperties[i].sensor_type ==
-            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
-          // convert reading from °C to °F
-          float tempF = (*iter)->dallasTempObj->toFahrenheit(tempC);
-          // TODO: pack value and sensor type
-
-        } else {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Unable to determine DSx's requested sensor type");
-          break;
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
+              tempC;
         }
-        (*iter)->sensorPeriodPrv = curTime; // reset timer
+        if ((*iter)->sensorProperties[i].sensor_type ==
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
+          float tempF = (*iter)->dallasTempObj->toFahrenheit(tempC);
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
+              tempF;
+        }
+
+        // prep sensor event data for sending to IO
+        // use onewire_pin as the "address"
+        strcpy(msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin,
+               (*iter)->onewire_pin);
+        // prep and encode buffer
+        memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+        pb_ostream_t ostream = pb_ostream_from_buffer(
+            WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+        if (!pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
+                       &msgDS18x20Response)) {
+          WS_DEBUG_PRINTLN(
+              "ERROR: Unable to encode DS18x20 event response message!");
+          return;
+        }
+
+        // Publish I2CResponse msg
+        size_t msgSz;
+        pb_get_encoded_size(&msgSz,
+                            wippersnapper_signal_v1_Ds18x20Response_fields,
+                            &msgDS18x20Response);
+        WS_DEBUG_PRINT("PUBLISHING -> msgDS18x20Response Event Message...");
+        if (!WS._mqtt->publish(WS._topic_signal_ds18_device,
+                               WS._buffer_outgoing, msgSz, 1)) {
+          return;
+        };
+        WS_DEBUG_PRINTLN("PUBLISHED!");
+        (*iter)->sensorPeriodPrv = curTime; // set prv time
       }
-      // TODO
-      // wrap and send value to IO
     }
   }
 }
