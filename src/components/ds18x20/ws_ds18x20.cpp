@@ -28,7 +28,15 @@ ws_ds18x20::ws_ds18x20() {}
     @brief    Destructor for a WipperSnapper DS18X20 component.
 */
 /*************************************************************/
-ws_ds18x20::~ws_ds18x20() {}
+ws_ds18x20::~ws_ds18x20() {
+  // delete DallasTemp sensors and release onewire buses
+  for (int idx = 0; idx < _ds18xDrivers.size(); idx++) {
+    delete _ds18xDrivers[idx]->dallasTempObj;
+    delete _ds18xDrivers[idx]->oneWire;
+  }
+  // remove all elements
+  _ds18xDrivers.clear();
+}
 
 /********************************************************************/
 /*!
@@ -58,17 +66,19 @@ bool ws_ds18x20::addDS18x20(
     // attempt to set sensor resolution
     newObj->dallasTempObj->setResolution(msgDs18x20InitReq->sensor_resolution);
     // copy the device's sensor properties
+    newObj->sensorPropertiesCount =
+        msgDs18x20InitReq->i2c_device_properties_count;
     // TODO: Make sure this works, it's a new idea and untested :)
-    for (int i = 0; i < msgDs18x20InitReq->i2c_device_properties_count; i++) {
-      newObj->sensorPropeties[i].sensor_type =
+    for (int i = 0; i < newObj->sensorPropertiesCount; i++) {
+      newObj->sensorProperties[i].sensor_type =
           msgDs18x20InitReq->i2c_device_properties[i].sensor_type;
-      newObj->sensorPropeties[i].sensor_period =
+      newObj->sensorProperties[i].sensor_period =
           msgDs18x20InitReq->i2c_device_properties[i].sensor_period;
     }
     // set pin
     strcpy(newObj->onewire_pin, msgDs18x20InitReq->onewire_pin);
     // add the new ds18x20 driver to vec.
-    ds18xDrivers.push_back(newObj);
+    _ds18xDrivers.push_back(newObj);
     is_success = true;
   } else {
     WS_DEBUG_PRINTLN("Failed to obtain DSx sensor address");
@@ -115,14 +125,14 @@ bool ws_ds18x20::addDS18x20(
 void ws_ds18x20::deleteDS18x20(
     wippersnapper_ds18x20_v1_Ds18x20DeInitRequest *msgDS18x20DeinitReq) {
   // Loop thru vector of drivers to find the unique address
-  for (int idx = 0; idx < ds18xDrivers.size(); idx++) {
-    if (ds18xDrivers[idx]->onewire_pin == msgDS18x20DeinitReq->onewire_pin) {
-      delete ds18xDrivers[idx]
+  for (int idx = 0; idx < _ds18xDrivers.size(); idx++) {
+    if (_ds18xDrivers[idx]->onewire_pin == msgDS18x20DeinitReq->onewire_pin) {
+      delete _ds18xDrivers[idx]
           ->dallasTempObj; // delete dallas temp instance on pin
-      delete ds18xDrivers[idx]
+      delete _ds18xDrivers[idx]
           ->oneWire; // delete OneWire instance on pin and release pin for reuse
-      ds18xDrivers.erase(ds18xDrivers.begin() +
-                         idx); // erase vector and re-allocate
+      _ds18xDrivers.erase(_ds18xDrivers.begin() +
+                          idx); // erase vector and re-allocate
     }
   }
 }
@@ -134,55 +144,37 @@ void ws_ds18x20::deleteDS18x20(
 */
 /*************************************************************/
 void ws_ds18x20::update() {
-  /*
-    // Check if sensor period time has not yet elapsed
-    long curTime = millis();
-    if (!(curTime - _sensorPeriodPrv > _sensorPeriod))
-      return;
+  long curTime; // used for holding the millis() value
 
-    // Request temperature from 1-wire bus
-    _ds->requestTemperatures();
-    // Get temperature from sensor at idx 0 on 1-wire bus
-    float tempC = _ds->getTempC(_sensorAddress);
+  std::vector<ds18x20Obj *>::iterator iter, end;
+  for (iter = _ds18xDrivers.begin(), end = _ds18xDrivers.end(); iter != end;
+       ++iter) {
+    for (int i = 0; i < (*iter)->sensorPropertiesCount; i++) {
+      curTime = millis();
+      if (curTime - (*iter)->sensorPeriodPrv >
+          (*iter)->sensorProperties[i].sensor_period) {
+        // attempt to take temperature reading (°C)
+        float tempC = (*iter)->dallasTempObj->getTempC((*iter)->dallasTempAddr);
+        // check and pack based on sensorType
+        if ((*iter)->sensorProperties[i].sensor_type ==
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
+          // TODO: pack value and sensor type
+        } else if (
+            (*iter)->sensorProperties[i].sensor_type ==
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
+          // convert reading from °C to °F
+          float tempF = (*iter)->dallasTempObj->toFahrenheit(tempC);
+          // TODO: pack value and sensor type
 
-    // Sensor is disconnected from 1-wire bus
-    if (tempC == DEVICE_DISCONNECTED_C) {
-      WS_DEBUG_PRINTLN("ERROR OBTAINING TEMPERATURE FROM DS18X20");
-      return;
+        } else {
+          WS_DEBUG_PRINTLN(
+              "ERROR: Unable to determine DSx's requested sensor type");
+          break;
+        }
+        (*iter)->sensorPeriodPrv = curTime; // reset timer
+      }
+      // TODO
+      // wrap and send value to IO
     }
-
-    // Create a new sensor_event
-    wippersnapper_signal_v1_Ds18x20Response msgDS18Resp =
-        wippersnapper_signal_v1_Ds18x20Response_init_zero;
-    msgDS18Resp.which_payload =
-        wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
-    msgDS18Resp.payload.resp_ds18x20_event.has_sensor_event = true;
-    msgDS18Resp.payload.resp_ds18x20_event.onewire_pin = _sensorPin;
-    msgDS18Resp.payload.resp_ds18x20_event.sensor_event.type =
-        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
-    msgDS18Resp.payload.resp_ds18x20_event.sensor_event.value = tempC;
-
-    // Encode sensor_event
-    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-    pb_ostream_t ostream =
-        pb_ostream_from_buffer(WS._buffer_outgoing,
-    sizeof(WS._buffer_outgoing)); if (!pb_encode(&ostream,
-    wippersnapper_signal_v1_Ds18x20Response_fields, &msgDS18Resp)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Unable to encode DS18 device event response message!");
-      return;
-    }
-
-    // Publish sensor_event
-    size_t msgSz;
-    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
-                        &msgDS18Resp);
-    WS_DEBUG_PRINT("PUBLISHING -> DS Event...");
-    if (!WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing,
-                           msgSz, 1)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to publish!");
-      return;
-    };
-    WS_DEBUG_PRINTLN("PUBLISHED!");
-    _sensorPeriodPrv = millis(); // set period */
+  }
 }

@@ -29,8 +29,11 @@ struct ds18x20Obj {
   DallasTemperature
       *dallasTempObj; ///< Pointer to a DallasTemperature sensor object
   DeviceAddress dallasTempAddr; ///< Temperature sensor's address
-  wippersnapper_i2c_v1_I2CDeviceSensorProperties
-      sensorPropeties[2]; ///< DS sensor type(s) and period
+  int sensorPropertiesCount;
+  wippersnapper_i2c_v1_I2CDeviceSensorProperties sensorProperties[2] =
+      wippersnapper_i2c_v1_I2CDeviceSensorProperties_init_zero; ///< DS sensor
+                                                                ///< type(s)
+  long sensorPeriodPrv; ///< Last time the sensor was polled, in millis
 };
 
 // forward decl.
@@ -54,7 +57,8 @@ public:
   void update();
 
 private:
-  std::vector<ds18x20Obj *> ds18xDrivers; ///< List of ds18x drivers
+  std::vector<ds18x20Obj *>
+      _ds18xDrivers; ///< Vec. of ptrs. to ds18x driver objects
 };
 extern Wippersnapper WS;
 
