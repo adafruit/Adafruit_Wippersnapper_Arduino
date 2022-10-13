@@ -7,7 +7,6 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
  * Copyright (c) Tyeth Gundry 2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
@@ -63,7 +62,8 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Performs a light sensor read using the Adafruit
-                Unified Sensor API.
+                Unified Sensor API. Always uses VEML_LUX_AUTO,
+                controlling sensor integration time and gain.
       @param    lightEvent
                 Light sensor reading, in lux.
       @returns  True if the sensor event was obtained successfully, False
@@ -71,7 +71,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
-    // Get sensor event
+    // Get sensor event populated in lux via AUTO integration and gain
     lightEvent->light = _veml->readLux(VEML_LUX_AUTO);
 
     return true;
