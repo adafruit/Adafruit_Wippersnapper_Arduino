@@ -56,7 +56,7 @@ public:
   bool begin() {
     _veml = new Adafruit_VEML7700();
     // Attempt to initialize and configure VEML7700
-    return _veml->begin();
+    return _veml->begin(_i2c);
   }
 
   /*******************************************************************************/
