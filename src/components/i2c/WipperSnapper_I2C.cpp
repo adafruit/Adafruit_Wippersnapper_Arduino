@@ -203,7 +203,8 @@ WipperSnapper_Component_I2C::scanAddresses() {
 /*******************************************************************************/
 bool WipperSnapper_Component_I2C::initI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
-  WS_DEBUG_PRINTLN("Attempting to initialize an I2C device...");
+  WS_DEBUG_PRINT("Attempting to initialize I2C device: ");
+  WS_DEBUG_PRINTLN(msgDeviceInitReq->i2c_device_name);
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
   if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
