@@ -1376,13 +1376,13 @@ bool Wippersnapper::buildWSTopics() {
   // Topic for ds18x20 commands from device to broker
   WS._topic_signal_ds18_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
       strlen("ds18x20") + 1);
 
   // Topic for ds18x20 commands from broker to broker
   WS._topic_signal_ds18_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
       strlen("ds18x20") + 1);
 
   // Topic for servo messages from broker->device
@@ -1492,8 +1492,7 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_ds18_brkr, TOPIC_WS);
     strcat(WS._topic_signal_ds18_brkr, _device_uid);
     strcat(WS._topic_signal_ds18_brkr, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_ds18_brkr, "broker");
-    strcat(WS._topic_signal_ds18_brkr, "ds18x20");
+    strcat(WS._topic_signal_ds18_brkr, "broker/ds18x20");
   } else { // malloc failed
     is_success = false;
   }
@@ -1515,8 +1514,7 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_ds18_device, TOPIC_WS);
     strcat(WS._topic_signal_ds18_device, _device_uid);
     strcat(WS._topic_signal_ds18_device, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_ds18_device, "device");
-    strcat(WS._topic_signal_ds18_device, "ds18x20");
+    strcat(WS._topic_signal_ds18_device, "device/ds18x20");
   } else { // malloc failed
     is_success = false;
   }

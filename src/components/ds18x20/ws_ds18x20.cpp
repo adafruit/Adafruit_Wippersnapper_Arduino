@@ -71,7 +71,8 @@ bool ws_ds18x20::addDS18x20(
       newObj->sensorProperties[i].sensor_type =
           msgDs18x20InitReq->i2c_device_properties[i].sensor_type;
       newObj->sensorProperties[i].sensor_period =
-          msgDs18x20InitReq->i2c_device_properties[i].sensor_period;
+          (long)msgDs18x20InitReq->i2c_device_properties[i].sensor_period *
+          1000;
     }
     // set pin
     strcpy(newObj->onewire_pin, msgDs18x20InitReq->onewire_pin);
@@ -79,7 +80,7 @@ bool ws_ds18x20::addDS18x20(
     _ds18xDrivers.push_back(newObj);
     is_success = true;
   } else {
-    WS_DEBUG_PRINTLN("Failed to obtain DSx sensor address");
+    WS_DEBUG_PRINTLN("Failed to find DSx sensor on specified pin.");
   }
 
   // fill and publish the initialization response back to the broker
@@ -91,6 +92,10 @@ bool ws_ds18x20::addDS18x20(
   msgInitResp.payload.resp_ds18x20_init.is_initialized = is_success;
   strcpy(msgInitResp.payload.resp_ds18x20_init.onewire_pin,
          msgDs18x20InitReq->onewire_pin);
+
+  WS_DEBUG_PRINT("Created OneWireBus on GPIO ");
+  WS_DEBUG_PRINT(msgDs18x20InitReq->onewire_pin);
+  WS_DEBUG_PRINTLN(" with DS18x20 attached!");
 
   // Encode and publish response back to broker
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
@@ -164,8 +169,15 @@ void ws_ds18x20::update() {
       curTime = millis();
       if (curTime - (*iter)->sensorPeriodPrv >
           (*iter)->sensorProperties[i].sensor_period) {
-        // poll temperature sensor
+        // issue global temperature request to all sensors
+        (*iter)->dallasTempObj->requestTemperatures();
+        // grab the data
         float tempC = (*iter)->dallasTempObj->getTempC((*iter)->dallasTempAddr);
+        if (tempC == DEVICE_DISCONNECTED_C) {
+          WS_DEBUG_PRINTLN("ERROR: Could not read temperature data, is the "
+                           "sensor disconnected?");
+          break;
+        }
         // check and pack based on sensorType
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
@@ -173,6 +185,13 @@ void ws_ds18x20::update() {
               wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
               tempC;
+
+          // poll temperature sensor
+          WS_DEBUG_PRINT("(OneWireBus GPIO: ");
+          WS_DEBUG_PRINT((*iter)->onewire_pin);
+          WS_DEBUG_PRINT(") DS18x20 Value: ");
+          WS_DEBUG_PRINT(tempC);
+          WS_DEBUG_PRINTLN("*C")
         }
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
@@ -180,6 +199,13 @@ void ws_ds18x20::update() {
               wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
               (*iter)->dallasTempObj->toFahrenheit(tempC);
+          WS_DEBUG_PRINT("(OneWireBus GPIO: ");
+          WS_DEBUG_PRINT((*iter)->onewire_pin);
+          WS_DEBUG_PRINT(") DS18x20 Value: ");
+          WS_DEBUG_PRINT(
+              msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
+                  .value);
+          WS_DEBUG_PRINTLN("*F")
         }
 
         // prep sensor event data for sending to IO
@@ -195,6 +221,27 @@ void ws_ds18x20::update() {
           WS_DEBUG_PRINTLN(
               "ERROR: Unable to encode DS18x20 event response message!");
           return;
+        }
+
+        WS_DEBUG_PRINTLN(
+            "DEBUG: msgDS18x20Response sensor_event message contents: ");
+        for (int i = 0;
+             i <
+             msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count;
+             i++) {
+          WS_DEBUG_PRINT("sensor_event[#]: ");
+          WS_DEBUG_PRINTLN(i);
+          WS_DEBUG_PRINT("\tOneWire Bus: ");
+          WS_DEBUG_PRINTLN(
+              msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin);
+          WS_DEBUG_PRINT("\tsensor_event type: ");
+          WS_DEBUG_PRINTLN(
+              msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
+                  .type);
+          WS_DEBUG_PRINT("\tsensor_event value: ");
+          WS_DEBUG_PRINTLN(
+              msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
+                  .value);
         }
 
         // Publish I2CResponse msg
