@@ -129,7 +129,10 @@ void ws_ds18x20::deleteDS18x20(
     wippersnapper_ds18x20_v1_Ds18x20DeInitRequest *msgDS18x20DeinitReq) {
   // Loop thru vector of drivers to find the unique address
   for (int idx = 0; idx < _ds18xDrivers.size(); idx++) {
-    if (_ds18xDrivers[idx]->onewire_pin == msgDS18x20DeinitReq->onewire_pin) {
+    if (strcmp(_ds18xDrivers[idx]->onewire_pin,
+               msgDS18x20DeinitReq->onewire_pin) == 0) {
+      WS_DEBUG_PRINT("Deleting OneWire instance on pin ");
+      WS_DEBUG_PRINTLN(msgDS18x20DeinitReq->onewire_pin);
       delete _ds18xDrivers[idx]
           ->dallasTempObj; // delete dallas temp instance on pin
       delete _ds18xDrivers[idx]
