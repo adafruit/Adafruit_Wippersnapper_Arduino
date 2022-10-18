@@ -167,8 +167,19 @@ void ws_ds18x20::update() {
     msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count =
         (*iter)->sensorPropertiesCount;
 
+    WS_DEBUG_PRINTLN("Sensor Driver top");
+
     // Poll each sensor type, if period has elapsed
     for (int i = 0; i < (*iter)->sensorPropertiesCount; i++) {
+
+      // TODO- I am looking for why the if() check keeps failing on the 2nd iteration...
+      WS_DEBUG_PRINT("# events: "); WS_DEBUG_PRINTLN((*iter)->sensorPropertiesCount);
+      WS_DEBUG_PRINT("Sensor Property[] #: "); WS_DEBUG_PRINTLN(i);
+      WS_DEBUG_PRINT("Sensor Property Period:");
+      WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_period);
+      WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
+      WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
+      
       curTime = millis();
       if (curTime - (*iter)->sensorPeriodPrv >
           (*iter)->sensorProperties[i].sensor_period) {
@@ -182,6 +193,8 @@ void ws_ds18x20::update() {
           break;
         }
         // check and pack based on sensorType
+        WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
+        WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
@@ -196,6 +209,10 @@ void ws_ds18x20::update() {
           WS_DEBUG_PRINT(tempC);
           WS_DEBUG_PRINTLN("*C")
         }
+
+        // WHY IS THIS NOT BEING EXECUTED?
+        WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
+        WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
@@ -210,7 +227,7 @@ void ws_ds18x20::update() {
                   .value);
           WS_DEBUG_PRINTLN("*F")
         }
-
+/* 
         // prep sensor event data for sending to IO
         // use onewire_pin as the "address"
         strcpy(msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin,
@@ -257,7 +274,7 @@ void ws_ds18x20::update() {
                                WS._buffer_outgoing, msgSz, 1)) {
           return;
         };
-        WS_DEBUG_PRINTLN("PUBLISHED!");
+        WS_DEBUG_PRINTLN("PUBLISHED!"); */
         (*iter)->sensorPeriodPrv = curTime; // set prv time
       }
     }
