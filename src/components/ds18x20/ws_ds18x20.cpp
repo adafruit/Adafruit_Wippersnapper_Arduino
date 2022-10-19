@@ -168,31 +168,39 @@ void ws_ds18x20::update() {
         (*iter)->sensorPropertiesCount;
 
     WS_DEBUG_PRINTLN("Sensor Driver top");
+    WS_DEBUG_PRINT("# of driver sensor_events: ");
+    WS_DEBUG_PRINTLN((*iter)->sensorPropertiesCount);
 
+    // take the current time for the driver (*iter)
+    curTime = millis();
     // Poll each sensor type, if period has elapsed
     for (int i = 0; i < (*iter)->sensorPropertiesCount; i++) {
 
-      // TODO- I am looking for why the if() check keeps failing on the 2nd iteration...
-      WS_DEBUG_PRINT("# events: "); WS_DEBUG_PRINTLN((*iter)->sensorPropertiesCount);
-      WS_DEBUG_PRINT("Sensor Property[] #: "); WS_DEBUG_PRINTLN(i);
+      // TODO- I am looking for why the if() check keeps failing on the 2nd
+      // iteration...
+      WS_DEBUG_PRINT("Sensor Property[] #: ");
+      WS_DEBUG_PRINTLN(i);
       WS_DEBUG_PRINT("Sensor Property Period:");
       WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_period);
       WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
       WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
-      
-      curTime = millis();
+
+      // has sensor_period elapsed?
       if (curTime - (*iter)->sensorPeriodPrv >
           (*iter)->sensorProperties[i].sensor_period) {
-        // issue global temperature request to all sensors
+        // issue global temperature request to all DS sensors
+        WS_DEBUG_PRINTLN("Requesting temperatures..");
         (*iter)->dallasTempObj->requestTemperatures();
-        // grab the data
+        // poll the DS sensor driver
         float tempC = (*iter)->dallasTempObj->getTempC((*iter)->dallasTempAddr);
         if (tempC == DEVICE_DISCONNECTED_C) {
           WS_DEBUG_PRINTLN("ERROR: Could not read temperature data, is the "
                            "sensor disconnected?");
           break;
         }
+
         // check and pack based on sensorType
+        WS_DEBUG_PRINTLN("Checking if *C");
         WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
         WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
         if ((*iter)->sensorProperties[i].sensor_type ==
@@ -210,7 +218,7 @@ void ws_ds18x20::update() {
           WS_DEBUG_PRINTLN("*C")
         }
 
-        // WHY IS THIS NOT BEING EXECUTED?
+        WS_DEBUG_PRINTLN("Checking if *F");
         WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
         WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
         if ((*iter)->sensorProperties[i].sensor_type ==
@@ -227,56 +235,55 @@ void ws_ds18x20::update() {
                   .value);
           WS_DEBUG_PRINTLN("*F")
         }
-/* 
-        // prep sensor event data for sending to IO
-        // use onewire_pin as the "address"
-        strcpy(msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin,
-               (*iter)->onewire_pin);
-        // prep and encode buffer
-        memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-        pb_ostream_t ostream = pb_ostream_from_buffer(
-            WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-        if (!pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
-                       &msgDS18x20Response)) {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Unable to encode DS18x20 event response message!");
-          return;
-        }
+        /*
+                // prep sensor event data for sending to IO
+                // use onewire_pin as the "address"
+                strcpy(msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin,
+                       (*iter)->onewire_pin);
+                // prep and encode buffer
+                memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+                pb_ostream_t ostream = pb_ostream_from_buffer(
+                    WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+                if (!pb_encode(&ostream,
+           wippersnapper_signal_v1_Ds18x20Response_fields, &msgDS18x20Response))
+           { WS_DEBUG_PRINTLN( "ERROR: Unable to encode DS18x20 event response
+           message!"); return;
+                }
 
-        WS_DEBUG_PRINTLN(
-            "DEBUG: msgDS18x20Response sensor_event message contents: ");
-        for (int i = 0;
-             i <
-             msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count;
-             i++) {
-          WS_DEBUG_PRINT("sensor_event[#]: ");
-          WS_DEBUG_PRINTLN(i);
-          WS_DEBUG_PRINT("\tOneWire Bus: ");
-          WS_DEBUG_PRINTLN(
-              msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin);
-          WS_DEBUG_PRINT("\tsensor_event type: ");
-          WS_DEBUG_PRINTLN(
-              msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
-                  .type);
-          WS_DEBUG_PRINT("\tsensor_event value: ");
-          WS_DEBUG_PRINTLN(
-              msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
-                  .value);
-        }
+                WS_DEBUG_PRINTLN(
+                    "DEBUG: msgDS18x20Response sensor_event message contents:
+           "); for (int i = 0; i <
+                     msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count;
+                     i++) {
+                  WS_DEBUG_PRINT("sensor_event[#]: ");
+                  WS_DEBUG_PRINTLN(i);
+                  WS_DEBUG_PRINT("\tOneWire Bus: ");
+                  WS_DEBUG_PRINTLN(
+                      msgDS18x20Response.payload.resp_ds18x20_event.onewire_pin);
+                  WS_DEBUG_PRINT("\tsensor_event type: ");
+                  WS_DEBUG_PRINTLN(
+                      msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
+                          .type);
+                  WS_DEBUG_PRINT("\tsensor_event value: ");
+                  WS_DEBUG_PRINTLN(
+                      msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
+                          .value);
+                }
 
-        // Publish I2CResponse msg
-        size_t msgSz;
-        pb_get_encoded_size(&msgSz,
-                            wippersnapper_signal_v1_Ds18x20Response_fields,
-                            &msgDS18x20Response);
-        WS_DEBUG_PRINT("PUBLISHING -> msgDS18x20Response Event Message...");
-        if (!WS._mqtt->publish(WS._topic_signal_ds18_device,
-                               WS._buffer_outgoing, msgSz, 1)) {
-          return;
-        };
-        WS_DEBUG_PRINTLN("PUBLISHED!"); */
-        (*iter)->sensorPeriodPrv = curTime; // set prv time
+                // Publish I2CResponse msg
+                size_t msgSz;
+                pb_get_encoded_size(&msgSz,
+                                    wippersnapper_signal_v1_Ds18x20Response_fields,
+                                    &msgDS18x20Response);
+                WS_DEBUG_PRINT("PUBLISHING -> msgDS18x20Response Event
+           Message..."); if (!WS._mqtt->publish(WS._topic_signal_ds18_device,
+                                       WS._buffer_outgoing, msgSz, 1)) {
+                  return;
+                };
+                WS_DEBUG_PRINTLN("PUBLISHED!"); */
       }
     }
+    WS_DEBUG_PRINTLN("resetting curTime");
+    (*iter)->sensorPeriodPrv = curTime; // set prv time
   }
 }
