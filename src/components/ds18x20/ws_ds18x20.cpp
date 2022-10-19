@@ -164,8 +164,9 @@ void ws_ds18x20::update() {
         wippersnapper_signal_v1_Ds18x20Response_init_zero;
     msgDS18x20Response.which_payload =
         wippersnapper_signal_v1_Ds18x20Response_resp_ds18x20_event_tag;
-    msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count =
-        (*iter)->sensorPropertiesCount;
+    // TODO: Put this back
+    // msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count =
+    // (*iter)->sensorPropertiesCount;
 
     WS_DEBUG_PRINTLN("Sensor Driver top");
     WS_DEBUG_PRINT("# of driver sensor_events: ");
@@ -176,14 +177,8 @@ void ws_ds18x20::update() {
     // Poll each sensor type, if period has elapsed
     for (int i = 0; i < (*iter)->sensorPropertiesCount; i++) {
 
-      // TODO- I am looking for why the if() check keeps failing on the 2nd
-      // iteration...
       WS_DEBUG_PRINT("Sensor Property[] #: ");
       WS_DEBUG_PRINTLN(i);
-      WS_DEBUG_PRINT("Sensor Property Period:");
-      WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_period);
-      WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
-      WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
 
       // has sensor_period elapsed?
       if (curTime - (*iter)->sensorPeriodPrv >
@@ -201,26 +196,24 @@ void ws_ds18x20::update() {
 
         // check and pack based on sensorType
         WS_DEBUG_PRINTLN("Checking if *C");
-        WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
-        WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
-          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
-          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
-              tempC;
 
-          // poll temperature sensor
           WS_DEBUG_PRINT("(OneWireBus GPIO: ");
           WS_DEBUG_PRINT((*iter)->onewire_pin);
           WS_DEBUG_PRINT(") DS18x20 Value: ");
           WS_DEBUG_PRINT(tempC);
           WS_DEBUG_PRINTLN("*C")
+
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].value =
+              tempC;
+
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count++;
         }
 
         WS_DEBUG_PRINTLN("Checking if *F");
-        WS_DEBUG_PRINT("(*iter)->sensorProperties[i].sensor_type:");
-        WS_DEBUG_PRINTLN((*iter)->sensorProperties[i].sensor_type);
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
@@ -234,6 +227,24 @@ void ws_ds18x20::update() {
               msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
                   .value);
           WS_DEBUG_PRINTLN("*F")
+
+          msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count++;
+        }
+        delay(1500);
+
+        WS_DEBUG_PRINT("msgDS18x20Response.payload.resp_ds18x20_event.sensor_"
+                       "event_count: ");
+        WS_DEBUG_PRINTLN(
+            msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count);
+
+        WS_DEBUG_PRINT("(*iter)->sensorPropertiesCount: ");
+        WS_DEBUG_PRINTLN((*iter)->sensorPropertiesCount);
+
+        if (msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count ==
+            (*iter)->sensorPropertiesCount) {
+          // got both?
+          WS_DEBUG_PRINTLN("resetting curTime");
+          (*iter)->sensorPeriodPrv = curTime; // set prv time
         }
         /*
                 // prep sensor event data for sending to IO
@@ -282,8 +293,8 @@ void ws_ds18x20::update() {
                 };
                 WS_DEBUG_PRINTLN("PUBLISHED!"); */
       }
+      /*       WS_DEBUG_PRINTLN("resetting curTime");
+            (*iter)->sensorPeriodPrv = curTime; // set prv time */
     }
-    WS_DEBUG_PRINTLN("resetting curTime");
-    (*iter)->sensorPeriodPrv = curTime; // set prv time
   }
 }
