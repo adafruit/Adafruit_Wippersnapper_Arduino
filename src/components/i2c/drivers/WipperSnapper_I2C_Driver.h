@@ -114,6 +114,8 @@ public:
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
       _objectTempFPeriod = sensorPeriod;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+      _gasResistancePeriod = sensorPeriod;
     default:
       break;
     }
@@ -868,6 +870,57 @@ public:
     return true;
   }
 
+  /****************************** SENSOR_TYPE: Gas Resistance (ohms)
+   * *******************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the gas resistance (ohms)
+     sensor's period, if set.
+      @returns  Time when the  gas resistance sensor should be polled,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorGasResistancePeriod() { return _gasResistancePeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the gas resistance sensor (ohms) was queried last.
+      @returns  Time when the gas resistance sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorGasResistancePeriodPrv() {
+    return _gasResistancePeriodPrv;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the object gas resistance sensor
+                was queried.
+      @param    period
+                The time when the gas resistance sensor was queried
+     last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorGasResistancePeriodPrv(long period) {
+    _gasResistancePeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a gas resistance sensor and converts
+                the reading into the expected SI unit.
+      @param    gasEvent
+                gas resistance sensor reading, in ohms.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
+    return false;
+  }
+
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
   uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
@@ -921,16 +974,20 @@ protected:
                                         ///< was last read.
   long _rawSensorPeriod =
       0L; ///< The time period between reading the Raw sensor's value.
-  long _rawSensorPeriodPrv = 0L;    ///< The time when the Raw sensor
-                                    ///< was last read.
-  long _ambientTempFPeriod = 0L;    ///< The time period between reading the
-                                    ///< ambient temp. (°F) sensor's value.
-  long _ambientTempFPeriodPrv = 0L; ///< The time when the ambient temp. (°F)
-                                    ///< sensor was last read.
-  long _objectTempFPeriod = 0L;     ///< The time period between reading the
-                                    ///< object temp. (°F) sensor's value.
-  long _objectTempFPeriodPrv = 0L;  ///< The time when the object temp. (°F)
-                                    ///< sensor was last read.
+  long _rawSensorPeriodPrv = 0L;     ///< The time when the Raw sensor
+                                     ///< was last read.
+  long _ambientTempFPeriod = 0L;     ///< The time period between reading the
+                                     ///< ambient temp. (°F) sensor's value.
+  long _ambientTempFPeriodPrv = 0L;  ///< The time when the ambient temp. (°F)
+                                     ///< sensor was last read.
+  long _objectTempFPeriod = 0L;      ///< The time period between reading the
+                                     ///< object temp. (°F) sensor's value.
+  long _objectTempFPeriodPrv = 0L;   ///< The time when the object temp. (°F)
+                                     ///< sensor was last read.
+  long _gasResistancePeriod = 0L;    ///< The time period between reading the
+                                     ///< gas resistance sensor's value.
+  long _gasResistancePeriodPrv = 0L; ///< The time when the gas resistance
+                                     ///< sensor was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
