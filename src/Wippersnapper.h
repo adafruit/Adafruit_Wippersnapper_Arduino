@@ -28,7 +28,6 @@
 #include <pb.h>
 
 #include <wippersnapper/description/v1/description.pb.h> // description.proto
-#include <wippersnapper/pin/v1/pin.pb.h>                 // pin.proto
 #include <wippersnapper/signal/v1/signal.pb.h>           // signal.proto
 
 // Wippersnapper API Helpers
@@ -45,6 +44,7 @@
 #include "components/ledc/ws_ledc.h"
 #endif
 
+#include "components/ds18x20/ws_ds18x20.h"
 #include "components/servo/ws_servo.h"
 
 // External libraries
@@ -67,7 +67,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.52" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.53" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -168,12 +168,11 @@ class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class WipperSnapper_Component_I2C;
-
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
 #endif
-
 class ws_servo;
+class ws_ds18x20;
 
 /**************************************************************************/
 /*!
@@ -280,7 +279,8 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_servo *_servoComponent; ///< Instance of servo class
+  ws_servo *_servoComponent;     ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -311,6 +311,10 @@ public:
                                      device   to a broker. */
   char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
+  char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
+                                   a device to a broker. */
+  char *_topic_signal_ds18_device = NULL; /*!< Topic carries ds18x20 messages
+                                     from a broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -319,6 +323,11 @@ public:
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
+
+  // ds signal msg
+  wippersnapper_signal_v1_Ds18x20Request msgSignalDS =
+      wippersnapper_signal_v1_Ds18x20Request_init_zero; ///< DS request message
+                                                        ///< wrapper
 
   // servo message
   wippersnapper_signal_v1_ServoRequest
@@ -374,6 +383,8 @@ protected:
       *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
 

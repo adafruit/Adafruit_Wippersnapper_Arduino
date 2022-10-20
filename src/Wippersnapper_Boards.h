@@ -100,7 +100,7 @@
 #define BOARD_ID "feather-esp8266"
 #define USE_LITTLEFS
 #define USE_STATUS_LED
-#define STATUS_LED_PIN 13
+#define STATUS_LED_PIN 0
 #elif defined(ARDUINO_FEATHER_ESP32)
 #define BOARD_ID "feather-esp32"
 #define USE_LITTLEFS
