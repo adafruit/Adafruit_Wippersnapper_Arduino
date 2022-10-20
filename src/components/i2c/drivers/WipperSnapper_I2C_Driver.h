@@ -114,8 +114,10 @@ public:
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
       _objectTempFPeriod = sensorPeriod;
+      break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
       _gasResistancePeriod = sensorPeriod;
+      break;
     default:
       break;
     }
