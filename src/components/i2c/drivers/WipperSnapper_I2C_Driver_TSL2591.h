@@ -54,9 +54,9 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _tsl = new Adafruit_TSL2591();
+    _tsl = new Adafruit_TSL2591(2591);
     // Attempt to initialize TSL2591
-    if (!_tsl->begin())
+    if (!_tsl->begin(_i2c, TSL2591_ADDR))
       return false;
 
     // Configure TSL2591 sensor
