@@ -1050,6 +1050,38 @@ void cbSignalDSReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode DS message");
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when the device recieves a new message from the
+              /pixels/ topic.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbPixelsMsg(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Pixels]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  // TODO: Add decoder callback function
+  // WS.msgPixels.cb_payload.funcs.decode = 
+
+  // Decode servo message from buffer
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_ServoRequest_fields,
+                 &WS.msgPixels))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -1395,6 +1427,16 @@ bool Wippersnapper::buildWSTopics() {
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/servo") + 1);
 
+  // Topic for pixel messages from broker->device
+  WS._topic_signal_pixels_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen(MQTT_TOPIC_PIXELS_BROKER) + 1);
+
+  // Topic for pixel messages from device->broker
+  WS._topic_signal_pixels_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen(MQTT_TOPIC_PIXELS_DEVICE) + 1);
+
   // Create global registration topic
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
@@ -1520,12 +1562,21 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create broker-to-device servo signal topic
-  if (WS._topic_signal_servo_device != NULL) {
-    strcpy(WS._topic_signal_servo_device, WS._username);
-    strcat(WS._topic_signal_servo_device, TOPIC_WS);
-    strcat(WS._topic_signal_servo_device, _device_uid);
-    strcat(WS._topic_signal_servo_device, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_servo_device, "device/servo");
+  if (WS._topic_signal_pixels_device != NULL) {
+    strcpy(WS._topic_signal_pixels_device, WS._username);
+    strcat(WS._topic_signal_pixels_device, TOPIC_WS);
+    strcat(WS._topic_signal_pixels_device, _device_uid);
+    strcat(WS._topic_signal_pixels_device, MQTT_TOPIC_PIXELS_DEVICE);
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Create device-to-broker pixel signal topic
+  if (WS._topic_signal_pixels_brkr != NULL) {
+    strcpy(WS._topic_signal_pixels_brkr, WS._username);
+    strcat(WS._topic_signal_pixels_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_pixels_brkr, _device_uid);
+    strcat(WS._topic_signal_pixels_brkr, MQTT_TOPIC_PIXELS_BROKER);
   } else { // malloc failed
     is_success = false;
   }
@@ -1562,6 +1613,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
+
+  // Subscribe to pixels sub-topic
+  _topic_signal_pixels_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_pixels_sub);
+  _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
 
   // Subscribe to registration status topic
   _topic_description_sub =
