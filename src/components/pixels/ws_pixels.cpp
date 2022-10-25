@@ -63,34 +63,27 @@ bool ws_pixels::addStrand(
   if (strandIdx == -1)
     is_success = false;
 
-  // TODO: Maybe we could encapsulate this as well so we can control this flow
-  // with is_success
-  switch (pixelsCreateReqMsg->pixels_type) {
-  case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL:
-    // unpack pin, TODO!
-    // char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
+  if (pixelsCreateReqMsg->pixels_type ==
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
+    // TODO: check if pin and object is being used by the StatusLED + deallocate
+    // DO THIS ON TUESDAY
     // (uint16_t n, int16_t p, neoPixelType t
     // TODO: neoPixelType and pin is hard-coded, we need to remove this!
     _strands[strandIdx].neoPixelPtr =
         new Adafruit_NeoPixel(pixelsCreateReqMsg->pixels_num, 16, NEO_WRBG);
     // check if pin or num pixels were not set
     if (_strands[strandIdx].neoPixelPtr->getPin() == -1 &&
-        _strands[strandIdx].neoPixelPtr->numPixels() == 0) {
+        _strands[strandIdx].neoPixelPtr->numPixels() == 0)
       is_success = false;
-      break;
-    }
-    // init. strip
-    _strands[strandIdx].neoPixelPtr->begin();
-    // set all pixel colors to off and send to strand
-    _strands[strandIdx].neoPixelPtr->clear();
-    _strands[strandIdx].neoPixelPtr->show();
-    break;
-  case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR:
-    /* code */
-    break;
-  default:
-    break;
+  } else if (pixelsCreateReqMsg->pixels_type ==
+             wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    // TODO: fill out dotstar
+  } else {
+    // err: unable to find pixels_type
+    is_success = false;
   }
+  // TODO publish `_wippersnapper_pixels_v1_PixelsCreateResponse` back to broker
 
   return false;
 }
