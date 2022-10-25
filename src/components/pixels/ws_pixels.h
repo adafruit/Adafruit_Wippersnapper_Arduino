@@ -19,6 +19,16 @@
 
 #include "Wippersnapper.h"
 
+typedef struct strand_s {
+  wippersnapper_pixels_v1_PixelsType
+      pixels_type; ///< Strand type (NeoPixel, DotStar)
+  // TODO: Unsure if we'll need pixels_ordering from init? Is this handled for
+  // us by show()?
+  int16_t pinNeoPixel;     ///< NeoPixel strand data pin
+  int16_t pinDotStarData;  ///< DotStar strand data pin
+  int16_t pinDotStarClock; ///< DotStar strand clock pin
+} strand_t;
+
 class Wippersnapper; ///< friend class
 /**************************************************************************/
 /*!
