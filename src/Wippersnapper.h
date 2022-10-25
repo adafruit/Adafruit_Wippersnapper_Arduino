@@ -45,6 +45,7 @@
 #endif
 
 #include "components/ds18x20/ws_ds18x20.h"
+#include "components/pixels/ws_pixels.h"
 #include "components/servo/ws_servo.h"
 
 // External libraries
@@ -78,8 +79,10 @@
 #define TOPIC_INFO "/info/"       ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
-#define MQTT_TOPIC_PIXELS_DEVICE "/signals/device/pixels" ///< Pixels device->broker topic
-#define MQTT_TOPIC_PIXELS_BROKER "/signals/broker/pixels" ///< Pixels broker->device topic
+#define MQTT_TOPIC_PIXELS_DEVICE                                               \
+  "/signals/device/pixels" ///< Pixels device->broker topic
+#define MQTT_TOPIC_PIXELS_BROKER                                               \
+  "/signals/broker/pixels" ///< Pixels broker->device topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -175,6 +178,7 @@ class ws_ledc;
 #endif
 class ws_servo;
 class ws_ds18x20;
+class ws_pixels;
 
 /**************************************************************************/
 /*!
@@ -281,8 +285,9 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_servo *_servoComponent;     ///< Instance of servo class
-  ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
+  ws_servo *_servoComponent;      ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
+  ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -315,8 +320,8 @@ public:
                                      broker to a device. */
   char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
                                    a device to a broker. */
-  char *_topic_signal_ds18_device = NULL; /*!< Topic carries ds18x20 messages
-                                     from a broker to a device. */
+  char *_topic_signal_ds18_device = NULL;   /*!< Topic carries ds18x20 messages
+                                       from a broker to a device. */
   char *_topic_signal_pixels_brkr = NULL;   /*!< Topic carries pixel messages */
   char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
 
@@ -338,7 +343,8 @@ public:
       msgServo; ///< ServoRequest wrapper message
 
   // pixels signal message
-  wippersnapper_signal_v1_PixelsRequest msgPixels; ///< PixelsRequest wrapper message
+  wippersnapper_signal_v1_PixelsRequest
+      msgPixels; ///< PixelsRequest wrapper message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -396,7 +402,6 @@ protected:
       *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
-
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

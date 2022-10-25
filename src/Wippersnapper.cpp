@@ -1050,6 +1050,44 @@ void cbSignalDSReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode DS message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a pixel strand's signal request message and
+   executes the callback based on the message's tag.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
+                       void **arg) {
+  if (field->tag ==
+      wippersnapper_signal_v1_PixelsRequest_req_pixels_create_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_PixelsRequest_req_pixels_create_tag");
+    // Attempt to decode
+    wippersnapper_pixels_v1_PixelsCreateRequest msgPixelsCreateReq =
+        wippersnapper_pixels_v1_PixelsCreateRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsCreateRequest_fields,
+                   &msgPixelsCreateReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
+                       "wippersnapper_pixels_v1_PixelsCreateRequest!");
+      return false;
+    }
+    // exec. rpc
+    return WS._ws_pixelsComponent->addStrand(&msgPixelsCreateReq);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
+    return false;
+  }
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief    Called when the device recieves a new message from the
@@ -1073,7 +1111,7 @@ void cbPixelsMsg(char *data, uint16_t len) {
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
   // TODO: Add decoder callback function
-  // WS.msgPixels.cb_payload.funcs.decode = 
+  WS.msgPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
 
   // Decode servo message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
