@@ -21,7 +21,14 @@
 */
 /**************************************************************************/
 ws_pixels::ws_pixels() {
-  // TODO!
+  // init array of strands using aggregate list
+  for (int i = 0; i < sizeof(_strands); i++)
+    _strands[i] = {wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+                   nullptr,
+                   nullptr,
+                   -1,
+                   -1,
+                   -1};
 }
 
 /**************************************************************************/
@@ -31,11 +38,48 @@ ws_pixels::ws_pixels() {
 /**************************************************************************/
 ws_pixels::~ws_pixels() {
   // TODO!
+  // deinitialize objects
+  // release pins back
+}
+
+int16_t ws_pixels::allocateStrand() {
+  int16_t strandIdx = 0;
+  for (strandIdx; strandIdx < sizeof(_strands); strandIdx++) {
+    if (_strands[strandIdx].type ==
+        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED)
+      return strandIdx;
+  }
+  // unable to find a free strand
+  return -1;
 }
 
 bool ws_pixels::addStrand(
     wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg) {
-  // TODO!
+  bool is_success = true;
+
+  // attempt to allocate a free strand
+  int16_t strandIdx = allocateStrand();
+  if (strandIdx == -1)
+    is_success = false;
+
+  // TODO: Maybe we could encapsulate this as well so we can control this flow
+  // with is_success
+  switch (pixelsCreateReqMsg->pixels_type) {
+  case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL:
+    // unpack pin, TODO!
+    // char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
+    // (uint16_t n, int16_t p, neoPixelType t
+    // TODO: neoPixelType and pin is hard-coded, we need to remove this!
+    _strands[strandIdx].neoPixelPtr =
+        new Adafruit_NeoPixel(pixelsCreateReqMsg->pixels_num, 16, NEO_WRBG);
+    break;
+  case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR:
+    /* code */
+    break;
+  default:
+    break;
+  }
+
   return false;
 }
 

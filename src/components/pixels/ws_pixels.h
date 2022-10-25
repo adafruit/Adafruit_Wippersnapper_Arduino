@@ -19,9 +19,12 @@
 
 #include "Wippersnapper.h"
 
+#define MAX_PIXEL_STRANDS 5
+
 typedef struct strand_s {
-  wippersnapper_pixels_v1_PixelsType
-      pixels_type; ///< Strand type (NeoPixel, DotStar)
+  wippersnapper_pixels_v1_PixelsType type; ///< Strand type (NeoPixel, DotStar)
+  Adafruit_NeoPixel *neoPixelPtr;          ///< Ptr to a NeoPixel object
+  Adafruit_DotStar *dotStarPtr;            ///< Ptr to a DotStar object
   // TODO: Unsure if we'll need pixels_ordering from init? Is this handled for
   // us by show()?
   int16_t pinNeoPixel;     ///< NeoPixel strand data pin
@@ -47,8 +50,10 @@ public:
   void deleteStrand();
   void writeStrand();
 
+  int16_t allocateStrand();
+
 private:
-  // TODO
+  strand_t _strands[MAX_PIXEL_STRANDS];
 };
 extern Wippersnapper WS;
 #endif // WS_PIXELS
