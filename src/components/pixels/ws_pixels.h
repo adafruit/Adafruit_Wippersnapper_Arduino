@@ -23,6 +23,7 @@
 
 typedef struct strand_s {
   wippersnapper_pixels_v1_PixelsType type; ///< Strand type (NeoPixel, DotStar)
+  uint32_t brightness;                     ///< Strand brightness (0 to 255)
   Adafruit_NeoPixel *neoPixelPtr;          ///< Ptr to a NeoPixel object
   Adafruit_DotStar *dotStarPtr;            ///< Ptr to a DotStar object
   // TODO: Unsure if we'll need pixels_ordering from init? Is this handled for

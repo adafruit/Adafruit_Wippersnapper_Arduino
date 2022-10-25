@@ -24,6 +24,7 @@ ws_pixels::ws_pixels() {
   // init array of strands using aggregate list
   for (int i = 0; i < sizeof(_strands); i++)
     _strands[i] = {wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+                   128,
                    nullptr,
                    nullptr,
                    -1,
@@ -72,6 +73,17 @@ bool ws_pixels::addStrand(
     // TODO: neoPixelType and pin is hard-coded, we need to remove this!
     _strands[strandIdx].neoPixelPtr =
         new Adafruit_NeoPixel(pixelsCreateReqMsg->pixels_num, 16, NEO_WRBG);
+    // check if pin or num pixels were not set
+    if (_strands[strandIdx].neoPixelPtr->getPin() == -1 &&
+        _strands[strandIdx].neoPixelPtr->numPixels() == 0) {
+      is_success = false;
+      break;
+    }
+    // init. strip
+    _strands[strandIdx].neoPixelPtr->begin();
+    // set all pixel colors to off and send to strand
+    _strands[strandIdx].neoPixelPtr->clear();
+    _strands[strandIdx].neoPixelPtr->show();
     break;
   case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR:
     /* code */
