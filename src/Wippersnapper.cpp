@@ -1070,7 +1070,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN(
         "[Message Type]: "
         "wippersnapper_signal_v1_PixelsRequest_req_pixels_create_tag");
-    // Attempt to decode
+    // attempt to decode message
     wippersnapper_pixels_v1_PixelsCreateRequest msgPixelsCreateReq =
         wippersnapper_pixels_v1_PixelsCreateRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsCreateRequest_fields,
@@ -1081,6 +1081,22 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     }
     // exec. rpc
     return WS._ws_pixelsComponent->addStrand(&msgPixelsCreateReq);
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PixelsRequest_req_pixels_delete_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_PixelsRequest_req_pixels_delete_tag");
+    // attempt to decode message
+    wippersnapper_pixels_v1_PixelsDeleteRequest msgPixelsDeleteReq =
+        wippersnapper_pixels_v1_PixelsDeleteRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsDeleteRequest_fields,
+                   &msgPixelsDeleteReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
+                       "wippersnapper_pixels_v1_PixelsDeleteRequest!");
+      return false;
+    }
+    // exec. rpc
+    WS._ws_pixelsComponent->deleteStrand(&msgPixelsDeleteReq);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
     return false;

@@ -50,10 +50,12 @@ public:
   // TODO: Needs implementations, these interface with protobufs
   bool
   addStrand(wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg);
-  void deleteStrand();
+  void
+  deleteStrand(wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg);
   void writeStrand();
 
   int16_t allocateStrand();
+  void deallocateStrand(int16_t strandIdx);
 
 private:
   strand_t _strands[MAX_PIXEL_STRANDS];

@@ -43,6 +43,20 @@ ws_pixels::~ws_pixels() {
   // release pins back
 }
 
+// TODO: Possibly pass this the type so it can delete it??
+// TODO: use this in destructor for all strandIdx
+void ws_pixels::deallocateStrand(int16_t strandIdx) {
+  // de-allocate the pin
+  _strands[strandIdx] = {
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+      128,
+      nullptr,
+      nullptr,
+      -1,
+      -1,
+      -1};
+}
+
 /******************************************************************************/
 /*!
     @brief   Allocates an index of a free strand_t within the strand array.
@@ -93,6 +107,15 @@ neoPixelType getStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
   return strandType;
 }
 
+/**************************************************************************/
+/*!
+    @brief   Initializes a strand of addressable RGB Pixels.
+    @param   pixelsCreateReqMsg
+             Pointer to strand init. request message
+    @returns Type of NeoPixel strand, usable by Adafruit_NeoPixel
+             constructor
+*/
+/**************************************************************************/
 bool ws_pixels::addStrand(
     wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg) {
   bool is_success = true;
@@ -121,17 +144,16 @@ bool ws_pixels::addStrand(
     // Create a new strand of NeoPixels
     _strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
         pixelsCreateReqMsg->pixels_num, atoi(pixelsPin), strandType);
-    // check if pin or num pixels were not set by constructor
-    if (_strands[strandIdx].neoPixelPtr->getPin() == -1 &&
-        _strands[strandIdx].neoPixelPtr->numPixels() == 0)
-      is_success = false;
     // initialize NeoPixel
     _strands[strandIdx].neoPixelPtr->begin();
     _strands[strandIdx].neoPixelPtr->setBrightness(
         _strands[strandIdx].brightness);
     _strands[strandIdx].neoPixelPtr->clear();
     _strands[strandIdx].neoPixelPtr->show();
-
+    WS_DEBUG_PRINT("Created NeoPixel strand of length ");
+    WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
+    WS_DEBUG_PRINT(" on GPIO #");
+    WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
   } else if (pixelsCreateReqMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // TODO: fill out dotstar
@@ -139,13 +161,61 @@ bool ws_pixels::addStrand(
     // err: unable to find pixels_type
     is_success = false;
   }
-  // TODO publish `_wippersnapper_pixels_v1_PixelsCreateResponse` back to broker
 
-  return false;
+  // fill `wippersnapper_pixels_v1_PixelsCreateResponse` message
+  size_t msgSz; // message's encoded size
+  wippersnapper_signal_v1_PixelsResponse msgInitResp =
+      wippersnapper_signal_v1_PixelsResponse_init_zero;
+  msgInitResp.which_payload =
+      wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
+  msgInitResp.payload.resp_pixels_create.pixels_num =
+      (uint32_t)_strands[strandIdx].neoPixelPtr->numPixels();
+  msgInitResp.payload.resp_pixels_create.pixels_type =
+      pixelsCreateReqMsg->pixels_type;
+
+  // publish `wippersnapper_pixels_v1_PixelsCreateResponse` message back to
+  // broker
+  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+  pb_ostream_t ostream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!pb_encode(&ostream, wippersnapper_signal_v1_PixelsResponse_fields,
+                 &msgInitResp)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode "
+                     "wippersnapper_signal_v1_PixelsResponse message!");
+    return false;
+  }
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PixelsResponse_fields,
+                      &msgInitResp);
+  WS_DEBUG_PRINT("-> wippersnapper_signal_v1_PixelsResponse");
+  WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz,
+                    1);
+  WS_DEBUG_PRINTLN("Published!");
+
+  return true;
 }
 
-void ws_pixels::deleteStrand() {
-  // TODO!
+void ws_pixels::deleteStrand(
+    wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg) {
+  char *pixelPin = pixelsDeleteMsg->pixels_pin + 1;
+  // get strand index
+  // TODO: make this reusable
+  int strandIdx = -1;
+  for (int i = 0; i < sizeof(_strands); i++) {
+    if (_strands[i].pinNeoPixel == atoi(pixelPin))
+      strandIdx = i;
+  }
+  if (strandIdx == -1)
+    WS_DEBUG_PRINTLN("ERR: Strand of pixels not found at index.");
+  return;
+
+  // de-initialize and release NeoPixel object
+  delete _strands[strandIdx].neoPixelPtr;
+
+  // was the NeoPixel pin previously used as a status pin?
+  if (atoi(pixelPin) == STATUS_NEOPIXEL_PIN)
+    initStatusLED(); // re-use this pixel as a status LED again
+
+  deallocateStrand(strandIdx);
 }
 
 void ws_pixels::writeStrand() {
