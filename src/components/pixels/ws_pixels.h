@@ -19,7 +19,8 @@
 
 #include "Wippersnapper.h"
 
-#define MAX_PIXEL_STRANDS 5 ///< Maximum number of pixel strands connected to a WipperSnapper device
+#define MAX_PIXEL_STRANDS                                                      \
+  5 ///< Maximum number of pixel strands connected to a WipperSnapper device
 
 typedef struct strand_s {
   wippersnapper_pixels_v1_PixelsType type; ///< Strand type (NeoPixel, DotStar)

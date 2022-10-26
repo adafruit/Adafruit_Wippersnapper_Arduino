@@ -78,7 +78,7 @@ void Wippersnapper::provision() {
   getMacAddr();
 
   // init. LED for status signaling
-  statusLEDInit();
+  initStatusLED();
 #ifdef USE_TINYUSB
   _fileSystem = new Wippersnapper_FS();
   _fileSystem->parseSecrets();
@@ -1682,7 +1682,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Signal and hang forever
   while (1) {
     WS.feedWDT();
-    statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
+    blinkStatusLED(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
   }
 }
@@ -1724,14 +1724,14 @@ void Wippersnapper::runNetFSM() {
       maxAttempts = 5;
       while (maxAttempts > 0) {
         // blink before we connect
-        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
+        blinkStatusLED(WS_LED_STATUS_WIFI_CONNECTING);
         WS.feedWDT();
         // attempt to connect
         WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
         WS.feedWDT();
         // blink to simulate a delay to allow wifi connection to process
-        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
+        blinkStatusLED(WS_LED_STATUS_WIFI_CONNECTING);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
@@ -1749,7 +1749,7 @@ void Wippersnapper::runNetFSM() {
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        blinkStatusLED(WS_LED_STATUS_MQTT_CONNECTING);
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -1757,7 +1757,7 @@ void Wippersnapper::runNetFSM() {
         }
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
-        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        blinkStatusLED(WS_LED_STATUS_MQTT_CONNECTING);
         delay(1800);
         maxAttempts--;
       }
@@ -1786,7 +1786,7 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
   for (;;) {
-    statusLEDSolid(ledStatusColor);
+    showSolidStatusLED(ledStatusColor);
     // let the WDT fail out and reset!
     delay(100);
   }
@@ -1840,7 +1840,7 @@ void Wippersnapper::pingBroker() {
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
-    statusLEDBlink(WS_LED_STATUS_KAT);
+    blinkStatusLED(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }
 }
@@ -2027,7 +2027,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("OK!");
 
   // goto application
-  statusLEDFade(GREEN, 3);
+  fadeStatusLED(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
 }

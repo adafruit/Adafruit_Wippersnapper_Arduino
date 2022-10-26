@@ -57,12 +57,12 @@ typedef enum ws_led_status_t {
 #define LED_ERROR RED             ///< Error state
 
 // Status LED
-bool statusLEDInit();
-void statusLEDDeinit();
+void initStatusLED();
+void releaseStatusLED();
 uint32_t ledStatusStateToColor(ws_led_status_t statusState);
 void setStatusLEDColor(uint32_t color);
-void statusLEDBlink(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME);
-void statusLEDFade(uint32_t color, int numFades);
-void statusLEDSolid(ws_led_status_t statusState);
+void blinkStatusLED(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME);
+void fadeStatusLED(uint32_t color, int numFades);
+void showSolidStatusLED(ws_led_status_t statusState);
 
 #endif // WIPPERSNAPPER_STATUSLED_H

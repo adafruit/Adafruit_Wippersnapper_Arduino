@@ -80,7 +80,7 @@ void Wippersnapper::pollRegistrationResp() {
   while (WS._boardStatus != WS_BOARD_DEF_OK) {
     WS_DEBUG_PRINT("Polling for registration message response...");
     WS_DEBUG_PRINTLN(WS._boardStatus);
-    statusLEDBlink(WS_LED_STATUS_WAITING_FOR_REG_MSG);
+    blinkStatusLED(WS_LED_STATUS_WAITING_FOR_REG_MSG);
     WS._mqtt->processPackets(20); // long-poll
   }
 }

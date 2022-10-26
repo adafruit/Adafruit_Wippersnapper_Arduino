@@ -150,7 +150,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
 void WipperSnapper_LittleFS::fsHalt() {
   while (1) {
-    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+    showSolidStatusLED(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }

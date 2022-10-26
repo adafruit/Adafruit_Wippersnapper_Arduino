@@ -193,11 +193,9 @@ public:
 
   void provision();
 
-  bool lockStatusNeoPixel =
-      false; ///< True if status LED is using the status neopixel
-  bool lockStatusDotStar =
-      false; ///< True if status LED is using the status dotstar
-  bool lockStatusLED = false; ///< True if status LED is using the built-in LED
+  bool lockStatusNeoPixel; ///< True if status LED is using the status neopixel
+  bool lockStatusDotStar;  ///< True if status LED is using the status dotstar
+  bool lockStatusLED;      ///< True if status LED is using the built-in LED
 
   virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);

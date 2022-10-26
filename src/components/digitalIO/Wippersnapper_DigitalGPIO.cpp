@@ -68,7 +68,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 #ifdef STATUS_LED_PIN
     // deinit status led, use it as a dio component instead
     if (pinName == STATUS_LED_PIN)
-      statusLEDDeinit();
+      releaseStatusLED();
 #endif
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
@@ -140,7 +140,7 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 // if prv. in-use by DIO, release pin back to application
 #ifdef STATUS_LED_PIN
   if (pinName == STATUS_LED_PIN)
-    statusLEDInit();
+    initStatusLED();
 #endif
 }
 
