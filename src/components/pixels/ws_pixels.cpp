@@ -43,6 +43,12 @@ ws_pixels::~ws_pixels() {
   // release pins back
 }
 
+/******************************************************************************/
+/*!
+    @brief   Allocates an index of a free strand_t within the strand array.
+    @returns Index of free strand_t, -1 if strand array is full.
+*/
+/******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
   int16_t strandIdx = 0;
   for (strandIdx; strandIdx < sizeof(_strands); strandIdx++) {
@@ -52,6 +58,39 @@ int16_t ws_pixels::allocateStrand() {
   }
   // unable to find a free strand
   return -1;
+}
+
+/**************************************************************************/
+/*!
+    @brief   Returns the `neoPixelType` provided the strand's pixelOrder
+    @param   pixelOrder
+             Desired pixel order, from init. message.
+    @returns Type of NeoPixel strand, usable by Adafruit_NeoPixel
+             constructor
+*/
+/**************************************************************************/
+neoPixelType getStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
+  neoPixelType strandType;
+  switch (pixelOrder) {
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
+    strandType = NEO_GRB + NEO_KHZ800;
+    break;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRBW:
+    strandType = NEO_GRBW + NEO_KHZ800;
+    break;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RGB:
+    strandType = NEO_RGB + NEO_KHZ800;
+    break;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RGBW:
+    strandType = NEO_RGBW + NEO_KHZ800;
+    break;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BRG:
+    strandType = NEO_BRG + NEO_KHZ800;
+    break;
+  default:
+    break;
+  }
+  return strandType;
 }
 
 bool ws_pixels::addStrand(
@@ -68,14 +107,18 @@ bool ws_pixels::addStrand(
     char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
     // TODO: check if pin and object is being used by the StatusLED + deallocate
     // DO THIS ON TUESDAY
-    // (uint16_t n, int16_t p, neoPixelType t
-    // TODO: neoPixelType and pin is hard-coded, we need to remove this!
-    _strands[strandIdx].neoPixelPtr =
-        new Adafruit_NeoPixel(pixelsCreateReqMsg->pixels_num, 16, NEO_WRBG);
-    // check if pin or num pixels were not set
+
+    // Get type of strand
+    neoPixelType strandType =
+        getStrandType(pixelsCreateReqMsg->pixels_ordering);
+    // Create a new strand of NeoPixels
+    _strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
+        pixelsCreateReqMsg->pixels_num, atoi(pixelsPin), strandType);
+    // check if pin or num pixels were not set by constructor
     if (_strands[strandIdx].neoPixelPtr->getPin() == -1 &&
         _strands[strandIdx].neoPixelPtr->numPixels() == 0)
       is_success = false;
+    // TODO: Complete init routine
   } else if (pixelsCreateReqMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // TODO: fill out dotstar
