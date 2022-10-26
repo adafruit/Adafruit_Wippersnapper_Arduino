@@ -103,6 +103,9 @@ void releaseStatusLED() {
 /****************************************************************************/
 void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
+
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -131,6 +134,19 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 }
 
+/********************************************************************!
+    @brief   Retrieve the pin number used for NeoPixel data output.
+    @return  Arduino pin number (-1 if not set).
+********************************************************************/
+int16_t getStatusNeoPixelPin() {
+// https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h#L290
+#ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return -1; // status pixel is in-use elsewhere
+  return statusPixel->getPin();
+#endif
+}
+
 /****************************************************************************/
 /*!
     @brief    Fades the status LED.
@@ -153,6 +169,8 @@ void fadeStatusLED(uint32_t color, int numFades = 3) {
   for (int i = 0; i < numFades; i++) {
     for (int i = 50; i <= 200; i += 5) {
 #if defined(USE_STATUS_NEOPIXEL)
+      if (!WS.lockStatusNeoPixel)
+        return; // status pixel is in-use elsewhere
       statusPixel->setBrightness(i);
       statusPixel->show();
 #elif defined(USE_STATUS_DOTSTAR)
@@ -242,6 +260,12 @@ void showSolidStatusLED(
   if (!WS.lockStatusLED)
     return;
 #endif
+
+#ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
+#endif
+
   uint32_t ledColor = ledStatusStateToColor(statusState);
   setStatusLEDColor(ledColor);
 }
@@ -258,6 +282,11 @@ void blinkStatusLED(ws_led_status_t statusState) {
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return;
+#endif
+
+#ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
 #endif
 
   // set number of times to blink

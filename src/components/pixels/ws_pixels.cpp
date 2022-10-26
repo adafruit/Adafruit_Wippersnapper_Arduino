@@ -102,12 +102,19 @@ bool ws_pixels::addStrand(
   if (strandIdx == -1)
     is_success = false;
 
-  if (pixelsCreateReqMsg->pixels_type ==
+  // unpack strand type
+  _strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
+
+  if (_strands[strandIdx].type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
-    // TODO: check if pin and object is being used by the StatusLED + deallocate
-    // DO THIS ON TUESDAY
-
+    // is requested pin in-use by the status pixel?
+    if (getStatusNeoPixelPin() == atoi(pixelsPin) && WS.lockStatusNeoPixel)
+      releaseStatusLED(); // release it!
+    _strands[strandIdx].pinNeoPixel =
+        atoi(pixelsPin); // save into strand struct.
+    _strands[strandIdx].brightness =
+        DEFAULT_PIXEL_BRIGHTNESS; // save default brightness
     // Get type of strand
     neoPixelType strandType =
         getStrandType(pixelsCreateReqMsg->pixels_ordering);
@@ -118,7 +125,13 @@ bool ws_pixels::addStrand(
     if (_strands[strandIdx].neoPixelPtr->getPin() == -1 &&
         _strands[strandIdx].neoPixelPtr->numPixels() == 0)
       is_success = false;
-    // TODO: Complete init routine
+    // initialize NeoPixel
+    _strands[strandIdx].neoPixelPtr->begin();
+    _strands[strandIdx].neoPixelPtr->setBrightness(
+        _strands[strandIdx].brightness);
+    _strands[strandIdx].neoPixelPtr->clear();
+    _strands[strandIdx].neoPixelPtr->show();
+
   } else if (pixelsCreateReqMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // TODO: fill out dotstar
