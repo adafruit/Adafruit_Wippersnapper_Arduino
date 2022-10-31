@@ -43,6 +43,7 @@ We support building and locally testing WipperSnapper with the Platform IO IDE f
 * Download and install [Microsoft Visual Studio Code](https://code.visualstudio.com), PlatformIO IDE is built on top of it
 * Follow the instructions on [platformio's website to install the Platform IO IDE extension](https://platformio.org/install/ide?install=vscode).
 * [Make a local clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) of the [Adafruit WipperSnapper Arduino repository](https://github.com/adafruit/Adafruit_Wippersnapper_Arduino) on your computer. 
+* Ensure you have the dependencies listed in `library.properties` installed either in Arduino shared libraries, or into PlatformIO. These can be installed via the `update-platformio-deps.py` script in the root of the repository.
 * In `platformio.ini` file in the root of this repository, find the board you'd like to build WipperSnapper for. Change its `upload_port` and `monitor_port` to match your system.
 * The `platformio.ini` file in the root of this repository includes multiple environments to build WipperSnapper for different boards. In the [Platform IO toolbar](https://docs.platformio.org/en/stable//integration/ide/vscode.html#platformio-toolbar), use the Project environment switcher to switch to the board you'd like to upload to.
 * Open the `examples/Wippersnapper_demo/Wippersnapper_demo.ino` file.
