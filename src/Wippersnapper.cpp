@@ -1874,6 +1874,22 @@ void Wippersnapper::connect() {
   _status = WS_IDLE;
   WS._boardStatus = WS_BOARD_DEF_IDLE;
 
+  // Initialize components and buses
+  WS_DEBUG_PRINTLN("Initializing component instances...");
+#ifdef ARDUINO_ARCH_ESP32
+  WS_DEBUG_PRINT("LEDC: ");
+  WS._ledc = new ws_ledc();
+  WS_DEBUG_PRINTLN("OK!");
+#endif
+
+  WS_DEBUG_PRINT("SERVO: ");
+  WS._servoComponent = new ws_servo();
+  WS_DEBUG_PRINTLN("OK!");
+
+  WS_DEBUG_PRINT("DS18x20: ");
+  WS._ds18x20Component = new ws_ds18x20();
+  WS_DEBUG_PRINTLN("OK!");
+
   if (!validateAppCreds())
     haltError("Unable to validate application credentials.");
 
@@ -1914,22 +1930,6 @@ void Wippersnapper::connect() {
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
-
-  // Register components
-  WS_DEBUG_PRINTLN("Initializing component instances...");
-#ifdef ARDUINO_ARCH_ESP32
-  WS_DEBUG_PRINT("LEDC: ");
-  WS._ledc = new ws_ledc();
-  WS_DEBUG_PRINTLN("OK!");
-#endif
-
-  WS_DEBUG_PRINT("SERVO: ");
-  WS._servoComponent = new ws_servo();
-  WS_DEBUG_PRINTLN("OK!");
-
-  WS_DEBUG_PRINT("DS18x20: ");
-  WS._ds18x20Component = new ws_ds18x20();
-  WS_DEBUG_PRINTLN("OK!");
 
   // goto application
   statusLEDFade(GREEN, 3);
