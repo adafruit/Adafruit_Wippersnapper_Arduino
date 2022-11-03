@@ -58,8 +58,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _mcp9808 = new Adafruit_MCP9808();
-    bool isInit = _mcp9808->begin((uint8_t)_sensorAddress, _i2c);
-    return isInit;
+    return _mcp9808->begin((uint8_t)_sensorAddress, _i2c);
   }
 
   /*******************************************************************************/
@@ -71,7 +70,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemperature(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     tempEvent->temperature = _mcp9808->readTempC();
     return true;
   }

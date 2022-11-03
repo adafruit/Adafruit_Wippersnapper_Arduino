@@ -101,7 +101,6 @@ bool ws_ledc_servo::attached() { return _servo.Pin.isActive; }
 void ws_ledc_servo::writeMicroseconds(int value) {
   // are we attached to a pin?
   if (!attached()) {
-    Serial.println("NOT ATTACHED TO PIN!");
     return;
   }
 
@@ -111,12 +110,12 @@ void ws_ledc_servo::writeMicroseconds(int value) {
   if (value > _maxPulseWidth)
     value = _maxPulseWidth;
 
-  // formula from
+  // formula from ESP32Servo library
   // https://github.com/madhephaestus/ESP32Servo/blob/master/src/ESP32Servo.cpp
   // count = (pulse_high_width / (pulse_period/2**timer_width))
   // 50Hz servo =  20ms pulse_period
-  // count = pulse_high_width /((20000/65536))
-  uint32_t count = ((double)value / 0.30517578);
+  uint32_t count =
+      ((double)value / ((double)20000 / (double)pow(2, LEDC_TIMER_WIDTH)));
   _ledcMgr->setDuty(_servo.Pin.nbr, count);
 }
 #endif // ARDUINO_ARCH_ESP32

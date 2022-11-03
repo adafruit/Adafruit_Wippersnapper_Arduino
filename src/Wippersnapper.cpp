@@ -1115,6 +1115,93 @@ void cbPWMMsg(char *data, uint16_t len) {
 
 /******************************************************************************************/
 /*!
+    @brief    Decodes a Dallas Sensor (ds18x20) signal request message and
+   executes the callback based on the message's tag.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
+                        void **arg) {
+  if (field->tag ==
+      wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
+    WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
+    // Attempt to decode contents of DS18x20 message
+    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDS18xInitReq =
+        wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
+
+    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
+                   &msgDS18xInitReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode "
+                       "wippersnapper_ds18x20_v1_Ds18x20InitRequest");
+      return false; // fail out if we can't decode the request
+    }
+    WS_DEBUG_PRINT("Adding DS18x20 Component...");
+    if (!WS._ds18x20Component->addDS18x20(&msgDS18xInitReq))
+      return false;
+    WS_DEBUG_PRINTLN("Added!");
+  } else if (field->tag ==
+             wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
+    WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
+    // Attempt to decode contents of message
+    wippersnapper_ds18x20_v1_Ds18x20DeInitRequest msgDS18xDeInitReq =
+        wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_fields,
+                   &msgDS18xDeInitReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode "
+                       "wippersnapper_ds18x20_v1_Ds18x20DeInitRequest");
+      return false; // fail out if we can't decode the request
+    }
+    // exec. deinit request
+    WS._ds18x20Component->deleteDS18x20(&msgDS18xDeInitReq);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: DS Message type not found!");
+    return false;
+  }
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Called when DallasSensor (DS) signal sub-topic receives a
+              new message and attempts to decode the message.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbSignalDSReq(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-DS]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Zero-out existing I2C signal msg.
+  // WS.msgSignalDS = wippersnapper_signal_v1_Ds18x20Request_init_zero;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgSignalDS.cb_payload.funcs.decode = cbDecodeDs18x20Msg;
+
+  // Decode DS signal request
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_Ds18x20Request_fields,
+                 &WS.msgSignalDS))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode DS message");
+}
+
+/******************************************************************************************/
+/*!
     @brief    Decodes a pwm message and dispatches to the pwm component.
     @param    stream
               Incoming data stream from buffer.
@@ -1444,6 +1531,58 @@ bool Wippersnapper::buildWSTopics() {
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
                      strlen(TOPIC_INFO) + strlen("status") + 1);
+
+  // Registration status topic
+  WS._topic_description_status =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status/") + strlen("broker") + 1);
+
+  // Registration status completion topic
+  WS._topic_description_status_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status") + strlen("/device/complete") + 1);
+
+  // Topic to signal pin configuration complete from device to broker
+  WS._topic_device_pin_config_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
+                     strlen("device/pinConfigComplete") + 1);
+
+  // Topic for signals from device to broker
+  WS._topic_signal_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
+
+  // Topic for signals from broker to device
+  WS._topic_signal_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
+
+  // Topic for i2c signals from broker to device
+  WS._topic_signal_i2c_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+      strlen(TOPIC_I2C) + 1);
+
+  // Topic for i2c signals from device to broker
+  WS._topic_signal_i2c_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+      strlen(TOPIC_I2C) + 1);
+
+  // Topic for servo messages from broker->device
+  WS._topic_signal_servo_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/servo") + 1);
+
+  // Topic for servo messages from device->broker
+  WS._topic_signal_servo_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/servo") + 1);
+
+  // Create global registration topic
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
@@ -1562,10 +1701,6 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
-  // Topic for servo messages from broker->device
-  WS._topic_signal_servo_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/servo") + 1);
   // Create device-to-broker servo signal topic
   if (WS._topic_signal_servo_brkr != NULL) {
     strcpy(WS._topic_signal_servo_brkr, WS._username);
@@ -1577,10 +1712,7 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
-  // Topic for servo messages from device->broker
-  WS._topic_signal_servo_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/servo") + 1);
+  // Create broker-to-device servo signal topic
   if (WS._topic_signal_servo_device != NULL) {
     strcpy(WS._topic_signal_servo_device, WS._username);
     strcat(WS._topic_signal_servo_device, TOPIC_WS);
@@ -1640,6 +1772,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
+
+  // Subscribe to signal's ds18x20 sub-topic
+  _topic_signal_ds18_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_ds18_sub);
+  _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
 
   // Subscribe to servo sub-topic
   _topic_signal_servo_sub =
@@ -1993,7 +2131,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // Register components
-  WS_DEBUG_PRINTLN("Registering components...");
+  WS_DEBUG_PRINTLN("Initializing component instances...");
 #ifdef ARDUINO_ARCH_ESP32
   WS_DEBUG_PRINT("LEDC: ");
   WS._ledc = new ws_ledc();
@@ -2002,6 +2140,10 @@ void Wippersnapper::connect() {
 
   WS_DEBUG_PRINT("SERVO: ");
   WS._servoComponent = new ws_servo();
+  WS_DEBUG_PRINTLN("OK!");
+
+  WS_DEBUG_PRINT("DS18x20: ");
+  WS._ds18x20Component = new ws_ds18x20();
   WS_DEBUG_PRINTLN("OK!");
 
   WS_DEBUG_PRINT("PWM: ");
@@ -2080,6 +2222,9 @@ ws_status_t Wippersnapper::run() {
   if (WS._isI2CPort0Init)
     WS._i2cPort0->update();
   WS.feedWDT();
+
+  // Process DS18x20 sensor events
+  WS._ds18x20Component->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

@@ -42,6 +42,8 @@ jobs:
     - name: Install extra Arduino libraries
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
+        git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+        git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: Build for ESP32-Sx
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: list
@@ -95,6 +97,8 @@ jobs:
     - name: Install extra Arduino libraries
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
+        git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+        git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: Install Dependencies
       run: |
         pip3 install esptool
@@ -129,7 +133,7 @@ jobs:
           echo "::set-output name=boardJson::$content"
     - name: Create combined binary using Esptool merge_bin
       run: |
-          python3 -m esptool --chip esp32 merge_bin \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
             --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
             --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
@@ -176,6 +180,8 @@ jobs:
       run: |
         git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
+        git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+        git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: Rename build artifacts to reflect the platform name
@@ -220,6 +226,8 @@ jobs:
         git clone --quiet https://github.com/arduino-libraries/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
         git clone --quiet https://github.com/arduino-libraries/Servo.git /home/runner/Arduino/libraries/Servo
+        git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+        git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
 
@@ -249,6 +257,8 @@ jobs:
     - name: Install extra Arduino library
       run: |
         git clone --quiet https://github.com/brentru/Adafruit_MQTT_Library.git /home/runner/Arduino/libraries/Adafruit_MQTT_Library
+        git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+        git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
     - name: list build artifacts
