@@ -282,7 +282,6 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_servo *_servoComponent; ///< Instance of servo class
   ws_pwm *_pwmComponent;     ///< Instance of pwm class
   ws_servo *_servoComponent;     ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
@@ -397,11 +396,8 @@ protected:
       *_topic_signal_servo_sub; /*!< Subscription callback for servo topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_pwm_sub; /*!< Subscription callback for pwm topic. */
-      *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
