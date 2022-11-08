@@ -338,6 +338,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sht4x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sht4x);
     WS_DEBUG_PRINTLN("SHT4X Initialized Successfully!");
+  } else if (strcmp("sht20", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sht20 = new WipperSnapper_I2C_Driver_SHT20(this->_i2c, i2cAddress);
+    if (!_sht20->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize sht20!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _sht20->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_sht20);
+    WS_DEBUG_PRINTLN("SHT20 Initialized Successfully!"); 
   } else if (strcmp("sht3x", msgDeviceInitReq->i2c_device_name) == 0) {
     _sht3x = new WipperSnapper_I2C_Driver_SHT3X(this->_i2c, i2cAddress);
     if (!_sht3x->begin()) {
