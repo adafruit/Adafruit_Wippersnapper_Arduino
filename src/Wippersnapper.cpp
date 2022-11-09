@@ -976,7 +976,7 @@ void cbServoMsg(char *data, uint16_t len) {
 */
 /******************************************************************************************/
 bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  WS_DEBUG_PRINTLN("Decoding Servo Message...");
+  WS_DEBUG_PRINTLN("Decoding PWM Message...");
   if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Attach");
     // Attempt to decode contents of PWM attach message
@@ -1527,72 +1527,22 @@ bool Wippersnapper::generateDeviceUID() {
 */
 /**************************************************************************/
 bool Wippersnapper::buildWSTopics() {
-  // Global registration topic
+  bool is_success = true;
+
+  // Create global registration topic
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
                      strlen(TOPIC_INFO) + strlen("status") + 1);
-
-  // Registration status topic
-  WS._topic_description_status =
-      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status/") + strlen("broker") + 1);
-
-  // Registration status completion topic
-  WS._topic_description_status_complete =
-      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status") + strlen("/device/complete") + 1);
-
-  // Topic to signal pin configuration complete from device to broker
-  WS._topic_device_pin_config_complete =
-      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
-                     strlen("device/pinConfigComplete") + 1);
-
-  // Topic for signals from device to broker
-  WS._topic_signal_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
-
-  // Topic for signals from broker to device
-  WS._topic_signal_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
-
-  // Topic for i2c signals from broker to device
-  WS._topic_signal_i2c_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
-      strlen(TOPIC_I2C) + 1);
-
-  // Topic for i2c signals from device to broker
-  WS._topic_signal_i2c_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
-      strlen(TOPIC_I2C) + 1);
-
-  // Topic for servo messages from broker->device
-  WS._topic_signal_servo_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/servo") + 1);
-
-  // Topic for servo messages from device->broker
-  WS._topic_signal_servo_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/servo") + 1);
-
-  // Create global registration topic
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
     strcat(WS._topic_description, TOPIC_INFO);
     strcat(WS._topic_description, "status");
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
-  // Registration status topic
+  // Create registration status topic
   WS._topic_description_status =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_INFO) +
@@ -1605,10 +1555,10 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description_status, "status");
     strcat(WS._topic_description_status, "/broker");
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
-  // Registration status completion topic
+  // Create registration status complete topic
   WS._topic_description_status_complete =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_INFO) +
@@ -1621,10 +1571,24 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description_status_complete, "status");
     strcat(WS._topic_description_status_complete, "/device/complete");
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
-  // Topic to signal pin configuration complete from device to broker
+  // Create device-to-broker signal topic
+  WS._topic_signal_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
+  if (WS._topic_signal_device != NULL) {
+    strcpy(WS._topic_signal_device, WS._username);
+    strcat(WS._topic_signal_device, "/wprsnpr/");
+    strcat(WS._topic_signal_device, _device_uid);
+    strcat(WS._topic_signal_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_device, "device");
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Create device-to-broker signal topic
   WS._topic_device_pin_config_complete =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
@@ -1636,28 +1600,13 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_device_pin_config_complete, TOPIC_SIGNALS);
     strcat(WS._topic_device_pin_config_complete, "device/pinConfigComplete");
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
-  // Topic for signals from device to broker
-  WS._topic_signal_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
-  if (WS._topic_signal_device != NULL) {
-    strcpy(WS._topic_signal_device, WS._username);
-    strcat(WS._topic_signal_device, "/wprsnpr/");
-    strcat(WS._topic_signal_device, _device_uid);
-    strcat(WS._topic_signal_device, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_device, "device");
-  } else { // malloc failed
-    return false;
-  }
-
-  // Topic for signals from broker to device
+  // Create broker-to-device signal topic
   WS._topic_signal_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
-  // Create broker-to-device signal topic
   if (WS._topic_signal_brkr != NULL) {
     strcpy(WS._topic_signal_brkr, WS._username);
     strcat(WS._topic_signal_brkr, "/wprsnpr/");
@@ -1665,10 +1614,10 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_brkr, "broker");
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
-  // Topic for i2c signals from broker to device
+  // Create device-to-broker i2c signal topic
   WS._topic_signal_i2c_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
@@ -1681,15 +1630,14 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_brkr, "broker");
     strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
-  // Topic for i2c signals from device to broker
+  // Create broker-to-device i2c signal topic
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
-  // Create broker-to-device i2c signal topic
   if (WS._topic_signal_i2c_device != NULL) {
     strcpy(WS._topic_signal_i2c_device, WS._username);
     strcat(WS._topic_signal_i2c_device, TOPIC_WS);
@@ -1698,10 +1646,43 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_device, "device");
     strcat(WS._topic_signal_i2c_device, TOPIC_I2C);
   } else { // malloc failed
-    return false;
+    is_success = false;
+  }
+
+  // Create device-to-broker ds18x20 topic
+  WS._topic_signal_ds18_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
+      strlen("ds18x20") + 1);
+  if (WS._topic_signal_ds18_brkr != NULL) {
+    strcpy(WS._topic_signal_ds18_brkr, WS._username);
+    strcat(WS._topic_signal_ds18_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_ds18_brkr, _device_uid);
+    strcat(WS._topic_signal_ds18_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_ds18_brkr, "broker/ds18x20");
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Create broker-to-device ds18x20 topic
+  WS._topic_signal_ds18_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
+      strlen("ds18x20") + 1);
+  if (WS._topic_signal_ds18_device != NULL) {
+    strcpy(WS._topic_signal_ds18_device, WS._username);
+    strcat(WS._topic_signal_ds18_device, TOPIC_WS);
+    strcat(WS._topic_signal_ds18_device, _device_uid);
+    strcat(WS._topic_signal_ds18_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_ds18_device, "device/ds18x20");
+  } else { // malloc failed
+    is_success = false;
   }
 
   // Create device-to-broker servo signal topic
+  WS._topic_signal_servo_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/servo") + 1);
   if (WS._topic_signal_servo_brkr != NULL) {
     strcpy(WS._topic_signal_servo_brkr, WS._username);
     strcat(WS._topic_signal_servo_brkr, TOPIC_WS);
@@ -1709,10 +1690,13 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_servo_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_servo_brkr, "broker/servo");
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
   // Create broker-to-device servo signal topic
+  WS._topic_signal_servo_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/servo") + 1);
   if (WS._topic_signal_servo_device != NULL) {
     strcpy(WS._topic_signal_servo_device, WS._username);
     strcat(WS._topic_signal_servo_device, TOPIC_WS);
@@ -1720,7 +1704,7 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_servo_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_servo_device, "device/servo");
   } else { // malloc failed
-    return false;
+    is_success = false;
   }
 
   // Topic for pwm messages from broker->device
@@ -1741,7 +1725,7 @@ bool Wippersnapper::buildWSTopics() {
   // Topic for pwm messages from device->broker
   WS._topic_signal_pwm_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/servo") + 1);
+      strlen("/wprsnpr/signals/device/pwm") + 1);
   if (WS._topic_signal_pwm_device != NULL) {
     strcpy(WS._topic_signal_pwm_device, WS._username);
     strcat(WS._topic_signal_pwm_device, TOPIC_WS);
@@ -1752,7 +1736,7 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
-  return true;
+  return is_success;
 }
 
 /**************************************************************************/
