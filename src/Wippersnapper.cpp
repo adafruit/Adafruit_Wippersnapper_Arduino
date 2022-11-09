@@ -51,6 +51,23 @@ Wippersnapper::Wippersnapper() {
   _throttle_topic = 0;
   _err_sub = 0;
   _throttle_sub = 0;
+
+  // Init. component classes
+
+  // DallasSemi (OneWire)
+  WS._ds18x20Component = new ws_ds18x20();
+  // LEDC (ESP32-ONLY)
+#ifdef ARDUINO_ARCH_ESP32
+  WS._ledc = new ws_ledc();
+#endif
+  // Servo
+  WS._servoComponent = new ws_servo();
+  // PWM
+#ifdef ARDUINO_ARCH_ESP32
+  WS._pwmComponent = new ws_pwm(WS._ledc);
+#else
+  WS._pwmComponent = new ws_pwm();
+#endif
 };
 
 /**************************************************************************/
@@ -2033,63 +2050,40 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 
 /**************************************************************************/
 /*!
-    @brief    Connects to Adafruit IO+ Wippersnapper broker.
+    @brief    Prints information about the WS device to the serial monitor.
 */
 /**************************************************************************/
-void Wippersnapper::connect() {
-  WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
-
-  // Print all identifiers to the debug log
+void printDeviceInfo() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
-
   WS_DEBUG_PRINT("Firmware Version: ");
   WS_DEBUG_PRINTLN(WS_VERSION);
-
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
-
   WS_DEBUG_PRINT("Adafruit.io User: ");
   WS_DEBUG_PRINTLN(WS._username);
-
   WS_DEBUG_PRINT("WiFi Network: ");
   WS_DEBUG_PRINTLN(WS._network_ssid);
-
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
           WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
   WS_DEBUG_PRINT("MAC Address: ");
   WS_DEBUG_PRINTLN(sMAC);
   WS_DEBUG_PRINTLN("-------------------------------");
+}
 
-  // enable WDT
+/**************************************************************************/
+/*!
+    @brief    Connects to Adafruit IO+ Wippersnapper broker.
+*/
+/**************************************************************************/
+void Wippersnapper::connect() {
+  WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
+
+  // Dump device info to the serial monitor
+  printDeviceInfo();
+
+  // enable global WDT
   WS.enableWDT(WS_WDT_TIMEOUT);
-
-  _status = WS_IDLE;
-  WS._boardStatus = WS_BOARD_DEF_IDLE;
-
-  // Register components
-  WS_DEBUG_PRINTLN("Initializing component instances...");
-#ifdef ARDUINO_ARCH_ESP32
-  WS_DEBUG_PRINT("LEDC: ");
-  WS._ledc = new ws_ledc();
-  WS_DEBUG_PRINTLN("OK!");
-#endif
-
-  WS_DEBUG_PRINT("SERVO: ");
-  WS._servoComponent = new ws_servo();
-  WS_DEBUG_PRINTLN("OK!");
-
-  WS_DEBUG_PRINT("DS18x20: ");
-  WS._ds18x20Component = new ws_ds18x20();
-  WS_DEBUG_PRINTLN("OK!");
-
-  WS_DEBUG_PRINT("PWM: ");
-#ifdef ARDUINO_ARCH_ESP32
-  WS._pwmComponent = new ws_pwm(WS._ledc);
-#else
-  WS._pwmComponent = new ws_pwm();
-#endif
-  WS_DEBUG_PRINTLN("OK!");
 
   // Generate device identifier
   if (!generateDeviceUID()) {

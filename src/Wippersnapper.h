@@ -275,7 +275,7 @@ public:
                                                      outgoing payload data */
   uint16_t bufSize; /*!< Length of data inside buffer */
 
-  ws_board_status_t _boardStatus; ///< Hardware's registration status
+  ws_board_status_t _boardStatus = WS_BOARD_DEF_IDLE; ///< Hardware's registration status
 
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
