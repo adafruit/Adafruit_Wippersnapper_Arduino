@@ -47,15 +47,17 @@ public:
   ws_pixels();
   ~ws_pixels();
 
-  // TODO: Needs implementations, these interface with protobufs
+  // Protobuf RPC
   bool
   addStrand(wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg);
   void
   deleteStrand(wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg);
-  void writeStrand();
+  void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest pixelsWriteMsg);
 
+  // Helpers
   int16_t allocateStrand();
   void deallocateStrand(int16_t strandIdx);
+  int getStrandIdx(int16_t pin);
 
 private:
   strand_t _strands[MAX_PIXEL_STRANDS];

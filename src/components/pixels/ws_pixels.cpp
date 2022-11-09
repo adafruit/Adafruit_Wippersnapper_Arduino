@@ -194,30 +194,45 @@ bool ws_pixels::addStrand(
   return true;
 }
 
+int ws_pixels::getStrandIdx(int16_t pin) {
+    int strandIdx = -1;
+    for (int i = 0; i < sizeof(_strands); i++) {
+      if (_strands[i].pinNeoPixel == pin)
+        strandIdx = i;
+    }
+    return strandIdx;
+}
+
 void ws_pixels::deleteStrand(
     wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg) {
-  char *pixelPin = pixelsDeleteMsg->pixels_pin + 1;
-  // get strand index
-  // TODO: make this reusable
-  int strandIdx = -1;
-  for (int i = 0; i < sizeof(_strands); i++) {
-    if (_strands[i].pinNeoPixel == atoi(pixelPin))
-      strandIdx = i;
+  int neoPixelPin, strandIdx;
+
+  // check addressable pixel strand type
+  switch (pixelsDeleteMsg->pixels_type)
+  {
+  case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL:
+    neoPixelPin = atoi(pixelsDeleteMsg->pixels_pin_neopixel + 1);
+    strandIdx = getStrandIdx(neoPixelPin);
+    if (strandIdx == -1) {
+      WS_DEBUG_PRINTLN("ERROR: NeoPixel strand not found, can not delete strand!");
+      return;
+    }
+    // de-init and release NeoPixel object
+    delete _strands[strandIdx].neoPixelPtr;
+    // if NeoPixel strand was the builtin status LED - re-init status LED behavior
+    if (neoPixelPin == STATUS_NEOPIXEL_PIN)
+      initStatusLED(); // re-use this pixel as a status LED again */
+    break;
+  default:
+    break;
   }
-  if (strandIdx == -1)
-    WS_DEBUG_PRINTLN("ERR: Strand of pixels not found at index.");
-  return;
 
-  // de-initialize and release NeoPixel object
-  delete _strands[strandIdx].neoPixelPtr;
-
-  // was the NeoPixel pin previously used as a status pin?
-  if (atoi(pixelPin) == STATUS_NEOPIXEL_PIN)
-    initStatusLED(); // re-use this pixel as a status LED again
-
+  // deallocate strand object at strandIdx
+  // TODO: Do we do this for Dotstar as well?
   deallocateStrand(strandIdx);
 }
 
-void ws_pixels::writeStrand() {
-  // TODO
+void ws_pixels::writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest pixelsWriteMsg) {
+  // check type of strand we're writing to
+  
 }

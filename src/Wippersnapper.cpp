@@ -1097,11 +1097,30 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     }
     // exec. rpc
     WS._ws_pixelsComponent->deleteStrand(&msgPixelsDeleteReq);
-  } else {
-    WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
-    return false;
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PixelsRequest_req_pixels_write_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_PixelsRequest_req_pixels_write_tag");
+
+    // attempt to decode message
+    wippersnapper_pixels_v1_PixelsWriteRequest msgPixelsWritereq =
+        wippersnapper_pixels_v1_PixelsWriteRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsWriteRequest_fields,
+                   &msgPixelsWritereq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
+                       "wippersnapper_pixels_v1_PixelsWriteRequest!");
+      return false;
+    }
+    // exec. rpc
+    WS._ws_pixelsComponent->writeStrand(&msgPixelsWritereq);
   }
-  return true;
+}
+else {
+  WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
+  return false;
+}
+return true;
 }
 
 /**************************************************************************/
