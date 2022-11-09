@@ -2048,37 +2048,6 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
 
-/**************************************************************************/
-/*!
-    @brief    Prints information about the WS device to the serial monitor.
-*/
-/**************************************************************************/
-void printDeviceInfo() {
-  WS_DEBUG_PRINTLN("-------Device Information-------");
-  WS_DEBUG_PRINT("Firmware Version: ");
-  WS_DEBUG_PRINTLN(WS_VERSION);
-  WS_DEBUG_PRINT("Board ID: ");
-  WS_DEBUG_PRINTLN(BOARD_ID);
-  WS_DEBUG_PRINT("Adafruit.io User: ");
-  WS_DEBUG_PRINTLN(WS._username);
-  WS_DEBUG_PRINT("WiFi Network: ");
-  WS_DEBUG_PRINTLN(WS._network_ssid);
-  char sMAC[18] = {0};
-  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
-          WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
-  WS_DEBUG_PRINT("MAC Address: ");
-  WS_DEBUG_PRINTLN(sMAC);
-  WS_DEBUG_PRINTLN("-------------------------------");
-
-// (ESP32-Only) Print reason why device was reset
-#ifdef ARDUINO_ARCH_ESP32
-  WS_DEBUG_PRINT("ESP32 CPU0 RESET REASON: ");
-  print_reset_reason(0);
-  WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
-  print_reset_reason(1);
-#endif
-}
-
 /**************************************************************/
 /*!
     @brief    Prints last reset reason of ESP32
@@ -2138,6 +2107,37 @@ void print_reset_reason(int reason) {
   default:
     WS_DEBUG_PRINTLN("NO_MEAN");
   }
+}
+
+/**************************************************************************/
+/*!
+    @brief    Prints information about the WS device to the serial monitor.
+*/
+/**************************************************************************/
+void printDeviceInfo() {
+  WS_DEBUG_PRINTLN("-------Device Information-------");
+  WS_DEBUG_PRINT("Firmware Version: ");
+  WS_DEBUG_PRINTLN(WS_VERSION);
+  WS_DEBUG_PRINT("Board ID: ");
+  WS_DEBUG_PRINTLN(BOARD_ID);
+  WS_DEBUG_PRINT("Adafruit.io User: ");
+  WS_DEBUG_PRINTLN(WS._username);
+  WS_DEBUG_PRINT("WiFi Network: ");
+  WS_DEBUG_PRINTLN(WS._network_ssid);
+  char sMAC[18] = {0};
+  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
+          WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
+  WS_DEBUG_PRINT("MAC Address: ");
+  WS_DEBUG_PRINTLN(sMAC);
+  WS_DEBUG_PRINTLN("-------------------------------");
+
+// (ESP32-Only) Print reason why device was reset
+#ifdef ARDUINO_ARCH_ESP32
+  WS_DEBUG_PRINT("ESP32 CPU0 RESET REASON: ");
+  print_reset_reason(0);
+  WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
+  print_reset_reason(1);
+#endif
 }
 
 /**************************************************************************/
