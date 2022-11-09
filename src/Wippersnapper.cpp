@@ -1114,13 +1114,11 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     }
     // exec. rpc
     WS._ws_pixelsComponent->writeStrand(&msgPixelsWritereq);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
+    return false;
   }
-}
-else {
-  WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
-  return false;
-}
-return true;
+  return true;
 }
 
 /**************************************************************************/

@@ -52,7 +52,7 @@ public:
   addStrand(wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg);
   void
   deleteStrand(wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg);
-  void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest pixelsWriteMsg);
+  void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
 
   // Helpers
   int16_t allocateStrand();

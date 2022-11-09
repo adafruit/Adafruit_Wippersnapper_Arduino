@@ -205,14 +205,14 @@ int ws_pixels::getStrandIdx(int16_t pin) {
 
 void ws_pixels::deleteStrand(
     wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg) {
-  int neoPixelPin, strandIdx;
+  int pinData, strandIdx;
 
+  pinData = atoi(pixelsDeleteMsg->pixels_pin_data + 1);
   // check addressable pixel strand type
   switch (pixelsDeleteMsg->pixels_type)
   {
   case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL:
-    neoPixelPin = atoi(pixelsDeleteMsg->pixels_pin_neopixel + 1);
-    strandIdx = getStrandIdx(neoPixelPin);
+    strandIdx = getStrandIdx(pinData);
     if (strandIdx == -1) {
       WS_DEBUG_PRINTLN("ERROR: NeoPixel strand not found, can not delete strand!");
       return;
@@ -220,7 +220,7 @@ void ws_pixels::deleteStrand(
     // de-init and release NeoPixel object
     delete _strands[strandIdx].neoPixelPtr;
     // if NeoPixel strand was the builtin status LED - re-init status LED behavior
-    if (neoPixelPin == STATUS_NEOPIXEL_PIN)
+    if (pinData == STATUS_NEOPIXEL_PIN)
       initStatusLED(); // re-use this pixel as a status LED again */
     break;
   default:
@@ -232,7 +232,7 @@ void ws_pixels::deleteStrand(
   deallocateStrand(strandIdx);
 }
 
-void ws_pixels::writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest pixelsWriteMsg) {
+void ws_pixels::writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   // check type of strand we're writing to
   
 }
