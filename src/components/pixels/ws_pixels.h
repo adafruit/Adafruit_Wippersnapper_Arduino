@@ -59,7 +59,7 @@ public:
   int getStrandIdx(int16_t pin, wippersnapper_pixels_v1_PixelsType type);
 
 private:
-  strand_t _strands[MAX_PIXEL_STRANDS];
+  strand_t _strands[MAX_PIXEL_STRANDS]; ///< Array of `strand_t`.
 };
 extern Wippersnapper WS;
 #endif // WS_PIXELS

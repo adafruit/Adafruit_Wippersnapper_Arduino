@@ -46,8 +46,13 @@ ws_pixels::~ws_pixels() {
   initStatusLED();
 }
 
-// TODO: Possibly pass this the type so it can delete it??
-// TODO: use this in destructor for all strandIdx
+/**************************************************************************/
+/*!
+    @brief  Deallocates a `strand_t` within `_strands`, provided an index.
+    @param  strandIdx
+            The desired index of a `strand_t` within `_strands`.
+*/
+/**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
   // de-allocate the pin
   _strands[strandIdx] = {
@@ -64,7 +69,7 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
 /******************************************************************************/
 /*!
     @brief   Allocates an index of a free strand_t within the strand array.
-    @returns Index of free strand_t, -1 if strand array is full.
+    @returns Index of a free strand_t, -1 if strand array is full.
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
@@ -227,6 +232,16 @@ bool ws_pixels::addStrand(
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief   Obtains the index of a `strand_t` within array of `_strands`.
+    @param   pin
+             strand_t's data pin // TODO: Possibly rename to dataPin
+    @param   type
+             Type of strand_t, NeoPixel or DotStar.
+    @returns The index of a strand_t if within strands[], -1 otherwise.
+*/
+/**************************************************************************/
 int ws_pixels::getStrandIdx(int16_t pin,
                             wippersnapper_pixels_v1_PixelsType type) {
   int strandIdx = -1;
@@ -249,6 +264,15 @@ int ws_pixels::getStrandIdx(int16_t pin,
   return strandIdx;
 }
 
+/**************************************************************************/
+/*!
+    @brief   Deletes a `strand_t` from `_strands`, deinitializes a strand,
+             and frees its resources.
+    @param   pixelsDeleteMsg
+             Protobuf message from Adafruit IO containing a
+             `wippersnapper_pixels_v1_PixelsDeleteRequest`.
+*/
+/**************************************************************************/
 void ws_pixels::deleteStrand(
     wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg) {
   int pinData, strandIdx;
@@ -278,6 +302,13 @@ void ws_pixels::deleteStrand(
   deallocateStrand(strandIdx);
 }
 
+/**************************************************************************/
+/*!
+    @brief   Writes a color to a strand_t.
+    @param   pixelsWriteMsg
+             Protobuf message from Adafruit IO containing data to write.
+*/
+/**************************************************************************/
 void ws_pixels::writeStrand(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   // Attempt to get strand's index
