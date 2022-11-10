@@ -147,6 +147,19 @@ int16_t getStatusNeoPixelPin() {
 #endif
 }
 
+/********************************************************************!
+    @brief   Retrieve the pin number used for DotStar data output.
+    @return  Arduino pin number (-1 if not set).
+********************************************************************/
+int16_t getStatusDotStarDataPin() {
+// https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h#L290
+#ifdef USE_STATUS_DOTSTAR
+  if (!WS.lockStatusDotStar)
+    return -1; // status pixel is in-use elsewhere
+  return STATUS_DOTSTAR_PIN_DATA;
+#endif
+}
+
 /****************************************************************************/
 /*!
     @brief    Fades the status LED.
