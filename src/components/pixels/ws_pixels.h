@@ -26,10 +26,9 @@
 typedef struct strand_s {
   wippersnapper_pixels_v1_PixelsType type; ///< Strand type (NeoPixel, DotStar)
   uint32_t brightness;                     ///< Strand brightness (0 to 255)
+  wippersnapper_pixels_v1_PixelsOrder ordering; ///< Strand pixel ordering
   Adafruit_NeoPixel *neoPixelPtr;          ///< Ptr to a NeoPixel object
   Adafruit_DotStar *dotStarPtr;            ///< Ptr to a DotStar object
-  // TODO: Unsure if we'll need pixels_ordering from init? Is this handled for
-  // us by show()?
   int16_t pinNeoPixel;     ///< NeoPixel strand data pin
   int16_t pinDotStarData;  ///< DotStar strand data pin
   int16_t pinDotStarClock; ///< DotStar strand clock pin
@@ -57,7 +56,7 @@ public:
   // Helpers
   int16_t allocateStrand();
   void deallocateStrand(int16_t strandIdx);
-  int getStrandIdx(int16_t pin);
+  int getStrandIdx(int16_t pin, wippersnapper_pixels_v1_PixelsType type);
 
 private:
   strand_t _strands[MAX_PIXEL_STRANDS];

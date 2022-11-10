@@ -25,6 +25,7 @@ ws_pixels::ws_pixels() {
   for (int i = 0; i < sizeof(_strands); i++)
     _strands[i] = {wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
                    128,
+                   wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
                    nullptr,
                    nullptr,
                    -1,
@@ -50,6 +51,7 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
   _strands[strandIdx] = {
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
       128,
+      wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
       nullptr,
       nullptr,
       -1,
@@ -138,6 +140,7 @@ bool ws_pixels::addStrand(
         atoi(pixelsPin); // save into strand struct.
     _strands[strandIdx].brightness =
         DEFAULT_PIXEL_BRIGHTNESS; // save default brightness
+    _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
     // Get type of strand
     neoPixelType strandType =
         getStrandType(pixelsCreateReqMsg->pixels_ordering);
@@ -194,11 +197,23 @@ bool ws_pixels::addStrand(
   return true;
 }
 
-int ws_pixels::getStrandIdx(int16_t pin) {
+int ws_pixels::getStrandIdx(int16_t pin, wippersnapper_pixels_v1_PixelsType type) {
     int strandIdx = -1;
-    for (int i = 0; i < sizeof(_strands); i++) {
-      if (_strands[i].pinNeoPixel == pin)
-        strandIdx = i;
+
+    if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+      for (int i = 0; i < sizeof(_strands); i++) {
+        if (_strands[i].pinNeoPixel == pin)
+          strandIdx = i;
+          return strandIdx;
+      }
+    } else if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+      for (int i = 0; i < sizeof(_strands); i++) {
+        if (_strands[i].pinDotStarData == pin)
+          strandIdx = i;
+          return strandIdx;
+      }
+    } else {
+      strandIdx = -1; // type not found
     }
     return strandIdx;
 }
@@ -208,15 +223,17 @@ void ws_pixels::deleteStrand(
   int pinData, strandIdx;
 
   pinData = atoi(pixelsDeleteMsg->pixels_pin_data + 1);
+  strandIdx = getStrandIdx(pinData, pixelsDeleteMsg->pixels_type);
+  if (strandIdx == -1) {
+      WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
+      return;
+  }
+
   // check addressable pixel strand type
   switch (pixelsDeleteMsg->pixels_type)
   {
   case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL:
-    strandIdx = getStrandIdx(pinData);
-    if (strandIdx == -1) {
-      WS_DEBUG_PRINTLN("ERROR: NeoPixel strand not found, can not delete strand!");
-      return;
-    }
+
     // de-init and release NeoPixel object
     delete _strands[strandIdx].neoPixelPtr;
     // if NeoPixel strand was the builtin status LED - re-init status LED behavior
@@ -233,6 +250,21 @@ void ws_pixels::deleteStrand(
 }
 
 void ws_pixels::writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
-  // check type of strand we're writing to
-  
+  // Attempt to get strand's index
+  int pinData = atoi(pixelsWriteMsg->pixels_pin_data + 1);
+  int strandIdx = getStrandIdx(pinData, pixelsWriteMsg->pixels_type);
+  if (strandIdx == -1) {
+    WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
+    return;
+  }
+
+  // let's fill the strand
+  uint16_t numPixels = _strands[strandIdx].neoPixelPtr->numPixels();
+  for (int i = 0; i < numPixels; i++ ) {
+    // set color
+    _strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color, i);
+  }
+  // display color
+  _strands[strandIdx].neoPixelPtr->show();
+
 }
