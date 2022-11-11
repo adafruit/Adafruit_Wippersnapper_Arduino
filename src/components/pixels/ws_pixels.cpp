@@ -185,6 +185,9 @@ bool ws_pixels::addStrand(
         _strands[strandIdx].brightness);
     _strands[strandIdx].neoPixelPtr->clear();
     _strands[strandIdx].neoPixelPtr->show();
+    // post-init check
+    if (_strands[strandIdx].neoPixelPtr->numPixels() == 0)
+      is_success = false;
     WS_DEBUG_PRINT("Created NeoPixel strand of length ");
     WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
     WS_DEBUG_PRINT(" on GPIO #");
@@ -219,6 +222,14 @@ bool ws_pixels::addStrand(
         _strands[strandIdx].brightness);
     _strands[strandIdx].dotStarPtr->clear();
     _strands[strandIdx].dotStarPtr->show();
+
+    // post-init check
+    if (_strands[strandIdx].dotStarPtr->numPixels() == 0)
+      is_success = false;
+    WS_DEBUG_PRINT("Created DotStar strand of length ");
+    WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
+    WS_DEBUG_PRINT(" on Data GPIO #");
+    WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_dotstar_data);
   } else {
     // err: unable to find pixels_type
     is_success = false;
@@ -230,10 +241,7 @@ bool ws_pixels::addStrand(
       wippersnapper_signal_v1_PixelsResponse_init_zero;
   msgInitResp.which_payload =
       wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
-  msgInitResp.payload.resp_pixels_create.pixels_num =
-      (uint32_t)_strands[strandIdx].neoPixelPtr->numPixels(); // TODO: We should store #pixels and ref it here
-  msgInitResp.payload.resp_pixels_create.pixels_type =
-      pixelsCreateReqMsg->pixels_type;
+  msgInitResp.payload.resp_pixels_create.is_success = is_success;
 
   // publish `wippersnapper_pixels_v1_PixelsCreateResponse` message back to
   // broker
