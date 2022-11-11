@@ -21,11 +21,10 @@
 
 #define MAX_PIXEL_STRANDS                                                      \
   5 ///< Maximum number of pixel strands connected to a WipperSnapper device
-#define DEFAULT_PIXEL_BRIGHTNESS 128 ///< Default pixel strand brightness
 
 typedef struct strand_s {
   wippersnapper_pixels_v1_PixelsType type; ///< Strand type (NeoPixel, DotStar)
-  uint32_t brightness;                     ///< Strand brightness (0 to 255)
+  uint8_t brightness;                      ///< Strand brightness (0 to 255)
   wippersnapper_pixels_v1_PixelsOrder ordering; ///< Strand pixel ordering
   Adafruit_NeoPixel *neoPixelPtr;          ///< Ptr to a NeoPixel object
   Adafruit_DotStar *dotStarPtr;            ///< Ptr to a DotStar object

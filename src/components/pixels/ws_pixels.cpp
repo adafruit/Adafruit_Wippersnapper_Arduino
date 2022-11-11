@@ -170,8 +170,7 @@ bool ws_pixels::addStrand(
       releaseStatusLED(); // release it!
     _strands[strandIdx].pinNeoPixel =
         atoi(pixelsPin); // save into strand struct.
-    _strands[strandIdx].brightness =
-        DEFAULT_PIXEL_BRIGHTNESS; // save default brightness
+    _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
     _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
     // Get type of strand
     neoPixelType strandType =
@@ -202,7 +201,7 @@ bool ws_pixels::addStrand(
     // fill strand_t with fields from `pixelsCreateReqMsg`
     // TODO: make this generic/reusable with the block above for neoPixels
     _strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
-    _strands[strandIdx].brightness = DEFAULT_PIXEL_BRIGHTNESS;
+    _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
     _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
     _strands[strandIdx].pinDotStarData =
         atoi(pixelsCreateReqMsg->pixels_pin_dotstar_data);
