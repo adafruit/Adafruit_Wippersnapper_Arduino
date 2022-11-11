@@ -83,8 +83,6 @@ int16_t ws_pixels::allocateStrand() {
   return -1;
 }
 
-// TODO: this should also pull in the pixel type so we can check if dotstar or
-// neopixel strand type
 /**************************************************************************/
 /*!
     @brief   Returns the `neoPixelType` provided the strand's pixelOrder
@@ -94,7 +92,8 @@ int16_t ws_pixels::allocateStrand() {
              constructor
 */
 /**************************************************************************/
-neoPixelType getStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
+neoPixelType
+getNeoPixelStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
   neoPixelType strandType;
   switch (pixelOrder) {
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
@@ -116,6 +115,31 @@ neoPixelType getStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
     break;
   }
   return strandType;
+}
+
+/**************************************************************************/
+/*!
+    @brief   Returns the `neoPixelType` provided the strand's pixelOrder
+    @param   pixelOrder
+             Desired pixel order, from init. message.
+    @returns Type of NeoPixel strand, usable by Adafruit_NeoPixel
+             constructor
+*/
+/**************************************************************************/
+uint8_t getDotStarStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
+  uint8_t order;
+  if (pixelOrder == wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB) {
+    order = DOTSTAR_GRB;
+  } else if (pixelOrder ==
+             wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RGB) {
+    order = DOTSTAR_RGB;
+  } else if (pixelOrder ==
+             wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BRG) {
+    order = DOTSTAR_BRG;
+  } else {
+    order = -1;
+  }
+  return order;
 }
 
 /**************************************************************************/
@@ -152,7 +176,7 @@ bool ws_pixels::addStrand(
     _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
     // Get type of strand
     neoPixelType strandType =
-        getStrandType(pixelsCreateReqMsg->pixels_ordering);
+        getNeoPixelStrandType(pixelsCreateReqMsg->pixels_ordering);
     // Create a new strand of NeoPixels
     _strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
         pixelsCreateReqMsg->pixels_num, atoi(pixelsPin), strandType);
@@ -185,16 +209,17 @@ bool ws_pixels::addStrand(
     if ((_strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) &&
         WS.lockStatusDotStar)
       releaseStatusLED();
-    // TODO!
-    // get type of strand for Adafruit_DotStar constructor
-    // uint8_t dotStarStrandtype =
-    // getStrandType(pixelsCreateReqMsg->pixels_ordering);
     // init DotStar object
-    // _strands[strandIdx].dotStarPtr = new
-    // Adafruit_DotStar(pixelsCreateReqMsg->pixels_num,
-    // _strands[strandIdx].pinDotStarData, _strands[strandIdx].pinDotStarClock,
-    // )
-
+    _strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
+        pixelsCreateReqMsg->pixels_num, _strands[strandIdx].pinDotStarData,
+        _strands[strandIdx].pinDotStarClock,
+        getDotStarStrandOrder(pixelsCreateReqMsg->pixels_ordering));
+    // init. pins for output
+    _strands[strandIdx].dotStarPtr->begin();
+    _strands[strandIdx].dotStarPtr->setBrightness(
+        _strands[strandIdx].brightness);
+    _strands[strandIdx].dotStarPtr->clear();
+    _strands[strandIdx].dotStarPtr->show();
   } else {
     // err: unable to find pixels_type
     is_success = false;

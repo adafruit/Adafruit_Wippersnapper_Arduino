@@ -158,6 +158,7 @@ int16_t getStatusDotStarDataPin() {
     return -1; // status pixel is in-use elsewhere
   return STATUS_DOTSTAR_PIN_DATA;
 #endif
+  return -1;
 }
 
 /****************************************************************************/
