@@ -147,8 +147,7 @@ uint8_t getDotStarStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
     @brief   Initializes a strand of addressable RGB Pixels.
     @param   pixelsCreateReqMsg
              Pointer to strand init. request message
-    @returns Type of NeoPixel strand, usable by Adafruit_NeoPixel
-             constructor
+    @returns True if successfully initialized, False otherwise.
 */
 /**************************************************************************/
 bool ws_pixels::addStrand(
@@ -232,7 +231,7 @@ bool ws_pixels::addStrand(
   msgInitResp.which_payload =
       wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
   msgInitResp.payload.resp_pixels_create.pixels_num =
-      (uint32_t)_strands[strandIdx].neoPixelPtr->numPixels();
+      (uint32_t)_strands[strandIdx].neoPixelPtr->numPixels(); // TODO: We should store #pixels and ref it here
   msgInitResp.payload.resp_pixels_create.pixels_type =
       pixelsCreateReqMsg->pixels_type;
 
