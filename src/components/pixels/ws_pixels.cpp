@@ -192,8 +192,10 @@ bool ws_pixels::addStrand(
     WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
     WS_DEBUG_PRINT(" on GPIO #");
     WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
-  } else if (pixelsCreateReqMsg->pixels_type ==
-             wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+  }
+
+  if (pixelsCreateReqMsg->pixels_type ==
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // unpack pins
     char *pinData = pixelsCreateReqMsg->pixels_pin_dotstar_data + 1;
     char *pinClock = pixelsCreateReqMsg->pixels_pin_dotstar_clock + 1;
@@ -230,9 +232,6 @@ bool ws_pixels::addStrand(
     WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
     WS_DEBUG_PRINT(" on Data GPIO #");
     WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_dotstar_data);
-  } else {
-    // err: unable to find pixels_type
-    is_success = false;
   }
 
   // fill `wippersnapper_pixels_v1_PixelsCreateResponse` message
@@ -316,24 +315,29 @@ void ws_pixels::deleteStrand(
     return;
   }
 
-  // check addressable pixel strand type
-  switch (pixelsDeleteMsg->pixels_type) {
-  case wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL:
+  if (pixelsDeleteMsg->pixels_type ==
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     // de-init and release NeoPixel object
     delete _strands[strandIdx].neoPixelPtr;
-    // if NeoPixel strand was the builtin status LED, re-init status LED
-    // behavior
+    // if NeoPixel strand was the builtin status indicator, re-init
     if (pinData == STATUS_NEOPIXEL_PIN)
       initStatusLED();
-    break;
-  default:
-    break;
+  }
+
+  if (pixelsDeleteMsg->pixels_type ==
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    // de-init and release DotStar object
+    delete _strands[strandIdx].dotStarPtr;
+    // if DotStar strand was the builtin status indicator, re-init
+    if (pinData == STATUS_DOTSTAR_PIN_DATA)
+      initStatusLED();
   }
 
   // deallocate strand object at strandIdx
   deallocateStrand(strandIdx);
 }
 
+// TODO: Currently neopix only!!
 /**************************************************************************/
 /*!
     @brief   Writes a color to a strand_t.
