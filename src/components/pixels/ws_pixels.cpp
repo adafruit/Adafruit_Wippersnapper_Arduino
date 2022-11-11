@@ -217,14 +217,14 @@ bool ws_pixels::addStrand(
         pixelsCreateReqMsg->pixels_num, _strands[strandIdx].pinDotStarData,
         _strands[strandIdx].pinDotStarClock,
         getDotStarStrandOrder(pixelsCreateReqMsg->pixels_ordering));
-    // init. pins for output
+    // init. strand for output
     _strands[strandIdx].dotStarPtr->begin();
     _strands[strandIdx].dotStarPtr->setBrightness(
         _strands[strandIdx].brightness);
     _strands[strandIdx].dotStarPtr->clear();
     _strands[strandIdx].dotStarPtr->show();
 
-    // post-init check
+    // post-init sanity check
     if (_strands[strandIdx].dotStarPtr->numPixels() == 0)
       is_success = false;
     WS_DEBUG_PRINT("Created DotStar strand of length ");
@@ -282,15 +282,15 @@ int ws_pixels::getStrandIdx(int16_t pin,
         strandIdx = i;
       return strandIdx;
     }
-  } else if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+  }
+  if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     for (int i = 0; i < sizeof(_strands); i++) {
       if (_strands[i].pinDotStarData == pin)
         strandIdx = i;
       return strandIdx;
     }
-  } else {
-    strandIdx = -1; // type not found
   }
+
   return strandIdx;
 }
 
@@ -350,17 +350,34 @@ void ws_pixels::writeStrand(
   int pinData = atoi(pixelsWriteMsg->pixels_pin_data + 1);
   int strandIdx = getStrandIdx(pinData, pixelsWriteMsg->pixels_type);
   if (strandIdx == -1) {
-    WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
+    WS_DEBUG_PRINTLN(
+        "ERROR: Strand not found, can not write a color to the strand!");
     return;
   }
 
-  // let's fill the strand
-  uint16_t numPixels = _strands[strandIdx].neoPixelPtr->numPixels();
-  for (int i = 0; i < numPixels; i++) {
-    // set color
-    _strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color,
-                                                   i);
+  if (pixelsWriteMsg->pixels_type =
+          wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    // let's fill the strand
+    uint16_t numPixels = _strands[strandIdx].neoPixelPtr->numPixels();
+    for (int i = 0; i < numPixels; i++) {
+      // set color
+      _strands[strandIdx].neoPixelPtr->setPixelColor(
+          pixelsWriteMsg->pixels_color, i);
+    }
+    // display color
+    _strands[strandIdx].neoPixelPtr->show();
   }
-  // display color
-  _strands[strandIdx].neoPixelPtr->show();
+
+  if (pixelsWriteMsg->pixels_type =
+          wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    // let's fill the strand
+    uint16_t numPixels = _strands[strandIdx].dotStarPtr->numPixels();
+    for (int i = 0; i < numPixels; i++) {
+      // set color
+      _strands[strandIdx].dotStarPtr->setPixelColor(
+          pixelsWriteMsg->pixels_color, i);
+    }
+    // display color
+    _strands[strandIdx].dotStarPtr->show();
+  }
 }
