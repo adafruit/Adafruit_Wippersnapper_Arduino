@@ -996,7 +996,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventProximity(sensors_event_t *proximityEvent) { return false; }
+  virtual bool getEventProximity(sensors_event_t *proximityEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -1006,7 +1008,9 @@ public:
                 proimity sensor.
   */
   /*******************************************************************************/
-  virtual void updateSensorProximity(float period) { setSensorProximityPeriod(period); }
+  virtual void updateSensorProximity(float period) {
+    setSensorProximityPeriod(period);
+  }
 
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
@@ -1075,10 +1079,10 @@ protected:
                                      ///< gas resistance sensor's value.
   long _gasResistancePeriodPrv = 0L; ///< The time when the gas resistance
                                      ///< sensor was last read.
-  long _proximitySensorPeriod = 0L;     ///< The time period between reading the
-                                        ///< proximity sensor's value.
-  long _proximitySensorPeriodPrv = 0L;  ///< The time when the proximity sensor
-                                        ///< was last read.                                        
+  long _proximitySensorPeriod = 0L;  ///< The time period between reading the
+                                     ///< proximity sensor's value.
+  long _proximitySensorPeriodPrv = 0L; ///< The time when the proximity sensor
+                                       ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
