@@ -936,7 +936,6 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tProximity: ");
         WS_DEBUG_PRINT(event.data[0]);
-        WS_DEBUG_PRINTLN(" mm");
 
         // pack event data into msg
         fillEventMessage(&msgi2cResponse, event.data[0],
