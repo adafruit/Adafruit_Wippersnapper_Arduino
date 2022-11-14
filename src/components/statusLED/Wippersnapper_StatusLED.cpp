@@ -145,6 +145,7 @@ int16_t getStatusNeoPixelPin() {
     return -1; // status pixel is in-use elsewhere
   return statusPixel->getPin();
 #endif
+return -1;
 }
 
 /********************************************************************!

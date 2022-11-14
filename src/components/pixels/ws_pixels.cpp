@@ -199,7 +199,6 @@ bool ws_pixels::addStrand(
     char *pinData = pixelsCreateReqMsg->pixels_pin_dotstar_data + 1;
     char *pinClock = pixelsCreateReqMsg->pixels_pin_dotstar_clock + 1;
     // fill strand_t with fields from `pixelsCreateReqMsg`
-    // TODO: make this generic/reusable with the block above for neoPixels
     _strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
     _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
     _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
@@ -265,27 +264,27 @@ bool ws_pixels::addStrand(
 /**************************************************************************/
 /*!
     @brief   Obtains the index of a `strand_t` within array of `_strands`.
-    @param   pin
-             strand_t's data pin // TODO: Possibly rename to dataPin
+    @param   dataPin
+             strand_t's data dataPin
     @param   type
              Type of strand_t, NeoPixel or DotStar.
     @returns The index of a strand_t if within strands[], -1 otherwise.
 */
 /**************************************************************************/
-int ws_pixels::getStrandIdx(int16_t pin,
+int ws_pixels::getStrandIdx(int16_t dataPin,
                             wippersnapper_pixels_v1_PixelsType type) {
   int strandIdx = -1;
 
   if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     for (int i = 0; i < sizeof(_strands); i++) {
-      if (_strands[i].pinNeoPixel == pin)
+      if (_strands[i].pinNeoPixel == dataPin)
         strandIdx = i;
       return strandIdx;
     }
   }
   if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     for (int i = 0; i < sizeof(_strands); i++) {
-      if (_strands[i].pinDotStarData == pin)
+      if (_strands[i].pinDotStarData == dataPin)
         strandIdx = i;
       return strandIdx;
     }
@@ -327,16 +326,12 @@ void ws_pixels::deleteStrand(
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // de-init and release DotStar object
     delete _strands[strandIdx].dotStarPtr;
-    // if DotStar strand was the builtin status indicator, re-init
-    if (pinData == STATUS_DOTSTAR_PIN_DATA)
-      initStatusLED();
   }
 
   // deallocate strand object at strandIdx
   deallocateStrand(strandIdx);
 }
 
-// TODO: Currently neopix only!!
 /**************************************************************************/
 /*!
     @brief   Writes a color to a strand_t.

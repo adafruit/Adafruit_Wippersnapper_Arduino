@@ -51,8 +51,6 @@ public:
   void
   deleteStrand(wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg);
   void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
-  // TODO: setStrandBrightness
-  // void setStrandBrightness(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
 
   // Helpers
   int16_t allocateStrand();
