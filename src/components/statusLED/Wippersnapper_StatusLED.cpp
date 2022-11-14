@@ -134,10 +134,12 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 }
 
-/********************************************************************!
+/****************************************************************************/
+/*!
     @brief   Retrieve the pin number used for NeoPixel data output.
     @return  Arduino pin number (-1 if not set).
-********************************************************************/
+*/
+/****************************************************************************/
 int16_t getStatusNeoPixelPin() {
 // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h#L290
 #ifdef USE_STATUS_NEOPIXEL
@@ -145,13 +147,15 @@ int16_t getStatusNeoPixelPin() {
     return -1; // status pixel is in-use elsewhere
   return statusPixel->getPin();
 #endif
-return -1;
+  return -1;
 }
 
-/********************************************************************!
+/****************************************************************************/
+/*!
     @brief   Retrieve the pin number used for DotStar data output.
     @return  Arduino pin number (-1 if not set).
-********************************************************************/
+*/
+/****************************************************************************/
 int16_t getStatusDotStarDataPin() {
 // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h#L290
 #ifdef USE_STATUS_DOTSTAR

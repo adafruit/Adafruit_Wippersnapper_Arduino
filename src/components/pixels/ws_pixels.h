@@ -22,6 +22,7 @@
 #define MAX_PIXEL_STRANDS                                                      \
   5 ///< Maximum number of pixel strands connected to a WipperSnapper device
 
+/** Object representation of a strand of pixels */
 typedef struct strand_s {
   wippersnapper_pixels_v1_PixelsType type; ///< Strand type (NeoPixel, DotStar)
   uint8_t brightness;                      ///< Strand brightness (0 to 255)
