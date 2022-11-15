@@ -44,8 +44,8 @@
 #include "components/ledc/ws_ledc.h"
 #endif
 
-#include "components/pwm/ws_pwm.h"
 #include "components/ds18x20/ws_ds18x20.h"
+#include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
 
 // External libraries
@@ -55,7 +55,7 @@
 // ESP32-IDF components
 #ifdef ARDUINO_ARCH_ESP32
 #ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
-#if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
+#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
 #include "esp32/rom/rtc.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/rtc.h"
@@ -63,7 +63,7 @@
 #include "esp32c3/rom/rtc.h"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #include "esp32s3/rom/rtc.h"
-#else 
+#else
 #error Target CONFIG_IDF_TARGET is not supported
 #endif
 #else // ESP32 Before IDF 4.0
@@ -294,14 +294,15 @@ public:
                                                      outgoing payload data */
   uint16_t bufSize; /*!< Length of data inside buffer */
 
-  ws_board_status_t _boardStatus = WS_BOARD_DEF_IDLE; ///< Hardware's registration status
+  ws_board_status_t _boardStatus =
+      WS_BOARD_DEF_IDLE; ///< Hardware's registration status
 
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
-      *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_pwm *_pwmComponent;     ///< Instance of pwm class
+      *_littleFS;        ///< Instance of LittleFS Filesystem (non-native USB)
+  ws_pwm *_pwmComponent; ///< Instance of pwm class
   ws_servo *_servoComponent;     ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
 
