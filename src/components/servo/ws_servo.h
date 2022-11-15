@@ -20,7 +20,7 @@
 #include "Wippersnapper.h"
 
 #if defined(ARDUINO_ARCH_ESP32)
-#include "components/ledc/drivers/ws_ledc_servo.h"
+#include "components/ledc/drivers/servo/ws_ledc_servo.h"
 #else
 #include <Servo.h>
 #endif
