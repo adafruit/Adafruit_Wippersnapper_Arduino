@@ -1879,7 +1879,7 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
-      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -1966,8 +1966,9 @@ ws_board_status_t Wippersnapper::getBoardStatus() { return WS._boardStatus; }
 */
 /**************************************************************************/
 void Wippersnapper::pingBroker() {
-  // ping within keepalive to keep connection open
-  if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
+  // ping within keepalive-10% to keep connection open
+  if (millis() > (_prv_ping + (WS_KEEPALIVE_INTERVAL_MS -
+                               (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
     WS_DEBUG_PRINTLN("PING!");
     WS._mqtt->ping();
     _prv_ping = millis();
