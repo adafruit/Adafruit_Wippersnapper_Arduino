@@ -58,7 +58,7 @@ void initStatusLED() {
   statusPixelDotStar->begin();
   statusPixelDotStar->show(); // turn all pixels off
   statusPixelDotStar->setBrightness(5);
-  WS.lockStatusDotStar = true
+  WS.lockStatusDotStar = true;
 #endif
 
 #ifdef USE_STATUS_LED
