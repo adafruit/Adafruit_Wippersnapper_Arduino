@@ -73,8 +73,7 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
-  int16_t strandIdx = 0;
-  for (strandIdx; strandIdx < sizeof(_strands); strandIdx++) {
+  for (int16_t strandIdx = 0; strandIdx < sizeof(_strands); strandIdx++) {
     if (_strands[strandIdx].type ==
         wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED)
       return strandIdx;
@@ -94,7 +93,7 @@ int16_t ws_pixels::allocateStrand() {
 /**************************************************************************/
 neoPixelType
 getNeoPixelStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
-  neoPixelType strandType;
+  neoPixelType strandType = NEO_GRB + NEO_KHZ800; // default type
   switch (pixelOrder) {
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
     strandType = NEO_GRB + NEO_KHZ800;
@@ -202,10 +201,8 @@ bool ws_pixels::addStrand(
     _strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
     _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
     _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
-    _strands[strandIdx].pinDotStarData =
-        atoi(pixelsCreateReqMsg->pixels_pin_dotstar_data);
-    _strands[strandIdx].pinDotStarClock =
-        atoi(pixelsCreateReqMsg->pixels_pin_dotstar_clock);
+    _strands[strandIdx].pinDotStarData = atoi(pinData);
+    _strands[strandIdx].pinDotStarClock = atoi(pinClock);
     // release the status dotstar, if it is both in-use and the pin within
     // `pixelsCreateReqMsg`
     if ((_strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) &&
