@@ -51,6 +51,23 @@ Wippersnapper::Wippersnapper() {
   _throttle_topic = 0;
   _err_sub = 0;
   _throttle_sub = 0;
+
+  // Init. component classes
+
+  // DallasSemi (OneWire)
+  WS._ds18x20Component = new ws_ds18x20();
+  // LEDC (ESP32-ONLY)
+#ifdef ARDUINO_ARCH_ESP32
+  WS._ledc = new ws_ledc();
+#endif
+  // Servo
+  WS._servoComponent = new ws_servo();
+  // PWM
+#ifdef ARDUINO_ARCH_ESP32
+  WS._pwmComponent = new ws_pwm(WS._ledc);
+#else
+  WS._pwmComponent = new ws_pwm();
+#endif
 };
 
 /**************************************************************************/
@@ -780,6 +797,40 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
   return is_success;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when i2c signal sub-topic receives a new message and
+              attempts to decode a signal request message.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbSignalI2CReq(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Zero-out existing I2C signal msg.
+  WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgSignalI2C.cb_payload.funcs.decode = cbDecodeSignalRequestI2C;
+
+  // Decode I2C signal request
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
+                 &WS.msgSignalI2C))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+}
+
 /******************************************************************************************/
 /*!
     @brief    Decodes a servo message and dispatches to the servo component.
@@ -929,18 +980,137 @@ void cbServoMsg(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode servo message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a servo message and dispatches to the servo component.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded and executed successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  WS_DEBUG_PRINTLN("Decoding PWM Message...");
+  if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
+    WS_DEBUG_PRINTLN("GOT: PWM Pin Attach");
+    // Attempt to decode contents of PWM attach message
+    wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest =
+        wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMAttachRequest_fields,
+                   &msgPWMAttachRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
+      return false; // fail out if we can't decode the request
+    }
+
+    // execute PWM pin attach request
+    char *pwmPin = msgPWMAttachRequest.pin + 1;
+    bool attached = WS._pwmComponent->attach(
+        atoi(pwmPin), (double)msgPWMAttachRequest.frequency,
+        (uint8_t)msgPWMAttachRequest.resolution);
+    if (!attached) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to attach PWM pin");
+      attached = false;
+    }
+
+    // Create and fill the response message
+    wippersnapper_signal_v1_PWMResponse msgPWMResponse =
+        wippersnapper_signal_v1_PWMResponse_init_zero;
+    msgPWMResponse.which_payload =
+        wippersnapper_signal_v1_PWMResponse_attach_response_tag;
+    msgPWMResponse.payload.attach_response.did_attach = attached;
+    strcpy(msgPWMResponse.payload.attach_response.pin, msgPWMAttachRequest.pin);
+
+    // Encode and publish response back to broker
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                  sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_PWMResponse_fields,
+                   &msgPWMResponse)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode PWM response message!");
+      return false;
+    }
+    size_t msgSz; // message's encoded size
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PWMResponse_fields,
+                        &msgPWMResponse);
+    WS_DEBUG_PRINT("PUBLISHING: PWM Attach Response...");
+    WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz,
+                      1);
+    WS_DEBUG_PRINTLN("Published!");
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
+    WS_DEBUG_PRINTLN("GOT: PWM Pin Detach");
+    // Attempt to decode contents of PWM detach message
+    wippersnapper_pwm_v1_PWMDetachRequest msgPWMDetachRequest =
+        wippersnapper_pwm_v1_PWMDetachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMDetachRequest_fields,
+                   &msgPWMDetachRequest)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode wippersnapper_pwm_v1_PWMDetachRequest");
+      return false; // fail out if we can't decode the request
+    }
+    // execute PWM pin detatch request
+    char *pwmPin = msgPWMDetachRequest.pin + 1;
+    WS._pwmComponent->detach(atoi(pwmPin));
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PWMRequest_write_freq_request_tag) {
+    WS_DEBUG_PRINTLN("GOT: PWM Write Tone");
+    // Attempt to decode contents of PWM detach message
+    wippersnapper_pwm_v1_PWMWriteFrequencyRequest msgPWMWriteFreqRequest =
+        wippersnapper_pwm_v1_PWMWriteFrequencyRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMWriteFrequencyRequest_fields,
+                   &msgPWMWriteFreqRequest)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode "
+                       "wippersnapper_pwm_v1_PWMWriteFrequencyRequest");
+      return false; // fail out if we can't decode the request
+    }
+
+    // execute PWM pin duty cycle write request
+    char *pwmPin = msgPWMWriteFreqRequest.pin + 1;
+    WS_DEBUG_PRINT("Writing frequency:  ");
+    WS_DEBUG_PRINT(msgPWMWriteFreqRequest.frequency);
+    WS_DEBUG_PRINT("Hz to pin ");
+    WS_DEBUG_PRINTLN(atoi(pwmPin));
+    WS._pwmComponent->writeTone(atoi(pwmPin), msgPWMWriteFreqRequest.frequency);
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
+    WS_DEBUG_PRINTLN("GOT: PWM Write Duty Cycle");
+
+    // Attempt to decode contents of PWM detach message
+    wippersnapper_pwm_v1_PWMWriteDutyCycleRequest msgPWMWriteDutyCycleRequest =
+        wippersnapper_pwm_v1_PWMWriteDutyCycleRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMWriteDutyCycleRequest_fields,
+                   &msgPWMWriteDutyCycleRequest)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode "
+                       "wippersnapper_pwm_v1_PWMWriteDutyCycleRequest");
+      return false; // fail out if we can't decode the request
+    }
+    // execute PWM duty cycle write request
+    char *pwmPin = msgPWMWriteDutyCycleRequest.pin + 1;
+    WS._pwmComponent->writeDutyCycle(
+        atoi(pwmPin), (int)msgPWMWriteDutyCycleRequest.duty_cycle);
+  } else {
+    WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
+    return false;
+  }
+  return true;
+}
+
 /**************************************************************************/
 /*!
-    @brief    Called when i2c signal sub-topic receives a new message and
-              attempts to decode a signal request message.
+    @brief    Called when the device recieves a new message from the
+              /pwm/ topic.
     @param    data
               Incoming data from MQTT broker.
     @param    len
               Length of incoming data.
 */
 /**************************************************************************/
-void cbSignalI2CReq(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Signal-I2C]: ");
+void cbPWMMsg(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: PWM]: ");
   WS_DEBUG_PRINT(len);
   WS_DEBUG_PRINTLN(" bytes.");
   // zero-out current buffer
@@ -949,18 +1119,15 @@ void cbSignalI2CReq(char *data, uint16_t len) {
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
 
-  // Zero-out existing I2C signal msg.
-  WS.msgSignalI2C = wippersnapper_signal_v1_I2CRequest_init_zero;
-
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
-  WS.msgSignalI2C.cb_payload.funcs.decode = cbDecodeSignalRequestI2C;
+  WS.msgPWM.cb_payload.funcs.decode = cbPWMDecodeMsg;
 
-  // Decode I2C signal request
+  // Decode servo message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
-                 &WS.msgSignalI2C))
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
+  if (!pb_decode(&istream, wippersnapper_signal_v1_PWMRequest_fields,
+                 &WS.msgPWM))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode PWM message");
 }
 
 /******************************************************************************************/
@@ -1143,7 +1310,6 @@ void cbPixelsMsg(char *data, uint16_t len) {
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
-  // TODO: Add decoder callback function
   WS.msgPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
 
   // Decode servo message from buffer
@@ -1152,6 +1318,7 @@ void cbPixelsMsg(char *data, uint16_t len) {
                  &WS.msgPixels))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
+
 
 /****************************************************************************/
 /*!
@@ -1394,6 +1561,54 @@ void Wippersnapper::subscribeErrorTopics() {
 
 /**************************************************************************/
 /*!
+    @brief    Attempts to generate unique device identifier.
+    @returns  True if device identifier generated successfully,
+              False otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper::generateDeviceUID() {
+  // Validate IO configuration from flash
+  if (WS._username == NULL || WS._key == NULL) {
+    WS_DEBUG_PRINTLN("FATAL ERROR: IO Config not detected on device!");
+    return false;
+  }
+
+  // Validate network configuration from flash
+  if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL ||
+      WS._network_pass == NULL) {
+    WS_DEBUG_PRINTLN("FATAL ERROR: Network Config not detected on device!");
+    return false;
+  }
+
+  // Generate device unique identifier
+  // Set machine_name
+  WS._boardId = BOARD_ID;
+  // Move the top 3 bytes from the UID
+  for (int i = 5; i > 2; i--) {
+    WS._macAddr[6 - 1 - i] = WS._macAddr[i];
+  }
+  snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
+           WS._macAddr[1], WS._macAddr[2]);
+  // Conversion to match integer UID sent by encodePubRegistrationReq()
+  char mac_uid[13];
+  itoa(atoi(WS.sUID), mac_uid, 10);
+
+  // Attempt to malloc a the device identifier string
+  _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
+                               strlen(WS._boardId) + strlen(mac_uid) + 1);
+  if (_device_uid == NULL) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to create device uid, Malloc failure");
+    return false;
+  }
+  // Create the device identifier
+  strcpy(_device_uid, "io-wipper-");
+  strcat(_device_uid, WS._boardId);
+  strcat(_device_uid, mac_uid);
+  return true;
+}
+
+/**************************************************************************/
+/*!
     @brief    Generates device-specific Wippersnapper control topics.
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
@@ -1402,113 +1617,10 @@ void Wippersnapper::subscribeErrorTopics() {
 bool Wippersnapper::buildWSTopics() {
   bool is_success = true;
 
-  // Validate that we've correctly pulled configuration keys from the FS
-  if (WS._username == NULL || WS._key == NULL || WS._network_ssid == NULL ||
-      WS._network_pass == NULL)
-    return false;
-
-  // Create device unique identifier
-  // Move the top 3 bytes from the UID
-  for (int i = 5; i > 2; i--) {
-    WS._macAddr[6 - 1 - i] = WS._macAddr[i];
-  }
-  snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
-           WS._macAddr[1], WS._macAddr[2]);
-
-  // Set machine_name
-  WS._boardId = BOARD_ID;
-  // Conversion to match integer UID sent by encodePubRegistrationReq()
-  int32_t iUID = atoi(WS.sUID);
-  char mac_uid[13];
-  itoa(iUID, mac_uid, 10);
-
-  _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
-                               strlen(WS._boardId) + strlen(mac_uid) + 1);
-  strcpy(_device_uid, "io-wipper-");
-  strcat(_device_uid, WS._boardId);
-  strcat(_device_uid, mac_uid);
-
-  // Initialize MQTT client with UID as the ClientID
-  setupMQTTClient(_device_uid);
-
-  // Global registration topic
+  // Create global registration topic
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
                      strlen(TOPIC_INFO) + strlen("status") + 1);
-
-  // Registration status topic
-  WS._topic_description_status =
-      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status/") + strlen("broker") + 1);
-
-  // Registration status completion topic
-  WS._topic_description_status_complete =
-      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status") + strlen("/device/complete") + 1);
-
-  // Topic to signal pin configuration complete from device to broker
-  WS._topic_device_pin_config_complete =
-      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
-                     strlen("device/pinConfigComplete") + 1);
-
-  // Topic for signals from device to broker
-  WS._topic_signal_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
-
-  // Topic for signals from broker to device
-  WS._topic_signal_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
-
-  // Topic for i2c signals from broker to device
-  WS._topic_signal_i2c_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
-      strlen(TOPIC_I2C) + 1);
-
-  // Topic for i2c signals from device to broker
-  WS._topic_signal_i2c_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
-      strlen(TOPIC_I2C) + 1);
-
-  // Topic for ds18x20 commands from device to broker
-  WS._topic_signal_ds18_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
-      strlen("ds18x20") + 1);
-
-  // Topic for ds18x20 commands from broker to broker
-  WS._topic_signal_ds18_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
-      strlen("ds18x20") + 1);
-
-  // Topic for servo messages from broker->device
-  WS._topic_signal_servo_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/servo") + 1);
-
-  // Topic for servo messages from device->broker
-  WS._topic_signal_servo_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/servo") + 1);
-
-  // Topic for pixel messages from broker->device
-  WS._topic_signal_pixels_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen(MQTT_TOPIC_PIXELS_BROKER) + 1);
-
-  // Topic for pixel messages from device->broker
-  WS._topic_signal_pixels_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen(MQTT_TOPIC_PIXELS_DEVICE) + 1);
-
-  // Create global registration topic
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
@@ -1519,6 +1631,10 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create registration status topic
+  WS._topic_description_status =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status/") + strlen("broker") + 1);
   if (WS._topic_description_status != NULL) {
     strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
@@ -1531,6 +1647,10 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create registration status complete topic
+  WS._topic_description_status_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status") + strlen("/device/complete") + 1);
   if (WS._topic_description_status_complete != NULL) {
     strcpy(WS._topic_description_status_complete, WS._username);
     strcat(WS._topic_description_status_complete, "/wprsnpr/");
@@ -1543,6 +1663,9 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create device-to-broker signal topic
+  WS._topic_signal_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
   if (WS._topic_signal_device != NULL) {
     strcpy(WS._topic_signal_device, WS._username);
     strcat(WS._topic_signal_device, "/wprsnpr/");
@@ -1554,6 +1677,10 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create device-to-broker signal topic
+  WS._topic_device_pin_config_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
+                     strlen("device/pinConfigComplete") + 1);
   if (WS._topic_device_pin_config_complete != NULL) {
     strcpy(WS._topic_device_pin_config_complete, WS._username);
     strcat(WS._topic_device_pin_config_complete, "/wprsnpr/");
@@ -1565,6 +1692,9 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create broker-to-device signal topic
+  WS._topic_signal_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
   if (WS._topic_signal_brkr != NULL) {
     strcpy(WS._topic_signal_brkr, WS._username);
     strcat(WS._topic_signal_brkr, "/wprsnpr/");
@@ -1576,6 +1706,10 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create device-to-broker i2c signal topic
+  WS._topic_signal_i2c_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+      strlen(TOPIC_I2C) + 1);
   if (WS._topic_signal_i2c_brkr != NULL) {
     strcpy(WS._topic_signal_i2c_brkr, WS._username);
     strcat(WS._topic_signal_i2c_brkr, TOPIC_WS);
@@ -1588,6 +1722,10 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create broker-to-device i2c signal topic
+  WS._topic_signal_i2c_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+      strlen(TOPIC_I2C) + 1);
   if (WS._topic_signal_i2c_device != NULL) {
     strcpy(WS._topic_signal_i2c_device, WS._username);
     strcat(WS._topic_signal_i2c_device, TOPIC_WS);
@@ -1600,6 +1738,10 @@ bool Wippersnapper::buildWSTopics() {
   }
 
   // Create device-to-broker ds18x20 topic
+  WS._topic_signal_ds18_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
+      strlen("ds18x20") + 1);
   if (WS._topic_signal_ds18_brkr != NULL) {
     strcpy(WS._topic_signal_ds18_brkr, WS._username);
     strcat(WS._topic_signal_ds18_brkr, TOPIC_WS);
@@ -1610,18 +1752,11 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
-  // Create device-to-broker servo signal topic
-  if (WS._topic_signal_servo_brkr != NULL) {
-    strcpy(WS._topic_signal_servo_brkr, WS._username);
-    strcat(WS._topic_signal_servo_brkr, TOPIC_WS);
-    strcat(WS._topic_signal_servo_brkr, _device_uid);
-    strcat(WS._topic_signal_servo_brkr, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_servo_brkr, "broker/servo");
-  } else { // malloc failed
-    is_success = false;
-  }
-
   // Create broker-to-device ds18x20 topic
+  WS._topic_signal_ds18_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
+      strlen("ds18x20") + 1);
   if (WS._topic_signal_ds18_device != NULL) {
     strcpy(WS._topic_signal_ds18_device, WS._username);
     strcat(WS._topic_signal_ds18_device, TOPIC_WS);
@@ -1632,22 +1767,85 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
-  // Create broker-to-device servo signal topic
-  if (WS._topic_signal_pixels_device != NULL) {
-    strcpy(WS._topic_signal_pixels_device, WS._username);
-    strcat(WS._topic_signal_pixels_device, TOPIC_WS);
-    strcat(WS._topic_signal_pixels_device, _device_uid);
-    strcat(WS._topic_signal_pixels_device, MQTT_TOPIC_PIXELS_DEVICE);
+  // Create device-to-broker servo signal topic
+  WS._topic_signal_servo_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/servo") + 1);
+  if (WS._topic_signal_servo_brkr != NULL) {
+    strcpy(WS._topic_signal_servo_brkr, WS._username);
+    strcat(WS._topic_signal_servo_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_servo_brkr, _device_uid);
+    strcat(WS._topic_signal_servo_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_servo_brkr, "broker/servo");
   } else { // malloc failed
     is_success = false;
   }
 
-  // Create device-to-broker pixel signal topic
+  // Create broker-to-device servo signal topic
+  WS._topic_signal_servo_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/servo") + 1);
+  if (WS._topic_signal_servo_device != NULL) {
+    strcpy(WS._topic_signal_servo_device, WS._username);
+    strcat(WS._topic_signal_servo_device, TOPIC_WS);
+    strcat(WS._topic_signal_servo_device, _device_uid);
+    strcat(WS._topic_signal_servo_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_servo_device, "device/servo");
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Topic for pwm messages from broker->device
+  WS._topic_signal_pwm_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/pwm") + 1);
+  // Create device-to-broker pwm signal topic
+  if (WS._topic_signal_pwm_brkr != NULL) {
+    strcpy(WS._topic_signal_pwm_brkr, WS._username);
+    strcat(WS._topic_signal_pwm_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_pwm_brkr, _device_uid);
+    strcat(WS._topic_signal_pwm_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_pwm_brkr, "broker/pwm");
+  } else { // malloc failed
+    return false;
+  }
+
+  // Topic for pwm messages from device->broker
+  WS._topic_signal_pwm_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/pwm") + 1);
+  if (WS._topic_signal_pwm_device != NULL) {
+    strcpy(WS._topic_signal_pwm_device, WS._username);
+    strcat(WS._topic_signal_pwm_device, TOPIC_WS);
+    strcat(WS._topic_signal_pwm_device, _device_uid);
+    strcat(WS._topic_signal_pwm_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_pwm_device, "device/pwm");
+  } else { // malloc failed
+    return false;
+  }
+
+  // Topic for pixel messages from broker->device
+  WS._topic_signal_pixels_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen(MQTT_TOPIC_PIXELS_BROKER) + 1);
   if (WS._topic_signal_pixels_brkr != NULL) {
     strcpy(WS._topic_signal_pixels_brkr, WS._username);
     strcat(WS._topic_signal_pixels_brkr, TOPIC_WS);
     strcat(WS._topic_signal_pixels_brkr, _device_uid);
     strcat(WS._topic_signal_pixels_brkr, MQTT_TOPIC_PIXELS_BROKER);
+  } else { // malloc failed
+    is_success = false;
+  }
+
+  // Topic for pixel messages from device->broker
+  WS._topic_signal_pixels_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen(MQTT_TOPIC_PIXELS_DEVICE) + 1);
+  if (WS._topic_signal_pixels_device != NULL) {
+    strcpy(WS._topic_signal_pixels_device, WS._username);
+    strcat(WS._topic_signal_pixels_device, TOPIC_WS);
+    strcat(WS._topic_signal_pixels_device, _device_uid);
+    strcat(WS._topic_signal_pixels_device, MQTT_TOPIC_PIXELS_DEVICE);
   } else { // malloc failed
     is_success = false;
   }
@@ -1690,6 +1888,12 @@ void Wippersnapper::subscribeWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_pixels_sub);
   _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
+
+  // Subscribe to PWM sub-topic
+  _topic_signal_pwm_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_pwm_sub);
+  _topic_signal_pwm_sub->setCallback(cbPWMMsg);
 
   // Subscribe to registration status topic
   _topic_description_sub =
@@ -1778,7 +1982,7 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
-      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL);
+      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -1865,8 +2069,9 @@ ws_board_status_t Wippersnapper::getBoardStatus() { return WS._boardStatus; }
 */
 /**************************************************************************/
 void Wippersnapper::pingBroker() {
-  // ping within keepalive to keep connection open
-  if (millis() > (_prv_ping + WS_KEEPALIVE_INTERVAL_MS)) {
+  // ping within keepalive-10% to keep connection open
+  if (millis() > (_prv_ping + (WS_KEEPALIVE_INTERVAL_MS -
+                               (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
     WS_DEBUG_PRINTLN("PING!");
     WS._mqtt->ping();
     _prv_ping = millis();
@@ -1947,23 +2152,96 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   WS._mqtt->publish(topic, payload, bLen, qos);
 }
 
+/**************************************************************/
+/*!
+    @brief    Prints last reset reason of ESP32
+    @param    reason
+              The return code of rtc_get_reset_reason(coreNum)
+*/
+/**************************************************************/
+void print_reset_reason(int reason) {
+  // //
+  // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/ResetReason/ResetReason.ino
+  switch (reason) {
+  case 1:
+    WS_DEBUG_PRINTLN("POWERON_RESET");
+    break; /**<1,  Vbat power on reset*/
+  case 3:
+    WS_DEBUG_PRINTLN("SW_RESET");
+    break; /**<3,  Software reset digital core*/
+  case 4:
+    WS_DEBUG_PRINTLN("OWDT_RESET");
+    break; /**<4,  Legacy watch dog reset digital core*/
+  case 5:
+    WS_DEBUG_PRINTLN("DEEPSLEEP_RESET");
+    break; /**<5,  Deep Sleep reset digital core*/
+  case 6:
+    WS_DEBUG_PRINTLN("SDIO_RESET");
+    break; /**<6,  Reset by SLC module, reset digital core*/
+  case 7:
+    WS_DEBUG_PRINTLN("TG0WDT_SYS_RESET");
+    break; /**<7,  Timer Group0 Watch dog reset digital core*/
+  case 8:
+    WS_DEBUG_PRINTLN("TG1WDT_SYS_RESET");
+    break; /**<8,  Timer Group1 Watch dog reset digital core*/
+  case 9:
+    WS_DEBUG_PRINTLN("RTCWDT_SYS_RESET");
+    break; /**<9,  RTC Watch dog Reset digital core*/
+  case 10:
+    WS_DEBUG_PRINTLN("INTRUSION_RESET");
+    break; /**<10, Instrusion tested to reset CPU*/
+  case 11:
+    WS_DEBUG_PRINTLN("TGWDT_CPU_RESET");
+    break; /**<11, Time Group reset CPU*/
+  case 12:
+    WS_DEBUG_PRINTLN("SW_CPU_RESET");
+    break; /**<12, Software reset CPU*/
+  case 13:
+    WS_DEBUG_PRINTLN("RTCWDT_CPU_RESET");
+    break; /**<13, RTC Watch dog Reset CPU*/
+  case 14:
+    WS_DEBUG_PRINTLN("EXT_CPU_RESET");
+    break; /**<14, for APP CPU, reseted by PRO CPU*/
+  case 15:
+    WS_DEBUG_PRINTLN("RTCWDT_BROWN_OUT_RESET");
+    break; /**<15, Reset when the vdd voltage is not stable*/
+  case 16:
+    WS_DEBUG_PRINTLN("RTCWDT_RTC_RESET");
+    break; /**<16, RTC Watch dog reset digital core and rtc module*/
+  default:
+    WS_DEBUG_PRINTLN("NO_MEAN");
+  }
+}
+
 /**************************************************************************/
 /*!
-    @brief    Checks validity of WipperSnapper application credentials.
-    @returns  True if WipperSnapper application credentials exist
-                and are valid, False otherwise.
+    @brief    Prints information about the WS device to the serial monitor.
 */
 /**************************************************************************/
-bool validateAppCreds() {
-  // Check if null
-  if (WS._username == 0 || WS._key == 0 || WS._network_ssid == 0 ||
-      WS._network_pass == 0)
-    return false;
-  // Check credential length
-  if (strlen(WS._username) == 0 || strlen(WS._key) == 0 ||
-      strlen(WS._network_ssid) == 0 || strlen(WS._network_pass) == 0)
-    return false;
-  return true;
+void printDeviceInfo() {
+  WS_DEBUG_PRINTLN("-------Device Information-------");
+  WS_DEBUG_PRINT("Firmware Version: ");
+  WS_DEBUG_PRINTLN(WS_VERSION);
+  WS_DEBUG_PRINT("Board ID: ");
+  WS_DEBUG_PRINTLN(BOARD_ID);
+  WS_DEBUG_PRINT("Adafruit.io User: ");
+  WS_DEBUG_PRINTLN(WS._username);
+  WS_DEBUG_PRINT("WiFi Network: ");
+  WS_DEBUG_PRINTLN(WS._network_ssid);
+  char sMAC[18] = {0};
+  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
+          WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
+  WS_DEBUG_PRINT("MAC Address: ");
+  WS_DEBUG_PRINTLN(sMAC);
+  WS_DEBUG_PRINTLN("-------------------------------");
+
+// (ESP32-Only) Print reason why device was reset
+#ifdef ARDUINO_ARCH_ESP32
+  WS_DEBUG_PRINT("ESP32 CPU0 RESET REASON: ");
+  print_reset_reason(0);
+  WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
+  print_reset_reason(1);
+#endif
 }
 
 /**************************************************************************/
@@ -1974,61 +2252,29 @@ bool validateAppCreds() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
 
-  // Print all identifiers to the debug log
-  WS_DEBUG_PRINTLN("-------Device Information-------");
+  // Dump device info to the serial monitor
+  printDeviceInfo();
 
-  WS_DEBUG_PRINT("Firmware Version: ");
-  WS_DEBUG_PRINTLN(WS_VERSION);
-
-  WS_DEBUG_PRINT("Board ID: ");
-  WS_DEBUG_PRINTLN(BOARD_ID);
-
-  WS_DEBUG_PRINT("Adafruit.io User: ");
-  WS_DEBUG_PRINTLN(WS._username);
-
-  WS_DEBUG_PRINT("WiFi Network: ");
-  WS_DEBUG_PRINTLN(WS._network_ssid);
-
-  char sMAC[18] = {0};
-  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
-          WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
-  WS_DEBUG_PRINT("MAC Address: ");
-  WS_DEBUG_PRINTLN(sMAC);
-  WS_DEBUG_PRINTLN("-------------------------------");
-
-  // enable WDT
+  // enable global WDT
   WS.enableWDT(WS_WDT_TIMEOUT);
 
-  _status = WS_IDLE;
-  WS._boardStatus = WS_BOARD_DEF_IDLE;
+  // Generate device identifier
+  if (!generateDeviceUID()) {
+    haltError("Unable to generate Device UID");
+  }
 
-  // Initialize components and buses
-  WS_DEBUG_PRINTLN("Initializing component instances...");
-#ifdef ARDUINO_ARCH_ESP32
-  WS_DEBUG_PRINT("LEDC: ");
-  WS._ledc = new ws_ledc();
-  WS_DEBUG_PRINTLN("OK!");
-#endif
+  // Initialize MQTT client with device identifer
+  setupMQTTClient(_device_uid);
 
-  WS_DEBUG_PRINT("SERVO: ");
-  WS._servoComponent = new ws_servo();
-  WS_DEBUG_PRINTLN("OK!");
-
-  WS_DEBUG_PRINT("DS18x20: ");
-  WS._ds18x20Component = new ws_ds18x20();
-  WS_DEBUG_PRINTLN("OK!");
-
-  if (!validateAppCreds())
-    haltError("Unable to validate application credentials.");
-
-  // build MQTT topics for WipperSnapper and subscribe
+  WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
   if (!buildWSTopics()) {
     haltError("Unable to allocate space for MQTT topics");
   }
   if (!buildErrorTopics()) {
     haltError("Unable to allocate space for MQTT error topics");
   }
-  WS_DEBUG_PRINTLN("Subscribing to MQTT topics...");
+
+  WS_DEBUG_PRINTLN("Subscribing to device's MQTT topics...");
   subscribeWSTopics();
   subscribeErrorTopics();
 

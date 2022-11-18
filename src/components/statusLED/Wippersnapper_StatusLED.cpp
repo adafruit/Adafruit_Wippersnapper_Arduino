@@ -309,15 +309,15 @@ void blinkStatusLED(ws_led_status_t statusState) {
 #endif
 
   // set number of times to blink
-  int blinkNum = 5;
+  int blinkNum = 2;
   // set blink color
   uint32_t ledColor = ledStatusStateToColor(statusState);
 
   while (blinkNum > 0) {
     setStatusLEDColor(ledColor);
-    delay(300);
+    delay(100);
     setStatusLEDColor(BLACK);
-    delay(300);
+    delay(100);
     blinkNum--;
   }
 }

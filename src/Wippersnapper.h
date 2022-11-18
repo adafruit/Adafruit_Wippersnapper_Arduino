@@ -46,11 +46,31 @@
 
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
+#include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
+
+// ESP32-IDF components
+#ifdef ARDUINO_ARCH_ESP32
+#ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
+#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
+#include "esp32/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/rtc.h"
+#else
+#error Target CONFIG_IDF_TARGET is not supported
+#endif
+#else // ESP32 Before IDF 4.0
+#include "rom/rtc.h"
+#endif // ESP_IDF_VERSION_MAJOR
+#endif // ARDUINO_ARCH_ESP32
 
 // Note: These might be better off in their respective wrappers
 #include <SPI.h>
@@ -68,7 +88,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.54" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.55" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -160,10 +180,8 @@ typedef enum {
 
 #define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
-// TODO: Redundant, we should reference keepalive_interval_ms and just do math
-#define WS_KEEPALIVE_INTERVAL 4 ///< Session keepalive interval time, in seconds
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
-  4000 ///< Session keepalive interval time, in milliseconds
+  5000 ///< Session keepalive interval time, in milliseconds
 
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   512 ///< MAXIMUM expected payload size, in bytes
@@ -177,6 +195,7 @@ class WipperSnapper_Component_I2C;
 class ws_ledc;
 #endif
 class ws_servo;
+class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
 
@@ -212,6 +231,7 @@ public:
   virtual ws_status_t networkStatus();
   ws_board_status_t getBoardStatus();
 
+  bool generateDeviceUID();
   bool buildWSTopics();
   void subscribeWSTopics();
   bool buildErrorTopics();
@@ -276,16 +296,18 @@ public:
                                                      outgoing payload data */
   uint16_t bufSize; /*!< Length of data inside buffer */
 
-  ws_board_status_t _boardStatus; ///< Hardware's registration status
+  ws_board_status_t _boardStatus =
+      WS_BOARD_DEF_IDLE; ///< Hardware's registration status
 
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_servo *_servoComponent;      ///< Instance of servo class
-  ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
+  ws_pwm *_pwmComponent; ///< Instance of pwm class
+  ws_servo *_servoComponent;     ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -316,6 +338,10 @@ public:
                                      device   to a broker. */
   char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
                                      broker to a device. */
+  char *_topic_signal_pwm_brkr =
+      NULL; /*!< Topic carries PWM messages from a device to a broker. */
+  char *_topic_signal_pwm_device =
+      NULL; /*!< Topic carries PWM messages from a broker to a device. */
   char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
                                    a device to a broker. */
   char *_topic_signal_ds18_device = NULL;   /*!< Topic carries ds18x20 messages
@@ -325,8 +351,6 @@ public:
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
-
-  // i2c signal msg
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
       wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
                                                     ///< message
@@ -339,6 +363,9 @@ public:
   // servo message
   wippersnapper_signal_v1_ServoRequest
       msgServo; ///< ServoRequest wrapper message
+  wippersnapper_signal_v1_PWMRequest msgPWM =
+      wippersnapper_signal_v1_PWMRequest_init_zero; ///< PWM request wrapper
+                                                    ///< message.
 
   // pixels signal message
   wippersnapper_signal_v1_PixelsRequest
@@ -386,18 +413,20 @@ protected:
   char *_err_topic = NULL;         /*!< Adafruit IO MQTT error message topic. */
   char *_throttle_topic = NULL; /*!< Adafruit IO MQTT throttle message topic. */
 
+  Adafruit_MQTT_Subscribe *_topic_description_sub; /*!< Subscription callback
+                                                      for registration topic. */
+  Adafruit_MQTT_Publish *_topic_signal_device_pub; /*!< Subscription callback
+                                                      for D2C signal topic. */
+  Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub; /*!< Subscription callback
+                                                      for C2D signal topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_description_sub; /*!< Subscription for registration topic. */
-  Adafruit_MQTT_Publish
-      *_topic_signal_device_pub; /*!< Subscription for D2C signal topic. */
+      *_topic_signal_i2c_sub; /*!< Subscription callback for I2C topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_signal_brkr_sub; /*!< Subscription for C2D signal topic. */
+      *_topic_signal_servo_sub; /*!< Subscription callback for servo topic. */
   Adafruit_MQTT_Subscribe
-      *_topic_signal_i2c_sub; /*!< Subscribes to signal's I2C topic. */
+      *_topic_signal_pwm_sub; /*!< Subscription callback for pwm topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_servo_sub; /*!< Subscribes to device's servo topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
 
