@@ -318,7 +318,7 @@ void ws_pixels::deleteStrand(
     // de-init and release NeoPixel object
     delete _strands[strandIdx].neoPixelPtr;
     // if NeoPixel strand was the builtin status indicator, re-init
-    if (pinData == STATUS_NEOPIXEL_PIN)
+    if (pinData == getStatusNeoPixelPin())
       initStatusLED();
   }
 
@@ -326,6 +326,10 @@ void ws_pixels::deleteStrand(
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // de-init and release DotStar object
     delete _strands[strandIdx].dotStarPtr;
+
+    // if Dotstar strand was the builtin status indicator, re-init
+    if (pinData == getStatusDotStarDataPin())
+      initStatusLED();
   }
 
   // deallocate strand object at strandIdx
@@ -350,7 +354,7 @@ void ws_pixels::writeStrand(
     return;
   }
 
-  if (pixelsWriteMsg->pixels_type =
+  if (pixelsWriteMsg->pixels_type ==
           wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     // let's fill the strand
     uint16_t numPixels = _strands[strandIdx].neoPixelPtr->numPixels();
@@ -363,7 +367,7 @@ void ws_pixels::writeStrand(
     _strands[strandIdx].neoPixelPtr->show();
   }
 
-  if (pixelsWriteMsg->pixels_type =
+  if (pixelsWriteMsg->pixels_type ==
           wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // let's fill the strand
     uint16_t numPixels = _strands[strandIdx].dotStarPtr->numPixels();
