@@ -58,6 +58,9 @@ public:
   /*******************************************************************************/
   bool begin() {
     _vl53l0x = new Adafruit_VL53L0X();
+    #ifdef WS_DEBUG
+    Serial.println("VL53L0X begin()");
+    #endif
     bool isInit = _vl53l0x->begin((uint8_t)_sensorAddress,
 #ifdef WS_DEBUG
       true
@@ -79,9 +82,10 @@ public:
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     u_int16_t proximityMM = _vl53l0x->readRange();
-    if(proximityMM > 4000) return false;
-    //Must be CM for sensors_event_t distance
-    proximityEvent->distance = proximityMM / 10; 
+    if(proximityMM <= 0 || proximityMM > 4000) {
+      return false;
+    }
+    proximityEvent->data[0] = proximityMM; 
     return true;
   }
 
