@@ -78,7 +78,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    proximityEvent->data[0] = _vl53l0x->readRange();
+    u_int16_t proximityMM = _vl53l0x->readRange();
+    if(proximityMM > 4000) return false;
+    //Must be CM for sensors_event_t distance
+    proximityEvent->distance = proximityMM / 10; 
     return true;
   }
 
