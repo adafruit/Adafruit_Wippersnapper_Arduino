@@ -106,6 +106,9 @@ public:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
       _voltagePeriod = sensorPeriod;
       break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
+      _proximitySensorPeriod = sensorPeriod;
+      break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
       _rawSensorPeriod = sensorPeriod;
       break;
@@ -957,11 +960,10 @@ public:
                 proximity sensor.
   */
   /*******************************************************************************/
-  virtual void setSensorProximityPeriod(float period) {
+  virtual void setSensorProximityPeriod(long period) {
     if (period == 0)
       disableSensorProximity();
-    // Period is in seconds, cast it to long and convert it to milliseconds
-    _proximitySensorPeriod = (long)period * 1000;
+    _proximitySensorPeriod = period;
   }
 
   /*********************************************************************************/
