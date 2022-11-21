@@ -7,7 +7,8 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
+ * Copyright (c) 2022 @afp316 https://github.com/afp316
+ * Modified (c) by Tyeth Gundry https://github.com/tyeth
  *
  * MIT license, all text here must be included in any redistribution.
  *
