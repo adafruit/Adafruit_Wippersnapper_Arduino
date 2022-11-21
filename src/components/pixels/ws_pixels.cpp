@@ -20,18 +20,7 @@
     @brief  Constructor
 */
 /**************************************************************************/
-ws_pixels::ws_pixels() {
-  // init array of strands using aggregate list
-  for (int i = 0; i < sizeof(_strands); i++)
-    _strands[i] = {wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
-                   128,
-                   wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
-                   nullptr,
-                   nullptr,
-                   -1,
-                   -1,
-                   -1};
-}
+ws_pixels::ws_pixels() {}
 
 /**************************************************************************/
 /*!
@@ -41,7 +30,7 @@ ws_pixels::ws_pixels() {
 ws_pixels::~ws_pixels() {
   // release all strands
   for (int i = 0; i < sizeof(_strands); i++)
-    deallocateStrand(i);
+    deallocateStrand(i); // TODO: Should this also DELETE the objects?
   // re-init the status LED
   initStatusLED();
 }
@@ -54,18 +43,11 @@ ws_pixels::~ws_pixels() {
 */
 /**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
+  // TODO: DELETE THE OBJECT POINTED TO!!!
   // TODO: Was this previously in-use as a status LED?
 
   // de-allocate the strand within the array
-  _strands[strandIdx] = {
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
-      128,
-      wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
-      nullptr,
-      nullptr,
-      -1,
-      -1,
-      -1};
+  // TODO: Set to: wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED
 }
 
 /******************************************************************************/
@@ -113,7 +95,7 @@ getNeoPixelStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
     strandType = NEO_BRG + NEO_KHZ800;
     break;
   default:
-    strandType = NEO_GRB + NEO_KHZ800
+    strandType = NEO_GRB + NEO_KHZ800;
     break;
   }
   return strandType;
@@ -354,7 +336,7 @@ void ws_pixels::writeStrand(
   }
 
   if (pixelsWriteMsg->pixels_type ==
-          wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     // let's fill the strand
     for (int i = 0; i < _strands[strandIdx].neoPixelPtr->numPixels(); i++) {
       // set color
@@ -366,7 +348,7 @@ void ws_pixels::writeStrand(
   }
 
   if (pixelsWriteMsg->pixels_type ==
-          wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // let's fill the strand
     for (int i = 0; i < _strands[strandIdx].dotStarPtr->numPixels(); i++) {
       // set color

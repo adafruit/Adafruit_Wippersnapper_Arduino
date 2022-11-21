@@ -62,9 +62,9 @@ void initStatusLED() {
 #endif
 
 #ifdef USE_STATUS_LED
-      pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
-  digitalWrite(STATUS_LED_PIN, 0);     // Turn OFF LED
-  WS.lockStatusLED = true;             // lock LED for use
+  pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
+  digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
+  WS.lockStatusLED = true;         // lock LED for use
 #endif
 }
 

@@ -24,14 +24,21 @@
 
 /** Object representation of a strand of pixels */
 typedef struct strand_s {
-  wippersnapper_pixels_v1_PixelsType type; ///< Strand type (NeoPixel, DotStar)
-  uint8_t brightness;                      ///< Strand brightness (0 to 255)
-  wippersnapper_pixels_v1_PixelsOrder ordering; ///< Strand pixel ordering
-  Adafruit_NeoPixel *neoPixelPtr;          ///< Ptr to a NeoPixel object
-  Adafruit_DotStar *dotStarPtr;            ///< Ptr to a DotStar object
-  int16_t pinNeoPixel;     ///< NeoPixel strand data pin
-  int16_t pinDotStarData;  ///< DotStar strand data pin
-  int16_t pinDotStarClock; ///< DotStar strand clock pin
+  wippersnapper_pixels_v1_PixelsType type =
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED; ///< Strand
+                                                                  ///< type
+                                                                  ///< (NeoPixel,
+                                                                  ///< DotStar)
+  uint8_t brightness = 0; ///< Strand brightness (0 to 255)
+  wippersnapper_pixels_v1_PixelsOrder ordering =
+      wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED; ///< Strand
+                                                                    ///< pixel
+                                                                    ///< ordering
+  Adafruit_NeoPixel *neoPixelPtr = nullptr; ///< Ptr to a NeoPixel object
+  Adafruit_DotStar *dotStarPtr = nullptr;   ///< Ptr to a DotStar object
+  int16_t pinNeoPixel = -1;                 ///< NeoPixel strand data pin
+  int16_t pinDotStarData = -1;              ///< DotStar strand data pin
+  int16_t pinDotStarClock = -1;             ///< DotStar strand clock pin
 } strand_t;
 
 class Wippersnapper; ///< friend class

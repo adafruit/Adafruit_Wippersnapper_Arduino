@@ -1319,7 +1319,6 @@ void cbPixelsMsg(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
 
-
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
