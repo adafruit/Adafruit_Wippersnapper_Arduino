@@ -54,7 +54,9 @@ ws_pixels::~ws_pixels() {
 */
 /**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
-  // de-allocate the pin
+  // TODO: Was this previously in-use as a status LED?
+
+  // de-allocate the strand within the array
   _strands[strandIdx] = {
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
       128,
@@ -93,7 +95,7 @@ int16_t ws_pixels::allocateStrand() {
 /**************************************************************************/
 neoPixelType
 getNeoPixelStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
-  neoPixelType strandType = NEO_GRB + NEO_KHZ800; // default type
+  neoPixelType strandType;
   switch (pixelOrder) {
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
     strandType = NEO_GRB + NEO_KHZ800;
@@ -111,6 +113,7 @@ getNeoPixelStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
     strandType = NEO_BRG + NEO_KHZ800;
     break;
   default:
+    strandType = NEO_GRB + NEO_KHZ800
     break;
   }
   return strandType;
@@ -286,7 +289,6 @@ int ws_pixels::getStrandIdx(int16_t dataPin,
       return strandIdx;
     }
   }
-
   return strandIdx;
 }
 
@@ -354,8 +356,7 @@ void ws_pixels::writeStrand(
   if (pixelsWriteMsg->pixels_type ==
           wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     // let's fill the strand
-    uint16_t numPixels = _strands[strandIdx].neoPixelPtr->numPixels();
-    for (int i = 0; i < numPixels; i++) {
+    for (int i = 0; i < _strands[strandIdx].neoPixelPtr->numPixels(); i++) {
       // set color
       _strands[strandIdx].neoPixelPtr->setPixelColor(
           pixelsWriteMsg->pixels_color, i);
@@ -367,8 +368,7 @@ void ws_pixels::writeStrand(
   if (pixelsWriteMsg->pixels_type ==
           wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // let's fill the strand
-    uint16_t numPixels = _strands[strandIdx].dotStarPtr->numPixels();
-    for (int i = 0; i < numPixels; i++) {
+    for (int i = 0; i < _strands[strandIdx].dotStarPtr->numPixels(); i++) {
       // set color
       _strands[strandIdx].dotStarPtr->setPixelColor(
           pixelsWriteMsg->pixels_color, i);
