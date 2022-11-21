@@ -59,16 +59,8 @@ public:
   /*******************************************************************************/
   bool begin() {
     _vl53l0x = new Adafruit_VL53L0X();
-    #ifdef WS_DEBUG
-    Serial.println("VL53L0X begin()");
-    #endif
-    bool isInit = _vl53l0x->begin((uint8_t)_sensorAddress,
-#ifdef WS_DEBUG
-      true
-#else
-      false
-#endif
-      , _i2c, Adafruit_VL53L0X::VL53L0X_SENSE_HIGH_ACCURACY);
+    bool isInit = _vl53l0x->begin((uint8_t)_sensorAddress, false, _i2c,
+                                  Adafruit_VL53L0X::VL53L0X_SENSE_HIGH_ACCURACY);
     return isInit;
   }
 
