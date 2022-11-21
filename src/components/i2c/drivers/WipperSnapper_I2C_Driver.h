@@ -937,7 +937,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Disables the device's object light sensor, if it exists.
+      @brief    Disables the device's object proximity sensor, if it exists.
   */
   /*******************************************************************************/
   virtual void disableSensorProximity() { _proximitySensorPeriod = 0.0L; }
