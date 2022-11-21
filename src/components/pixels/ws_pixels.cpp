@@ -28,11 +28,9 @@ ws_pixels::ws_pixels() {}
 */
 /**************************************************************************/
 ws_pixels::~ws_pixels() {
-  // release all strands
+  // de-allocate all strands
   for (int i = 0; i < sizeof(_strands); i++)
-    deallocateStrand(i); // TODO: Should this also DELETE the objects?
-  // re-init the status LED
-  initStatusLED();
+    deallocateStrand(i);
 }
 
 /**************************************************************************/
@@ -43,11 +41,20 @@ ws_pixels::~ws_pixels() {
 */
 /**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
-  // TODO: DELETE THE OBJECT POINTED TO!!!
-  // TODO: Was this previously in-use as a status LED?
+  // reset pixel type
+  _strands[strandIdx].type =
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED;
 
-  // de-allocate the strand within the array
-  // TODO: Set to: wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED
+  // delete the pixel type object
+  if (_strands[strandIdx].neoPixelPtr != nullptr)
+    delete _strands[strandIdx].neoPixelPtr;
+  if ((_strands[strandIdx].dotStarPtr != nullptr))
+    delete _strands[strandIdx].dotStarPtr;
+
+  // was this pixel previously used as a status LED?
+  if (_strands[strandIdx].pinNeoPixel == getStatusNeoPixelPin() ||
+      _strands[strandIdx].pinDotStarData == getStatusDotStarDataPin())
+    initStatusLED();
 }
 
 /******************************************************************************/
@@ -285,35 +292,13 @@ int ws_pixels::getStrandIdx(int16_t dataPin,
 /**************************************************************************/
 void ws_pixels::deleteStrand(
     wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg) {
-  int pinData, strandIdx;
-
-  pinData = atoi(pixelsDeleteMsg->pixels_pin_data + 1);
-  strandIdx = getStrandIdx(pinData, pixelsDeleteMsg->pixels_type);
+  int strandIdx = getStrandIdx(atoi(pixelsDeleteMsg->pixels_pin_data + 1), pixelsDeleteMsg->pixels_type);
   if (strandIdx == -1) {
     WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
     return;
   }
 
-  if (pixelsDeleteMsg->pixels_type ==
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    // de-init and release NeoPixel object
-    delete _strands[strandIdx].neoPixelPtr;
-    // if NeoPixel strand was the builtin status indicator, re-init
-    if (pinData == getStatusNeoPixelPin())
-      initStatusLED();
-  }
-
-  if (pixelsDeleteMsg->pixels_type ==
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    // de-init and release DotStar object
-    delete _strands[strandIdx].dotStarPtr;
-
-    // if Dotstar strand was the builtin status indicator, re-init
-    if (pinData == getStatusDotStarDataPin())
-      initStatusLED();
-  }
-
-  // deallocate strand object at strandIdx
+  // deallocate and release resources of strand object
   deallocateStrand(strandIdx);
 }
 
