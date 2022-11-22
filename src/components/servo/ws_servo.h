@@ -25,20 +25,21 @@
 #include <Servo.h>
 #endif
 
-#define MAX_SERVO_NUM 16 ///< Maximum # of servo objects
+#define MAX_SERVO_NUM 16          ///< Maximum number of servo objects
+#define MIN_SERVO_PULSE_WIDTH 500 ///< Default min. servo pulse width of 500uS
 
 #if defined(ARDUINO_ARCH_ESP32)
 class ws_ledc_servo;
 /** Servo object for ESP32-servo implementation */
 struct servoComponent {
-  ws_ledc_servo *servoObj; ///< Servo object
-  uint8_t pin;             ///< Servo's pin number
+  ws_ledc_servo *servoObj = nullptr; ///< Servo object
+  uint8_t pin = 255;                 ///< Servo's pin number
 };
 #else
 /** Servo object for Generic servo implementation */
 struct servoComponent {
-  Servo *servoObj; ///< Servo object
-  uint8_t pin;     ///< Servo's pin number
+  Servo *servoObj = nullptr; ///< Servo object
+  uint8_t pin = 255;         ///< Servo's pin number
 };
 #endif
 
@@ -56,6 +57,7 @@ public:
   bool servo_attach(int pin, int minPulseWidth, int maxPulseWidth, int freq);
   void servo_detach(int pin);
   void servo_write(int pin, int value);
+  int getServoIdx(uint8_t servoPin);
 
 private:
   servoComponent _servos[MAX_SERVO_NUM]; ///< Container of servo objects and
