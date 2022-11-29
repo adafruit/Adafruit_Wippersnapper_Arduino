@@ -132,7 +132,7 @@ public:
     // Was the network within secrets.json found?
     bool is_ssid_found = false;
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
         is_ssid_found = true;
     }
 
