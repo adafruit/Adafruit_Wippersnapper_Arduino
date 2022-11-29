@@ -79,6 +79,47 @@ public:
     _pass = WS._network_pass;
   }
 
+  static int compare_rssis(const void *a, const void *b) {
+    uint32_t arg1 = *(const uint32_t *)a;
+    uint32_t arg2 = *(const uint32_t *)b;
+
+    if (arg1 < arg2)
+      return -1;
+    if (arg1 > arg2)
+      return 1;
+    return 0;
+  }
+
+  /***********************************************************/
+  /*!
+  @brief  Performs a scan of local WiFi networks.
+  @returns True if `_network_ssid` is found, False otherwise.
+  */
+  /***********************************************************/
+  bool check_valid_ssid() {
+    // Set WiFi to station mode and disconnect from an AP if it was previously
+    // connected
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    delay(100);
+
+    // Perform a network scan
+    int n = WiFi.scanNetworks();
+    if (n == 0) {
+      WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
+      return false;
+    }
+
+    // Was the network within secrets.json found?
+    bool is_ssid_found = false;
+    for (int i = 0; i < n; ++i) {
+      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+        is_ssid_found = true;
+    }
+
+    return is_ssid_found;
+  }
+
   /********************************************************/
   /*!
   @brief  Sets the ESP32's unique client identifier

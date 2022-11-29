@@ -192,6 +192,11 @@ void Wippersnapper::set_ssid_pass() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
+bool Wippersnapper::check_valid_ssid() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return false;
+}
+
 /****************************************************************************/
 /*!
     @brief    Configures the device's Adafruit IO credentials. This method
@@ -2174,6 +2179,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Subscribing to device's MQTT topics...");
   subscribeWSTopics();
   subscribeErrorTopics();
+
+  // Check if requested SSID is valid
+  check_valid_ssid();
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
