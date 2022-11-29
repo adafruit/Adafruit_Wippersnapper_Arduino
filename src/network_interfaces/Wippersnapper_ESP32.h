@@ -79,17 +79,6 @@ public:
     _pass = WS._network_pass;
   }
 
-  static int compare_rssis(const void *a, const void *b) {
-    uint32_t arg1 = *(const uint32_t *)a;
-    uint32_t arg2 = *(const uint32_t *)b;
-
-    if (arg1 < arg2)
-      return -1;
-    if (arg1 > arg2)
-      return 1;
-    return 0;
-  }
-
   /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
