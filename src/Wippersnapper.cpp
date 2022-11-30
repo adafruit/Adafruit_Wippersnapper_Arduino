@@ -192,6 +192,17 @@ void Wippersnapper::set_ssid_pass() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
+/***********************************************************/
+/*!
+@brief   Performs a scan of local WiFi networks.
+@returns True if `_network_ssid` is found, False otherwise.
+*/
+/***********************************************************/
+bool Wippersnapper::check_valid_ssid() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return false;
+}
+
 /****************************************************************************/
 /*!
     @brief    Configures the device's Adafruit IO credentials. This method
@@ -1836,24 +1847,29 @@ void Wippersnapper::runNetFSM() {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
+        WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
-      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
       if (networkStatus() == WS_NET_CONNECTED) {
-        // WS_DEBUG_PRINTLN("Connected to WiFi");
+        WS_DEBUG_PRINTLN("Connected to WiFi!");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
+      // Perform a WiFi scan and check if SSID within
+      // secrets.json is within the scanned SSIDs
+      if (!check_valid_ssid())
+        haltError("ERROR: Unable to find WiFi network, rebooting soon...",
+                  WS_LED_STATUS_WIFI_CONNECTING);
+
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -1871,6 +1887,7 @@ void Wippersnapper::runNetFSM() {
           break;
         maxAttempts--;
       }
+
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED)
         haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
@@ -1878,7 +1895,7 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+      WS_DEBUG_PRINTLN("Attempting to connect to Adafruit IO...");
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
@@ -2125,6 +2142,7 @@ void printDeviceInfo() {
   WS_DEBUG_PRINTLN(WS._username);
   WS_DEBUG_PRINT("WiFi Network: ");
   WS_DEBUG_PRINTLN(WS._network_ssid);
+
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
           WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);

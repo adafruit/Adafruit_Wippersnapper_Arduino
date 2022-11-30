@@ -109,6 +109,44 @@ public:
     WS._network_pass = _pass;
   }
 
+  /***********************************************************/
+  /*!
+  @brief   Performs a scan of local WiFi networks.
+  @returns True if `_network_ssid` is found, False otherwise.
+  */
+  /***********************************************************/
+  bool check_valid_ssid() {
+    // Set WiFi to station mode and disconnect from an AP if it was previously
+    // connected
+    WiFi.disconnect();
+    delay(100);
+
+    // Perform a network scan
+    int n = WiFi.scanNetworks();
+    if (n == 0) {
+      WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
+      return false;
+    }
+
+    // Was the network within secrets.json found?
+    for (int i = 0; i < n; ++i) {
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
+        return true;
+    }
+
+    // User-set network not found, print scan results to serial console
+    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
+    for (int i = 0; i < n; ++i) {
+      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINTLN("dB");
+    }
+
+    return false;
+  }
+
   /********************************************************/
   /*!
   @brief  Sets the WiFi client.

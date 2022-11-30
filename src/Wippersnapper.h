@@ -215,6 +215,7 @@ public:
   virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
+  virtual bool check_valid_ssid();
 
   virtual void _connect();
   virtual void _disconnect();
@@ -322,7 +323,7 @@ public:
 
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
-  char *_topic_description = NULL; /*!< MQTT topic for the device description  */
+  char *_topic_description = NULL; /*!< MQTT topic for the device description */
   char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
   char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
                                    to a broker. */
