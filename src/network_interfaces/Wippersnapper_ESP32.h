@@ -100,25 +100,22 @@ public:
     }
 
     // Was the network within secrets.json found?
-    bool is_ssid_found = false;
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
-        is_ssid_found = true;
+        return true;
     }
 
     // User-set network not found, print scan results to serial console
-    if (!is_ssid_found) {
-      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-      WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-      for (int i = 0; i < n; ++i) {
-        WS_DEBUG_PRINT(WiFi.SSID(i));
-        WS_DEBUG_PRINT(" ");
-        WS_DEBUG_PRINT(WiFi.RSSI(i));
-        WS_DEBUG_PRINTLN("dB");
-      }
+    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
+    for (int i = 0; i < n; ++i) {
+      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINTLN("dB");
     }
 
-    return is_ssid_found;
+    return false;
   }
 
   /********************************************************/
