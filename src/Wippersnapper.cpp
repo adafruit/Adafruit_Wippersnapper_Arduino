@@ -192,6 +192,12 @@ void Wippersnapper::set_ssid_pass() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
+  /***********************************************************/
+  /*!
+  @brief   Performs a scan of local WiFi networks.
+  @returns True if `_network_ssid` is found, False otherwise.
+  */
+  /***********************************************************/
 bool Wippersnapper::check_valid_ssid() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return false;
