@@ -91,7 +91,14 @@ public:
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
-    _pass = ssidPassword;
+
+    // set the AP password
+    // check if ssidPassword was "" in secrets.json
+    if ((ssidPassword != NULL) && (strlen(ssidPassword) == 0)) {
+      _pass = NULL; // Set as NULL for open networks
+    } else {
+      _pass = ssidPassword;
+    }
   }
 
   /**********************************************************/

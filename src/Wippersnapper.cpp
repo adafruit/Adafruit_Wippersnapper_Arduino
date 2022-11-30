@@ -2125,6 +2125,7 @@ void printDeviceInfo() {
   WS_DEBUG_PRINTLN(WS._username);
   WS_DEBUG_PRINT("WiFi Network: ");
   WS_DEBUG_PRINTLN(WS._network_ssid);
+
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
           WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
