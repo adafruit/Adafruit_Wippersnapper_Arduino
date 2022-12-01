@@ -58,7 +58,6 @@ public:
   bool servo_attach(int pin, int minPulseWidth, int maxPulseWidth, int freq);
   void servo_detach(int pin);
   void servo_write(int pin, int value);
-  int getServoIdx(uint8_t servoPin);
   servoComponent* getServoComponent(uint8_t pin);
 
 private:

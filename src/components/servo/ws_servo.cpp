@@ -28,6 +28,13 @@ ws_servo::~ws_servo() {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief  Attempts to get the servoComponent for the desired pin.
+    @param  pin  Desired GPIO pin.
+    @returns servoComponent within _servos[] if found, nullptr otherwise.
+*/
+/**************************************************************************/
 servoComponent *ws_servo::getServoComponent(uint8_t pin) {
   for (int i = 0; i < sizeof(_servos) / sizeof(_servos[0]); i++) {
     WS_DEBUG_PRINTLN(_servos[i].pin);
@@ -98,16 +105,17 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
 */
 /**************************************************************************/
 void ws_servo::servo_detach(int pin) {
-  // TODO!
-  /*   servoComponent servo = getServoComponent(pin);
-    if (servo == NULL)
-      return;
-    // de-initialize pin
-    servo.pin = 0;
-    // release pin
-    servo.servoObj->detach();
-    // delete object
-    delete servo.servoObj; */
+  // attempt to get servoComponent for desired `pin`
+  servoComponent *servoComponentPtr = getServoComponent(pin);
+  if (servo == nullptr)
+    return;
+
+  // reset pin to default value
+  servoComponentPtr->pin = 0;
+  // release pin from use by servo object
+  servoComponentPtr->servoObj->detach();
+  // de-init servo object
+  delete servoComponentPtr->servoObj;
 }
 
 /**************************************************************************/
@@ -118,7 +126,8 @@ void ws_servo::servo_detach(int pin) {
 */
 /**************************************************************************/
 void ws_servo::servo_write(int pin, int value) {
-  servoComponent *servo = getServoComponent(pin);
-  if (servo != nullptr)
-    servo->servoObj->writeMicroseconds(value);
+  // attempt to get servoComponent for desired `pin`
+  servoComponent *servoComponentPtr = getServoComponent(pin);
+  if (servoComponentPtr != nullptr)
+    servoComponentPtr->servoObj->writeMicroseconds(value);
 }
