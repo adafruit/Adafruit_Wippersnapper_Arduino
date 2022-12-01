@@ -80,11 +80,8 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
   // Attempt to allocate an unused servo
   int servoIdx = -1;
   for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    Serial.println(_servos[i].pin);
     if (_servos[i].pin == 0) {
       servoIdx = i;
-      Serial.print("Servos IDX:");
-      Serial.println(servoIdx);
       break;
     }
   }
@@ -107,7 +104,7 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
 void ws_servo::servo_detach(int pin) {
   // attempt to get servoComponent for desired `pin`
   servoComponent *servoComponentPtr = getServoComponent(pin);
-  if (servo == nullptr)
+  if (servoComponentPtr == nullptr)
     return;
 
   // reset pin to default value
