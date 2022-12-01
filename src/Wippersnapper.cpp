@@ -1848,7 +1848,7 @@ void Wippersnapper::runNetFSM() {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
       if (WS._mqtt->connected()) {
-        WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
+        // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
@@ -1856,7 +1856,7 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
-        WS_DEBUG_PRINTLN("Connected to WiFi!");
+        // WS_DEBUG_PRINTLN("Connected to WiFi!");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
@@ -1938,8 +1938,14 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINTLN(error);
   for (;;) {
     statusLEDSolid(ledStatusColor);
-    // let the WDT fail out and reset!
+// let the WDT fail out and reset!
+#ifndef ARDUINO_ARCH_ESP8266
     delay(100);
+#else
+    // Calls to delay() and yield() feed the ESP8266's
+    // hardware and software watchdog timers, delayMicroseconds does not.
+    delayMicroseconds(100);
+#endif
   }
 }
 
@@ -2002,11 +2008,7 @@ void Wippersnapper::pingBroker() {
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
-void Wippersnapper::feedWDT() {
-#ifndef ESP8266
-  Watchdog.reset();
-#endif
-}
+void Wippersnapper::feedWDT() { Watchdog.reset(); }
 
 /********************************************************/
 /*!
@@ -2017,7 +2019,6 @@ void Wippersnapper::feedWDT() {
 */
 /*******************************************************/
 void Wippersnapper::enableWDT(int timeoutMS) {
-#ifndef ESP8266
   Watchdog.disable();
   if (Watchdog.enable(timeoutMS) == 0) {
     WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
@@ -2026,7 +2027,6 @@ void Wippersnapper::enableWDT(int timeoutMS) {
       delay(100);
     }
   }
-#endif
 }
 
 /********************************************************/

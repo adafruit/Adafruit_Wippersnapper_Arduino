@@ -74,9 +74,7 @@
 // Note: These might be better off in their respective wrappers
 #include <SPI.h>
 
-#ifndef ESP8266
 #include "Adafruit_SleepyDog.h"
-#endif
 
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
