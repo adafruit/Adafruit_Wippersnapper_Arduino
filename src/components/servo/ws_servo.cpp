@@ -28,8 +28,8 @@ ws_servo::~ws_servo() {
   }
 }
 
-servoComponent* ws_servo::getServoComponent (uint8_t pin) {
-  for (int i = 0; i < sizeof(_servos)/sizeof(_servos[0]); i++) {
+servoComponent *ws_servo::getServoComponent(uint8_t pin) {
+  for (int i = 0; i < sizeof(_servos) / sizeof(_servos[0]); i++) {
     WS_DEBUG_PRINTLN(_servos[i].pin);
     if (_servos[i].pin == pin)
       return &_servos[i];
@@ -98,16 +98,17 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
 */
 /**************************************************************************/
 void ws_servo::servo_detach(int pin) {
-/*   servoComponent servo = getServoComponent(pin);
-  if (servo == NULL)
-    return;
-  // de-initialize pin
-  servo.pin = 0;
-  // release pin
-  servo.servoObj->detach();
-  // delete object
-  delete servo.servoObj; */
-} 
+  // TODO!
+  /*   servoComponent servo = getServoComponent(pin);
+    if (servo == NULL)
+      return;
+    // de-initialize pin
+    servo.pin = 0;
+    // release pin
+    servo.servoObj->detach();
+    // delete object
+    delete servo.servoObj; */
+}
 
 /**************************************************************************/
 /*!
@@ -118,8 +119,6 @@ void ws_servo::servo_detach(int pin) {
 /**************************************************************************/
 void ws_servo::servo_write(int pin, int value) {
   servoComponent *servo = getServoComponent(pin);
-  WS_DEBUG_PRINT("pin: ");
-  WS_DEBUG_PRINTLN(servo->pin);
   if (servo != nullptr)
     servo->servoObj->writeMicroseconds(value);
 }
