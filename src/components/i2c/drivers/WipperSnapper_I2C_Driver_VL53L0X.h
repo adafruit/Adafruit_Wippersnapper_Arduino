@@ -59,8 +59,9 @@ public:
   /*******************************************************************************/
   bool begin() {
     _vl53l0x = new Adafruit_VL53L0X();
-    bool isInit = _vl53l0x->begin((uint8_t)_sensorAddress, false, _i2c,
-                                  Adafruit_VL53L0X::VL53L0X_SENSE_HIGH_ACCURACY);
+    bool isInit =
+        _vl53l0x->begin((uint8_t)_sensorAddress, false, _i2c,
+                        Adafruit_VL53L0X::VL53L0X_SENSE_HIGH_ACCURACY);
     return isInit;
   }
 
@@ -75,10 +76,10 @@ public:
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     u_int16_t proximityMM = _vl53l0x->readRange();
-    if(proximityMM <= 0 || proximityMM > 4000) {
+    if (proximityMM <= 0 || proximityMM > 4000) {
       return false;
     }
-    proximityEvent->data[0] = proximityMM; 
+    proximityEvent->data[0] = proximityMM;
     return true;
   }
 
