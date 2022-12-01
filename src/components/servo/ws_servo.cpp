@@ -17,13 +17,6 @@
 
 /**************************************************************************/
 /*!
-    @brief  Constructor
-*/
-/**************************************************************************/
-ws_servo::ws_servo() {}
-
-/**************************************************************************/
-/*!
     @brief  Destructor
 */
 /**************************************************************************/
@@ -35,22 +28,15 @@ ws_servo::~ws_servo() {
   }
 }
 
-/**************************************************************************/
-/*!
-    @brief   Obtains the index of the requested servo object within the
-             array of servos.
-    @param   servoPin
-             The desired servo pin.
-    @returns The index of the servo object, -1 otherwise.
-*/
-/**************************************************************************/
-int ws_servo::getServoIdx(uint8_t servoPin) {
-  int servoIdx = -1;
-  for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    if (_servos[i].pin == servoPin)
-      return i;
+servoComponent* ws_servo::getServoComponent (uint8_t pin) {
+  for (int i = 0; i < sizeof(_servos)/sizeof(_servos[0]); i++) {
+    WS_DEBUG_PRINTLN(_servos[i].pin);
+    if (_servos[i].pin == pin)
+      return &_servos[i];
   }
-  return servoIdx;
+  WS_DEBUG_PRINT("ERROR: Can not find servo on pin #");
+  WS_DEBUG_PRINTLN(pin);
+  return nullptr;
 }
 
 /**************************************************************************/
@@ -75,30 +61,25 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
   Servo *servo = new Servo();
 #endif
 
-  uint16_t rc = 255;
+  uint16_t rc = ERR_SERVO_ATTACH;
 #ifdef ARDUINO_ARCH_ESP32
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
 #else
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth);
 #endif
-  if (rc == 255)
+  if (rc == ERR_SERVO_ATTACH)
     return false; // allocation or pin error
 
   // Attempt to allocate an unused servo
   int servoIdx = -1;
   for (int i = 0; i < MAX_SERVO_NUM; i++) {
     Serial.println(_servos[i].pin);
-    if (_servos[i].pin == 255) {
+    if (_servos[i].pin == 0) {
       servoIdx = i;
       Serial.print("Servos IDX:");
       Serial.println(servoIdx);
       break;
     }
-  }
-  // check if servo was allocated
-  if (servoIdx == 255) {
-    Serial.println("ERROR: Maximum servos reached!");
-    return false;
   }
 
   // create a new servo component storage struct
@@ -117,18 +98,16 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
 */
 /**************************************************************************/
 void ws_servo::servo_detach(int pin) {
-  int servoIdx = getServoIdx(pin);
-  if (servoIdx == -1) {
-    WS_DEBUG_PRINTLN("ERROR: Can not detach servo, not found!");
+/*   servoComponent servo = getServoComponent(pin);
+  if (servo == NULL)
     return;
-  }
-  // default value for unallocated servo pin
-  _servos[servoIdx].pin = 255;
-  // detach the servo from the pin
-  _servos[servoIdx].servoObj->detach();
-  // delete the object
-  delete _servos[servoIdx].servoObj;
-}
+  // de-initialize pin
+  servo.pin = 0;
+  // release pin
+  servo.servoObj->detach();
+  // delete object
+  delete servo.servoObj; */
+} 
 
 /**************************************************************************/
 /*!
@@ -138,11 +117,9 @@ void ws_servo::servo_detach(int pin) {
 */
 /**************************************************************************/
 void ws_servo::servo_write(int pin, int value) {
-  int servoIdx = getServoIdx(pin);
-  if (servoIdx == -1) {
-    WS_DEBUG_PRINTLN("ERROR: Can not detach servo, not found!");
-    return;
-  }
-  // write to servo
-  _servos[servoIdx].servoObj->writeMicroseconds(value);
+  servoComponent *servo = getServoComponent(pin);
+  WS_DEBUG_PRINT("pin: ");
+  WS_DEBUG_PRINTLN(servo->pin);
+  if (servo != nullptr)
+    servo->servoObj->writeMicroseconds(value);
 }
