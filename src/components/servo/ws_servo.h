@@ -34,13 +34,13 @@ class ws_ledc_servo;
 /** Servo object for ESP32-servo implementation */
 struct servoComponent {
   ws_ledc_servo *servoObj = nullptr; ///< Servo object
-  uint8_t pin = 0;                 ///< Servo's pin number
+  uint8_t pin = 0;                   ///< Servo's pin number
 };
 #else
 /** Servo object for Generic servo implementation */
 struct servoComponent {
   Servo *servoObj = nullptr; ///< Servo object
-  uint8_t pin = 0;         ///< Servo's pin number
+  uint8_t pin = 0;           ///< Servo's pin number
 };
 #endif
 
@@ -53,12 +53,12 @@ class Wippersnapper;
 /**************************************************************************/
 class ws_servo {
 public:
-  ws_servo() {};
+  ws_servo(){};
   ~ws_servo();
   bool servo_attach(int pin, int minPulseWidth, int maxPulseWidth, int freq);
   void servo_detach(int pin);
   void servo_write(int pin, int value);
-  servoComponent* getServoComponent(uint8_t pin);
+  servoComponent *getServoComponent(uint8_t pin);
 
 private:
   servoComponent _servos[MAX_SERVO_NUM]; ///< Container of servo objects and
