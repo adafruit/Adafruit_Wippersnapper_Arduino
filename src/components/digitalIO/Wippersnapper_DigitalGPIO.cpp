@@ -73,7 +73,15 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
     pinMode(pinName, OUTPUT);
+// Initialize LOW
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+    // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting
+    // the pin LOW will turn the LED on.
+    digitalWrite(STATUS_LED_PIN, !0);
+#else
+    pinMode(pinName, OUTPUT);
     digitalWrite(pinName, LOW); // initialize LOW
+#endif
   } else if (
       direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
@@ -173,7 +181,16 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
   WS_DEBUG_PRINT(pinName);
   WS_DEBUG_PRINT(" to ");
   WS_DEBUG_PRINTLN(pinValue);
+
+// Write to the GPIO pin
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+  // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting the
+  // pin LOW will turn the LED on.
+  if (pinName == 0)
+    digitalWrite(pinName, !pinValue);
+#else
   digitalWrite(pinName, pinValue);
+#endif
 }
 
 /**********************************************************/
