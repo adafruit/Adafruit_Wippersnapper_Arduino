@@ -67,9 +67,19 @@ bool statusLEDInit() {
 #endif
 
 #ifdef USE_STATUS_LED
-  pinMode(STATUS_LED_PIN, OUTPUT); // Initialize LED
-  digitalWrite(STATUS_LED_PIN, 0); // Turn OFF LED
-  WS.lockStatusLED = true;         // set global pin "lock" flag
+  pinMode(STATUS_LED_PIN,
+          OUTPUT); // Initialize LED
+
+// Turn OFF LED
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+                   // The Adafruit Feather ESP8266's built-in LED is reverse
+                   // wired so setting the pin LOW will turn the LED on.
+  digitalWrite(STATUS_LED_PIN, !0);
+#else
+  digitalWrite(STATUS_LED_PIN, 0);
+#endif
+
+  WS.lockStatusLED = true; // set global pin "lock" flag
   is_success = true;
 #endif
   return is_success;
@@ -278,4 +288,11 @@ void statusLEDBlink(ws_led_status_t statusState) {
     delay(100);
     blinkNum--;
   }
+
+// turn OFF ESP8266's status LED
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+  // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting the
+  // pin LOW will turn the LED on.
+  digitalWrite(STATUS_LED_PIN, !0);
+#endif
 }
