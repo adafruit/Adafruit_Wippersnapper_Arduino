@@ -79,7 +79,8 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     // the pin LOW will turn the LED on.
     digitalWrite(STATUS_LED_PIN, !0);
 #else
-    digitalWrite(STATUS_LED_PIN, 0);
+    pinMode(pinName, OUTPUT);
+    digitalWrite(pinName, LOW); // initialize LOW
 #endif
   } else if (
       direction ==
