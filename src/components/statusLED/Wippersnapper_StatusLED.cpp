@@ -72,8 +72,8 @@ bool statusLEDInit() {
 
 // Turn OFF LED
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
-                   // The Adafruit Feather ESP8266's built-in LED is reverse
-                   // wired so setting the pin LOW will turn the LED on.
+  // The Adafruit Feather ESP8266's built-in LED is reverse
+  // wired so setting the pin LOW will turn the LED on.
   digitalWrite(STATUS_LED_PIN, !0);
 #else
   digitalWrite(STATUS_LED_PIN, 0);
@@ -205,8 +205,15 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
   pinMode(STATUS_LED_PIN, OUTPUT);
 #endif
 
+// turn OFF ESP8266's status LED
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+  // The Adafruit Feather ESP8266's built-in LED is reverse wired
+  // clear status LED color
+  setStatusLEDColor(BLACK ^ 1);
+#else
   // clear status LED color
   setStatusLEDColor(BLACK);
+#endif
 }
 
 /****************************************************************************/
@@ -285,14 +292,13 @@ void statusLEDBlink(ws_led_status_t statusState) {
     setStatusLEDColor(ledColor);
     delay(100);
     setStatusLEDColor(BLACK);
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+    // The Adafruit Feather ESP8266's built-in LED is reverse wired
+    setStatusLEDColor(BLACK ^ 1);
+#else
+    setStatusLEDColor(BLACK);
+#endif
     delay(100);
     blinkNum--;
   }
-
-// turn OFF ESP8266's status LED
-#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
-  // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting the
-  // pin LOW will turn the LED on.
-  digitalWrite(STATUS_LED_PIN, !0);
-#endif
 }
