@@ -179,13 +179,6 @@ void setStatusLEDColor(uint32_t color) {
 void statusLEDFade(uint32_t color, int numFades = 3) {
   setStatusLEDColor(color);
 
-// attach LEDC pin
-// TODO: Remove and replace with ws pwm component instead
-#if defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
-  ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
-  ledcAttachPin(STATUS_LED_PIN, LEDC_CHANNEL_0);
-#endif
-
   // pulse numFades times
   for (int i = 0; i < numFades; i++) {
     for (int i = 50; i <= 200; i += 5) {
