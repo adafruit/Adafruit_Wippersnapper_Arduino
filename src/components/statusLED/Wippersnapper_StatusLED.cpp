@@ -167,6 +167,41 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 }
 
+void setStatusLEDColor(uint32_t color, int brightness) {
+#ifdef USE_STATUS_NEOPIXEL
+  uint8_t red = (color >> 16) & 0xff;  // red
+  uint8_t green = (color >> 8) & 0xff; // green
+  uint8_t blue = color & 0xff;         // blue
+  // flood all neopixels
+  for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
+    statusPixel->setPixelColor(i, brightness * red / 255,
+                               brightness * green / 255,
+                               brightness * blue / 255);
+  }
+  statusPixel->show();
+#endif
+
+#ifdef USE_STATUS_DOTSTAR
+  uint8_t red = (color >> 16) & 0xff;  // red
+  uint8_t green = (color >> 8) & 0xff; // green
+  uint8_t blue = color & 0xff;         // blue
+  // flood all dotstar pixels
+  for (int i = 0; i < STATUS_DOTSTAR_NUM; i++) {
+    statusPixelDotStar->setPixelColor(i, brightness * red / 255,
+                                      brightness * green / 255,
+                                      brightness * blue / 255);
+  }
+  statusPixelDotStar->show();
+#endif
+
+#ifdef USE_STATUS_LED
+  if (color != BLACK)
+    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, brightness);
+  else
+    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
+#endif
+}
+
 /****************************************************************************/
 /*!
     @brief    Fades the status LED.
@@ -177,37 +212,16 @@ void setStatusLEDColor(uint32_t color) {
 */
 /****************************************************************************/
 void statusLEDFade(uint32_t color, int numFades = 3) {
-  setStatusLEDColor(color);
-
-  // pulse numFades times
+  // pulse `numFades` times
   for (int i = 0; i < numFades; i++) {
+    // fade up
     for (int i = 50; i <= 200; i += 5) {
-#if defined(USE_STATUS_NEOPIXEL)
-      statusPixel->setBrightness(i);
-      statusPixel->show();
-#elif defined(USE_STATUS_DOTSTAR)
-      statusPixelDotStar->setBrightness(i);
-      statusPixelDotStar->show();
-#elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
-      WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, i);
-#else
-      analogWrite(STATUS_LED_PIN, i);
-#endif
+      setStatusLEDColor(color, i);
       delay(10);
     }
-
+    // fade down
     for (int i = 200; i >= 50; i -= 5) {
-#if defined(USE_STATUS_NEOPIXEL)
-      statusPixel->setBrightness(i);
-      statusPixel->show();
-#elif defined(USE_STATUS_DOTSTAR)
-      statusPixelDotStar->setBrightness(i);
-      statusPixelDotStar->show();
-#elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
-      WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, i);
-#else
-      analogWrite(STATUS_LED_PIN, i);
-#endif
+      setStatusLEDColor(color, i);
       delay(10);
     }
   }
