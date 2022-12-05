@@ -371,22 +371,6 @@ void Wippersnapper_FS::parseSecrets() {
   WS._key = io_key;
 
   // Parse WiFi Network SSID
-  // TODO: The following lines allow backwards-compatibiity for older
-  // secrets.json files, added in b32
-  // TODO: Remove the following check in future versions
-  // Check if network type is AirLift WiFi
-  const char *network_type_wifi_ssid =
-      doc["network_type_wifi_airlift"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
-  }
-
-  // TODO: Remove the following check in future versions
-  // Check if network type is native WiFi
-  network_type_wifi_ssid = doc["network_type_wifi_native"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
-  }
   // Check if network type is WiFi
   network_type_wifi_ssid = doc["network_type_wifi"]["network_ssid"];
   if (network_type_wifi_ssid != nullptr) {
@@ -413,25 +397,6 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Parse WiFi Network Password
-  // TODO: The following lines allow backwards-compatibiity for older
-  // secrets.json files, added in b32
-
-  // TODO: Remove the following check in future versions
-  // Check if network type is AirLift WiFi
-  const char *network_type_wifi_password =
-      doc["network_type_wifi_airlift"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
-  }
-
-  // TODO: Remove the following check in future versions
-  // Check if network type is native WiFi
-  network_type_wifi_password =
-      doc["network_type_wifi_native"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
-  }
-
   // Check if network type is WiFi
   network_type_wifi_password = doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_password != nullptr) {
