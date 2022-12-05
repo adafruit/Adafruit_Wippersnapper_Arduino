@@ -17,7 +17,7 @@
 #include "Wippersnapper.h"
 
 extern Wippersnapper WS;
-
+float pixel_brightness = 0.5; ///< LED's brightness level, 0.0 (0%) to 1.0 (100%)
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
     STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -51,33 +51,32 @@ bool statusLEDInit() {
     statusPixel = new Adafruit_NeoPixel(
         STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
     statusPixel->begin();
-    statusPixel->setBrightness(10);
-    statusPixel->show();
+    statusPixel->show(); // turn OFF all pixels
+    WS.lockStatusNeoPixel = true;
   }
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
   if (WS.lockStatusDotStar == false) {
     statusPixelDotStar->begin();
-    statusPixelDotStar->show(); // turn all pixels off
-    statusPixelDotStar->setBrightness(5);
+    statusPixelDotStar->show(); // turn OFF all pixels
     WS.lockStatusDotStar = true;
     is_success = true;
   }
 #endif
 
 #ifdef USE_STATUS_LED
-  pinMode(STATUS_LED_PIN,
-          OUTPUT); // Initialize LED
+  pinMode(STATUS_LED_PIN, OUTPUT);
 
-// Turn OFF LED
-#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
-  // The Adafruit Feather ESP8266's built-in LED is reverse
-  // wired so setting the pin LOW will turn the LED on.
-  digitalWrite(STATUS_LED_PIN, !0);
-#else
-  digitalWrite(STATUS_LED_PIN, 0);
-#endif
+  // Turn off LED initially
+  #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+  analogWrite(STATUS_LED_PIN, 255);
+  #elif defined(ARDUINO_ARCH_ESP32)
+  WS._pwmComponent.attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
+  WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
+  #else
+  analogWrite(STATUS_LED_PIN, 0);
+  #endif
 
   WS.lockStatusLED = true; // set global pin "lock" flag
   is_success = true;
@@ -109,6 +108,17 @@ void statusLEDDeinit() {
           INPUT);           // "release" for use by setting to input (hi-z)
   WS.lockStatusLED = false; // un-set global pin "lock" flag
 #endif
+}
+
+/****************************************************************************/
+/*!
+    @brief    Sets the status pixel's brightness
+    @param    brightness
+              Desired pixel brightness, from 0.0 (0%) to 1.0 (100%).
+*/
+/****************************************************************************/
+void setStatusLEDBrightness(float brightness) {
+  pixel_brightness = brightness;
 }
 
 /****************************************************************************/
@@ -161,6 +171,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
   setStatusLEDColor(color);
 
 // attach LEDC pin
+// TODO: Remove and replace with ws pwm component instead
 #if defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
   ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
   ledcAttachPin(STATUS_LED_PIN, LEDC_CHANNEL_0);
