@@ -17,7 +17,8 @@
 #include "Wippersnapper.h"
 
 extern Wippersnapper WS;
-float pixel_brightness = 0.3; ///< LED's brightness level, 0.0 (0%) to 1.0 (100%)
+float pixel_brightness =
+    0.3; ///< LED's brightness level, 0.0 (0%) to 1.0 (100%)
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
     STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -68,15 +69,15 @@ bool statusLEDInit() {
 #ifdef USE_STATUS_LED
   pinMode(STATUS_LED_PIN, OUTPUT);
 
-  // Turn off LED initially
-  #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+// Turn off LED initially
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
   analogWrite(STATUS_LED_PIN, 255);
-  #elif defined(ARDUINO_ARCH_ESP32)
+#elif defined(ARDUINO_ARCH_ESP32)
   WS._pwmComponent.attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
   WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
-  #else
+#else
   analogWrite(STATUS_LED_PIN, 0);
-  #endif
+#endif
 
   WS.lockStatusLED = true; // set global pin "lock" flag
   is_success = true;
@@ -117,9 +118,7 @@ void statusLEDDeinit() {
               Desired pixel brightness, from 0.0 (0%) to 1.0 (100%).
 */
 /****************************************************************************/
-void setStatusLEDBrightness(float brightness) {
-  pixel_brightness = brightness;
-}
+void setStatusLEDBrightness(float brightness) { pixel_brightness = brightness; }
 
 /****************************************************************************/
 /*!
@@ -134,11 +133,13 @@ void setStatusLEDColor(uint32_t color) {
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
   // map() the pixel_brightness
-  float pixel_brightness = 0.5;
+  float pixel_brightness = 1.0;
   int brightness = pixel_brightness * 255.0;
   // flood all neopixels
   for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
-    statusPixel->setPixelColor(i, brightness*red/255, brightness*green/255, brightness*blue/255);
+    statusPixel->setPixelColor(i, brightness * red / 255,
+                               brightness * green / 255,
+                               brightness * blue / 255);
   }
   statusPixel->show();
 #endif
@@ -151,14 +152,17 @@ void setStatusLEDColor(uint32_t color) {
   int brightness = pixel_brightness * 255.0;
   // flood all dotstar pixels
   for (int i = 0; i < STATUS_DOTSTAR_NUM; i++) {
-    statusPixelDotStar->setPixelColor(i, brightness*red/255, brightness*green/255, brightness*blue/255);
+    statusPixelDotStar->setPixelColor(i, brightness * red / 255,
+                                      brightness * green / 255,
+                                      brightness * blue / 255);
   }
   statusPixelDotStar->show();
 #endif
 
 #ifdef USE_STATUS_LED
   if (color != BLACK)
-    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, map(pixel_brightness, 0.0, 1.0, 0, 1023));
+    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN,
+                                    map(pixel_brightness, 0.0, 1.0, 0, 1023));
   else
     WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
 #endif
@@ -185,7 +189,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 
   // pulse numFades times
   for (int i = 0; i < numFades; i++) {
-components/statusLED/Wippersnapper_StatusLED.cpp    for (int i = 50; i <= 200; i += 5) {
+    for (int i = 50; i <= 200; i += 5) {
 #if defined(USE_STATUS_NEOPIXEL)
       statusPixel->setBrightness(i);
       statusPixel->show();
