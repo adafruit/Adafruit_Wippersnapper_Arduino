@@ -18,7 +18,7 @@
 
 extern Wippersnapper WS;
 float pixel_brightness =
-    0.3; ///< LED's brightness level, 0.0 (0%) to 1.0 (100%)
+    0.2; ///< LED's brightness level, 0.0 (0%) to 1.0 (100%)
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
     STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -133,11 +133,7 @@ void setStatusLEDColor(uint32_t color) {
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
   // map() the pixel_brightness
-
-  float pixel_brightness = 0.1;
   int brightness = pixel_brightness * 255.0;
-  // you were printing this out, the time between blinks increased within the blink function so change it back
-  WS_DEBUG_PRINTLN(brightness);
   // flood all neopixels
   for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
     statusPixel->setPixelColor(i, brightness * red / 255,
@@ -200,7 +196,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
       statusPixelDotStar->setBrightness(i);
       statusPixelDotStar->show();
 #elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
-      ledcWrite(LEDC_CHANNEL_0, i);
+      WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, i);
 #else
       analogWrite(STATUS_LED_PIN, i);
 #endif
@@ -215,19 +211,13 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
       statusPixelDotStar->setBrightness(i);
       statusPixelDotStar->show();
 #elif defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
-      ledcWrite(LEDC_CHANNEL_0, i);
+      WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, i);
 #else
       analogWrite(STATUS_LED_PIN, i);
 #endif
       delay(10);
     }
   }
-
-// detach LEDC pin and reset its pinMode
-#if defined(ARDUINO_ARCH_ESP32) && defined(USE_STATUS_LED)
-  ledcDetachPin(STATUS_LED_PIN);
-  pinMode(STATUS_LED_PIN, OUTPUT);
-#endif
 
 // turn OFF ESP8266's status LED
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
@@ -314,7 +304,7 @@ void statusLEDBlink(ws_led_status_t statusState) {
 
   while (blinkNum > 0) {
     setStatusLEDColor(ledColor);
-    delay(10000);
+    delay(100);
     setStatusLEDColor(BLACK);
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
     // The Adafruit Feather ESP8266's built-in LED is reverse wired
