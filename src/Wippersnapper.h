@@ -85,7 +85,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.56" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.57" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -209,6 +209,9 @@ public:
   bool lockStatusDotStar =
       false; ///< True if status LED is using the status dotstar
   bool lockStatusLED = false; ///< True if status LED is using the built-in LED
+  float status_pixel_brightness =
+      STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
+                                       ///< (from 0.0 to 1.0)
 
   virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);

@@ -302,8 +302,8 @@ void Wippersnapper_FS::createConfigFileSkel() {
   secretsFile.print("HERE\",\n\t\"network_type_wifi\":{\n\t\t\"network_"
                     "ssid\":\"YOUR_WIFI_SSID_");
   secretsFile.flush();
-  secretsFile.print(
-      "HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_HERE\"\n\t}\n}");
+  secretsFile.print("HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_"
+                    "HERE\"\n\t},\n\t\"status_pixel_brightness\":\"0.5\"\n}");
   secretsFile.flush();
   secretsFile.close();
   writeToBootOut(
@@ -371,24 +371,8 @@ void Wippersnapper_FS::parseSecrets() {
   WS._key = io_key;
 
   // Parse WiFi Network SSID
-  // TODO: The following lines allow backwards-compatibiity for older
-  // secrets.json files, added in b32
-  // TODO: Remove the following check in future versions
-  // Check if network type is AirLift WiFi
-  const char *network_type_wifi_ssid =
-      doc["network_type_wifi_airlift"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
-  }
-
-  // TODO: Remove the following check in future versions
-  // Check if network type is native WiFi
-  network_type_wifi_ssid = doc["network_type_wifi_native"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
-  }
   // Check if network type is WiFi
-  network_type_wifi_ssid = doc["network_type_wifi"]["network_ssid"];
+  const char *network_type_wifi_ssid = doc["network_type_wifi"]["network_ssid"];
   if (network_type_wifi_ssid != nullptr) {
     WS._network_ssid = network_type_wifi_ssid;
   }
@@ -413,27 +397,9 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Parse WiFi Network Password
-  // TODO: The following lines allow backwards-compatibiity for older
-  // secrets.json files, added in b32
-
-  // TODO: Remove the following check in future versions
-  // Check if network type is AirLift WiFi
-  const char *network_type_wifi_password =
-      doc["network_type_wifi_airlift"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
-  }
-
-  // TODO: Remove the following check in future versions
-  // Check if network type is native WiFi
-  network_type_wifi_password =
-      doc["network_type_wifi_native"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
-  }
-
   // Check if network type is WiFi
-  network_type_wifi_password = doc["network_type_wifi"]["network_password"];
+  const char *network_type_wifi_password =
+      doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_password != nullptr) {
     WS._network_pass = network_type_wifi_password;
   }
@@ -457,8 +423,18 @@ void Wippersnapper_FS::parseSecrets() {
   writeToBootOut(WS._network_ssid);
   writeToBootOut("\n");
 
-  // Optional, Set the IO URL
+  // Optionally set the MQTT broker url (used to switch btween prod. and
+  // staging)
   WS._mqttBrokerURL = doc["io_url"];
+
+  // Get (optional) setting for the status pixel brightness
+  const char *status_pixel_brightness = doc["status_pixel_brightness"];
+  // Not found, that's ok, we'll use the default brightness instead
+  if (status_pixel_brightness == nullptr) {
+    setStatusLEDBrightness(STATUS_PIXEL_BRIGHTNESS_DEFAULT);
+  } else {
+    setStatusLEDBrightness(atof(status_pixel_brightness));
+  }
 
   // clear the document and release all memory from the memory pool
   doc.clear();
