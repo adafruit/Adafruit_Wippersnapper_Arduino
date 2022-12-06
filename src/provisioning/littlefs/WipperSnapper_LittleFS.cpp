@@ -94,7 +94,8 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Parse SSID
   // Check if network type is WiFi
-  const char *network_type_wifi_ssid = _doc["network_type_wifi"]["network_ssid"];
+  const char *network_type_wifi_ssid =
+      _doc["network_type_wifi"]["network_ssid"];
   if (network_type_wifi_ssid != nullptr) {
     WS._network_ssid = network_type_wifi_ssid;
   }
@@ -105,7 +106,8 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
 
   // Parse WiFi network password
-  const char *network_type_wifi_password = _doc["network_type_wifi"]["network_password"];
+  const char *network_type_wifi_password =
+      _doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_password != nullptr) {
     WS._network_pass = network_type_wifi_password;
   }
@@ -120,12 +122,12 @@ void WipperSnapper_LittleFS::parseSecrets() {
   WS._mqttBrokerURL = _doc["io_url"];
 
   // Get (optional) setting for the status pixel brightness
-  const char *status_pixel_brightness = doc["status_pixel_brightness"];
+  const char *status_pixel_brightness = _doc["status_pixel_brightness"];
   // Not found, that's ok, we'll use the default brightness instead
   if (status_pixel_brightness == nullptr) {
     WS.status_pixel_brightness = STATUS_PIXEL_BRIGHTNESS_DEFAULT;
   } else {
-    // take status_pixel_brightness and convert to a float 
+    // take status_pixel_brightness and convert to a float
     WS.status_pixel_brightness = atof(status_pixel_brightness);
   }
 

@@ -116,7 +116,9 @@ void statusLEDDeinit() {
               Desired pixel brightness, from 0.0 (0%) to 1.0 (100%).
 */
 /****************************************************************************/
-void setStatusLEDBrightness(float brightness) { WS.status_pixel_brightness = brightness; }
+void setStatusLEDBrightness(float brightness) {
+  WS.status_pixel_brightness = brightness;
+}
 
 /****************************************************************************/
 /*!
@@ -158,13 +160,22 @@ void setStatusLEDColor(uint32_t color) {
 
 #ifdef USE_STATUS_LED
   if (color != BLACK)
-    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN,
-                                    map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
+    WS._pwmComponent.writeDutyCycle(
+        STATUS_LED_PIN, map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
   else
     WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
 #endif
 }
 
+/****************************************************************************/
+/*!
+    @brief    Sets a status RGB LED's color
+    @param    color
+              Desired RGB color.
+    @param    brightness
+              Brightness level, as an integer
+*/
+/****************************************************************************/
 void setStatusLEDColor(uint32_t color, int brightness) {
 #ifdef USE_STATUS_NEOPIXEL
   uint8_t red = (color >> 16) & 0xff;  // red
@@ -194,9 +205,10 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 
 #ifdef USE_STATUS_LED
   if (color != BLACK)
-    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, brightness);
-  else
-    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
+    // re-map for pixel as a LED
+    int pulseWidth = map(brightness, 0, 255, 0, 1023);
+  WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, pulseWidth);
+  else WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
 #endif
 }
 
@@ -210,15 +222,19 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 */
 /****************************************************************************/
 void statusLEDFade(uint32_t color, int numFades = 3) {
+  // don't fade if our pixel is off
+  if (WS.status_pixel_brightness == 0.0)
+    return;
+
   // pulse `numFades` times
   for (int i = 0; i < numFades; i++) {
     // fade up
-    for (int i = 50; i <= 200; i += 5) {
+    for (int i = 0; i <= 255; i += 5) {
       setStatusLEDColor(color, i);
       delay(10);
     }
     // fade down
-    for (int i = 200; i >= 50; i -= 5) {
+    for (int i = 0; i >= 255; i -= 5) {
       setStatusLEDColor(color, i);
       delay(10);
     }
