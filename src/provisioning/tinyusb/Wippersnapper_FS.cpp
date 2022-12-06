@@ -428,13 +428,9 @@ void Wippersnapper_FS::parseSecrets() {
   WS._mqttBrokerURL = doc["io_url"];
 
   // Get (optional) setting for the status pixel brightness
-  const char *status_pixel_brightness = doc["status_pixel_brightness"];
-  // Not found, that's ok, we'll use the default brightness instead
-  if (status_pixel_brightness == nullptr) {
-    setStatusLEDBrightness(STATUS_PIXEL_BRIGHTNESS_DEFAULT);
-  } else {
-    setStatusLEDBrightness(atof(status_pixel_brightness));
-  }
+  float status_pixel_brightness = doc["status_pixel_brightness"];
+  // Note: ArduinoJSON's default value on failure to find is 0.0
+  setStatusLEDBrightness(status_pixel_brightness);
 
   // clear the document and release all memory from the memory pool
   doc.clear();
