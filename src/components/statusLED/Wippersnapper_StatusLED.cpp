@@ -17,8 +17,6 @@
 #include "Wippersnapper.h"
 
 extern Wippersnapper WS;
-float pixel_brightness =
-    0.2; ///< LED's brightness level, 0.0 (0%) to 1.0 (100%)
 #ifdef USE_STATUS_NEOPIXEL
 Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
     STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -118,7 +116,7 @@ void statusLEDDeinit() {
               Desired pixel brightness, from 0.0 (0%) to 1.0 (100%).
 */
 /****************************************************************************/
-void setStatusLEDBrightness(float brightness) { pixel_brightness = brightness; }
+void setStatusLEDBrightness(float brightness) { WS.status_pixel_brightness = brightness; }
 
 /****************************************************************************/
 /*!
@@ -132,8 +130,8 @@ void setStatusLEDColor(uint32_t color) {
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
-  // map() the pixel_brightness
-  int brightness = pixel_brightness * 255.0;
+  // map() the WS.status_pixel_brightness
+  int brightness = WS.status_pixel_brightness * 255.0;
   // flood all neopixels
   for (int i = 0; i < STATUS_NEOPIXEL_NUM; i++) {
     statusPixel->setPixelColor(i, brightness * red / 255,
@@ -147,8 +145,8 @@ void setStatusLEDColor(uint32_t color) {
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
-  // map() the pixel_brightness
-  int brightness = pixel_brightness * 255.0;
+  // map() the WS.status_pixel_brightness
+  int brightness = WS.status_pixel_brightness * 255.0;
   // flood all dotstar pixels
   for (int i = 0; i < STATUS_DOTSTAR_NUM; i++) {
     statusPixelDotStar->setPixelColor(i, brightness * red / 255,
@@ -161,7 +159,7 @@ void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_LED
   if (color != BLACK)
     WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN,
-                                    map(pixel_brightness, 0.0, 1.0, 0, 1023));
+                                    map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
   else
     WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
 #endif

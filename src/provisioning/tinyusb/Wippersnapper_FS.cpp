@@ -422,8 +422,18 @@ void Wippersnapper_FS::parseSecrets() {
   writeToBootOut(WS._network_ssid);
   writeToBootOut("\n");
 
-  // Optional, Set the IO URL
+  // Optionally set the MQTT broker url (used to switch btween prod. and staging)
   WS._mqttBrokerURL = doc["io_url"];
+
+  // Get (optional) setting for the status pixel brightness
+  const char *status_pixel_brightness = doc["status_pixel_brightness"];
+  // Not found, that's ok, we'll use the default brightness instead
+  if (status_pixel_brightness == nullptr) {
+    WS.status_pixel_brightness = STATUS_PIXEL_BRIGHTNESS_DEFAULT;
+  } else {
+    // take status_pixel_brightness and convert to a float 
+    WS.status_pixel_brightness = atof(status_pixel_brightness);
+  }
 
   // clear the document and release all memory from the memory pool
   doc.clear();

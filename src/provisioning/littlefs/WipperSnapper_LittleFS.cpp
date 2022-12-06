@@ -119,6 +119,16 @@ void WipperSnapper_LittleFS::parseSecrets() {
   // Optionally set the Adafruit.io URL
   WS._mqttBrokerURL = _doc["io_url"];
 
+  // Get (optional) setting for the status pixel brightness
+  const char *status_pixel_brightness = doc["status_pixel_brightness"];
+  // Not found, that's ok, we'll use the default brightness instead
+  if (status_pixel_brightness == nullptr) {
+    WS.status_pixel_brightness = STATUS_PIXEL_BRIGHTNESS_DEFAULT;
+  } else {
+    // take status_pixel_brightness and convert to a float 
+    WS.status_pixel_brightness = atof(status_pixel_brightness);
+  }
+
   // close the file
   secretsFile.close();
 

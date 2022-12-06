@@ -209,6 +209,7 @@ public:
   bool lockStatusDotStar =
       false; ///< True if status LED is using the status dotstar
   bool lockStatusLED = false; ///< True if status LED is using the built-in LED
+  float status_pixel_brightness; ///< Global status pixel's brightness (from 0.0 to 1.0)
 
   virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);

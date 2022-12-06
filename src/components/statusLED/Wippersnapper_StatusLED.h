@@ -56,6 +56,8 @@ typedef enum ws_led_status_t {
 #define LED_CONNECTED GREEN       ///< Successful registration state
 #define LED_ERROR RED             ///< Error state
 
+#define STATUS_PIXEL_BRIGHTNESS_DEFAULT 0.5 ///< Default status pixel brightness
+
 // Status LED
 bool statusLEDInit();
 void statusLEDDeinit();
