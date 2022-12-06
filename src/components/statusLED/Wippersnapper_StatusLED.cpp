@@ -71,8 +71,8 @@ bool statusLEDInit() {
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
   analogWrite(STATUS_LED_PIN, 255);
 #elif defined(ARDUINO_ARCH_ESP32)
-  WS._pwmComponent.attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
-  WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
+  WS._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
+  WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
 #else
   analogWrite(STATUS_LED_PIN, 0);
 #endif
@@ -160,10 +160,10 @@ void setStatusLEDColor(uint32_t color) {
 
 #ifdef USE_STATUS_LED
   if (color != BLACK)
-    WS._pwmComponent.writeDutyCycle(
+    WS._pwmComponent->writeDutyCycle(
         STATUS_LED_PIN, map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
   else
-    WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
 #endif
 }
 
@@ -207,8 +207,8 @@ void setStatusLEDColor(uint32_t color, int brightness) {
   if (color != BLACK)
     // re-map for pixel as a LED
     int pulseWidth = map(brightness, 0, 255, 0, 1023);
-  WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, pulseWidth);
-  else WS._pwmComponent.writeDutyCycle(STATUS_LED_PIN, 0);
+  WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
+  else WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
 #endif
 }
 
