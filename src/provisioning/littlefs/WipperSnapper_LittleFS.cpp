@@ -125,10 +125,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
   const char *status_pixel_brightness = _doc["status_pixel_brightness"];
   // Not found, that's ok, we'll use the default brightness instead
   if (status_pixel_brightness == nullptr) {
-    WS.status_pixel_brightness = STATUS_PIXEL_BRIGHTNESS_DEFAULT;
+    setStatusLEDBrightness(STATUS_PIXEL_BRIGHTNESS_DEFAULT);
   } else {
-    // take status_pixel_brightness and convert to a float
-    WS.status_pixel_brightness = atof(status_pixel_brightness);
+    setStatusLEDBrightness(atof(status_pixel_brightness));
   }
 
   // close the file
