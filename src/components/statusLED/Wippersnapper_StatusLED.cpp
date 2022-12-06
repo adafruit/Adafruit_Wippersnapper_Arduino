@@ -204,11 +204,13 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_LED
-  if (color != BLACK)
+  if (color != BLACK) {
     // re-map for pixel as a LED
     int pulseWidth = map(brightness, 0, 255, 0, 1023);
-  WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
-  else WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
+  } else {
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+  }
 #endif
 }
 
