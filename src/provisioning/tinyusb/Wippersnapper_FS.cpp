@@ -157,7 +157,7 @@ bool Wippersnapper_FS::initFilesystem() {
 
   // No file indexing on macOS
   wipperFatFs.mkdir("/.fseventsd/");
-  File writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
+  File32 writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
   if (!writeFile)
     return false;
   writeFile.close();
@@ -235,7 +235,7 @@ void Wippersnapper_FS::eraseCPFS() {
   if (wipperFatFs.exists("/boot_out.txt")) {
     wipperFatFs.remove("/boot_out.txt");
     wipperFatFs.remove("/code.py");
-    File libDir = wipperFatFs.open("/lib");
+    File32 libDir = wipperFatFs.open("/lib");
     libDir.rmRfStar();
   }
 }
@@ -261,7 +261,7 @@ bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   char sMAC[18] = {0};
 
-  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
     bootFile.println("Adafruit.io WipperSnapper");
 
@@ -293,7 +293,7 @@ bool Wippersnapper_FS::createBootFile() {
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
   // open for writing, create a new file if one doesnt exist
-  File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
+  File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (!secretsFile) {
     setStatusLEDColor(RED);
     while (1)
@@ -323,7 +323,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
 /**************************************************************************/
 void Wippersnapper_FS::parseSecrets() {
   // open file for parsing
-  File secretsFile = wipperFatFs.open("/secrets.json");
+  File32 secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
     fsHalt();
@@ -454,7 +454,7 @@ void Wippersnapper_FS::parseSecrets() {
 /**************************************************************************/
 void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
-  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
     bootFile.print(str);
     bootFile.flush();
