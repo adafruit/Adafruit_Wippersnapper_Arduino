@@ -2019,7 +2019,9 @@ void Wippersnapper::feedWDT() { Watchdog.reset(); }
 */
 /*******************************************************/
 void Wippersnapper::enableWDT(int timeoutMS) {
+  #ifndef ARDUINO_ARCH_RP2040
   Watchdog.disable();
+  #endif
   if (Watchdog.enable(timeoutMS) == 0) {
     WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
     setStatusLEDColor(LED_ERROR);

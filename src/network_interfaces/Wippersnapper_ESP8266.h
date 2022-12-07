@@ -17,10 +17,15 @@
 #ifndef WIPPERSNAPPER_ESP8266_H
 #define WIPPERSNAPPER_ESP8266_H
 
-#ifdef ARDUINO_ARCH_ESP8266
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
+
+#if defined(ARDUINO_ARCH_ESP8266)
 #include "ESP8266WiFi.h"
+#else
+#include <WiFi.h>
+#endif
 #include "Wippersnapper.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
@@ -134,7 +139,7 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
         return true;
     }
 
