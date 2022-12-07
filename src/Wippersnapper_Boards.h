@@ -130,7 +130,7 @@
 #define BOARD_ID "rpi-pico-w"
 #define USE_TINYUSB
 #define USE_STATUS_LED
-#define STATUS_LED_PIN PIN_LED
+#define STATUS_LED_PIN 32
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif
