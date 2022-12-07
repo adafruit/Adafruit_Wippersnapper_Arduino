@@ -159,13 +159,11 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_LED
-  analogWrite(STATUS_LED_PIN,  map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
-
-/*   if (color != BLACK)
+  if (color != BLACK)
     WS._pwmComponent->writeDutyCycle(
         STATUS_LED_PIN, map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
   else
-    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); */
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
 #endif
 }
 
@@ -209,11 +207,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
   if (color != BLACK) {
     // re-map for pixel as a LED
     int pulseWidth = map(brightness, 0, 255, 0, 1023);
-    analogWrite(STATUS_LED_PIN, pulseWidth);
-    //WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
   } else {
-    analogWrite(STATUS_LED_PIN, 0);
-    //WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+    WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
   }
 #endif
 }
@@ -328,7 +324,6 @@ void statusLEDBlink(ws_led_status_t statusState) {
   uint32_t ledColor = ledStatusStateToColor(statusState);
 
   while (blinkNum > 0) {
-    WS_DEBUG_PRINTLN("blink1");
     setStatusLEDColor(ledColor);
     delay(100);
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
