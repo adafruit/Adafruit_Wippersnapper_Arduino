@@ -426,6 +426,10 @@ void Wippersnapper_FS::parseSecrets() {
   // Optionally set the MQTT broker url (used to switch btween prod. and
   // staging)
   WS._mqttBrokerURL = doc["io_url"];
+  // Optionally set the MQTT broker port
+  WS._mqtt_port = doc["io_port"];
+  // Optionally set the MQTT keepalive time, in milliseconds
+  WS._mqttKeepAliveTime = doc["keep_alive_millis"];
 
   // Get (optional) setting for the status pixel brightness
   float status_pixel_brightness = doc["status_pixel_brightness"];

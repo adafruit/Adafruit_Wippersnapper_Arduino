@@ -313,6 +313,8 @@ public:
 
   const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
+  uint16_t _mqttKeepAliveTime =
+      WS_KEEPALIVE_INTERVAL_MS; /*! < MQTT KeepAlive Time */
 
   // AIO credentials
   const char *_username = NULL; /*!< Adafruit IO username */

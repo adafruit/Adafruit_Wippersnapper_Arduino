@@ -23,7 +23,8 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
-#include <WiFiClientSecure.h>
+// #include <WiFiClient.h>
+#include <WiFi.h>
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -42,7 +43,7 @@ public:
   Wippersnapper_ESP32() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
-    _mqtt_client = new WiFiClientSecure;
+    _mqtt_client = new WiFiClient;
   }
 
   /**************************************************************************/
@@ -147,9 +148,9 @@ public:
   void setupMQTTClient(const char *clientID) {
     if (WS._mqttBrokerURL == nullptr) {
       WS._mqttBrokerURL = "io.adafruit.com";
-      _mqtt_client->setCACert(_aio_root_ca_prod);
+      //_mqtt_client->setCACert(_aio_root_ca_prod);
     } else {
-      _mqtt_client->setCACert(_aio_root_ca_staging);
+      //_mqtt_client->setCACert(_aio_root_ca_staging);
     }
 
     WS._mqtt =
@@ -185,10 +186,10 @@ public:
   const char *connectionType() { return "ESP32"; }
 
 protected:
-  const char *_ssid;              ///< WiFi SSID
-  const char *_pass;              ///< WiFi password
-  const char *_mqttBrokerURL;     ///< MQTT broker URL
-  WiFiClientSecure *_mqtt_client; ///< Pointer to a secure MQTT client object
+  const char *_ssid;          ///< WiFi SSID
+  const char *_pass;          ///< WiFi password
+  const char *_mqttBrokerURL; ///< MQTT broker URL
+  WiFiClient *_mqtt_client;   ///< Pointer to a secure MQTT client object
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"

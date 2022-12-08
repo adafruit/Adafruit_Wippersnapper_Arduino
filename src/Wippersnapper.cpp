@@ -1896,7 +1896,7 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("Attempting to connect to Adafruit IO...");
-      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
+      WS._mqtt->setKeepAliveInterval(WS._mqttKeepAliveTime / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {

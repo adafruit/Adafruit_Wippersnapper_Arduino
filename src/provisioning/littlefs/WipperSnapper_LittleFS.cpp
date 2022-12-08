@@ -120,6 +120,10 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Optionally set the Adafruit.io URL
   WS._mqttBrokerURL = _doc["io_url"];
+  // Optionally set the MQTT broker port
+  WS._mqtt_port = _doc["io_port"];
+  // Optionally set the MQTT keepalive time, in milliseconds
+  WS._mqttKeepAliveTime = _doc["keep_alive_millis"];
 
   // Get (optional) setting for the status pixel brightness
   float status_pixel_brightness = _doc["status_pixel_brightness"];
