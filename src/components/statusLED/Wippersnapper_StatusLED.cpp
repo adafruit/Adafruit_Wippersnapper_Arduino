@@ -73,6 +73,8 @@ bool statusLEDInit() {
 #elif defined(ARDUINO_ARCH_ESP32)
   WS._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
   WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+  digitalWrite(STATUS_LED_PIN, 0);
 #else
   analogWrite(STATUS_LED_PIN, 0);
 #endif
@@ -159,11 +161,15 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_LED
+#ifdef ARDUINO_RASPBERRY_PI_PICO_W
+  digitalWrite(STATUS_LED_PIN, color > 0);
+#else
   if (color != BLACK)
     WS._pwmComponent->writeDutyCycle(
         STATUS_LED_PIN, map(WS.status_pixel_brightness, 0.0, 1.0, 0, 1023));
   else
     WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+#endif
 #endif
 }
 
@@ -204,6 +210,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_LED
+#ifdef ARDUINO_RASPBERRY_PI_PICO_W
+  digitalWrite(STATUS_LED_PIN, color > 0);
+#else
   if (color != BLACK) {
     // re-map for pixel as a LED
     int pulseWidth = map(brightness, 0, 255, 0, 1023);
@@ -211,6 +220,7 @@ void setStatusLEDColor(uint32_t color, int brightness) {
   } else {
     WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
   }
+#endif
 #endif
 }
 

@@ -21,7 +21,7 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM) ||                       \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) || \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
     defined(ARDUINO_RASPBERRY_PI_PICO_W)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
@@ -38,10 +38,11 @@ Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
 // Therefore there is no need to specify the SPI and SS
 Adafruit_FlashTransport_ESP32 flashTransport;
 #elif defined(ARDUINO_ARCH_RP2040)
-  // RP2040 use same flash device that store code.
-  // Therefore there is no need to specify the SPI and SS
-  // Use default (no-args) constructor to be compatible with CircuitPython partition scheme
-  Adafruit_FlashTransport_RP2040 flashTransport;
+// RP2040 use same flash device that store code.
+// Therefore there is no need to specify the SPI and SS
+// Use default (no-args) constructor to be compatible with CircuitPython
+// partition scheme
+Adafruit_FlashTransport_RP2040 flashTransport;
 #else
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
