@@ -48,7 +48,7 @@ Adafruit_FlashTransport_RP2040 flashTransport;
 #endif
 
 Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
-FatFileSystem wipperFatFs;                ///< FatFS object
+FatVolume wipperFatFs;                    ///< File system object from Adafruit SDFat
 
 Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 
