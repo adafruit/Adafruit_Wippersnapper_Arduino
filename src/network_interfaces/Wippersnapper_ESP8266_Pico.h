@@ -1,21 +1,22 @@
 /*!
- * @file Wippersnapper_ESP8266.h
+ * @file Wippersnapper_ESP8266_Pico.h
  *
  * This is a driver for using the ESP8266's network interface
- *  with Wippersnapper.
+ *  with Wippersnapper. This network interface is shared with the
+ *  Raspberry Pi Pico BSP as well.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef WIPPERSNAPPER_ESP8266_H
-#define WIPPERSNAPPER_ESP8266_H
+#ifndef Wippersnapper_ESP8266_Pico_H
+#define Wippersnapper_ESP8266_Pico_H
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
 #include "Adafruit_MQTT.h"
@@ -51,7 +52,7 @@ extern Wippersnapper WS;
    interface.
 */
 /******************************************************************************/
-class Wippersnapper_ESP8266 : public Wippersnapper {
+class Wippersnapper_ESP8266_Pico : public Wippersnapper {
 
 public:
   /**************************************************************************/
@@ -67,7 +68,7 @@ public:
           Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266() : Wippersnapper() {
+  Wippersnapper_ESP8266_Pico() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
     _wifi_client = new WiFiClient;
@@ -78,7 +79,7 @@ public:
   @brief  Destructor for the ESP8266's network iface.
   */
   /**************************************************************************/
-  ~Wippersnapper_ESP8266() {
+  ~Wippersnapper_ESP8266_Pico() {
     if (_wifi_client)
       delete _wifi_client;
     if (_mqtt)
@@ -264,4 +265,4 @@ protected:
 };
 
 #endif // ARDUINO_ARCH_ESP8266
-#endif // WIPPERSNAPPER_ESP8266_H
+#endif // Wippersnapper_ESP8266_Pico_H
