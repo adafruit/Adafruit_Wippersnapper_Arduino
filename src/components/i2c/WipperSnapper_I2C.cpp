@@ -325,6 +325,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd40->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd40);
     WS_DEBUG_PRINTLN("SCD40 Initialized Successfully!");
+  } else if (strcmp("sen55", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sen5x = new WipperSnapper_I2C_Driver_SEN5X(this->_i2c, i2cAddress);
+    if (!_sen5x->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize SEN5X!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _sen5x->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_sen5x);
+    WS_DEBUG_PRINTLN("SEN5X Initialized Successfully!");
   } else if (strcmp("sht40", msgDeviceInitReq->i2c_device_name) == 0) {
     _sht4x = new WipperSnapper_I2C_Driver_SHT4X(this->_i2c, i2cAddress);
     if (!_sht4x->begin()) {
