@@ -230,7 +230,6 @@ jobs:
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
     - name: upload build artifacts
       uses: actions/upload-artifact@v2
       with:
