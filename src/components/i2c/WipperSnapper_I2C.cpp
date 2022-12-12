@@ -16,9 +16,10 @@
 
 #include "WipperSnapper_I2C.h"
 
+#ifdef ARDUINO_ARCH_RP2040
 // Wire uses GPIO4 (SDA) and GPIO5 (SCL) automatically.
-// TODO: ifdef block this for RP2040 arch
 #define WIRE Wire
+#endif
 
 /***************************************************************************************************************/
 /*!
