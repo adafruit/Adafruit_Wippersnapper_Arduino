@@ -25,9 +25,11 @@
 #include <Servo.h>
 #endif
 
-#define MAX_SERVO_NUM 16          ///< Maximum number of servo objects
+#define MAX_SERVO_NUM 16 ///< Maximum number of servo objects
 #ifdef ARDUINO_ARCH_RP2040
-#define MAX_SERVO_NUM 8          ///< Maximum number of servo objects for Pico, https://arduino-pico.readthedocs.io/en/latest/servo.html
+#define MAX_SERVO_NUM                                                          \
+  8 ///< Maximum number of servo objects for Pico,
+    ///< https://arduino-pico.readthedocs.io/en/latest/servo.html
 #endif
 
 #define MIN_SERVO_PULSE_WIDTH 500 ///< Default min. servo pulse width of 500uS
