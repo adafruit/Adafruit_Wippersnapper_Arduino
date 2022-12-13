@@ -16,6 +16,11 @@
 
 #include "WipperSnapper_I2C.h"
 
+#ifdef ARDUINO_ARCH_RP2040
+// Wire uses GPIO4 (SDA) and GPIO5 (SCL) automatically.
+#define WIRE Wire
+#endif
+
 /***************************************************************************************************************/
 /*!
     @brief    Creates a new WipperSnapper I2C component.
@@ -82,6 +87,10 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     _i2c = new TwoWire();
     _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
     _i2c->setClock(50000);
+    _isInit = true;
+#elif defined(ARDUINO_ARCH_RP2040)
+    _i2c = &WIRE;
+    _i2c->begin();
     _isInit = true;
 #else
     // SAMD

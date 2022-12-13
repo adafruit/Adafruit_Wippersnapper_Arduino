@@ -21,7 +21,8 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM) ||                       \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT)
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
+    defined(ARDUINO_RASPBERRY_PI_PICO_W)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -36,12 +37,18 @@ Adafruit_FlashTransport_SPI flashTransport(EXTERNAL_FLASH_USE_CS,
 // ESP32-S2 uses same flash device that stores code.
 // Therefore there is no need to specify the SPI and SS
 Adafruit_FlashTransport_ESP32 flashTransport;
+#elif defined(ARDUINO_ARCH_RP2040)
+// RP2040 use same flash device that store code.
+// Therefore there is no need to specify the SPI and SS
+// Use default (no-args) constructor to be compatible with CircuitPython
+// partition scheme
+Adafruit_FlashTransport_RP2040 flashTransport;
 #else
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
 
 Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
-FatFileSystem wipperFatFs;                ///< FatFS object
+FatVolume wipperFatFs;                    ///< File system object from Adafruit SDFat
 
 Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 
@@ -151,7 +158,7 @@ bool Wippersnapper_FS::initFilesystem() {
 
   // No file indexing on macOS
   wipperFatFs.mkdir("/.fseventsd/");
-  File writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
+  File32 writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
   if (!writeFile)
     return false;
   writeFile.close();
@@ -229,7 +236,7 @@ void Wippersnapper_FS::eraseCPFS() {
   if (wipperFatFs.exists("/boot_out.txt")) {
     wipperFatFs.remove("/boot_out.txt");
     wipperFatFs.remove("/code.py");
-    File libDir = wipperFatFs.open("/lib");
+    File32 libDir = wipperFatFs.open("/lib");
     libDir.rmRfStar();
   }
 }
@@ -255,7 +262,7 @@ bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   char sMAC[18] = {0};
 
-  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
     bootFile.println("Adafruit.io WipperSnapper");
 
@@ -287,7 +294,7 @@ bool Wippersnapper_FS::createBootFile() {
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
   // open for writing, create a new file if one doesnt exist
-  File secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
+  File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   if (!secretsFile) {
     setStatusLEDColor(RED);
     while (1)
@@ -317,7 +324,7 @@ void Wippersnapper_FS::createConfigFileSkel() {
 /**************************************************************************/
 void Wippersnapper_FS::parseSecrets() {
   // open file for parsing
-  File secretsFile = wipperFatFs.open("/secrets.json");
+  File32 secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
     fsHalt();
@@ -448,7 +455,7 @@ void Wippersnapper_FS::parseSecrets() {
 /**************************************************************************/
 void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
-  File bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
   if (bootFile) {
     bootFile.print(str);
     bootFile.flush();
