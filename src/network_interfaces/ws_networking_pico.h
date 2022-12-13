@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef ws_networking_pico_H
-#define ws_networking_pico_H
+#ifndef WS_NETWORKING_PICO_H
+#define WS_NETWORKING_PICO_H
 
 #ifdef ARDUINO_ARCH_RP2040
 #include "Wippersnapper.h"
@@ -36,7 +36,7 @@ class ws_networking_pico : public Wippersnapper {
 public:
   /**************************************************************************/
   /*!
-  @brief  Initializes the Adafruit IO class for Raspberry Pi Pico devices.
+  @brief  Initializes the WipperSnapper class for RPi Pico.
   */
   /**************************************************************************/
   ws_networking_pico() : Wippersnapper() {
@@ -47,7 +47,7 @@ public:
 
   /**************************************************************************/
   /*!
-  @brief  Destructor for the Adafruit IO RPi Pico network interface.
+  @brief  Destructor
   */
   /**************************************************************************/
   ~ws_networking_pico() {
@@ -275,4 +275,4 @@ protected:
 };
 
 #endif // ARDUINO_ARCH_RP2040
-#endif // ws_networking_pico_H
+#endif // WS_NETWORKING_PICO_H
