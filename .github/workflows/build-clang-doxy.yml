@@ -202,7 +202,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["picow_rp2040_tinyusb_wippersnapper"]
+        arduino-platform: ["rpi_pico_w"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -236,7 +236,6 @@ jobs:
         name: build-files
         path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
 
   # NOTE: This does NOT release artifacts, it only builds
