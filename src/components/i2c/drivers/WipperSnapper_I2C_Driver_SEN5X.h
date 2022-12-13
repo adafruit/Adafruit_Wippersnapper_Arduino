@@ -59,6 +59,7 @@ public:
     if (error_stop != 0) {
       return false;
     }
+    delay(1100); // Wait 1 second for sensors to start recording + 100ms for reset
     u_int16_t error_start = _sen->startMeasurement();
     if (error_start != 0) {
       return false;
