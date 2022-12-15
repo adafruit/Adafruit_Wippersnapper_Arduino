@@ -945,6 +945,49 @@ void WipperSnapper_Component_I2C::update() {
       (*iter)->setSensorGasResistancePeriodPrv(curTime);
     }
 
+    // NOx-index sensor
+    curTime = millis();
+    if ((*iter)->getSensorNOxIndexPeriod() != 0L &&
+        curTime - (*iter)->getSensorNOxIndexPeriodPrv() >
+            (*iter)->getSensorNOxIndexPeriod()) {
+      if ((*iter)->getEventNOxIndex(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tNOx Index: ");
+        WS_DEBUG_PRINT(event.nox_index);
+
+        fillEventMessage(
+            &msgi2cResponse, event.data[0],
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to obtain NOx index sensor reading!");
+      }
+      (*iter)->setSensorNOxIndexPeriodPrv(curTime);
+    }
+
+    // VOC-index sensor
+    curTime = millis();
+    if ((*iter)->getSensorVOCIndexPeriod() != 0L &&
+        curTime - (*iter)->getSensorVOCIndexPeriodPrv() >
+            (*iter)->getSensorVOCIndexPeriod()) {
+      if ((*iter)->getEventVOCIndex(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tVOC Index: ");
+        WS_DEBUG_PRINT(event.voc_index);
+
+        fillEventMessage(
+            &msgi2cResponse, event.data[0],
+            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "ERROR: Failed to obtain VOC index sensor reading!");
+      }
+      (*iter)->setSensorVOCIndexPeriodPrv(curTime);
+    }
     // Proximity sensor
     curTime = millis();
     if ((*iter)->sensorProximityPeriod() != 0L &&

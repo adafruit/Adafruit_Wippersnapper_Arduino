@@ -59,7 +59,8 @@ public:
     if (error_stop != 0) {
       return false;
     }
-    delay(1100); // Wait 1 second for sensors to start recording + 100ms for reset
+    // Wait 1 second for sensors to start recording + 100ms for reset i2c command
+    delay(1100); 
     u_int16_t error_start = _sen->startMeasurement();
     if (error_start != 0) {
       return false;
@@ -124,20 +125,20 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the SEN5X's current NOX/VOC reading.
-      @param    rawEvent
-                  Adafruit Sensor event for Raw data (4 float array)
+      @brief    Gets the SEN5X's current NOX reading.
+      @param    noxIndexEvent
+                  Adafruit Sensor event for NOx Index (1-500, 100 is normal)
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventRaw(sensors_event_t *rawEvent) {
-    float massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
-        ambientTemperature, vocIndex, noxIndex;
+  bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
+    u_int16_t massConcentrationPm1p0, massConcentrationPm2p5,
+        massConcentrationPm4p0, massConcentrationPm10p0;
+    int16_t ambientHumidity, ambientTemperature, vocIndex, noxIndex;
     uint16_t error;
 
-    error = _sen->readMeasuredValues(
+    error = _sen->readMeasuredValuesAsIntegers(
         massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
         massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
         noxIndex);
@@ -145,8 +146,35 @@ public:
       return false;
     }
 
-    rawEvent->data[0] = noxIndex; // alphabetical?
-    rawEvent->data[1] = vocIndex;
+    noxIndexEvent->nox_index = noxIndex;
+    return true;
+  }
+
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SEN5X's current VOC reading.
+      @param    vocIndexEvent
+                  Adafruit Sensor event for VOC Index (1-500, 100 is normal)
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
+    u_int16_t massConcentrationPm1p0, massConcentrationPm2p5,
+        massConcentrationPm4p0, massConcentrationPm10p0;
+    int16_t ambientHumidity, ambientTemperature, vocIndex, noxIndex;
+    uint16_t error;
+
+    error = _sen->readMeasuredValuesAsIntegers(
+        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
+        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
+        noxIndex);
+    if ((_rawSensorPeriod != 0 && error) || noxIndex == 0 || vocIndex == 0) {
+      return false;
+    }
+
+    vocIndexEvent->voc_index = vocIndex;
     return true;
   }
 

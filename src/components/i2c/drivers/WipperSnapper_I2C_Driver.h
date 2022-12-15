@@ -121,6 +121,12 @@ public:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
       _gasResistancePeriod = sensorPeriod;
       break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX:
+      _NOxIndexPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX:
+      _VOCIndexPeriod = sensorPeriod;
+      break;
     default:
       break;
     }
@@ -926,6 +932,109 @@ public:
     return false;
   }
 
+  /****************************** SENSOR_TYPE: NOx Index (index)
+   * *******************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the NOx Index
+     sensor's period, if set.
+      @returns  Time when the  NOx Index sensor should be polled,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorNOxIndexPeriod() { return _NOxIndexPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the NOx Index sensor was queried last.
+      @returns  Time when the NOx Index sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorNOxIndexPeriodPrv() {
+    return _NOxIndexPeriodPrv;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the object NOx Index sensor
+                was queried.
+      @param    period
+                The time when the NOx Index sensor was queried
+     last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorNOxIndexPeriodPrv(long period) {
+    _NOxIndexPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a NOx Index sensor and converts
+                the reading into the expected SI unit.
+      @param    gasEvent
+                NOx Index sensor reading, in ohms.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) {
+    return false;
+  }
+
+  /****************************** SENSOR_TYPE: VOC Index (index)
+   * *******************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the VOC Index
+     sensor's period, if set.
+      @returns  Time when the  VOC Index sensor should be polled,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorVOCIndexPeriod() { return _VOCIndexPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the VOC Index sensor was queried last.
+      @returns  Time when the VOC Index sensor was last queried,
+                in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorVOCIndexPeriodPrv() {
+    return _VOCIndexPeriodPrv;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the object VOC Index sensor
+                was queried.
+      @param    period
+                The time when the VOC Index sensor was queried
+     last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorVOCIndexPeriodPrv(long period) {
+    _VOCIndexPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a VOC Index sensor and converts
+                the reading into the expected SI unit.
+      @param    gasEvent
+                VOC Index sensor reading, in ohms.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) {
+    return false;
+  }
+
+
   /**************************** SENSOR_TYPE: PROXIMITY
    * ****************************/
   /*******************************************************************************/
@@ -1080,6 +1189,14 @@ protected:
   long _gasResistancePeriod = 0L;    ///< The time period between reading the
                                      ///< gas resistance sensor's value.
   long _gasResistancePeriodPrv = 0L; ///< The time when the gas resistance
+                                     ///< sensor was last read.
+  long _NOxIndexPeriod = 0L;    ///< The time period between reading the
+                                     ///< NOx Index sensor's value.
+  long _NOxIndexPeriodPrv = 0L; ///< The time when the NOx Index
+                                     ///< sensor was last read.
+  long _VOCIndexPeriod = 0L;    ///< The time period between reading the
+                                     ///< VOC Index sensor's value.
+  long _VOCIndexPeriodPrv = 0L; ///< The time when the VOC Index
                                      ///< sensor was last read.
   long _proximitySensorPeriod = 0L;  ///< The time period between reading the
                                      ///< proximity sensor's value.
