@@ -126,6 +126,9 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X's current NOX reading.
+                Note: If this value is unknown, which is true for SEN54,
+                NAN is returned. During the first 10..11 seconds after
+                power-on or device reset, this value will be NAN as well.
       @param    noxIndexEvent
                   Adafruit Sensor event for NOx Index (1-500, 100 is normal)
       @returns  True if the sensor value was obtained successfully, False
@@ -133,16 +136,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    u_int16_t massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0;
-    int16_t ambientHumidity, ambientTemperature, vocIndex, noxIndex;
+    float massConcentrationPm1p0, massConcentrationPm2p5,
+        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
+        ambientTemperature, vocIndex, noxIndex;
     uint16_t error;
 
-    error = _sen->readMeasuredValuesAsIntegers(
+    error = _sen->readMeasuredValues(
         massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
         massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
         noxIndex);
-    if ((_rawSensorPeriod != 0 && error) || noxIndex == 0 || vocIndex == 0) {
+    if ((_rawSensorPeriod != 0 && error) || noxIndex == NAN) {
       return false;
     }
 
@@ -161,16 +164,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    u_int16_t massConcentrationPm1p0, massConcentrationPm2p5,
-        massConcentrationPm4p0, massConcentrationPm10p0;
-    int16_t ambientHumidity, ambientTemperature, vocIndex, noxIndex;
+    float massConcentrationPm1p0, massConcentrationPm2p5,
+        massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
+        ambientTemperature, vocIndex, noxIndex;
     uint16_t error;
 
-    error = _sen->readMeasuredValuesAsIntegers(
+    error = _sen->readMeasuredValues(
         massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
         massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
         noxIndex);
-    if ((_rawSensorPeriod != 0 && error) || noxIndex == 0 || vocIndex == 0) {
+    if ((_rawSensorPeriod != 0 && error) || vocIndex == NAN) {
       return false;
     }
 
