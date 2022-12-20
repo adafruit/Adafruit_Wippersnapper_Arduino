@@ -54,7 +54,6 @@ void initStatusLED() {
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn OFF all pixels
     WS.lockStatusDotStar = true;
-    is_success = true;
   }
 #endif
 
@@ -73,7 +72,6 @@ void initStatusLED() {
 #endif
 
   WS.lockStatusLED = true; // set global pin "lock" flag
-  is_success = true;
 #endif
 }
 
