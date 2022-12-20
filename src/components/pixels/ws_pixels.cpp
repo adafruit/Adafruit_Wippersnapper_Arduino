@@ -292,7 +292,8 @@ int ws_pixels::getStrandIdx(int16_t dataPin,
 /**************************************************************************/
 void ws_pixels::deleteStrand(
     wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg) {
-  int strandIdx = getStrandIdx(atoi(pixelsDeleteMsg->pixels_pin_data + 1), pixelsDeleteMsg->pixels_type);
+  int strandIdx = getStrandIdx(atoi(pixelsDeleteMsg->pixels_pin_data + 1),
+                               pixelsDeleteMsg->pixels_type);
   if (strandIdx == -1) {
     WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
     return;

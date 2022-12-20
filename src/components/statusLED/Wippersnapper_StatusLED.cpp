@@ -42,11 +42,11 @@ void initStatusLED() {
   pinMode(NEOPIXEL_POWER, OUTPUT);
   digitalWrite(NEOPIXEL_POWER, HIGH);
 #endif
-    statusPixel = new Adafruit_NeoPixel(
-        STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
-    statusPixel->begin();
-    statusPixel->show(); // turn OFF all pixels
-    WS.lockStatusNeoPixel = true;
+  statusPixel = new Adafruit_NeoPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN,
+                                      NEO_GRB + NEO_KHZ800);
+  statusPixel->begin();
+  statusPixel->show(); // turn OFF all pixels
+  WS.lockStatusNeoPixel = true;
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
@@ -330,8 +330,7 @@ uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
               Hardware's status state.
 */
 /****************************************************************************/
-void statusLEDSolid(
-    ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
+void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return;
