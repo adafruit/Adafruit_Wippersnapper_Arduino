@@ -192,6 +192,17 @@ void Wippersnapper::set_ssid_pass() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
+/***********************************************************/
+/*!
+@brief   Performs a scan of local WiFi networks.
+@returns True if `_network_ssid` is found, False otherwise.
+*/
+/***********************************************************/
+bool Wippersnapper::check_valid_ssid() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return false;
+}
+
 /****************************************************************************/
 /*!
     @brief    Configures the device's Adafruit IO credentials. This method
@@ -1918,7 +1929,7 @@ void Wippersnapper::errorWriteHang(String error) {
   // Signal and hang forever
   while (1) {
     WS.feedWDT();
-    blinkStatusLED(WS_LED_STATUS_ERROR_RUNTIME);
+    statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
   }
 }
@@ -1938,41 +1949,47 @@ void Wippersnapper::runNetFSM() {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_MQTT");
       if (WS._mqtt->connected()) {
+        // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
-      // WS_DEBUG_PRINTLN("FSM_NET_CHECK_NETWORK");
       if (networkStatus() == WS_NET_CONNECTED) {
-        // WS_DEBUG_PRINTLN("Connected to WiFi");
+        // WS_DEBUG_PRINTLN("Connected to WiFi!");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      // WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_NETWORK");
+      WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
+      // Perform a WiFi scan and check if SSID within
+      // secrets.json is within the scanned SSIDs
+      if (!check_valid_ssid())
+        haltError("ERROR: Unable to find WiFi network, rebooting soon...",
+                  WS_LED_STATUS_WIFI_CONNECTING);
+
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
         // blink before we connect
-        blinkStatusLED(WS_LED_STATUS_WIFI_CONNECTING);
+        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
         WS.feedWDT();
         // attempt to connect
         WS_DEBUG_PRINTLN("Attempting to connect to WiFi...");
         _connect();
         WS.feedWDT();
         // blink to simulate a delay to allow wifi connection to process
-        blinkStatusLED(WS_LED_STATUS_WIFI_CONNECTING);
+        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
         maxAttempts--;
       }
+
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED)
         haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
@@ -1980,12 +1997,12 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WS_DEBUG_PRINTLN("FSM_NET_ESTABLISH_MQTT");
+      WS_DEBUG_PRINTLN("Attempting to connect to Adafruit IO...");
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        blinkStatusLED(WS_LED_STATUS_MQTT_CONNECTING);
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -1993,7 +2010,7 @@ void Wippersnapper::runNetFSM() {
         }
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
-        blinkStatusLED(WS_LED_STATUS_MQTT_CONNECTING);
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         delay(1800);
         maxAttempts--;
       }
@@ -2022,9 +2039,15 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
   for (;;) {
-    showSolidStatusLED(ledStatusColor);
     // let the WDT fail out and reset!
+    statusLEDSolid(ledStatusColor);
+#ifndef ARDUINO_ARCH_ESP8266
     delay(100);
+#else
+    // Calls to delay() and yield() feed the ESP8266's
+    // hardware and software watchdog timers, delayMicroseconds does not.
+    delayMicroseconds(100);
+#endif
   }
 }
 
@@ -2077,7 +2100,7 @@ void Wippersnapper::pingBroker() {
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
-    blinkStatusLED(WS_LED_STATUS_KAT);
+    statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }
 }
@@ -2087,11 +2110,7 @@ void Wippersnapper::pingBroker() {
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
-void Wippersnapper::feedWDT() {
-#ifndef ESP8266
-  Watchdog.reset();
-#endif
-}
+void Wippersnapper::feedWDT() { Watchdog.reset(); }
 
 /********************************************************/
 /*!
@@ -2102,8 +2121,9 @@ void Wippersnapper::feedWDT() {
 */
 /*******************************************************/
 void Wippersnapper::enableWDT(int timeoutMS) {
-#ifndef ESP8266
+#ifndef ARDUINO_ARCH_RP2040
   Watchdog.disable();
+#endif
   if (Watchdog.enable(timeoutMS) == 0) {
     WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
     setStatusLEDColor(LED_ERROR);
@@ -2111,7 +2131,6 @@ void Wippersnapper::enableWDT(int timeoutMS) {
       delay(100);
     }
   }
-#endif
 }
 
 /********************************************************/
@@ -2227,6 +2246,7 @@ void printDeviceInfo() {
   WS_DEBUG_PRINTLN(WS._username);
   WS_DEBUG_PRINT("WiFi Network: ");
   WS_DEBUG_PRINTLN(WS._network_ssid);
+
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],
           WS._macAddr[2], WS._macAddr[3], WS._macAddr[4], WS._macAddr[5]);
@@ -2305,7 +2325,7 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // goto application
-  fadeStatusLED(GREEN, 3);
+  statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
 }

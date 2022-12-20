@@ -1,23 +1,23 @@
 /*!
- * @file Wippersnapper_ESP32.h
+ * @file ws_networking_pico.h
  *
- * This is a driver for using the ESP32's network interface
- * with Adafruit IO Wippersnapper.
+ * This is a driver for using the Raspberry Pi Pico (RP2040)
+ * network interface with Adafruit IO Wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef Wippersnapper_ESP32_H
-#define Wippersnapper_ESP32_H
+#ifndef WS_NETWORKING_PICO_H
+#define WS_NETWORKING_PICO_H
 
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_RP2040
 #include "Wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
@@ -28,18 +28,18 @@ extern Wippersnapper WS;
 
 /****************************************************************************/
 /*!
-    @brief  Class for using the ESP32 network interface.
+    @brief  Class for using the Raspberry Pi Pico network interface.
 */
 /****************************************************************************/
-class Wippersnapper_ESP32 : public Wippersnapper {
+class ws_networking_pico : public Wippersnapper {
 
 public:
   /**************************************************************************/
   /*!
-  @brief  Initializes the Adafruit IO class for ESP32 devices.
+  @brief  Initializes the WipperSnapper class for RPi Pico.
   */
   /**************************************************************************/
-  Wippersnapper_ESP32() : Wippersnapper() {
+  ws_networking_pico() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
     _mqtt_client = new WiFiClientSecure;
@@ -47,10 +47,10 @@ public:
 
   /**************************************************************************/
   /*!
-  @brief  Destructor for the Adafruit IO AirLift class.
+  @brief  Destructor
   */
   /**************************************************************************/
-  ~Wippersnapper_ESP32() {
+  ~ws_networking_pico() {
     if (_mqtt_client)
       delete _mqtt_client;
   }
@@ -108,7 +108,7 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
         return true;
     }
 
@@ -127,8 +127,8 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Sets the ESP32's unique client identifier
-  @note   On ESP32, the UID is the MAC address.
+  @brief  Sets the RPi Pico's unique client identifier
+  @note   On RPi Pico, the UID is the MAC address.
   */
   /********************************************************/
   void getMacAddr() {
@@ -159,7 +159,7 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Returns the network status of an ESP32 module.
+  @brief  Returns the network status of an RPi Pico.
   @return ws_status_t
   */
   /********************************************************/
@@ -179,10 +179,10 @@ public:
   /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
-  @return ESP32
+  @return Pico
   */
   /*******************************************************************/
-  const char *connectionType() { return "ESP32"; }
+  const char *connectionType() { return "Pico"; }
 
 protected:
   const char *_ssid;              ///< WiFi SSID
@@ -274,5 +274,5 @@ protected:
   }
 };
 
-#endif // ARDUINO_ARCH_ESP32_H
-#endif // Wippersnapper_ESP32_H
+#endif // ARDUINO_ARCH_RP2040
+#endif // WS_NETWORKING_PICO_H

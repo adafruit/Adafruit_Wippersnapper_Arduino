@@ -16,6 +16,11 @@
 
 #include "WipperSnapper_I2C.h"
 
+#ifdef ARDUINO_ARCH_RP2040
+// Wire uses GPIO4 (SDA) and GPIO5 (SCL) automatically.
+#define WIRE Wire
+#endif
+
 /***************************************************************************************************************/
 /*!
     @brief    Creates a new WipperSnapper I2C component.
@@ -82,6 +87,10 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     _i2c = new TwoWire();
     _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
     _i2c->setClock(50000);
+    _isInit = true;
+#elif defined(ARDUINO_ARCH_RP2040)
+    _i2c = &WIRE;
+    _i2c->begin();
     _isInit = true;
 #else
     // SAMD
@@ -283,17 +292,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _mcp9808->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mcp9808);
     WS_DEBUG_PRINTLN("MCP9808 Initialized Successfully!");
-  } else if (strcmp("mcp9601", msgDeviceInitReq->i2c_device_name) == 0) {
-    _mcp9601 = new WipperSnapper_I2C_Driver_MCP9601(this->_i2c, i2cAddress);
-    if (!_mcp9601->begin()) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MCP9601!");
-      _busStatusResponse =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
-      return false;
-    }
-    _mcp9601->configureDriver(msgDeviceInitReq);
-    drivers.push_back(_mcp9601);
-    WS_DEBUG_PRINTLN("MCP9601 Initialized Successfully!");
   } else if (strcmp("tsl2591", msgDeviceInitReq->i2c_device_name) == 0) {
     _tsl2591 = new WipperSnapper_I2C_Driver_TSL2591(this->_i2c, i2cAddress);
     if (!_tsl2591->begin()) {
@@ -394,6 +392,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _ss->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ss);
     WS_DEBUG_PRINTLN("STEMMA Soil Sensor Initialized Successfully!");
+  } else if (strcmp("vl53l0x", msgDeviceInitReq->i2c_device_name) == 0) {
+    _vl53l0x = new WipperSnapper_I2C_Driver_VL53L0X(this->_i2c, i2cAddress);
+    if (!_vl53l0x->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize VL53L0X!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _vl53l0x->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_vl53l0x);
+    WS_DEBUG_PRINTLN("VL53L0X Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -923,6 +932,28 @@ void WipperSnapper_Component_I2C::update() {
             "ERROR: Failed to obtain gas resistance sensor reading!");
       }
       (*iter)->setSensorGasResistancePeriodPrv(curTime);
+    }
+
+    // Proximity sensor
+    curTime = millis();
+    if ((*iter)->sensorProximityPeriod() != 0L &&
+        curTime - (*iter)->SensorProximityPeriodPrv() >
+            (*iter)->sensorProximityPeriod()) {
+      if ((*iter)->getEventProximity(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tProximity: ");
+        WS_DEBUG_PRINT(event.data[0]);
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY);
+
+        (*iter)->setSensorProximityPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get proximity sensor reading!");
+      }
     }
 
     // Did this driver obtain data from sensors?

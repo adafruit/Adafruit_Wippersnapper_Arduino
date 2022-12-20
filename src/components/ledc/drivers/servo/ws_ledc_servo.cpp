@@ -62,7 +62,8 @@ void ws_ledc_servo::setLEDCDriver(ws_ledc *ledcManager) {
 uint8_t ws_ledc_servo::attach(int pin, int minPulseWidth, int maxPulseWidth,
                               int servoFreq) {
   // Attempt to attach a pin to ledc channel
-  uint8_t chan = _ledcMgr->attachPin((uint8_t)pin, (double)servoFreq, 16);
+  uint8_t chan =
+      _ledcMgr->attachPin((uint8_t)pin, (double)servoFreq, LEDC_TIMER_WIDTH);
   if (chan == LEDC_CH_ERR) // error!
     return chan;
   // configure the servo object and assign it to a pin

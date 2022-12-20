@@ -75,9 +75,7 @@
 // Note: These might be better off in their respective wrappers
 #include <SPI.h>
 
-#ifndef ESP8266
 #include "Adafruit_SleepyDog.h"
-#endif
 
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -88,7 +86,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.55" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.57" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -215,10 +213,14 @@ public:
   bool lockStatusNeoPixel; ///< True if status LED is using the status neopixel
   bool lockStatusDotStar;  ///< True if status LED is using the status dotstar
   bool lockStatusLED;      ///< True if status LED is using the built-in LED
+  float status_pixel_brightness =
+      STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
+                                       ///< (from 0.0 to 1.0)
 
   virtual void set_user_key();
   virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
+  virtual bool check_valid_ssid();
 
   virtual void _connect();
   virtual void _disconnect();
@@ -327,8 +329,7 @@ public:
 
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
-  char *_topic_description =
-      NULL; /*!< MQTT topic for the device description  */
+  char *_topic_description = NULL; /*!< MQTT topic for the device description */
   char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
   char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
                                    to a broker. */

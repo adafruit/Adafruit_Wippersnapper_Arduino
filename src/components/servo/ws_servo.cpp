@@ -17,18 +17,6 @@
 
 /**************************************************************************/
 /*!
-    @brief  Constructor
-*/
-/**************************************************************************/
-ws_servo::ws_servo() {
-  for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    _servos[i].pin = 255;
-    _servos[i].servoObj = nullptr;
-  }
-}
-
-/**************************************************************************/
-/*!
     @brief  Destructor
 */
 /**************************************************************************/
@@ -38,6 +26,24 @@ ws_servo::~ws_servo() {
     if (_servos[i].servoObj->attached())
       _servos[i].servoObj->detach();
   }
+}
+
+/**************************************************************************/
+/*!
+    @brief  Attempts to get the servoComponent for the desired pin.
+    @param  pin  Desired GPIO pin.
+    @returns servoComponent within _servos[] if found, nullptr otherwise.
+*/
+/**************************************************************************/
+servoComponent *ws_servo::getServoComponent(uint8_t pin) {
+  for (int i = 0; i < sizeof(_servos) / sizeof(_servos[0]); i++) {
+    WS_DEBUG_PRINTLN(_servos[i].pin);
+    if (_servos[i].pin == pin)
+      return &_servos[i];
+  }
+  WS_DEBUG_PRINT("ERROR: Can not find servo on pin #");
+  WS_DEBUG_PRINTLN(pin);
+  return nullptr;
 }
 
 /**************************************************************************/
@@ -62,53 +68,51 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
   Servo *servo = new Servo();
 #endif
 
-  uint16_t rc = 255;
+  uint16_t rc = ERR_SERVO_ATTACH;
 #ifdef ARDUINO_ARCH_ESP32
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
 #else
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth);
 #endif
-  if (rc == 255)
+  if (rc == ERR_SERVO_ATTACH)
     return false; // allocation or pin error
 
   // Attempt to allocate an unused servo
   int servoIdx = -1;
   for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    Serial.println(_servos[i].pin);
-    if (_servos[i].pin == 255) {
+    if (_servos[i].pin == 0) {
       servoIdx = i;
-      Serial.print("Servos IDX:");
-      Serial.println(servoIdx);
       break;
     }
-  }
-  // check if allocated
-  if (servoIdx == 255) {
-    Serial.println("ERROR: Maximum servos reached!");
-    return false;
   }
 
   // create a new servo component storage struct
   _servos[servoIdx].servoObj = servo;
   _servos[servoIdx].pin = pin;
 
+  // Write the default minimum to a servo
+  servo_write(_servos[servoIdx].pin, MIN_SERVO_PULSE_WIDTH);
   return true;
 }
 
 /**************************************************************************/
 /*!
-    @brief    Detaches a servo from a pin, frees a servo object to a pin.
+    @brief    Detaches a servo from a pin and re-allocates the GPIO pin.
     @param    pin  Desired GPIO pin.
 */
 /**************************************************************************/
 void ws_servo::servo_detach(int pin) {
-  for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    if (_servos[i].pin == pin) {
-      _servos[i].pin = 255;
-      _servos[i].servoObj->detach();
-      return;
-    }
-  }
+  // attempt to get servoComponent for desired `pin`
+  servoComponent *servoComponentPtr = getServoComponent(pin);
+  if (servoComponentPtr == nullptr)
+    return;
+
+  // reset pin to default value
+  servoComponentPtr->pin = 0;
+  // release pin from use by servo object
+  servoComponentPtr->servoObj->detach();
+  // de-init servo object
+  delete servoComponentPtr->servoObj;
 }
 
 /**************************************************************************/
@@ -119,10 +123,8 @@ void ws_servo::servo_detach(int pin) {
 */
 /**************************************************************************/
 void ws_servo::servo_write(int pin, int value) {
-  for (int i = 0; i < MAX_SERVO_NUM; i++) {
-    if (_servos[i].pin == pin) {
-      _servos[i].servoObj->writeMicroseconds(value);
-      return;
-    }
-  }
+  // attempt to get servoComponent for desired `pin`
+  servoComponent *servoComponentPtr = getServoComponent(pin);
+  if (servoComponentPtr != nullptr)
+    servoComponentPtr->servoObj->writeMicroseconds(value);
 }
