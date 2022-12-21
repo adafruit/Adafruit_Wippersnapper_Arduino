@@ -35,6 +35,10 @@
 
 Wippersnapper WS;
 
+const char* fmtMemCk = "Free: %d\tMaxAlloc: %d\t PSFree: %d\n";
+#define MEMCK Serial.printf(fmtMemCk,ESP.getFreeHeap(),ESP.getMaxAllocHeap(),ESP.getFreePsram())
+
+
 Wippersnapper::Wippersnapper() {
   _mqtt = 0; // MQTT Client object
 
@@ -107,6 +111,7 @@ void Wippersnapper::provision() {
 #endif
 
   set_ssid_pass();
+  free(_littleFS); //280400 prv.
 }
 
 /**************************************************************************/
@@ -1562,11 +1567,13 @@ void Wippersnapper::subscribeErrorTopics() {
   _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
   WS._mqtt->subscribe(_err_sub);
   _err_sub->setCallback(cbErrorTopic);
+  free(WS._err_topic);
 
   // Subscribe to throttle topic
   _throttle_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._throttle_topic);
   WS._mqtt->subscribe(_throttle_sub);
   _throttle_sub->setCallback(cbThrottleTopic);
+  free(WS._throttle_topic);
 }
 
 /**************************************************************************/
@@ -1627,6 +1634,8 @@ bool Wippersnapper::generateDeviceUID() {
 bool Wippersnapper::buildWSTopics() {
   bool is_success = true;
 
+  MEMCK;
+
   // Create global registration topic
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
@@ -1655,6 +1664,13 @@ bool Wippersnapper::buildWSTopics() {
   } else { // malloc failed
     is_success = false;
   }
+
+  // Subscribe to registration status topic
+  _topic_description_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
+  WS._mqtt->subscribe(_topic_description_sub);
+  _topic_description_sub->setCallback(cbRegistrationStatus);
+  free(WS._topic_description_status);
 
   // Create registration status complete topic
   WS._topic_description_status_complete =
@@ -1715,6 +1731,13 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Subscribe to signal topic
+  _topic_signal_brkr_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_brkr_sub);
+  _topic_signal_brkr_sub->setCallback(cbSignalTopic);
+  free(WS._topic_signal_brkr);
+
   // Create device-to-broker i2c signal topic
   WS._topic_signal_i2c_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
@@ -1730,6 +1753,13 @@ bool Wippersnapper::buildWSTopics() {
   } else { // malloc failed
     is_success = false;
   }
+
+  // Subscribe to signal's I2C sub-topic
+  _topic_signal_i2c_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_i2c_sub);
+  _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
+  free(WS._topic_signal_i2c_brkr);
 
   // Create broker-to-device i2c signal topic
   WS._topic_signal_i2c_device = (char *)malloc(
@@ -1762,6 +1792,13 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Subscribe to signal's ds18x20 sub-topic
+  _topic_signal_ds18_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_ds18_sub);
+  _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
+  free(WS._topic_signal_ds18_brkr);
+
   // Create broker-to-device ds18x20 topic
   WS._topic_signal_ds18_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
@@ -1790,6 +1827,13 @@ bool Wippersnapper::buildWSTopics() {
   } else { // malloc failed
     is_success = false;
   }
+
+  // Subscribe to servo sub-topic
+  _topic_signal_servo_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_servo_sub);
+  _topic_signal_servo_sub->setCallback(cbServoMsg);
+  free(WS._topic_signal_servo_brkr);
 
   // Create broker-to-device servo signal topic
   WS._topic_signal_servo_device = (char *)malloc(
@@ -1820,6 +1864,13 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
+  // Subscribe to PWM sub-topic
+  _topic_signal_pwm_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_pwm_sub);
+  _topic_signal_pwm_sub->setCallback(cbPWMMsg);
+  free(WS._topic_signal_pwm_brkr);
+
   // Topic for pwm messages from device->broker
   WS._topic_signal_pwm_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
@@ -1834,10 +1885,12 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
+  MEMCK;
+
   // Topic for pixel messages from broker->device
   WS._topic_signal_pixels_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen(MQTT_TOPIC_PIXELS_BROKER) + 1);
+      strlen("/wprsnpr/signals/broker/pixels") + 1);
   if (WS._topic_signal_pixels_brkr != NULL) {
     strcpy(WS._topic_signal_pixels_brkr, WS._username);
     strcat(WS._topic_signal_pixels_brkr, TOPIC_WS);
@@ -1847,10 +1900,19 @@ bool Wippersnapper::buildWSTopics() {
     is_success = false;
   }
 
+  // Subscribe to pixels sub-topic
+  _topic_signal_pixels_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_pixels_sub);
+  _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
+  free(WS._topic_signal_pixels_device);
+
+  MEMCK;
+
   // Topic for pixel messages from device->broker
   WS._topic_signal_pixels_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-      strlen(MQTT_TOPIC_PIXELS_DEVICE) + 1);
+      strlen("/wprsnpr/signals/device/pixels") + 1);
   if (WS._topic_signal_pixels_device != NULL) {
     strcpy(WS._topic_signal_pixels_device, WS._username);
     strcat(WS._topic_signal_pixels_device, TOPIC_WS);
@@ -1869,47 +1931,7 @@ bool Wippersnapper::buildWSTopics() {
 */
 /**************************************************************************/
 void Wippersnapper::subscribeWSTopics() {
-  // Subscribe to signal topic
-  _topic_signal_brkr_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_brkr_sub);
-  _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
-  // Subscribe to signal's I2C sub-topic
-  _topic_signal_i2c_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_i2c_sub);
-  _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
-
-  // Subscribe to signal's ds18x20 sub-topic
-  _topic_signal_ds18_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_ds18_sub);
-  _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
-
-  // Subscribe to servo sub-topic
-  _topic_signal_servo_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_servo_sub);
-  _topic_signal_servo_sub->setCallback(cbServoMsg);
-
-  // Subscribe to pixels sub-topic
-  _topic_signal_pixels_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_pixels_sub);
-  _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
-
-  // Subscribe to PWM sub-topic
-  _topic_signal_pwm_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_pwm_sub);
-  _topic_signal_pwm_sub->setCallback(cbPWMMsg);
-
-  // Subscribe to registration status topic
-  _topic_description_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
-  WS._mqtt->subscribe(_topic_description_sub);
-  _topic_description_sub->setCallback(cbRegistrationStatus);
 }
 
 /**************************************************************************/
