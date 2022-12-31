@@ -952,9 +952,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorNOxIndexPeriodPrv() {
-    return _NOxIndexPeriodPrv;
-  }
+  virtual long getSensorNOxIndexPeriodPrv() { return _NOxIndexPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -965,9 +963,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorNOxIndexPeriodPrv(long period) {
-    _NOxIndexPeriodPrv = period;
-  }
+  virtual void setSensorNOxIndexPeriodPrv(long period) { _NOxIndexPeriodPrv = period; }
 
   /*******************************************************************************/
   /*!
@@ -979,9 +975,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) {
-    return false;
-  }
+  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) { return false; }
 
   /****************************** SENSOR_TYPE: VOC Index (index)
    * *******************************/
@@ -1003,9 +997,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorVOCIndexPeriodPrv() {
-    return _VOCIndexPeriodPrv;
-  }
+  virtual long getSensorVOCIndexPeriodPrv() { return _VOCIndexPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -1016,9 +1008,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorVOCIndexPeriodPrv(long period) {
-    _VOCIndexPeriodPrv = period;
-  }
+  virtual void setSensorVOCIndexPeriodPrv(long period) { _VOCIndexPeriodPrv = period; }
 
   /*******************************************************************************/
   /*!
@@ -1030,10 +1020,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) {
-    return false;
-  }
-
+  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) { return false; }
 
   /**************************** SENSOR_TYPE: PROXIMITY
    * ****************************/
@@ -1190,13 +1177,13 @@ protected:
                                      ///< gas resistance sensor's value.
   long _gasResistancePeriodPrv = 0L; ///< The time when the gas resistance
                                      ///< sensor was last read.
-  long _NOxIndexPeriod = 0L;    ///< The time period between reading the
+  long _NOxIndexPeriod = 0L;         ///< The time period between reading the
                                      ///< NOx Index sensor's value.
-  long _NOxIndexPeriodPrv = 0L; ///< The time when the NOx Index
+  long _NOxIndexPeriodPrv = 0L;      ///< The time when the NOx Index
                                      ///< sensor was last read.
-  long _VOCIndexPeriod = 0L;    ///< The time period between reading the
+  long _VOCIndexPeriod = 0L;         ///< The time period between reading the
                                      ///< VOC Index sensor's value.
-  long _VOCIndexPeriodPrv = 0L; ///< The time when the VOC Index
+  long _VOCIndexPeriodPrv = 0L;      ///< The time when the VOC Index
                                      ///< sensor was last read.
   long _proximitySensorPeriod = 0L;  ///< The time period between reading the
                                      ///< proximity sensor's value.

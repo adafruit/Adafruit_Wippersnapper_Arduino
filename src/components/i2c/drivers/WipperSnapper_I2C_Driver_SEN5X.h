@@ -59,7 +59,7 @@ public:
     if (error_stop != 0) {
       return false;
     }
-    // Wait 1 second for sensors to start recording + 100ms for reset i2c command
+    // Wait 1 second for sensors to start recording + 100ms for reset command
     delay(1100); 
     u_int16_t error_start = _sen->startMeasurement();
     if (error_start != 0) {

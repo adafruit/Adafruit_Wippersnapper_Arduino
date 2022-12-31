@@ -957,12 +957,10 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT("\tNOx Index: ");
         WS_DEBUG_PRINT(event.nox_index);
 
-        fillEventMessage(
-            &msgi2cResponse, event.data[0],
-            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX);
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX);
       } else {
-        WS_DEBUG_PRINTLN(
-            "ERROR: Failed to obtain NOx index sensor reading!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to obtain NOx index sensor reading!");
       }
       (*iter)->setSensorNOxIndexPeriodPrv(curTime);
     }
@@ -979,12 +977,10 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT("\tVOC Index: ");
         WS_DEBUG_PRINT(event.voc_index);
 
-        fillEventMessage(
-            &msgi2cResponse, event.data[0],
-            wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX);
+        fillEventMessage(&msgi2cResponse, event.data[0],
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX);
       } else {
-        WS_DEBUG_PRINTLN(
-            "ERROR: Failed to obtain VOC index sensor reading!");
+        WS_DEBUG_PRINTLN("ERROR: Failed to obtain VOC index sensor reading!");
       }
       (*iter)->setSensorVOCIndexPeriodPrv(curTime);
     }
