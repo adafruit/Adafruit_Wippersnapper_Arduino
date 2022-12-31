@@ -60,7 +60,7 @@ public:
       return false;
     }
     // Wait 1 second for sensors to start recording + 100ms for reset command
-    delay(1100); 
+    delay(1100);
     u_int16_t error_start = _sen->startMeasurement();
     if (error_start != 0) {
       return false;
@@ -152,7 +152,6 @@ public:
     noxIndexEvent->nox_index = noxIndex;
     return true;
   }
-
 
   /*******************************************************************************/
   /*!

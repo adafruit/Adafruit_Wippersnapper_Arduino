@@ -963,7 +963,9 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorNOxIndexPeriodPrv(long period) { _NOxIndexPeriodPrv = period; }
+  virtual void setSensorNOxIndexPeriodPrv(long period) {
+    _NOxIndexPeriodPrv = period;
+  }
 
   /*******************************************************************************/
   /*!
@@ -1008,7 +1010,9 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorVOCIndexPeriodPrv(long period) { _VOCIndexPeriodPrv = period; }
+  virtual void setSensorVOCIndexPeriodPrv(long period) {
+    _VOCIndexPeriodPrv = period;
+  }
 
   /*******************************************************************************/
   /*!
