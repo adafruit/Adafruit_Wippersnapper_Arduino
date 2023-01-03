@@ -86,7 +86,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.57" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.58" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -98,9 +98,9 @@
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
 #define MQTT_TOPIC_PIXELS_DEVICE                                               \
-  "/signals/device/pixels" ///< Pixels device->broker topic
+  "/signals/device/pixel" ///< Pixels device->broker topic
 #define MQTT_TOPIC_PIXELS_BROKER                                               \
-  "/signals/broker/pixels" ///< Pixels broker->device topic
+  "/signals/broker/pixel" ///< Pixels broker->device topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed

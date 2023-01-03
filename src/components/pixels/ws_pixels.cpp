@@ -15,13 +15,11 @@
  */
 #include "ws_pixels.h"
 
-/**************************************************************************/
-/*!
-    @brief  Constructor
-*/
-/**************************************************************************/
-ws_pixels::ws_pixels() {}
+strand_s _strands[MAX_PIXEL_STRANDS];
 
+ws_pixels::ws_pixels() {
+  
+}
 /**************************************************************************/
 /*!
     @brief  Destructor
@@ -64,10 +62,15 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
-  for (int16_t strandIdx = 0; strandIdx < sizeof(_strands); strandIdx++) {
-    if (_strands[strandIdx].type ==
-        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED)
+  strand_s strands[5];
+  WS_DEBUG_PRINTLN(strands[0].pinNeoPixel);
+  _strands[0].brightness = 0;
+  WS_DEBUG_PRINT("_strands[0].type: ");
+  WS_DEBUG_PRINTLN(_strands[0].brightness);
+  for (int16_t strandIdx = 0; strandIdx < MAX_PIXEL_STRANDS; strandIdx++) {
+    if (_strands[strandIdx].type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
       return strandIdx;
+    }
   }
   // unable to find a free strand
   return -1;
@@ -147,10 +150,16 @@ bool ws_pixels::addStrand(
 
   // attempt to allocate a free strand
   int16_t strandIdx = allocateStrand();
+  WS_DEBUG_PRINT("Strand Idx: ");
+  WS_DEBUG_PRINTLN(strandIdx);
   if (strandIdx == -1)
     is_success = false;
 
   // unpack strand type
+  WS_DEBUG_PRINT("pixelsCreateReqMsg->pixels_type: ");
+  WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_type);
+
+  _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
   _strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
 
   if (_strands[strandIdx].type ==

@@ -1328,9 +1328,9 @@ void cbPixelsMsg(char *data, uint16_t len) {
   // each oneof payload field once the field tag is known
   WS.msgPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
 
-  // Decode servo message from buffer
+  // Decode pixel message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_ServoRequest_fields,
+  if (!pb_decode(&istream, wippersnapper_signal_v1_PixelsRequest_fields,
                  &WS.msgPixels))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
@@ -1672,7 +1672,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
   WS._mqtt->subscribe(_topic_description_sub);
   _topic_description_sub->setCallback(cbRegistrationStatus);
-  free(WS._topic_description_status);
+  //free(WS._topic_description_status);
   WS_DEBUG_PRINTLN(WS._topic_description_status);
 
   // Create registration status complete topic
@@ -1739,7 +1739,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_brkr_sub);
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
-  free(WS._topic_signal_brkr);
+  //free(WS._topic_signal_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_brkr);
 
   // Create device-to-broker i2c signal topic
@@ -1763,7 +1763,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
-  free(WS._topic_signal_i2c_brkr);
+  //free(WS._topic_signal_i2c_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_i2c_brkr);
 
   // Create broker-to-device i2c signal topic
@@ -1802,7 +1802,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_ds18_sub);
   _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
-  free(WS._topic_signal_ds18_brkr);
+  //free(WS._topic_signal_ds18_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_ds18_brkr);
 
   // Create broker-to-device ds18x20 topic
@@ -1839,7 +1839,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
-  free(WS._topic_signal_servo_brkr);
+  //free(WS._topic_signal_servo_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_servo_brkr);
 
   // Create broker-to-device servo signal topic
@@ -1876,7 +1876,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_pwm_sub);
   _topic_signal_pwm_sub->setCallback(cbPWMMsg);
-  free(WS._topic_signal_pwm_brkr);
+  //free(WS._topic_signal_pwm_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_pwm_brkr);
 
   // Topic for pwm messages from device->broker
@@ -1913,7 +1913,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_pixels_sub);
   _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
-  free(WS._topic_signal_pixels_device);
+  //free(WS._topic_signal_pixels_device);
   WS_DEBUG_PRINTLN(WS._topic_signal_pixels_brkr);
 
   MEMCK;
