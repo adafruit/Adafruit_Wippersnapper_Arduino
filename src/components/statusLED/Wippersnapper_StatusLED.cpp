@@ -18,11 +18,14 @@
 
 extern Wippersnapper WS;
 #ifdef USE_STATUS_NEOPIXEL
-Adafruit_NeoPixel *statusPixel;
+Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
+    STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-Adafruit_DotStar *statusPixelDotStar;
+Adafruit_DotStar *statusPixelDotStar =
+    new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
+                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
 #endif
 
 /****************************************************************************/
@@ -31,22 +34,21 @@ Adafruit_DotStar *statusPixelDotStar;
 */
 /****************************************************************************/
 void initStatusLED() {
-
 #ifdef USE_STATUS_NEOPIXEL
-  Adafruit_NeoPixel *statusPixel = new Adafruit_NeoPixel(
-      STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+  if (!WS.lockStatusNeoPixel) {
 #if defined(NEOPIXEL_I2C_POWER)
-  pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
+    pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
+    digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
 #elif defined(NEOPIXEL_POWER)
-  pinMode(NEOPIXEL_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_POWER, HIGH);
+    pinMode(NEOPIXEL_POWER, OUTPUT);
+    digitalWrite(NEOPIXEL_POWER, HIGH);
 #endif
-  statusPixel = new Adafruit_NeoPixel(STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN,
-                                      NEO_GRB + NEO_KHZ800);
-  statusPixel->begin();
-  statusPixel->show(); // turn OFF all pixels
-  WS.lockStatusNeoPixel = true;
+    statusPixel = new Adafruit_NeoPixel(
+        STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+    statusPixel->begin();
+    statusPixel->show(); // turn OFF all pixels
+    WS.lockStatusNeoPixel = true;
+  }
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
@@ -59,6 +61,7 @@ void initStatusLED() {
 
 #ifdef USE_STATUS_LED
   pinMode(STATUS_LED_PIN, OUTPUT);
+
 // Turn off LED initially
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
   analogWrite(STATUS_LED_PIN, 255);

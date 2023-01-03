@@ -111,7 +111,7 @@ void Wippersnapper::provision() {
 #endif
 
   set_ssid_pass();
-  free(_littleFS); //280400 prv.
+  //free(_littleFS); //280400 prv.
 }
 
 /**************************************************************************/
@@ -1568,12 +1568,14 @@ void Wippersnapper::subscribeErrorTopics() {
   WS._mqtt->subscribe(_err_sub);
   _err_sub->setCallback(cbErrorTopic);
   free(WS._err_topic);
+  WS_DEBUG_PRINTLN(WS._err_topic);
 
   // Subscribe to throttle topic
   _throttle_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._throttle_topic);
   WS._mqtt->subscribe(_throttle_sub);
   _throttle_sub->setCallback(cbThrottleTopic);
   free(WS._throttle_topic);
+  WS_DEBUG_PRINTLN(WS._throttle_topic);
 }
 
 /**************************************************************************/
@@ -1671,6 +1673,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._mqtt->subscribe(_topic_description_sub);
   _topic_description_sub->setCallback(cbRegistrationStatus);
   free(WS._topic_description_status);
+  WS_DEBUG_PRINTLN(WS._topic_description_status);
 
   // Create registration status complete topic
   WS._topic_description_status_complete =
@@ -1737,6 +1740,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._mqtt->subscribe(_topic_signal_brkr_sub);
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
   free(WS._topic_signal_brkr);
+  WS_DEBUG_PRINTLN(WS._topic_signal_brkr);
 
   // Create device-to-broker i2c signal topic
   WS._topic_signal_i2c_brkr = (char *)malloc(
@@ -1760,6 +1764,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
   free(WS._topic_signal_i2c_brkr);
+  WS_DEBUG_PRINTLN(WS._topic_signal_i2c_brkr);
 
   // Create broker-to-device i2c signal topic
   WS._topic_signal_i2c_device = (char *)malloc(
@@ -1798,6 +1803,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._mqtt->subscribe(_topic_signal_ds18_sub);
   _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
   free(WS._topic_signal_ds18_brkr);
+  WS_DEBUG_PRINTLN(WS._topic_signal_ds18_brkr);
 
   // Create broker-to-device ds18x20 topic
   WS._topic_signal_ds18_device = (char *)malloc(
@@ -1834,6 +1840,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
   free(WS._topic_signal_servo_brkr);
+  WS_DEBUG_PRINTLN(WS._topic_signal_servo_brkr);
 
   // Create broker-to-device servo signal topic
   WS._topic_signal_servo_device = (char *)malloc(
@@ -1870,6 +1877,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._mqtt->subscribe(_topic_signal_pwm_sub);
   _topic_signal_pwm_sub->setCallback(cbPWMMsg);
   free(WS._topic_signal_pwm_brkr);
+  WS_DEBUG_PRINTLN(WS._topic_signal_pwm_brkr);
 
   // Topic for pwm messages from device->broker
   WS._topic_signal_pwm_device = (char *)malloc(
@@ -1906,6 +1914,7 @@ bool Wippersnapper::buildWSTopics() {
   WS._mqtt->subscribe(_topic_signal_pixels_sub);
   _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
   free(WS._topic_signal_pixels_device);
+  WS_DEBUG_PRINTLN(WS._topic_signal_pixels_brkr);
 
   MEMCK;
 
@@ -2311,6 +2320,7 @@ void Wippersnapper::connect() {
   if (!buildWSTopics()) {
     haltError("Unable to allocate space for MQTT topics");
   }
+
   if (!buildErrorTopics()) {
     haltError("Unable to allocate space for MQTT error topics");
   }
