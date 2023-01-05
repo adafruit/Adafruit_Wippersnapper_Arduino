@@ -15,7 +15,15 @@
  */
 #include "ws_pixels.h"
 
-strand_s strands[MAX_PIXEL_STRANDS] {nullptr, nullptr, wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED, 0, wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED, -1, -1, -1};
+strand_s strands[MAX_PIXEL_STRANDS]{
+    nullptr,
+    nullptr,
+    wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+    0,
+    wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
+    -1,
+    -1,
+    -1};
 
 /**************************************************************************/
 /*!
@@ -59,8 +67,10 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
-  for (int16_t strandIdx = 0; strandIdx < sizeof(strands)/sizeof(strands[0]); strandIdx++) {
-    if (strands[strandIdx].type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
+  for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
+       strandIdx++) {
+    if (strands[strandIdx].type ==
+        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
       return strandIdx;
     }
   }
@@ -154,7 +164,7 @@ bool ws_pixels::addStrand(
     char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
     // is requested pin in-use by the status pixel?
     if (getStatusNeoPixelPin() == atoi(pixelsPin) && WS.lockStatusNeoPixel)
-        releaseStatusLED(); // release it!
+      releaseStatusLED(); // release it!
     strands[strandIdx].pinNeoPixel =
         atoi(pixelsPin); // save into strand struct.
     strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
@@ -171,7 +181,8 @@ bool ws_pixels::addStrand(
         strands[strandIdx].brightness);
     strands[strandIdx].neoPixelPtr->clear();
     // Testing if we can actually write? TODO: Remove!
-    // strands[strandIdx].neoPixelPtr->setPixelColor(0, strands[strandIdx].neoPixelPtr->Color(0, 150, 0));
+    // strands[strandIdx].neoPixelPtr->setPixelColor(0,
+    // strands[strandIdx].neoPixelPtr->Color(0, 150, 0));
     strands[strandIdx].neoPixelPtr->show();
     // post-init check
     if (strands[strandIdx].neoPixelPtr->numPixels() == 0)
@@ -205,8 +216,7 @@ bool ws_pixels::addStrand(
         getDotStarStrandOrder(pixelsCreateReqMsg->pixels_ordering));
     // init. strand for output
     strands[strandIdx].dotStarPtr->begin();
-    strands[strandIdx].dotStarPtr->setBrightness(
-        strands[strandIdx].brightness);
+    strands[strandIdx].dotStarPtr->setBrightness(strands[strandIdx].brightness);
     strands[strandIdx].dotStarPtr->clear();
     strands[strandIdx].dotStarPtr->show();
 
@@ -219,13 +229,17 @@ bool ws_pixels::addStrand(
     WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_dotstar_data);
   }
 
-  // fill `wippersnapper_pixels_v1_PixelsCreateResponse` message
+  // create `wippersnapper_pixels_v1_PixelsCreateResponse` message
   size_t msgSz; // message's encoded size
   wippersnapper_signal_v1_PixelsResponse msgInitResp =
       wippersnapper_signal_v1_PixelsResponse_init_zero;
+  // fill `wippersnapper_pixels_v1_PixelsCreateResponse` message
   msgInitResp.which_payload =
       wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
   msgInitResp.payload.resp_pixels_create.is_success = is_success;
+  // TODO: This should handle the dotstar data pin as well as neopixel data pin
+  memcpy(msgInitResp.payload.resp_pixels_create.pixels_pin_data,
+         pixelsCreateReqMsg->pixels_pin_neopixel, sizeof(char) * 6);
 
   // publish `wippersnapper_pixels_v1_PixelsCreateResponse` message back to
   // broker
@@ -325,16 +339,18 @@ void ws_pixels::writeStrand(
     // let's fill the strand
     // TODO: Add back in
     // TODO: We may want a pixel class mutex lock too..
-    //for (int i = 0; i < strands[strandIdx].neoPixelPtr->numPixels(); i++) {
-    //for (int i = 0; i < 1; i++) {
-      // set color
-      //strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color, i);
+    // for (int i = 0; i < strands[strandIdx].neoPixelPtr->numPixels(); i++) {
+    // for (int i = 0; i < 1; i++) {
+    // set color
+    // strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color,
+    // i);
     //}
     // TODO: Are we pulling this apart? WWRRGGBB
-    // in the Arduino lib, colors can be specified 0xWWRRGGBB and get remapped to
-    // whatever color order was passed to the constructor.
-    // If it’s an RGB strip, the W part of the value will be ignored.
-    strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color, 1);
+    // in the Arduino lib, colors can be specified 0xWWRRGGBB and get remapped
+    // to whatever color order was passed to the constructor. If it’s an RGB
+    // strip, the W part of the value will be ignored.
+    strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color,
+                                                  1);
     // display color
     strands[strandIdx].neoPixelPtr->show();
   }
@@ -344,8 +360,8 @@ void ws_pixels::writeStrand(
     // let's fill the strand
     for (int i = 0; i < strands[strandIdx].dotStarPtr->numPixels(); i++) {
       // set color
-      strands[strandIdx].dotStarPtr->setPixelColor(
-          pixelsWriteMsg->pixels_color, i);
+      strands[strandIdx].dotStarPtr->setPixelColor(pixelsWriteMsg->pixels_color,
+                                                   i);
     }
     // display color
     strands[strandIdx].dotStarPtr->show();
