@@ -15,11 +15,8 @@
  */
 #include "ws_pixels.h"
 
-strand_s _strands[MAX_PIXEL_STRANDS];
+strand_s strands[MAX_PIXEL_STRANDS] {nullptr, nullptr, wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED, 0, wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED, -1, -1, -1};
 
-ws_pixels::ws_pixels() {
-  
-}
 /**************************************************************************/
 /*!
     @brief  Destructor
@@ -27,31 +24,31 @@ ws_pixels::ws_pixels() {
 /**************************************************************************/
 ws_pixels::~ws_pixels() {
   // de-allocate all strands
-  for (int i = 0; i < sizeof(_strands); i++)
+  for (int i = 0; i < sizeof(strands) / sizeof(strands[0]); i++)
     deallocateStrand(i);
 }
 
 /**************************************************************************/
 /*!
-    @brief  Deallocates a `strand_t` within `_strands`, provided an index.
+    @brief  Deallocates a `strand_t` within `strands`, provided an index.
     @param  strandIdx
-            The desired index of a `strand_t` within `_strands`.
+            The desired index of a `strand_t` within `strands`.
 */
 /**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
   // reset pixel type
-  _strands[strandIdx].type =
+  strands[strandIdx].type =
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED;
 
   // delete the pixel type object
-  if (_strands[strandIdx].neoPixelPtr != nullptr)
-    delete _strands[strandIdx].neoPixelPtr;
-  if ((_strands[strandIdx].dotStarPtr != nullptr))
-    delete _strands[strandIdx].dotStarPtr;
+  if (strands[strandIdx].neoPixelPtr != nullptr)
+    delete strands[strandIdx].neoPixelPtr;
+  if ((strands[strandIdx].dotStarPtr != nullptr))
+    delete strands[strandIdx].dotStarPtr;
 
   // was this pixel previously used as a status LED?
-  if (_strands[strandIdx].pinNeoPixel == getStatusNeoPixelPin() ||
-      _strands[strandIdx].pinDotStarData == getStatusDotStarDataPin())
+  if (strands[strandIdx].pinNeoPixel == getStatusNeoPixelPin() ||
+      strands[strandIdx].pinDotStarData == getStatusDotStarDataPin())
     initStatusLED();
 }
 
@@ -62,13 +59,8 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
-  strand_s strands[5];
-  WS_DEBUG_PRINTLN(strands[0].pinNeoPixel);
-  _strands[0].brightness = 0;
-  WS_DEBUG_PRINT("_strands[0].type: ");
-  WS_DEBUG_PRINTLN(_strands[0].brightness);
-  for (int16_t strandIdx = 0; strandIdx < MAX_PIXEL_STRANDS; strandIdx++) {
-    if (_strands[strandIdx].type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
+  for (int16_t strandIdx = 0; strandIdx < sizeof(strands)/sizeof(strands[0]); strandIdx++) {
+    if (strands[strandIdx].type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
       return strandIdx;
     }
   }
@@ -150,42 +142,39 @@ bool ws_pixels::addStrand(
 
   // attempt to allocate a free strand
   int16_t strandIdx = allocateStrand();
-  WS_DEBUG_PRINT("Strand Idx: ");
-  WS_DEBUG_PRINTLN(strandIdx);
   if (strandIdx == -1)
     is_success = false;
 
   // unpack strand type
-  WS_DEBUG_PRINT("pixelsCreateReqMsg->pixels_type: ");
-  WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_type);
+  // TODO: Do we do this in here or within the conditional?
+  strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
 
-  _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
-  _strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
-
-  if (_strands[strandIdx].type ==
+  if (strands[strandIdx].type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
     // is requested pin in-use by the status pixel?
     if (getStatusNeoPixelPin() == atoi(pixelsPin) && WS.lockStatusNeoPixel)
-      releaseStatusLED(); // release it!
-    _strands[strandIdx].pinNeoPixel =
+        releaseStatusLED(); // release it!
+    strands[strandIdx].pinNeoPixel =
         atoi(pixelsPin); // save into strand struct.
-    _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
-    _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
+    strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
+    strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
     // Get type of strand
     neoPixelType strandType =
         getNeoPixelStrandType(pixelsCreateReqMsg->pixels_ordering);
     // Create a new strand of NeoPixels
-    _strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
+    strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
         pixelsCreateReqMsg->pixels_num, atoi(pixelsPin), strandType);
     // initialize NeoPixel
-    _strands[strandIdx].neoPixelPtr->begin();
-    _strands[strandIdx].neoPixelPtr->setBrightness(
-        _strands[strandIdx].brightness);
-    _strands[strandIdx].neoPixelPtr->clear();
-    _strands[strandIdx].neoPixelPtr->show();
+    strands[strandIdx].neoPixelPtr->begin();
+    strands[strandIdx].neoPixelPtr->setBrightness(
+        strands[strandIdx].brightness);
+    strands[strandIdx].neoPixelPtr->clear();
+    // Testing if we can actually write? TODO: Remove!
+    // strands[strandIdx].neoPixelPtr->setPixelColor(0, strands[strandIdx].neoPixelPtr->Color(0, 150, 0));
+    strands[strandIdx].neoPixelPtr->show();
     // post-init check
-    if (_strands[strandIdx].neoPixelPtr->numPixels() == 0)
+    if (strands[strandIdx].neoPixelPtr->numPixels() == 0)
       is_success = false;
     WS_DEBUG_PRINT("Created NeoPixel strand of length ");
     WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
@@ -199,30 +188,30 @@ bool ws_pixels::addStrand(
     char *pinData = pixelsCreateReqMsg->pixels_pin_dotstar_data + 1;
     char *pinClock = pixelsCreateReqMsg->pixels_pin_dotstar_clock + 1;
     // fill strand_t with fields from `pixelsCreateReqMsg`
-    _strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
-    _strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
-    _strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
-    _strands[strandIdx].pinDotStarData = atoi(pinData);
-    _strands[strandIdx].pinDotStarClock = atoi(pinClock);
+    strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
+    strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
+    strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
+    strands[strandIdx].pinDotStarData = atoi(pinData);
+    strands[strandIdx].pinDotStarClock = atoi(pinClock);
     // release the status dotstar, if it is both in-use and the pin within
     // `pixelsCreateReqMsg`
-    if ((_strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) &&
+    if ((strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) &&
         WS.lockStatusDotStar)
       releaseStatusLED();
     // init DotStar object
-    _strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
-        pixelsCreateReqMsg->pixels_num, _strands[strandIdx].pinDotStarData,
-        _strands[strandIdx].pinDotStarClock,
+    strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
+        pixelsCreateReqMsg->pixels_num, strands[strandIdx].pinDotStarData,
+        strands[strandIdx].pinDotStarClock,
         getDotStarStrandOrder(pixelsCreateReqMsg->pixels_ordering));
     // init. strand for output
-    _strands[strandIdx].dotStarPtr->begin();
-    _strands[strandIdx].dotStarPtr->setBrightness(
-        _strands[strandIdx].brightness);
-    _strands[strandIdx].dotStarPtr->clear();
-    _strands[strandIdx].dotStarPtr->show();
+    strands[strandIdx].dotStarPtr->begin();
+    strands[strandIdx].dotStarPtr->setBrightness(
+        strands[strandIdx].brightness);
+    strands[strandIdx].dotStarPtr->clear();
+    strands[strandIdx].dotStarPtr->show();
 
     // post-init sanity check
-    if (_strands[strandIdx].dotStarPtr->numPixels() == 0)
+    if (strands[strandIdx].dotStarPtr->numPixels() == 0)
       is_success = false;
     WS_DEBUG_PRINT("Created DotStar strand of length ");
     WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
@@ -261,7 +250,7 @@ bool ws_pixels::addStrand(
 
 /**************************************************************************/
 /*!
-    @brief   Obtains the index of a `strand_t` within array of `_strands`.
+    @brief   Obtains the index of a `strand_t` within array of `strands`.
     @param   dataPin
              strand_t's data dataPin
     @param   type
@@ -274,15 +263,14 @@ int ws_pixels::getStrandIdx(int16_t dataPin,
   int strandIdx = -1;
 
   if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    for (int i = 0; i < sizeof(_strands); i++) {
-      if (_strands[i].pinNeoPixel == dataPin)
-        strandIdx = i;
-      return strandIdx;
+    for (int i = 0; i < sizeof(strands); i++) {
+      if (strands[i].pinNeoPixel == dataPin)
+        return i;
     }
   }
   if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    for (int i = 0; i < sizeof(_strands); i++) {
-      if (_strands[i].pinDotStarData == dataPin)
+    for (int i = 0; i < sizeof(strands); i++) {
+      if (strands[i].pinDotStarData == dataPin)
         strandIdx = i;
       return strandIdx;
     }
@@ -292,7 +280,7 @@ int ws_pixels::getStrandIdx(int16_t dataPin,
 
 /**************************************************************************/
 /*!
-    @brief   Deletes a `strand_t` from `_strands`, deinitializes a strand,
+    @brief   Deletes a `strand_t` from `strands`, deinitializes a strand,
              and frees its resources.
     @param   pixelsDeleteMsg
              Protobuf message from Adafruit IO containing a
@@ -323,7 +311,9 @@ void ws_pixels::writeStrand(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   // Attempt to get strand's index
   int pinData = atoi(pixelsWriteMsg->pixels_pin_data + 1);
+
   int strandIdx = getStrandIdx(pinData, pixelsWriteMsg->pixels_type);
+
   if (strandIdx == -1) {
     WS_DEBUG_PRINTLN(
         "ERROR: Strand not found, can not write a color to the strand!");
@@ -333,24 +323,31 @@ void ws_pixels::writeStrand(
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     // let's fill the strand
-    for (int i = 0; i < _strands[strandIdx].neoPixelPtr->numPixels(); i++) {
+    // TODO: Add back in
+    // TODO: We may want a pixel class mutex lock too..
+    //for (int i = 0; i < strands[strandIdx].neoPixelPtr->numPixels(); i++) {
+    //for (int i = 0; i < 1; i++) {
       // set color
-      _strands[strandIdx].neoPixelPtr->setPixelColor(
-          pixelsWriteMsg->pixels_color, i);
-    }
+      //strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color, i);
+    //}
+    // TODO: Are we pulling this apart? WWRRGGBB
+    // in the Arduino lib, colors can be specified 0xWWRRGGBB and get remapped to
+    // whatever color order was passed to the constructor.
+    // If it’s an RGB strip, the W part of the value will be ignored.
+    strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color, 1);
     // display color
-    _strands[strandIdx].neoPixelPtr->show();
+    strands[strandIdx].neoPixelPtr->show();
   }
 
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // let's fill the strand
-    for (int i = 0; i < _strands[strandIdx].dotStarPtr->numPixels(); i++) {
+    for (int i = 0; i < strands[strandIdx].dotStarPtr->numPixels(); i++) {
       // set color
-      _strands[strandIdx].dotStarPtr->setPixelColor(
+      strands[strandIdx].dotStarPtr->setPixelColor(
           pixelsWriteMsg->pixels_color, i);
     }
     // display color
-    _strands[strandIdx].dotStarPtr->show();
+    strands[strandIdx].dotStarPtr->show();
   }
 }
