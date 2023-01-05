@@ -20,6 +20,7 @@ strand_s strands[MAX_PIXEL_STRANDS]{
     nullptr,
     wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
     0,
+    0,
     wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
     -1,
     -1,
@@ -336,21 +337,21 @@ void ws_pixels::writeStrand(
 
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    // let's fill the strand
-    // TODO: Add back in
-    // TODO: We may want a pixel class mutex lock too..
-    // for (int i = 0; i < strands[strandIdx].neoPixelPtr->numPixels(); i++) {
-    // for (int i = 0; i < 1; i++) {
-    // set color
-    // strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color,
-    // i);
-    //}
-    // TODO: Are we pulling this apart? WWRRGGBB
-    // in the Arduino lib, colors can be specified 0xWWRRGGBB and get remapped
-    // to whatever color order was passed to the constructor. If it’s an RGB
-    // strip, the W part of the value will be ignored.
-    strands[strandIdx].neoPixelPtr->setPixelColor(pixelsWriteMsg->pixels_color,
-                                                  1);
+    // fill the strand
+    for (int i = 0; i < strands[strandIdx].numPixels; i++) {
+      strands[strandIdx].neoPixelPtr->setPixelColor(i, 7340287);
+    }
+    
+  // TODO: Possibly split this into an abstract object, then call it like servo does?
+  // rather than having sep. calls for neopixel and dotstar...
+
+  if (pixelsWriteMsg->pixels_type ==
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    // fill the strand
+    for (int i = 0; i < strands[strandIdx].numPixels; i++) {
+      // should be from IO in 0xWWRRGGBB format
+      strands[strandIdx].neoPixelPtr->setPixelColor(i, pixelsWriteMsg->pixels_color);
+    }
     // display color
     strands[strandIdx].neoPixelPtr->show();
   }
