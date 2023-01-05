@@ -150,47 +150,47 @@ bool ws_pixels::addStrand(
     wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg) {
   bool is_success = true;
 
-  // attempt to allocate a free strand
+  // attempt to allocate a free strand from array of strands
   int16_t strandIdx = allocateStrand();
   if (strandIdx == -1)
     is_success = false;
 
-  // unpack strand type
-  // TODO: Do we do this in here or within the conditional?
-  strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
+  // TODO: check if is_success == false before going through
+  // the init. routine
 
-  if (strands[strandIdx].type ==
+  if (pixelsCreateReqMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
     // is requested pin in-use by the status pixel?
     if (getStatusNeoPixelPin() == atoi(pixelsPin) && WS.lockStatusNeoPixel)
       releaseStatusLED(); // release it!
-    strands[strandIdx].pinNeoPixel =
-        atoi(pixelsPin); // save into strand struct.
+
+    // Save data from message into strand structure
+    strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
+    strands[strandIdx].pinNeoPixel = atoi(pixelsPin);
     strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
     strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
-    // Get type of strand
-    neoPixelType strandType =
-        getNeoPixelStrandType(pixelsCreateReqMsg->pixels_ordering);
+    strands[strandIdx].numPixels = pixelsCreateReqMsg->pixels_num;
+    // TODO ^ Implement this elsewhere in the code!!
     // Create a new strand of NeoPixels
     strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
-        pixelsCreateReqMsg->pixels_num, atoi(pixelsPin), strandType);
-    // initialize NeoPixel
+        pixelsCreateReqMsg->pixels_num, atoi(pixelsPin), getNeoPixelStrandType(pixelsCreateReqMsg->pixels_ordering));
+    // Initialize strand
     strands[strandIdx].neoPixelPtr->begin();
     strands[strandIdx].neoPixelPtr->setBrightness(
         strands[strandIdx].brightness);
     strands[strandIdx].neoPixelPtr->clear();
-    // Testing if we can actually write? TODO: Remove!
-    // strands[strandIdx].neoPixelPtr->setPixelColor(0,
-    // strands[strandIdx].neoPixelPtr->Color(0, 150, 0));
     strands[strandIdx].neoPixelPtr->show();
-    // post-init check
+    // Check that we've correctly initialized the strand
     if (strands[strandIdx].neoPixelPtr->numPixels() == 0)
       is_success = false;
-    WS_DEBUG_PRINT("Created NeoPixel strand of length ");
-    WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
-    WS_DEBUG_PRINT(" on GPIO #");
-    WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
+
+    if (is_success) {
+      WS_DEBUG_PRINT("Created NeoPixel strand of length ");
+      WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
+      WS_DEBUG_PRINT(" on GPIO #");
+      WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
+    }
   }
 
   if (pixelsCreateReqMsg->pixels_type ==

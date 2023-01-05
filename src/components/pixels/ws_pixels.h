@@ -28,6 +28,7 @@ struct strand_s {
   Adafruit_DotStar *dotStarPtr;   ///< Ptr to a DotStar object
   wippersnapper_pixels_v1_PixelsType type;
   uint8_t brightness; ///< Strand brightness (0 to 255)
+  uint16_t numPixels; ///< Number of pixels on strand
   wippersnapper_pixels_v1_PixelsOrder ordering;
   int16_t pinNeoPixel;                 ///< NeoPixel strand data pin
   int16_t pinDotStarData;              ///< DotStar strand data pin
