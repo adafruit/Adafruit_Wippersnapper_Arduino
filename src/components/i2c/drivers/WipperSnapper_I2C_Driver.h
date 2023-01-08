@@ -972,7 +972,7 @@ public:
       @brief    Base implementation - Reads a NOx Index sensor and converts
                 the reading into the expected SI unit.
       @param    gasEvent
-                NOx Index sensor reading, in ohms.
+                NOx Index sensor reading, unitless.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
@@ -1019,7 +1019,7 @@ public:
       @brief    Base implementation - Reads a VOC Index sensor and converts
                 the reading into the expected SI unit.
       @param    gasEvent
-                VOC Index sensor reading, in ohms.
+                VOC Index sensor reading, unitless.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */

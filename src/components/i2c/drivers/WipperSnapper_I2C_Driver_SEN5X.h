@@ -130,7 +130,7 @@ public:
                 NAN is returned. During the first 10..11 seconds after
                 power-on or device reset, this value will be NAN as well.
       @param    noxIndexEvent
-                  Adafruit Sensor event for NOx Index (1-500, 100 is normal)
+                  Adafruit Sensor event for NOx Index (0-500, 1 is normal)
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
