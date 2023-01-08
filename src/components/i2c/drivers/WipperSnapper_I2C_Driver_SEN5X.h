@@ -145,7 +145,7 @@ public:
         massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
         massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
         noxIndex);
-    if ((_rawSensorPeriod != 0 && error) || noxIndex == NAN) {
+    if ((_NOxIndexPeriod != 0 && error != 0) || noxIndex == NAN) {
       return false;
     }
 
@@ -172,7 +172,7 @@ public:
         massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
         massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
         noxIndex);
-    if ((_rawSensorPeriod != 0 && error) || vocIndex == NAN) {
+    if ((_VOCIndexPeriod != 0 && error != 0) || vocIndex == NAN) {
       return false;
     }
 
