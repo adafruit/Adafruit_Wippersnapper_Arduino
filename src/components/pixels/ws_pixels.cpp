@@ -175,7 +175,8 @@ bool ws_pixels::addStrand(
     // TODO ^ Implement this elsewhere in the code!!
     // Create a new strand of NeoPixels
     strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
-        pixelsCreateReqMsg->pixels_num, atoi(pixelsPin), getNeoPixelStrandType(pixelsCreateReqMsg->pixels_ordering));
+        pixelsCreateReqMsg->pixels_num, atoi(pixelsPin),
+        getNeoPixelStrandType(pixelsCreateReqMsg->pixels_ordering));
     // Initialize strand
     strands[strandIdx].neoPixelPtr->begin();
     strands[strandIdx].neoPixelPtr->setBrightness(
@@ -315,56 +316,29 @@ void ws_pixels::deleteStrand(
   deallocateStrand(strandIdx);
 }
 
-/**************************************************************************/
-/*!
-    @brief   Writes a color to a strand_t.
-    @param   pixelsWriteMsg
-             Protobuf message from Adafruit IO containing data to write.
-*/
-/**************************************************************************/
-void ws_pixels::writeStrand(
+void ws_pixels::writeStrandNeoPixel(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
-  // Attempt to get strand's index
-  int pinData = atoi(pixelsWriteMsg->pixels_pin_data + 1);
-
-  int strandIdx = getStrandIdx(pinData, pixelsWriteMsg->pixels_type);
-
+  // Obtain index of pixel strand
+  int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
+                               pixelsWriteMsg->pixels_type);
   if (strandIdx == -1) {
     WS_DEBUG_PRINTLN(
-        "ERROR: Strand not found, can not write a color to the strand!");
+        "ERROR: Pixel strand not found, can not write a color to the strand!");
     return;
   }
 
-  if (pixelsWriteMsg->pixels_type ==
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    // fill the strand
-    for (int i = 0; i < strands[strandIdx].numPixels; i++) {
-      strands[strandIdx].neoPixelPtr->setPixelColor(i, 7340287);
-    }
-    
-  // TODO: Possibly split this into an abstract object, then call it like servo does?
-  // rather than having sep. calls for neopixel and dotstar...
-
-  if (pixelsWriteMsg->pixels_type ==
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    // fill the strand
-    for (int i = 0; i < strands[strandIdx].numPixels; i++) {
-      // should be from IO in 0xWWRRGGBB format
-      strands[strandIdx].neoPixelPtr->setPixelColor(i, pixelsWriteMsg->pixels_color);
-    }
-    // display color
-    strands[strandIdx].neoPixelPtr->show();
+  // Fill color from Adafruit IO to the strand
+  for (int i = 0; i < strands[strandIdx].numPixels; i++) {
+    uint32_t rgbcolorGamma =
+        strands[strandIdx].neoPixelPtr->gamma32(pixelsWriteMsg->pixels_color);
+    strands[strandIdx].neoPixelPtr->setPixelColor(i, rgbcolorGamma);
   }
 
-  if (pixelsWriteMsg->pixels_type ==
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    // let's fill the strand
-    for (int i = 0; i < strands[strandIdx].dotStarPtr->numPixels(); i++) {
-      // set color
-      strands[strandIdx].dotStarPtr->setPixelColor(pixelsWriteMsg->pixels_color,
-                                                   i);
-    }
-    // display color
-    strands[strandIdx].dotStarPtr->show();
-  }
+  // Display the color on the strand
+  strands[strandIdx].neoPixelPtr->show();
+}
+
+void ws_pixels::writeStrandDotStar(
+    wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
+  // TODO!
 }

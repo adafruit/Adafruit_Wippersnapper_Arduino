@@ -35,9 +35,10 @@
 
 Wippersnapper WS;
 
-const char* fmtMemCk = "Free: %d\tMaxAlloc: %d\t PSFree: %d\n";
-#define MEMCK Serial.printf(fmtMemCk,ESP.getFreeHeap(),ESP.getMaxAllocHeap(),ESP.getFreePsram())
-
+const char *fmtMemCk = "Free: %d\tMaxAlloc: %d\t PSFree: %d\n";
+#define MEMCK                                                                  \
+  Serial.printf(fmtMemCk, ESP.getFreeHeap(), ESP.getMaxAllocHeap(),            \
+                ESP.getFreePsram())
 
 Wippersnapper::Wippersnapper() {
   _mqtt = 0; // MQTT Client object
@@ -111,7 +112,7 @@ void Wippersnapper::provision() {
 #endif
 
   set_ssid_pass();
-  //free(_littleFS); //280400 prv.
+  // free(_littleFS); //280400 prv.
 }
 
 /**************************************************************************/
@@ -1295,8 +1296,19 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
                        "wippersnapper_pixels_v1_PixelsWriteRequest!");
       return false;
     }
-    // exec. rpc
-    WS._ws_pixelsComponent->writeStrand(&msgPixelsWritereq);
+
+    // exec. command
+    if (msgPixelsWritereq.pixels_type ==
+        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+      WS._ws_pixelsComponent->writeStrandNeoPixel(&msgPixelsWritereq);
+    } else if (msgPixelsWritereq.pixels_type ==
+               wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+      WS._ws_pixelsComponent->writeStrandDotStar(&msgPixelsWritereq);
+    } else {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Can not write to strnad - invalid pixel type provided!");
+    }
+
   } else {
     WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
     return false;
@@ -1672,7 +1684,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
   WS._mqtt->subscribe(_topic_description_sub);
   _topic_description_sub->setCallback(cbRegistrationStatus);
-  //free(WS._topic_description_status);
+  // free(WS._topic_description_status);
   WS_DEBUG_PRINTLN(WS._topic_description_status);
 
   // Create registration status complete topic
@@ -1739,7 +1751,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_brkr_sub);
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
-  //free(WS._topic_signal_brkr);
+  // free(WS._topic_signal_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_brkr);
 
   // Create device-to-broker i2c signal topic
@@ -1763,7 +1775,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
-  //free(WS._topic_signal_i2c_brkr);
+  // free(WS._topic_signal_i2c_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_i2c_brkr);
 
   // Create broker-to-device i2c signal topic
@@ -1802,7 +1814,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_ds18_sub);
   _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
-  //free(WS._topic_signal_ds18_brkr);
+  // free(WS._topic_signal_ds18_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_ds18_brkr);
 
   // Create broker-to-device ds18x20 topic
@@ -1839,7 +1851,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
-  //free(WS._topic_signal_servo_brkr);
+  // free(WS._topic_signal_servo_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_servo_brkr);
 
   // Create broker-to-device servo signal topic
@@ -1876,7 +1888,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_pwm_sub);
   _topic_signal_pwm_sub->setCallback(cbPWMMsg);
-  //free(WS._topic_signal_pwm_brkr);
+  // free(WS._topic_signal_pwm_brkr);
   WS_DEBUG_PRINTLN(WS._topic_signal_pwm_brkr);
 
   // Topic for pwm messages from device->broker
@@ -1913,7 +1925,7 @@ bool Wippersnapper::buildWSTopics() {
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_pixels_sub);
   _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
-  //free(WS._topic_signal_pixels_device);
+  // free(WS._topic_signal_pixels_device);
   WS_DEBUG_PRINTLN(WS._topic_signal_pixels_brkr);
 
   MEMCK;
@@ -1939,9 +1951,7 @@ bool Wippersnapper::buildWSTopics() {
     @brief    Subscribes to device-specific MQTT control topics.
 */
 /**************************************************************************/
-void Wippersnapper::subscribeWSTopics() {
-
-}
+void Wippersnapper::subscribeWSTopics() {}
 
 /**************************************************************************/
 /*!
