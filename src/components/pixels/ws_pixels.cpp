@@ -45,20 +45,28 @@ ws_pixels::~ws_pixels() {
 */
 /**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
-  // reset pixel type
-  strands[strandIdx].type =
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED;
 
-  // delete the pixel type object
+  // delete the pixel object
   if (strands[strandIdx].neoPixelPtr != nullptr)
     delete strands[strandIdx].neoPixelPtr;
   if ((strands[strandIdx].dotStarPtr != nullptr))
     delete strands[strandIdx].dotStarPtr;
 
-  // was this pixel previously used as a status LED?
+  // re-initialize status pixel (if pixel was prvsly used)
   if (strands[strandIdx].pinNeoPixel == getStatusNeoPixelPin() ||
       strands[strandIdx].pinDotStarData == getStatusDotStarDataPin())
     initStatusLED();
+
+  strands[strandIdx] = {
+    nullptr,
+    nullptr,
+    wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+    0,
+    0,
+    wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
+    -1,
+    -1,
+    -1};
 }
 
 /******************************************************************************/
