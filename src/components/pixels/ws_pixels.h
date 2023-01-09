@@ -22,6 +22,8 @@
 #define MAX_PIXEL_STRANDS                                                      \
   5 ///< Maximum number of pixel strands connected to a WipperSnapper device
 
+#define ERR_INVALID_STRAND -1
+
 /** Object representation of a strand of pixels */
 struct strand_s {
   Adafruit_NeoPixel *neoPixelPtr; ///< Ptr to a NeoPixel object

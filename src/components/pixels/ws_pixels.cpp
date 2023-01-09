@@ -64,7 +64,8 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
 /******************************************************************************/
 /*!
     @brief   Allocates an index of a free strand_t within the strand array.
-    @returns Index of a free strand_t, -1 if strand array is full.
+    @returns Index of a free strand_t, ERR_INVALID_STRAND if strand array is
+   full.
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
@@ -75,8 +76,7 @@ int16_t ws_pixels::allocateStrand() {
       return strandIdx;
     }
   }
-  // unable to find a free strand
-  return -1;
+  return ERR_INVALID_STRAND;
 }
 
 /**************************************************************************/
@@ -134,7 +134,7 @@ uint8_t getDotStarStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
              wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BRG) {
     order = DOTSTAR_BRG;
   } else {
-    order = -1;
+    order = ERR_INVALID_STRAND;
   }
   return order;
 }
@@ -153,7 +153,7 @@ bool ws_pixels::addStrand(
 
   // attempt to allocate a free strand from array of strands
   int16_t strandIdx = allocateStrand();
-  if (strandIdx == -1)
+  if (strandIdx == ERR_INVALID_STRAND)
     is_success = false;
 
   // TODO: check if is_success == false before going through
@@ -271,27 +271,23 @@ bool ws_pixels::addStrand(
              strand_t's data dataPin
     @param   type
              Type of strand_t, NeoPixel or DotStar.
-    @returns The index of a strand_t if within strands[], -1 otherwise.
+    @returns The index of a strand_t if within strands[], ERR_INVALID_STRAND
+   otherwise.
 */
 /**************************************************************************/
 int ws_pixels::getStrandIdx(int16_t dataPin,
                             wippersnapper_pixels_v1_PixelsType type) {
-  int strandIdx = -1;
-
-  if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    for (int i = 0; i < sizeof(strands); i++) {
-      if (strands[i].pinNeoPixel == dataPin)
-        return i;
-    }
-  }
-  if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    for (int i = 0; i < sizeof(strands); i++) {
-      if (strands[i].pinDotStarData == dataPin)
-        strandIdx = i;
+  for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
+       strandIdx++) {
+    if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL &&
+        strands[strandIdx].pinNeoPixel == dataPin)
       return strandIdx;
-    }
+    else if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR &&
+             strands[strandIdx].pinDotStarData == dataPin)
+      return strandIdx;
   }
-  return strandIdx;
+
+  return ERR_INVALID_STRAND;
 }
 
 /**************************************************************************/
@@ -307,7 +303,7 @@ void ws_pixels::deleteStrand(
     wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg) {
   int strandIdx = getStrandIdx(atoi(pixelsDeleteMsg->pixels_pin_data + 1),
                                pixelsDeleteMsg->pixels_type);
-  if (strandIdx == -1) {
+  if (strandIdx == ERR_INVALID_STRAND) {
     WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
     return;
   }
@@ -321,7 +317,7 @@ void ws_pixels::writeStrandNeoPixel(
   // Obtain index of pixel strand
   int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
                                pixelsWriteMsg->pixels_type);
-  if (strandIdx == -1) {
+  if (strandIdx == ERR_INVALID_STRAND) {
     WS_DEBUG_PRINTLN(
         "ERROR: Pixel strand not found, can not write a color to the strand!");
     return;
