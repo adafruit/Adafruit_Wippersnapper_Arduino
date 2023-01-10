@@ -142,6 +142,9 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
+  if (!WS.lockStatusDotStar)
+    return; // status pixel is in-use elsewhere
+
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -157,6 +160,8 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_LED
+  if (!WS.lockStatusLED)
+    return; // status pixel is in-use elsewhere
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
@@ -180,6 +185,10 @@ void setStatusLEDColor(uint32_t color) {
 /****************************************************************************/
 void setStatusLEDColor(uint32_t color, int brightness) {
 #ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
+
+  // parse out the color elements
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -193,6 +202,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
+  if (!WS.lockStatusDotStar)
+    return; // status pixel is in-use elsewhere
+
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -206,6 +218,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_LED
+  if (!WS.lockStatusLED)
+    return;
+
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else

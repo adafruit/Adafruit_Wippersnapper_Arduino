@@ -58,15 +58,15 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
     initStatusLED();
 
   strands[strandIdx] = {
-    nullptr,
-    nullptr,
-    wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
-    0,
-    0,
-    wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
-    -1,
-    -1,
-    -1};
+      nullptr,
+      nullptr,
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED,
+      0,
+      0,
+      wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
+      -1,
+      -1,
+      -1};
 }
 
 /******************************************************************************/
@@ -166,6 +166,7 @@ bool ws_pixels::addStrand(
 
   // TODO: check if is_success == false before going through
   // the init. routine
+  // TODO: Maybe just send now? Make a funcn to send instead?
 
   if (pixelsCreateReqMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
@@ -173,7 +174,6 @@ bool ws_pixels::addStrand(
     // is requested pin in-use by the status pixel?
     if (getStatusNeoPixelPin() == atoi(pixelsPin) && WS.lockStatusNeoPixel)
       releaseStatusLED(); // release it!
-
     // Save data from message into strand structure
     strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
     strands[strandIdx].pinNeoPixel = atoi(pixelsPin);
@@ -217,8 +217,9 @@ bool ws_pixels::addStrand(
     // release the status dotstar, if it is both in-use and the pin within
     // `pixelsCreateReqMsg`
     if ((strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) &&
-        WS.lockStatusDotStar)
+        WS.lockStatusDotStar) {
       releaseStatusLED();
+    }
     // init DotStar object
     strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
         pixelsCreateReqMsg->pixels_num, strands[strandIdx].pinDotStarData,
