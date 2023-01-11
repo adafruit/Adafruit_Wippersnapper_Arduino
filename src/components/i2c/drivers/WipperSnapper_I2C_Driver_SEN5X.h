@@ -234,7 +234,7 @@ public:
       return false;
     }
 
-    pm25StdEvent->data[0] = massConcentrationPm10p0;
+    pm25StdEvent->data[0] = massConcentrationPm2p5;
     return true;
   }
 
