@@ -35,10 +35,12 @@
 
 Wippersnapper WS;
 
+#ifdef ARDUINO_ARCH_ESP32
 const char *fmtMemCk = "Free: %d\tMaxAlloc: %d\t PSFree: %d\n";
 #define MEMCK                                                                  \
   Serial.printf(fmtMemCk, ESP.getFreeHeap(), ESP.getMaxAllocHeap(),            \
                 ESP.getFreePsram())
+#endif
 
 Wippersnapper::Wippersnapper() {
   _mqtt = 0; // MQTT Client object
@@ -1644,7 +1646,9 @@ bool Wippersnapper::generateDeviceUID() {
 bool Wippersnapper::buildWSTopics() {
   bool is_success = true;
 
+  #ifdef ARDUINO_ARCH_ESP32
   MEMCK;
+  #endif
 
   // Create global registration topic
   WS._topic_description =
@@ -1901,7 +1905,9 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
+  #ifdef ARDUINO_ARCH_ESP32
   MEMCK;
+  #endif
 
   // Topic for pixel messages from broker->device
   WS._topic_signal_pixels_brkr = (char *)malloc(
@@ -1924,7 +1930,9 @@ bool Wippersnapper::buildWSTopics() {
   // free(WS._topic_signal_pixels_device);
   WS_DEBUG_PRINTLN(WS._topic_signal_pixels_brkr);
 
+  #ifdef ARDUINO_ARCH_ESP32
   MEMCK;
+  #endif
 
   // Topic for pixel messages from device->broker
   WS._topic_signal_pixels_device = (char *)malloc(
