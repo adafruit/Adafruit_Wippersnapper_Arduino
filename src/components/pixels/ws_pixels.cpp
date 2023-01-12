@@ -280,8 +280,8 @@ bool ws_pixels::addStrand(
              strand_t's data dataPin
     @param   type
              Type of strand_t, NeoPixel or DotStar.
-    @returns The index of a strand_t if within strands[], ERR_INVALID_STRAND
-   otherwise.
+    @returns The index of a strand_t if within strands[],
+             ERR_INVALID_STRAND otherwise.
 */
 /**************************************************************************/
 int ws_pixels::getStrandIdx(int16_t dataPin,
@@ -316,11 +316,18 @@ void ws_pixels::deleteStrand(
     WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
     return;
   }
-
   // deallocate and release resources of strand object
   deallocateStrand(strandIdx);
 }
 
+/**************************************************************************/
+/*!
+    @brief   Writes a color from Adafruit IO to a NeoPixel strand
+    @param   pixelsWriteMsg
+             Protobuf message from Adafruit IO containing a
+             `wippersnapper_pixels_v1_PixelsWriteRequest`.
+*/
+/**************************************************************************/
 void ws_pixels::writeStrandNeoPixel(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   // Obtain index of pixel strand
@@ -343,6 +350,14 @@ void ws_pixels::writeStrandNeoPixel(
   strands[strandIdx].neoPixelPtr->show();
 }
 
+/**************************************************************************/
+/*!
+    @brief   Writes a color from Adafruit IO to a DotStar strand
+    @param   pixelsWriteMsg
+             Protobuf message from Adafruit IO containing a
+             `wippersnapper_pixels_v1_PixelsWriteRequest`.
+*/
+/**************************************************************************/
 void ws_pixels::writeStrandDotStar(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   // TODO!
