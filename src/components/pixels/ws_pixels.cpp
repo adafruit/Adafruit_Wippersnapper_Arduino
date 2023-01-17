@@ -211,6 +211,7 @@ bool ws_pixels::addStrand(
     // fill strand_t with fields from `pixelsCreateReqMsg`
     strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
     strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
+    strands[strandIdx].numPixels = pixelsCreateReqMsg->pixels_num;
     strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
     strands[strandIdx].pinDotStarData = atoi(pinData);
     strands[strandIdx].pinDotStarClock = atoi(pinClock);
@@ -220,12 +221,14 @@ bool ws_pixels::addStrand(
         WS.lockStatusDotStar) {
       releaseStatusLED();
     }
-    // init DotStar object
+
+    // Create Dotstar strand
     strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
-        pixelsCreateReqMsg->pixels_num, strands[strandIdx].pinDotStarData,
+        strands[strandIdx].numPixels, strands[strandIdx].pinDotStarData,
         strands[strandIdx].pinDotStarClock,
-        getDotStarStrandOrder(pixelsCreateReqMsg->pixels_ordering));
-    // init. strand for output
+        DOTSTAR_BRG);
+
+    // initialize strand
     strands[strandIdx].dotStarPtr->begin();
     strands[strandIdx].dotStarPtr->setBrightness(strands[strandIdx].brightness);
     strands[strandIdx].dotStarPtr->clear();
@@ -234,11 +237,15 @@ bool ws_pixels::addStrand(
     // post-init sanity check
     if (strands[strandIdx].dotStarPtr->numPixels() == 0)
       is_success = false;
+
     WS_DEBUG_PRINT("Created DotStar strand of length ");
-    WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
+    WS_DEBUG_PRINT(strands[strandIdx].numPixels);
     WS_DEBUG_PRINT(" on Data GPIO #");
-    WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_dotstar_data);
+    WS_DEBUG_PRINTLN(strands[strandIdx].pinDotStarData);
   }
+
+  WS_DEBUG_PRINT("is_success: ");
+  WS_DEBUG_PRINTLN(is_success);
 
   // create `wippersnapper_pixels_v1_PixelsCreateResponse` message
   size_t msgSz; // message's encoded size
@@ -360,5 +367,25 @@ void ws_pixels::writeStrandNeoPixel(
 /**************************************************************************/
 void ws_pixels::writeStrandDotStar(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
-  // TODO!
+  // Obtain index of pixel strand
+  int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
+                               pixelsWriteMsg->pixels_type);
+  if (strandIdx == ERR_INVALID_STRAND) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Pixel strand not found, can not write a color to the strand!");
+    return;
+  }
+
+  WS_DEBUG_PRINT("Writing color: ");
+  WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
+
+  // Fill color from Adafruit IO to the strand
+  for (int i = 0; i < strands[strandIdx].numPixels; i++) {
+    uint32_t rgbcolorGamma =
+        strands[strandIdx].dotStarPtr->gamma32(pixelsWriteMsg->pixels_color);
+    strands[strandIdx].dotStarPtr->setPixelColor(i, rgbcolorGamma);
+  }
+
+  // Display the color on the strand
+  strands[strandIdx].dotStarPtr->show();
 }

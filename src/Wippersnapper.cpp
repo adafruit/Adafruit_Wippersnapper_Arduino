@@ -1308,7 +1308,8 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
       WS._ws_pixelsComponent->writeStrandDotStar(&msgPixelsWritereq);
     } else {
       WS_DEBUG_PRINTLN(
-          "ERROR: Can not write to strnad - invalid pixel type provided!");
+          "ERROR: Can not write to strand - invalid pixel type provided!");
+      return false;
     }
 
   } else {
