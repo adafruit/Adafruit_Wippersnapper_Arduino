@@ -132,8 +132,6 @@ neoPixelType ws_pixels::getNeoPixelStrandOrder(
 /**************************************************************************/
 uint8_t ws_pixels::getDotStarStrandOrder(
     wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
-  // TODO: Implement via
-  // https://github.com/adafruit/Wippersnapper_Protobuf/pull/125
   switch (pixelOrder) {
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
     return DOTSTAR_GRB;
@@ -141,6 +139,12 @@ uint8_t ws_pixels::getDotStarStrandOrder(
     return DOTSTAR_RGB;
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BRG:
     return DOTSTAR_BRG;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RBG:
+    return DOTSTAR_RBG;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GBR:
+    return DOTSTAR_GBR;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BGR:
+    return DOTSTAR_BGR;
   default:
     return DOTSTAR_BRG;
   }
