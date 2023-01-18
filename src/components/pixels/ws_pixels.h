@@ -32,9 +32,9 @@ struct strand_s {
   uint8_t brightness; ///< Strand brightness (0 to 255)
   uint16_t numPixels; ///< Number of pixels on strand
   wippersnapper_pixels_v1_PixelsOrder ordering;
-  int16_t pinNeoPixel;                 ///< NeoPixel strand data pin
-  int16_t pinDotStarData;              ///< DotStar strand data pin
-  int16_t pinDotStarClock;             ///< DotStar strand clock pin
+  int16_t pinNeoPixel;     ///< NeoPixel strand data pin
+  int16_t pinDotStarData;  ///< DotStar strand data pin
+  int16_t pinDotStarClock; ///< DotStar strand clock pin
 };
 
 class Wippersnapper; ///< friend class
@@ -54,15 +54,20 @@ public:
   addStrand(wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg);
   void
   deleteStrand(wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg);
-  //void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
-  void writeStrandNeoPixel(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
-  void writeStrandDotStar(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
+  // void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest
+  // *pixelsWriteMsg);
+  void writeStrandNeoPixel(
+      wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
+  void writeStrandDotStar(
+      wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
 
   // Helpers
   int16_t allocateStrand();
   void deallocateStrand(int16_t strandIdx);
   int getStrandIdx(int16_t pin, wippersnapper_pixels_v1_PixelsType type);
-
+  neoPixelType
+  getNeoPixelStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder);
+  uint8_t getDotStarStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder);
 };
 extern Wippersnapper WS;
 #endif // WS_PIXELS

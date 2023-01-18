@@ -96,8 +96,8 @@ int16_t ws_pixels::allocateStrand() {
              constructor
 */
 /**************************************************************************/
-neoPixelType
-getNeoPixelStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
+neoPixelType ws_pixels::getNeoPixelStrandOrder(
+    wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
   neoPixelType strandType;
   switch (pixelOrder) {
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
@@ -124,27 +124,26 @@ getNeoPixelStrandType(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
 
 /**************************************************************************/
 /*!
-    @brief   Returns the `neoPixelType` provided the strand's pixelOrder
+    @brief   Returns the color order of the DotStar strand.
     @param   pixelOrder
              Desired pixel order, from init. message.
-    @returns Type of NeoPixel strand, usable by Adafruit_NeoPixel
-             constructor
+    @returns Type of DotStar strand.
 */
 /**************************************************************************/
-uint8_t getDotStarStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
-  uint8_t order;
-  if (pixelOrder == wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB) {
-    order = DOTSTAR_GRB;
-  } else if (pixelOrder ==
-             wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RGB) {
-    order = DOTSTAR_RGB;
-  } else if (pixelOrder ==
-             wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BRG) {
-    order = DOTSTAR_BRG;
-  } else {
-    order = ERR_INVALID_STRAND;
+uint8_t ws_pixels::getDotStarStrandOrder(
+    wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
+  // TODO: Implement via
+  // https://github.com/adafruit/Wippersnapper_Protobuf/pull/125
+  switch (pixelOrder) {
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
+    return DOTSTAR_GRB;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RGB:
+    return DOTSTAR_RGB;
+  case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BRG:
+    return DOTSTAR_BRG;
+  default:
+    return DOTSTAR_BRG;
   }
-  return order;
 }
 
 /**************************************************************************/
@@ -184,7 +183,7 @@ bool ws_pixels::addStrand(
     // Create a new strand of NeoPixels
     strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
         pixelsCreateReqMsg->pixels_num, atoi(pixelsPin),
-        getNeoPixelStrandType(pixelsCreateReqMsg->pixels_ordering));
+        getNeoPixelStrandOrder(pixelsCreateReqMsg->pixels_ordering));
     // Initialize strand
     strands[strandIdx].neoPixelPtr->begin();
     strands[strandIdx].neoPixelPtr->setBrightness(
@@ -226,7 +225,7 @@ bool ws_pixels::addStrand(
     strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
         strands[strandIdx].numPixels, strands[strandIdx].pinDotStarData,
         strands[strandIdx].pinDotStarClock,
-        DOTSTAR_BRG);
+        getDotStarStrandOrder(strands[strandIdx].ordering));
 
     // initialize strand
     strands[strandIdx].dotStarPtr->begin();
