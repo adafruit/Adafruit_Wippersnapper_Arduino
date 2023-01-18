@@ -25,6 +25,7 @@ The following microcontrollers are supported by Adafruit WipperSnapper:
 * Espressif ESP32-S2
 * Espressif ESP32-S3
 * Espressif ESP32-C3
+* Raspberry Pi RP2040
 * Microchip ATSAMD51 + [AirLift WiFi Co-Processor](https://www.adafruit.com/?q=airlift+wifi&sort=BestMatch)
 
 ## Contributing to Adafruit.io and WipperSnapper
