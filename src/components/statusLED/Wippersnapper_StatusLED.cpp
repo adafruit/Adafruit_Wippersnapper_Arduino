@@ -52,6 +52,12 @@ void initStatusLED() {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
+  // TODO for brent tomorrow.
+  // THE SOFTWARE CRASHES HERE, why is not known yet
+  // may want to recompile and upload, i have a feeling its the lock
+  WS_DEBUG_PRINTLN("initStatusLED DotStar");
+  WS_DEBUG_PRINTLN("WS.lockStatusDotStar: ");
+  WS_DEBUG_PRINT(WS.lockStatusDotStar);
   if (WS.lockStatusDotStar == false) {
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn OFF all pixels
@@ -238,33 +244,26 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 /****************************************************************************/
 /*!
     @brief   Retrieve the pin number used for NeoPixel data output.
-    @return  Arduino pin number (-1 if not set).
+    @return  Arduino pin number (-2 if not set).
 */
 /****************************************************************************/
 int16_t getStatusNeoPixelPin() {
-// https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h#L290
 #ifdef USE_STATUS_NEOPIXEL
-  if (!WS.lockStatusNeoPixel)
-    return -1; // status pixel is in-use elsewhere
-  return statusPixel->getPin();
+return statusPixel->getPin();
 #endif
-  return -1;
+return -2;
 }
 
 /****************************************************************************/
 /*!
     @brief   Retrieve the pin number used for DotStar data output.
-    @return  Arduino pin number (-1 if not set).
+    @return  Arduino pin number (-2 if not set).
 */
 /****************************************************************************/
 int16_t getStatusDotStarDataPin() {
-// https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h#L290
 #ifdef USE_STATUS_DOTSTAR
-  if (!WS.lockStatusDotStar)
-    return -1; // status pixel is in-use elsewhere
-  return STATUS_DOTSTAR_PIN_DATA;
+return STATUS_DOTSTAR_PIN_DATA;
 #endif
-  return -1;
 }
 
 /****************************************************************************/

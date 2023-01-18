@@ -49,13 +49,23 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
   // delete the pixel object
   if (strands[strandIdx].neoPixelPtr != nullptr)
     delete strands[strandIdx].neoPixelPtr;
+
   if ((strands[strandIdx].dotStarPtr != nullptr))
     delete strands[strandIdx].dotStarPtr;
 
   // re-initialize status pixel (if pixel was prvsly used)
+  WS_DEBUG_PRINT("strands[strandIdx].pinDotStarData: ");
+  WS_DEBUG_PRINTLN(strands[strandIdx].pinDotStarData);
+
+  WS_DEBUG_PRINT("getStatusDotStarDataPin()");
+  WS_DEBUG_PRINTLN(getStatusDotStarDataPin());
   if (strands[strandIdx].pinNeoPixel == getStatusNeoPixelPin() ||
-      strands[strandIdx].pinDotStarData == getStatusDotStarDataPin())
-    initStatusLED();
+      strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) {
+        WS_DEBUG_PRINTLN("re-initing the status LED");
+        initStatusLED();
+      }
+
+  WS_DEBUG_PRINTLN("done re-init'ing the status LED");
 
   strands[strandIdx] = {
       nullptr,
@@ -169,7 +179,12 @@ bool ws_pixels::addStrand(
 
   // TODO: check if is_success == false before going through
   // the init. routine
-  // TODO: Maybe just send now? Make a funcn to send instead?
+
+  // create `wippersnapper_pixels_v1_PixelsCreateResponse` message
+  wippersnapper_signal_v1_PixelsResponse msgInitResp = wippersnapper_signal_v1_PixelsResponse_init_zero;
+  // fill `wippersnapper_pixels_v1_PixelsCreateResponse` message
+  msgInitResp.which_payload = wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
+
 
   if (pixelsCreateReqMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
@@ -250,17 +265,12 @@ bool ws_pixels::addStrand(
   WS_DEBUG_PRINT("is_success: ");
   WS_DEBUG_PRINTLN(is_success);
 
-  // create `wippersnapper_pixels_v1_PixelsCreateResponse` message
-  size_t msgSz; // message's encoded size
-  wippersnapper_signal_v1_PixelsResponse msgInitResp =
-      wippersnapper_signal_v1_PixelsResponse_init_zero;
-  // fill `wippersnapper_pixels_v1_PixelsCreateResponse` message
-  msgInitResp.which_payload =
-      wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
+  // Fill response message
   msgInitResp.payload.resp_pixels_create.is_success = is_success;
-  // TODO: This should handle the dotstar data pin as well as neopixel data pin
-  memcpy(msgInitResp.payload.resp_pixels_create.pixels_pin_data,
-         pixelsCreateReqMsg->pixels_pin_neopixel, sizeof(char) * 6);
+  if (pixelsCreateReqMsg->pixels_type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL)
+    memcpy(msgInitResp.payload.resp_pixels_create.pixels_pin_data, pixelsCreateReqMsg->pixels_pin_neopixel, sizeof(char) * 6);
+  else
+    memcpy(msgInitResp.payload.resp_pixels_create.pixels_pin_data, pixelsCreateReqMsg->pixels_pin_dotstar_data, sizeof(char) * 6);
 
   // publish `wippersnapper_pixels_v1_PixelsCreateResponse` message back to
   // broker
@@ -273,6 +283,7 @@ bool ws_pixels::addStrand(
                      "wippersnapper_signal_v1_PixelsResponse message!");
     return false;
   }
+  size_t msgSz;
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PixelsResponse_fields,
                       &msgInitResp);
   WS_DEBUG_PRINT("-> wippersnapper_signal_v1_PixelsResponse");
@@ -298,11 +309,9 @@ int ws_pixels::getStrandIdx(int16_t dataPin,
                             wippersnapper_pixels_v1_PixelsType type) {
   for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
        strandIdx++) {
-    if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL &&
-        strands[strandIdx].pinNeoPixel == dataPin)
+    if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL && strands[strandIdx].pinNeoPixel == dataPin)
       return strandIdx;
-    else if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR &&
-             strands[strandIdx].pinDotStarData == dataPin)
+    if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR && strands[strandIdx].pinDotStarData == dataPin)
       return strandIdx;
   }
 
