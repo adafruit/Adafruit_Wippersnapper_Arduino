@@ -165,6 +165,7 @@ bool ws_pixels::addStrand(
   // TODO: check if is_success == false before going through
   // the init. routine
 
+  // TODO: Need to move this elsewhere
   // create `wippersnapper_pixels_v1_PixelsCreateResponse` message
   wippersnapper_signal_v1_PixelsResponse msgInitResp =
       wippersnapper_signal_v1_PixelsResponse_init_zero;
@@ -172,60 +173,58 @@ bool ws_pixels::addStrand(
   msgInitResp.which_payload =
       wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
 
+  // Fill generic members of strand obj.
+  strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
+  strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
+  strands[strandIdx].numPixels = pixelsCreateReqMsg->pixels_num;
+  strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
+
+  // Fill specific members of strand obj.
   if (pixelsCreateReqMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    // Unpack pin (required? TODO - see if we can just call the member??)
     char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
-    // is requested pin in-use by the status pixel?
-    if (getStatusNeoPixelPin() == atoi(pixelsPin) && WS.lockStatusNeoPixel)
-      releaseStatusLED(); // release it!
-    // Save data from message into strand structure
-    strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
     strands[strandIdx].pinNeoPixel = atoi(pixelsPin);
-    strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
-    strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
-    strands[strandIdx].numPixels = pixelsCreateReqMsg->pixels_num;
-    // TODO ^ Implement this elsewhere in the code!!
+  } else if (pixelsCreateReqMsg->pixels_type ==
+             wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    // unpack pins
+    char *pinData = pixelsCreateReqMsg->pixels_pin_dotstar_data + 1;
+    char *pinClock = pixelsCreateReqMsg->pixels_pin_dotstar_clock + 1;
+    strands[strandIdx].pinDotStarData = atoi(pinData);
+    strands[strandIdx].pinDotStarClock = atoi(pinClock);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Invalid strand type provided!");
+    // TODO: Send message via MQTT
+    // then, fail out of this function (ret. false)
+  }
+
+  // Fill specific members of strand obj.
+  if (pixelsCreateReqMsg->pixels_type ==
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     // Create a new strand of NeoPixels
     strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
-        pixelsCreateReqMsg->pixels_num, atoi(pixelsPin),
+        pixelsCreateReqMsg->pixels_num, strands[strandIdx].pinNeoPixel,
         getNeoPixelStrandOrder(pixelsCreateReqMsg->pixels_ordering));
+
     // Initialize strand
     strands[strandIdx].neoPixelPtr->begin();
     strands[strandIdx].neoPixelPtr->setBrightness(
         strands[strandIdx].brightness);
     strands[strandIdx].neoPixelPtr->clear();
     strands[strandIdx].neoPixelPtr->show();
+
     // Check that we've correctly initialized the strand
-    if (strands[strandIdx].neoPixelPtr->numPixels() == 0)
-      is_success = false;
-
-    if (is_success) {
-      WS_DEBUG_PRINT("Created NeoPixel strand of length ");
-      WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
-      WS_DEBUG_PRINT(" on GPIO #");
-      WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
-    }
-  }
-
-  if (pixelsCreateReqMsg->pixels_type ==
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    // unpack pins
-    char *pinData = pixelsCreateReqMsg->pixels_pin_dotstar_data + 1;
-    char *pinClock = pixelsCreateReqMsg->pixels_pin_dotstar_clock + 1;
-    // fill strand_t with fields from `pixelsCreateReqMsg`
-    strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
-    strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
-    strands[strandIdx].numPixels = pixelsCreateReqMsg->pixels_num;
-    strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
-    strands[strandIdx].pinDotStarData = atoi(pinData);
-    strands[strandIdx].pinDotStarClock = atoi(pinClock);
-    // release the status dotstar, if it is both in-use and the pin within
-    // `pixelsCreateReqMsg`
-    if ((strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) &&
-        WS.lockStatusDotStar) {
-      releaseStatusLED();
+    if (strands[strandIdx].neoPixelPtr->numPixels() == 0) {
+      // TODO: Publish out first then ret.
+      return false;
     }
 
+    WS_DEBUG_PRINT("Created NeoPixel strand of length ");
+    WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
+    WS_DEBUG_PRINT(" on GPIO #");
+    WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
+  } else if (pixelsCreateReqMsg->pixels_type ==
+             wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
     // Create Dotstar strand
     strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
         strands[strandIdx].numPixels, strands[strandIdx].pinDotStarData,
@@ -239,13 +238,19 @@ bool ws_pixels::addStrand(
     strands[strandIdx].dotStarPtr->show();
 
     // post-init sanity check
-    if (strands[strandIdx].dotStarPtr->numPixels() == 0)
-      is_success = false;
+    if (strands[strandIdx].dotStarPtr->numPixels() == 0) {
+      // TODO: Publish out first then ret.
+      return false;
+    }
 
     WS_DEBUG_PRINT("Created DotStar strand of length ");
     WS_DEBUG_PRINT(strands[strandIdx].numPixels);
     WS_DEBUG_PRINT(" on Data GPIO #");
     WS_DEBUG_PRINTLN(strands[strandIdx].pinDotStarData);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Invalid strand type provided!");
+    // TODO: Send message via MQTT
+    // then, fail out of this function (ret. false)
   }
 
   // Fill response message
