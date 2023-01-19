@@ -36,10 +36,10 @@
 Wippersnapper WS;
 
 #ifdef ARDUINO_ARCH_ESP32
-const char *fmtMemCk = "Free: %d\tMaxAlloc: %d\t PSFree: %d\n";
+const char *fmtMemCk = "Free: %d\tMaxAlloc: %d\t PSFree: %d\n"; // printf string format for MEMCK calls
 #define MEMCK                                                                  \
   Serial.printf(fmtMemCk, ESP.getFreeHeap(), ESP.getMaxAllocHeap(),            \
-                ESP.getFreePsram())
+                ESP.getFreePsram()) ///< ESP32 memory check macro
 #endif
 
 Wippersnapper::Wippersnapper() {
