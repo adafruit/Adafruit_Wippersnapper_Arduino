@@ -53,14 +53,16 @@ void initStatusLED() {
 
 #ifdef USE_STATUS_DOTSTAR
   if (WS.lockStatusDotStar == false) {
-    #ifdef STATUS_DOTSTAR_COLOR_ORDER
+#ifdef STATUS_DOTSTAR_COLOR_ORDER
     // Board requires a non-default color order in the constructor
-    statusPixelDotStar = new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
-                         STATUS_DOTSTAR_PIN_CLK, STATUS_DOTSTAR_COLOR_ORDER);
-    #else
-        statusPixelDotStar = new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
-                         STATUS_DOTSTAR_PIN_CLK, STATUS_DOTSTAR_COLOR_ORDER)
-    #endif
+    statusPixelDotStar = new Adafruit_DotStar(
+        STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK,
+        STATUS_DOTSTAR_COLOR_ORDER);
+#else
+    statusPixelDotStar =
+        new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
+                             STATUS_DOTSTAR_PIN_CLK, STATUS_DOTSTAR_COLOR_ORDER)
+#endif
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn OFF all pixels
     WS.lockStatusDotStar = true;
@@ -251,9 +253,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 /****************************************************************************/
 int16_t getStatusNeoPixelPin() {
 #ifdef USE_STATUS_NEOPIXEL
-return statusPixel->getPin();
+  return statusPixel->getPin();
 #endif
-return -2;
+  return -2;
 }
 
 /****************************************************************************/
@@ -264,9 +266,9 @@ return -2;
 /****************************************************************************/
 int16_t getStatusDotStarDataPin() {
 #ifdef USE_STATUS_DOTSTAR
-return STATUS_DOTSTAR_PIN_DATA;
+  return STATUS_DOTSTAR_PIN_DATA;
 #endif
-return -2;
+  return -2;
 }
 
 /****************************************************************************/
