@@ -56,12 +56,7 @@ public:
   addStrand(wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg);
   void
   deleteStrand(wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg);
-  // void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest
-  // *pixelsWriteMsg);
-  void fillStrandNeoPixel(
-      wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
-  void
-  fillStrandDotStar(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
+  void fillStrand(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
 
   // Helpers
   int16_t allocateStrand();

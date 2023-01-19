@@ -1303,17 +1303,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // fill strand
-    if (msgPixelsWritereq.pixels_type ==
-        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-      WS._ws_pixelsComponent->fillStrandNeoPixel(&msgPixelsWritereq);
-    } else if (msgPixelsWritereq.pixels_type ==
-               wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-      WS._ws_pixelsComponent->fillStrandDotStar(&msgPixelsWritereq);
-    } else {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Can not write to strand - invalid pixel type provided!");
-      return false;
-    }
+    WS._ws_pixelsComponent->fillStrand(&msgPixelsWritereq);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
     return false;

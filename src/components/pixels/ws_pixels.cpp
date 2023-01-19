@@ -38,6 +38,24 @@ ws_pixels::~ws_pixels() {
     deallocateStrand(i);
 }
 
+/******************************************************************************/
+/*!
+    @brief   Allocates an index of a free strand_t within the strand array.
+    @returns Index of a free strand_t, ERR_INVALID_STRAND if strand array is
+   full.
+*/
+/******************************************************************************/
+int16_t ws_pixels::allocateStrand() {
+  for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
+       strandIdx++) {
+    if (strands[strandIdx].type ==
+        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
+      return strandIdx;
+    }
+  }
+  return ERR_INVALID_STRAND;
+}
+
 /**************************************************************************/
 /*!
     @brief  Deallocates a `strand_t` within `strands`, provided an index.
@@ -50,7 +68,6 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
   // delete the pixel object
   if (strands[strandIdx].neoPixelPtr != nullptr)
     delete strands[strandIdx].neoPixelPtr;
-
   if ((strands[strandIdx].dotStarPtr != nullptr))
     delete strands[strandIdx].dotStarPtr;
 
@@ -73,24 +90,6 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
       -1};
 }
 
-/******************************************************************************/
-/*!
-    @brief   Allocates an index of a free strand_t within the strand array.
-    @returns Index of a free strand_t, ERR_INVALID_STRAND if strand array is
-   full.
-*/
-/******************************************************************************/
-int16_t ws_pixels::allocateStrand() {
-  for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
-       strandIdx++) {
-    if (strands[strandIdx].type ==
-        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
-      return strandIdx;
-    }
-  }
-  return ERR_INVALID_STRAND;
-}
-
 /**************************************************************************/
 /*!
     @brief   Returns the `neoPixelType` provided the strand's pixelOrder
@@ -102,28 +101,20 @@ int16_t ws_pixels::allocateStrand() {
 /**************************************************************************/
 neoPixelType ws_pixels::getNeoPixelStrandOrder(
     wippersnapper_pixels_v1_PixelsOrder pixelOrder) {
-  neoPixelType strandType;
   switch (pixelOrder) {
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRB:
-    strandType = NEO_GRB + NEO_KHZ800;
-    break;
+    return NEO_GRB + NEO_KHZ800;
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_GRBW:
-    strandType = NEO_GRBW + NEO_KHZ800;
-    break;
+    return NEO_GRBW + NEO_KHZ800;
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RGB:
-    strandType = NEO_RGB + NEO_KHZ800;
-    break;
+    return NEO_RGB + NEO_KHZ800;
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_RGBW:
-    strandType = NEO_RGBW + NEO_KHZ800;
-    break;
+    return NEO_RGBW + NEO_KHZ800;
   case wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_BRG:
-    strandType = NEO_BRG + NEO_KHZ800;
-    break;
+    return NEO_BRG + NEO_KHZ800;
   default:
-    strandType = NEO_GRB + NEO_KHZ800;
-    break;
+    return NEO_GRB + NEO_KHZ800;
   }
-  return strandType;
 }
 
 /**************************************************************************/
@@ -338,15 +329,17 @@ void ws_pixels::deleteStrand(
 
 /**************************************************************************/
 /*!
-    @brief   Writes a color from Adafruit IO to a NeoPixel strand
+    @brief   Writes a color from Adafruit IO to a strand of
+             addressable pixels
     @param   pixelsWriteMsg
              Protobuf message from Adafruit IO containing a
              `wippersnapper_pixels_v1_PixelsWriteRequest`.
 */
 /**************************************************************************/
-void ws_pixels::fillStrandNeoPixel(
+void ws_pixels::fillStrand(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
-  // Obtain index of pixel strand
+
+  // Get index of pixel strand
   int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
                                pixelsWriteMsg->pixels_type);
   if (strandIdx == ERR_INVALID_STRAND) {
@@ -355,49 +348,21 @@ void ws_pixels::fillStrandNeoPixel(
     return;
   }
 
-  WS_DEBUG_PRINT("Filling color: ");
-  WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
-
-  // Fill color from Adafruit IO to the strand
-  for (int i = 0; i < strands[strandIdx].numPixels; i++) {
-    uint32_t rgbcolorGamma =
-        strands[strandIdx].neoPixelPtr->gamma32(pixelsWriteMsg->pixels_color);
-    strands[strandIdx].neoPixelPtr->setPixelColor(i, rgbcolorGamma);
-  }
-
-  // Display the color on the strand
-  strands[strandIdx].neoPixelPtr->show();
-}
-
-/**************************************************************************/
-/*!
-    @brief   Writes a color from Adafruit IO to a DotStar strand
-    @param   pixelsWriteMsg
-             Protobuf message from Adafruit IO containing a
-             `wippersnapper_pixels_v1_PixelsWriteRequest`.
-*/
-/**************************************************************************/
-void ws_pixels::fillStrandDotStar(
-    wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
-  // Obtain index of pixel strand
-  int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
-                               pixelsWriteMsg->pixels_type);
-  if (strandIdx == ERR_INVALID_STRAND) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Pixel strand not found, can not write a color to the strand!");
-    return;
-  }
+  // Perform gamma correction on the color before we write
+  uint32_t rgbcolorGamma =
+      strands[strandIdx].neoPixelPtr->gamma32(pixelsWriteMsg->pixels_color);
 
   WS_DEBUG_PRINT("Filling color: ");
   WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
-
-  // Fill color from Adafruit IO to the strand
-  for (int i = 0; i < strands[strandIdx].numPixels; i++) {
-    uint32_t rgbcolorGamma =
-        strands[strandIdx].dotStarPtr->gamma32(pixelsWriteMsg->pixels_color);
-    strands[strandIdx].dotStarPtr->setPixelColor(i, rgbcolorGamma);
+  if (pixelsWriteMsg->pixels_type ==
+      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    strands[strandIdx].neoPixelPtr->fill(rgbcolorGamma);
+    strands[strandIdx].neoPixelPtr->show();
+  } else if (pixelsWriteMsg->pixels_type ==
+             wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    strands[strandIdx].dotStarPtr->fill(rgbcolorGamma);
+    strands[strandIdx].dotStarPtr->show();
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unable to determine pixel type to write to!");
   }
-
-  // Display the color on the strand
-  strands[strandIdx].dotStarPtr->show();
 }
