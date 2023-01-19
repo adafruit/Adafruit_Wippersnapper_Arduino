@@ -260,6 +260,7 @@ int16_t getStatusDotStarDataPin() {
 #ifdef USE_STATUS_DOTSTAR
 return STATUS_DOTSTAR_PIN_DATA;
 #endif
+return -2;
 }
 
 /****************************************************************************/
