@@ -120,7 +120,6 @@
   {} ///< Prints line from debug output.
 #endif
 
-
 /** Defines the Adafruit IO connection status */
 typedef enum {
   WS_IDLE = 0,               // Waiting for connection establishement

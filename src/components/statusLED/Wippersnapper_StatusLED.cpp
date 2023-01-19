@@ -52,13 +52,9 @@ void initStatusLED() {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  // TODO for brent tomorrow.
-  // THE SOFTWARE CRASHES HERE, why is not known yet
-  // may want to recompile and upload, i have a feeling its the lock
-  WS_DEBUG_PRINTLN("initStatusLED DotStar");
-  WS_DEBUG_PRINTLN("WS.lockStatusDotStar: ");
-  WS_DEBUG_PRINT(WS.lockStatusDotStar);
   if (WS.lockStatusDotStar == false) {
+    statusPixelDotStar = new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
+                         STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn OFF all pixels
     WS.lockStatusDotStar = true;

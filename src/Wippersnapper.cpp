@@ -1647,9 +1647,9 @@ bool Wippersnapper::generateDeviceUID() {
 bool Wippersnapper::buildWSTopics() {
   bool is_success = true;
 
-  #ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_ESP32
   MEMCK;
-  #endif
+#endif
 
   // Create global registration topic
   WS._topic_description =
@@ -1906,9 +1906,9 @@ bool Wippersnapper::buildWSTopics() {
     return false;
   }
 
-  #ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_ESP32
   MEMCK;
-  #endif
+#endif
 
   // Topic for pixel messages from broker->device
   WS._topic_signal_pixels_brkr = (char *)malloc(
@@ -1931,9 +1931,9 @@ bool Wippersnapper::buildWSTopics() {
   // free(WS._topic_signal_pixels_device);
   WS_DEBUG_PRINTLN(WS._topic_signal_pixels_brkr);
 
-  #ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_ESP32
   MEMCK;
-  #endif
+#endif
 
   // Topic for pixel messages from device->broker
   WS._topic_signal_pixels_device = (char *)malloc(
