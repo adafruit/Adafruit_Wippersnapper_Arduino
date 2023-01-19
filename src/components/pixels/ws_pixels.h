@@ -1,14 +1,15 @@
 /*!
  * @file ws_pixels.h
  *
- * High-level interface for wippersnapper to manage pixel strands
+ * High-level interface for wippersnapper to manage addressable RGB pixel
+ * strands
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
  *
- * Brent Rubell for Adafruit Industries 2022
+ * Brent Rubell for Adafruit Industries, 2022-2023
  *
  *
  * MIT license, all text here must be included in any redistribution.
@@ -28,13 +29,14 @@
 struct strand_s {
   Adafruit_NeoPixel *neoPixelPtr; ///< Ptr to a NeoPixel object
   Adafruit_DotStar *dotStarPtr;   ///< Ptr to a DotStar object
-  wippersnapper_pixels_v1_PixelsType type; ///< Type of strand (DotStar, NeoPixel)
+  wippersnapper_pixels_v1_PixelsType
+      type;           ///< Type of strand (DotStar, NeoPixel)
   uint8_t brightness; ///< Strand brightness (0 to 255)
   uint16_t numPixels; ///< Number of pixels on strand
   wippersnapper_pixels_v1_PixelsOrder ordering; ///< Color order of strand
-  int16_t pinNeoPixel;     ///< NeoPixel strand data pin
-  int16_t pinDotStarData;  ///< DotStar strand data pin
-  int16_t pinDotStarClock; ///< DotStar strand clock pin
+  int16_t pinNeoPixel;                          ///< NeoPixel strand data pin
+  int16_t pinDotStarData;                       ///< DotStar strand data pin
+  int16_t pinDotStarClock;                      ///< DotStar strand clock pin
 };
 
 class Wippersnapper; ///< friend class
@@ -56,10 +58,10 @@ public:
   deleteStrand(wippersnapper_pixels_v1_PixelsDeleteRequest *pixelsDeleteMsg);
   // void writeStrand(wippersnapper_pixels_v1_PixelsWriteRequest
   // *pixelsWriteMsg);
-  void writeStrandNeoPixel(
+  void fillStrandNeoPixel(
       wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
-  void writeStrandDotStar(
-      wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
+  void
+  fillStrandDotStar(wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg);
 
   // Helpers
   int16_t allocateStrand();

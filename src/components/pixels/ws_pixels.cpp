@@ -1,14 +1,15 @@
 /*!
  * @file ws_pixels.cpp
  *
- * High-level interface for wippersnapper to manage pixel strands
+ * High-level interface for wippersnapper to manage addressable RGB pixel
+ * strands
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
  *
- * Written by Brent Rubell for Adafruit Industries, 2022.
+ * Written by Brent Rubell for Adafruit Industries, 2022-2023
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -343,7 +344,7 @@ void ws_pixels::deleteStrand(
              `wippersnapper_pixels_v1_PixelsWriteRequest`.
 */
 /**************************************************************************/
-void ws_pixels::writeStrandNeoPixel(
+void ws_pixels::fillStrandNeoPixel(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   // Obtain index of pixel strand
   int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
@@ -353,6 +354,9 @@ void ws_pixels::writeStrandNeoPixel(
         "ERROR: Pixel strand not found, can not write a color to the strand!");
     return;
   }
+
+  WS_DEBUG_PRINT("Filling color: ");
+  WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
 
   // Fill color from Adafruit IO to the strand
   for (int i = 0; i < strands[strandIdx].numPixels; i++) {
@@ -373,7 +377,7 @@ void ws_pixels::writeStrandNeoPixel(
              `wippersnapper_pixels_v1_PixelsWriteRequest`.
 */
 /**************************************************************************/
-void ws_pixels::writeStrandDotStar(
+void ws_pixels::fillStrandDotStar(
     wippersnapper_pixels_v1_PixelsWriteRequest *pixelsWriteMsg) {
   // Obtain index of pixel strand
   int strandIdx = getStrandIdx(atoi(pixelsWriteMsg->pixels_pin_data + 1),
@@ -384,7 +388,7 @@ void ws_pixels::writeStrandDotStar(
     return;
   }
 
-  WS_DEBUG_PRINT("Writing color: ");
+  WS_DEBUG_PRINT("Filling color: ");
   WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
 
   // Fill color from Adafruit IO to the strand
