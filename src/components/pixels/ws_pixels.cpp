@@ -24,7 +24,7 @@ strand_s strands[MAX_PIXEL_STRANDS]{
     wippersnapper_pixels_v1_PixelsOrder_PIXELS_ORDER_UNSPECIFIED,
     -1,
     -1,
-    -1};
+    -1}; ///< Contains all pixel strands used by WipperSnapper
 
 /**************************************************************************/
 /*!

@@ -22,16 +22,16 @@
 #define MAX_PIXEL_STRANDS                                                      \
   5 ///< Maximum number of pixel strands connected to a WipperSnapper device
 
-#define ERR_INVALID_STRAND -1
+#define ERR_INVALID_STRAND -1 ///< Invalid strand index
 
 /** Object representation of a strand of pixels */
 struct strand_s {
   Adafruit_NeoPixel *neoPixelPtr; ///< Ptr to a NeoPixel object
   Adafruit_DotStar *dotStarPtr;   ///< Ptr to a DotStar object
-  wippersnapper_pixels_v1_PixelsType type;
+  wippersnapper_pixels_v1_PixelsType type; ///< Type of strand (DotStar, NeoPixel)
   uint8_t brightness; ///< Strand brightness (0 to 255)
   uint16_t numPixels; ///< Number of pixels on strand
-  wippersnapper_pixels_v1_PixelsOrder ordering;
+  wippersnapper_pixels_v1_PixelsOrder ordering; ///< Color order of strand
   int16_t pinNeoPixel;     ///< NeoPixel strand data pin
   int16_t pinDotStarData;  ///< DotStar strand data pin
   int16_t pinDotStarClock; ///< DotStar strand clock pin
