@@ -53,10 +53,14 @@
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
 
-// ESP32-IDF components
+// ESP32-IDF components and macros
 #ifdef ARDUINO_ARCH_ESP32
-#ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
-#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
+#define MEMCK                                                                  \
+  Serial.printf("Free: %d\tMaxAlloc: %d\t PSFree: %d\n", ESP.getFreeHeap(),    \
+                ESP.getMaxAllocHeap(),                                         \
+                ESP.getFreePsram()) ///< ESP32 memory check macro
+#ifdef ESP_IDF_VERSION_MAJOR        // IDF 4+
+#if CONFIG_IDF_TARGET_ESP32         // ESP32/PICO-D4
 #include "esp32/rom/rtc.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/rtc.h"
