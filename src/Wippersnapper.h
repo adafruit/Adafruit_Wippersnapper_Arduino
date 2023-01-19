@@ -234,10 +234,8 @@ public:
   ws_board_status_t getBoardStatus();
 
   bool generateDeviceUID();
-  bool buildWSTopics();
-  void subscribeWSTopics();
-  bool buildErrorTopics();
-  void subscribeErrorTopics();
+  bool generateWSTopics();
+  bool generateWSErrorTopics();
 
   // Registration API
   bool registerBoard();

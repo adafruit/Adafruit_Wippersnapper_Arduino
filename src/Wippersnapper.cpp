@@ -1541,12 +1541,12 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 /**************************************************************************/
 /*!
     @brief    Builds MQTT topics for handling errors returned from the
-                Adafruit IO broker.
+                Adafruit IO broker and subscribes to them
     @returns  True if memory for error topics allocated successfully,
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::buildErrorTopics() {
+bool Wippersnapper::generateWSErrorTopics() {
   // dynamically allocate memory for err topic
   WS._err_topic = (char *)malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
@@ -1559,6 +1559,11 @@ bool Wippersnapper::buildErrorTopics() {
     return false;
   }
 
+  // Subscribe to error topic
+  _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
+  WS._mqtt->subscribe(_err_sub);
+  _err_sub->setCallback(cbErrorTopic);
+
   // dynamically allocate memory for throttle topic
   WS._throttle_topic = (char *)malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
@@ -1570,24 +1575,13 @@ bool Wippersnapper::buildErrorTopics() {
     WS_DEBUG_PRINTLN("ERROR: Failed to allocate global throttle topic!");
     return false;
   }
-  return true;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Subscribes to user-specific Adafruit IO MQTT topics
-*/
-/**************************************************************************/
-void Wippersnapper::subscribeErrorTopics() {
-  // Subscribe to error topic
-  _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
-  WS._mqtt->subscribe(_err_sub);
-  _err_sub->setCallback(cbErrorTopic);
 
   // Subscribe to throttle topic
   _throttle_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._throttle_topic);
   WS._mqtt->subscribe(_throttle_sub);
   _throttle_sub->setCallback(cbThrottleTopic);
+
+  return true;
 }
 
 /**************************************************************************/
@@ -1640,12 +1634,13 @@ bool Wippersnapper::generateDeviceUID() {
 
 /**************************************************************************/
 /*!
-    @brief    Generates device-specific Wippersnapper control topics.
+    @brief    Generates device-specific Wippersnapper control topics and
+              subscribes to them.
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::buildWSTopics() {
+bool Wippersnapper::generateWSTopics() {
   // Create global registration topic
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
@@ -1940,14 +1935,6 @@ bool Wippersnapper::buildWSTopics() {
 
   return true;
 }
-
-/**************************************************************************/
-/*!
-    @brief    Subscribes to device-specific MQTT control topics.
-*/
-/**************************************************************************/
-void Wippersnapper::subscribeWSTopics() {}
-// TODO: Why is this empty? Do we no longer need it??
 
 /**************************************************************************/
 /*!
@@ -2323,17 +2310,13 @@ void Wippersnapper::connect() {
   setupMQTTClient(_device_uid);
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
-  if (!buildWSTopics()) {
+  if (!generateWSTopics()) {
     haltError("Unable to allocate space for MQTT topics");
   }
 
-  if (!buildErrorTopics()) {
+  if (!generateWSErrorTopics()) {
     haltError("Unable to allocate space for MQTT error topics");
   }
-
-  WS_DEBUG_PRINTLN("Subscribing to device's MQTT topics...");
-  subscribeWSTopics();
-  subscribeErrorTopics();
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
