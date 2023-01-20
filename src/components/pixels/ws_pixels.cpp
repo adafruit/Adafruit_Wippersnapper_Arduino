@@ -147,6 +147,48 @@ uint8_t ws_pixels::getDotStarStrandOrder(
 
 /**************************************************************************/
 /*!
+    @brief   Creates a PixelsResponse message and publishes it to IO.
+    @param   is_success
+             True if `addStrand()` succeeded, False otherwise.
+    @param   pixels_pin_data
+             The strand's data pin..
+*/
+/**************************************************************************/
+void ws_pixels::publishAddStrandResponse(bool is_success,
+                                         char *pixels_pin_data) {
+  // Create response message
+  wippersnapper_signal_v1_PixelsResponse msgInitResp =
+      wippersnapper_signal_v1_PixelsResponse_init_zero;
+  msgInitResp.which_payload =
+      wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
+  // Fill response message
+  msgInitResp.payload.resp_pixels_create.is_success = is_success;
+  memcpy(msgInitResp.payload.resp_pixels_create.pixels_pin_data,
+         pixels_pin_data, sizeof(char) * 6);
+
+  // Encode `wippersnapper_pixels_v1_PixelsCreateResponse` message
+  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+  pb_ostream_t ostream =
+      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!pb_encode(&ostream, wippersnapper_signal_v1_PixelsResponse_fields,
+                 &msgInitResp)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode "
+                     "wippersnapper_signal_v1_PixelsResponse message!");
+    return;
+  }
+
+  // Publish message to broker
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PixelsResponse_fields,
+                      &msgInitResp);
+  WS_DEBUG_PRINT("-> wippersnapper_signal_v1_PixelsResponse...");
+  WS._mqtt->publish(WS._topic_signal_pixels_device, WS._buffer_outgoing, msgSz,
+                    1);
+  WS_DEBUG_PRINTLN("Published!");
+}
+
+/**************************************************************************/
+/*!
     @brief   Initializes a strand of addressable RGB Pixels.
     @param   pixelsCreateReqMsg
              Pointer to strand init. request message
@@ -159,19 +201,11 @@ bool ws_pixels::addStrand(
 
   // attempt to allocate a free strand from array of strands
   int16_t strandIdx = allocateStrand();
-  if (strandIdx == ERR_INVALID_STRAND)
-    is_success = false;
-
-  // TODO: check if is_success == false before going through
-  // the init. routine
-
-  // TODO: Need to move this elsewhere
-  // create `wippersnapper_pixels_v1_PixelsCreateResponse` message
-  wippersnapper_signal_v1_PixelsResponse msgInitResp =
-      wippersnapper_signal_v1_PixelsResponse_init_zero;
-  // fill `wippersnapper_pixels_v1_PixelsCreateResponse` message
-  msgInitResp.which_payload =
-      wippersnapper_signal_v1_PixelsResponse_resp_pixels_create_tag;
+  if (strandIdx == ERR_INVALID_STRAND) {
+    // TODO: This only works with NeoPixel?
+    publishAddStrandResponse(false, pixelsCreateReqMsg->pixels_pin_neopixel);
+    return false;
+  }
 
   // Fill generic members of strand obj.
   strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
@@ -179,23 +213,21 @@ bool ws_pixels::addStrand(
   strands[strandIdx].numPixels = pixelsCreateReqMsg->pixels_num;
   strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
 
-  // Fill specific members of strand obj.
+  // Fill strand pins
   if (pixelsCreateReqMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    // Unpack pin (required? TODO - see if we can just call the member??)
-    char *pixelsPin = pixelsCreateReqMsg->pixels_pin_neopixel + 1;
-    strands[strandIdx].pinNeoPixel = atoi(pixelsPin);
+    strands[strandIdx].pinNeoPixel =
+        atoi(pixelsCreateReqMsg->pixels_pin_neopixel + 1);
   } else if (pixelsCreateReqMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    // unpack pins
-    char *pinData = pixelsCreateReqMsg->pixels_pin_dotstar_data + 1;
-    char *pinClock = pixelsCreateReqMsg->pixels_pin_dotstar_clock + 1;
-    strands[strandIdx].pinDotStarData = atoi(pinData);
-    strands[strandIdx].pinDotStarClock = atoi(pinClock);
+    strands[strandIdx].pinDotStarData =
+        atoi(pixelsCreateReqMsg->pixels_pin_dotstar_data + 1);
+    strands[strandIdx].pinDotStarClock =
+        atoi(pixelsCreateReqMsg->pixels_pin_dotstar_clock + 1);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Invalid strand type provided!");
-    // TODO: Send message via MQTT
-    // then, fail out of this function (ret. false)
+    publishAddStrandResponse(false, pixelsCreateReqMsg->pixels_pin_neopixel);
+    return false;
   }
 
   // Fill specific members of strand obj.
@@ -215,7 +247,7 @@ bool ws_pixels::addStrand(
 
     // Check that we've correctly initialized the strand
     if (strands[strandIdx].neoPixelPtr->numPixels() == 0) {
-      // TODO: Publish out first then ret.
+      publishAddStrandResponse(false, pixelsCreateReqMsg->pixels_pin_neopixel);
       return false;
     }
 
@@ -239,7 +271,8 @@ bool ws_pixels::addStrand(
 
     // post-init sanity check
     if (strands[strandIdx].dotStarPtr->numPixels() == 0) {
-      // TODO: Publish out first then ret.
+      publishAddStrandResponse(false,
+                               pixelsCreateReqMsg->pixels_pin_dotstar_data);
       return false;
     }
 
@@ -247,40 +280,13 @@ bool ws_pixels::addStrand(
     WS_DEBUG_PRINT(strands[strandIdx].numPixels);
     WS_DEBUG_PRINT(" on Data GPIO #");
     WS_DEBUG_PRINTLN(strands[strandIdx].pinDotStarData);
+    publishAddStrandResponse(true, pixelsCreateReqMsg->pixels_pin_dotstar_data);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Invalid strand type provided!");
-    // TODO: Send message via MQTT
-    // then, fail out of this function (ret. false)
-  }
-
-  // Fill response message
-  msgInitResp.payload.resp_pixels_create.is_success = is_success;
-  if (pixelsCreateReqMsg->pixels_type ==
-      wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL)
-    memcpy(msgInitResp.payload.resp_pixels_create.pixels_pin_data,
-           pixelsCreateReqMsg->pixels_pin_neopixel, sizeof(char) * 6);
-  else
-    memcpy(msgInitResp.payload.resp_pixels_create.pixels_pin_data,
-           pixelsCreateReqMsg->pixels_pin_dotstar_data, sizeof(char) * 6);
-
-  // publish `wippersnapper_pixels_v1_PixelsCreateResponse` message back to
-  // broker
-  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
-  pb_ostream_t ostream =
-      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&ostream, wippersnapper_signal_v1_PixelsResponse_fields,
-                 &msgInitResp)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode "
-                     "wippersnapper_signal_v1_PixelsResponse message!");
+    publishAddStrandResponse(false,
+                             pixelsCreateReqMsg->pixels_pin_dotstar_data);
     return false;
   }
-  size_t msgSz;
-  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PixelsResponse_fields,
-                      &msgInitResp);
-  WS_DEBUG_PRINT("-> wippersnapper_signal_v1_PixelsResponse");
-  WS._mqtt->publish(WS._topic_signal_pixels_device, WS._buffer_outgoing, msgSz,
-                    1);
-  WS_DEBUG_PRINTLN("Published!");
 
   return true;
 }
