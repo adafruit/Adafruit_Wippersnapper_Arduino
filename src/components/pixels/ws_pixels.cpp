@@ -197,8 +197,6 @@ void ws_pixels::publishAddStrandResponse(bool is_success,
 /**************************************************************************/
 bool ws_pixels::addStrand(
     wippersnapper_pixels_v1_PixelsCreateRequest *pixelsCreateReqMsg) {
-  bool is_success = true;
-
   // attempt to allocate a free strand from array of strands
   int16_t strandIdx = allocateStrand();
   if (strandIdx == ERR_INVALID_STRAND) { // unable to allocate a strand
