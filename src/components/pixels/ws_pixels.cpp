@@ -201,19 +201,24 @@ bool ws_pixels::addStrand(
 
   // attempt to allocate a free strand from array of strands
   int16_t strandIdx = allocateStrand();
-  if (strandIdx == ERR_INVALID_STRAND) {
-    // TODO: This only works with NeoPixel?
-    publishAddStrandResponse(false, pixelsCreateReqMsg->pixels_pin_neopixel);
+  if (strandIdx == ERR_INVALID_STRAND) { // unable to allocate a strand
+    if (pixelsCreateReqMsg->pixels_type ==
+        wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL)
+      publishAddStrandResponse(false, pixelsCreateReqMsg->pixels_pin_neopixel);
+    else if (pixelsCreateReqMsg->pixels_type ==
+             wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR)
+      publishAddStrandResponse(false,
+                               pixelsCreateReqMsg->pixels_pin_dotstar_data);
     return false;
   }
 
-  // Fill generic members of strand obj.
+  // fill generic members of the strand obj.
   strands[strandIdx].type = pixelsCreateReqMsg->pixels_type;
   strands[strandIdx].brightness = pixelsCreateReqMsg->pixels_brightness;
   strands[strandIdx].numPixels = pixelsCreateReqMsg->pixels_num;
   strands[strandIdx].ordering = pixelsCreateReqMsg->pixels_ordering;
 
-  // Fill strand pins
+  // fill strand pins
   if (pixelsCreateReqMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     strands[strandIdx].pinNeoPixel =
@@ -313,7 +318,6 @@ int ws_pixels::getStrandIdx(int16_t dataPin,
         strands[strandIdx].pinDotStarData == dataPin)
       return strandIdx;
   }
-
   return ERR_INVALID_STRAND;
 }
 
@@ -331,7 +335,7 @@ void ws_pixels::deleteStrand(
   int strandIdx = getStrandIdx(atoi(pixelsDeleteMsg->pixels_pin_data + 1),
                                pixelsDeleteMsg->pixels_type);
   if (strandIdx == ERR_INVALID_STRAND) {
-    WS_DEBUG_PRINTLN("ERROR: Strand not found, can not delete strand!");
+    WS_DEBUG_PRINTLN("ERROR: Strand not found, unable to delete strand!");
     return;
   }
   // deallocate and release resources of strand object
