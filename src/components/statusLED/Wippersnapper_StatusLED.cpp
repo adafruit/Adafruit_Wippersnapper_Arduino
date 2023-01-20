@@ -35,7 +35,7 @@ Adafruit_DotStar *statusPixelDotStar =
 /****************************************************************************/
 void initStatusLED() {
 #ifdef USE_STATUS_NEOPIXEL
-  if (!WS.lockStatusNeoPixel) {
+  if (WS.lockStatusNeoPixel == false) {
 #if defined(NEOPIXEL_I2C_POWER)
     pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
     digitalWrite(NEOPIXEL_I2C_POWER, HIGH);

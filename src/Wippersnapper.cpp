@@ -2107,6 +2107,7 @@ void Wippersnapper::pingBroker() {
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
+    WS_DEBUG_PRINTLN("STATUS LED BLINK KAT");
     statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }

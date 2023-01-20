@@ -236,6 +236,12 @@ bool ws_pixels::addStrand(
   // Fill specific members of strand obj.
   if (pixelsCreateReqMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    // Release status LED
+    // is requested pin in-use by the status pixel?
+    if (getStatusNeoPixelPin() == strands[strandIdx].pinNeoPixel &&
+        WS.lockStatusNeoPixel)
+      releaseStatusLED(); // release it!
+
     // Create a new strand of NeoPixels
     strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
         pixelsCreateReqMsg->pixels_num, strands[strandIdx].pinNeoPixel,
@@ -258,8 +264,17 @@ bool ws_pixels::addStrand(
     WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
     WS_DEBUG_PRINT(" on GPIO #");
     WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
+    publishAddStrandResponse(true, pixelsCreateReqMsg->pixels_pin_neopixel);
   } else if (pixelsCreateReqMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
+
+    // release the status dotstar, if it is both in-use and the pin within
+    // `pixelsCreateReqMsg`
+    if ((strands[strandIdx].pinDotStarData == getStatusDotStarDataPin()) &&
+        WS.lockStatusDotStar) {
+      releaseStatusLED();
+    }
+
     // Create Dotstar strand
     strands[strandIdx].dotStarPtr = new Adafruit_DotStar(
         strands[strandIdx].numPixels, strands[strandIdx].pinDotStarData,
@@ -338,6 +353,9 @@ void ws_pixels::deleteStrand(
   }
   // deallocate and release resources of strand object
   deallocateStrand(strandIdx);
+
+  WS_DEBUG_PRINT("Deleted strand on data pin ");
+  WS_DEBUG_PRINTLN(pixelsDeleteMsg->pixels_pin_data);
 }
 
 /**************************************************************************/
