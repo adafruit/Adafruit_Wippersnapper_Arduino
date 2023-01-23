@@ -45,6 +45,7 @@
 #endif
 
 #include "components/ds18x20/ws_ds18x20.h"
+#include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
 
@@ -52,10 +53,14 @@
 #include "Adafruit_MQTT.h" // MQTT Client
 #include "Arduino.h"       // Wiring
 
-// ESP32-IDF components
+// ESP32-IDF components and macros
 #ifdef ARDUINO_ARCH_ESP32
-#ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
-#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
+#define MEMCK                                                                  \
+  Serial.printf("Free: %d\tMaxAlloc: %d\t PSFree: %d\n", ESP.getFreeHeap(),    \
+                ESP.getMaxAllocHeap(),                                         \
+                ESP.getFreePsram()) ///< ESP32 memory check macro
+#ifdef ESP_IDF_VERSION_MAJOR        // IDF 4+
+#if CONFIG_IDF_TARGET_ESP32         // ESP32/PICO-D4
 #include "esp32/rom/rtc.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/rtc.h"
@@ -96,6 +101,10 @@
 #define TOPIC_INFO "/info/"       ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
+#define MQTT_TOPIC_PIXELS_DEVICE                                               \
+  "/signals/device/pixel" ///< Pixels device->broker topic
+#define MQTT_TOPIC_PIXELS_BROKER                                               \
+  "/signals/broker/pixel" ///< Pixels broker->device topic
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -190,6 +199,7 @@ class ws_ledc;
 class ws_servo;
 class ws_pwm;
 class ws_ds18x20;
+class ws_pixels;
 
 /**************************************************************************/
 /*!
@@ -204,11 +214,9 @@ public:
 
   void provision();
 
-  bool lockStatusNeoPixel =
-      false; ///< True if status LED is using the status neopixel
-  bool lockStatusDotStar =
-      false; ///< True if status LED is using the status dotstar
-  bool lockStatusLED = false; ///< True if status LED is using the built-in LED
+  bool lockStatusNeoPixel; ///< True if status LED is using the status neopixel
+  bool lockStatusDotStar;  ///< True if status LED is using the status dotstar
+  bool lockStatusLED;      ///< True if status LED is using the built-in LED
   float status_pixel_brightness =
       STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
                                        ///< (from 0.0 to 1.0)
@@ -230,10 +238,8 @@ public:
   ws_board_status_t getBoardStatus();
 
   bool generateDeviceUID();
-  bool buildWSTopics();
-  void subscribeWSTopics();
-  bool buildErrorTopics();
-  void subscribeErrorTopics();
+  bool generateWSTopics();
+  bool generateWSErrorTopics();
 
   // Registration API
   bool registerBoard();
@@ -301,10 +307,11 @@ public:
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
-      *_littleFS;        ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_pwm *_pwmComponent; ///< Instance of pwm class
-  ws_servo *_servoComponent;     ///< Instance of servo class
-  ws_ds18x20 *_ds18x20Component; ///< Instance of DS18x20 class
+      *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
+  ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
+  ws_pwm *_pwmComponent;          ///< Instance of pwm class
+  ws_servo *_servoComponent;      ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
@@ -340,8 +347,10 @@ public:
       NULL; /*!< Topic carries PWM messages from a broker to a device. */
   char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
                                    a device to a broker. */
-  char *_topic_signal_ds18_device = NULL; /*!< Topic carries ds18x20 messages
-                                     from a broker to a device. */
+  char *_topic_signal_ds18_device = NULL;   /*!< Topic carries ds18x20 messages
+                                       from a broker to a device. */
+  char *_topic_signal_pixels_brkr = NULL;   /*!< Topic carries pixel messages */
+  char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -360,6 +369,10 @@ public:
   wippersnapper_signal_v1_PWMRequest msgPWM =
       wippersnapper_signal_v1_PWMRequest_init_zero; ///< PWM request wrapper
                                                     ///< message.
+
+  // pixels signal message
+  wippersnapper_signal_v1_PixelsRequest
+      msgPixels; ///< PixelsRequest wrapper message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -417,6 +430,8 @@ protected:
       *_topic_signal_pwm_sub; /*!< Subscription callback for pwm topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

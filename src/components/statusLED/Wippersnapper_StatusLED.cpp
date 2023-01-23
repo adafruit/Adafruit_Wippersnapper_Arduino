@@ -30,16 +30,12 @@ Adafruit_DotStar *statusPixelDotStar =
 
 /****************************************************************************/
 /*!
-    @brief    Initializes board-specific status LED.
-    @returns  True if initialized, False if status LED hardware is already
-                in-use.
+    @brief    Initializes board-specific status LED pixel
 */
 /****************************************************************************/
-bool statusLEDInit() {
-  bool is_success = false;
-
+void initStatusLED() {
 #ifdef USE_STATUS_NEOPIXEL
-  if (!WS.lockStatusNeoPixel) {
+  if (WS.lockStatusNeoPixel == false) {
 #if defined(NEOPIXEL_I2C_POWER)
     pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
     digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
@@ -57,10 +53,19 @@ bool statusLEDInit() {
 
 #ifdef USE_STATUS_DOTSTAR
   if (WS.lockStatusDotStar == false) {
+#ifdef STATUS_DOTSTAR_COLOR_ORDER
+    // Board requires a non-default color order in the constructor
+    statusPixelDotStar = new Adafruit_DotStar(
+        STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA, STATUS_DOTSTAR_PIN_CLK,
+        STATUS_DOTSTAR_COLOR_ORDER);
+#else
+    statusPixelDotStar =
+        new Adafruit_DotStar(STATUS_DOTSTAR_NUM, STATUS_DOTSTAR_PIN_DATA,
+                             STATUS_DOTSTAR_PIN_CLK, STATUS_DOTSTAR_COLOR_ORDER)
+#endif
     statusPixelDotStar->begin();
     statusPixelDotStar->show(); // turn OFF all pixels
     WS.lockStatusDotStar = true;
-    is_success = true;
   }
 #endif
 
@@ -80,27 +85,25 @@ bool statusLEDInit() {
 #endif
 
   WS.lockStatusLED = true; // set global pin "lock" flag
-  is_success = true;
 #endif
-  return is_success;
 }
 
 /****************************************************************************/
 /*!
-    @brief    De-initializes status LED. The usingStatus flag is also reset.
+    @brief    De-initializes the status LED and releases pin.
 */
 /****************************************************************************/
-void statusLEDDeinit() {
+void releaseStatusLED() {
 #ifdef USE_STATUS_NEOPIXEL
-  statusPixel->clear();
-  statusPixel->show(); // turn off
-  WS.lockStatusNeoPixel = false;
+  delete statusPixel; // Deallocate Adafruit_NeoPixel object, set data pin back
+                      // to INPUT.
+  WS.lockStatusNeoPixel = false; // unlock
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
-  statusPixelDotStar->clear();
-  statusPixelDotStar->show(); // turn off
-  WS.lockStatusDotStar = false;
+  delete statusPixelDotStar; // Deallocate Adafruit_DotStar object, set data pin
+                             // back to INPUT.
+  WS.lockStatusDotStar = false; // unlock
 #endif
 
 #ifdef USE_STATUS_LED
@@ -131,6 +134,9 @@ void setStatusLEDBrightness(float brightness) {
 /****************************************************************************/
 void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
+
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -146,6 +152,9 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
+  if (!WS.lockStatusDotStar)
+    return; // status pixel is in-use elsewhere
+
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -161,6 +170,8 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 
 #ifdef USE_STATUS_LED
+  if (!WS.lockStatusLED)
+    return; // status pixel is in-use elsewhere
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
@@ -184,6 +195,10 @@ void setStatusLEDColor(uint32_t color) {
 /****************************************************************************/
 void setStatusLEDColor(uint32_t color, int brightness) {
 #ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
+
+  // parse out the color elements
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -197,6 +212,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
+  if (!WS.lockStatusDotStar)
+    return; // status pixel is in-use elsewhere
+
   uint8_t red = (color >> 16) & 0xff;  // red
   uint8_t green = (color >> 8) & 0xff; // green
   uint8_t blue = color & 0xff;         // blue
@@ -210,6 +228,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 
 #ifdef USE_STATUS_LED
+  if (!WS.lockStatusLED)
+    return;
+
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
@@ -222,6 +243,32 @@ void setStatusLEDColor(uint32_t color, int brightness) {
   }
 #endif
 #endif
+}
+
+/****************************************************************************/
+/*!
+    @brief   Retrieve the pin number used for NeoPixel data output.
+    @return  Arduino pin number (-2 if not set).
+*/
+/****************************************************************************/
+int16_t getStatusNeoPixelPin() {
+#ifdef USE_STATUS_NEOPIXEL
+  return statusPixel->getPin();
+#endif
+  return -2;
+}
+
+/****************************************************************************/
+/*!
+    @brief   Retrieve the pin number used for DotStar data output.
+    @return  Arduino pin number (-2 if not set).
+*/
+/****************************************************************************/
+int16_t getStatusDotStarDataPin() {
+#ifdef USE_STATUS_DOTSTAR
+  return STATUS_DOTSTAR_PIN_DATA;
+#endif
+  return -2;
 }
 
 /****************************************************************************/
@@ -310,6 +357,12 @@ void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
   if (!WS.lockStatusLED)
     return;
 #endif
+
+#ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
+#endif
+
   uint32_t ledColor = ledStatusStateToColor(statusState);
   setStatusLEDColor(ledColor);
 }
@@ -326,6 +379,11 @@ void statusLEDBlink(ws_led_status_t statusState) {
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return;
+#endif
+
+#ifdef USE_STATUS_NEOPIXEL
+  if (!WS.lockStatusNeoPixel)
+    return; // status pixel is in-use elsewhere
 #endif
 
   // set number of times to blink

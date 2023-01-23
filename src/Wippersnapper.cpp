@@ -23,7 +23,7 @@
  *
  * @section author Author
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2023 for Adafruit Industries.
  *
  * @section license License
  *
@@ -95,7 +95,7 @@ void Wippersnapper::provision() {
   getMacAddr();
 
   // init. LED for status signaling
-  statusLEDInit();
+  initStatusLED();
 #ifdef USE_TINYUSB
   _fileSystem = new Wippersnapper_FS();
   _fileSystem->parseSecrets();
@@ -1230,34 +1230,109 @@ void cbSignalDSReq(char *data, uint16_t len) {
 
 /******************************************************************************************/
 /*!
-    @brief    Decodes a pwm message and dispatches to the pwm component.
+    @brief    Decodes a pixel strand request message and executes the callback
+   based on the message's tag.
     @param    stream
               Incoming data stream from buffer.
     @param    field
               Protobuf message's tag type.
     @param    arg
               Optional arguments from decoder calling function.
-    @returns  True if decoded and executed successfully, False otherwise.
+    @returns  True if decoded successfully, False otherwise.
 */
 /******************************************************************************************/
-bool cbDecodePWMMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  WS_DEBUG_PRINTLN("Decoding PWM Message...");
-  if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
-    WS_DEBUG_PRINTLN("GOT: PWMAttachRequest");
+bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
+                       void **arg) {
+  if (field->tag ==
+      wippersnapper_signal_v1_PixelsRequest_req_pixels_create_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_PixelsRequest_req_pixels_create_tag");
 
-    // Attempt to decode PWMAttachRequest message
-    wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest =
-        wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachRequest_fields,
-                   &msgPWMAttachRequest)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
-      return false; // fail out if we can't decode the request
+    // attempt to decode create message
+    wippersnapper_pixels_v1_PixelsCreateRequest msgPixelsCreateReq =
+        wippersnapper_pixels_v1_PixelsCreateRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsCreateRequest_fields,
+                   &msgPixelsCreateReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
+                       "wippersnapper_pixels_v1_PixelsCreateRequest!");
+      return false;
     }
-    // TODO: Implement the rest of the handling code once PWM module is pulled
-    // in
+
+    // Add a new strand
+    return WS._ws_pixelsComponent->addStrand(&msgPixelsCreateReq);
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PixelsRequest_req_pixels_delete_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_PixelsRequest_req_pixels_delete_tag");
+
+    // attempt to decode delete strand message
+    wippersnapper_pixels_v1_PixelsDeleteRequest msgPixelsDeleteReq =
+        wippersnapper_pixels_v1_PixelsDeleteRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsDeleteRequest_fields,
+                   &msgPixelsDeleteReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
+                       "wippersnapper_pixels_v1_PixelsDeleteRequest!");
+      return false;
+    }
+
+    // delete strand
+    WS._ws_pixelsComponent->deleteStrand(&msgPixelsDeleteReq);
+  } else if (field->tag ==
+             wippersnapper_signal_v1_PixelsRequest_req_pixels_write_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_PixelsRequest_req_pixels_write_tag");
+
+    // attempt to decode pixel write message
+    wippersnapper_pixels_v1_PixelsWriteRequest msgPixelsWritereq =
+        wippersnapper_pixels_v1_PixelsWriteRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsWriteRequest_fields,
+                   &msgPixelsWritereq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
+                       "wippersnapper_pixels_v1_PixelsWriteRequest!");
+      return false;
+    }
+
+    // fill strand
+    WS._ws_pixelsComponent->fillStrand(&msgPixelsWritereq);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Pixels message type not found!");
+    return false;
   }
   return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Called when the device recieves a new message from the
+              /pixels/ topic.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbPixelsMsg(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Pixels]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
+
+  // Decode pixel message from buffer
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_PixelsRequest_fields,
+                 &WS.msgPixels))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
 
 /****************************************************************************/
@@ -1449,13 +1524,12 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 /**************************************************************************/
 /*!
     @brief    Builds MQTT topics for handling errors returned from the
-                Adafruit IO broker.
+                Adafruit IO broker and subscribes to them
     @returns  True if memory for error topics allocated successfully,
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::buildErrorTopics() {
-  bool is_success = true;
+bool Wippersnapper::generateWSErrorTopics() {
   // dynamically allocate memory for err topic
   WS._err_topic = (char *)malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
@@ -1464,9 +1538,14 @@ bool Wippersnapper::buildErrorTopics() {
     strcpy(WS._err_topic, WS._username);
     strcat(WS._err_topic, TOPIC_IO_ERRORS);
   } else { // malloc failed
-    WS._err_topic = 0;
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate global error topic!");
+    return false;
   }
+
+  // Subscribe to error topic
+  _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
+  WS._mqtt->subscribe(_err_sub);
+  _err_sub->setCallback(cbErrorTopic);
 
   // dynamically allocate memory for throttle topic
   WS._throttle_topic = (char *)malloc(
@@ -1476,27 +1555,16 @@ bool Wippersnapper::buildErrorTopics() {
     strcpy(WS._throttle_topic, WS._username);
     strcat(WS._throttle_topic, TOPIC_IO_THROTTLE);
   } else { // malloc failed
-    WS._throttle_topic = 0;
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate global throttle topic!");
+    return false;
   }
-  return is_success;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Subscribes to user-specific Adafruit IO MQTT topics
-*/
-/**************************************************************************/
-void Wippersnapper::subscribeErrorTopics() {
-  // Subscribe to error topic
-  _err_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._err_topic);
-  WS._mqtt->subscribe(_err_sub);
-  _err_sub->setCallback(cbErrorTopic);
 
   // Subscribe to throttle topic
   _throttle_sub = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._throttle_topic);
   WS._mqtt->subscribe(_throttle_sub);
   _throttle_sub->setCallback(cbThrottleTopic);
+
+  return true;
 }
 
 /**************************************************************************/
@@ -1549,14 +1617,13 @@ bool Wippersnapper::generateDeviceUID() {
 
 /**************************************************************************/
 /*!
-    @brief    Generates device-specific Wippersnapper control topics.
+    @brief    Generates device-specific Wippersnapper control topics and
+              subscribes to them.
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper::buildWSTopics() {
-  bool is_success = true;
-
+bool Wippersnapper::generateWSTopics() {
   // Create global registration topic
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
@@ -1567,7 +1634,8 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description, TOPIC_INFO);
     strcat(WS._topic_description, "status");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate registration topic!");
+    return false;
   }
 
   // Create registration status topic
@@ -1583,8 +1651,15 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description_status, "status");
     strcat(WS._topic_description_status, "/broker");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate registration status topic!");
+    return false;
   }
+
+  // Subscribe to registration status topic
+  _topic_description_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
+  WS._mqtt->subscribe(_topic_description_sub);
+  _topic_description_sub->setCallback(cbRegistrationStatus);
 
   // Create registration status complete topic
   WS._topic_description_status_complete =
@@ -1599,7 +1674,8 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_description_status_complete, "status");
     strcat(WS._topic_description_status_complete, "/device/complete");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate registration complete topic!");
+    return false;
   }
 
   // Create device-to-broker signal topic
@@ -1613,10 +1689,11 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_device, "device");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c signal topic!");
+    return false;
   }
 
-  // Create device-to-broker signal topic
+  // Create pin configuration complete topic
   WS._topic_device_pin_config_complete =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
@@ -1628,7 +1705,9 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_device_pin_config_complete, TOPIC_SIGNALS);
     strcat(WS._topic_device_pin_config_complete, "device/pinConfigComplete");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN(
+        "ERROR: Failed to allocate pin config complete flag topic!");
+    return false;
   }
 
   // Create broker-to-device signal topic
@@ -1642,8 +1721,15 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_brkr, "broker");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate c2d signal topic!");
+    return false;
   }
+
+  // Subscribe to signal topic
+  _topic_signal_brkr_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_brkr_sub);
+  _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
   // Create device-to-broker i2c signal topic
   WS._topic_signal_i2c_brkr = (char *)malloc(
@@ -1658,8 +1744,15 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_brkr, "broker");
     strcat(WS._topic_signal_i2c_brkr, TOPIC_I2C);
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c i2c topic!");
+    return false;
   }
+
+  // Subscribe to signal's I2C sub-topic
+  _topic_signal_i2c_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_i2c_sub);
+  _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
   // Create broker-to-device i2c signal topic
   WS._topic_signal_i2c_device = (char *)malloc(
@@ -1674,7 +1767,8 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_i2c_device, "device");
     strcat(WS._topic_signal_i2c_device, TOPIC_I2C);
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to c2d i2c topic!");
+    return false;
   }
 
   // Create device-to-broker ds18x20 topic
@@ -1689,8 +1783,15 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_ds18_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_ds18_brkr, "broker/ds18x20");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c ds18x20 topic!");
+    return false;
   }
+
+  // Subscribe to signal's ds18x20 sub-topic
+  _topic_signal_ds18_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_ds18_sub);
+  _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
 
   // Create broker-to-device ds18x20 topic
   WS._topic_signal_ds18_device = (char *)malloc(
@@ -1704,7 +1805,8 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_ds18_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_ds18_device, "device/ds18x20");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate c2d ds18x20 topic!");
+    return false;
   }
 
   // Create device-to-broker servo signal topic
@@ -1718,8 +1820,15 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_servo_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_servo_brkr, "broker/servo");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c servo topic!");
+    return false;
   }
+
+  // Subscribe to servo sub-topic
+  _topic_signal_servo_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_servo_sub);
+  _topic_signal_servo_sub->setCallback(cbServoMsg);
 
   // Create broker-to-device servo signal topic
   WS._topic_signal_servo_device = (char *)malloc(
@@ -1732,7 +1841,8 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_servo_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_servo_device, "device/servo");
   } else { // malloc failed
-    is_success = false;
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate c2d servo topic!");
+    return false;
   }
 
   // Topic for pwm messages from broker->device
@@ -1747,8 +1857,15 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_pwm_brkr, TOPIC_SIGNALS);
     strcat(WS._topic_signal_pwm_brkr, "broker/pwm");
   } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate c2d pwm topic!");
     return false;
   }
+
+  // Subscribe to PWM sub-topic
+  _topic_signal_pwm_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_pwm_sub);
+  _topic_signal_pwm_sub->setCallback(cbPWMMsg);
 
   // Topic for pwm messages from device->broker
   WS._topic_signal_pwm_device = (char *)malloc(
@@ -1761,53 +1878,45 @@ bool Wippersnapper::buildWSTopics() {
     strcat(WS._topic_signal_pwm_device, TOPIC_SIGNALS);
     strcat(WS._topic_signal_pwm_device, "device/pwm");
   } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c pwm topic!");
     return false;
   }
 
-  return is_success;
-}
+  // Topic for pixel messages from broker->device
+  WS._topic_signal_pixels_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/pixels") + 1);
+  if (WS._topic_signal_pixels_brkr != NULL) {
+    strcpy(WS._topic_signal_pixels_brkr, WS._username);
+    strcat(WS._topic_signal_pixels_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_pixels_brkr, _device_uid);
+    strcat(WS._topic_signal_pixels_brkr, MQTT_TOPIC_PIXELS_BROKER);
+  } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate c2d pixel topic!");
+    return false;
+  }
 
-/**************************************************************************/
-/*!
-    @brief    Subscribes to device-specific MQTT control topics.
-*/
-/**************************************************************************/
-void Wippersnapper::subscribeWSTopics() {
-  // Subscribe to signal topic
-  _topic_signal_brkr_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_brkr_sub);
-  _topic_signal_brkr_sub->setCallback(cbSignalTopic);
+  // Subscribe to pixels sub-topic
+  _topic_signal_pixels_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pixels_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_pixels_sub);
+  _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
 
-  // Subscribe to signal's I2C sub-topic
-  _topic_signal_i2c_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_i2c_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_i2c_sub);
-  _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
+  // Topic for pixel messages from device->broker
+  WS._topic_signal_pixels_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/pixels") + 1);
+  if (WS._topic_signal_pixels_device != NULL) {
+    strcpy(WS._topic_signal_pixels_device, WS._username);
+    strcat(WS._topic_signal_pixels_device, TOPIC_WS);
+    strcat(WS._topic_signal_pixels_device, _device_uid);
+    strcat(WS._topic_signal_pixels_device, MQTT_TOPIC_PIXELS_DEVICE);
+  } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c pixels topic!");
+    return false;
+  }
 
-  // Subscribe to signal's ds18x20 sub-topic
-  _topic_signal_ds18_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_ds18_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_ds18_sub);
-  _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
-
-  // Subscribe to servo sub-topic
-  _topic_signal_servo_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_servo_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_servo_sub);
-  _topic_signal_servo_sub->setCallback(cbServoMsg);
-
-  // Subscribe to PWM sub-topic
-  _topic_signal_pwm_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_pwm_brkr, 1);
-  WS._mqtt->subscribe(_topic_signal_pwm_sub);
-  _topic_signal_pwm_sub->setCallback(cbPWMMsg);
-
-  // Subscribe to registration status topic
-  _topic_description_sub =
-      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_description_status, 1);
-  WS._mqtt->subscribe(_topic_description_sub);
-  _topic_description_sub->setCallback(cbRegistrationStatus);
+  return true;
 }
 
 /**************************************************************************/
@@ -1937,8 +2046,8 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
   WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
   WS_DEBUG_PRINTLN(error);
   for (;;) {
+    // let the WDT fail out and reset!
     statusLEDSolid(ledStatusColor);
-// let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
     delay(100);
 #else
@@ -1998,6 +2107,7 @@ void Wippersnapper::pingBroker() {
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
+    WS_DEBUG_PRINTLN("STATUS LED BLINK KAT");
     statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }
@@ -2184,16 +2294,13 @@ void Wippersnapper::connect() {
   setupMQTTClient(_device_uid);
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
-  if (!buildWSTopics()) {
+  if (!generateWSTopics()) {
     haltError("Unable to allocate space for MQTT topics");
   }
-  if (!buildErrorTopics()) {
+
+  if (!generateWSErrorTopics()) {
     haltError("Unable to allocate space for MQTT error topics");
   }
-
-  WS_DEBUG_PRINTLN("Subscribing to device's MQTT topics...");
-  subscribeWSTopics();
-  subscribeErrorTopics();
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");

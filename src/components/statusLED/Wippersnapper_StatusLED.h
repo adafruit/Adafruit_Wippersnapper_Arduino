@@ -59,8 +59,10 @@ typedef enum ws_led_status_t {
 #define STATUS_PIXEL_BRIGHTNESS_DEFAULT 0.5 ///< Default status pixel brightness
 
 // Status LED
-bool statusLEDInit();
-void statusLEDDeinit();
+void initStatusLED();
+void releaseStatusLED();
+int16_t getStatusNeoPixelPin();
+int16_t getStatusDotStarDataPin();
 uint32_t ledStatusStateToColor(ws_led_status_t statusState);
 void setStatusLEDBrightness(float brightness);
 void setStatusLEDColor(uint32_t color);
