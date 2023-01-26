@@ -64,7 +64,7 @@ uint8_t ws_ledc_servo::attach(int pin, int minPulseWidth, int maxPulseWidth,
   // Attempt to attach a pin to ledc channel
   uint8_t chan =
       _ledcMgr->attachPin((uint8_t)pin, (double)servoFreq, LEDC_TIMER_WIDTH);
-  if (chan == 255) // error!
+  if (chan == LEDC_CH_ERR) // error!
     return chan;
   // configure the servo object and assign it to a pin
   _servo.Pin.nbr = pin;

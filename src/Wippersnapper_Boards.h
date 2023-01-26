@@ -35,6 +35,7 @@
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK
 #define STATUS_DOTSTAR_NUM 5
+#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_GBR
 #elif defined(ARDUINO_METRO_ESP32S2)
 #define BOARD_ID "metroesp32s2"
 #define USE_TINYUSB
@@ -126,6 +127,11 @@
 #define BOARD_ID "mkrwifi1010"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 6
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#define BOARD_ID "rpi-pico-w"
+#define USE_TINYUSB
+#define USE_STATUS_LED
+#define STATUS_LED_PIN 32
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

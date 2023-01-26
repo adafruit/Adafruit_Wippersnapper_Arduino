@@ -44,24 +44,41 @@ ws_ledc::~ws_ledc() {
 
 /**************************************************************************/
 /*!
+    @brief  Checks if a channel has already been allocated for a pin.
+    @param  pin  Desired GPIO pin number.
+    @return The channel number if the pin was successfully or already
+            attached, otherwise LEDC_CH_ERR.
+*/
+/**************************************************************************/
+uint8_t ws_ledc::_getChannel(uint8_t pin) {
+  // have we already attached this pin?
+  for (int i = 0; i < MAX_LEDC_PWMS; i++) {
+    if (_ledcPins[i].pin == pin)
+      return _ledcPins[i].chan;
+  }
+  return LEDC_CH_ERR;
+}
+
+/**************************************************************************/
+/*!
     @brief  Allocates a timer + channel for a pin and attaches it.
     @param  pin  Desired GPIO pin number.
-    @param  freq Desired LEDC timer frequency, in Hz.
-    @param  resolution Desired LEDC timer resolution, in bits.
-    @return The channel number if the pin was successfully attached,
-            otherwise 255.
+    @param  freq Desired timer frequency, in Hz.
+    @param  resolution Desired timer resolution, in bits.
+    @return The channel number if the pin was successfully or already
+            attached, otherwise 255.
 */
 /**************************************************************************/
 uint8_t ws_ledc::attachPin(uint8_t pin, double freq, uint8_t resolution) {
   // have we already attached this pin?
   for (int i = 0; i < MAX_LEDC_PWMS; i++) {
     if (_ledcPins[i].pin == pin)
-      return 255;
+      return _ledcPins[i].chan;
   }
 
   // allocate chanel
   uint8_t chanNum = _allocateChannel(freq, resolution);
-  if (chanNum == 255)
+  if (chanNum == LEDC_CH_ERR)
     return chanNum;
 
   // attach pin to channel
@@ -69,6 +86,7 @@ uint8_t ws_ledc::attachPin(uint8_t pin, double freq, uint8_t resolution) {
 
   // allocate pin in pool
   _ledcPins[chanNum].pin = pin;
+  _ledcPins[chanNum].chan = chanNum;
 
   return chanNum;
 }
@@ -97,25 +115,17 @@ void ws_ledc::detachPin(uint8_t pin) {
 /**************************************************************************/
 /*!
     @brief  Allocates a channel and timer.
-    @param  freq Desired LEDC timer frequency, in Hz.
-    @param  resolution Desired LEDC timer resolution, in bits.
+    @param  freq       Timer frequency, in Hz.
+    @param  resolution Timer resolution, in bits.
     @return The channel number if the timer was successfully initialized,
             otherwise 255.
 */
 /**************************************************************************/
-uint8_t ws_ledc::_allocateChannel(double freq, uint8_t resolution) {
-  // attempt to allocate an inactive channel
-  uint8_t chanNum = 255;
-  for (int i = 0; i < MAX_LEDC_PWMS; i++) {
-    if (_ledcPins[i].isActive == false) {
-      chanNum = i;
-      break;
-    }
-  }
-
-  // did we fail to allocate?
-  if (chanNum == 255)
-    return 255;
+uint8_t ws_ledc::_allocateChannel(double freq, uint8_t resolution = 16) {
+  // obtain an inactive channel number
+  uint8_t chanNum = _getInactiveChannel();
+  if (chanNum == LEDC_CH_ERR)
+    return LEDC_CH_ERR; // failed to obtain inactive channel #
 
   // attempt to set up a ledc_timer on the free channel
   double rc = ledcSetup(uint8_t(chanNum), freq, resolution);
@@ -127,6 +137,47 @@ uint8_t ws_ledc::_allocateChannel(double freq, uint8_t resolution) {
   _ledcPins[chanNum].isActive = true;
 
   return chanNum;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Returns an inactive LEDC channel number.
+    @returns  Inactive channel number if free, otherwise LEDC_CH_ERR.
+*/
+/**************************************************************************/
+uint8_t ws_ledc::_getInactiveChannel() {
+  for (int ch = 0; ch < sizeof(_ledcPins); ch++) {
+    if (_ledcPins[ch].isActive == false) {
+      return ch;
+    }
+  }
+  return LEDC_CH_ERR;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Arduino AnalogWrite function, but for ESP32's LEDC.
+    @param  pin  The desired pin to write to.
+    @param  value The duty cycle.
+*/
+/**************************************************************************/
+void ws_ledc::analogWrite(uint8_t pin, int value) {
+  if (value > 255 || value < 0)
+    return;
+
+  uint8_t ch;
+  ch = _getChannel(pin);
+  if (ch == LEDC_CH_ERR) {
+    Serial.println("ERROR: Pin not attached to channel");
+    return;
+  }
+
+  // perform duty cycle calculation provided value
+  // (assumes 12-bit resolution, 2^12)
+  uint32_t dutyCycle = (4095 / 255) * min(value, 255);
+
+  // set the duty cycle of the pin
+  setDuty(pin, dutyCycle);
 }
 
 /**************************************************************************/
@@ -148,6 +199,23 @@ void ws_ledc::setDuty(uint8_t pin, uint32_t duty) {
 
   // set the channel's duty cycle
   ledcWrite(chan, duty);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Writes a square wave with a fixed duty cycle and variable
+            frequency to a pin. Used by piezo buzzers and speakers.
+    @param  pin  The desired pin to write to.
+    @param  freq The frequency of the tone, in Hz.
+*/
+/**************************************************************************/
+void ws_ledc::tone(uint8_t pin, uint32_t freq) {
+  uint8_t ch;
+  ch = _getChannel(pin);
+  if (ch == LEDC_CH_ERR) {
+    // Serial.println("ERROR: Pin not previously attached!");
+  }
+  ledcWriteTone(ch, freq);
 }
 
 #endif // ARDUINO_ARCH_ESP32

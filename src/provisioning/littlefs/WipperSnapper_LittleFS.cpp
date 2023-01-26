@@ -93,17 +93,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
   WS._key = io_key;
 
   // Parse SSID
-
-  // TODO: Remove the following check in future versions
-  // Check if network type is native WiFi
-  const char *network_type_wifi_ssid =
-      _doc["network_type_wifi_native"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
-  }
-
   // Check if network type is WiFi
-  network_type_wifi_ssid = _doc["network_type_wifi"]["network_ssid"];
+  const char *network_type_wifi_ssid =
+      _doc["network_type_wifi"]["network_ssid"];
   if (network_type_wifi_ssid != nullptr) {
     WS._network_ssid = network_type_wifi_ssid;
   }
@@ -113,18 +105,9 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
 
-  // Parse SSID password
-
-  // TODO: Remove on next release
-  // Parse WiFi network password, native
-  const char *network_type_wifi_password =
-      _doc["network_type_wifi_native"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
-  }
-
   // Parse WiFi network password
-  network_type_wifi_password = _doc["network_type_wifi"]["network_password"];
+  const char *network_type_wifi_password =
+      _doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_password != nullptr) {
     WS._network_pass = network_type_wifi_password;
   }
@@ -137,6 +120,11 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Optionally set the Adafruit.io URL
   WS._mqttBrokerURL = _doc["io_url"];
+
+  // Get (optional) setting for the status pixel brightness
+  float status_pixel_brightness = _doc["status_pixel_brightness"];
+  // Note: ArduinoJSON's default value on failure to find is 0.0
+  setStatusLEDBrightness(status_pixel_brightness);
 
   // close the file
   secretsFile.close();
