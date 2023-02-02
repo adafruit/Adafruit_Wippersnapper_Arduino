@@ -409,18 +409,10 @@ void ws_pixels::fillStrand(
   WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    // Perform gamma correction on the color before we write
-    uint32_t rgbcolorGamma =
-        strands[strandIdx].neoPixelPtr->gamma32(pixelsWriteMsg->pixels_color);
-
     strands[strandIdx].neoPixelPtr->fill(rgbcolorGamma);
     strands[strandIdx].neoPixelPtr->show();
   } else if (pixelsWriteMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    // Perform gamma correction on the color before we write
-    uint32_t rgbcolorGamma =
-        strands[strandIdx].dotStarPtr->gamma32(pixelsWriteMsg->pixels_color);
-
     strands[strandIdx].dotStarPtr->fill(rgbcolorGamma);
     strands[strandIdx].dotStarPtr->show();
   } else {
