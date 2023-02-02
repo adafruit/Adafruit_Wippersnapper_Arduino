@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2023 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -40,9 +40,11 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
 
   // allocate analog input pins
   _analog_input_pins = new analogInputPin[_totalAnalogInputPins];
+  
+  // TODO: Refactor this to use list-based initialization
   for (int pin = 0; pin < _totalAnalogInputPins; pin++) {
     // turn sampling off
-    _analog_input_pins[pin].period = -1;
+    _analog_input_pins[pin].enabled = false;
   }
 }
 
@@ -146,13 +148,15 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
     int pin, float period,
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pullMode,
     wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
-  WS_DEBUG_PRINT("Initialized analog input pin A");
-  WS_DEBUG_PRINTLN(pin);
-  if (pullMode == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
-    pinMode(pin, INPUT_PULLUP); // set analog input pull-up
-  } else {
-    pinMode(pin, INPUT); // set analog input
-  }
+
+  // TODO: Take in pinmsg here, dont do decoding in .cpp, however realize
+  // Wippersnapper::configurePinRequest takes in a ptr. to pinMsg instead and calls this
+
+  // Set analog read pull mode
+  if (pullMode == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP)
+    pinMode(pin, INPUT_PULLUP);
+  else
+    pinMode(pin, INPUT);
 
   // Period is in seconds, cast it to long and convert it to milliseconds
   long periodMs = (long)period * 1000;
@@ -161,10 +165,11 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
 
   // attempt to allocate pin within _analog_input_pins[]
   for (int i = 0; i < _totalAnalogInputPins; i++) {
-    if (_analog_input_pins[i].period == -1L) {
+    if (_analog_input_pins[i].enabled == false) {
       _analog_input_pins[i].pinName = pin;
       _analog_input_pins[i].period = periodMs;
       _analog_input_pins[i].readMode = analogReadMode;
+      _analog_input_pins[i].enabled = true;
       break;
     }
   }
@@ -333,13 +338,12 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
     @brief    Iterates thru analog inputs
 */
 /**********************************************************/
-void Wippersnapper_AnalogIO::processAnalogInputs() {
+void Wippersnapper_AnalogIO::update() {
   long _curTime = millis();
   // Process analog input pins
   for (int i = 0; i < _totalAnalogInputPins; i++) {
-    if (_analog_input_pins[i].period >
-        -1L) { // validate if pin is enabled for sampling
-      // pin executes on-period
+    if (_analog_input_pins[i].enabled == true) {
+      // Does the pin execute on-period?
       if (_curTime - _analog_input_pins[i].prvPeriod >
               _analog_input_pins[i].period &&
           _analog_input_pins[i].period != 0L) {
@@ -351,7 +355,10 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
             wippersnapper_signal_v1_CreateSignalRequest_init_zero;
 
         // Perform an analog read
+        WS_DEBUG_PRINTLN("Reading analog pin value..");
         _pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
+        WS_DEBUG_PRINT("Pin Value: ");
+        WS_DEBUG_PRINTLN(_pinValue);
         if (_analog_input_pins[i].readMode ==
             wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
           // convert value to voltage
@@ -383,10 +390,12 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
         // reset the digital pin
         _analog_input_pins[i].prvPeriod = _curTime;
       }
-      // pin sample on-change
+      // Does the pin execute on_change?
       else if (_analog_input_pins[i].period == 0L) {
         // Perform an analog read
         _pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
+        WS_DEBUG_PRINT("readAnalogPinRaw Value: ");
+        WS_DEBUG_PRINTLN(_pinValue);
         // calculate bounds
         _pinValThreshHi = _analog_input_pins[i].prvPinVal +
                           (_analog_input_pins[i].prvPinVal * _hysterisis);
@@ -436,6 +445,9 @@ void Wippersnapper_AnalogIO::processAnalogInputs() {
 
           // reset the digital pin
           _analog_input_pins[i].prvPeriod = _curTime;
+
+          // delay by _pinValue to prevent fast readings back to IO
+          delay(_pinValue);
         }
       }
     }

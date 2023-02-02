@@ -21,6 +21,7 @@
 /** Data about an analog input pin */
 struct analogInputPin {
   int pinName; ///< Pin name
+  bool enabled; ///< Pin is enabled for sampling
   wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode
       readMode;    ///< Which type of read to perform
   long period;     ///< Pin timer interval, in millis, -1 if disabled.
@@ -62,7 +63,7 @@ public:
   int getADCresolution();
   int getNativeResolution();
 
-  void processAnalogInputs();
+  void update();
 
   bool
   encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,

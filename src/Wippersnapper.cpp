@@ -2390,7 +2390,7 @@ ws_status_t Wippersnapper::run() {
   WS.feedWDT();
 
   // Process analog inputs
-  WS._analogIO->processAnalogInputs();
+  WS._analogIO->update();
   WS.feedWDT();
 
   // Process I2C sensor events
