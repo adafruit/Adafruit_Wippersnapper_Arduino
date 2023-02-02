@@ -360,6 +360,29 @@ void ws_pixels::deleteStrand(
 
 /**************************************************************************/
 /*!
+    @brief   Gets the gamma-corrected color, provided a pixel_color
+    @param   pixel_color
+             Strand's color from Adafruit IO.
+    @param   strand
+             Desired strand struct. to access.
+    @returns A gamma-corrected strand color
+*/
+/**************************************************************************/
+uint32_t ws_pixels::getGammaCorrectedColor(uint32_t pixel_color,
+                                           strand_s strand) {
+  if (strand.neoPixelPtr != nullptr) {
+    return strand.neoPixelPtr->gamma32(pixel_color);
+  } else if (strand.dotStarPtr != nullptr) {
+    return strand.dotStarPtr->gamma32(pixel_color);
+  } else {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to perform gamma correction, unknown strand type!");
+    return 0;
+  }
+}
+
+/**************************************************************************/
+/*!
     @brief   Writes a color from Adafruit IO to a strand of
              addressable pixels
     @param   pixelsWriteMsg
@@ -379,19 +402,18 @@ void ws_pixels::fillStrand(
     return;
   }
 
-  // Perform gamma correction on the color before we write
-  uint32_t rgbcolorGamma =
-      strands[strandIdx].neoPixelPtr->gamma32(pixelsWriteMsg->pixels_color);
+  uint32_t rgbColorGamma =
+      getGammaCorrectedColor(pixelsWriteMsg->pixels_color, strands[strandIdx]);
 
   WS_DEBUG_PRINT("Filling color: ");
   WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    strands[strandIdx].neoPixelPtr->fill(rgbcolorGamma);
+    strands[strandIdx].neoPixelPtr->fill(rgbColorGamma);
     strands[strandIdx].neoPixelPtr->show();
   } else if (pixelsWriteMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    strands[strandIdx].dotStarPtr->fill(rgbcolorGamma);
+    strands[strandIdx].dotStarPtr->fill(rgbColorGamma);
     strands[strandIdx].dotStarPtr->show();
   } else {
     WS_DEBUG_PRINTLN("ERROR: Unable to determine pixel type to write to!");
