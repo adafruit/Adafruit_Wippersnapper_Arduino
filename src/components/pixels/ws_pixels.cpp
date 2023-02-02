@@ -409,11 +409,11 @@ void ws_pixels::fillStrand(
   WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    strands[strandIdx].neoPixelPtr->fill(rgbcolorGamma);
+    strands[strandIdx].neoPixelPtr->fill(rgbColorGamma);
     strands[strandIdx].neoPixelPtr->show();
   } else if (pixelsWriteMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
-    strands[strandIdx].dotStarPtr->fill(rgbcolorGamma);
+    strands[strandIdx].dotStarPtr->fill(rgbColorGamma);
     strands[strandIdx].dotStarPtr->show();
   } else {
     WS_DEBUG_PRINTLN("ERROR: Unable to determine pixel type to write to!");
