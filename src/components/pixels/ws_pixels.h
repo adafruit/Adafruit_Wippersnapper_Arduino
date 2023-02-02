@@ -66,6 +66,7 @@ public:
   getNeoPixelStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder);
   uint8_t getDotStarStrandOrder(wippersnapper_pixels_v1_PixelsOrder pixelOrder);
   void publishAddStrandResponse(bool is_success, char *pixels_pin_data);
+  uint32_t getGammaCorrectedColor(uint32_t pixel_color, strand_s strand);
 };
 extern Wippersnapper WS;
 #endif // WS_PIXELS
