@@ -228,7 +228,11 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 /**********************************************************/
 uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
   uint16_t value;
+  WS_DEBUG_PRINT("Pin: ");
+  WS_DEBUG_PRINTLN(pin);
   value = analogRead(pin);
+  WS_DEBUG_PRINT("readAnalogPinRaw (raw): ");
+  WS_DEBUG_PRINTLN(value);
 
   // scale by the ADC resolution manually if not implemented by BSP
   if (scaleAnalogRead) {
@@ -280,7 +284,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // fill the pin_event message
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
+  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "%d", pinName);
   sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinVal);
 
   // Encode signal message
@@ -318,7 +322,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // fill the pin_event message
   outgoingSignalMsg->which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
+  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "%d", pinName);
   sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%0.3f", pinVal);
 
   // Encode signal message
@@ -344,6 +348,7 @@ void Wippersnapper_AnalogIO::update() {
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].enabled == true) {
       // Does the pin execute on-period?
+      // TODO: Does THIS work? Print out all conditionals
       if (_curTime - _analog_input_pins[i].prvPeriod >
               _analog_input_pins[i].period &&
           _analog_input_pins[i].period != 0L) {

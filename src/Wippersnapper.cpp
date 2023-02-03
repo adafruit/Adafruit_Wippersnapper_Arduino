@@ -229,11 +229,11 @@ bool Wippersnapper::configurePinRequest(
   WS_DEBUG_PRINTLN("configurePinRequest");
 
   bool is_success = true;
-  char *pinName = pinMsg->pin_name + 1;
-  int pin = atoi(pinName);
 
   // Decode pin mode
   if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_DIGITAL) {
+    char *pinName = pinMsg->pin_name + 1;
+    int pin = atoi(pinName);
     if (pinMsg->request_type ==
         wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
       // Initialize GPIO pin
@@ -250,6 +250,9 @@ bool Wippersnapper::configurePinRequest(
   }
 
   else if (pinMsg->mode == wippersnapper_pin_v1_Mode_MODE_ANALOG) {
+    // TODO: We should really be passing the message here, not decoding!
+    char *pinName = pinMsg->pin_name;
+    int pin = atoi(pinName);
     if (pinMsg->request_type ==
         wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
       // Initialize analog io pin
