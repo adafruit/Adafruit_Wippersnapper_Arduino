@@ -246,15 +246,14 @@ uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
 /*!
     @brief    Calculates analog pin's voltage provided
                a 16-bit ADC value.
-    @param    rawValue
+    @param    pin
               The value from a previous ADC reading.
     @returns  The pin's voltage.
 */
 /**********************************************************/
-float Wippersnapper_AnalogIO::getPinValueVolts(uint16_t rawValue) {
-  float pinVoltage;
-  pinVoltage = rawValue * getAref() / 65536;
-  return pinVoltage;
+float Wippersnapper_AnalogIO::getPinValueVolts(int pin) {
+  uint16_t rawValue = getPinValue(pin);
+  return rawValue * getAref() / 65536;
 }
 
 /******************************************************************/
@@ -287,9 +286,10 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // Fill pinValue based on the analog read mode
   if (readMode ==
       wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE)
-    sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinVal);
+    sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinValRaw);
   else
-    sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%0.3f", pinVal);
+    sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%0.3f",
+            pinValVolts);
 
   // Encode signal message
   pb_ostream_t stream =
@@ -308,7 +308,11 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
 */
 /**********************************************************/
 void Wippersnapper_AnalogIO::update() {
+  // TODO: Globally scope curtime
   long _curTime = millis();
+  // TODO: Globally scope these, dont have them here every time
+  float pinValVolts = 0.0;
+  uint16_t pinValRaw = 0;
   // Process analog input pins
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].enabled == true) {
@@ -320,17 +324,13 @@ void Wippersnapper_AnalogIO::update() {
         WS_DEBUG_PRINT("Executing periodic event on A");
         WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
-        // TODO: Declare these at the top of the loop
-        float pinValVolts = 0.0;
-        uint16_t pinValRaw = 0;
-
         // Read from the pin
         // TODO: May want to refactor out into funcn?
-        if (analogInputPin[i].readMode ==
+        if (_analog_input_pins[i].readMode ==
             wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-          pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
+          pinValVolts = getPinValue(_analog_input_pins[i].pinName);
         } else if (
-            analogInputPin[i].readMode ==
+            _analog_input_pins[i].readMode ==
             wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE)
           pinValRaw = getPinValue(_analog_input_pins[i].pinName);
       } else {
@@ -422,5 +422,4 @@ void Wippersnapper_AnalogIO::update() {
       }
     }
   }
-}
 }
