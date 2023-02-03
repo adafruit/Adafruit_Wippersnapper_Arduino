@@ -18,9 +18,11 @@
 
 #include "Wippersnapper.h"
 
+#define HYSTERISIS 0.2 ///< Default hysterisis of 2%
+
 /** Data about an analog input pin */
 struct analogInputPin {
-  int pinName; ///< Pin name
+  int pinName;  ///< Pin name
   bool enabled; ///< Pin is enabled for sampling
   wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode
       readMode;    ///< Which type of read to perform
@@ -56,21 +58,17 @@ public:
                   int pin);
   void deinitAnalogInputPinObj(int pin);
 
-  uint16_t readAnalogPinRaw(int pin);
-  float getAnalogPinVoltage(uint16_t rawValue);
+  uint16_t getPinValue(int pin);
+  float getPinValueVolts(int pin);
 
   void setADCResolution(int resolution);
   int getADCresolution();
   int getNativeResolution();
 
   void update();
-
-  bool
-  encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-                 uint8_t pinName, float pinVal);
-  bool
-  encodePinEvent(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-                 uint8_t pinName, uint16_t pinVal);
+  bool encodePinEvent(
+      wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
+      uint8_t pinName, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode, uint16_t pinValRaw = 0, float pinValVolts = 0.0);
 
   analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 private:
@@ -80,10 +78,6 @@ private:
   bool scaleAnalogRead = false; /*!< True if we need to manually scale the value
                                    returned by analogRead(). */
   int32_t _totalAnalogInputPins; /*!< Total number of analog input pins */
-
-  float _hysterisis;         /*!< Hysterisis factor. */
-  uint16_t _pinValThreshLow; /*!< Calculated low threshold. */
-  uint16_t _pinValThreshHi;  /*!< Calculated high threshold. */
 
   uint16_t _pinValue; /*!< Pin's raw value from analogRead */
   float _pinVoltage;  /*!< Pin's calculated voltage, in volts. */
