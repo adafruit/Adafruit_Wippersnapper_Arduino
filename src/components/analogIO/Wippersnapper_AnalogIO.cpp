@@ -130,10 +130,6 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pullMode,
     wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
 
-  // TODO: Take in pinmsg here, dont do decoding in .cpp, however realize
-  // Wippersnapper::configureDigitalPinReq takes in a ptr. to pinMsg instead and
-  // calls this
-
   // Set analog read pull mode
   if (pullMode == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP)
     pinMode(pin, INPUT_PULLUP);
@@ -142,8 +138,6 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
 
   // Period is in seconds, cast it to long and convert it to milliseconds
   long periodMs = (long)period * 1000;
-  WS_DEBUG_PRINT("Interval (ms):");
-  WS_DEBUG_PRINTLN(periodMs);
 
   // TODO: Maybe pull this out into a func. or use map() lookup instead
   // attempt to allocate pin within _analog_input_pins[]
@@ -156,23 +150,21 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
       break;
     }
   }
+  WS_DEBUG_PRINT("Configured Analog Input pin with polling time (ms):");
+  WS_DEBUG_PRINTLN(periodMs);
 }
 
 /***********************************************************************************/
 /*!
-    @brief  Deinitializes an analog input pin.
+    @brief  Disables an analog input pin from sampling
     @param  pin
-                The analog input pin to deinitialize.
+            The analog input pin to disable.
 */
 /***********************************************************************************/
-void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
-  // de-allocate the pin within digital_input_pins[]
+void Wippersnapper_AnalogIO::disableAnalogInPin(int pin) {
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].pinName == pin) {
-      _analog_input_pins[i].pinName = 0;
-      _analog_input_pins[i].period = -1;
-      _analog_input_pins[i].prvPinVal = 0.0;
-      _analog_input_pins[i].prvPeriod = 0L;
+      _analog_input_pins[i].enabled = false;
       break;
     }
   }
@@ -195,7 +187,7 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     WS_DEBUG_PRINTLN("Deinitialized analog input pin obj.");
-    deinitAnalogInputPinObj(pin);
+    disableAnalogInPin(pin);
   }
   pinMode(pin, INPUT); // hi-z
 }

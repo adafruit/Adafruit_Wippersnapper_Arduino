@@ -55,7 +55,7 @@ public:
   void
   deinitAnalogPin(wippersnapper_pin_v1_ConfigurePinRequest_Direction direction,
                   int pin);
-  void deinitAnalogInputPinObj(int pin);
+  void disableAnalogInPin(int pin);
 
   uint16_t getPinValue(int pin);
   float getPinValueVolts(int pin);
