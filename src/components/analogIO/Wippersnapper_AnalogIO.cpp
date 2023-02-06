@@ -325,6 +325,7 @@ void Wippersnapper_AnalogIO::update() {
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     // TODO: Can we collapse the conditionals below?
     if (_analog_input_pins[i].enabled == true) {
+
       // Does the pin execute on-period?
       if (millis() - _analog_input_pins[i].prvPeriod >
               _analog_input_pins[i].period &&
@@ -332,58 +333,61 @@ void Wippersnapper_AnalogIO::update() {
         WS_DEBUG_PRINT("Executing periodic event on A");
         WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
-        // Read from the pin
-        // TODO: May want to refactor out into funcn?
+        // Read from analog pin
         if (_analog_input_pins[i].readMode ==
             wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-          pinValVolts = getPinValue(_analog_input_pins[i].pinName);
+          pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
         } else if (
             _analog_input_pins[i].readMode ==
-            wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE)
+            wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE) {
           pinValRaw = getPinValue(_analog_input_pins[i].pinName);
-      } else {
-        WS_DEBUG_PRINTLN("ERROR: Unable to read pin value, cannot determine "
-                         "analog read mode!");
-        pinValRaw = 0.0;
+        } else {
+          WS_DEBUG_PRINTLN("ERROR: Unable to read pin value, cannot determine "
+                           "analog read mode!");
+          pinValRaw = 0.0;
+        }
+
+        // Publish a new pin event
+        encodePinEvent(_analog_input_pins[i].pinName,
+                       _analog_input_pins[i].readMode, pinValRaw, pinValVolts);
+
+        // IMPT - reset the digital pin
+        _analog_input_pins[i].prvPeriod = millis();
       }
+      // Does the pin execute on_change?
+      else if (_analog_input_pins[i].period == 0L) {
 
-      // Publish a new pin event
-      encodePinEvent(_analog_input_pins[i].pinName,
-                     _analog_input_pins[i].readMode, pinValRaw, pinValVolts);
+        // note: on-change requires ADC DEFAULT_HYSTERISIS to check against prv
+        // pin value
+        uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
 
-      // IMPT - reset the digital pin
-      _analog_input_pins[i].prvPeriod = millis();
-    }
-    // Does the pin execute on_change?
-    else if (_analog_input_pins[i].period == 0L) {
-
-      // note: on-change requires ADC DEFAULT_HYSTERISIS check against prv value
-      uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
-
-      if (!(pinValRaw >
+        uint16_t _pinValThreshHi =
             _analog_input_pins[i].prvPinVal +
-                (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS)) ||
-          !pinValRaw <
-              (_analog_input_pins[i].prvPinVal -
-               (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS))) {
-        WS_DEBUG_PRINTLN(
-            "ADC pin value has not changed enough to report, continuing...");
-        continue;
+            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
+        uint16_t _pinValThreshLow =
+            _analog_input_pins[i].prvPinVal -
+            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
+
+        if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
+          // Perform voltage conversion if we need to
+          if (_analog_input_pins[i].readMode ==
+              wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
+            pinValVolts = pinValRaw * getAref() / 65536;
+          }
+
+          // Publish pin event to IO
+          encodePinEvent(_analog_input_pins[i].pinName,
+                         _analog_input_pins[i].readMode, pinValRaw,
+                         pinValVolts);
+
+        } else {
+          WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
+          continue;
+        }
+        // set the pin value in the digital pin object for comparison on next
+        // run
+        _analog_input_pins[i].prvPinVal = pinValRaw;
       }
-
-      // Perform voltage conversion if we need to
-      if (_analog_input_pins[i].readMode ==
-          wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-        pinValVolts = pinValRaw * getAref() / 65536;
-      }
-
-      // Publish pin event to IO
-      encodePinEvent(_analog_input_pins[i].pinName,
-                     _analog_input_pins[i].readMode, pinValRaw, pinValVolts);
-
-      // set the pin value in the digital pin object for comparison on next
-      // run
-      _analog_input_pins[i].prvPinVal = pinValRaw;
     }
   }
 }
