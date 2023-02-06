@@ -306,7 +306,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   size_t msgSz;
   pb_get_encoded_size(&msgSz,
                       wippersnapper_signal_v1_CreateSignalRequest_fields,
-                      &_outgoingSignalMsg);
+                      &outgoingSignalMsg);
   WS_DEBUG_PRINT("Publishing pinEvent...");
   WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
   WS_DEBUG_PRINTLN("Published!");
@@ -337,8 +337,6 @@ bool Wippersnapper_AnalogIO::timerExpired(long currentTime,
 */
 /**********************************************************/
 void Wippersnapper_AnalogIO::update() {
-  // TODO: Globally scope curtime
-  long _curTime = millis();
   // TODO: Globally scope these, dont have them here every time
   float pinValVolts = 0.0;
   uint16_t pinValRaw = 0;
@@ -378,23 +376,21 @@ void Wippersnapper_AnalogIO::update() {
     else if (_analog_input_pins[i].period == 0L) {
 
       // note: on-change requires ADC hysterisis check against prv value
-      // calculate high bound
-      uint16_t pinValThreshHi = _analog_input_pins[i].prvPinVal +
-                                (_analog_input_pins[i].prvPinVal * HYSTERISIS);
-      // calculate low bound
-      uint16_t pinValThreshLow = _analog_input_pins[i].prvPinVal -
-                                 (_analog_input_pins[i].prvPinVal * HYSTERISIS);
       uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
 
-      if (!pinValRaw > pinValThreshHi || !pinValRaw < pinValThreshLow) {
+      if (!(pinValRaw > _analog_input_pins[i].prvPinVal +
+                            (_analog_input_pins[i].prvPinVal * HYSTERISIS)) ||
+          !pinValRaw < (_analog_input_pins[i].prvPinVal -
+                        (_analog_input_pins[i].prvPinVal * HYSTERISIS))) {
         WS_DEBUG_PRINTLN(
             "ADC pin value has not changed enough to report, continuing...");
         continue;
       }
 
+      // Perform voltage conversion if we need to
       if (_analog_input_pins[i].readMode ==
           wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-        pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
+        pinValVolts = pinValRaw * getAref() / 65536;
       }
 
       // Publish pin event to IO
