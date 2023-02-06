@@ -66,7 +66,10 @@ public:
   bool timerExpired(long currentTime, analogInputPin pin);
 
   void update();
-  bool encodePinEvent(uint8_t pinName, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode, uint16_t pinValRaw = 0, float pinValVolts = 0.0);
+  bool encodePinEvent(
+      uint8_t pinName,
+      wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode,
+      uint16_t pinValRaw = 0, float pinValVolts = 0.0);
 
 private:
   float _aRef;           /*!< Hardware's reported voltage reference */
@@ -74,7 +77,7 @@ private:
   int _nativeResolution; /*!< Hardware's native ADC resolution. */
   bool scaleAnalogRead = false; /*!< True if we need to manually scale the value
                                    returned by analogRead(). */
-  int32_t _totalAnalogInputPins; /*!< Total number of analog input pins */
+  int32_t _totalAnalogInputPins;      /*!< Total number of analog input pins */
   analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 };
 extern Wippersnapper WS; /*!< Wippersnapper variable. */

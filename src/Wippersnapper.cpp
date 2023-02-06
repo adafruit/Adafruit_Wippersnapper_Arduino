@@ -225,24 +225,31 @@ void Wippersnapper::set_user_key() {
     @returns  True if analog pin configured successfully, False otherwise.
 */
 /****************************************************************************/
-bool Wippersnapper::configAnalogInPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-    bool is_success= true;
-    char *pinName = pinMsg->pin_name + 1;
-    int pin = atoi(pinName);
+bool Wippersnapper::configAnalogInPinReq(
+    wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
+  bool is_success = true;
 
-    if (pinMsg->request_type ==
-        wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
-        WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->pull,
-                                         pinMsg->analog_read_mode);
-    } else if (
-        pinMsg->request_type ==
-        wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
-      WS._analogIO->deinitAnalogPin(pinMsg->direction, pin);
-    } else {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode analog pin request!");
-      is_success = false;
-    }
-    return is_success;
+#if defined(ARDUINO_ARCH_RP2040)
+  char *pinName = pinMsg->pin_name + 1;
+  int pin = atoi(pinName);
+#else
+  char *pinName = pinMsg->pin_name + 1;
+  int pin = atoi(pinName);
+#endif
+
+  if (pinMsg->request_type ==
+      wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
+    WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->pull,
+                                     pinMsg->analog_read_mode);
+  } else if (
+      pinMsg->request_type ==
+      wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
+    WS._analogIO->deinitAnalogPin(pinMsg->direction, pin);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Could not decode analog pin request!");
+    is_success = false;
+  }
+  return is_success;
 }
 
 /****************************************************************************/
@@ -256,23 +263,23 @@ bool Wippersnapper::configAnalogInPinReq(wippersnapper_pin_v1_ConfigurePinReques
 /****************************************************************************/
 bool Wippersnapper::configureDigitalPinReq(
     wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
-    bool is_success = true;
-    char *pinName = pinMsg->pin_name + 1;
-    int pin = atoi(pinName);
+  bool is_success = true;
+  char *pinName = pinMsg->pin_name + 1;
+  int pin = atoi(pinName);
 
-    if (pinMsg->request_type ==
-        wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
-      // Initialize GPIO pin
-      WS._digitalGPIO->initDigitalPin(pinMsg->direction, pin, pinMsg->period,
-                                      pinMsg->pull);
-    } else if (
-        pinMsg->request_type ==
-        wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
-      // Delete digital GPIO pin
-      WS._digitalGPIO->deinitDigitalPin(pinMsg->direction, pin);
-    } else {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode digital pin request type");
-    }
+  if (pinMsg->request_type ==
+      wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
+    // Initialize GPIO pin
+    WS._digitalGPIO->initDigitalPin(pinMsg->direction, pin, pinMsg->period,
+                                    pinMsg->pull);
+  } else if (
+      pinMsg->request_type ==
+      wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
+    // Delete digital GPIO pin
+    WS._digitalGPIO->deinitDigitalPin(pinMsg->direction, pin);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Could not decode digital pin request type");
+  }
 
   return is_success;
 }
