@@ -399,13 +399,7 @@ void Wippersnapper_AnalogIO::update() {
 
       // set the pin value in the digital pin object for comparison on next
       // run
-      _analog_input_pins[i].prvPinVal = _pinValue;
-
-      // reset the digital pin
-      _analog_input_pins[i].prvPeriod = millis();
-
-      // delay by _pinValue to prevent fast readings back to IO
-      delay(_pinValue);
+      _analog_input_pins[i].prvPinVal = pinValRaw;
     }
   }
 }
