@@ -160,6 +160,7 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
   WS_DEBUG_PRINT("Interval (ms):");
   WS_DEBUG_PRINTLN(periodMs);
 
+  // TODO: Maybe pull this out into a func. or use map() lookup instead
   // attempt to allocate pin within _analog_input_pins[]
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].enabled == false) {
@@ -304,6 +305,23 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
 
 /**********************************************************/
 /*!
+    @brief Checks if pin's period is expired.
+    @param currentTime
+           The current software timer value.
+    @param pin
+           The desired analog pin to check
+    @returns True if pin's period expired, False otherwise.
+*/
+/**********************************************************/
+bool Wippersnapper_AnalogIO::timerExpired(long currentTime,
+                                          analogInputPin pin) {
+  if (currentTime - pin.prvPeriod > pin.period && pin.period != 0L)
+    return true;
+  return false;
+}
+
+/**********************************************************/
+/*!
     @brief    Iterates thru analog inputs
 */
 /**********************************************************/
@@ -317,8 +335,7 @@ void Wippersnapper_AnalogIO::update() {
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].enabled == true) {
       // Does the pin execute on-period?
-      // TODO: Does THIS work? Print out all conditionals
-      if (_curTime - _analog_input_pins[i].prvPeriod >
+      if (millis() - _analog_input_pins[i].prvPeriod >
               _analog_input_pins[i].period &&
           _analog_input_pins[i].period != 0L) {
         WS_DEBUG_PRINT("Executing periodic event on A");
@@ -339,6 +356,7 @@ void Wippersnapper_AnalogIO::update() {
         pinValRaw = 0.0;
       }
 
+      // TODO MONDAY: Encode and publish out from the same func?
       // Encode pin event
       _outgoingSignalMsg =
           wippersnapper_signal_v1_CreateSignalRequest_init_zero;
@@ -355,10 +373,11 @@ void Wippersnapper_AnalogIO::update() {
       WS_DEBUG_PRINTLN("Published!");
 
       // IMPT - reset the digital pin
-      _analog_input_pins[i].prvPeriod = _curTime;
+      _analog_input_pins[i].prvPeriod = millis();
     }
     // Does the pin execute on_change?
     else if (_analog_input_pins[i].period == 0L) {
+      // TODO: Refactor this like above
       // Perform an analog read
       _pinValue = getPinValue(_analog_input_pins[i].pinName);
       WS_DEBUG_PRINT("getPinValue Value: ");
@@ -415,7 +434,7 @@ void Wippersnapper_AnalogIO::update() {
         _analog_input_pins[i].prvPinVal = _pinValue;
 
         // reset the digital pin
-        _analog_input_pins[i].prvPeriod = _curTime;
+        _analog_input_pins[i].prvPeriod = millis();
 
         // delay by _pinValue to prevent fast readings back to IO
         delay(_pinValue);

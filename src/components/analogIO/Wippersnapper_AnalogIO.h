@@ -25,7 +25,7 @@ struct analogInputPin {
   int pinName;  ///< Pin name
   bool enabled; ///< Pin is enabled for sampling
   wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode
-      readMode;    ///< Which type of read to perform
+      readMode;    ///< Which type of analog read to perform
   long period;     ///< Pin timer interval, in millis, -1 if disabled.
   long prvPeriod;  ///< When Pin's timer was previously serviced, in millis
   float prvPinVal; ///< Previous pin value
@@ -64,6 +64,7 @@ public:
   void setADCResolution(int resolution);
   int getADCresolution();
   int getNativeResolution();
+  bool timerExpired(long currentTime, analogInputPin pin);
 
   void update();
   bool encodePinEvent(
