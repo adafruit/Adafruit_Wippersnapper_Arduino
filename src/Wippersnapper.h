@@ -279,7 +279,8 @@ public:
                  uint8_t pinName, int pinVal);
 
   // Pin configure message
-  bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+  bool configureDigitalPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+  bool configAnalogInPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
   // I2C
   std::vector<WipperSnapper_Component_I2C *>

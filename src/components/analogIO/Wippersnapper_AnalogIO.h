@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2023 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -18,7 +18,7 @@
 
 #include "Wippersnapper.h"
 
-#define HYSTERISIS 0.2 ///< Default hysterisis of 2%
+#define DEFAULT_HYSTERISIS 0.2 ///< Default DEFAULT_HYSTERISIS of 2%
 
 /** Data about an analog input pin */
 struct analogInputPin {
@@ -68,7 +68,6 @@ public:
   void update();
   bool encodePinEvent(uint8_t pinName, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode, uint16_t pinValRaw = 0, float pinValVolts = 0.0);
 
-  analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 private:
   float _aRef;           /*!< Hardware's reported voltage reference */
   int _adcResolution;    /*!< Resolution returned by the analogRead() funcn. */
@@ -76,9 +75,7 @@ private:
   bool scaleAnalogRead = false; /*!< True if we need to manually scale the value
                                    returned by analogRead(). */
   int32_t _totalAnalogInputPins; /*!< Total number of analog input pins */
-
-  uint16_t _pinValue; /*!< Pin's raw value from analogRead */
-  float _pinVoltage;  /*!< Pin's calculated voltage, in volts. */
+  analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 };
 extern Wippersnapper WS; /*!< Wippersnapper variable. */
 

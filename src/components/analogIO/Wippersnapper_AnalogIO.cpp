@@ -131,7 +131,7 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
     wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
 
   // TODO: Take in pinmsg here, dont do decoding in .cpp, however realize
-  // Wippersnapper::configurePinRequest takes in a ptr. to pinMsg instead and
+  // Wippersnapper::configureDigitalPinReq takes in a ptr. to pinMsg instead and
   // calls this
 
   // Set analog read pull mode
@@ -357,13 +357,15 @@ void Wippersnapper_AnalogIO::update() {
     // Does the pin execute on_change?
     else if (_analog_input_pins[i].period == 0L) {
 
-      // note: on-change requires ADC hysterisis check against prv value
+      // note: on-change requires ADC DEFAULT_HYSTERISIS check against prv value
       uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
 
-      if (!(pinValRaw > _analog_input_pins[i].prvPinVal +
-                            (_analog_input_pins[i].prvPinVal * HYSTERISIS)) ||
-          !pinValRaw < (_analog_input_pins[i].prvPinVal -
-                        (_analog_input_pins[i].prvPinVal * HYSTERISIS))) {
+      if (!(pinValRaw >
+            _analog_input_pins[i].prvPinVal +
+                (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS)) ||
+          !pinValRaw <
+              (_analog_input_pins[i].prvPinVal -
+               (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS))) {
         WS_DEBUG_PRINTLN(
             "ADC pin value has not changed enough to report, continuing...");
         continue;
