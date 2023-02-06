@@ -67,9 +67,7 @@ public:
   bool timerExpired(long currentTime, analogInputPin pin);
 
   void update();
-  bool encodePinEvent(
-      wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-      uint8_t pinName, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode, uint16_t pinValRaw = 0, float pinValVolts = 0.0);
+  bool encodePinEvent(uint8_t pinName, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode, uint16_t pinValRaw = 0, float pinValVolts = 0.0);
 
   analogInputPin *_analog_input_pins; /*!< Array of analog pin objects */
 private:
@@ -82,9 +80,6 @@ private:
 
   uint16_t _pinValue; /*!< Pin's raw value from analogRead */
   float _pinVoltage;  /*!< Pin's calculated voltage, in volts. */
-
-  wippersnapper_signal_v1_CreateSignalRequest
-      _outgoingSignalMsg; /*!< Signal message to send to broker on pin event. */
 };
 extern Wippersnapper WS; /*!< Wippersnapper variable. */
 
