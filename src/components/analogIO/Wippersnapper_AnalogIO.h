@@ -48,7 +48,6 @@ public:
   void setAref(float refVoltage);
   float getAref();
 
-  void initAnalogOutputPin(int pin);
   void initAnalogInputPin(
       int pin, float period,
       wippersnapper_pin_v1_ConfigurePinRequest_Pull pullMode,

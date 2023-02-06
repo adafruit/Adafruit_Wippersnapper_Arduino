@@ -83,12 +83,10 @@ float Wippersnapper_AnalogIO::getAref() { return _aRef; }
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
 // set the resolution natively in the BSP
-#ifdef ARDUINO_ARCH_SAMD
+#if defined(ARDUINO_ARCH_SAMD)
   analogReadResolution(16);
   _nativeResolution = 12;
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
+#elif defined(ARDUINO_ARCH_ESP32)
   scaleAnalogRead = true;
   _nativeResolution = 13;
 #endif
@@ -113,19 +111,6 @@ int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
 */
 /***********************************************************************************/
 int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
-
-/***********************************************************************************/
-/*!
-    @brief  Initializes an analog output pin.
-    @param  pin
-                The analog pin to read from.
-*/
-/***********************************************************************************/
-void Wippersnapper_AnalogIO::initAnalogOutputPin(int pin) {
-  WS_DEBUG_PRINT("ERROR: Analog output on pin ");
-  WS_DEBUG_PRINT(pin);
-  WS_DEBUG_PRINTLN("not implemented yet.");
-}
 
 /***********************************************************************************/
 /*!
@@ -225,12 +210,8 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 */
 /**********************************************************/
 uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
-  uint16_t value;
-  WS_DEBUG_PRINT("Pin: ");
-  WS_DEBUG_PRINTLN(pin);
-  value = analogRead(pin);
-  WS_DEBUG_PRINT("getPinValue (raw): ");
-  WS_DEBUG_PRINTLN(value);
+  // get pin value
+  uint16_t value = analogRead(pin);
 
   // scale by the ADC resolution manually if not implemented by BSP
   if (scaleAnalogRead) {
@@ -342,6 +323,7 @@ void Wippersnapper_AnalogIO::update() {
   uint16_t pinValRaw = 0;
   // Process analog input pins
   for (int i = 0; i < _totalAnalogInputPins; i++) {
+    // TODO: Can we collapse the conditionals below?
     if (_analog_input_pins[i].enabled == true) {
       // Does the pin execute on-period?
       if (millis() - _analog_input_pins[i].prvPeriod >
