@@ -236,6 +236,8 @@ float Wippersnapper_AnalogIO::getPinValueVolts(int pin) {
                 signal message and publish it to IO.
     @param    pinName
               Specifies the pin's name.
+    @param    readMode
+              Read mode - raw ADC or voltage.
     @param    pinValRaw
               Raw pin value, used if readmode is raw.
     @param    pinValVolts
@@ -373,7 +375,7 @@ void Wippersnapper_AnalogIO::update() {
                          pinValVolts);
 
         } else {
-          WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
+          // WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
           continue;
         }
         // set the pin value in the digital pin object for comparison on next

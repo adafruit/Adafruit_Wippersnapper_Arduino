@@ -227,7 +227,7 @@ void Wippersnapper::set_user_key() {
 /****************************************************************************/
 bool Wippersnapper::configAnalogInPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg) {
     bool is_success= true;
-    char *pinName = pinMsg->pin_name;
+    char *pinName = pinMsg->pin_name + 1;
     int pin = atoi(pinName);
 
     if (pinMsg->request_type ==
