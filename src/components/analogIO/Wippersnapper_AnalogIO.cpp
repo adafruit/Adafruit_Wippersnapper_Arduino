@@ -258,7 +258,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // Fill payload
   outgoingSignalMsg.which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  sprintf(outgoingSignalMsg.payload.pin_event.pin_name, "%d", pinName);
+  sprintf(outgoingSignalMsg.payload.pin_event.pin_name, "A%d", pinName);
 
   // Fill pinValue based on the analog read mode
   if (readMode ==
