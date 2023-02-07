@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2023 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -35,14 +35,13 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
   // Set ADC resolution, default to 16-bit
   setADCResolution(16);
 
-  // Default hysterisis of 2%
-  _hysterisis = 0.02;
-
   // allocate analog input pins
   _analog_input_pins = new analogInputPin[_totalAnalogInputPins];
+
+  // TODO: Refactor this to use list-based initialization
   for (int pin = 0; pin < _totalAnalogInputPins; pin++) {
     // turn sampling off
-    _analog_input_pins[pin].period = -1;
+    _analog_input_pins[pin].enabled = false;
   }
 }
 
@@ -54,7 +53,6 @@ Wippersnapper_AnalogIO::Wippersnapper_AnalogIO(int32_t totalAnalogInputPins,
 Wippersnapper_AnalogIO::~Wippersnapper_AnalogIO() {
   _aRef = 0.0;
   _totalAnalogInputPins = 0;
-  _hysterisis = 0;
   delete _analog_input_pins;
 }
 
@@ -85,12 +83,10 @@ float Wippersnapper_AnalogIO::getAref() { return _aRef; }
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
 // set the resolution natively in the BSP
-#ifdef ARDUINO_ARCH_SAMD
+#if defined(ARDUINO_ARCH_SAMD)
   analogReadResolution(16);
   _nativeResolution = 12;
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
+#elif defined(ARDUINO_ARCH_ESP32)
   scaleAnalogRead = true;
   _nativeResolution = 13;
 #endif
@@ -118,19 +114,6 @@ int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
 
 /***********************************************************************************/
 /*!
-    @brief  Initializes an analog output pin.
-    @param  pin
-                The analog pin to read from.
-*/
-/***********************************************************************************/
-void Wippersnapper_AnalogIO::initAnalogOutputPin(int pin) {
-  WS_DEBUG_PRINT("ERROR: Analog output on pin ");
-  WS_DEBUG_PRINT(pin);
-  WS_DEBUG_PRINTLN("not implemented yet.");
-}
-
-/***********************************************************************************/
-/*!
     @brief  Initializes an analog input pin
     @param  pin
               The analog pin to read from.
@@ -146,45 +129,42 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
     int pin, float period,
     wippersnapper_pin_v1_ConfigurePinRequest_Pull pullMode,
     wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode) {
-  WS_DEBUG_PRINT("Initialized analog input pin A");
-  WS_DEBUG_PRINTLN(pin);
-  if (pullMode == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
-    pinMode(pin, INPUT_PULLUP); // set analog input pull-up
-  } else {
-    pinMode(pin, INPUT); // set analog input
-  }
+
+  // Set analog read pull mode
+  if (pullMode == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP)
+    pinMode(pin, INPUT_PULLUP);
+  else
+    pinMode(pin, INPUT);
 
   // Period is in seconds, cast it to long and convert it to milliseconds
   long periodMs = (long)period * 1000;
-  WS_DEBUG_PRINT("Interval (ms):");
-  WS_DEBUG_PRINTLN(periodMs);
 
+  // TODO: Maybe pull this out into a func. or use map() lookup instead
   // attempt to allocate pin within _analog_input_pins[]
   for (int i = 0; i < _totalAnalogInputPins; i++) {
-    if (_analog_input_pins[i].period == -1L) {
+    if (_analog_input_pins[i].enabled == false) {
       _analog_input_pins[i].pinName = pin;
       _analog_input_pins[i].period = periodMs;
       _analog_input_pins[i].readMode = analogReadMode;
+      _analog_input_pins[i].enabled = true;
       break;
     }
   }
+  WS_DEBUG_PRINT("Configured Analog Input pin with polling time (ms):");
+  WS_DEBUG_PRINTLN(periodMs);
 }
 
 /***********************************************************************************/
 /*!
-    @brief  Deinitializes an analog input pin.
+    @brief  Disables an analog input pin from sampling
     @param  pin
-                The analog input pin to deinitialize.
+            The analog input pin to disable.
 */
 /***********************************************************************************/
-void Wippersnapper_AnalogIO::deinitAnalogInputPinObj(int pin) {
-  // de-allocate the pin within digital_input_pins[]
+void Wippersnapper_AnalogIO::disableAnalogInPin(int pin) {
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     if (_analog_input_pins[i].pinName == pin) {
-      _analog_input_pins[i].pinName = 0;
-      _analog_input_pins[i].period = -1;
-      _analog_input_pins[i].prvPinVal = 0.0;
-      _analog_input_pins[i].prvPeriod = 0L;
+      _analog_input_pins[i].enabled = false;
       break;
     }
   }
@@ -207,23 +187,23 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     WS_DEBUG_PRINTLN("Deinitialized analog input pin obj.");
-    deinitAnalogInputPinObj(pin);
+    disableAnalogInPin(pin);
   }
   pinMode(pin, INPUT); // hi-z
 }
 
 /**********************************************************/
 /*!
-    @brief    Reads the value of an analog pin.
+    @brief    Reads the raw ADC value of an analog pin.
                 Value is always scaled to 16-bit.
     @param    pin
               The pin to be read.
     @returns  The pin's ADC value.
 */
 /**********************************************************/
-uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
-  uint16_t value;
-  value = analogRead(pin);
+uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
+  // get pin value
+  uint16_t value = analogRead(pin);
 
   // scale by the ADC resolution manually if not implemented by BSP
   if (scaleAnalogRead) {
@@ -233,7 +213,6 @@ uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
       value = value >> (getNativeResolution() - getADCresolution());
     }
   }
-
   return value;
 }
 
@@ -241,91 +220,90 @@ uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw(int pin) {
 /*!
     @brief    Calculates analog pin's voltage provided
                a 16-bit ADC value.
-    @param    rawValue
+    @param    pin
               The value from a previous ADC reading.
     @returns  The pin's voltage.
 */
 /**********************************************************/
-float Wippersnapper_AnalogIO::getAnalogPinVoltage(uint16_t rawValue) {
-  float pinVoltage;
-  pinVoltage = rawValue * getAref() / 65536;
-  return pinVoltage;
+float Wippersnapper_AnalogIO::getPinValueVolts(int pin) {
+  uint16_t rawValue = getPinValue(pin);
+  return rawValue * getAref() / 65536;
 }
 
 /******************************************************************/
 /*!
     @brief    Encodes an analog input pin event into a
-                signal message.
-    @param    outgoingSignalMsg
-              Pointer to an empty CreateSignalRequest
-              message.
+                signal message and publish it to IO.
     @param    pinName
               Specifies the pin's name.
-    @param    pinVal
-              Pin value.
+    @param    readMode
+              Read mode - raw ADC or voltage.
+    @param    pinValRaw
+              Raw pin value, used if readmode is raw.
+    @param    pinValVolts
+              Raw pin value expressed in Volts, used if readmode is
+              volts.
     @returns  True if successfully encoded a PinEvent signal
                 message, False otherwise.
 */
 /******************************************************************/
 bool Wippersnapper_AnalogIO::encodePinEvent(
-    wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-    uint8_t pinName, uint16_t pinVal) {
-  bool is_success = true;
-  WS_DEBUG_PRINT("Encoding signal message...");
-  // fill the pin_event message
-  outgoingSignalMsg->which_payload =
+    uint8_t pinName,
+    wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode,
+    uint16_t pinValRaw, float pinValVolts) {
+  // Create new signal message
+  wippersnapper_signal_v1_CreateSignalRequest outgoingSignalMsg =
+      wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+
+  // Fill payload
+  outgoingSignalMsg.which_payload =
       wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%u", pinVal);
+  sprintf(outgoingSignalMsg.payload.pin_event.pin_name, "A%d", pinName);
+
+  // Fill pinValue based on the analog read mode
+  if (readMode ==
+      wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE)
+    sprintf(outgoingSignalMsg.payload.pin_event.pin_value, "%u", pinValRaw);
+  else
+    sprintf(outgoingSignalMsg.payload.pin_event.pin_value, "%0.3f",
+            pinValVolts);
 
   // Encode signal message
   pb_ostream_t stream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
   if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
-                 outgoingSignalMsg)) {
+                 &outgoingSignalMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
-    is_success = false;
+    return false;
   }
 
-  WS_DEBUG_PRINTLN("Encoded!");
-  return is_success;
+  // Publish out to IO
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz,
+                      wippersnapper_signal_v1_CreateSignalRequest_fields,
+                      &outgoingSignalMsg);
+  WS_DEBUG_PRINT("Publishing pinEvent...");
+  WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
+  WS_DEBUG_PRINTLN("Published!");
+
+  return true;
 }
 
-/************************************************************/
+/**********************************************************/
 /*!
-    @brief    Encodes an analog input pin event into a
-                signal message.
-    @param    outgoingSignalMsg
-                Pointer to an empty CreateSignalRequest
-                message.
-    @param    pinName
-                Specifies the pin's name.
-    @param    pinVal
-                Pin voltage, in volts.
-    @returns  True if encoded successfully, False otherwise.
+    @brief Checks if pin's period is expired.
+    @param currentTime
+           The current software timer value.
+    @param pin
+           The desired analog pin to check
+    @returns True if pin's period expired, False otherwise.
 */
-/************************************************************/
-bool Wippersnapper_AnalogIO::encodePinEvent(
-    wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-    uint8_t pinName, float pinVal) {
-  bool is_success = true;
-
-  // fill the pin_event message
-  outgoingSignalMsg->which_payload =
-      wippersnapper_signal_v1_CreateSignalRequest_pin_event_tag;
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_name, "A%d", pinName);
-  sprintf(outgoingSignalMsg->payload.pin_event.pin_value, "%0.3f", pinVal);
-
-  // Encode signal message
-  pb_ostream_t stream =
-      pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
-                 outgoingSignalMsg)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
-    is_success = false;
-  }
-
-  return is_success;
+/**********************************************************/
+bool Wippersnapper_AnalogIO::timerExpired(long currentTime,
+                                          analogInputPin pin) {
+  if (currentTime - pin.prvPeriod > pin.period && pin.period != 0L)
+    return true;
+  return false;
 }
 
 /**********************************************************/
@@ -333,110 +311,76 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
     @brief    Iterates thru analog inputs
 */
 /**********************************************************/
-void Wippersnapper_AnalogIO::processAnalogInputs() {
-  long _curTime = millis();
+void Wippersnapper_AnalogIO::update() {
+  // TODO: Globally scope these, dont have them here every time
+  float pinValVolts = 0.0;
+  uint16_t pinValRaw = 0;
   // Process analog input pins
   for (int i = 0; i < _totalAnalogInputPins; i++) {
-    if (_analog_input_pins[i].period >
-        -1L) { // validate if pin is enabled for sampling
-      // pin executes on-period
-      if (_curTime - _analog_input_pins[i].prvPeriod >
+    // TODO: Can we collapse the conditionals below?
+    if (_analog_input_pins[i].enabled == true) {
+
+      // Does the pin execute on-period?
+      if (millis() - _analog_input_pins[i].prvPeriod >
               _analog_input_pins[i].period &&
           _analog_input_pins[i].period != 0L) {
         WS_DEBUG_PRINT("Executing periodic event on A");
         WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
-        // init outgoing signal msg
-        _outgoingSignalMsg =
-            wippersnapper_signal_v1_CreateSignalRequest_init_zero;
-
-        // Perform an analog read
-        _pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
+        // Read from analog pin
         if (_analog_input_pins[i].readMode ==
             wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-          // convert value to voltage
-          _pinVoltage = getAnalogPinVoltage(_pinValue);
-          // Attempt to encode pin event
-          if (!encodePinEvent(&_outgoingSignalMsg,
-                              _analog_input_pins[i].pinName, _pinVoltage)) {
-            WS_DEBUG_PRINTLN(
-                "ERROR: Unable to encode pinevent (analog input, voltage");
-          }
-        } else { // raw value
-          // Attempt to encode pin event msg.
-          if (!encodePinEvent(&_outgoingSignalMsg,
-                              _analog_input_pins[i].pinName, _pinValue)) {
-            WS_DEBUG_PRINTLN(
-                "ERROR: Unable to encode pinevent (analog input, value");
-          }
+          pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
+        } else if (
+            _analog_input_pins[i].readMode ==
+            wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE) {
+          pinValRaw = getPinValue(_analog_input_pins[i].pinName);
+        } else {
+          WS_DEBUG_PRINTLN("ERROR: Unable to read pin value, cannot determine "
+                           "analog read mode!");
+          pinValRaw = 0.0;
         }
 
-        // Obtain size and only write out buffer to end
-        size_t msgSz;
-        pb_get_encoded_size(&msgSz,
-                            wippersnapper_signal_v1_CreateSignalRequest_fields,
-                            &_outgoingSignalMsg);
-        WS_DEBUG_PRINT("Publishing pinEvent...");
-        WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-        WS_DEBUG_PRINTLN("Published!");
+        // Publish a new pin event
+        encodePinEvent(_analog_input_pins[i].pinName,
+                       _analog_input_pins[i].readMode, pinValRaw, pinValVolts);
 
-        // reset the digital pin
-        _analog_input_pins[i].prvPeriod = _curTime;
+        // IMPT - reset the digital pin
+        _analog_input_pins[i].prvPeriod = millis();
       }
-      // pin sample on-change
+      // Does the pin execute on_change?
       else if (_analog_input_pins[i].period == 0L) {
-        // Perform an analog read
-        _pinValue = readAnalogPinRaw(_analog_input_pins[i].pinName);
-        // calculate bounds
-        _pinValThreshHi = _analog_input_pins[i].prvPinVal +
-                          (_analog_input_pins[i].prvPinVal * _hysterisis);
-        _pinValThreshLow = _analog_input_pins[i].prvPinVal -
-                           (_analog_input_pins[i].prvPinVal * _hysterisis);
 
-        if (_pinValue > _pinValThreshHi || _pinValue < _pinValThreshLow) {
-          WS_DEBUG_PRINT("Executing state-based event on A");
-          WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+        // note: on-change requires ADC DEFAULT_HYSTERISIS to check against prv
+        // pin value
+        uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
 
-          // init outgoing signal msg
-          _outgoingSignalMsg =
-              wippersnapper_signal_v1_CreateSignalRequest_init_zero;
+        uint16_t _pinValThreshHi =
+            _analog_input_pins[i].prvPinVal +
+            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
+        uint16_t _pinValThreshLow =
+            _analog_input_pins[i].prvPinVal -
+            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
 
+        if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
+          // Perform voltage conversion if we need to
           if (_analog_input_pins[i].readMode ==
               wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-            // convert value to voltage
-            _pinVoltage = getAnalogPinVoltage(_pinValue);
-            // Attempt to encode pin event
-            if (!encodePinEvent(&_outgoingSignalMsg,
-                                _analog_input_pins[i].pinName, _pinVoltage)) {
-              WS_DEBUG_PRINTLN(
-                  "ERROR: Unable to encode pinevent (analog input, voltage");
-            }
-          } else { // raw value
-            // Attempt to encode pin event msg.
-            if (!encodePinEvent(&_outgoingSignalMsg,
-                                _analog_input_pins[i].pinName, _pinValue)) {
-              WS_DEBUG_PRINTLN(
-                  "ERROR: Unable to encode pinevent (analog input, value");
-            }
+            pinValVolts = pinValRaw * getAref() / 65536;
           }
 
-          // Obtain msg size and only write out buffer to end
-          size_t msgSz;
-          pb_get_encoded_size(
-              &msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields,
-              &_outgoingSignalMsg);
-          // Publish
-          WS_DEBUG_PRINT("Publishing pinEvent...");
-          WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-          WS_DEBUG_PRINTLN("Published!");
+          // Publish pin event to IO
+          encodePinEvent(_analog_input_pins[i].pinName,
+                         _analog_input_pins[i].readMode, pinValRaw,
+                         pinValVolts);
 
-          // set the pin value in the digital pin object for comparison on next
-          // run
-          _analog_input_pins[i].prvPinVal = _pinValue;
-
-          // reset the digital pin
-          _analog_input_pins[i].prvPeriod = _curTime;
+        } else {
+          // WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
+          continue;
         }
+        // set the pin value in the digital pin object for comparison on next
+        // run
+        _analog_input_pins[i].prvPinVal = pinValRaw;
       }
     }
   }

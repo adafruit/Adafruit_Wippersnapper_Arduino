@@ -90,7 +90,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.59" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.60" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -279,7 +279,8 @@ public:
                  uint8_t pinName, int pinVal);
 
   // Pin configure message
-  bool configurePinRequest(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+  bool configureDigitalPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+  bool configAnalogInPinReq(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
   // I2C
   std::vector<WipperSnapper_Component_I2C *>
