@@ -25,6 +25,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_BME680.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_LC709203F.h"
+#include "drivers/WipperSnapper_I2C_Driver_MAX17048.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
@@ -100,6 +101,7 @@ private:
   WipperSnapper_I2C_Driver_LC709203F *_lc = nullptr;
   WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor *_ss = nullptr;
   WipperSnapper_I2C_Driver_VL53L0X *_vl53l0x = nullptr;
+  WipperSnapper_I2C_Driver_MAX17048 *_max17048 = nullptr;
 };
 extern Wippersnapper WS;
 
