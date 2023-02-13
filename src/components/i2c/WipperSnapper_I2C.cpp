@@ -416,7 +416,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_vl53l0x);
     WS_DEBUG_PRINTLN("VL53L0X Initialized Successfully!");
   } else if (strcmp("max17048", msgDeviceInitReq->i2c_device_name) == 0) {
-    _vl53l0x = new WipperSnapper_I2C_Driver_MAX17048(this->_i2c, i2cAddress);
+    _max17048 = new WipperSnapper_I2C_Driver_MAX17048(this->_i2c, i2cAddress);
     if (!_max17048->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize MAX17048/MAX17049!");
       _busStatusResponse =

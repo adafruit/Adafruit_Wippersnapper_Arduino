@@ -72,7 +72,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVoltage(sensors_event_t *voltageEvent) {
-    voltageEvent->voltage = _maxlipo.cellVoltage();
+    voltageEvent->voltage = _maxlipo->cellVoltage();
     return true;
   }
 
