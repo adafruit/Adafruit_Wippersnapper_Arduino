@@ -325,7 +325,7 @@ bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
 
 /**************************************************************************/
 /*!
-    @brief  Decodes repeated PinEvents messages.
+    @brief  Decodes repeated PinEvents (digital pin write) messages.
     @param  stream
             Input stream to read from.
     @param  field
@@ -335,10 +335,10 @@ bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
     @returns True if successfully decoded, False otherwise.
 */
 /**************************************************************************/
-bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field,
-                         void **arg) {
+bool cbDecodeDigitalPinWriteMsg(pb_istream_t *stream, const pb_field_t *field,
+                                void **arg) {
   bool is_success = true;
-  WS_DEBUG_PRINTLN("cbDecodePinEventMsg");
+  WS_DEBUG_PRINTLN("cbDecodeDigitalPinWriteMsg");
 
   // Decode stream into a PinEvent
   wippersnapper_pin_v1_PinEvent pinEventMsg =
@@ -348,17 +348,9 @@ bool cbDecodePinEventMsg(pb_istream_t *stream, const pb_field_t *field,
     is_success = false;
   }
 
+  // execute callback
   char *pinName = pinEventMsg.pin_name + 1;
-  if (pinEventMsg.pin_name[0] == 'D') { // digital pin event
-    WS._digitalGPIO->digitalWriteSvc(atoi(pinName),
-                                     atoi(pinEventMsg.pin_value));
-  } else if (pinEventMsg.pin_name[0] == 'A') { // analog pin event
-    // TODO
-    WS_DEBUG_PRINTLN("ERROR: Analog PinEvent unimplemented!");
-  } else {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode pin event name.");
-    is_success = false;
-  }
+  WS._digitalGPIO->digitalWriteSvc(atoi(pinName), atoi(pinEventMsg.pin_value));
 
   return is_success;
 }
@@ -412,7 +404,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     wippersnapper_pin_v1_PinEvents msg =
         wippersnapper_pin_v1_PinEvents_init_zero;
     // set up callback
-    msg.list.funcs.decode = cbDecodePinEventMsg;
+    msg.list.funcs.decode = cbDecodeDigitalPinWriteMsg;
     msg.list.arg = field->pData;
     // decode each PinEvents sub-message
     if (!pb_decode(stream, wippersnapper_pin_v1_PinEvents_fields, &msg)) {
