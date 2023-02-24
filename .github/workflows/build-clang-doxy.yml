@@ -133,7 +133,7 @@ jobs:
           echo "{boardJson}={content} >> $GITHUB_OUTPUT"
     - name: Create combined binary using Esptool merge_bin
       run: |
-          python3 -m esptool --chip ${{fromJson($GITHUB_OUTPUT).esptool.chip}} merge_bin \
+          python3 -m esptool --chip ${{$GITHUB_OUTPUT.esptool.chip}} merge_bin \
             --flash_mode ${{fromJson($GITHUB_OUTPUT).esptool.flashMode}} \
             --flash_freq ${{fromJson($GITHUB_OUTPUT).esptool.flashFreq}} \
             --flash_size ${{fromJson($GITHUB_OUTPUT).esptool.flashSize}} \
