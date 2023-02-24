@@ -27,13 +27,13 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
         git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
          repository: brentru/ci-arduino
          path: ci
@@ -55,7 +55,7 @@ jobs:
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
     - name: upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
@@ -77,18 +77,18 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
         git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
         repository: adafruit/ci-arduino
         path: ci
     - name: Checkout Board Definitions
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
       with:
         repository: adafruit/Wippersnapper_Boards
         path: ws-boards
@@ -131,12 +131,13 @@ jobs:
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
           echo "{boardJson}={content} >> $GITHUB_OUTPUT"
+
     - name: Create combined binary using Esptool merge_bin
       run: |
-          python3 -m esptool --chip ${{$GITHUB_OUTPUT.esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson($GITHUB_OUTPUT).esptool.flashMode}} \
-            --flash_freq ${{fromJson($GITHUB_OUTPUT).esptool.flashFreq}} \
-            --flash_size ${{fromJson($GITHUB_OUTPUT).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
+            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
+            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
+            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
@@ -146,7 +147,7 @@ jobs:
       run: |
             zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
     - name: upload build artifacts zip
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
@@ -163,13 +164,13 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
         git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
          repository: adafruit/ci-arduino
          path: ci
@@ -189,7 +190,7 @@ jobs:
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
     - name: upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
@@ -207,13 +208,13 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
         git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
          repository: brentru/ci-arduino
          path: ci
@@ -231,7 +232,7 @@ jobs:
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
     - name: upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
@@ -250,13 +251,13 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
         git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
          repository: adafruit/ci-arduino
          path: ci
@@ -283,13 +284,13 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Get WipperSnapper version
       run: |
         git fetch --prune --unshallow --tags
         git describe --dirty --tags
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
          repository: adafruit/ci-arduino
          path: ci
@@ -315,7 +316,7 @@ jobs:
       run: |
             zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
     - name: upload build artifacts zip
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2
       with:
         name: build-files
         path: |
@@ -329,9 +330,9 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
          repository: adafruit/ci-arduino
          path: ci
