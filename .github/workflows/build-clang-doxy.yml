@@ -24,7 +24,7 @@ jobs:
                            "feather_esp32s3_tft",
                            "qtpy_esp32s3", "qtpy_esp32s2"]
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - uses: actions/checkout@v2
@@ -74,7 +74,7 @@ jobs:
           - offset: "0x0"
             arduino-platform: "qtpy_esp32c3"
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - uses: actions/checkout@v2
@@ -130,7 +130,7 @@ jobs:
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=boardJson::$content"
+          echo "{boardJson}={$content} >> $GITHUB_OUTPUT"
     - name: Create combined binary using Esptool merge_bin
       run: |
           python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
@@ -160,7 +160,7 @@ jobs:
       matrix:
         arduino-platform: ["pyportal_tinyusb", "metro_m4_airliftlite_tinyusb"]
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - uses: actions/checkout@v2
@@ -204,7 +204,7 @@ jobs:
       matrix:
         arduino-platform: ["rpi_pico_w"]
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - uses: actions/checkout@v2
@@ -247,7 +247,7 @@ jobs:
       matrix:
         arduino-platform: ["mkrwifi1010", "nano_33_iot"]
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - uses: actions/checkout@v2
@@ -280,7 +280,7 @@ jobs:
       matrix:
         arduino-platform: ["feather_esp8266"]
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - uses: actions/checkout@v2
@@ -326,7 +326,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-samd, build-esp32, build-esp32sx, build-esp8266, build-samd-non-fs, build-rp2040]
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - uses: actions/checkout@v2
