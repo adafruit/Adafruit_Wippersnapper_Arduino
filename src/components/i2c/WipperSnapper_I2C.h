@@ -20,6 +20,7 @@
 #include <Wire.h>
 
 #include "drivers/WipperSnapper_I2C_Driver.h"
+#include "drivers/WipperSnapper_I2C_Driver_ADT7410.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME680.h"
@@ -102,6 +103,7 @@ private:
   WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor *_ss = nullptr;
   WipperSnapper_I2C_Driver_VL53L0X *_vl53l0x = nullptr;
   WipperSnapper_I2C_Driver_MAX17048 *_max17048 = nullptr;
+  WipperSnapper_I2C_Driver_ADT7410 *_adt7410 = nullptr;
 };
 extern Wippersnapper WS;
 

@@ -427,6 +427,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _max17048->configureDriver(msgDeviceInitReq);
     drivers.push_back(_max17048);
     WS_DEBUG_PRINTLN("MAX17048/MAX17049 Initialized Successfully!");
+  } else if (strcmp("adt7410", msgDeviceInitReq->i2c_device_name) == 0) {
+    _adt7410 = new WipperSnapper_I2C_Driver_ADT7410(this->_i2c, i2cAddress);
+    if (!_adt7410->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize ADT7410!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _adt7410->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_adt7410);
+    WS_DEBUG_PRINTLN("ADT7410 Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
