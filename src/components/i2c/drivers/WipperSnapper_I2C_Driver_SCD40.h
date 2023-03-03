@@ -1,5 +1,5 @@
 /*!
- * @file WipperSnapper_I2C_Driver_SCD40.h
+ * @file WipperSnapper_I2C_Driver_scd40.h
  *
  * Device driver for the SCD40 CO2, Temperature, and Humidity sensor.
  * TEMPORARY HACK
@@ -14,12 +14,14 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_SCD40_H
-#define WipperSnapper_I2C_Driver_SCD40_H
+#ifndef WipperSnapper_I2C_Driver_scd40_H
+#define WipperSnapper_I2C_Driver_scd40_H
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <SensirionI2CScd4x.h>
 #include <Wire.h>
+
+// TODO: Change title to SCD4X.h
 
 /**************************************************************************/
 /*!
@@ -53,16 +55,35 @@ public:
   bool begin() {
     _scd = new SensirionI2CScd4x();
     _scd->begin(*_i2c);
-    bool error_stop = _scd->stopPeriodicMeasurement();
-    if (error_stop) {
-      return false;
-    }
 
-    bool error_start = _scd->startPeriodicMeasurement();
-    if (error_start) {
+    // stop previously started measurement
+    if (!_scd->stopPeriodicMeasurement())
       return false;
-    }
 
+    // attempt to grab SCD4x's serial number
+    uint16_t serial0;
+    uint16_t serial1;
+    uint16_t serial2;
+    if (!_scd->getSerialNumber(serial0, serial1, serial2))
+      return false;
+
+    // start measurements
+    if (!_scd->startPeriodicMeasurement())
+      return false;
+
+    return true;
+  }
+
+  bool readSensorMeasurements() {
+    // TODO: We should also have a func. to check if data is ready
+    // prior to calling this func but sensiron does not yet
+    // have this released:
+    // https://github.com/Sensirion/arduino-i2c-scd4x/commit/4ec07965f30f32f4320960a04aadb7a19e6499c7
+
+    int16_t error;
+    error = _scd->readMeasurement(_co2, _temperature, _humidity);
+    if (error || _co2 == 0)
+      return false;
     return true;
   }
 
@@ -76,18 +97,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // check if sensor is enabled and data is available
-    uint16_t co2;
-    float temperature;
-    float humidity;
-    uint16_t error;
-
-    error = _scd->readMeasurement(co2, temperature, humidity);
-    if ((_tempSensorPeriod != 0 && error) || co2 == 0) {
+    // read all sensor measurements
+    if (!readSensorMeasurements())
       return false;
-    }
 
-    tempEvent->temperature = temperature;
+    tempEvent->temperature = _temperature;
     return true;
   }
 
@@ -101,18 +115,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    // check if sensor is enabled and data is available
-    uint16_t co2;
-    float temperature;
-    float humidity;
-    uint16_t error;
-
-    error = _scd->readMeasurement(co2, temperature, humidity);
-    if ((_humidSensorPeriod != 0 && error) || co2 == 0) {
+    // read all sensor measurements
+    if (!readSensorMeasurements())
       return false;
-    }
 
-    humidEvent->relative_humidity = humidity;
+    humidEvent->relative_humidity = _humidity;
     return true;
   }
 
@@ -126,25 +133,21 @@ public:
   */
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
-    // check if sensor is enabled and data is available
-    uint16_t co2;
-    float temperature;
-    float humidity;
-    uint16_t error;
-
-    error = _scd->readMeasurement(co2, temperature, humidity);
-    if ((_CO2SensorPeriod != 0 && error) || co2 == 0) {
+    // read all sensor measurements
+    if (!readSensorMeasurements())
       return false;
-    }
 
     // TODO: This is a TEMPORARY HACK, we need to add CO2 type to
     // adafruit_sensor
-    co2Event->data[0] = co2;
+    co2Event->data[0] = _co2;
     return true;
   }
 
 protected:
-  SensirionI2CScd4x *_scd; ///< SCD40 driver object
+  SensirionI2CScd4x *_scd; ///< SCD4x driver object
+  uint16_t _co2;           ///< SCD4x co2 reading
+  float _temperature;      ///< SCD4x temperature reading
+  float _humidity;         ///< SCD4x humidity reading
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD40
