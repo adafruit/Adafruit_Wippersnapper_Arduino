@@ -819,11 +819,11 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tPM1.0: ");
-        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINT(event.pm10_std);
         WS_DEBUG_PRINTLN(" ppm");
 
         // pack event data into msg
-        fillEventMessage(&msgi2cResponse, event.data[0],
+        fillEventMessage(&msgi2cResponse, event.pm10_std,
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get PM1.0 sensor reading!");
@@ -842,11 +842,11 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tPM2.5: ");
-        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINT(event.pm25_std);
         WS_DEBUG_PRINTLN(" ppm");
 
         // pack event data into msg
-        fillEventMessage(&msgi2cResponse, event.data[0],
+        fillEventMessage(&msgi2cResponse, event.pm25_std,
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get PM2.5 sensor reading!");
@@ -864,12 +864,12 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINT("Sensor 0x");
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
-        WS_DEBUG_PRINT("\tPM100: ");
-        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINT("\tPM10.0: ");
+        WS_DEBUG_PRINT(event.pm25_std);
         WS_DEBUG_PRINTLN(" ppm");
 
         // pack event data into msg
-        fillEventMessage(&msgi2cResponse, event.data[0],
+        fillEventMessage(&msgi2cResponse, event.pm25_std,
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to get PM10.0 sensor reading!");
@@ -920,7 +920,7 @@ void WipperSnapper_Component_I2C::update() {
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT);
       } else {
         WS_DEBUG_PRINTLN(
-            "ERROR: Failed to get unitless percentage sensor reading!");
+            "ERROR: Failed to get unitless percent sensor reading!");
       }
       // try again in curTime seconds
       (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
@@ -956,11 +956,11 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tGas Resistance: ");
-        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINT(event.gas_resistance);
         WS_DEBUG_PRINT(" ohms");
 
         fillEventMessage(
-            &msgi2cResponse, event.data[0],
+            &msgi2cResponse, event.gas_resistance,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE);
       } else {
         WS_DEBUG_PRINTLN(

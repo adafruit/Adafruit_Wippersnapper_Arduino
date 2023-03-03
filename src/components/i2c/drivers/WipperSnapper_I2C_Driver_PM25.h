@@ -75,7 +75,7 @@ public:
     if (!_pm25->read(&data))
       return false; // couldn't read data
 
-    pm10StdEvent->data[0] = (float)data.pm10_standard;
+    pm10StdEvent->pm10_std = (float)data.pm10_standard;
     return true;
   }
 
@@ -93,7 +93,7 @@ public:
     if (!_pm25->read(&data))
       return false; // couldn't read data
 
-    pm25StdEvent->data[0] = (float)data.pm25_standard;
+    pm25StdEvent->pm25_std = (float)data.pm25_standard;
     return true;
   }
 
@@ -111,7 +111,7 @@ public:
     if (!_pm25->read(&data))
       return false; // couldn't read data
 
-    pm100StdEvent->data[0] = (float)data.pm100_standard;
+    pm100StdEvent->pm100_std = (float)data.pm100_standard;
     return true;
   }
 

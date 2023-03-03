@@ -1,8 +1,7 @@
 /*!
- * @file WipperSnapper_I2C_Driver_scd40.h
+ * @file WipperSnapper_I2C_Driver_SCD4x.h
  *
- * Device driver for the SCD40 CO2, Temperature, and Humidity sensor.
- * TEMPORARY HACK
+ * Device driver for the SCD4X CO2, Temperature, and Humidity sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -21,7 +20,6 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <SensirionI2CScd4x.h>
 #include <Wire.h>
-
 
 /**************************************************************************/
 /*!
@@ -74,6 +72,13 @@ public:
     return true;
   }
 
+  /********************************************************************************/
+  /*!
+      @brief    Reads the SCD4x's sensors
+      @returns  True if the measurements were read without errors, False
+     otherwise.
+  */
+  /********************************************************************************/
   bool readSensorMeasurements() {
     // TODO: We should also have a func. to check if data is ready
     // prior to calling this func but sensiron does not yet

@@ -165,9 +165,8 @@ public:
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
     if (!bmePerformReading())
       return false;
-    // NOTE: This is hacked onto Adafruit_Sensor and should eventually be
-    // removed
-    gasEvent->data[0] = (float)_bme->gas_resistance;
+
+    gasEvent->gas_resistance = (float)_bme->gas_resistance;
     return true;
   }
 

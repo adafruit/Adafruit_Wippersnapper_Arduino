@@ -110,9 +110,8 @@ public:
     // check if sensor is enabled and data is available
     if (_CO2SensorPeriod != 0 && (!_scd->dataReady()))
       return false;
-    // TODO: This is a TEMPORARY HACK, we need to add CO2 type to
-    // adafruit_sensor
-    co2Event->data[0] = _scd->CO2;
+
+    co2Event->CO2 = _scd->CO2;
     return true;
   }
 
