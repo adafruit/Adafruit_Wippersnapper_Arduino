@@ -55,18 +55,11 @@ public:
     _scd->begin(*_i2c);
 
     // stop previously started measurement
-    if (!_scd->stopPeriodicMeasurement())
-      return false;
-
-    // attempt to grab SCD4x's serial number
-    uint16_t serial0;
-    uint16_t serial1;
-    uint16_t serial2;
-    if (!_scd->getSerialNumber(serial0, serial1, serial2))
+    if (_scd->stopPeriodicMeasurement())
       return false;
 
     // start measurements
-    if (!_scd->startPeriodicMeasurement())
+    if (_scd->startPeriodicMeasurement())
       return false;
 
     return true;
@@ -142,7 +135,7 @@ public:
     if (!readSensorMeasurements())
       return false;
 
-    co2Event->CO2 = _co2;
+    co2Event->CO2 = (float)_co2;
     return true;
   }
 
