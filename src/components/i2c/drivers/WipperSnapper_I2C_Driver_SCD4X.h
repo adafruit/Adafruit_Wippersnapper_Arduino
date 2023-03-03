@@ -8,27 +8,27 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
+ * Copyright (c) Marni Brewster 2022
+ * Copyright (c) Brent Rubell 2023 for Adafruit Industries
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_scd40_H
-#define WipperSnapper_I2C_Driver_scd40_H
+#ifndef WipperSnapper_I2C_Driver_SCD4X_H
+#define WipperSnapper_I2C_Driver_SCD4X_H
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <SensirionI2CScd4x.h>
 #include <Wire.h>
 
-// TODO: Change title to SCD4X.h
 
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SCD40 sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_SCD40 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_SCD4X : public WipperSnapper_I2C_Driver {
 
 public:
   /*******************************************************************************/
@@ -40,7 +40,7 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_SCD40(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_SCD4X(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -137,9 +137,7 @@ public:
     if (!readSensorMeasurements())
       return false;
 
-    // TODO: This is a TEMPORARY HACK, we need to add CO2 type to
-    // adafruit_sensor
-    co2Event->data[0] = _co2;
+    co2Event->CO2 = _co2;
     return true;
   }
 
@@ -150,4 +148,4 @@ protected:
   float _humidity;         ///< SCD4x humidity reading
 };
 
-#endif // WipperSnapper_I2C_Driver_SCD40
+#endif // WipperSnapper_I2C_Driver_SCD4X

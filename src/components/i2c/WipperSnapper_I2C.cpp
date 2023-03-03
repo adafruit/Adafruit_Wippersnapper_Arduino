@@ -316,7 +316,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_veml7700);
     WS_DEBUG_PRINTLN("VEML7700 Initialized Successfully!");
   } else if (strcmp("scd40", msgDeviceInitReq->i2c_device_name) == 0) {
-    _scd40 = new WipperSnapper_I2C_Driver_SCD40(this->_i2c, i2cAddress);
+    _scd40 = new WipperSnapper_I2C_Driver_SCD4X(this->_i2c, i2cAddress);
     if (!_scd40->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize SCD40!");
       _busStatusResponse =
@@ -752,10 +752,10 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tCO2: ");
-        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINT(event.CO2);
         WS_DEBUG_PRINTLN(" ppm");
 
-        fillEventMessage(&msgi2cResponse, event.data[0],
+        fillEventMessage(&msgi2cResponse, event.CO2,
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
         (*iter)->setSensorCO2PeriodPrv(curTime);
       } else {
@@ -911,12 +911,12 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tRead: ");
-        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINT(event.unitless_percent);
         WS_DEBUG_PRINTLN(" %");
 
         // pack event data into msg
         fillEventMessage(
-            &msgi2cResponse, event.voltage,
+            &msgi2cResponse, event.unitless_percent,
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT);
       } else {
         WS_DEBUG_PRINTLN(
