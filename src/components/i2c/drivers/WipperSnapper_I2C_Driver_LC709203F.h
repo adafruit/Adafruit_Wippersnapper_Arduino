@@ -94,7 +94,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    unitlessPercentEvent->data[0] = _lc->cellPercent();
+    unitlessPercentEvent->unitless_percent = _lc->cellPercent();
     return true;
   }
 

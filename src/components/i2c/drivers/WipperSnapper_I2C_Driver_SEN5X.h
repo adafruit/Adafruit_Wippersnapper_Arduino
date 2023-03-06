@@ -205,7 +205,7 @@ public:
       return false;
     }
 
-    pm10StdEvent->data[0] = massConcentrationPm1p0;
+    pm10StdEvent->pm10_std = massConcentrationPm1p0;
     return true;
   }
 
@@ -234,7 +234,7 @@ public:
       return false;
     }
 
-    pm25StdEvent->data[0] = massConcentrationPm2p5;
+    pm25StdEvent->pm25_std = massConcentrationPm2p5;
     return true;
   }
 
@@ -292,7 +292,7 @@ public:
       return false;
     }
 
-    pm100StdEvent->data[0] = massConcentrationPm10p0;
+    pm100StdEvent->pm100_std = massConcentrationPm10p0;
     return true;
   }
 

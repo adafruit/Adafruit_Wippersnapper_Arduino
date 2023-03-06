@@ -87,7 +87,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    unitlessPercentEvent->data[0] = _maxlipo->cellPercent();
+    unitlessPercentEvent->unitless_percent = _maxlipo->cellPercent();
     return true;
   }
 
