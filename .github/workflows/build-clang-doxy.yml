@@ -22,7 +22,7 @@ jobs:
                            "feather_esp32s2_tft",
                            "feather_esp32s3", "feather_esp32s3_4mbflash_2mbpsram",
                            "feather_esp32s3_tft",
-                           "qtpy_esp32s3", "qtpy_esp32s2"]
+                           "qtpy_esp32s3", "qtpy_esp32s2", "feather_esp32s3_reverse_tft"]
     steps:
     - uses: actions/setup-python@v1
       with:

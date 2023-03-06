@@ -22,7 +22,8 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
-    defined(ARDUINO_RASPBERRY_PI_PICO_W)
+    defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -48,7 +49,7 @@ Adafruit_FlashTransport_RP2040 flashTransport;
 #endif
 
 Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
-FatVolume wipperFatFs;                    ///< File system object from Adafruit SDFat
+FatVolume wipperFatFs; ///< File system object from Adafruit SDFat
 
 Adafruit_USBD_MSC usb_msc; /*!< USB mass storage object */
 
