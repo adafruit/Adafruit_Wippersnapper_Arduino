@@ -67,21 +67,26 @@ public:
 
   /********************************************************************************/
   /*!
-      @brief    Reads the SCD4x's sensors
+      @brief    Attempts to read the SCD4x's sensor measurements
       @returns  True if the measurements were read without errors, False
-     otherwise.
+                if read errors occured or if sensor did not have data ready.
   */
   /********************************************************************************/
   bool readSensorMeasurements() {
-    // TODO: We should also have a func. to check if data is ready
-    // prior to calling this func but sensiron does not yet
-    // have this released:
-    // https://github.com/Sensirion/arduino-i2c-scd4x/commit/4ec07965f30f32f4320960a04aadb7a19e6499c7
+    uint16_t error;
+    bool isDataReady = false;
+    delay(100);
 
-    int16_t error;
+    // Check if data is ready
+    error = _scd->getDataReadyFlag(isDataReady);
+    if (error || !isDataReady)
+      return false;
+
+    // Read SCD4x measurement
     error = _scd->readMeasurement(_co2, _temperature, _humidity);
     if (error || _co2 == 0)
       return false;
+
     return true;
   }
 
