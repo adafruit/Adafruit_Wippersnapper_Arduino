@@ -34,6 +34,9 @@
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 
+// Display
+#include "display/ws_display_driver.h"
+
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
@@ -192,6 +195,7 @@ class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
+class ws_display_driver;
 class WipperSnapper_Component_I2C;
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
@@ -309,10 +313,11 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
-  ws_pwm *_pwmComponent;          ///< Instance of pwm class
-  ws_servo *_servoComponent;      ///< Instance of servo class
-  ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
+  ws_display_driver *_display = nullptr; ///< Instance of display driver class
+  ws_pixels *_ws_pixelsComponent;        ///< ptr to instance of ws_pixels class
+  ws_pwm *_pwmComponent;                 ///< Instance of pwm class
+  ws_servo *_servoComponent;             ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component;         ///< Instance of DS18x20 class
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */

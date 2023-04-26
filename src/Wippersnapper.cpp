@@ -106,6 +106,21 @@ void Wippersnapper::provision() {
   set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
 
+  // TODO: Move parseSecrets() out to here so we can error check and correct
+
+  // TODO: Implement parseDisplayConfig() in the filesystem class
+  displayConfig config = WS._fileSystem->parseDisplayConfig();
+  // TODO: Need error boundary checks and signaling around
+  // display initialization if it doesnt exist!
+  WS._display = new ws_display_driver(config);
+
+  if (!WS._display->begin())
+    WS_DEBUG_PRINTLN(
+        "Unable to enable display driver and LVGL"); // TODO: Maybe fail out and
+                                                     // revert to non-display?
+                                                     // Where do we log this?
+  WS._display->enableLogging();
+
   set_ssid_pass();
 }
 

@@ -27,6 +27,7 @@
 
 // forward decl.
 class Wippersnapper;
+struct displayConfig;
 
 // global TinyUSB callbacks
 int32_t qspi_msc_write_cb(uint32_t lba, uint8_t *buffer, uint32_t bufsize);
@@ -57,6 +58,9 @@ public:
   void fsHalt();
 
   void parseSecrets();
+
+  displayConfig parseDisplayConfig();
+  void createDisplayConfig();
 
   // NOTE: calculated capacity with maximum
   // length of usernames/passwords/tokens
