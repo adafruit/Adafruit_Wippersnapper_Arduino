@@ -21,7 +21,7 @@
               Data to write out to serial.
 */
 /**************************************************************************/
-static void my_log_cb(const char *buf) { Serial.printf(buf); }
+static void my_log_cb(const char *buf) { WS_DEBUG_PRINTLN(buf); }
 
 /**************************************************************************/
 /*!
@@ -43,7 +43,7 @@ ws_display_driver::ws_display_driver(displayConfig config) {
   if (strcmp(config.driver, "ST7789") == 0) {
     Serial.println("Configuring the Adafruit_ST7789 driver");
     _tft_st7789 =
-        new Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RESET);
+        new Adafruit_ST7789(config.pinCS, config.pinDC, config.pinRST);
   } else {
     Serial.println("ERROR: Display driver type not implemented!");
   }
@@ -105,10 +105,12 @@ void ws_display_driver::setRotation(uint8_t rotationMode) {
 /**************************************************************************/
 bool ws_display_driver::begin() {
 
+  // TODO: This function could use some cleanup around how it inits glue
+
   // initialize display driver
   if (_tft_st7789 != nullptr) {
     WS_DEBUG_PRINTLN("INIT st7789 tft");
-    _tft_st7789->init(240, 240);
+    _tft_st7789->init(_displayWidth, _displayHeight);
   } else {
     Serial.println("ERROR: Unable to initialize the display driver!");
     return false;
@@ -125,7 +127,8 @@ bool ws_display_driver::begin() {
 
   // initialize LVGL_glue
   WS_DEBUG_PRINTLN("INIT lvgl_glue");
-  LvGLStatus status = _glue.begin(_tft_st7789);
+  _glue = new Adafruit_LvGL_Glue();
+  LvGLStatus status = _glue->begin(_tft_st7789);
   WS_DEBUG_PRINT("LVGL GLUE STATUS: ");
   WS_DEBUG_PRINTLN((int) status);
 
@@ -135,7 +138,8 @@ bool ws_display_driver::begin() {
     return false;
   }
   WS_DEBUG_PRINTLN("Setting screen BLACK");
-  lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_STATE_DEFAULT);
+  lv_obj_set_style_bg_color(lv_scr_act(), lv_color_white(), LV_STATE_DEFAULT);
+  lv_task_handler();
 
   return true;
 }
