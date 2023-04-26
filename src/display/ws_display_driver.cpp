@@ -105,23 +105,26 @@ void ws_display_driver::setRotation(uint8_t rotationMode) {
 /**************************************************************************/
 bool ws_display_driver::begin() {
 
-// Hardware-specific display commands
-#ifdef ARDUINO_FUNHOUSE_ESP32S2
-  pinMode(TFT_BACKLIGHT, OUTPUT);
-  digitalWrite(TFT_BACKLIGHT, HIGH);
-#endif // ARDUINO_FUNHOUSE_ESP32S2
-
   // initialize display driver
   if (_tft_st7789 != nullptr) {
     WS_DEBUG_PRINTLN("INIT st7789 tft");
-    //_tft_st7789->init(240, 240);
+    _tft_st7789->init(240, 240);
   } else {
     Serial.println("ERROR: Unable to initialize the display driver!");
     return false;
   }
 
+    // Hardware-specific display commands
+    #ifdef ARDUINO_FUNHOUSE_ESP32S2
+    pinMode(TFT_BACKLIGHT, OUTPUT);
+    digitalWrite(TFT_BACKLIGHT, HIGH);
+    #endif // ARDUINO_FUNHOUSE_ESP32S2
+
+    //WS_DEBUG_PRINTLN("Fill screen");
+    //_tft_st7789->fillScreen(ST77XX_BLACK);
+
   // initialize LVGL_glue
-/*   WS_DEBUG_PRINTLN("INIT lvgl_glue");
+  WS_DEBUG_PRINTLN("INIT lvgl_glue");
   LvGLStatus status = _glue.begin(_tft_st7789);
   WS_DEBUG_PRINT("LVGL GLUE STATUS: ");
   WS_DEBUG_PRINTLN((int) status);
@@ -130,8 +133,9 @@ bool ws_display_driver::begin() {
   if (status != LVGL_OK) {
     Serial.printf("LVGL_Glue error %d\r\n", (int)status);
     return false;
-  } */
-
+  }
+  WS_DEBUG_PRINTLN("Setting screen BLACK");
+  lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_STATE_DEFAULT);
 
   return true;
 }

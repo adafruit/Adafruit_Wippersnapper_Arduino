@@ -2311,7 +2311,6 @@ void Wippersnapper::connect() {
                                                      // revert to non-display?
                                                      // Where do we log this?
   WS._display->enableLogging();
-  // lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_STATE_DEFAULT);
 
   // Dump device info to the serial monitor
   printDeviceInfo();
