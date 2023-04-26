@@ -55,7 +55,7 @@ public:
   void enableLogging();
 
 private:
-  Adafruit_LvGL_Glue _glue;
+  Adafruit_LvGL_Glue *_glue;
   Adafruit_ST7789 *_tft_st7789 = nullptr;
   uint16_t _displayWidth;
   uint16_t _displayHeight;

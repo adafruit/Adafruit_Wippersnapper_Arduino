@@ -32,11 +32,18 @@ static void my_log_cb(const char *buf) { Serial.printf(buf); }
 */
 /**************************************************************************/
 ws_display_driver::ws_display_driver(displayConfig config) {
+  WS_DEBUG_PRINT("Display Configuration: \n");
+  WS_DEBUG_PRINTLN(config.pinCS);
+  WS_DEBUG_PRINTLN(config.pinDC);
+  WS_DEBUG_PRINTLN(config.pinRST);
+  WS_DEBUG_PRINTLN(config.width);
+  WS_DEBUG_PRINTLN(config.height);
+  
   // let's dynamically create the display driver from the configuration file
   if (strcmp(config.driver, "ST7789") == 0) {
     Serial.println("Configuring the Adafruit_ST7789 driver");
     _tft_st7789 =
-        new Adafruit_ST7789(config.pinCS, config.pinDC, config.pinRST);
+        new Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RESET);
   } else {
     Serial.println("ERROR: Display driver type not implemented!");
   }
@@ -97,27 +104,34 @@ void ws_display_driver::setRotation(uint8_t rotationMode) {
 */
 /**************************************************************************/
 bool ws_display_driver::begin() {
-  LvGLStatus status;
-  // initialize display driver and lvgl_glue
-  if (_tft_st7789 != nullptr) {
-    _tft_st7789->init(_displayWidth, _displayHeight);
-    status = _glue.begin(_tft_st7789);
-  } else {
-    Serial.println("ERROR: Unable to initialize the display driver!");
-    return false;
-  }
-
-  // check if lvgl initialized correctly
-  if (status != LVGL_OK) {
-    Serial.printf("LVGL_Glue error %d\r\n", (int)status);
-    return false;
-  }
 
 // Hardware-specific display commands
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
   pinMode(TFT_BACKLIGHT, OUTPUT);
   digitalWrite(TFT_BACKLIGHT, HIGH);
 #endif // ARDUINO_FUNHOUSE_ESP32S2
+
+  // initialize display driver
+  if (_tft_st7789 != nullptr) {
+    WS_DEBUG_PRINTLN("INIT st7789 tft");
+    //_tft_st7789->init(240, 240);
+  } else {
+    Serial.println("ERROR: Unable to initialize the display driver!");
+    return false;
+  }
+
+  // initialize LVGL_glue
+/*   WS_DEBUG_PRINTLN("INIT lvgl_glue");
+  LvGLStatus status = _glue.begin(_tft_st7789);
+  WS_DEBUG_PRINT("LVGL GLUE STATUS: ");
+  WS_DEBUG_PRINTLN((int) status);
+
+  // check if lvgl initialized correctly
+  if (status != LVGL_OK) {
+    Serial.printf("LVGL_Glue error %d\r\n", (int)status);
+    return false;
+  } */
+
 
   return true;
 }
