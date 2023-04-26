@@ -91,29 +91,25 @@ Wippersnapper::~Wippersnapper() {
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
-  // Get MAC address from network interface
+  // Get MAC address from the network interface
   getMacAddr();
 
-  // init. LED for status signaling
+  // Initialize the status LED
   initStatusLED();
+
+// Initialize the filesystem
 #ifdef USE_TINYUSB
   _fileSystem = new Wippersnapper_FS();
-  _fileSystem->parseSecrets();
 #elif defined(USE_LITTLEFS)
   _littleFS = new WipperSnapper_LittleFS();
-  _littleFS->parseSecrets();
-#else
-  set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
 
-  // TODO: Move parseSecrets() out to here so we can error check and correct
-
-  // TODO: Implement parseDisplayConfig() in the filesystem class
+  // Initialize the display
   displayConfig config = WS._fileSystem->parseDisplayConfig();
   // TODO: Need error boundary checks and signaling around
   // display initialization if it doesnt exist!
   WS._display = new ws_display_driver(config);
-
+  // Begin display
   if (!WS._display->begin())
     WS_DEBUG_PRINTLN(
         "Unable to enable display driver and LVGL"); // TODO: Maybe fail out and
@@ -121,6 +117,16 @@ void Wippersnapper::provision() {
                                                      // Where do we log this?
   WS._display->enableLogging();
 
+// TODO: Add display error modes within parseSecrets()
+#ifdef USE_TINYUSB
+  _fileSystem->parseSecrets();
+#elif defined(USE_LITTLEFS)
+  _littleFS->parseSecrets();
+#else
+  set_user_key(); // non-fs-backed, sets global credentials within network iface
+#endif
+
+  // Set device's wireless credentials
   set_ssid_pass();
 }
 
