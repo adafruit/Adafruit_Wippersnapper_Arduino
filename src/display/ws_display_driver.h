@@ -19,7 +19,6 @@
 
 #include <Adafruit_LvGL_Glue.h> // Always include this BEFORE lvgl.h!
 #include <Adafruit_ST7789.h>
-// #include <ArduinoJson.h>
 #include <lvgl.h>
 
 struct displayConfig {
@@ -36,7 +35,9 @@ struct displayConfig {
   uint8_t pinRST;
 };
 
-class Wippersnapper; // friend class
+LV_FONT_DECLARE(errorTriangle);
+
+class Wippersnapper; // fwd decl
 
 /***************************************************************************/
 /*!
@@ -53,9 +54,9 @@ public:
   void setResolution(uint16_t displayWidth, uint16_t displayHeight);
   void setRotation(uint8_t rotationMode);
   void enableLogging();
-
-private:
   Adafruit_LvGL_Glue *_glue;
+private:
+  
   Adafruit_ST7789 *_tft_st7789 = nullptr;
   uint16_t _displayWidth;
   uint16_t _displayHeight;

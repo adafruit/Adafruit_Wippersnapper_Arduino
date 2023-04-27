@@ -36,6 +36,7 @@
 
 // Display
 #include "display/ws_display_driver.h"
+#include "display/ws_display_ui_helper.h"
 
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -196,6 +197,7 @@ class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class ws_display_driver;
+class ws_display_ui_helper;
 class WipperSnapper_Component_I2C;
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
@@ -314,6 +316,7 @@ public:
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
   ws_display_driver *_display = nullptr; ///< Instance of display driver class
+  ws_display_ui_helper *_ui_helper = nullptr; ///< Instance of display UI helper class
   ws_pixels *_ws_pixelsComponent;        ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;                 ///< Instance of pwm class
   ws_servo *_servoComponent;             ///< Instance of servo class

@@ -104,7 +104,8 @@ void Wippersnapper::provision() {
   _littleFS = new WipperSnapper_LittleFS();
 #endif
 
-/*   // Initialize the display
+  // TODO: Add checks around display init.
+  // Initialize the display
   displayConfig config = WS._fileSystem->parseDisplayConfig();
   // TODO: Need error boundary checks and signaling around
   // display initialization if it doesnt exist!
@@ -115,7 +116,14 @@ void Wippersnapper::provision() {
         "Unable to enable display driver and LVGL"); // TODO: Maybe fail out and
                                                      // revert to non-display?
                                                      // Where do we log this?
-  WS._display->enableLogging(); */
+  WS._display->enableLogging();
+
+  // UI Setup
+  WS._ui_helper = new ws_display_ui_helper();
+  WS._ui_helper->set_bg_black();
+  WS._ui_helper->show_scr_load();
+  lv_task_handler();
+
 
 // TODO: Add display error modes within parseSecrets()
 #ifdef USE_TINYUSB
@@ -2299,18 +2307,6 @@ void printDeviceInfo() {
 void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
 
-  // Initialize the display
-  displayConfig config = WS._fileSystem->parseDisplayConfig();
-  // TODO: Need error boundary checks and signaling around
-  // display initialization if it doesnt exist!
-  WS._display = new ws_display_driver(config);
-  // Begin display
-  if (!WS._display->begin())
-    WS_DEBUG_PRINTLN(
-        "Unable to enable display driver and LVGL"); // TODO: Maybe fail out and
-                                                     // revert to non-display?
-                                                     // Where do we log this?
-  WS._display->enableLogging();
 
   // Dump device info to the serial monitor
   printDeviceInfo();
