@@ -52,7 +52,7 @@ public:
   void eraseBootFile();
 
   bool configFileExists();
-  void createConfigFileSkel();
+  void createSecretsFile();
   bool createBootFile();
   void writeToBootOut(PGM_P str);
   void fsHalt();

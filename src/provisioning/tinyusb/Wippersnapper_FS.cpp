@@ -181,7 +181,7 @@ bool Wippersnapper_FS::initFilesystem() {
   // Check if secrets.json file already exists
   if (!configFileExists()) {
     // Create new secrets.json file and halt
-    createConfigFileSkel();
+    createSecretsFile();
   }
 
   return true;
@@ -290,10 +290,10 @@ bool Wippersnapper_FS::createBootFile() {
 
 /**************************************************************************/
 /*!
-    @brief    Creates a skeleton secret.json file on the filesystem.
+    @brief    Creates a default secrets.json file on the filesystem.
 */
 /**************************************************************************/
-void Wippersnapper_FS::createConfigFileSkel() {
+void Wippersnapper_FS::createSecretsFile() {
   // Create JSON object
   StaticJsonDocument<256> doc;
   doc["io_username"] = "YOUR_IO_USERNAME_HERE";
@@ -301,13 +301,13 @@ void Wippersnapper_FS::createConfigFileSkel() {
   JsonObject network_type_wifi = doc.createNestedObject("network_type_wifi");
   network_type_wifi["network_ssid"] = "YOUR_WIFI_SSID_HERE";
   network_type_wifi["network_password"] = "YOUR_WIFI_PASS_HERE";
-  doc["status_pixel_brightness"] = "0.0";
+  doc["status_pixel_brightness"] = "0.2";
 
   // Serialize JSON object and write secrets.json to file
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   serializeJsonPretty(doc, secretsFile);
-  displayFile.flush();
-  displayFile.close();
+  secretsFile.flush();
+  secretsFile.close();
   delay(2500);
 
   writeToBootOut(
