@@ -259,4 +259,7 @@ void ws_display_ui_helper::show_scr_error(const char *lblError,
   // set_width used by LABEL_LONG_WRAP
   lv_obj_set_width(labelErrorBody, 220);
   lv_obj_align(labelErrorBody, LV_ALIGN_CENTER, -3, 55);
+
+  // call task handler
+  lv_task_handler();
 }
