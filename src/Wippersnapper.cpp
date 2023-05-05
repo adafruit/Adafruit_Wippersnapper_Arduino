@@ -91,10 +91,10 @@ Wippersnapper::~Wippersnapper() {
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
-  // Get MAC address from the network interface
+  // Filesystem should get the MAC address
   getMacAddr();
 
-  // Initialize the status LED
+  // Initialize the status LED for signaling FS errors
   initStatusLED();
 
 // Initialize the filesystem

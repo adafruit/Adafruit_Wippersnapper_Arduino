@@ -360,6 +360,8 @@ void Wippersnapper_FS::parseSecrets() {
         "* ERROR: Default username found in secrets.json, please edit "
         "the secrets.json file and reset the board for the changes to take "
         "effect\n");
+    WS._ui_helper->show_scr_error("INVALID USERNAME", "The \"io_username\" field within secrets.json is invalid, please change it to match your Adafruit IO username.\nConfused? Visit adafru.it/123456 for detailed instructions.");
+    lv_task_handler();
     fsHalt();
   }
   WS._username = io_username;
@@ -473,7 +475,7 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt() {
   while (1) {
-    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+    //statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }

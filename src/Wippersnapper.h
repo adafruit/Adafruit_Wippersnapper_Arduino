@@ -321,6 +321,7 @@ public:
   ws_pwm *_pwmComponent;                 ///< Instance of pwm class
   ws_servo *_servoComponent;             ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;         ///< Instance of DS18x20 class
+  
 
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
