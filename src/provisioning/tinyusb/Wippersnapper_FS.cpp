@@ -180,7 +180,7 @@ bool Wippersnapper_FS::initFilesystem() {
 
   // Check if secrets.json file already exists
   if (!configFileExists()) {
-    // Create new secrets.json file
+    // Create new secrets.json file and halt
     createConfigFileSkel();
   }
 
@@ -294,28 +294,30 @@ bool Wippersnapper_FS::createBootFile() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createConfigFileSkel() {
-  // open for writing, create a new file if one doesnt exist
+  // Create JSON object
+  StaticJsonDocument<256> doc;
+  doc["io_username"] = "YOUR_IO_USERNAME_HERE";
+  doc["io_key"] = "YOUR_IO_KEY_HERE";
+  JsonObject network_type_wifi = doc.createNestedObject("network_type_wifi");
+  network_type_wifi["network_ssid"] = "YOUR_WIFI_SSID_HERE";
+  network_type_wifi["network_password"] = "YOUR_WIFI_PASS_HERE";
+  doc["status_pixel_brightness"] = "0.0";
+
+  // Serialize JSON object and write secrets.json to file
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
-  if (!secretsFile) {
-    setStatusLEDColor(RED);
-    while (1)
-      yield();
-  }
-  // write out secrets file to USB-MSD
-  // NOTE: This was chunked into sep. lines, had issue with writing the entire
-  // file at once
-  secretsFile.print("{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_"
-                    "key\":\"YOUR_IO_KEY_");
-  secretsFile.flush();
-  secretsFile.print("HERE\",\n\t\"network_type_wifi\":{\n\t\t\"network_"
-                    "ssid\":\"YOUR_WIFI_SSID_");
-  secretsFile.flush();
-  secretsFile.print("HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_"
-                    "HERE\"\n\t},\n\t\"status_pixel_brightness\":\"0.5\"\n}");
-  secretsFile.flush();
-  secretsFile.close();
+  serializeJsonPretty(doc, secretsFile);
+  displayFile.flush();
+  displayFile.close();
+  delay(2500);
+
   writeToBootOut(
       "* Please edit the secrets.json file. Then, reset your board.\n");
+  WS._ui_helper->show_scr_error(
+      "INVALID SETTINGS FILE",
+      "The settings.json file on the WIPPER drive contains default values. "
+      "Please edit it to reflect your Adafruit IO and network credentials. "
+      "When you're done, press RESET on the board.");
+  fsHalt();
 }
 
 /**************************************************************************/
@@ -342,10 +344,15 @@ void Wippersnapper_FS::parseSecrets() {
   // Parse io_username
   const char *io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_username == nullptr || strcmp(io_username, "YOUR_IO_USERNAME_HERE") == 0) {
+  if (io_username == nullptr ||
+      strcmp(io_username, "YOUR_IO_USERNAME_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     writeToBootOut("ERROR: invalid io_username value in secrets.json!\n");
-    WS._ui_helper->show_scr_error("INVALID USERNAME", "The \"io_username\" field within secrets.json is invalid, please change it to match your Adafruit IO username.\nConfused? Visit adafru.it/123456 for detailed instructions.");
+    WS._ui_helper->show_scr_error(
+        "INVALID USERNAME",
+        "The \"io_username\" field within secrets.json is invalid, please "
+        "change it to match your Adafruit IO username.\nConfused? Visit "
+        "adafru.it/123456 for detailed instructions.");
     fsHalt();
   }
   // Set io_username
@@ -356,18 +363,27 @@ void Wippersnapper_FS::parseSecrets() {
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     writeToBootOut("ERROR: invalid io_key value in secrets.json!\n");
-    WS._ui_helper->show_scr_error("INVALID IO KEY", "The \"io_key\" field within secrets.json is invalid, please change it to match your Adafruit IO username.\nConfused? Visit adafru.it/123456 for detailed instructions.");
+    WS._ui_helper->show_scr_error(
+        "INVALID IO KEY",
+        "The \"io_key\" field within secrets.json is invalid, please change it "
+        "to match your Adafruit IO username.\nConfused? Visit adafru.it/123456 "
+        "for detailed instructions.");
     fsHalt();
   }
   WS._key = io_key;
 
   // Parse WiFi SSID
   const char *network_type_wifi_ssid = doc["network_type_wifi"]["network_ssid"];
-  if (network_type_wifi_ssid == nullptr || strcmp(network_type_wifi_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
+  if (network_type_wifi_ssid == nullptr ||
+      strcmp(network_type_wifi_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid network_ssid value in secrets.json!");
     writeToBootOut("ERROR: invalid network_ssid value in secrets.json!\n");
-    WS._ui_helper->show_scr_error("INVALID SSID", "The \"network_ssid\" field within secrets.json is invalid, please change it to match your Adafruit IO username.\nConfused? Visit adafru.it/123456 for detailed instructions.");
-    fshalt();
+    WS._ui_helper->show_scr_error(
+        "INVALID SSID",
+        "The \"network_ssid\" field within secrets.json is invalid, please "
+        "change it to match your Adafruit IO username.\nConfused? Visit "
+        "adafru.it/123456 for detailed instructions.");
+    fsHalt();
   }
   // Set network SSID
   WS._network_ssid = network_type_wifi_ssid;
@@ -375,16 +391,20 @@ void Wippersnapper_FS::parseSecrets() {
   // Parse WiFi Network Password
   const char *network_type_wifi_password =
       doc["network_type_wifi"]["network_password"];
-  if (network_type_wifi_password == nullptr || strcmp(network_type_wifi_password, "YOUR_WIFI_PASS_HERE") == 0) {
+  if (network_type_wifi_password == nullptr ||
+      strcmp(network_type_wifi_password, "YOUR_WIFI_PASS_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid network_type_wifi_password value in "
                      "secrets.json!");
     writeToBootOut("ERROR: invalid network_type_wifi_password value in "
                    "secrets.json!\n");
-    WS._ui_helper->show_scr_error("INVALID SSID", "The \"network_ssid\" field within secrets.json is invalid, please change it to match your Adafruit IO username.\nConfused? Visit adafru.it/123456 for detailed instructions.");
+    WS._ui_helper->show_scr_error(
+        "INVALID SSID",
+        "The \"network_ssid\" field within secrets.json is invalid, please "
+        "change it to match your Adafruit IO username.\nConfused? Visit "
+        "adafru.it/123456 for detailed instructions.");
     fsHalt();
   }
   WS._network_pass = network_type_wifi_password;
-
 
   // Optionally set the MQTT broker url (used to switch btween prod. and
   // staging)
@@ -436,7 +456,7 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt() {
   while (1) {
-    //statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+    // statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }
