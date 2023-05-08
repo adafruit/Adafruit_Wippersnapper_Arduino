@@ -205,7 +205,6 @@ void ws_display_ui_helper::clear_scr_load() {
   lv_style_reset(&styleIconWiFi);
   lv_style_reset(&styleIconCloud);
   lv_style_reset(&styleIconTurtle30px);
-  lv_style_reset(&styleIconCheckmark);
   // Stop the loading tip timer and delete the label
   remove_tip_timer();
   lv_obj_del(lblTipText);
@@ -225,6 +224,7 @@ void ws_display_ui_helper::show_scr_error(const char *lblError,
   Serial.println("ws_display_ui_helper");
   // clear the active loading screen (for now, will eventually expand to take in
   // a scr obj.)
+
   clear_scr_load();
 
   // Create error symbol

@@ -2067,10 +2067,15 @@ void Wippersnapper::runNetFSM() {
         delay(1800);
         maxAttempts--;
       }
-      if (fsmNetwork != FSM_NET_CHECK_MQTT)
+      if (fsmNetwork != FSM_NET_CHECK_MQTT) {
+        WS._ui_helper->show_scr_error("CONNECTION ERROR", "Unable to connect to Adafruit.io, rebooting in N seconds...");
+        delay(10);
+        lv_task_handler();
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
+      }
+
       break;
     default:
       break;
