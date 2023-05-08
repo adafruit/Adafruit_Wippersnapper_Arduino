@@ -122,6 +122,7 @@ void Wippersnapper::provision() {
   WS._ui_helper = new ws_display_ui_helper();
   WS._ui_helper->set_bg_black();
   WS._ui_helper->show_scr_load();
+  WS._ui_helper->set_label_status("Validating Credentials...");
   lv_task_handler();
 
 
@@ -136,6 +137,9 @@ void Wippersnapper::provision() {
 
   // Set device's wireless credentials
   set_ssid_pass();
+
+  WS._ui_helper->set_label_status("");
+  WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
 }
 
 /**************************************************************************/
@@ -1985,7 +1989,9 @@ void Wippersnapper::runNetFSM() {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
       if (WS._mqtt->connected()) {
-        // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
+        WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
+        WS._ui_helper->set_label_status("Registering device with IO...");
+        WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
@@ -1993,7 +1999,7 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
-        // WS_DEBUG_PRINTLN("Connected to WiFi!");
+        WS_DEBUG_PRINTLN("Connected to WiFi!");
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
@@ -2001,12 +2007,16 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_NETWORK:
       WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
+      // TODO: Pass in SSID as a string
+      WS._ui_helper->set_label_status("Scanning for SSID...");
+      lv_task_handler();
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       if (!check_valid_ssid())
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
-
+      WS._ui_helper->set_label_status("Connecting to WiFi...");
+      lv_task_handler();
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2032,7 +2042,10 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WS_DEBUG_PRINTLN("Attempting to connect to Adafruit IO...");
+      WS_DEBUG_PRINTLN("Attempting to connect to IO...");
+      WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+      WS._ui_helper->set_label_status("Connecting to IO...");
+      lv_task_handler();
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
