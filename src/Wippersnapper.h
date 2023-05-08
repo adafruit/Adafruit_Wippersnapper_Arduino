@@ -94,7 +94,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.62" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.64" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -310,6 +310,8 @@ public:
   ws_board_status_t _boardStatus =
       WS_BOARD_DEF_IDLE; ///< Hardware's registration status
 
+  // TODO: We really should look at making these static definitions, not dynamic
+  // to free up space on the heap
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
@@ -321,8 +323,9 @@ public:
   ws_pwm *_pwmComponent;                 ///< Instance of pwm class
   ws_servo *_servoComponent;             ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;         ///< Instance of DS18x20 class
-  
 
+
+  // TODO: does this really need to be global?
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
   const char *_boardId; /*!< Adafruit IO+ board string */
@@ -339,6 +342,7 @@ public:
   const char *_network_ssid = NULL; /*!< WiFi network SSID */
   const char *_network_pass = NULL; /*!< WiFi network password*/
 
+  // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
   char *_topic_description = NULL; /*!< MQTT topic for the device description */
