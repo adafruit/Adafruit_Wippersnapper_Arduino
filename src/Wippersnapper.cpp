@@ -1991,6 +1991,8 @@ void Wippersnapper::runNetFSM() {
       if (WS._mqtt->connected()) {
         WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
         WS._ui_helper->set_label_status("Registering device with IO...");
+        delay(10);
+        lv_task_handler();
         WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
@@ -2000,6 +2002,9 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
+        WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+        delay(10);
+        lv_task_handler();
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
@@ -2008,15 +2013,14 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_NETWORK:
       WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
       // TODO: Pass in SSID as a string
-      WS._ui_helper->set_label_status("Scanning for SSID...");
+      WS._ui_helper->set_label_status("Connecting to WiFi...");
+      delay(10);
       lv_task_handler();
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       if (!check_valid_ssid())
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
-      WS._ui_helper->set_label_status("Connecting to WiFi...");
-      lv_task_handler();
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2043,9 +2047,10 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("Attempting to connect to IO...");
-      WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+/*       WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
       WS._ui_helper->set_label_status("Connecting to IO...");
-      lv_task_handler();
+      delay(10);
+      lv_task_handler(); */
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
