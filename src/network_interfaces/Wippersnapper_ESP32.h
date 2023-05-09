@@ -151,9 +151,10 @@ public:
     } else {
       _mqtt_client->setCACert(_aio_root_ca_staging);
     }
+
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, 8883,
-                                 clientID, WS._username , WS._key);
+        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
+                                 clientID, WS._username, WS._key);
   }
 
   /********************************************************/

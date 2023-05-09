@@ -1994,10 +1994,10 @@ void Wippersnapper::runNetFSM() {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
       if (WS._mqtt->connected()) {
-        WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
-        WS._ui_helper->set_label_status("Registering device with IO...");
-        delay(10);
-        lv_task_handler();
+        //WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
+        //WS._ui_helper->set_label_status("Registering device with IO...");
+        //delay(10);
+        //lv_task_handler();
         WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
@@ -2007,9 +2007,9 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
-        WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
-        delay(10);
-        lv_task_handler();
+        //WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+        //delay(10);
+        //lv_task_handler();
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
@@ -2018,9 +2018,9 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_NETWORK:
       WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
       // TODO: Pass in SSID as a string
-      WS._ui_helper->set_label_status("Connecting to WiFi...");
-      delay(10);
-      lv_task_handler();
+      //WS._ui_helper->set_label_status("Connecting to WiFi...");
+      //delay(10);
+      //lv_task_handler();
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       if (!check_valid_ssid())
