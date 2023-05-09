@@ -187,7 +187,7 @@ void ws_display_ui_helper::show_scr_load() {
   lv_obj_set_style_text_color(lblTipText, lv_color_white(), LV_PART_MAIN);
   lv_label_set_text(lblTipText, "\0");
   lv_obj_align(lblTipText, LV_ALIGN_BOTTOM_LEFT, 0, -40);
-  timerLoadTips = lv_timer_create(lv_timer_tips_cb, 500, NULL);
+  timerLoadTips = lv_timer_create(lv_timer_tips_cb, 2000, NULL);
 }
 
 /**************************************************************************/

@@ -121,8 +121,11 @@ void Wippersnapper::provision() {
   // UI Setup
   WS._ui_helper = new ws_display_ui_helper();
   WS._ui_helper->set_bg_black();
+  lv_task_handler();
   WS._ui_helper->show_scr_load();
+  lv_task_handler();
   WS._ui_helper->set_label_status("Validating Credentials...");
+  delay(10);
   lv_task_handler();
 
 
@@ -140,6 +143,8 @@ void Wippersnapper::provision() {
 
   WS._ui_helper->set_label_status("");
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
+  delay(10);
+  lv_task_handler();
 }
 
 /**************************************************************************/
@@ -2047,10 +2052,13 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("Attempting to connect to IO...");
-/*       WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+      WS_DEBUG_PRINTLN(WS._username);
+      WS_DEBUG_PRINTLN(WS._key);
+      
+       WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
       WS._ui_helper->set_label_status("Connecting to IO...");
       delay(10);
-      lv_task_handler(); */
+      lv_task_handler();
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;

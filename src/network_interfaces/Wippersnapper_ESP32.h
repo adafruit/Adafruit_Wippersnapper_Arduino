@@ -146,15 +146,15 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     if (WS._mqttBrokerURL == nullptr) {
+      WS_DEBUG_PRINT("Setting io.adafruit.com and root cert...");
       WS._mqttBrokerURL = "io.adafruit.com";
       _mqtt_client->setCACert(_aio_root_ca_prod);
     } else {
       _mqtt_client->setCACert(_aio_root_ca_staging);
     }
-
     WS._mqtt =
         new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
-                                 clientID, WS._username, WS._key);
+                                 clientID, "brubell", "aio_wyjT377nvCaZQApeYk4WcG1lSeOp");
   }
 
   /********************************************************/
