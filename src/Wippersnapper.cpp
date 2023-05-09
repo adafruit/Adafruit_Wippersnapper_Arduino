@@ -2052,18 +2052,13 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("Attempting to connect to IO...");
-      WS_DEBUG_PRINTLN(WS._username);
-      WS_DEBUG_PRINTLN(WS._key);
-      
-       WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
-      WS._ui_helper->set_label_status("Connecting to IO...");
-      delay(10);
-      lv_task_handler();
-      WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
+      WS_DEBUG_PRINT("NETWORK STATUS: "); WS_DEBUG_PRINTLN(networkStatus());
+      // WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        // statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        WS_DEBUG_PRINT("NETWORK STATUS: "); WS_DEBUG_PRINTLN(networkStatus());
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
