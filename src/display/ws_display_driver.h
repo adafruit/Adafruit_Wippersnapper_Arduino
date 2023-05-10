@@ -55,6 +55,8 @@ public:
   void setRotation(uint8_t rotationMode);
   void enableLogging();
   Adafruit_LvGL_Glue *_glue;
+  void esp32_lvgl_acquire();
+  void esp32_lvgl_release();
 private:
   
   Adafruit_ST7789 *_tft_st7789 = nullptr;

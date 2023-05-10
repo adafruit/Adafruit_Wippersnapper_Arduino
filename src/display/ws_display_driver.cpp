@@ -137,9 +137,19 @@ bool ws_display_driver::begin() {
     Serial.printf("LVGL_Glue error %d\r\n", (int)status);
     return false;
   }
+
   WS_DEBUG_PRINTLN("Setting screen BLACK");
+  esp32_lvgl_acquire();
   lv_obj_set_style_bg_color(lv_scr_act(), lv_color_white(), LV_STATE_DEFAULT);
-  lv_task_handler();
+  esp32_lvgl_release();
 
   return true;
+}
+
+void ws_display_driver::esp32_lvgl_acquire() {
+    _glue->lvgl_acquire();
+}
+
+void ws_display_driver::esp32_lvgl_release() {
+    _glue->lvgl_release();
 }

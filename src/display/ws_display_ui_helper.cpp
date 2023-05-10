@@ -15,6 +15,8 @@
 
 #include "ws_display_ui_helper.h"
 
+
+
 /**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.

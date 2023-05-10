@@ -84,6 +84,13 @@ Wippersnapper::~Wippersnapper() {
   free(_throttle_sub);
 }
 
+void stats_timer(lv_timer_t * timer) {
+    Serial.printf("Size: %d\tFree: %d\tMaxAlloc: %d\t PSFree: %d\n", ESP.getHeapSize(), ESP.getFreeHeap(),    \
+            ESP.getMaxAllocHeap(),                                         \
+            ESP.getFreePsram()); ///< ESP32 memory check macro
+    lv_timer_reset(timer);
+}
+
 /**************************************************************************/
 /*!
     @brief    Provisions a WipperSnapper device with its network
@@ -118,16 +125,20 @@ void Wippersnapper::provision() {
                                                      // Where do we log this?
   WS._display->enableLogging();
 
-  // UI Setup
-  WS._ui_helper = new ws_display_ui_helper();
-  WS._ui_helper->set_bg_black();
-  lv_task_handler();
-  WS._ui_helper->show_scr_load();
-  lv_task_handler();
-  WS._ui_helper->set_label_status("Validating Credentials...");
-  delay(10);
-  lv_task_handler();
+  //lv_timer_t * timer = lv_timer_create(stats_timer, 100,  NULL);
 
+  // UI Setup
+  //WS._ui_helper = new ws_display_ui_helper();
+  // lvgl_port_lock();
+  //WS._ui_helper->set_bg_black();
+  //lv_task_handler();
+  // lvgl_port_unlock();
+
+  //WS._ui_helper->show_scr_load();
+  //lv_task_handler();
+  //WS._ui_helper->set_label_status("Validating Credentials...");
+  //delay(10);
+  //lv_task_handler();
 
 // TODO: Add display error modes within parseSecrets()
 #ifdef USE_TINYUSB
@@ -140,11 +151,10 @@ void Wippersnapper::provision() {
 
   // Set device's wireless credentials
   set_ssid_pass();
-
-  WS._ui_helper->set_label_status("");
-  WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
-  delay(10);
-  lv_task_handler();
+  //WS._ui_helper->set_label_status("");
+  //WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
+  //delay(10);
+  //lv_task_handler();
 }
 
 /**************************************************************************/
@@ -2053,6 +2063,7 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("Attempting to connect to IO...");
       WS_DEBUG_PRINT("NETWORK STATUS: "); WS_DEBUG_PRINTLN(networkStatus());
+      MEMCK;
       // WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
@@ -2071,9 +2082,11 @@ void Wippersnapper::runNetFSM() {
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
-        WS._ui_helper->show_scr_error("CONNECTION ERROR", "Unable to connect to Adafruit.io, rebooting in N seconds...");
-        delay(10);
-        lv_task_handler();
+        // lvgl_port_lock();
+        //WS._ui_helper->show_scr_error("CONNECTION ERROR", "Unable to connect to Adafruit.io, rebooting in N seconds...");
+        //delay(10);
+        // lv_task_handler();
+        // lvgl_port_unlock();
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
