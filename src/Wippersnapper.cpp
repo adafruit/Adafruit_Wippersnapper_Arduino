@@ -123,22 +123,17 @@ void Wippersnapper::provision() {
         "Unable to enable display driver and LVGL"); // TODO: Maybe fail out and
                                                      // revert to non-display?
                                                      // Where do we log this?
-  WS._display->enableLogging();
+  // WS._display->enableLogging();
 
   //lv_timer_t * timer = lv_timer_create(stats_timer, 100,  NULL);
 
   // UI Setup
   //WS._ui_helper = new ws_display_ui_helper();
-  // lvgl_port_lock();
+  //WS._display->esp32_lvgl_acquire();
   //WS._ui_helper->set_bg_black();
-  //lv_task_handler();
-  // lvgl_port_unlock();
-
   //WS._ui_helper->show_scr_load();
-  //lv_task_handler();
   //WS._ui_helper->set_label_status("Validating Credentials...");
-  //delay(10);
-  //lv_task_handler();
+  //WS._display->esp32_lvgl_release();
 
 // TODO: Add display error modes within parseSecrets()
 #ifdef USE_TINYUSB
