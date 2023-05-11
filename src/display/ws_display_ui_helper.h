@@ -17,16 +17,17 @@
 #define WS_DISPLAY_UI_HELPER_H
 
 #include "Wippersnapper.h"
-#include <lvgl.h>
 #include "ws_display_driver.h"
 #include "ws_display_tooltips.h"
+#include <lvgl.h>
 
 // External Fonts
-#define SYMBOL_CODE "\xEF\x87\x89"            ///< Symbol code for file icon
-#define SYMBOL_WIFI "\xEF\x87\xAB"            ///< Symbol code for WiFi icon
-#define SYMBOL_TURTLE30PX "\xEF\x9C\xA6"      ///< Symbol code for turtle icon
-#define SYMBOL_CLOUD "\xEF\x83\x82"           ///< Symbol code for cloud icon
-#define SYMBOL_ERROR_TRIANGLE "\xEF\x81\xB1"  ///< Symbol code for error triangle icon
+#define SYMBOL_CODE "\xEF\x87\x89"       ///< Symbol code for file icon
+#define SYMBOL_WIFI "\xEF\x87\xAB"       ///< Symbol code for WiFi icon
+#define SYMBOL_TURTLE30PX "\xEF\x9C\xA6" ///< Symbol code for turtle icon
+#define SYMBOL_CLOUD "\xEF\x83\x82"      ///< Symbol code for cloud icon
+#define SYMBOL_ERROR_TRIANGLE                                                  \
+  "\xEF\x81\xB1" ///< Symbol code for error triangle icon
 LV_FONT_DECLARE(errorTriangle);
 LV_FONT_DECLARE(file);
 LV_FONT_DECLARE(wifi_30px);
@@ -73,9 +74,12 @@ enum loadBarIcons {
 }; ///< Icon names for use by set_load_bar_icon_complete
 
 // holds all the loading tips
-static const char* loading_tips[4] = { WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3, WS_LOADING_TIP_4 };
+static const char *loading_tips[4] = {WS_LOADING_TIP_1, WS_LOADING_TIP_2,
+                                      WS_LOADING_TIP_3, WS_LOADING_TIP_4};
 
-static lv_timer_t * timerLoadTips;
+static lv_timer_t *timerLoadTips;
+
+class ws_display_driver;
 
 /**************************************************************************/
 /*!
@@ -85,11 +89,10 @@ static lv_timer_t * timerLoadTips;
 /**************************************************************************/
 class ws_display_ui_helper {
 public:
-  ws_display_ui_helper(){};
+  ws_display_ui_helper(ws_display_driver *drv) { _dispDriver = drv; };
   ~ws_display_ui_helper(){};
 
   void set_bg_black();
-
   void show_scr_load();
   void clear_scr_load();
   void set_load_bar_icon_complete(loadBarIcons iconType);
@@ -97,5 +100,8 @@ public:
   void remove_tip_timer();
 
   void show_scr_error(const char *lblError, const char *lblDesc);
+
+private:
+  ws_display_driver *_dispDriver = nullptr;
 };
 #endif // WS_DISPLAY_UI_HELPER_H

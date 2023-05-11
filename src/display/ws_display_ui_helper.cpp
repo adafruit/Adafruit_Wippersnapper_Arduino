@@ -15,8 +15,6 @@
 
 #include "ws_display_ui_helper.h"
 
-
-
 /**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.
@@ -27,7 +25,9 @@
 void lv_timer_tips_cb(lv_timer_t *timer) {
   Serial.println("Timer tips cb called");
   long tipNum = random(0, sizeof(loading_tips) / sizeof(loading_tips[0]));
+  // _dispDriver->esp32_lvgl_acquire();
   lv_label_set_text(lblTipText, loading_tips[tipNum]);
+  // _dispDriver->esp32_lvgl_release();
 }
 
 /**************************************************************************/
@@ -55,7 +55,9 @@ static void label_status_cb(lv_event_t *event) {
 void ws_display_ui_helper::set_label_status(const char *text) {
   Serial.print("set_label_status (text): ");
   Serial.println(text);
+  _dispDriver->esp32_lvgl_acquire();
   lv_event_send(lblStatusText, LV_EVENT_REFRESH, &text);
+  _dispDriver->esp32_lvgl_release();
 }
 
 /**************************************************************************/
@@ -74,7 +76,9 @@ void ws_display_ui_helper::remove_tip_timer() {
 */
 /**************************************************************************/
 void ws_display_ui_helper::set_bg_black() {
+  _dispDriver->esp32_lvgl_acquire();
   lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), LV_STATE_DEFAULT);
+  _dispDriver->esp32_lvgl_release();
 }
 
 /**************************************************************************/
@@ -109,12 +113,11 @@ void ws_display_ui_helper::set_load_bar_icon_complete(loadBarIcons iconType) {
     Serial.println("ERROR: Undefined iconType!");
     return;
   }
-
+  _dispDriver->esp32_lvgl_acquire();
   // set icon's color and refresh
   lv_style_set_text_color(styleIcon, lv_palette_main(LV_PALETTE_GREEN));
   lv_obj_refresh_style(objIcon, LV_PART_MAIN, LV_STYLE_PROP_ANY);
-
-  lv_task_handler();
+  _dispDriver->esp32_lvgl_release();
 }
 
 /**************************************************************************/
@@ -123,7 +126,7 @@ void ws_display_ui_helper::set_load_bar_icon_complete(loadBarIcons iconType) {
 */
 /**************************************************************************/
 void ws_display_ui_helper::show_scr_load() {
-
+  _dispDriver->esp32_lvgl_acquire();
   // Icon bar
   const lv_coord_t iconBarXStart =
       20; // Coordinate where the icon bar begins, on the X axis
@@ -189,7 +192,9 @@ void ws_display_ui_helper::show_scr_load() {
   lv_obj_set_style_text_color(lblTipText, lv_color_white(), LV_PART_MAIN);
   lv_label_set_text(lblTipText, "\0");
   lv_obj_align(lblTipText, LV_ALIGN_BOTTOM_LEFT, 0, -40);
-  timerLoadTips = lv_timer_create(lv_timer_tips_cb, 2000, NULL);
+  timerLoadTips = lv_timer_create(lv_timer_tips_cb, 3000, NULL);
+
+  _dispDriver->esp32_lvgl_release();
 }
 
 /**************************************************************************/
@@ -205,6 +210,7 @@ void ws_display_ui_helper::clear_scr_load() {
   lv_obj_del(labelCloudBar);
   // Clear all properties from styles and free all allocated memory
   lv_style_reset(&styleIconWiFi);
+  lv_style_reset(&styleIconFile);
   lv_style_reset(&styleIconCloud);
   lv_style_reset(&styleIconTurtle30px);
   // Stop the loading tip timer and delete the label
@@ -227,6 +233,7 @@ void ws_display_ui_helper::show_scr_error(const char *lblError,
   // clear the active loading screen (for now, will eventually expand to take in
   // a scr obj.)
 
+  _dispDriver->esp32_lvgl_acquire();
   clear_scr_load();
 
   // Create error symbol
@@ -262,6 +269,5 @@ void ws_display_ui_helper::show_scr_error(const char *lblError,
   lv_obj_set_width(labelErrorBody, 220);
   lv_obj_align(labelErrorBody, LV_ALIGN_CENTER, -3, 55);
 
-  // call task handler
-  lv_task_handler();
+  _dispDriver->esp32_lvgl_release();
 }
