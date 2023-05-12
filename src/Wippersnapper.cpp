@@ -2057,6 +2057,9 @@ void Wippersnapper::runNetFSM() {
         // statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         WS_DEBUG_PRINT("NETWORK STATUS: ");
         WS_DEBUG_PRINTLN(networkStatus());
+    Serial.printf("Size: %d\tFree: %d\tMaxAlloc: %d\t PSFree: %d\n",
+                    ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMaxAllocHeap(),
+                    ESP.getFreePsram()); ///< ESP32 memory check macro
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;

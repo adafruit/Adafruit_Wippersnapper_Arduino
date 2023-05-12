@@ -84,7 +84,7 @@ void ws_display_driver::setResolution(uint16_t displayWidth,
               AFTER calling Serial.begin().
 */
 /**************************************************************************/
-void ws_display_driver::enableLogging() { lv_log_register_print_cb(my_log_cb); }
+void ws_display_driver::enableLogging() {  }
 
 /**************************************************************************/
 /*!
