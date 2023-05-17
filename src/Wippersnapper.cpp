@@ -104,17 +104,17 @@ void Wippersnapper::provision() {
   _littleFS = new WipperSnapper_LittleFS();
 #endif
 
-
-  #ifdef USE_DISPLAY
+#ifdef USE_DISPLAY
   // Initialize the display
   displayConfig config = WS._fileSystem->parseDisplayConfig();
   WS._display = new ws_display_driver(config);
   // Begin display
-  if (!WS._display->begin())
-    WS_DEBUG_PRINTLN(
-        "Unable to enable display driver and LVGL"); // TODO: Maybe fail out and
-                                                     // revert to non-display?
-                                                     // Where do we log this?
+  if (!WS._display->begin()) {
+    WS_DEBUG_PRINTLN("Unable to enable display driver and LVGL");
+    haltError("Unable to enable display driver, please check the json "
+              "configuration!");
+  }
+
   WS._display->enableLogging();
   releaseStatusLED(); // don't use status LED if we are using the display
   // UI Setup
@@ -122,10 +122,9 @@ void Wippersnapper::provision() {
   WS._ui_helper->set_bg_black();
   WS._ui_helper->show_scr_load();
   WS._ui_helper->set_label_status("Validating Credentials...");
-  #endif
+#endif
 
-
-// TODO: Add display error modes within parseSecrets()
+  // Parse secrets.json file
 #ifdef USE_TINYUSB
   _fileSystem->parseSecrets();
 #elif defined(USE_LITTLEFS)
@@ -133,14 +132,13 @@ void Wippersnapper::provision() {
 #else
   set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
-
   // Set device's wireless credentials
   set_ssid_pass();
 
-  #ifdef USE_DISPLAY
+#ifdef USE_DISPLAY
   WS._ui_helper->set_label_status("");
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
-  #endif
+#endif
 }
 
 /**************************************************************************/
@@ -1636,7 +1634,7 @@ bool Wippersnapper::generateDeviceUID() {
 
   // Attempt to malloc a the device identifier string
   _device_uid = (char *)ps_malloc(sizeof(char) + strlen("io-wipper-") +
-                               strlen(WS._boardId) + strlen(mac_uid) + 1);
+                                  strlen(WS._boardId) + strlen(mac_uid) + 1);
   if (_device_uid == NULL) {
     WS_DEBUG_PRINTLN("ERROR: Unable to create device uid, Malloc failure");
     return false;
@@ -1658,9 +1656,9 @@ bool Wippersnapper::generateDeviceUID() {
 /**************************************************************************/
 bool Wippersnapper::generateWSTopics() {
   // Create global registration topic
-  WS._topic_description =
-      (char *)ps_malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
-                     strlen(TOPIC_INFO) + strlen("status") + 1);
+  WS._topic_description = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
+      strlen(TOPIC_INFO) + strlen("status") + 1);
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
@@ -1672,10 +1670,10 @@ bool Wippersnapper::generateWSTopics() {
   }
 
   // Create registration status topic
-  WS._topic_description_status =
-      (char *)ps_malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status/") + strlen("broker") + 1);
+  WS._topic_description_status = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status/") +
+      strlen("broker") + 1);
   if (WS._topic_description_status != NULL) {
     strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
@@ -1695,10 +1693,10 @@ bool Wippersnapper::generateWSTopics() {
   _topic_description_sub->setCallback(cbRegistrationStatus);
 
   // Create registration status complete topic
-  WS._topic_description_status_complete =
-      (char *)ps_malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status") + strlen("/device/complete") + 1);
+  WS._topic_description_status_complete = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status") +
+      strlen("/device/complete") + 1);
   if (WS._topic_description_status_complete != NULL) {
     strcpy(WS._topic_description_status_complete, WS._username);
     strcat(WS._topic_description_status_complete, "/wprsnpr/");
@@ -1727,10 +1725,10 @@ bool Wippersnapper::generateWSTopics() {
   }
 
   // Create pin configuration complete topic
-  WS._topic_device_pin_config_complete =
-      (char *)ps_malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
-                     strlen("device/pinConfigComplete") + 1);
+  WS._topic_device_pin_config_complete = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
+      strlen("device/pinConfigComplete") + 1);
   if (WS._topic_device_pin_config_complete != NULL) {
     strcpy(WS._topic_device_pin_config_complete, WS._username);
     strcat(WS._topic_device_pin_config_complete, "/wprsnpr/");
@@ -1990,7 +1988,7 @@ void Wippersnapper::runNetFSM() {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
       if (WS._mqtt->connected()) {
-        //WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
+        // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
       }
@@ -1999,26 +1997,30 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
-        #ifdef USE_DISPLAY
+#ifdef USE_DISPLAY
         WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
-        #endif
+#endif
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
-      // TODO: Pass in SSID as a string
-      #ifdef USE_DISPLAY
+      WS_DEBUG_PRINTLN("Connecting to WiFi...");
+#ifdef USE_DISPLAY
       WS._ui_helper->set_label_status("Connecting to WiFi...");
-      #endif
+#endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
-      // TODO: add signaling for display in check below
-      if (!check_valid_ssid())
+      if (!check_valid_ssid()) {
+#ifdef USE_DISPLAY
+        WS._ui_helper->show_scr_error("ERROR",
+                                      "Unable to find WiFi network listed in "
+                                      "the secrets file. Rebooting soon...");
+#endif
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
+      }
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2039,24 +2041,26 @@ void Wippersnapper::runNetFSM() {
 
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED)
-        haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
-                  WS_LED_STATUS_WIFI_CONNECTING);
+#ifdef USE_DISPLAY
+        WS._ui_helper->show_scr_error(
+            "CONNECTION ERROR",
+            "Unable to connect to WiFi Network. Please check that you entered "
+            "the WiFi credentials correctly. Rebooting in 5 seconds...");
+#endif
+      haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
+                WS_LED_STATUS_WIFI_CONNECTING);
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("Attempting to connect to IO...");
-      WS_DEBUG_PRINT("NETWORK STATUS: ");
-      WS_DEBUG_PRINTLN(networkStatus());
+#ifdef USE_DISPLAY
+      WS._ui_helper->set_label_status("Connecting to IO...");
+#endif
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
-        // statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
-        WS_DEBUG_PRINT("NETWORK STATUS: ");
-        WS_DEBUG_PRINTLN(networkStatus());
-        Serial.printf("Size: %d\tFree: %d\tMaxAlloc: %d\t PSFree: %d\n",
-                        ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMaxAllocHeap(),
-                        ESP.getFreePsram()); ///< ESP32 memory check macro
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         int8_t mqttRC = WS._mqtt->connect();
         if (mqttRC == WS_MQTT_CONNECTED) {
           fsmNetwork = FSM_NET_CHECK_MQTT;
@@ -2069,16 +2073,15 @@ void Wippersnapper::runNetFSM() {
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
-        #ifdef USE_DISPLAY
+#ifdef USE_DISPLAY
         WS._ui_helper->show_scr_error(
             "CONNECTION ERROR",
             "Unable to connect to Adafruit.io, rebooting in 5 seconds...");
-        #endif
+#endif
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
       }
-
       break;
     default:
       break;
@@ -2362,10 +2365,10 @@ void Wippersnapper::connect() {
   runNetFSM();
   WS.feedWDT();
 
-  #ifdef USE_DISPLAY
+#ifdef USE_DISPLAY
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
   WS._ui_helper->set_label_status("Registering device with IO...");
-  #endif
+#endif
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
@@ -2388,10 +2391,10 @@ void Wippersnapper::connect() {
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
-  // goto application
-  #ifdef USE_DISPLAY
+// goto application
+#ifdef USE_DISPLAY
   WS._ui_helper->clear_scr_load();
-  #endif
+#endif
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
