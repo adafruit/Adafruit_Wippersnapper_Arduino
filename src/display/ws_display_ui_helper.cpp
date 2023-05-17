@@ -204,7 +204,10 @@ void ws_display_ui_helper::show_scr_load() {
 */
 /**************************************************************************/
 void ws_display_ui_helper::clear_scr_load() {
+  _dispDriver->esp32_lvgl_acquire();
+  // Delete icons
   lv_obj_del(lblStatusText);
+  lv_obj_del(lblIconWiFi);
   lv_obj_del(lblIconFile);
   lv_obj_del(labelTurtleBar);
   lv_obj_del(labelCloudBar);
@@ -216,6 +219,7 @@ void ws_display_ui_helper::clear_scr_load() {
   // Stop the loading tip timer and delete the label
   remove_tip_timer();
   lv_obj_del(lblTipText);
+  _dispDriver->esp32_lvgl_release();
 }
 
 /**************************************************************************/

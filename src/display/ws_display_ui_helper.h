@@ -45,7 +45,6 @@ static lv_obj_t *lblIconFile;
 static lv_obj_t *lblIconWiFi;
 static lv_obj_t *labelTurtleBar;
 static lv_obj_t *labelCloudBar;
-static lv_obj_t *labelCircleBar;
 static lv_obj_t *lblStatusText;
 static lv_obj_t *lblTipText;
 // Styles

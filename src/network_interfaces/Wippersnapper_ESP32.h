@@ -42,11 +42,7 @@ public:
   Wippersnapper_ESP32() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
-    #ifndef CONFIG_IDF_TARGET_ESP32S2
     _mqtt_client = new WiFiClientSecure;
-    #else
-    _mqtt_client = new WiFiClient;
-    #endif
   }
 
   /**************************************************************************/
@@ -150,13 +146,10 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     WS._mqttBrokerURL = "io.adafruit.com";
-    
-    #ifndef CONFIG_IDF_TARGET_ESP32S2
     _mqtt_client->setCACert(_aio_root_ca_prod);
-    #endif
 
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, 1883,
+        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, 8883,
                                  clientID, WS._username, WS._key);
   }
 
@@ -191,11 +184,7 @@ protected:
   const char *_ssid;              ///< WiFi SSID
   const char *_pass;              ///< WiFi password
   const char *_mqttBrokerURL;     ///< MQTT broker URL
-  #ifndef CONFIG_IDF_TARGET_ESP32S2
   WiFiClientSecure *_mqtt_client; ///< Pointer to a WiFi client object (TLS/SSL)
-  #else
-  WiFiClient *_mqtt_client; ///< Pointer to a WiFi client object (non-TLS/SSL)
-  #endif
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
