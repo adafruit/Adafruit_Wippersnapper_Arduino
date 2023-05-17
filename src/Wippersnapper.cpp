@@ -104,11 +104,10 @@ void Wippersnapper::provision() {
   _littleFS = new WipperSnapper_LittleFS();
 #endif
 
-  // TODO: Add checks around display init.
+
+  #ifdef USE_DISPLAY
   // Initialize the display
   displayConfig config = WS._fileSystem->parseDisplayConfig();
-  // TODO: Need error boundary checks and signaling around
-  // display initialization if it doesnt exist!
   WS._display = new ws_display_driver(config);
   // Begin display
   if (!WS._display->begin())
@@ -117,12 +116,12 @@ void Wippersnapper::provision() {
                                                      // revert to non-display?
                                                      // Where do we log this?
   WS._display->enableLogging();
-
   // UI Setup
   WS._ui_helper = new ws_display_ui_helper(WS._display);
   WS._ui_helper->set_bg_black();
   WS._ui_helper->show_scr_load();
   WS._ui_helper->set_label_status("Validating Credentials...");
+  #endif
 
   if (psramInit()) {
     WS_DEBUG_PRINTLN("PSRAM INIT: OK");
@@ -141,8 +140,11 @@ void Wippersnapper::provision() {
 
   // Set device's wireless credentials
   set_ssid_pass();
+
+  #ifdef USE_DISPLAY
   WS._ui_helper->set_label_status("");
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
+  #endif
 }
 
 /**************************************************************************/
@@ -2001,7 +2003,9 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
+        #ifdef USE_DISPLAY
         WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+        #endif
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
@@ -2010,7 +2014,9 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_NETWORK:
       WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
       // TODO: Pass in SSID as a string
+      #ifdef USE_DISPLAY
       WS._ui_helper->set_label_status("Connecting to WiFi...");
+      #endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       // TODO: add signaling for display in check below
@@ -2067,9 +2073,11 @@ void Wippersnapper::runNetFSM() {
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
+        #ifdef USE_DISPLAY
         WS._ui_helper->show_scr_error(
             "CONNECTION ERROR",
-            "Unable to connect to Adafruit.io, rebooting in N seconds...");
+            "Unable to connect to Adafruit.io, rebooting in 5 seconds...");
+        #endif
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
@@ -2358,8 +2366,10 @@ void Wippersnapper::connect() {
   runNetFSM();
   WS.feedWDT();
 
+  #ifdef USE_DISPLAY
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
   WS._ui_helper->set_label_status("Registering device with IO...");
+  #endif
 
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
@@ -2383,9 +2393,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   // goto application
-  WS_DEBUG_PRINT("Clearing Screen...");
+  #ifdef USE_DISPLAY
   WS._ui_helper->clear_scr_load();
-  WS_DEBUG_PRINTLN("Cleared!");
+  #endif
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
