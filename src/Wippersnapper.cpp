@@ -124,11 +124,6 @@ void Wippersnapper::provision() {
   WS._ui_helper->set_label_status("Validating Credentials...");
   #endif
 
-  if (psramInit()) {
-    WS_DEBUG_PRINTLN("PSRAM INIT: OK");
-  } else {
-    WS_DEBUG_PRINTLN("PSRAM INIT: FAIL");
-  }
 
 // TODO: Add display error modes within parseSecrets()
 #ifdef USE_TINYUSB
