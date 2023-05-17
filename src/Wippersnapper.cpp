@@ -116,6 +116,7 @@ void Wippersnapper::provision() {
                                                      // revert to non-display?
                                                      // Where do we log this?
   WS._display->enableLogging();
+  releaseStatusLED(); // don't use status LED if we are using the display
   // UI Setup
   WS._ui_helper = new ws_display_ui_helper(WS._display);
   WS._ui_helper->set_bg_black();
