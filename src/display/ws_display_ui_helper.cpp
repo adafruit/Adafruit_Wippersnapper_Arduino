@@ -222,6 +222,32 @@ void ws_display_ui_helper::clear_scr_load() {
   _dispDriver->esp32_lvgl_release();
 }
 
+
+/**************************************************************************/
+/*!
+    @brief    Build and display the activity screen
+*/
+/**************************************************************************/
+void ws_display_ui_helper::show_scr_activity() {
+    _dispDriver->esp32_lvgl_acquire();
+
+    // TODO
+    // Add a status bar to the top of the screen
+
+    // Add a textarea to screen
+    lv_obj_t * ta = lv_textarea_create(lv_scr_act());
+    // Set textarea properties
+    lv_obj_set_style_bg_color(ta, lv_color_black(), LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ta, LV_OPA_COVER, 0);
+    lv_obj_align(ta, LV_ALIGN_TOP_MID, 0, 10);
+
+    // try adding text
+    lv_textarea_add_text(ta, "insert this text\n");
+    lv_textarea_add_text(ta, "insert this text2");
+
+    _dispDriver->esp32_lvgl_release();
+}
+
 /**************************************************************************/
 /*!
     @brief    Build and display an error screen.

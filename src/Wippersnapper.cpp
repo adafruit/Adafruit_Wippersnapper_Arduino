@@ -2040,15 +2040,17 @@ void Wippersnapper::runNetFSM() {
       }
 
       // Validate connection
-      if (networkStatus() != WS_NET_CONNECTED)
+      if (networkStatus() != WS_NET_CONNECTED) {
 #ifdef USE_DISPLAY
         WS._ui_helper->show_scr_error(
             "CONNECTION ERROR",
             "Unable to connect to WiFi Network. Please check that you entered "
             "the WiFi credentials correctly. Rebooting in 5 seconds...");
 #endif
-      haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
-                WS_LED_STATUS_WIFI_CONNECTING);
+        haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
+                  WS_LED_STATUS_WIFI_CONNECTING);
+      }
+
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
@@ -2394,6 +2396,7 @@ void Wippersnapper::connect() {
 // goto application
 #ifdef USE_DISPLAY
   WS._ui_helper->clear_scr_load();
+  WS._ui_helper->show_scr_activity();
 #endif
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(

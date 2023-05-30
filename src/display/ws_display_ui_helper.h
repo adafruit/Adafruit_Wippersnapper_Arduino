@@ -94,6 +94,7 @@ public:
   void set_bg_black();
   void show_scr_load();
   void clear_scr_load();
+  void show_scr_activity();
   void set_load_bar_icon_complete(loadBarIcons iconType);
   void set_label_status(const char *text); // callback ui help?
   void remove_tip_timer();
