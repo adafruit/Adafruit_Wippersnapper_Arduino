@@ -70,9 +70,16 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     if (pinName == STATUS_LED_PIN)
       releaseStatusLED();
 #endif
+    pinMode(pinName, OUTPUT);
+
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
-    pinMode(pinName, OUTPUT);
+    
+    char buffer[100];
+    snprintf(buffer, 100, "[Pin] Configured Digital Output on D%u", pinName);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
+
 // Initialize LOW
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
     // The Adafruit Feather ESP8266's built-in LED is reverse wired so setting
