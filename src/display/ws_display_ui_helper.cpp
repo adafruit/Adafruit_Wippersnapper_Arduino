@@ -329,8 +329,68 @@ void ws_display_ui_helper::build_scr_activity() {
   lv_style_init(styleTerminalLabel);
   lv_style_set_text_color(styleTerminalLabel, lv_color_white());
   lv_obj_add_style(terminalLabel, styleTerminalLabel, LV_PART_MAIN);
-  lv_label_set_text_static(terminalLabel, consoleTextBuf);
+  lv_label_set_text_static(terminalLabel, terminalTextBuffer);
   lv_obj_move_background(terminalLabel);
 
+  _dispDriver->esp32_lvgl_release();
+}
+
+/**************************************************************************/
+/*!
+    @brief    Adds a line of text on the terminal label and displays it.
+    @param    text
+              A line of text to display on the terminal.
+    @note     Reference:
+   https://github.com/lvgl/lv_demos/blob/release/v6/lv_apps/terminal/terminal.c
+*/
+/**************************************************************************/
+void ws_display_ui_helper::addToTerminal(const char *text) {
+  // Calculate text size
+  size_t txt_len = strlen(text);
+  size_t old_len = strlen(terminalTextBuffer);
+
+  // If the data is longer then the terminal ax size show the last part of data
+  if (txt_len > MAX_CONSOLE_TEXT_LEN) {
+    text += (txt_len - MAX_CONSOLE_TEXT_LEN);
+    txt_len = MAX_CONSOLE_TEXT_LEN;
+    old_len = 0;
+  }
+
+  // If the text become too long 'forget' the oldest lines
+  else if (old_len + txt_len > MAX_CONSOLE_TEXT_LEN) {
+    uint16_t new_start;
+    for (new_start = 0; new_start < old_len; new_start++) {
+      if (terminalTextBuffer[new_start] == '\n') {
+        if (new_start >= txt_len) {
+          while (terminalTextBuffer[new_start] == '\n' ||
+                 terminalTextBuffer[new_start] == '\r')
+            new_start++;
+          break;
+        }
+      }
+    }
+
+    // If it wasn't able to make enough space on line breaks simply forget the
+    // oldest characters
+    if (new_start == old_len) {
+      new_start = old_len - (MAX_CONSOLE_TEXT_LEN - txt_len);
+    }
+
+    // Move the remaining text to the beginning
+    uint16_t j;
+    for (j = new_start; j < old_len; j++) {
+      terminalTextBuffer[j - new_start] = terminalTextBuffer[j];
+    }
+    old_len = old_len - new_start;
+    terminalTextBuffer[old_len] = '\0';
+  }
+
+  // Copy new text to the text buffer
+  memcpy(&terminalTextBuffer[old_len], text, txt_len);
+  terminalTextBuffer[old_len + txt_len] = '\0';
+
+  // Update terminal label
+  _dispDriver->esp32_lvgl_acquire();
+  lv_label_set_text_static(terminalLabel, terminalTextBuffer);
   _dispDriver->esp32_lvgl_release();
 }

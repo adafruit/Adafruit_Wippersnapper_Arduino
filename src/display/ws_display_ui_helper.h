@@ -92,8 +92,9 @@ enum loadBarIcons {
 static const char *loading_tips[4] = {
     WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3,
     WS_LOADING_TIP_4}; ///< Holds the loading "tips"
-static char consoleTextBuf[MAX_CONSOLE_TEXT_LEN +
-                           1]; ///< Contains all text displayed on the terminal
+static char
+    terminalTextBuffer[MAX_CONSOLE_TEXT_LEN +
+                       1]; ///< Contains all text displayed on the terminal
 
 class ws_display_driver;
 
@@ -120,5 +121,6 @@ public:
 
 private:
   ws_display_driver *_dispDriver = nullptr;
+  void addToTerminal(const char *text);
 };
 #endif // WS_DISPLAY_UI_HELPER_H
