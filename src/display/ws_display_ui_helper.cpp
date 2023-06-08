@@ -224,6 +224,60 @@ void ws_display_ui_helper::clear_scr_load() {
 
 /**************************************************************************/
 /*!
+    @brief    Build and display an error screen.
+    @param    lblError
+              The generic error.
+    @param    lblDesc
+              Instructions or steps to resolve the error.
+*/
+/**************************************************************************/
+void ws_display_ui_helper::show_scr_error(const char *lblError,
+                                          const char *lblDesc) {
+  Serial.println("ws_display_ui_helper");
+  // clear the active loading screen (for now, will eventually expand to take in
+  // a scr obj.)
+
+  _dispDriver->esp32_lvgl_acquire();
+  clear_scr_load();
+
+  // Create error symbol
+  labelErrorTriangle = lv_label_create(lv_scr_act());
+  lv_label_set_text(labelErrorTriangle, SYMBOL_ERROR_TRIANGLE);
+
+  lv_style_init(&styleErrorTriangle);
+  lv_style_set_text_color(&styleErrorTriangle, lv_color_white());
+  lv_style_set_text_font(&styleErrorTriangle, &errorTriangle);
+  lv_obj_add_style(labelErrorTriangle, &styleErrorTriangle, LV_PART_MAIN);
+  lv_obj_align(labelErrorTriangle, LV_ALIGN_TOP_MID, 0, 5);
+
+  // Add error label (large)
+  labelErrorHeader = lv_label_create(lv_scr_act());
+  lv_label_set_text(labelErrorHeader, lblError);
+
+  lv_style_init(&styleLabelErrorLarge);
+  lv_style_set_text_color(&styleLabelErrorLarge, lv_color_white());
+  lv_style_set_text_font(&styleLabelErrorLarge, &lv_font_montserrat_18);
+  lv_obj_add_style(labelErrorHeader, &styleLabelErrorLarge, LV_PART_MAIN);
+  lv_obj_align(labelErrorHeader, LV_ALIGN_CENTER, 0, -5);
+
+  // Add error label (small)
+  labelErrorBody = lv_label_create(lv_scr_act());
+  lv_label_set_long_mode(labelErrorBody, LV_LABEL_LONG_WRAP);
+  lv_label_set_text(labelErrorBody, lblDesc);
+
+  lv_style_init(&styleLabelErrorSmall);
+  lv_style_set_text_color(&styleLabelErrorSmall, lv_color_white());
+  lv_style_set_text_font(&styleLabelErrorSmall, &lv_font_montserrat_12);
+  lv_obj_add_style(labelErrorBody, &styleLabelErrorSmall, LV_PART_MAIN);
+  // set_width used by LABEL_LONG_WRAP
+  lv_obj_set_width(labelErrorBody, 220);
+  lv_obj_align(labelErrorBody, LV_ALIGN_CENTER, -3, 55);
+
+  _dispDriver->esp32_lvgl_release();
+}
+
+/**************************************************************************/
+/*!
     @brief    Build and display the activity screen
 */
 /**************************************************************************/
@@ -277,60 +331,6 @@ void ws_display_ui_helper::build_scr_activity() {
   lv_obj_add_style(terminalLabel, styleTerminalLabel, LV_PART_MAIN);
   lv_label_set_text_static(terminalLabel, consoleTextBuf);
   lv_obj_move_background(terminalLabel);
-
-  _dispDriver->esp32_lvgl_release();
-}
-
-/**************************************************************************/
-/*!
-    @brief    Build and display an error screen.
-    @param    lblError
-              The generic error.
-    @param    lblDesc
-              Instructions or steps to resolve the error.
-*/
-/**************************************************************************/
-void ws_display_ui_helper::show_scr_error(const char *lblError,
-                                          const char *lblDesc) {
-  Serial.println("ws_display_ui_helper");
-  // clear the active loading screen (for now, will eventually expand to take in
-  // a scr obj.)
-
-  _dispDriver->esp32_lvgl_acquire();
-  clear_scr_load();
-
-  // Create error symbol
-  labelErrorTriangle = lv_label_create(lv_scr_act());
-  lv_label_set_text(labelErrorTriangle, SYMBOL_ERROR_TRIANGLE);
-
-  lv_style_init(&styleErrorTriangle);
-  lv_style_set_text_color(&styleErrorTriangle, lv_color_white());
-  lv_style_set_text_font(&styleErrorTriangle, &errorTriangle);
-  lv_obj_add_style(labelErrorTriangle, &styleErrorTriangle, LV_PART_MAIN);
-  lv_obj_align(labelErrorTriangle, LV_ALIGN_TOP_MID, 0, 5);
-
-  // Add error label (large)
-  labelErrorHeader = lv_label_create(lv_scr_act());
-  lv_label_set_text(labelErrorHeader, lblError);
-
-  lv_style_init(&styleLabelErrorLarge);
-  lv_style_set_text_color(&styleLabelErrorLarge, lv_color_white());
-  lv_style_set_text_font(&styleLabelErrorLarge, &lv_font_montserrat_18);
-  lv_obj_add_style(labelErrorHeader, &styleLabelErrorLarge, LV_PART_MAIN);
-  lv_obj_align(labelErrorHeader, LV_ALIGN_CENTER, 0, -5);
-
-  // Add error label (small)
-  labelErrorBody = lv_label_create(lv_scr_act());
-  lv_label_set_long_mode(labelErrorBody, LV_LABEL_LONG_WRAP);
-  lv_label_set_text(labelErrorBody, lblDesc);
-
-  lv_style_init(&styleLabelErrorSmall);
-  lv_style_set_text_color(&styleLabelErrorSmall, lv_color_white());
-  lv_style_set_text_font(&styleLabelErrorSmall, &lv_font_montserrat_12);
-  lv_obj_add_style(labelErrorBody, &styleLabelErrorSmall, LV_PART_MAIN);
-  // set_width used by LABEL_LONG_WRAP
-  lv_obj_set_width(labelErrorBody, 220);
-  lv_obj_align(labelErrorBody, LV_ALIGN_CENTER, -3, 55);
 
   _dispDriver->esp32_lvgl_release();
 }

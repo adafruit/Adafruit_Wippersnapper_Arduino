@@ -21,25 +21,22 @@
 #include "ws_display_tooltips.h"
 #include <lvgl.h>
 
-// External Fonts
+/**********************
+ *      MACROS
+ **********************/
+#define MAX_CONSOLE_TEXT_LEN 430 ///< Maximum text length on the console
+/* External fonts and symbols */
 #define SYMBOL_CODE "\xEF\x87\x89"       ///< Symbol code for file icon
 #define SYMBOL_WIFI "\xEF\x87\xAB"       ///< Symbol code for WiFi icon
 #define SYMBOL_TURTLE30PX "\xEF\x9C\xA6" ///< Symbol code for turtle icon
 #define SYMBOL_CLOUD "\xEF\x83\x82"      ///< Symbol code for cloud icon
 #define SYMBOL_ERROR_TRIANGLE                                                  \
   "\xEF\x81\xB1" ///< Symbol code for error triangle icon
-LV_FONT_DECLARE(errorTriangle);
-LV_FONT_DECLARE(file);
-LV_FONT_DECLARE(wifi_30px);
-LV_FONT_DECLARE(cloud_30px);
-LV_FONT_DECLARE(turtle_30px);
-LV_FONT_DECLARE(circle_30px);
 
-// Images
-LV_IMG_DECLARE(ws_icon_100px);
-
-/* Screen: Loading */
-// Objects
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+/* Loading screen */
 static lv_obj_t *imgWSLogo;
 static lv_obj_t *lblIconFile;
 static lv_obj_t *lblIconWiFi;
@@ -47,34 +44,42 @@ static lv_obj_t *labelTurtleBar;
 static lv_obj_t *labelCloudBar;
 static lv_obj_t *lblStatusText;
 static lv_obj_t *lblTipText;
-// Styles
 static lv_style_t styleIconFile;
 static lv_style_t styleIconWiFi;
 static lv_style_t styleIconTurtle30px;
 static lv_style_t styleIconCloud;
 static lv_style_t styleIconCheckmark;
 
-/* Screen: Error */
-// Objects
+/* Error screen */
 static lv_obj_t *labelErrorTriangle;
 static lv_obj_t *labelErrorHeader;
 static lv_obj_t *labelErrorBody;
-// Styles
 static lv_style_t styleErrorTriangle;
 static lv_style_t styleLabelErrorLarge;
 static lv_style_t styleLabelErrorSmall;
 
-/* Screen: Activity */
-#define MAX_CONSOLE_TEXT_LEN 430
-static char consoleTextBuf[MAX_CONSOLE_TEXT_LEN + 1]; // + '\0'
-// Objects
+/* Activity screen */
 static lv_obj_t *canvasStatusBar;
 static lv_draw_rect_dsc_t *rect_dsc;
 static lv_obj_t *statusbar_icon_bat;
 static lv_obj_t *statusbar_icon_wifi;
 static lv_obj_t *terminalLabel;
-// Styles
 static lv_style_t *styleTerminalLabel;
+
+/**********************
+ *  IMAGE DECLARE
+ **********************/
+LV_FONT_DECLARE(errorTriangle);
+LV_FONT_DECLARE(file);
+LV_FONT_DECLARE(wifi_30px);
+LV_FONT_DECLARE(cloud_30px);
+LV_FONT_DECLARE(turtle_30px);
+LV_FONT_DECLARE(circle_30px);
+
+/**********************
+ *  Timers
+ **********************/
+static lv_timer_t *timerLoadTips;
 
 enum loadBarIcons {
   loadBarIconFile,
@@ -84,11 +89,11 @@ enum loadBarIcons {
   loadBarIconCheckmark
 }; ///< Icon names for use by set_load_bar_icon_complete
 
-// holds all the loading tips
-static const char *loading_tips[4] = {WS_LOADING_TIP_1, WS_LOADING_TIP_2,
-                                      WS_LOADING_TIP_3, WS_LOADING_TIP_4};
-
-static lv_timer_t *timerLoadTips;
+static const char *loading_tips[4] = {
+    WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3,
+    WS_LOADING_TIP_4}; ///< Holds the loading "tips"
+static char consoleTextBuf[MAX_CONSOLE_TEXT_LEN +
+                           1]; ///< Contains all text displayed on the terminal
 
 class ws_display_driver;
 
