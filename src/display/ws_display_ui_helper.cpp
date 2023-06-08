@@ -337,6 +337,18 @@ void ws_display_ui_helper::build_scr_activity() {
 
 /**************************************************************************/
 /*!
+    @brief    Add text on the terminal label and displays it.
+    @param    text
+              Text to display on the terminal, should end in "\n"
+*/
+/**************************************************************************/
+void ws_display_ui_helper::add_text_to_terminal(const char *text) {
+  snprintf(terminalTextBuffer, 256, text);
+  addToTerminal(terminalTextBuffer);
+}
+
+/**************************************************************************/
+/*!
     @brief    Adds a line of text on the terminal label and displays it.
     @param    text
               A line of text to display on the terminal.

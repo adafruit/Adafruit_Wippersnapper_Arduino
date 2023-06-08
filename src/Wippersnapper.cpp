@@ -2161,6 +2161,7 @@ void Wippersnapper::pingBroker() {
   if (millis() > (_prv_ping + (WS_KEEPALIVE_INTERVAL_MS -
                                (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
     WS_DEBUG_PRINTLN("PING!");
+    WS._ui_helper->add_text_to_terminal("[NET] Pinging IO..OK!");
     WS._mqtt->ping();
     _prv_ping = millis();
   }
