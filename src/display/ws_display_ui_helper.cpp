@@ -222,30 +222,63 @@ void ws_display_ui_helper::clear_scr_load() {
   _dispDriver->esp32_lvgl_release();
 }
 
-
 /**************************************************************************/
 /*!
     @brief    Build and display the activity screen
 */
 /**************************************************************************/
-void ws_display_ui_helper::show_scr_activity() {
-    _dispDriver->esp32_lvgl_acquire();
+void ws_display_ui_helper::build_scr_activity() {
+  _dispDriver->esp32_lvgl_acquire();
 
-    // TODO
-    // Add a status bar to the top of the screen
+  // add canvas to create a status bar
+  canvasStatusBar = lv_canvas_create(lv_scr_act());
+  static uint8_t buffer[LV_CANVAS_BUF_SIZE_TRUE_COLOR(240, 25)];
+  lv_canvas_set_buffer(canvasStatusBar, buffer, 240, 25, LV_IMG_CF_TRUE_COLOR);
+  lv_canvas_fill_bg(canvasStatusBar, lv_color_black(), LV_OPA_COVER);
+  // draw rectangle on the canvas
+  rect_dsc->bg_color = lv_palette_main(LV_PALETTE_GREY);
+  rect_dsc->bg_opa = LV_OPA_COVER;
+  lv_draw_rect_dsc_init(rect_dsc);
+  lv_canvas_draw_rect(canvasStatusBar, 0, 0, 240, 25, rect_dsc);
 
-    // Add a textarea to screen
-    lv_obj_t * ta = lv_textarea_create(lv_scr_act());
-    // Set textarea properties
-    lv_obj_set_style_bg_color(ta, lv_color_black(), LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ta, LV_OPA_COVER, 0);
-    lv_obj_align(ta, LV_ALIGN_TOP_MID, 0, 10);
+  // add battery icon to status bar
+  // Future TODO: Optional timer cb funcn to check battery level on some boards
+  statusbar_icon_bat = lv_label_create(lv_scr_act());
+  lv_label_set_text(statusbar_icon_bat, LV_SYMBOL_BATTERY_FULL);
+  lv_obj_align(statusbar_icon_bat, LV_ALIGN_TOP_RIGHT, -5, 6);
 
-    // try adding text
-    lv_textarea_add_text(ta, "insert this text\n");
-    lv_textarea_add_text(ta, "insert this text2");
+  // add WiFi icon to status bar
+  statusbar_icon_wifi = lv_label_create(lv_scr_act());
+  lv_label_set_text(statusbar_icon_wifi, LV_SYMBOL_WIFI);
+  lv_obj_align(statusbar_icon_wifi, LV_ALIGN_TOP_RIGHT, -30, 5);
 
-    _dispDriver->esp32_lvgl_release();
+  // add turtle icon to status bar
+  // TODO: Maybe we'll just write WipperSnapper here instead?
+  /*   lv_obj_t *labelTurtleBar = lv_label_create(lv_scr_act());
+    lv_label_set_text(labelTurtleBar, SYMBOL_TURTLE);
+    static lv_style_t styleIconTurtle30px;
+    lv_style_init(&styleIconTurtle30px);
+    lv_style_set_text_color(&styleIconTurtle30px,
+                            lv_palette_main(LV_PALETTE_GREEN));
+    lv_style_set_text_font(&styleIconTurtle30px, &turtle_20);
+    lv_obj_add_style(labelTurtleBar, &styleIconTurtle30px,
+                     LV_PART_MAIN);
+    lv_obj_align(labelTurtleBar, LV_ALIGN_TOP_LEFT, 5, 5); */
+
+  // add a label to hold the terminal text
+  // TODO: Still have overlap between the top console text and the
+  // status bar that we need to remove before release
+  terminalLabel = lv_label_create(lv_scr_act());
+  lv_obj_align(terminalLabel, LV_ALIGN_BOTTOM_LEFT, 3, 0);
+  lv_obj_set_width(terminalLabel, 230);
+  lv_label_set_long_mode(terminalLabel, LV_LABEL_LONG_WRAP);
+  lv_style_init(styleTerminalLabel);
+  lv_style_set_text_color(styleTerminalLabel, lv_color_white());
+  lv_obj_add_style(terminalLabel, styleTerminalLabel, LV_PART_MAIN);
+  lv_label_set_text_static(terminalLabel, consoleTextBuf);
+  lv_obj_move_background(terminalLabel);
+
+  _dispDriver->esp32_lvgl_release();
 }
 
 /**************************************************************************/

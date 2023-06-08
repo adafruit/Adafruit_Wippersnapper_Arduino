@@ -64,6 +64,18 @@ static lv_style_t styleErrorTriangle;
 static lv_style_t styleLabelErrorLarge;
 static lv_style_t styleLabelErrorSmall;
 
+/* Screen: Activity */
+#define MAX_CONSOLE_TEXT_LEN 430
+static char consoleTextBuf[MAX_CONSOLE_TEXT_LEN + 1]; // + '\0'
+// Objects
+static lv_obj_t *canvasStatusBar;
+static lv_draw_rect_dsc_t *rect_dsc;
+static lv_obj_t *statusbar_icon_bat;
+static lv_obj_t *statusbar_icon_wifi;
+static lv_obj_t *terminalLabel;
+// Styles
+static lv_style_t *styleTerminalLabel;
+
 enum loadBarIcons {
   loadBarIconFile,
   loadBarIconWifi,
@@ -94,7 +106,7 @@ public:
   void set_bg_black();
   void show_scr_load();
   void clear_scr_load();
-  void show_scr_activity();
+  void build_scr_activity();
   void set_load_bar_icon_complete(loadBarIcons iconType);
   void set_label_status(const char *text); // callback ui help?
   void remove_tip_timer();

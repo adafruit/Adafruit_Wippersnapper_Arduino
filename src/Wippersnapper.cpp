@@ -2396,7 +2396,7 @@ void Wippersnapper::connect() {
 // goto application
 #ifdef USE_DISPLAY
   WS._ui_helper->clear_scr_load();
-  WS._ui_helper->show_scr_activity();
+  WS._ui_helper->build_scr_activity();
 #endif
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
