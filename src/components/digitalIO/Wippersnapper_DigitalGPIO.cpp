@@ -74,11 +74,10 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 
     WS_DEBUG_PRINT("Configured digital output pin on D");
     WS_DEBUG_PRINTLN(pinName);
-    
+
     char buffer[100];
     snprintf(buffer, 100, "[Pin] Configured Digital Output on D%u\n", pinName);
     WS._ui_helper->add_text_to_terminal(buffer);
-
 
 // Initialize LOW
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
@@ -109,7 +108,9 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     WS_DEBUG_PRINTLN(periodMs);
 
     char buffer[100];
-    snprintf(buffer, 100, "[Pin] Configured Digital Input on D%u, polling every %lmS", pinName, periodMs);
+    snprintf(buffer, 100,
+             "[Pin] Configured Digital Input on D%u, polling every %lmS",
+             pinName, periodMs);
     WS._ui_helper->add_text_to_terminal(buffer);
 
     // attempt to allocate a pinName within _digital_input_pins[]
@@ -141,9 +142,9 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   WS_DEBUG_PRINT("Deinitializing digital pin ");
   WS_DEBUG_PRINTLN(pinName);
 
-    char buffer[100];
-    snprintf(buffer, 100, "[Pin] De-initialized D%u", pinName);
-    WS._ui_helper->add_text_to_terminal(buffer);
+  char buffer[100];
+  snprintf(buffer, 100, "[Pin] De-initialized D%u", pinName);
+  WS._ui_helper->add_text_to_terminal(buffer);
 
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
@@ -199,7 +200,9 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
   WS_DEBUG_PRINT(" to ");
   WS_DEBUG_PRINTLN(pinValue);
 
-
+  char buffer[100];
+  snprintf(buffer, 100, "[Pin] Writing %d to D%u", pinValue, pinName);
+  WS._ui_helper->add_text_to_terminal(buffer);
 
 // Write to the GPIO pin
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
@@ -235,6 +238,11 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
         // read the pin
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
 
+        char buffer[100];
+        snprintf(buffer, 100, "[Pin] Read D%u: %d",
+                 _digital_input_pins[i].pinName, pinVal);
+        WS._ui_helper->add_text_to_terminal(buffer);
+
         // Create new signal message
         wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg =
             wippersnapper_signal_v1_CreateSignalRequest_init_zero;
@@ -267,6 +275,11 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
         if (pinVal != _digital_input_pins[i].prvPinVal) {
           WS_DEBUG_PRINT("Executing state-based event on D");
           WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
+
+          char buffer[100];
+          snprintf(buffer, 100, "[Pin] Read D%u: %d",
+                   _digital_input_pins[i].pinName, pinVal);
+          WS._ui_helper->add_text_to_terminal(buffer);
 
           // Create new signal message
           wippersnapper_signal_v1_CreateSignalRequest _outgoingSignalMsg =
