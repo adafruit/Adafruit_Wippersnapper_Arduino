@@ -2161,7 +2161,8 @@ void Wippersnapper::pingBroker() {
   if (millis() > (_prv_ping + (WS_KEEPALIVE_INTERVAL_MS -
                                (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
     WS_DEBUG_PRINTLN("PING!");
-    WS._ui_helper->add_text_to_terminal("[NET] Pinging IO..OK!");
+    // TODO: Add back, is crashing currently
+    WS._ui_helper->add_text_to_terminal("[NET] Pinging IO...OK!\n");
     WS._mqtt->ping();
     _prv_ping = millis();
   }
@@ -2396,12 +2397,15 @@ void Wippersnapper::connect() {
 
 // goto application
 #ifdef USE_DISPLAY
+  WS_DEBUG_PRINTLN("Clearing loading screen...");
   WS._ui_helper->clear_scr_load();
+  WS_DEBUG_PRINTLN("building activity screen...");
   WS._ui_helper->build_scr_activity();
 #endif
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
+
 }
 
 /**************************************************************************/

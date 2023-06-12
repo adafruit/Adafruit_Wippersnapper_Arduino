@@ -1,7 +1,7 @@
 /*!
  * @file ws_display_ui_helper.h
  *
- * LVGL "helper" class for WipperSnapper.
+ * LVGL UI Helper class for WipperSnapper
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -63,8 +63,9 @@ static lv_obj_t *canvasStatusBar;
 static lv_draw_rect_dsc_t *rect_dsc;
 static lv_obj_t *statusbar_icon_bat;
 static lv_obj_t *statusbar_icon_wifi;
+//static lv_obj_t *labelTurtleBar;
 static lv_obj_t *terminalLabel;
-static lv_style_t *styleTerminalLabel;
+static lv_style_t styleTerminalLabel;
 
 /**********************
  *  IMAGE DECLARE
@@ -74,6 +75,7 @@ LV_FONT_DECLARE(file);
 LV_FONT_DECLARE(wifi_30px);
 LV_FONT_DECLARE(cloud_30px);
 LV_FONT_DECLARE(turtle_30px);
+LV_FONT_DECLARE(turtle_20);
 LV_FONT_DECLARE(circle_30px);
 
 /**********************
@@ -94,7 +96,7 @@ static const char *loading_tips[4] = {
     WS_LOADING_TIP_4}; ///< Holds the loading "tips"
 static char
     terminalTextBuffer[MAX_CONSOLE_TEXT_LEN +
-                       1]; ///< Contains all text displayed on the terminal
+                       1]; ///< Contains all text actively displayed on the terminal
 
 class ws_display_driver;
 
@@ -122,6 +124,6 @@ public:
 
 private:
   ws_display_driver *_dispDriver = nullptr;
-  void addToTerminal(const char *text);
+  void addToTerminal(const char *txt_in);
 };
 #endif // WS_DISPLAY_UI_HELPER_H

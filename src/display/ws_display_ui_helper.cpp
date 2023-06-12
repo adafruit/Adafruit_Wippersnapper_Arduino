@@ -1,7 +1,7 @@
 /*!
  * @file ws_display_ui_helper.cpp
  *
- * LVGL "helper" class for WipperSnapper.
+ * LVGL UI Helper class for WipperSnapper
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -25,8 +25,10 @@
 void lv_timer_tips_cb(lv_timer_t *timer) {
   Serial.println("Timer tips cb called");
   long tipNum = random(0, sizeof(loading_tips) / sizeof(loading_tips[0]));
+  // TODO: Why is acquire and release commented out here?
   // _dispDriver->esp32_lvgl_acquire();
   lv_label_set_text(lblTipText, loading_tips[tipNum]);
+  // TODO: Why is acquire and release commented out here?
   // _dispDriver->esp32_lvgl_release();
 }
 
@@ -285,52 +287,55 @@ void ws_display_ui_helper::build_scr_activity() {
   _dispDriver->esp32_lvgl_acquire();
 
   // add canvas to create a status bar
-  canvasStatusBar = lv_canvas_create(lv_scr_act());
+  lv_obj_t * canvas = lv_canvas_create(lv_scr_act());
   static uint8_t buffer[LV_CANVAS_BUF_SIZE_TRUE_COLOR(240, 25)];
-  lv_canvas_set_buffer(canvasStatusBar, buffer, 240, 25, LV_IMG_CF_TRUE_COLOR);
-  lv_canvas_fill_bg(canvasStatusBar, lv_color_black(), LV_OPA_COVER);
-  // draw rectangle on the canvas
-  rect_dsc->bg_color = lv_palette_main(LV_PALETTE_GREY);
-  rect_dsc->bg_opa = LV_OPA_COVER;
-  lv_draw_rect_dsc_init(rect_dsc);
-  lv_canvas_draw_rect(canvasStatusBar, 0, 0, 240, 25, rect_dsc);
+  lv_canvas_set_buffer(canvas, buffer, 240, 25, LV_IMG_CF_TRUE_COLOR);
+  lv_canvas_fill_bg(canvas, lv_color_black(), LV_OPA_COVER);
+  lv_draw_rect_dsc_t rect_dsc;
+  rect_dsc.bg_color = lv_palette_main(LV_PALETTE_GREY);
+  rect_dsc.bg_opa = LV_OPA_COVER;
+  lv_draw_rect_dsc_init(&rect_dsc);
+  lv_canvas_draw_rect(canvas, 0, 0, 240, 25, &rect_dsc);
 
-  // add battery icon to status bar
-  // Future TODO: Optional timer cb funcn to check battery level on some boards
+  // Add battery icon to status bar
+  // Future TODO: Optional timer to check battery level on some boards
+  // Note: FunHouse won't require this and should always be have a full battery displayed
   statusbar_icon_bat = lv_label_create(lv_scr_act());
   lv_label_set_text(statusbar_icon_bat, LV_SYMBOL_BATTERY_FULL);
   lv_obj_align(statusbar_icon_bat, LV_ALIGN_TOP_RIGHT, -5, 6);
 
-  // add WiFi icon to status bar
+  // Add WiFi icon to status bar
+  // Future TODO: Timer to check if we are still connected to WiFi levels every 2000ms
   statusbar_icon_wifi = lv_label_create(lv_scr_act());
   lv_label_set_text(statusbar_icon_wifi, LV_SYMBOL_WIFI);
   lv_obj_align(statusbar_icon_wifi, LV_ALIGN_TOP_RIGHT, -30, 5);
 
-  // add turtle icon to status bar
-  // TODO: Maybe we'll just write WipperSnapper here instead?
-  /*   lv_obj_t *labelTurtleBar = lv_label_create(lv_scr_act());
-    lv_label_set_text(labelTurtleBar, SYMBOL_TURTLE);
-    static lv_style_t styleIconTurtle30px;
-    lv_style_init(&styleIconTurtle30px);
-    lv_style_set_text_color(&styleIconTurtle30px,
-                            lv_palette_main(LV_PALETTE_GREEN));
-    lv_style_set_text_font(&styleIconTurtle30px, &turtle_20);
-    lv_obj_add_style(labelTurtleBar, &styleIconTurtle30px,
-                     LV_PART_MAIN);
-    lv_obj_align(labelTurtleBar, LV_ALIGN_TOP_LEFT, 5, 5); */
+  // Add Turtle icon to status bar
+  lv_obj_t *labelTurtleBar = lv_label_create(lv_scr_act());
+  lv_label_set_text(labelTurtleBar, SYMBOL_TURTLE30PX);
+  static lv_style_t styleIconTurtle30px;
+  lv_style_init(&styleIconTurtle30px);
+  lv_style_set_text_color(&styleIconTurtle30px,
+                          lv_palette_main(LV_PALETTE_GREEN));
+  lv_style_set_text_font(&styleIconTurtle30px, &turtle_20);
+  lv_obj_add_style(labelTurtleBar, &styleIconTurtle30px,
+                   LV_PART_MAIN);
+  lv_obj_align(labelTurtleBar, LV_ALIGN_TOP_LEFT, 5, 5);
 
-  // add a label to hold the terminal text
-  // TODO: Still have overlap between the top console text and the
-  // status bar that we need to remove before release
+  // Add a label to hold console text
+  // TODO: Still having some overlap between the top console text and the
+  // status bar.. this should be fixed in the sim. first before release
   terminalLabel = lv_label_create(lv_scr_act());
   lv_obj_align(terminalLabel, LV_ALIGN_BOTTOM_LEFT, 3, 0);
   lv_obj_set_width(terminalLabel, 230);
   lv_label_set_long_mode(terminalLabel, LV_LABEL_LONG_WRAP);
-  lv_style_init(styleTerminalLabel);
-  lv_style_set_text_color(styleTerminalLabel, lv_color_white());
-  lv_obj_add_style(terminalLabel, styleTerminalLabel, LV_PART_MAIN);
+  lv_style_init(&styleTerminalLabel);
+  lv_style_set_text_color(&styleTerminalLabel, lv_color_white());
+  lv_obj_add_style(terminalLabel, &styleTerminalLabel, LV_PART_MAIN);
   lv_label_set_text_static(terminalLabel, terminalTextBuffer);
   lv_obj_move_background(terminalLabel);
+
+  Serial.println("main app. screen built!");
 
   _dispDriver->esp32_lvgl_release();
 }
@@ -343,8 +348,10 @@ void ws_display_ui_helper::build_scr_activity() {
 */
 /**************************************************************************/
 void ws_display_ui_helper::add_text_to_terminal(const char *text) {
-  snprintf(terminalTextBuffer, 256, text);
-  addToTerminal(terminalTextBuffer);
+  Serial.println("add_text_to_terminal");
+  char txtBuffer[256]; // temporary text buffer for snprintf
+  snprintf(txtBuffer, 256, text);
+  addToTerminal(txtBuffer);
 }
 
 /**************************************************************************/
@@ -356,53 +363,52 @@ void ws_display_ui_helper::add_text_to_terminal(const char *text) {
    https://github.com/lvgl/lv_demos/blob/release/v6/lv_apps/terminal/terminal.c
 */
 /**************************************************************************/
-void ws_display_ui_helper::addToTerminal(const char *text) {
-  // Calculate text size
-  size_t txt_len = strlen(text);
-  size_t old_len = strlen(terminalTextBuffer);
+void ws_display_ui_helper::addToTerminal(const char * txt_in)
+{
+    // Calculate text size
+    size_t txt_len = strlen(txt_in);
+    size_t old_len = strlen(terminalTextBuffer);
 
-  // If the data is longer then the terminal ax size show the last part of data
-  if (txt_len > MAX_CONSOLE_TEXT_LEN) {
-    text += (txt_len - MAX_CONSOLE_TEXT_LEN);
-    txt_len = MAX_CONSOLE_TEXT_LEN;
-    old_len = 0;
-  }
+    // If the data is longer then the terminal ax size show the last part of data
+    if(txt_len > MAX_CONSOLE_TEXT_LEN) {
+        txt_in += (txt_len - MAX_CONSOLE_TEXT_LEN);
+        txt_len = MAX_CONSOLE_TEXT_LEN;
+        old_len = 0;
+    }
 
-  // If the text become too long 'forget' the oldest lines
-  else if (old_len + txt_len > MAX_CONSOLE_TEXT_LEN) {
-    uint16_t new_start;
-    for (new_start = 0; new_start < old_len; new_start++) {
-      if (terminalTextBuffer[new_start] == '\n') {
-        if (new_start >= txt_len) {
-          while (terminalTextBuffer[new_start] == '\n' ||
-                 terminalTextBuffer[new_start] == '\r')
-            new_start++;
-          break;
+    // If the text become too long 'forget' the oldest lines
+    else if(old_len + txt_len > MAX_CONSOLE_TEXT_LEN) {
+        uint16_t new_start;
+        for(new_start = 0; new_start < old_len; new_start++) {
+            if(terminalTextBuffer[new_start] == '\n') {
+                if(new_start >= txt_len) {
+                    while(terminalTextBuffer[new_start] == '\n' || terminalTextBuffer[new_start] == '\r') new_start++;
+                    break;
+                }
+            }
         }
-      }
+
+        // If it wasn't able to make enough space on line breaks simply forget the oldest characters
+        if(new_start == old_len) {
+            new_start = old_len - (MAX_CONSOLE_TEXT_LEN - txt_len);
+        }
+
+        // Move the remaining text to the beginning
+        uint16_t j;
+        for(j = new_start; j < old_len; j++) {
+            terminalTextBuffer[j - new_start] = terminalTextBuffer[j];
+        }
+        old_len = old_len - new_start;
+        terminalTextBuffer[old_len] = '\0';
+
     }
 
-    // If it wasn't able to make enough space on line breaks simply forget the
-    // oldest characters
-    if (new_start == old_len) {
-      new_start = old_len - (MAX_CONSOLE_TEXT_LEN - txt_len);
-    }
+    // Copy new text to the text buffer
+    memcpy(&terminalTextBuffer[old_len], txt_in, txt_len);
+    terminalTextBuffer[old_len + txt_len] = '\0';
 
-    // Move the remaining text to the beginning
-    uint16_t j;
-    for (j = new_start; j < old_len; j++) {
-      terminalTextBuffer[j - new_start] = terminalTextBuffer[j];
-    }
-    old_len = old_len - new_start;
-    terminalTextBuffer[old_len] = '\0';
-  }
-
-  // Copy new text to the text buffer
-  memcpy(&terminalTextBuffer[old_len], text, txt_len);
-  terminalTextBuffer[old_len + txt_len] = '\0';
-
-  // Update terminal label
-  _dispDriver->esp32_lvgl_acquire();
-  lv_label_set_text_static(terminalLabel, terminalTextBuffer);
-  _dispDriver->esp32_lvgl_release();
+    // Update label
+    _dispDriver->esp32_lvgl_acquire();
+    lv_label_set_text_static(terminalLabel, terminalTextBuffer);
+    _dispDriver->esp32_lvgl_release();
 }
