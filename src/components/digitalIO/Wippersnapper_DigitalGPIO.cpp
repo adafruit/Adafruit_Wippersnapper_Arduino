@@ -76,7 +76,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     WS_DEBUG_PRINTLN(pinName);
     
     char buffer[100];
-    snprintf(buffer, 100, "[Pin] Configured Digital Output on D%u", pinName);
+    snprintf(buffer, 100, "[Pin] Configured Digital Output on D%u\n", pinName);
     WS._ui_helper->add_text_to_terminal(buffer);
 
 
@@ -94,6 +94,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     WS_DEBUG_PRINT("Configuring digital input pin on D");
     WS_DEBUG_PRINT(pinName);
+
     if (pull == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
       WS_DEBUG_PRINTLN("with internal pull-up enabled");
       pinMode(pinName, INPUT_PULLUP);
@@ -106,6 +107,10 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     long periodMs = (long)period * 1000;
     WS_DEBUG_PRINT("Interval (ms):");
     WS_DEBUG_PRINTLN(periodMs);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[Pin] Configured Digital Input on D%u, polling every %lmS", pinName, periodMs);
+    WS._ui_helper->add_text_to_terminal(buffer);
 
     // attempt to allocate a pinName within _digital_input_pins[]
     for (int i = 0; i < _totalDigitalInputPins; i++) {
@@ -135,6 +140,11 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
     uint8_t pinName) {
   WS_DEBUG_PRINT("Deinitializing digital pin ");
   WS_DEBUG_PRINTLN(pinName);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[Pin] De-initialized D%u", pinName);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
     // de-allocate the pin within digital_input_pins[]
@@ -188,6 +198,8 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
   WS_DEBUG_PRINT(pinName);
   WS_DEBUG_PRINT(" to ");
   WS_DEBUG_PRINTLN(pinValue);
+
+
 
 // Write to the GPIO pin
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
