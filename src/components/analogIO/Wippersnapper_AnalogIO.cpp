@@ -261,12 +261,18 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   sprintf(outgoingSignalMsg.payload.pin_event.pin_name, "A%d", pinName);
 
   // Fill pinValue based on the analog read mode
+  char buffer[100];
   if (readMode ==
-      wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE)
+      wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE) {
     sprintf(outgoingSignalMsg.payload.pin_event.pin_value, "%u", pinValRaw);
-  else
+    snprintf(buffer, 100, "[Pin] A%d read: %u\n.", pinName, pinValRaw);
+  } else {
     sprintf(outgoingSignalMsg.payload.pin_event.pin_value, "%0.3f",
             pinValVolts);
+    snprintf(buffer, 100, "[Pin] A%d read: %0.2f\n.", pinName, pinValVolts);
+  }
+  // display analog pin read on terminal
+  WS._ui_helper->add_text_to_terminal(buffer);
 
   // Encode signal message
   pb_ostream_t stream =

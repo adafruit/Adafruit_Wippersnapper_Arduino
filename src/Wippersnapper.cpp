@@ -275,7 +275,7 @@ bool Wippersnapper::configAnalogInPinReq(
                                      pinMsg->analog_read_mode);
 
     char buffer[100];
-    snprintf(buffer, 100, "[Pin] Reading %s every %f seconds\n.",
+    snprintf(buffer, 100, "[Pin] Reading %s every %0.2f seconds\n.",
              pinMsg->pin_name, pinMsg->period);
     WS._ui_helper->add_text_to_terminal(buffer);
 
@@ -908,6 +908,8 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
                    &msgServoAttachReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachRequest");
+      WS._ui_helper->add_text_to_terminal(
+          "[Servo ERROR] Could not decode servo request from IO!\n");
       return false; // fail out if we can't decode the request
     }
     // execute servo attach request
@@ -917,6 +919,9 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
             atoi(servoPin), msgServoAttachReq.min_pulse_width,
             msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
+      WS._ui_helper->add_text_to_terminal(
+          "[Servo ERROR] Unable to attach servo to pin! Is it already in "
+          "use?\n");
       attached = false;
     } else {
       WS_DEBUG_PRINT("ATTACHED servo w/minPulseWidth: ");
@@ -925,6 +930,11 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
       WS_DEBUG_PRINT("uS on pin: ");
       WS_DEBUG_PRINTLN(servoPin);
+
+      char buffer[100];
+      snprintf(buffer, 100, "[Servo] Attached servo on pin %s\n.",
+               msgServoAttachReq.servo_pin);
+      WS._ui_helper->add_text_to_terminal(buffer);
     }
 
     // Create and fill a servo response message
@@ -974,6 +984,11 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINT("uS to servo on pin#: ");
     WS_DEBUG_PRINTLN(servoPin);
 
+    char buffer[100];
+    snprintf(buffer, 100, "[Servo] Writing pulse width of %u uS to pin %s\n.",
+             (int)msgServoWriteReq.pulse_width, msgServoWriteReq.servo_pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
     WS._servoComponent->servo_write(atoi(servoPin),
                                     (int)msgServoWriteReq.pulse_width);
   } else if (field->tag ==
@@ -992,8 +1007,14 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
 
     // execute servo detach request
     char *servoPin = msgServoDetachReq.servo_pin + 1;
-    WS_DEBUG_PRINT("Detaching servo on pin ");
+    WS_DEBUG_PRINT("Detaching servo from pin ");
     WS_DEBUG_PRINTLN(servoPin);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[Servo] Detaching from pin %s\n.",
+             msgServoDetachReq.servo_pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
     WS._servoComponent->servo_detach(atoi(servoPin));
   } else {
     WS_DEBUG_PRINTLN("Unable to decode servo message type!");
@@ -2414,7 +2435,6 @@ void Wippersnapper::connect() {
   runNetFSM();
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
-
 
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
