@@ -1077,6 +1077,8 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMAttachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR]: Could not decode pin attach request!\n");
       return false; // fail out if we can't decode the request
     }
 
@@ -1087,6 +1089,9 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
         (uint8_t)msgPWMAttachRequest.resolution);
     if (!attached) {
       WS_DEBUG_PRINTLN("ERROR: Unable to attach PWM pin");
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR]: Failed to attach PWM to pin! Is this pin already in "
+          "use?\n");
       attached = false;
     }
 
@@ -1114,6 +1119,12 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");
+
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Attached on pin %s\n.",
+             msgPWMResponse.payload.attach_response.pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Detach");
@@ -1124,11 +1135,19 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMDetachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMDetachRequest");
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR] Failed to decode pin detach request from IO!\n");
       return false; // fail out if we can't decode the request
     }
     // execute PWM pin detatch request
     char *pwmPin = msgPWMDetachRequest.pin + 1;
     WS._pwmComponent->detach(atoi(pwmPin));
+
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Detached on pin %s\n.",
+             msgPWMDetachRequest.pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_freq_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Tone");
@@ -1139,6 +1158,8 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMWriteFreqRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteFrequencyRequest");
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR] Failed to decode frequency write request from IO!\n");
       return false; // fail out if we can't decode the request
     }
 
@@ -1149,6 +1170,12 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS_DEBUG_PRINT("Hz to pin ");
     WS_DEBUG_PRINTLN(atoi(pwmPin));
     WS._pwmComponent->writeTone(atoi(pwmPin), msgPWMWriteFreqRequest.frequency);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Writing %u Hz to pin %s\n.",
+             msgPWMWriteFreqRequest.frequency, msgPWMWriteFreqRequest.pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Duty Cycle");
@@ -1160,12 +1187,21 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMWriteDutyCycleRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteDutyCycleRequest");
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR] Failed to decode duty cycle write request from IO!\n");
       return false; // fail out if we can't decode the request
     }
     // execute PWM duty cycle write request
     char *pwmPin = msgPWMWriteDutyCycleRequest.pin + 1;
     WS._pwmComponent->writeDutyCycle(
         atoi(pwmPin), (int)msgPWMWriteDutyCycleRequest.duty_cycle);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Writing duty cycle %d % to pin %s\n.",
+             (int)msgPWMWriteDutyCycleRequest.duty_cycle,
+             msgPWMWriteDutyCycleRequest.pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
   } else {
     WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
     return false;
