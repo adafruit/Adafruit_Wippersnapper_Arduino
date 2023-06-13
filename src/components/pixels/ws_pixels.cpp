@@ -264,6 +264,11 @@ bool ws_pixels::addStrand(
     WS_DEBUG_PRINT(pixelsCreateReqMsg->pixels_num);
     WS_DEBUG_PRINT(" on GPIO #");
     WS_DEBUG_PRINTLN(pixelsCreateReqMsg->pixels_pin_neopixel);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[Pixel] Added NeoPixel strand on Pin %s\n.", pixelsCreateReqMsg->pixels_pin_neopixel);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
     publishAddStrandResponse(true, pixelsCreateReqMsg->pixels_pin_neopixel);
   } else if (pixelsCreateReqMsg->pixels_type ==
              wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_DOTSTAR) {
@@ -298,6 +303,11 @@ bool ws_pixels::addStrand(
     WS_DEBUG_PRINT(strands[strandIdx].numPixels);
     WS_DEBUG_PRINT(" on Data GPIO #");
     WS_DEBUG_PRINTLN(strands[strandIdx].pinDotStarData);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[Pixel] Added NeoPixel strand on Pin %s\n.", pixelsCreateReqMsg->pixels_pin_neopixel);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
     publishAddStrandResponse(true, pixelsCreateReqMsg->pixels_pin_dotstar_data);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Invalid strand type provided!");
@@ -356,6 +366,10 @@ void ws_pixels::deleteStrand(
 
   WS_DEBUG_PRINT("Deleted strand on data pin ");
   WS_DEBUG_PRINTLN(pixelsDeleteMsg->pixels_pin_data);
+
+  char buffer[100];
+  snprintf(buffer, 100, "[Pixel] Deleted strand on pin %s\n.", pixelsDeleteMsg->pixels_pin_data);
+  WS._ui_helper->add_text_to_terminal(buffer);
 }
 
 /**************************************************************************/
@@ -407,6 +421,11 @@ void ws_pixels::fillStrand(
 
   WS_DEBUG_PRINT("Filling color: ");
   WS_DEBUG_PRINTLN(pixelsWriteMsg->pixels_color);
+
+  char buffer[100];
+  snprintf(buffer, 100, "[Pixel] Filling strand on pin %s with color %u\n.", pixelsWriteMsg->pixels_pin_data, pixelsWriteMsg->pixels_color);
+  WS._ui_helper->add_text_to_terminal(buffer);
+
   if (pixelsWriteMsg->pixels_type ==
       wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     strands[strandIdx].neoPixelPtr->fill(rgbColorGamma);

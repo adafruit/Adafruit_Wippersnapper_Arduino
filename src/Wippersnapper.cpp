@@ -1298,6 +1298,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
                    &msgPixelsCreateReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
                        "wippersnapper_pixels_v1_PixelsCreateRequest!");
+      WS._ui_helper->add_text_to_terminal("[Pixel] Error decoding message!\n");
       return false;
     }
 

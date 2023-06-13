@@ -109,7 +109,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 
     char buffer[100];
     snprintf(buffer, 100,
-             "[Pin] Configured Digital Input on D%u, polling every %lmS",
+             "[Pin] Configured Digital Input on D%u, polling every %lmS\n",
              pinName, periodMs);
     WS._ui_helper->add_text_to_terminal(buffer);
 
@@ -143,7 +143,7 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   WS_DEBUG_PRINTLN(pinName);
 
   char buffer[100];
-  snprintf(buffer, 100, "[Pin] De-initialized D%u", pinName);
+  snprintf(buffer, 100, "[Pin] De-initialized D%u\n", pinName);
   WS._ui_helper->add_text_to_terminal(buffer);
 
   if (direction ==
@@ -201,7 +201,7 @@ void Wippersnapper_DigitalGPIO::digitalWriteSvc(uint8_t pinName, int pinValue) {
   WS_DEBUG_PRINTLN(pinValue);
 
   char buffer[100];
-  snprintf(buffer, 100, "[Pin] Writing %d to D%u", pinValue, pinName);
+  snprintf(buffer, 100, "[Pin] Writing %d to D%u\n", pinValue, pinName);
   WS._ui_helper->add_text_to_terminal(buffer);
 
 // Write to the GPIO pin
@@ -239,7 +239,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
 
         char buffer[100];
-        snprintf(buffer, 100, "[Pin] Read D%u: %d",
+        snprintf(buffer, 100, "[Pin] Read D%u: %d\n",
                  _digital_input_pins[i].pinName, pinVal);
         WS._ui_helper->add_text_to_terminal(buffer);
 
@@ -277,7 +277,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
           WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
 
           char buffer[100];
-          snprintf(buffer, 100, "[Pin] Read D%u: %d",
+          snprintf(buffer, 100, "[Pin] Read D%u: %d\n",
                    _digital_input_pins[i].pinName, pinVal);
           WS._ui_helper->add_text_to_terminal(buffer);
 
