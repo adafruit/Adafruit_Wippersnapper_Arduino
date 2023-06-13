@@ -2394,6 +2394,14 @@ void Wippersnapper::connect() {
   runNetFSM();
   WS.feedWDT();
 
+// switch to monitor screen
+#ifdef USE_DISPLAY
+  WS_DEBUG_PRINTLN("Clearing loading screen...");
+  WS._ui_helper->clear_scr_load();
+  WS_DEBUG_PRINTLN("building monitor screen...");
+  WS._ui_helper->build_scr_monitor();
+#endif
+
   // Configure hardware
   WS.pinCfgCompleted = false;
   while (!WS.pinCfgCompleted) {
@@ -2407,13 +2415,7 @@ void Wippersnapper::connect() {
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
-// goto application
-#ifdef USE_DISPLAY
-  WS_DEBUG_PRINTLN("Clearing loading screen...");
-  WS._ui_helper->clear_scr_load();
-  WS_DEBUG_PRINTLN("building activity screen...");
-  WS._ui_helper->build_scr_activity();
-#endif
+
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");

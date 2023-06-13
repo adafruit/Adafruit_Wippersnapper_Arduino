@@ -280,10 +280,10 @@ void ws_display_ui_helper::show_scr_error(const char *lblError,
 
 /**************************************************************************/
 /*!
-    @brief    Build and display the activity screen
+    @brief    Build and display the monitor screen
 */
 /**************************************************************************/
-void ws_display_ui_helper::build_scr_activity() {
+void ws_display_ui_helper::build_scr_monitor() {
   _dispDriver->esp32_lvgl_acquire();
 
   // add canvas to create a status bar

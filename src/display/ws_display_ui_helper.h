@@ -114,7 +114,7 @@ public:
   void set_bg_black();
   void show_scr_load();
   void clear_scr_load();
-  void build_scr_activity();
+  void build_scr_monitor();
   void add_text_to_terminal(const char *text);
   void set_load_bar_icon_complete(loadBarIcons iconType);
   void set_label_status(const char *text); // callback ui help?
