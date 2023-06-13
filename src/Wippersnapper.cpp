@@ -273,10 +273,21 @@ bool Wippersnapper::configAnalogInPinReq(
       wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
     WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->pull,
                                      pinMsg->analog_read_mode);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[Pin] Reading %s every %f seconds\n.",
+             pinMsg->pin_name, pinMsg->period);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
   } else if (
       pinMsg->request_type ==
       wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
     WS._analogIO->deinitAnalogPin(pinMsg->direction, pin);
+
+    char buffer[100];
+    snprintf(buffer, 100, "[Pin] De-initialized pin %s\n.", pinMsg->pin_name);
+    WS._ui_helper->add_text_to_terminal(buffer);
+
   } else {
     WS_DEBUG_PRINTLN("ERROR: Could not decode analog pin request!");
     is_success = false;
@@ -2405,7 +2416,6 @@ void Wippersnapper::connect() {
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
-
 }
 
 /**************************************************************************/
