@@ -573,6 +573,141 @@ void WipperSnapper_Component_I2C::fillEventMessage(
   msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count++;
 }
 
+void WipperSnapper_Component_I2C::displayDeviceEventMessage(
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+    uint32_t sensorAddress) {
+
+  pb_size_t numEvents =
+      msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count;
+  WS_DEBUG_PRINT("total sensor events: ");
+  WS_DEBUG_PRINTLN(numEvents);
+
+  char buffer[100];
+  for (int i = 0; i < numEvents; i++) {
+    WS_DEBUG_PRINT("Sensor: ");
+    WS_DEBUG_PRINTLN(i);
+
+    switch (
+        msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].type) {
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f *C\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f %%rh\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f hPA\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f ppm\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f m\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f *C\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f lux\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f ppm\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f ppm\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f ppm\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f%%\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f V\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f\n.", sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f\n.", sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f * F\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f * F\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f Ohms\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f NOX\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX:
+      snprintf(
+          buffer, 100, "[I2C: %#12x] Sending Value to IO: %f VOC\n.",
+          sensorAddress,
+          msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value);
+      break;
+    default:
+      break;
+    }
+    WS._ui_helper->add_text_to_terminal(buffer);
+  }
+}
+
 /*******************************************************************************/
 /*!
     @brief    Queries all I2C device drivers for new values. Fills and sends an
@@ -1033,6 +1168,8 @@ void WipperSnapper_Component_I2C::update() {
     // Did this driver obtain data from sensors?
     if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count == 0)
       continue;
+
+    displayDeviceEventMessage(&msgi2cResponse, (*iter)->getI2CAddress());
 
     // Encode and publish I2CDeviceEvent message
     if (!encodePublishI2CDeviceEventMsg(&msgi2cResponse,
