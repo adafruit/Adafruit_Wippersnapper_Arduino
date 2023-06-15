@@ -15,6 +15,7 @@
 
 #include "ws_display_ui_helper.h"
 
+
 /**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.
@@ -25,12 +26,10 @@
 void lv_timer_tips_cb(lv_timer_t *timer) {
   Serial.println("Timer tips cb called");
   long tipNum = random(0, sizeof(loading_tips) / sizeof(loading_tips[0]));
-  // TODO: Why is acquire and release commented out here?
-  // _dispDriver->esp32_lvgl_acquire();
   lv_label_set_text(lblTipText, loading_tips[tipNum]);
-  // TODO: Why is acquire and release commented out here?
-  // _dispDriver->esp32_lvgl_release();
 }
+
+
 
 /**************************************************************************/
 /*!

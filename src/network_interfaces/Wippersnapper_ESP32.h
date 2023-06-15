@@ -172,6 +172,9 @@ public:
     }
   }
 
+
+
+
   /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper

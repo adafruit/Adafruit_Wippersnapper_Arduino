@@ -91,7 +91,7 @@ Wippersnapper::~Wippersnapper() {
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
-  // Filesystem should get the MAC address
+  // Obtain device's MAC address
   getMacAddr();
 
   // Initialize the status LED for signaling FS errors
@@ -177,6 +177,7 @@ void Wippersnapper::_disconnect() {
 void Wippersnapper::getMacAddr() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
+
 
 /****************************************************************************/
 /*!
@@ -275,7 +276,7 @@ bool Wippersnapper::configAnalogInPinReq(
                                      pinMsg->analog_read_mode);
 
     char buffer[100];
-    snprintf(buffer, 100, "[Pin] Reading %s every %0.2f seconds\n.",
+    snprintf(buffer, 100, "[Pin] Reading %s every %0.2f seconds\n",
              pinMsg->pin_name, pinMsg->period);
     WS._ui_helper->add_text_to_terminal(buffer);
 
@@ -2231,13 +2232,13 @@ void Wippersnapper::pingBroker() {
                                (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
     WS_DEBUG_PRINTLN("PING!");
     // TODO: Add back, is crashing currently
-    WS._ui_helper->add_text_to_terminal("[NET] Pinging IO...OK!\n");
     WS._mqtt->ping();
     _prv_ping = millis();
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
     WS_DEBUG_PRINTLN("STATUS LED BLINK KAT");
+    WS._ui_helper->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
     statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }
@@ -2438,9 +2439,10 @@ void Wippersnapper::connect() {
   runNetFSM();
   WS.feedWDT();
 
+
 #ifdef USE_DISPLAY
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
-  WS._ui_helper->set_label_status("Registering device with IO...");
+  WS._ui_helper->set_label_status("Sending device info...");
 #endif
 
   // Register hardware with Wippersnapper

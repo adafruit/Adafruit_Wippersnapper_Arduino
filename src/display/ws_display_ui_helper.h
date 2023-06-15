@@ -58,12 +58,11 @@ static lv_style_t styleErrorTriangle;
 static lv_style_t styleLabelErrorLarge;
 static lv_style_t styleLabelErrorSmall;
 
-/* Activity screen */
+/* Monitor screen */
 static lv_obj_t *canvasStatusBar;
 static lv_draw_rect_dsc_t *rect_dsc;
 static lv_obj_t *statusbar_icon_bat;
 static lv_obj_t *statusbar_icon_wifi;
-//static lv_obj_t *labelTurtleBar;
 static lv_obj_t *terminalLabel;
 static lv_style_t styleTerminalLabel;
 
@@ -125,5 +124,6 @@ public:
 private:
   ws_display_driver *_dispDriver = nullptr;
   void addToTerminal(const char *txt_in);
+  
 };
 #endif // WS_DISPLAY_UI_HELPER_H
