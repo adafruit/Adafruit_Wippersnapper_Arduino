@@ -107,7 +107,7 @@ void ws_display_ui_helper::set_load_bar_icon_complete(loadBarIcons iconType) {
     objIcon = labelCloudBar;
     break;
   case loadBarIconTurtle:
-    styleIcon = &styleIconTurtle30px;
+    styleIcon = &styleIconTurtleStatusbar;
     objIcon = labelTurtleBar;
     break;
   default:
@@ -168,11 +168,11 @@ void ws_display_ui_helper::show_scr_load() {
   labelTurtleBar = lv_label_create(lv_scr_act());
   lv_label_set_text(labelTurtleBar, SYMBOL_TURTLE30PX);
 
-  lv_style_init(&styleIconTurtle30px);
-  lv_style_set_text_color(&styleIconTurtle30px,
+  lv_style_init(&styleIconTurtleStatusbar);
+  lv_style_set_text_color(&styleIconTurtleStatusbar,
                           lv_palette_main(LV_PALETTE_GREY));
-  lv_style_set_text_font(&styleIconTurtle30px, &turtle_30px);
-  lv_obj_add_style(labelTurtleBar, &styleIconTurtle30px, LV_PART_MAIN);
+  lv_style_set_text_font(&styleIconTurtleStatusbar, &turtle_30px);
+  lv_obj_add_style(labelTurtleBar, &styleIconTurtleStatusbar, LV_PART_MAIN);
   lv_obj_align(labelTurtleBar, LV_ALIGN_TOP_LEFT, 180, iconBarYOffset);
 
   // Add status text label underneath the top loading bar
@@ -216,7 +216,7 @@ void ws_display_ui_helper::clear_scr_load() {
   lv_style_reset(&styleIconWiFi);
   lv_style_reset(&styleIconFile);
   lv_style_reset(&styleIconCloud);
-  lv_style_reset(&styleIconTurtle30px);
+  lv_style_reset(&styleIconTurtleStatusbar);
   // Stop the loading tip timer and delete the label
   remove_tip_timer();
   lv_obj_del(lblTipText);
@@ -312,12 +312,12 @@ void ws_display_ui_helper::build_scr_monitor() {
   // Add Turtle icon to status bar
   lv_obj_t *labelTurtleBar = lv_label_create(lv_scr_act());
   lv_label_set_text(labelTurtleBar, SYMBOL_TURTLE30PX);
-  static lv_style_t styleIconTurtle30px;
-  lv_style_init(&styleIconTurtle30px);
-  lv_style_set_text_color(&styleIconTurtle30px,
+  static lv_style_t styleIconTurtleStatusbar;
+  lv_style_init(&styleIconTurtleStatusbar);
+  lv_style_set_text_color(&styleIconTurtleStatusbar,
                           lv_palette_main(LV_PALETTE_GREEN));
-  lv_style_set_text_font(&styleIconTurtle30px, &turtle_20);
-  lv_obj_add_style(labelTurtleBar, &styleIconTurtle30px,
+  lv_style_set_text_font(&styleIconTurtleStatusbar, &turtle_16);
+  lv_obj_add_style(labelTurtleBar, &styleIconTurtleStatusbar,
                    LV_PART_MAIN);
   lv_obj_align(labelTurtleBar, LV_ALIGN_TOP_LEFT, 5, 5);
 

@@ -46,7 +46,7 @@ static lv_obj_t *lblStatusText;
 static lv_obj_t *lblTipText;
 static lv_style_t styleIconFile;
 static lv_style_t styleIconWiFi;
-static lv_style_t styleIconTurtle30px;
+static lv_style_t styleIconTurtleStatusbar;
 static lv_style_t styleIconCloud;
 static lv_style_t styleIconCheckmark;
 
@@ -74,7 +74,7 @@ LV_FONT_DECLARE(file);
 LV_FONT_DECLARE(wifi_30px);
 LV_FONT_DECLARE(cloud_30px);
 LV_FONT_DECLARE(turtle_30px);
-LV_FONT_DECLARE(turtle_20);
+LV_FONT_DECLARE(turtle_16);
 LV_FONT_DECLARE(circle_30px);
 
 /**********************
