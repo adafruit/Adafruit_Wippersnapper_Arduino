@@ -178,7 +178,6 @@ void Wippersnapper::getMacAddr() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-
 /****************************************************************************/
 /*!
     @brief    Sets up the MQTT client session.
@@ -1487,79 +1486,6 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 
 /**************************************************************************/
 /*!
-    @brief    Attempts to re-connect to the MQTT broker, retries with
-                an exponential backoff + jitter interval.
-*/
-/**************************************************************************/
-void retryMQTTConnection() {
-  // MQTT broker's connack return code
-  int8_t rc;
-  // amount of times we've attempted to re-connect to IO's MQTT broker
-  int retries = 0;
-  // maximum backoff time, in millis
-  double maxBackoff = 60000;
-  // current backoff time, in millis
-  double backoff;
-  // randomized jitter to prevent multi-client collisions
-  long jitter;
-
-  bool notConnected = true;
-  while (notConnected == true) {
-    WS_DEBUG_PRINTLN("Retrying connection...");
-    // attempt reconnection, save return code (rc)
-    rc = WS._mqtt->connect(WS._username, WS._key);
-    switch (rc) {
-    case WS_MQTT_CONNECTED:
-      WS_DEBUG_PRINTLN("Re-connected to IO MQTT!");
-      notConnected = false;
-      break;
-    case WS_MQTT_INVALID_PROTOCOL:
-      WS_DEBUG_PRINTLN("Invalid MQTT protocol");
-      break;
-    case WS_MQTT_INVALID_CID:
-      WS_DEBUG_PRINTLN("client ID rejected");
-      break;
-    case WS_MQTT_SERVICE_UNAVALIABLE:
-      WS_DEBUG_PRINTLN("MQTT service unavailable");
-      break;
-    case WS_MQTT_INVALID_USER_PASS:
-      WS_DEBUG_PRINTLN("malformed user/pass");
-      break;
-    case WS_MQTT_UNAUTHORIZED:
-      WS_DEBUG_PRINTLN("unauthorized");
-      break;
-    case WS_MQTT_THROTTLED:
-      WS_DEBUG_PRINTLN("ERROR: Throttled");
-      break;
-    case WS_MQTT_BANNED:
-      WS_DEBUG_PRINTLN("ERROR: Temporarily banned");
-      break;
-    default:
-      break;
-    }
-    retries++;
-    if (notConnected) {
-      WS_DEBUG_PRINTLN("Not connected, delaying...");
-      // calculate a jitter value btween 0ms and 100ms
-      jitter = random(0, 100);
-      // calculate exponential backoff w/jitter
-      backoff = (pow(2, retries) * 1000) + jitter;
-      backoff = min(backoff, maxBackoff);
-      WS_DEBUG_PRINT("Delaying for ");
-      WS_DEBUG_PRINT(backoff);
-      WS_DEBUG_PRINTLN("ms...");
-      // delay for backoff millis
-      delay(backoff);
-    } else {
-      WS_DEBUG_PRINTLN("Connected to MQTT broker!")
-      // reset backoff param and retries
-      backoff = 0;
-    }
-  }
-}
-
-/**************************************************************************/
-/*!
     @brief    Called when client receives a message published across the
                 Adafruit IO MQTT /error special topic.
     @param    errorData
@@ -2438,7 +2364,6 @@ void Wippersnapper::connect() {
   // Run the network fsm
   runNetFSM();
   WS.feedWDT();
-
 
 #ifdef USE_DISPLAY
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
