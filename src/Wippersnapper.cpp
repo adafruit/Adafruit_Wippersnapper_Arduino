@@ -1502,6 +1502,11 @@ void cbErrorTopic(char *errorData, uint16_t len) {
   if (!WS._mqtt->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
+
+#ifdef USE_DISPLAY
+  WS._ui_helper->show_scr_error("IO Ban Error", errorData);
+#endif
+
   // WDT reset
   for (;;) {
     delay(100);
@@ -1532,6 +1537,18 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("Device is throttled for ");
   WS_DEBUG_PRINT(throttleDuration);
   WS_DEBUG_PRINTLN("ms and blocking command execution.");
+
+#ifdef USE_DISPLAY
+  char buffer[100];
+  snprintf(
+      buffer, 100,
+      "[IO ERROR] Device is throttled for %d mS and blocking execution..\n.",
+      throttleDuration);
+  WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
+  // If throttle duration is less than the keepalive interval, delay for the
+  // full keepalive interval
   if (throttleDuration < WS_KEEPALIVE_INTERVAL_MS) {
     delay(WS_KEEPALIVE_INTERVAL_MS);
   } else {
@@ -1546,6 +1563,10 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
     }
   }
   WS_DEBUG_PRINTLN("Device is un-throttled, resumed command execution");
+#ifdef USE_DISPLAY
+  WS._ui_helper->add_text_to_terminal(
+      "[IO] Device is un-throttled, resuming...");
+#endif
 }
 
 /**************************************************************************/
