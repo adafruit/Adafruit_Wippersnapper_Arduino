@@ -1598,7 +1598,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINTLN("Device is un-throttled, resumed command execution");
 #ifdef USE_DISPLAY
   WS._ui_helper->add_text_to_terminal(
-      "[IO] Device is un-throttled, resuming...");
+      "[IO] Device is un-throttled, resuming...\n");
 #endif
 }
 
@@ -2093,6 +2093,7 @@ void Wippersnapper::runNetFSM() {
 
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
 #ifdef USE_DISPLAY
         WS._ui_helper->show_scr_error(
             "CONNECTION ERROR",
