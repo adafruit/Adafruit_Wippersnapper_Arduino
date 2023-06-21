@@ -2048,7 +2048,8 @@ void Wippersnapper::runNetFSM() {
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
 #ifdef USE_DISPLAY
-        WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+        if (WS._ui_helper->getLoadingState())
+          WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
 #endif
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
@@ -2058,7 +2059,8 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_NETWORK:
       WS_DEBUG_PRINTLN("Connecting to WiFi...");
 #ifdef USE_DISPLAY
-      WS._ui_helper->set_label_status("Connecting to WiFi...");
+      if (WS._ui_helper->getLoadingState())
+        WS._ui_helper->set_label_status("Connecting to WiFi...");
 #endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
@@ -2106,7 +2108,8 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_MQTT:
       WS_DEBUG_PRINTLN("Attempting to connect to IO...");
 #ifdef USE_DISPLAY
-      WS._ui_helper->set_label_status("Connecting to IO...");
+      if (WS._ui_helper->getLoadingState())
+        WS._ui_helper->set_label_status("Connecting to IO...");
 #endif
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect

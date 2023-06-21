@@ -123,6 +123,17 @@ void ws_display_ui_helper::set_load_bar_icon_complete(loadBarIcons iconType) {
 
 /**************************************************************************/
 /*!
+    @brief    Returns the loading screen's state.
+    @returns  The loading state, True if loading screen is active, 
+              False otherwise.
+*/
+/**************************************************************************/
+bool ws_display_ui_helper::getLoadingState() {
+    return _loadingState;
+}
+
+/**************************************************************************/
+/*!
     @brief    Builds and displays the loading screen.
 */
 /**************************************************************************/
@@ -196,6 +207,8 @@ void ws_display_ui_helper::show_scr_load() {
   timerLoadTips = lv_timer_create(lv_timer_tips_cb, 3000, NULL);
 
   _dispDriver->esp32_lvgl_release();
+
+  _loadingState = true; // using the loading screen state
 }
 
 /**************************************************************************/
@@ -221,6 +234,8 @@ void ws_display_ui_helper::clear_scr_load() {
   remove_tip_timer();
   lv_obj_del(lblTipText);
   _dispDriver->esp32_lvgl_release();
+
+  _loadingState = false; // no longer using the loading screen state
 }
 
 /**************************************************************************/

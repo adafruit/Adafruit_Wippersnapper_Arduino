@@ -118,12 +118,13 @@ public:
   void set_load_bar_icon_complete(loadBarIcons iconType);
   void set_label_status(const char *text); // callback ui help?
   void remove_tip_timer();
-
   void show_scr_error(const char *lblError, const char *lblDesc);
+  bool getLoadingState();
 
 private:
   ws_display_driver *_dispDriver = nullptr;
   void addToTerminal(const char *txt_in);
+  bool _loadingState = false;
   
 };
 #endif // WS_DISPLAY_UI_HELPER_H
