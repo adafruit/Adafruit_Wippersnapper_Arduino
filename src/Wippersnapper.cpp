@@ -2132,7 +2132,10 @@ void Wippersnapper::runNetFSM() {
 #ifdef USE_DISPLAY
         WS._ui_helper->show_scr_error(
             "CONNECTION ERROR",
-            "Unable to connect to Adafruit.io, rebooting in 5 seconds...");
+            "Unable to connect to Adafruit.io. If you are repeatedly having "
+            "this issue, please check that your IO Username and IO Key are set "
+            "correctly in the secrets file. This device will reboot in 5 "
+            "seconds...");
 #endif
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
