@@ -1227,9 +1227,9 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
 #ifdef USE_DISPLAY
     char buffer[100];
-    snprintf(buffer, 100, "[PWM] Writing duty cycle %d % to pin %s\n.",
+    snprintf(buffer, 100, "[PWM] Writing duty cycle %d % to pin %D\n.",
              (int)msgPWMWriteDutyCycleRequest.duty_cycle,
-             msgPWMWriteDutyCycleRequest.pin);
+             atoi(pwmPin));
     WS._ui_helper->add_text_to_terminal(buffer);
 #endif
 
