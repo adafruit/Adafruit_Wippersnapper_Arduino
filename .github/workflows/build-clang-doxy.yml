@@ -47,6 +47,7 @@ jobs:
         git clone --quiet https://github.com/adafruit/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
         git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
         git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
+        git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
     - name: List all files in Adafruit_LittlevGL_Glue_Library folder
       run: |
         ls /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
