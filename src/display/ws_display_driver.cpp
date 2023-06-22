@@ -32,14 +32,7 @@ static void my_log_cb(const char *buf) { WS_DEBUG_PRINTLN(buf); }
 */
 /**************************************************************************/
 ws_display_driver::ws_display_driver(displayConfig config) {
-  WS_DEBUG_PRINT("Display Configuration: \n");
-  WS_DEBUG_PRINTLN(config.pinCS);
-  WS_DEBUG_PRINTLN(config.pinDC);
-  WS_DEBUG_PRINTLN(config.pinRST);
-  WS_DEBUG_PRINTLN(config.width);
-  WS_DEBUG_PRINTLN(config.height);
-  
-  // let's dynamically create the display driver from the configuration file
+  // dynamically create the display driver from the configuration file
   if (strcmp(config.driver, "ST7789") == 0) {
     Serial.println("Configuring the Adafruit_ST7789 driver");
     _tft_st7789 =
@@ -65,21 +58,6 @@ ws_display_driver::~ws_display_driver() {
 
 /**************************************************************************/
 /*!
-    @brief    Sets the display resolution, must be called BEFORE begin()!
-    @param    displayWidth
-              The width of the display, in pixels.
-    @param    displayHeight
-              The height of the display, in pixels.
-*/
-/**************************************************************************/
-void ws_display_driver::setResolution(uint16_t displayWidth,
-                                      uint16_t displayHeight) {
-  _displayWidth = displayWidth;
-  _displayHeight = displayHeight;
-}
-
-/**************************************************************************/
-/*!
     @brief    Enables LVGL logging using the usb serial. Must be called
               AFTER calling Serial.begin().
 */
@@ -99,17 +77,29 @@ void ws_display_driver::setRotation(uint8_t rotationMode) {
 
 /**************************************************************************/
 /*!
+    @brief    Sets the display resolution, must be called BEFORE begin()!
+    @param    displayWidth
+              The width of the display, in pixels.
+    @param    displayHeight
+              The height of the display, in pixels.
+*/
+/**************************************************************************/
+void ws_display_driver::setResolution(uint16_t displayWidth,
+                                      uint16_t displayHeight) {
+  _displayWidth = displayWidth;
+  _displayHeight = displayHeight;
+}
+
+/**************************************************************************/
+/*!
     @brief    Initializes the display and the lvgl_glue driver.
     @returns  True if LVGL_Glue began successfully, False otherwise.
 */
 /**************************************************************************/
 bool ws_display_driver::begin() {
-
-  // TODO: This function could use some cleanup around how it inits glue
-
   // initialize display driver
   if (_tft_st7789 != nullptr) {
-    WS_DEBUG_PRINTLN("INIT st7789 tft");
+    WS_DEBUG_PRINTLN("Initialize ST7789 driver");
     _tft_st7789->init(_displayWidth, _displayHeight);
   } else {
     Serial.println("ERROR: Unable to initialize the display driver!");
@@ -122,34 +112,39 @@ bool ws_display_driver::begin() {
     digitalWrite(TFT_BACKLIGHT, HIGH);
     #endif // ARDUINO_FUNHOUSE_ESP32S2
 
-    //WS_DEBUG_PRINTLN("Fill screen");
-    //_tft_st7789->fillScreen(ST77XX_BLACK);
-
-  // initialize LVGL_glue
-  WS_DEBUG_PRINTLN("INIT lvgl_glue");
+  // initialize lvgl_glue
+  WS_DEBUG_PRINTLN("Initialize LVGL");
   _glue = new Adafruit_LvGL_Glue();
   LvGLStatus status = _glue->begin(_tft_st7789);
-  WS_DEBUG_PRINT("LVGL GLUE STATUS: ");
+  WS_DEBUG_PRINT("LVGL RC: ");
   WS_DEBUG_PRINTLN((int) status);
 
   // check if lvgl initialized correctly
   if (status != LVGL_OK) {
-    Serial.printf("LVGL_Glue error %d\r\n", (int)status);
+    Serial.printf("LVGL_Glue error: %d\r\n", (int)status);
     return false;
   }
 
-  WS_DEBUG_PRINTLN("Setting screen BLACK");
   esp32_lvgl_acquire();
   lv_obj_set_style_bg_color(lv_scr_act(), lv_color_white(), LV_STATE_DEFAULT);
   esp32_lvgl_release();
-
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Acquires the LVGL_Glue lock.
+*/
+/**************************************************************************/
 void ws_display_driver::esp32_lvgl_acquire() {
     _glue->lvgl_acquire();
 }
 
+/**************************************************************************/
+/*!
+    @brief    Releases the LVGL_Glue lock.
+*/
+/**************************************************************************/
 void ws_display_driver::esp32_lvgl_release() {
     _glue->lvgl_release();
 }
