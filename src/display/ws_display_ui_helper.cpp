@@ -15,6 +15,39 @@
 
 #include "ws_display_ui_helper.h"
 
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+/* Loading screen */
+static lv_obj_t *imgWSLogo;
+static lv_obj_t *lblIconFile;
+static lv_obj_t *lblIconWiFi;
+static lv_obj_t *labelTurtleBar;
+static lv_obj_t *labelCloudBar;
+static lv_obj_t *lblStatusText;
+static lv_obj_t *lblTipText;
+static lv_style_t styleIconFile;
+static lv_style_t styleIconWiFi;
+static lv_style_t styleIconTurtleStatusbar;
+static lv_style_t styleIconCloud;
+static lv_style_t styleIconCheckmark;
+
+/* Error screen */
+static lv_obj_t *labelErrorTriangle;
+static lv_obj_t *labelErrorHeader;
+static lv_obj_t *labelErrorBody;
+static lv_style_t styleErrorTriangle;
+static lv_style_t styleLabelErrorLarge;
+static lv_style_t styleLabelErrorSmall;
+
+/* Monitor screen */
+static lv_obj_t *canvasStatusBar;
+static lv_draw_rect_dsc_t *rect_dsc;
+static lv_obj_t *statusbar_icon_bat;
+static lv_obj_t *statusbar_icon_wifi;
+static lv_obj_t *terminalLabel;
+static lv_style_t styleTerminalLabel;
+
 /**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.
