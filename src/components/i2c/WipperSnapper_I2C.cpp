@@ -573,20 +573,24 @@ void WipperSnapper_Component_I2C::fillEventMessage(
   msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count++;
 }
 
+/*******************************************************************************/
+/*!
+    @brief    Displays a sensor event message on the TFT
+    @param    msgi2cResponse
+              A pointer to an I2CResponse message.
+    @param    sensorAddress
+              The unique I2C address of the sensor.
+*/
+/*******************************************************************************/
 void WipperSnapper_Component_I2C::displayDeviceEventMessage(
     wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
     uint32_t sensorAddress) {
 
   pb_size_t numEvents =
       msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count;
-  WS_DEBUG_PRINT("total sensor events: ");
-  WS_DEBUG_PRINTLN(numEvents);
 
   char buffer[100];
   for (int i = 0; i < numEvents; i++) {
-    WS_DEBUG_PRINT("Sensor: ");
-    WS_DEBUG_PRINTLN(i);
-
     float value =
         msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value;
 

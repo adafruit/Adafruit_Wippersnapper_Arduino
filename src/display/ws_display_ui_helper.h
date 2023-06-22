@@ -69,33 +69,33 @@ static lv_style_t styleTerminalLabel;
 /**********************
  *  IMAGE DECLARE
  **********************/
-LV_FONT_DECLARE(errorTriangle);
-LV_FONT_DECLARE(file);
-LV_FONT_DECLARE(wifi_30px);
-LV_FONT_DECLARE(cloud_30px);
-LV_FONT_DECLARE(turtle_30px);
-LV_FONT_DECLARE(turtle_16);
-LV_FONT_DECLARE(circle_30px);
+LV_FONT_DECLARE(errorTriangle); ///< Error triangle icon
+LV_FONT_DECLARE(file);          ///< File icon
+LV_FONT_DECLARE(wifi_30px);     ///< WiFi icon
+LV_FONT_DECLARE(cloud_30px);    ///< Cloud icon
+LV_FONT_DECLARE(turtle_30px);   ///< Turtle icon
+LV_FONT_DECLARE(turtle_16);     ///< Turtle icon
 
 /**********************
  *  Timers
  **********************/
 static lv_timer_t *timerLoadTips;
 
+/// Icon names for use with set_load_bar_icon_complete()
 enum loadBarIcons {
-  loadBarIconFile,
-  loadBarIconWifi,
-  loadBarIconCloud,
-  loadBarIconTurtle,
-  loadBarIconCheckmark
-}; ///< Icon names for use by set_load_bar_icon_complete
+  loadBarIconFile,     ///< File icon
+  loadBarIconWifi,     ///< WiFi icon
+  loadBarIconCloud,    ///< Cloud icon
+  loadBarIconTurtle,   ///< Turtle icon
+  loadBarIconCheckmark ///< Checkmark icon
+};
 
 static const char *loading_tips[4] = {
     WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3,
     WS_LOADING_TIP_4}; ///< Holds the loading "tips"
-static char
-    terminalTextBuffer[MAX_CONSOLE_TEXT_LEN +
-                       1]; ///< Contains all text actively displayed on the terminal
+static char terminalTextBuffer[MAX_CONSOLE_TEXT_LEN +
+                               1]; ///< Contains all text actively displayed on
+                                   ///< the terminal
 
 class ws_display_driver;
 
@@ -125,6 +125,5 @@ private:
   ws_display_driver *_dispDriver = nullptr;
   void addToTerminal(const char *txt_in);
   bool _loadingState = false;
-  
 };
 #endif // WS_DISPLAY_UI_HELPER_H
