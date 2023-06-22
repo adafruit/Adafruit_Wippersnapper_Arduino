@@ -49,7 +49,7 @@ jobs:
         git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
         git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
         git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
-        git clone --quiet https://github.com/adafruit/https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+        git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
         git clone --depth 1 --branch v8.2.0 https://github.com/lvgl/lvgl.git /home/runner/Arduino/libraries/lvgl
 
     - name: List all files in Adafruit_LittlevGL_Glue_Library folder
