@@ -57,6 +57,10 @@ static char terminalTextBuffer[MAX_CONSOLE_TEXT_LEN +
                                1]; ///< Contains all text actively displayed on
                                    ///< the terminal screen
 
+static const char *loading_tips[4] = {
+    WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3,
+    WS_LOADING_TIP_4}; ///< Holds the loading "tips"
+
 /**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.

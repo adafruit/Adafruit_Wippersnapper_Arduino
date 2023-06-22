@@ -52,9 +52,7 @@ enum loadBarIcons {
   loadBarIconCheckmark ///< Checkmark icon
 };
 
-static const char *loading_tips[4] = {
-    WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3,
-    WS_LOADING_TIP_4}; ///< Holds the loading "tips"
+
 
 class ws_display_driver;
 
