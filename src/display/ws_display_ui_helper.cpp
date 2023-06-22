@@ -333,8 +333,8 @@ void ws_display_ui_helper::build_scr_monitor() {
   lv_obj_align(labelTurtleBar, LV_ALIGN_TOP_LEFT, 5, 5);
 
   // Add a label to hold console text
-  // TODO: Still having some overlap between the top console text and the
-  // status bar.. this should be fixed in the sim. first before release
+  // FUTURE TODO: Have 10px of overlap between the top console text and the
+  // status bar
   terminalLabel = lv_label_create(lv_scr_act());
   lv_obj_align(terminalLabel, LV_ALIGN_BOTTOM_LEFT, 3, 0);
   lv_obj_set_width(terminalLabel, 230);

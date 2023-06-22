@@ -22,20 +22,20 @@
 #include <lvgl.h>
 
 struct displayConfig {
-  char driver[10];
-  int width;
-  int height;
-  int rotation;
-  bool isSPI;
-  bool isI2C;
-  uint8_t pinCS;
-  uint8_t pinDC;
-  uint8_t pinMOSI;
-  uint8_t pinSCK;
-  uint8_t pinRST;
-};
+  char driver[10]; ///< Display driver type
+  int width;       ///< Display width
+  int height;      ///< Display height
+  int rotation;    ///< Display rotation
+  bool isSPI;      ///< Is the display SPI?
+  bool isI2C;      ///< Is the display I2C?
+  uint8_t pinCS;   ///< Display CS pin
+  uint8_t pinDC;   ///< Display DC pin
+  uint8_t pinMOSI; ///< Display MOSI pin
+  uint8_t pinSCK;  ///< Display SCK pin
+  uint8_t pinRST;  ///< Display RST pin
+};                 ///< Display configuration struct
 
-LV_FONT_DECLARE(errorTriangle);
+LV_FONT_DECLARE(errorTriangle); ///< Error triangle symbol/font
 
 class Wippersnapper; // fwd decl
 
@@ -54,15 +54,16 @@ public:
   void setResolution(uint16_t displayWidth, uint16_t displayHeight);
   void setRotation(uint8_t rotationMode);
   void enableLogging();
-  Adafruit_LvGL_Glue *_glue;
+  Adafruit_LvGL_Glue *_glue; ///< LVGL glue object
   void esp32_lvgl_acquire();
   void esp32_lvgl_release();
+
 private:
-  
-  Adafruit_ST7789 *_tft_st7789 = nullptr;
-  uint16_t _displayWidth;
-  uint16_t _displayHeight;
-  uint8_t _displayRotationMode;
+  Adafruit_ST7789 *_tft_st7789 = nullptr; ///< Adafruit ST7789 display driver
+  uint16_t _displayWidth;                 ///< Display width
+  uint16_t _displayHeight;                ///< Display height
+  uint8_t
+      _displayRotationMode; ///< Display rotation (mode, not number in degrees)
 };
 extern Wippersnapper WS;
 
