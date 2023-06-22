@@ -53,6 +53,10 @@ static lv_style_t styleTerminalLabel;
  **********************/
 static lv_timer_t *timerLoadTips;
 
+static char terminalTextBuffer[MAX_CONSOLE_TEXT_LEN +
+                               1]; ///< Contains all text actively displayed on
+                                   ///< the terminal screen
+
 /**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.

@@ -33,7 +33,6 @@
 #define SYMBOL_ERROR_TRIANGLE                                                  \
   "\xEF\x81\xB1" ///< Symbol code for error triangle icon
 
-
 /**********************
  *  IMAGE DECLARE
  **********************/
@@ -56,9 +55,6 @@ enum loadBarIcons {
 static const char *loading_tips[4] = {
     WS_LOADING_TIP_1, WS_LOADING_TIP_2, WS_LOADING_TIP_3,
     WS_LOADING_TIP_4}; ///< Holds the loading "tips"
-static char terminalTextBuffer[MAX_CONSOLE_TEXT_LEN +
-                               1]; ///< Contains all text actively displayed on
-                                   ///< the terminal
 
 class ws_display_driver;
 
