@@ -44,11 +44,6 @@ LV_FONT_DECLARE(cloud_30px);    ///< Cloud icon
 LV_FONT_DECLARE(turtle_30px);   ///< Turtle icon
 LV_FONT_DECLARE(turtle_16);     ///< Turtle icon
 
-/**********************
- *  Timers
- **********************/
-static lv_timer_t *timerLoadTips;
-
 /// Icon names for use with set_load_bar_icon_complete()
 enum loadBarIcons {
   loadBarIconFile,     ///< File icon

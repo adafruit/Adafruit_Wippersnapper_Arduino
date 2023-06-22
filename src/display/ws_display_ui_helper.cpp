@@ -48,6 +48,11 @@ static lv_obj_t *statusbar_icon_wifi;
 static lv_obj_t *terminalLabel;
 static lv_style_t styleTerminalLabel;
 
+/**********************
+ *  Timers
+ **********************/
+static lv_timer_t *timerLoadTips;
+
 /**************************************************************************/
 /*!
     @brief    Changes a label every 2 seconds to a new, random, tip.
