@@ -19,7 +19,6 @@
  *  STATIC VARIABLES
  **********************/
 /* Loading screen */
-static lv_obj_t *imgWSLogo;
 static lv_obj_t *lblIconFile;
 static lv_obj_t *lblIconWiFi;
 static lv_obj_t *labelTurtleBar;
@@ -30,7 +29,6 @@ static lv_style_t styleIconFile;
 static lv_style_t styleIconWiFi;
 static lv_style_t styleIconTurtleStatusbar;
 static lv_style_t styleIconCloud;
-static lv_style_t styleIconCheckmark;
 
 /* Error screen */
 static lv_obj_t *labelErrorTriangle;
@@ -41,8 +39,6 @@ static lv_style_t styleLabelErrorLarge;
 static lv_style_t styleLabelErrorSmall;
 
 /* Monitor screen */
-static lv_obj_t *canvasStatusBar;
-static lv_draw_rect_dsc_t *rect_dsc;
 static lv_obj_t *statusbar_icon_bat;
 static lv_obj_t *statusbar_icon_wifi;
 static lv_obj_t *terminalLabel;
