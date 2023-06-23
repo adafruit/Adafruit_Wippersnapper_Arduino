@@ -112,7 +112,7 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
 #ifdef USE_DISPLAY
     char buffer[100];
     snprintf(buffer, 100,
-             "[Pin] Configured Digital Input on D%u, polling every %l mS\n",
+             "[Pin] Configured Digital Input on D%u, polling every %lu mS\n",
              pinName, periodMs);
     WS._ui_helper->add_text_to_terminal(buffer);
 #endif
