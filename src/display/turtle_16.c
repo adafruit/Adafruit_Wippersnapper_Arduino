@@ -3,7 +3,7 @@
  * Bpp: 4
  * Opts: 
  ******************************************************************************/
-
+#ifdef USE_DISPLAY 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
@@ -122,3 +122,4 @@ lv_font_t turtle_16 = {
 
 #endif /*#if TURTLE_16*/
 
+#endif 

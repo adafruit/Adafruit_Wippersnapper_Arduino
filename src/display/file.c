@@ -3,6 +3,7 @@
  * Bpp: 4
  * Opts: 
  ******************************************************************************/
+#ifdef USE_DISPLAY 
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
@@ -147,7 +148,7 @@ lv_font_t file = {
     .dsc = &font_dsc           /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */
 };
 
-
+#endif
 
 #endif /*#if FILE*/
 
