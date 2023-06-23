@@ -21,7 +21,7 @@
               Data to write out to serial.
 */
 /**************************************************************************/
-static void my_log_cb(const char *buf) { WS_DEBUG_PRINTLN(buf); }
+// static void my_log_cb(const char *buf) { WS_DEBUG_PRINTLN(buf); }
 
 /**************************************************************************/
 /*!
