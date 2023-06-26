@@ -15,8 +15,6 @@
 #ifndef WIPPERSNAPPER_DISPLAY_H
 #define WIPPERSNAPPER_DISPLAY_H
 
-#ifdef USE_DISPLAY
-
 #include "Wippersnapper.h"
 
 #include <Adafruit_LvGL_Glue.h> // Always include this BEFORE lvgl.h!
@@ -70,4 +68,3 @@ private:
 extern Wippersnapper WS;
 
 #endif // WIPPERSNAPPER_DISPLAY_H
-#endif // USE_DISPLAY
