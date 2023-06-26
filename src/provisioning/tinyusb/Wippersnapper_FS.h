@@ -59,8 +59,10 @@ public:
 
   void parseSecrets();
 
+  #ifdef ARDUINO_FUNHOUSE_ESP32S2
   void parseDisplayConfig(displayConfig& displayFile);
   void createDisplayConfig();
+  #endif
 
   // NOTE: calculated capacity with maximum
   // length of usernames/passwords/tokens

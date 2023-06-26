@@ -468,6 +468,7 @@ void Wippersnapper_FS::fsHalt() {
   }
 }
 
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
 void Wippersnapper_FS::createDisplayConfig() {
   StaticJsonDocument<256> doc;
 
@@ -500,7 +501,9 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig& displayFile) {
 
   if (!wipperFatFs.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
+    #ifdef ARDUINO_FUNHOUSE_ESP32S2
     createDisplayConfig();
+    #endif
   }
 
   File32 file = wipperFatFs.open("/display_config.json", FILE_READ);
@@ -537,6 +540,7 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig& displayFile) {
     // TODO: Halt?
   }
 }
+#endif // ARDUINO_FUNHOUSE_ESP32S2
 
 /**************************************************************************/
 /*!
