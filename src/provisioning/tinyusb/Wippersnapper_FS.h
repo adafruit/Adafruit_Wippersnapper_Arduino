@@ -59,7 +59,7 @@ public:
 
   void parseSecrets();
 
-  displayConfig parseDisplayConfig();
+  void parseDisplayConfig(displayConfig& displayFile);
   void createDisplayConfig();
 
   // NOTE: calculated capacity with maximum

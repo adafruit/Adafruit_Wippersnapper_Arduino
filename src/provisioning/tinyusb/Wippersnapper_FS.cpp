@@ -494,7 +494,7 @@ void Wippersnapper_FS::createDisplayConfig() {
   delay(2500);
 }
 
-displayConfig Wippersnapper_FS::parseDisplayConfig() {
+void Wippersnapper_FS::parseDisplayConfig(displayConfig& displayFile) {
   StaticJsonDocument<384> doc;
   DeserializationError error;
 
@@ -514,8 +514,6 @@ displayConfig Wippersnapper_FS::parseDisplayConfig() {
       yield();
   }
 
-  // let's parse the deserialized array into a displayConfig struct!
-  displayConfig displayFile;
   // generic fields
   strcpy(displayFile.driver, doc["driver"]);
   displayFile.height = doc["height"];
@@ -538,8 +536,6 @@ displayConfig Wippersnapper_FS::parseDisplayConfig() {
         "ERROR: Display device lacks a hardware interface, failing out...");
     // TODO: Halt?
   }
-
-  return displayFile;
 }
 
 /**************************************************************************/

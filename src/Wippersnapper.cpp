@@ -106,7 +106,8 @@ void Wippersnapper::provision() {
 
 #ifdef USE_DISPLAY
   // Initialize the display
-  displayConfig config = WS._fileSystem->parseDisplayConfig();
+  displayConfig config;
+  WS._fileSystem->parseDisplayConfig(config);
   WS._display = new ws_display_driver(config);
   // Begin display
   if (!WS._display->begin()) {
