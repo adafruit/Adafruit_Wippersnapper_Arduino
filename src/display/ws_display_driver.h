@@ -21,7 +21,7 @@
 #include <Adafruit_ST7789.h>
 #include <lvgl.h>
 
-struct displayConfig {
+typedef struct {
   char driver[10]; ///< Display driver type
   int width;       ///< Display width
   int height;      ///< Display height
@@ -33,7 +33,7 @@ struct displayConfig {
   uint8_t pinMOSI; ///< Display MOSI pin
   uint8_t pinSCK;  ///< Display SCK pin
   uint8_t pinRST;  ///< Display RST pin
-};                 ///< Display configuration struct
+} displayConfig;
 
 LV_FONT_DECLARE(errorTriangle); ///< Error triangle symbol/font
 
