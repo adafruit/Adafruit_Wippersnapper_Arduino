@@ -3,7 +3,7 @@
  * Bpp: 4
  * Opts: 
  ******************************************************************************/
-// #ifdef USE_DISPLAY 
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
 #else
@@ -674,4 +674,4 @@ lv_font_t errorTriangle = {
 
 #endif /*#if ERRORTRIANGLE*/
 
-// #endif 
+#endif

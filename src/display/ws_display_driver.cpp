@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-//#ifdef USE_DISPLAY
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
 #include "ws_display_driver.h"
 
 /**************************************************************************/
@@ -150,4 +150,4 @@ void ws_display_driver::esp32_lvgl_release() {
     _glue->lvgl_release();
 }
 
-// #endif
+#endif
