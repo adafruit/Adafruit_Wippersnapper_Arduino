@@ -63,7 +63,7 @@ ws_display_driver::~ws_display_driver() {
               AFTER calling Serial.begin().
 */
 /**************************************************************************/
-void ws_display_driver::enableLogging() {  }
+void ws_display_driver::enableLogging() {}
 
 /**************************************************************************/
 /*!
@@ -107,18 +107,18 @@ bool ws_display_driver::begin() {
     return false;
   }
 
-    // Hardware-specific display commands
-    #ifdef ARDUINO_FUNHOUSE_ESP32S2
-    pinMode(TFT_BACKLIGHT, OUTPUT);
-    digitalWrite(TFT_BACKLIGHT, HIGH);
-    #endif // ARDUINO_FUNHOUSE_ESP32S2
+// Hardware-specific display commands
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
+  pinMode(TFT_BACKLIGHT, OUTPUT);
+  digitalWrite(TFT_BACKLIGHT, HIGH);
+#endif // ARDUINO_FUNHOUSE_ESP32S2
 
   // initialize lvgl_glue
   WS_DEBUG_PRINTLN("Initialize LVGL");
   _glue = new Adafruit_LvGL_Glue();
   LvGLStatus status = _glue->begin(_tft_st7789);
   WS_DEBUG_PRINT("LVGL RC: ");
-  WS_DEBUG_PRINTLN((int) status);
+  WS_DEBUG_PRINTLN((int)status);
 
   // check if lvgl initialized correctly
   if (status != LVGL_OK) {
@@ -137,17 +137,13 @@ bool ws_display_driver::begin() {
     @brief    Acquires the LVGL_Glue lock.
 */
 /**************************************************************************/
-void ws_display_driver::esp32_lvgl_acquire() {
-    _glue->lvgl_acquire();
-}
+void ws_display_driver::esp32_lvgl_acquire() { _glue->lvgl_acquire(); }
 
 /**************************************************************************/
 /*!
     @brief    Releases the LVGL_Glue lock.
 */
 /**************************************************************************/
-void ws_display_driver::esp32_lvgl_release() {
-    _glue->lvgl_release();
-}
+void ws_display_driver::esp32_lvgl_release() { _glue->lvgl_release(); }
 
 #endif

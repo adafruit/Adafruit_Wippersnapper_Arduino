@@ -52,8 +52,6 @@ enum loadBarIcons {
   loadBarIconCheckmark ///< Checkmark icon
 };
 
-
-
 class ws_display_driver;
 
 /**************************************************************************/

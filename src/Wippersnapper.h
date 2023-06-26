@@ -321,15 +321,15 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-  #ifdef USE_DISPLAY
+#ifdef USE_DISPLAY
   ws_display_driver *_display = nullptr; ///< Instance of display driver class
-  ws_display_ui_helper *_ui_helper = nullptr; ///< Instance of display UI helper class
-  #endif
-  ws_pixels *_ws_pixelsComponent;        ///< ptr to instance of ws_pixels class
-  ws_pwm *_pwmComponent;                 ///< Instance of pwm class
-  ws_servo *_servoComponent;             ///< Instance of servo class
-  ws_ds18x20 *_ds18x20Component;         ///< Instance of DS18x20 class
-
+  ws_display_ui_helper *_ui_helper =
+      nullptr; ///< Instance of display UI helper class
+#endif
+  ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
+  ws_pwm *_pwmComponent;          ///< Instance of pwm class
+  ws_servo *_servoComponent;      ///< Instance of servo class
+  ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
 
   // TODO: does this really need to be global?
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */

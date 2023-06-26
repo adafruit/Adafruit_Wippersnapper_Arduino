@@ -148,9 +148,8 @@ public:
     WS._mqttBrokerURL = "io.adafruit.com";
     _mqtt_client->setCACert(_aio_root_ca_prod);
 
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, 8883,
-                                 clientID, WS._username, WS._key);
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, 8883,
+                                        clientID, WS._username, WS._key);
   }
 
   /********************************************************/
@@ -171,9 +170,6 @@ public:
       return WS_NET_DISCONNECTED;
     }
   }
-
-
-
 
   /*******************************************************************/
   /*!

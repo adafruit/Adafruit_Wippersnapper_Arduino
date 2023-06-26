@@ -1229,8 +1229,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 #ifdef USE_DISPLAY
     char buffer[100];
     snprintf(buffer, 100, "[PWM] Writing duty cycle %d to pin %d\n.",
-             (int)msgPWMWriteDutyCycleRequest.duty_cycle,
-             atoi(pwmPin));
+             (int)msgPWMWriteDutyCycleRequest.duty_cycle, atoi(pwmPin));
     WS._ui_helper->add_text_to_terminal(buffer);
 #endif
 
@@ -1612,14 +1611,14 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 */
 /**************************************************************************/
 bool Wippersnapper::generateWSErrorTopics() {
-  // dynamically allocate memory for err topic
-  #ifdef ARDUINO_ARCH_ESP32
+// dynamically allocate memory for err topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._err_topic = (char *)ps_malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
-  #else
-    WS._err_topic = (char *)malloc(
+#else
+  WS._err_topic = (char *)malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
-  #endif
+#endif
 
   if (WS._err_topic) { // build error topic
     strcpy(WS._err_topic, WS._username);
@@ -1634,14 +1633,14 @@ bool Wippersnapper::generateWSErrorTopics() {
   WS._mqtt->subscribe(_err_sub);
   _err_sub->setCallback(cbErrorTopic);
 
-  // dynamically allocate memory for throttle topic
-  #ifdef ARDUINO_ARCH_ESP32
+// dynamically allocate memory for throttle topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._throttle_topic = (char *)ps_malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
-  #else
-    WS._throttle_topic = (char *)malloc(
+#else
+  WS._throttle_topic = (char *)malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
-  #endif
+#endif
 
   if (WS._throttle_topic) { // build throttle topic
     strcpy(WS._throttle_topic, WS._username);
@@ -1693,14 +1692,14 @@ bool Wippersnapper::generateDeviceUID() {
   char mac_uid[13];
   itoa(atoi(WS.sUID), mac_uid, 10);
 
-  // Attempt to malloc a the device identifier string
-  #ifdef ARDUINO_ARCH_ESP32
+// Attempt to malloc a the device identifier string
+#ifdef ARDUINO_ARCH_ESP32
   _device_uid = (char *)ps_malloc(sizeof(char) + strlen("io-wipper-") +
                                   strlen(WS._boardId) + strlen(mac_uid) + 1);
-  #else
+#else
   _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
-                                  strlen(WS._boardId) + strlen(mac_uid) + 1);
-  #endif
+                               strlen(WS._boardId) + strlen(mac_uid) + 1);
+#endif
   if (_device_uid == NULL) {
     WS_DEBUG_PRINTLN("ERROR: Unable to create device uid, Malloc failure");
     return false;
@@ -1721,16 +1720,16 @@ bool Wippersnapper::generateDeviceUID() {
 */
 /**************************************************************************/
 bool Wippersnapper::generateWSTopics() {
-  // Create global registration topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create global registration topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_description = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
       strlen(TOPIC_INFO) + strlen("status") + 1);
-  #else
-  WS._topic_description = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
-      strlen(TOPIC_INFO) + strlen("status") + 1);
-  #endif
+#else
+  WS._topic_description =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
+                     strlen(TOPIC_INFO) + strlen("status") + 1);
+#endif
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
@@ -1741,18 +1740,18 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create registration status topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create registration status topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_description_status = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status/") +
       strlen("broker") + 1);
-  #else
-    WS._topic_description_status = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status/") +
-      strlen("broker") + 1);
-  #endif
+#else
+  WS._topic_description_status =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status/") + strlen("broker") + 1);
+#endif
   if (WS._topic_description_status != NULL) {
     strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
@@ -1771,18 +1770,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_description_sub);
   _topic_description_sub->setCallback(cbRegistrationStatus);
 
-  // Create registration status complete topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create registration status complete topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_description_status_complete = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status") +
       strlen("/device/complete") + 1);
-  #else
-    WS._topic_description_status_complete = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status") +
-      strlen("/device/complete") + 1);
-  #endif
+#else
+  WS._topic_description_status_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_INFO) +
+                     strlen("status") + strlen("/device/complete") + 1);
+#endif
   if (WS._topic_description_status_complete != NULL) {
     strcpy(WS._topic_description_status_complete, WS._username);
     strcat(WS._topic_description_status_complete, "/wprsnpr/");
@@ -1795,16 +1794,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create device-to-broker signal topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create device-to-broker signal topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
-  #else
+#else
   WS._topic_signal_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
-  #endif
+#endif
   if (WS._topic_signal_device != NULL) {
     strcpy(WS._topic_signal_device, WS._username);
     strcat(WS._topic_signal_device, "/wprsnpr/");
@@ -1816,18 +1815,18 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create pin configuration complete topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create pin configuration complete topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_device_pin_config_complete = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
       strlen("device/pinConfigComplete") + 1);
-  #else
-  WS._topic_device_pin_config_complete = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
-      strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
-      strlen("device/pinConfigComplete") + 1);
-  #endif
+#else
+  WS._topic_device_pin_config_complete =
+      (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
+                     strlen("device/pinConfigComplete") + 1);
+#endif
   if (WS._topic_device_pin_config_complete != NULL) {
     strcpy(WS._topic_device_pin_config_complete, WS._username);
     strcat(WS._topic_device_pin_config_complete, "/wprsnpr/");
@@ -1840,16 +1839,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create broker-to-device signal topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create broker-to-device signal topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
-  #else
+#else
   WS._topic_signal_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
-  #endif
+#endif
   if (WS._topic_signal_brkr != NULL) {
     strcpy(WS._topic_signal_brkr, WS._username);
     strcat(WS._topic_signal_brkr, "/wprsnpr/");
@@ -1867,18 +1866,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_brkr_sub);
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
-  // Create device-to-broker i2c signal topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create device-to-broker i2c signal topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_i2c_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
       strlen(TOPIC_I2C) + 1);
-  #else
+#else
   WS._topic_signal_i2c_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
       strlen(TOPIC_I2C) + 1);
-  #endif
+#endif
   if (WS._topic_signal_i2c_brkr != NULL) {
     strcpy(WS._topic_signal_i2c_brkr, WS._username);
     strcat(WS._topic_signal_i2c_brkr, TOPIC_WS);
@@ -1897,18 +1896,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
-  // Create broker-to-device i2c signal topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create broker-to-device i2c signal topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_i2c_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
-  #else
+#else
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
-  #endif
+#endif
   if (WS._topic_signal_i2c_device != NULL) {
     strcpy(WS._topic_signal_i2c_device, WS._username);
     strcat(WS._topic_signal_i2c_device, TOPIC_WS);
@@ -1921,18 +1920,18 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create device-to-broker ds18x20 topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create device-to-broker ds18x20 topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_ds18_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
       strlen("ds18x20") + 1);
-  #else
+#else
   WS._topic_signal_ds18_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
       strlen("ds18x20") + 1);
-  #endif
+#endif
   if (WS._topic_signal_ds18_brkr != NULL) {
     strcpy(WS._topic_signal_ds18_brkr, WS._username);
     strcat(WS._topic_signal_ds18_brkr, TOPIC_WS);
@@ -1950,18 +1949,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_ds18_sub);
   _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
 
-  // Create broker-to-device ds18x20 topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create broker-to-device ds18x20 topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_ds18_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
       strlen("ds18x20") + 1);
-  #else
+#else
   WS._topic_signal_ds18_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
       strlen("ds18x20") + 1);
-  #endif
+#endif
   if (WS._topic_signal_ds18_device != NULL) {
     strcpy(WS._topic_signal_ds18_device, WS._username);
     strcat(WS._topic_signal_ds18_device, TOPIC_WS);
@@ -1973,16 +1972,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create device-to-broker servo signal topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create device-to-broker servo signal topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_servo_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/servo") + 1);
-  #else
+#else
   WS._topic_signal_servo_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/servo") + 1);
-  #endif
+#endif
   if (WS._topic_signal_servo_brkr != NULL) {
     strcpy(WS._topic_signal_servo_brkr, WS._username);
     strcat(WS._topic_signal_servo_brkr, TOPIC_WS);
@@ -2000,16 +1999,16 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
 
-  // Create broker-to-device servo signal topic
-  #ifdef ARDUINO_ARCH_ESP32
+// Create broker-to-device servo signal topic
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_servo_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/servo") + 1);
-  #else
+#else
   WS._topic_signal_servo_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/servo") + 1);
-  #endif
+#endif
   if (WS._topic_signal_servo_device != NULL) {
     strcpy(WS._topic_signal_servo_device, WS._username);
     strcat(WS._topic_signal_servo_device, TOPIC_WS);
@@ -2021,16 +2020,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Topic for pwm messages from broker->device
-  #ifdef ARDUINO_ARCH_ESP32
+// Topic for pwm messages from broker->device
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_pwm_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pwm") + 1);
-  #else
+#else
   WS._topic_signal_pwm_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pwm") + 1);
-  #endif
+#endif
   // Create device-to-broker pwm signal topic
   if (WS._topic_signal_pwm_brkr != NULL) {
     strcpy(WS._topic_signal_pwm_brkr, WS._username);
@@ -2049,16 +2048,16 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_pwm_sub);
   _topic_signal_pwm_sub->setCallback(cbPWMMsg);
 
-  // Topic for pwm messages from device->broker
-  #ifdef ARDUINO_ARCH_ESP32
+// Topic for pwm messages from device->broker
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_pwm_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pwm") + 1);
-  #else
+#else
   WS._topic_signal_pwm_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pwm") + 1);
-  #endif
+#endif
   if (WS._topic_signal_pwm_device != NULL) {
     strcpy(WS._topic_signal_pwm_device, WS._username);
     strcat(WS._topic_signal_pwm_device, TOPIC_WS);
@@ -2070,16 +2069,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Topic for pixel messages from broker->device
-  #ifdef ARDUINO_ARCH_ESP32
+// Topic for pixel messages from broker->device
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_pixels_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pixels") + 1);
-  #else
-    WS._topic_signal_pixels_brkr = (char *)malloc(
+#else
+  WS._topic_signal_pixels_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pixels") + 1);
-  #endif
+#endif
   if (WS._topic_signal_pixels_brkr != NULL) {
     strcpy(WS._topic_signal_pixels_brkr, WS._username);
     strcat(WS._topic_signal_pixels_brkr, TOPIC_WS);
@@ -2096,16 +2095,16 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_pixels_sub);
   _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
 
-  // Topic for pixel messages from device->broker
-  #ifdef ARDUINO_ARCH_ESP32
+// Topic for pixel messages from device->broker
+#ifdef ARDUINO_ARCH_ESP32
   WS._topic_signal_pixels_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pixels") + 1);
-  #else
-    WS._topic_signal_pixels_device = (char *)malloc(
+#else
+  WS._topic_signal_pixels_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pixels") + 1);
-  #endif
+#endif
   if (WS._topic_signal_pixels_device != NULL) {
     strcpy(WS._topic_signal_pixels_device, WS._username);
     strcat(WS._topic_signal_pixels_device, TOPIC_WS);
