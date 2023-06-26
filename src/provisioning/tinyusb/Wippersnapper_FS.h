@@ -23,6 +23,8 @@
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
 
+#include "display/ws_display_driver.h"
+
 #include "Wippersnapper.h"
 
 // forward decl.
