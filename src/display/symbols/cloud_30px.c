@@ -4,7 +4,7 @@
  * Opts: 
  ******************************************************************************/
 
-#ifdef USE_DISPLAY
+//#ifdef USE_DISPLAY
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
 #include "lvgl.h"
@@ -173,4 +173,4 @@ lv_font_t cloud_30px = {
 
 #endif /*#if CLOUD_30PX*/
 
-#endif // USE_DISPLAY
+// #endif // USE_DISPLAY

@@ -12,7 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#ifdef USE_DISPLAY
+// #ifdef USE_DISPLAY
 #include "ws_display_ui_helper.h"
 
 /**********************
@@ -466,4 +466,4 @@ void ws_display_ui_helper::addToTerminal(const char *txt_in) {
   _dispDriver->esp32_lvgl_release();
 }
 
-#endif
+// #endif
