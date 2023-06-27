@@ -37,24 +37,28 @@
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK ///< DotStar Clock Pin
 #define STATUS_DOTSTAR_NUM 5                     ///< Number of DotStar LEDs
 #define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_GBR   ///< DotStar Color Order
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_METRO_ESP32S2)
 #define BOARD_ID "metroesp32s2"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 45
 #define STATUS_NEOPIXEL_NUM 1
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_MAGTAG29_ESP32S2)
 #define BOARD_ID "magtag"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 1
 #define STATUS_NEOPIXEL_NUM 4
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
 #define BOARD_ID "feather-esp32s2"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
 #define BOARD_ID "feather-esp32s2-tft"
 #define USE_TINYUSB
@@ -62,6 +66,7 @@
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
 #define PIN_I2C_POWER_INVERTED 7
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
 #define BOARD_ID "feather-esp32s3"
 #define USE_TINYUSB
@@ -74,24 +79,28 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT)
 #define BOARD_ID "feather-esp32s3-tft"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT)
 #define BOARD_ID "feather-esp32s3-reversetft"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NEOPIXEL_NUM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2)
 #define BOARD_ID "qtpy-esp32s2"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM)
 #define BOARD_ID "qtpy-esp32s3"
 #define USE_TINYUSB
@@ -120,12 +129,14 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO)
 #define BOARD_ID "qtpy-esp32"
 #define USE_LITTLEFS
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_SAMD_NANO_33_IOT)
 #define BOARD_ID "nano-33-iot"
 #define USE_STATUS_LED

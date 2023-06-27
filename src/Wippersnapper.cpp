@@ -1612,7 +1612,7 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 /**************************************************************************/
 bool Wippersnapper::generateWSErrorTopics() {
 // dynamically allocate memory for err topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._err_topic = (char *)ps_malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
 #else
@@ -1634,7 +1634,7 @@ bool Wippersnapper::generateWSErrorTopics() {
   _err_sub->setCallback(cbErrorTopic);
 
 // dynamically allocate memory for throttle topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._throttle_topic = (char *)ps_malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
 #else
@@ -1693,7 +1693,7 @@ bool Wippersnapper::generateDeviceUID() {
   itoa(atoi(WS.sUID), mac_uid, 10);
 
 // Attempt to malloc a the device identifier string
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   _device_uid = (char *)ps_malloc(sizeof(char) + strlen("io-wipper-") +
                                   strlen(WS._boardId) + strlen(mac_uid) + 1);
 #else
@@ -1721,7 +1721,7 @@ bool Wippersnapper::generateDeviceUID() {
 /**************************************************************************/
 bool Wippersnapper::generateWSTopics() {
 // Create global registration topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_description = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
       strlen(TOPIC_INFO) + strlen("status") + 1);
@@ -1741,7 +1741,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Create registration status topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_description_status = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status/") +
@@ -1771,7 +1771,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_description_sub->setCallback(cbRegistrationStatus);
 
 // Create registration status complete topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_description_status_complete = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status") +
@@ -1795,7 +1795,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Create device-to-broker signal topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
@@ -1816,7 +1816,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Create pin configuration complete topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_device_pin_config_complete = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
@@ -1840,7 +1840,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Create broker-to-device signal topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
@@ -1867,7 +1867,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
 // Create device-to-broker i2c signal topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_i2c_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
@@ -1897,7 +1897,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
 // Create broker-to-device i2c signal topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_i2c_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
@@ -1921,7 +1921,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Create device-to-broker ds18x20 topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_ds18_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
@@ -1950,7 +1950,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
 
 // Create broker-to-device ds18x20 topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_ds18_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
@@ -1973,7 +1973,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Create device-to-broker servo signal topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_servo_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/servo") + 1);
@@ -2000,7 +2000,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_servo_sub->setCallback(cbServoMsg);
 
 // Create broker-to-device servo signal topic
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_servo_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/servo") + 1);
@@ -2021,7 +2021,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Topic for pwm messages from broker->device
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_pwm_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pwm") + 1);
@@ -2049,7 +2049,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_pwm_sub->setCallback(cbPWMMsg);
 
 // Topic for pwm messages from device->broker
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_pwm_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pwm") + 1);
@@ -2070,7 +2070,7 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Topic for pixel messages from broker->device
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_pixels_brkr = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pixels") + 1);
@@ -2096,7 +2096,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
 
 // Topic for pixel messages from device->broker
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef USE_PSRAM
   WS._topic_signal_pixels_device = (char *)ps_malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pixels") + 1);
