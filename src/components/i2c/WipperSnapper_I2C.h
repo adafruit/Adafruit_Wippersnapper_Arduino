@@ -73,6 +73,10 @@ public:
                         float value,
                         wippersnapper_i2c_v1_SensorType sensorType);
 
+  void
+  displayDeviceEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+                            uint32_t sensorAddress);
+
   bool encodePublishI2CDeviceEventMsg(
       wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
       uint32_t sensorAddress);

@@ -91,22 +91,55 @@ Wippersnapper::~Wippersnapper() {
 */
 /**************************************************************************/
 void Wippersnapper::provision() {
-  // Get MAC address from network interface
+  // Obtain device's MAC address
   getMacAddr();
 
-  // init. LED for status signaling
+  // Initialize the status LED for signaling FS errors
   initStatusLED();
+
+// Initialize the filesystem
 #ifdef USE_TINYUSB
   _fileSystem = new Wippersnapper_FS();
-  _fileSystem->parseSecrets();
 #elif defined(USE_LITTLEFS)
   _littleFS = new WipperSnapper_LittleFS();
+#endif
+
+#ifdef USE_DISPLAY
+  // Initialize the display
+  displayConfig config;
+  WS._fileSystem->parseDisplayConfig(config);
+  WS._display = new ws_display_driver(config);
+  // Begin display
+  if (!WS._display->begin()) {
+    WS_DEBUG_PRINTLN("Unable to enable display driver and LVGL");
+    haltError("Unable to enable display driver, please check the json "
+              "configuration!");
+  }
+
+  WS._display->enableLogging();
+  releaseStatusLED(); // don't use status LED if we are using the display
+  // UI Setup
+  WS._ui_helper = new ws_display_ui_helper(WS._display);
+  WS._ui_helper->set_bg_black();
+  WS._ui_helper->show_scr_load();
+  WS._ui_helper->set_label_status("Validating Credentials...");
+#endif
+
+  // Parse secrets.json file
+#ifdef USE_TINYUSB
+  _fileSystem->parseSecrets();
+#elif defined(USE_LITTLEFS)
   _littleFS->parseSecrets();
 #else
   set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
-
+  // Set device's wireless credentials
   set_ssid_pass();
+
+#ifdef USE_DISPLAY
+  WS._ui_helper->set_label_status("");
+  WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
+#endif
 }
 
 /**************************************************************************/
@@ -241,10 +274,25 @@ bool Wippersnapper::configAnalogInPinReq(
       wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_CREATE) {
     WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->pull,
                                      pinMsg->analog_read_mode);
+
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[Pin] Reading %s every %0.2f seconds\n",
+             pinMsg->pin_name, pinMsg->period);
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
   } else if (
       pinMsg->request_type ==
       wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
     WS._analogIO->deinitAnalogPin(pinMsg->direction, pin);
+
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[Pin] De-initialized pin %s\n.", pinMsg->pin_name);
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
   } else {
     WS_DEBUG_PRINTLN("ERROR: Could not decode analog pin request!");
     is_success = false;
@@ -865,6 +913,10 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
                    &msgServoAttachReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachRequest");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal(
+          "[Servo ERROR] Could not decode servo request from IO!\n");
+#endif
       return false; // fail out if we can't decode the request
     }
     // execute servo attach request
@@ -874,6 +926,11 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
             atoi(servoPin), msgServoAttachReq.min_pulse_width,
             msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal(
+          "[Servo ERROR] Unable to attach servo to pin! Is it already in "
+          "use?\n");
+#endif
       attached = false;
     } else {
       WS_DEBUG_PRINT("ATTACHED servo w/minPulseWidth: ");
@@ -882,6 +939,12 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
       WS_DEBUG_PRINT("uS on pin: ");
       WS_DEBUG_PRINTLN(servoPin);
+#ifdef USE_DISPLAY
+      char buffer[100];
+      snprintf(buffer, 100, "[Servo] Attached servo on pin %s\n.",
+               msgServoAttachReq.servo_pin);
+      WS._ui_helper->add_text_to_terminal(buffer);
+#endif
     }
 
     // Create and fill a servo response message
@@ -931,6 +994,13 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINT("uS to servo on pin#: ");
     WS_DEBUG_PRINTLN(servoPin);
 
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[Servo] Writing pulse width of %u uS to pin %s\n.",
+             (int)msgServoWriteReq.pulse_width, msgServoWriteReq.servo_pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
     WS._servoComponent->servo_write(atoi(servoPin),
                                     (int)msgServoWriteReq.pulse_width);
   } else if (field->tag ==
@@ -949,8 +1019,16 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
 
     // execute servo detach request
     char *servoPin = msgServoDetachReq.servo_pin + 1;
-    WS_DEBUG_PRINT("Detaching servo on pin ");
+    WS_DEBUG_PRINT("Detaching servo from pin ");
     WS_DEBUG_PRINTLN(servoPin);
+
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[Servo] Detaching from pin %s\n.",
+             msgServoDetachReq.servo_pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
     WS._servoComponent->servo_detach(atoi(servoPin));
   } else {
     WS_DEBUG_PRINTLN("Unable to decode servo message type!");
@@ -1013,6 +1091,10 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMAttachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR]: Could not decode pin attach request!\n");
+#endif
       return false; // fail out if we can't decode the request
     }
 
@@ -1023,6 +1105,11 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
         (uint8_t)msgPWMAttachRequest.resolution);
     if (!attached) {
       WS_DEBUG_PRINTLN("ERROR: Unable to attach PWM pin");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR]: Failed to attach PWM to pin! Is this pin already in "
+          "use?\n");
+#endif
       attached = false;
     }
 
@@ -1050,6 +1137,14 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");
+
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Attached on pin %s\n.",
+             msgPWMResponse.payload.attach_response.pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Detach");
@@ -1060,11 +1155,23 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMDetachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMDetachRequest");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR] Failed to decode pin detach request from IO!\n");
+#endif
       return false; // fail out if we can't decode the request
     }
     // execute PWM pin detatch request
     char *pwmPin = msgPWMDetachRequest.pin + 1;
     WS._pwmComponent->detach(atoi(pwmPin));
+
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Detached on pin %s\n.",
+             msgPWMDetachRequest.pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_freq_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Tone");
@@ -1075,6 +1182,10 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMWriteFreqRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteFrequencyRequest");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR] Failed to decode frequency write request from IO!\n");
+#endif
       return false; // fail out if we can't decode the request
     }
 
@@ -1085,6 +1196,14 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS_DEBUG_PRINT("Hz to pin ");
     WS_DEBUG_PRINTLN(atoi(pwmPin));
     WS._pwmComponent->writeTone(atoi(pwmPin), msgPWMWriteFreqRequest.frequency);
+
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Writing %u Hz to pin %s\n.",
+             msgPWMWriteFreqRequest.frequency, msgPWMWriteFreqRequest.pin);
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Duty Cycle");
@@ -1096,12 +1215,24 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                    &msgPWMWriteDutyCycleRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteDutyCycleRequest");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal(
+          "[PWM ERROR] Failed to decode duty cycle write request from IO!\n");
+#endif
       return false; // fail out if we can't decode the request
     }
     // execute PWM duty cycle write request
     char *pwmPin = msgPWMWriteDutyCycleRequest.pin + 1;
     WS._pwmComponent->writeDutyCycle(
         atoi(pwmPin), (int)msgPWMWriteDutyCycleRequest.duty_cycle);
+
+#ifdef USE_DISPLAY
+    char buffer[100];
+    snprintf(buffer, 100, "[PWM] Writing duty cycle %d to pin %d\n.",
+             (int)msgPWMWriteDutyCycleRequest.duty_cycle, atoi(pwmPin));
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
   } else {
     WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
     return false;
@@ -1255,6 +1386,9 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
                    &msgPixelsCreateReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
                        "wippersnapper_pixels_v1_PixelsCreateRequest!");
+#ifdef USE_DISPLAY
+      WS._ui_helper->add_text_to_terminal("[Pixel] Error decoding message!\n");
+#endif
       return false;
     }
 
@@ -1385,79 +1519,6 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 
 /**************************************************************************/
 /*!
-    @brief    Attempts to re-connect to the MQTT broker, retries with
-                an exponential backoff + jitter interval.
-*/
-/**************************************************************************/
-void retryMQTTConnection() {
-  // MQTT broker's connack return code
-  int8_t rc;
-  // amount of times we've attempted to re-connect to IO's MQTT broker
-  int retries = 0;
-  // maximum backoff time, in millis
-  double maxBackoff = 60000;
-  // current backoff time, in millis
-  double backoff;
-  // randomized jitter to prevent multi-client collisions
-  long jitter;
-
-  bool notConnected = true;
-  while (notConnected == true) {
-    WS_DEBUG_PRINTLN("Retrying connection...");
-    // attempt reconnection, save return code (rc)
-    rc = WS._mqtt->connect(WS._username, WS._key);
-    switch (rc) {
-    case WS_MQTT_CONNECTED:
-      WS_DEBUG_PRINTLN("Re-connected to IO MQTT!");
-      notConnected = false;
-      break;
-    case WS_MQTT_INVALID_PROTOCOL:
-      WS_DEBUG_PRINTLN("Invalid MQTT protocol");
-      break;
-    case WS_MQTT_INVALID_CID:
-      WS_DEBUG_PRINTLN("client ID rejected");
-      break;
-    case WS_MQTT_SERVICE_UNAVALIABLE:
-      WS_DEBUG_PRINTLN("MQTT service unavailable");
-      break;
-    case WS_MQTT_INVALID_USER_PASS:
-      WS_DEBUG_PRINTLN("malformed user/pass");
-      break;
-    case WS_MQTT_UNAUTHORIZED:
-      WS_DEBUG_PRINTLN("unauthorized");
-      break;
-    case WS_MQTT_THROTTLED:
-      WS_DEBUG_PRINTLN("ERROR: Throttled");
-      break;
-    case WS_MQTT_BANNED:
-      WS_DEBUG_PRINTLN("ERROR: Temporarily banned");
-      break;
-    default:
-      break;
-    }
-    retries++;
-    if (notConnected) {
-      WS_DEBUG_PRINTLN("Not connected, delaying...");
-      // calculate a jitter value btween 0ms and 100ms
-      jitter = random(0, 100);
-      // calculate exponential backoff w/jitter
-      backoff = (pow(2, retries) * 1000) + jitter;
-      backoff = min(backoff, maxBackoff);
-      WS_DEBUG_PRINT("Delaying for ");
-      WS_DEBUG_PRINT(backoff);
-      WS_DEBUG_PRINTLN("ms...");
-      // delay for backoff millis
-      delay(backoff);
-    } else {
-      WS_DEBUG_PRINTLN("Connected to MQTT broker!")
-      // reset backoff param and retries
-      backoff = 0;
-    }
-  }
-}
-
-/**************************************************************************/
-/*!
     @brief    Called when client receives a message published across the
                 Adafruit IO MQTT /error special topic.
     @param    errorData
@@ -1474,6 +1535,11 @@ void cbErrorTopic(char *errorData, uint16_t len) {
   if (!WS._mqtt->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
+
+#ifdef USE_DISPLAY
+  WS._ui_helper->show_scr_error("IO Ban Error", errorData);
+#endif
+
   // WDT reset
   for (;;) {
     delay(100);
@@ -1504,6 +1570,18 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT("Device is throttled for ");
   WS_DEBUG_PRINT(throttleDuration);
   WS_DEBUG_PRINTLN("ms and blocking command execution.");
+
+#ifdef USE_DISPLAY
+  char buffer[100];
+  snprintf(
+      buffer, 100,
+      "[IO ERROR] Device is throttled for %d mS and blocking execution..\n.",
+      throttleDuration);
+  WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
+  // If throttle duration is less than the keepalive interval, delay for the
+  // full keepalive interval
   if (throttleDuration < WS_KEEPALIVE_INTERVAL_MS) {
     delay(WS_KEEPALIVE_INTERVAL_MS);
   } else {
@@ -1518,6 +1596,10 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
     }
   }
   WS_DEBUG_PRINTLN("Device is un-throttled, resumed command execution");
+#ifdef USE_DISPLAY
+  WS._ui_helper->add_text_to_terminal(
+      "[IO] Device is un-throttled, resuming...\n");
+#endif
 }
 
 /**************************************************************************/
@@ -1529,9 +1611,14 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 */
 /**************************************************************************/
 bool Wippersnapper::generateWSErrorTopics() {
-  // dynamically allocate memory for err topic
+// dynamically allocate memory for err topic
+#ifdef USE_PSRAM
+  WS._err_topic = (char *)ps_malloc(
+      sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
+#else
   WS._err_topic = (char *)malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_ERRORS) + 1));
+#endif
 
   if (WS._err_topic) { // build error topic
     strcpy(WS._err_topic, WS._username);
@@ -1546,9 +1633,14 @@ bool Wippersnapper::generateWSErrorTopics() {
   WS._mqtt->subscribe(_err_sub);
   _err_sub->setCallback(cbErrorTopic);
 
-  // dynamically allocate memory for throttle topic
+// dynamically allocate memory for throttle topic
+#ifdef USE_PSRAM
+  WS._throttle_topic = (char *)ps_malloc(
+      sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
+#else
   WS._throttle_topic = (char *)malloc(
       sizeof(char) * (strlen(WS._username) + strlen(TOPIC_IO_THROTTLE) + 1));
+#endif
 
   if (WS._throttle_topic) { // build throttle topic
     strcpy(WS._throttle_topic, WS._username);
@@ -1600,9 +1692,14 @@ bool Wippersnapper::generateDeviceUID() {
   char mac_uid[13];
   itoa(atoi(WS.sUID), mac_uid, 10);
 
-  // Attempt to malloc a the device identifier string
+// Attempt to malloc a the device identifier string
+#ifdef USE_PSRAM
+  _device_uid = (char *)ps_malloc(sizeof(char) + strlen("io-wipper-") +
+                                  strlen(WS._boardId) + strlen(mac_uid) + 1);
+#else
   _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
                                strlen(WS._boardId) + strlen(mac_uid) + 1);
+#endif
   if (_device_uid == NULL) {
     WS_DEBUG_PRINTLN("ERROR: Unable to create device uid, Malloc failure");
     return false;
@@ -1623,10 +1720,16 @@ bool Wippersnapper::generateDeviceUID() {
 */
 /**************************************************************************/
 bool Wippersnapper::generateWSTopics() {
-  // Create global registration topic
+// Create global registration topic
+#ifdef USE_PSRAM
+  WS._topic_description = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
+      strlen(TOPIC_INFO) + strlen("status") + 1);
+#else
   WS._topic_description =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr") +
                      strlen(TOPIC_INFO) + strlen("status") + 1);
+#endif
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._username);
     strcat(WS._topic_description, "/wprsnpr");
@@ -1637,11 +1740,18 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create registration status topic
+// Create registration status topic
+#ifdef USE_PSRAM
+  WS._topic_description_status = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status/") +
+      strlen("broker") + 1);
+#else
   WS._topic_description_status =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_INFO) +
                      strlen("status/") + strlen("broker") + 1);
+#endif
   if (WS._topic_description_status != NULL) {
     strcpy(WS._topic_description_status, WS._username);
     strcat(WS._topic_description_status, "/wprsnpr/");
@@ -1660,11 +1770,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_description_sub);
   _topic_description_sub->setCallback(cbRegistrationStatus);
 
-  // Create registration status complete topic
+// Create registration status complete topic
+#ifdef USE_PSRAM
+  WS._topic_description_status_complete = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status") +
+      strlen("/device/complete") + 1);
+#else
   WS._topic_description_status_complete =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_INFO) +
                      strlen("status") + strlen("/device/complete") + 1);
+#endif
   if (WS._topic_description_status_complete != NULL) {
     strcpy(WS._topic_description_status_complete, WS._username);
     strcat(WS._topic_description_status_complete, "/wprsnpr/");
@@ -1677,10 +1794,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create device-to-broker signal topic
+// Create device-to-broker signal topic
+#ifdef USE_PSRAM
+  WS._topic_signal_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
+#else
   WS._topic_signal_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("device") + 1);
+#endif
   if (WS._topic_signal_device != NULL) {
     strcpy(WS._topic_signal_device, WS._username);
     strcat(WS._topic_signal_device, "/wprsnpr/");
@@ -1692,11 +1815,18 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create pin configuration complete topic
+// Create pin configuration complete topic
+#ifdef USE_PSRAM
+  WS._topic_device_pin_config_complete = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
+      strlen("device/pinConfigComplete") + 1);
+#else
   WS._topic_device_pin_config_complete =
       (char *)malloc(sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
                      strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
                      strlen("device/pinConfigComplete") + 1);
+#endif
   if (WS._topic_device_pin_config_complete != NULL) {
     strcpy(WS._topic_device_pin_config_complete, WS._username);
     strcat(WS._topic_device_pin_config_complete, "/wprsnpr/");
@@ -1709,10 +1839,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create broker-to-device signal topic
+// Create broker-to-device signal topic
+#ifdef USE_PSRAM
+  WS._topic_signal_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
+#else
   WS._topic_signal_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/wprsnpr/") +
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) + strlen("broker") + 1);
+#endif
   if (WS._topic_signal_brkr != NULL) {
     strcpy(WS._topic_signal_brkr, WS._username);
     strcat(WS._topic_signal_brkr, "/wprsnpr/");
@@ -1730,11 +1866,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_brkr_sub);
   _topic_signal_brkr_sub->setCallback(cbSignalTopic);
 
-  // Create device-to-broker i2c signal topic
+// Create device-to-broker i2c signal topic
+#ifdef USE_PSRAM
+  WS._topic_signal_i2c_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+      strlen(TOPIC_I2C) + 1);
+#else
   WS._topic_signal_i2c_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
       strlen(TOPIC_I2C) + 1);
+#endif
   if (WS._topic_signal_i2c_brkr != NULL) {
     strcpy(WS._topic_signal_i2c_brkr, WS._username);
     strcat(WS._topic_signal_i2c_brkr, TOPIC_WS);
@@ -1753,11 +1896,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_i2c_sub);
   _topic_signal_i2c_sub->setCallback(cbSignalI2CReq);
 
-  // Create broker-to-device i2c signal topic
+// Create broker-to-device i2c signal topic
+#ifdef USE_PSRAM
+  WS._topic_signal_i2c_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+      strlen(TOPIC_I2C) + 1);
+#else
   WS._topic_signal_i2c_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
       strlen(TOPIC_I2C) + 1);
+#endif
   if (WS._topic_signal_i2c_device != NULL) {
     strcpy(WS._topic_signal_i2c_device, WS._username);
     strcat(WS._topic_signal_i2c_device, TOPIC_WS);
@@ -1770,11 +1920,18 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create device-to-broker ds18x20 topic
+// Create device-to-broker ds18x20 topic
+#ifdef USE_PSRAM
+  WS._topic_signal_ds18_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
+      strlen("ds18x20") + 1);
+#else
   WS._topic_signal_ds18_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
       strlen("ds18x20") + 1);
+#endif
   if (WS._topic_signal_ds18_brkr != NULL) {
     strcpy(WS._topic_signal_ds18_brkr, WS._username);
     strcat(WS._topic_signal_ds18_brkr, TOPIC_WS);
@@ -1792,11 +1949,18 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_ds18_sub);
   _topic_signal_ds18_sub->setCallback(cbSignalDSReq);
 
-  // Create broker-to-device ds18x20 topic
+// Create broker-to-device ds18x20 topic
+#ifdef USE_PSRAM
+  WS._topic_signal_ds18_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
+      strlen("ds18x20") + 1);
+#else
   WS._topic_signal_ds18_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
       strlen("ds18x20") + 1);
+#endif
   if (WS._topic_signal_ds18_device != NULL) {
     strcpy(WS._topic_signal_ds18_device, WS._username);
     strcat(WS._topic_signal_ds18_device, TOPIC_WS);
@@ -1808,10 +1972,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Create device-to-broker servo signal topic
+// Create device-to-broker servo signal topic
+#ifdef USE_PSRAM
+  WS._topic_signal_servo_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/servo") + 1);
+#else
   WS._topic_signal_servo_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/servo") + 1);
+#endif
   if (WS._topic_signal_servo_brkr != NULL) {
     strcpy(WS._topic_signal_servo_brkr, WS._username);
     strcat(WS._topic_signal_servo_brkr, TOPIC_WS);
@@ -1829,10 +1999,16 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_servo_sub);
   _topic_signal_servo_sub->setCallback(cbServoMsg);
 
-  // Create broker-to-device servo signal topic
+// Create broker-to-device servo signal topic
+#ifdef USE_PSRAM
+  WS._topic_signal_servo_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/servo") + 1);
+#else
   WS._topic_signal_servo_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/servo") + 1);
+#endif
   if (WS._topic_signal_servo_device != NULL) {
     strcpy(WS._topic_signal_servo_device, WS._username);
     strcat(WS._topic_signal_servo_device, TOPIC_WS);
@@ -1844,10 +2020,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Topic for pwm messages from broker->device
+// Topic for pwm messages from broker->device
+#ifdef USE_PSRAM
+  WS._topic_signal_pwm_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/pwm") + 1);
+#else
   WS._topic_signal_pwm_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pwm") + 1);
+#endif
   // Create device-to-broker pwm signal topic
   if (WS._topic_signal_pwm_brkr != NULL) {
     strcpy(WS._topic_signal_pwm_brkr, WS._username);
@@ -1866,10 +2048,16 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_pwm_sub);
   _topic_signal_pwm_sub->setCallback(cbPWMMsg);
 
-  // Topic for pwm messages from device->broker
+// Topic for pwm messages from device->broker
+#ifdef USE_PSRAM
+  WS._topic_signal_pwm_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/pwm") + 1);
+#else
   WS._topic_signal_pwm_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pwm") + 1);
+#endif
   if (WS._topic_signal_pwm_device != NULL) {
     strcpy(WS._topic_signal_pwm_device, WS._username);
     strcat(WS._topic_signal_pwm_device, TOPIC_WS);
@@ -1881,10 +2069,16 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-  // Topic for pixel messages from broker->device
+// Topic for pixel messages from broker->device
+#ifdef USE_PSRAM
+  WS._topic_signal_pixels_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/broker/pixels") + 1);
+#else
   WS._topic_signal_pixels_brkr = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/broker/pixels") + 1);
+#endif
   if (WS._topic_signal_pixels_brkr != NULL) {
     strcpy(WS._topic_signal_pixels_brkr, WS._username);
     strcat(WS._topic_signal_pixels_brkr, TOPIC_WS);
@@ -1901,10 +2095,16 @@ bool Wippersnapper::generateWSTopics() {
   WS._mqtt->subscribe(_topic_signal_pixels_sub);
   _topic_signal_pixels_sub->setCallback(cbPixelsMsg);
 
-  // Topic for pixel messages from device->broker
+// Topic for pixel messages from device->broker
+#ifdef USE_PSRAM
+  WS._topic_signal_pixels_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/signals/device/pixels") + 1);
+#else
   WS._topic_signal_pixels_device = (char *)malloc(
       sizeof(char) * strlen(WS._username) + strlen("/") + strlen(_device_uid) +
       strlen("/wprsnpr/signals/device/pixels") + 1);
+#endif
   if (WS._topic_signal_pixels_device != NULL) {
     strcpy(WS._topic_signal_pixels_device, WS._username);
     strcat(WS._topic_signal_pixels_device, TOPIC_WS);
@@ -1964,20 +2164,33 @@ void Wippersnapper::runNetFSM() {
       break;
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
-        // WS_DEBUG_PRINTLN("Connected to WiFi!");
+        WS_DEBUG_PRINTLN("Connected to WiFi!");
+#ifdef USE_DISPLAY
+        if (WS._ui_helper->getLoadingState())
+          WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+#endif
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      WS_DEBUG_PRINTLN("Attempting to connect to WiFi");
+      WS_DEBUG_PRINTLN("Connecting to WiFi...");
+#ifdef USE_DISPLAY
+      if (WS._ui_helper->getLoadingState())
+        WS._ui_helper->set_label_status("Connecting to WiFi...");
+#endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
-      if (!check_valid_ssid())
+      if (!check_valid_ssid()) {
+#ifdef USE_DISPLAY
+        WS._ui_helper->show_scr_error("ERROR",
+                                      "Unable to find WiFi network listed in "
+                                      "the secrets file. Rebooting soon...");
+#endif
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
-
+      }
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -1997,13 +2210,26 @@ void Wippersnapper::runNetFSM() {
       }
 
       // Validate connection
-      if (networkStatus() != WS_NET_CONNECTED)
+      if (networkStatus() != WS_NET_CONNECTED) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
+#ifdef USE_DISPLAY
+        WS._ui_helper->show_scr_error(
+            "CONNECTION ERROR",
+            "Unable to connect to WiFi Network. Please check that you entered "
+            "the WiFi credentials correctly. Rebooting in 5 seconds...");
+#endif
         haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
+      }
+
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-      WS_DEBUG_PRINTLN("Attempting to connect to Adafruit IO...");
+      WS_DEBUG_PRINTLN("Attempting to connect to IO...");
+#ifdef USE_DISPLAY
+      if (WS._ui_helper->getLoadingState())
+        WS._ui_helper->set_label_status("Connecting to IO...");
+#endif
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
@@ -2020,10 +2246,19 @@ void Wippersnapper::runNetFSM() {
         delay(1800);
         maxAttempts--;
       }
-      if (fsmNetwork != FSM_NET_CHECK_MQTT)
+      if (fsmNetwork != FSM_NET_CHECK_MQTT) {
+#ifdef USE_DISPLAY
+        WS._ui_helper->show_scr_error(
+            "CONNECTION ERROR",
+            "Unable to connect to Adafruit.io. If you are repeatedly having "
+            "this issue, please check that your IO Username and IO Key are set "
+            "correctly in the secrets file. This device will reboot in 5 "
+            "seconds...");
+#endif
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
+      }
       break;
     default:
       break;
@@ -2101,12 +2336,16 @@ void Wippersnapper::pingBroker() {
   if (millis() > (_prv_ping + (WS_KEEPALIVE_INTERVAL_MS -
                                (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
     WS_DEBUG_PRINTLN("PING!");
+    // TODO: Add back, is crashing currently
     WS._mqtt->ping();
     _prv_ping = millis();
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
     WS_DEBUG_PRINTLN("STATUS LED BLINK KAT");
+#ifdef USE_DISPLAY
+    WS._ui_helper->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
+#endif
     statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }
@@ -2307,6 +2546,11 @@ void Wippersnapper::connect() {
   runNetFSM();
   WS.feedWDT();
 
+#ifdef USE_DISPLAY
+  WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
+  WS._ui_helper->set_label_status("Sending device info...");
+#endif
+
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
   if (!registerBoard()) {
@@ -2314,6 +2558,14 @@ void Wippersnapper::connect() {
   }
   runNetFSM();
   WS.feedWDT();
+
+// switch to monitor screen
+#ifdef USE_DISPLAY
+  WS_DEBUG_PRINTLN("Clearing loading screen...");
+  WS._ui_helper->clear_scr_load();
+  WS_DEBUG_PRINTLN("building monitor screen...");
+  WS._ui_helper->build_scr_monitor();
+#endif
 
   // Configure hardware
   WS.pinCfgCompleted = false;
@@ -2328,7 +2580,6 @@ void Wippersnapper::connect() {
   publishPinConfigComplete();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
-  // goto application
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");

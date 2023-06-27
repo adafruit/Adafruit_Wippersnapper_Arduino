@@ -44,6 +44,12 @@
 #include "components/ledc/ws_ledc.h"
 #endif
 
+// Display
+#ifdef USE_DISPLAY
+#include "display/ws_display_driver.h"
+#include "display/ws_display_ui_helper.h"
+#endif
+
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
@@ -90,7 +96,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.63" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.64" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -192,10 +198,14 @@ class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
-class WipperSnapper_Component_I2C;
+#ifdef USE_DISPLAY
+class ws_display_driver;
+class ws_display_ui_helper;
+#endif
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
 #endif
+class WipperSnapper_Component_I2C;
 class ws_servo;
 class ws_pwm;
 class ws_ds18x20;
@@ -304,16 +314,24 @@ public:
   ws_board_status_t _boardStatus =
       WS_BOARD_DEF_IDLE; ///< Hardware's registration status
 
+  // TODO: We really should look at making these static definitions, not dynamic
+  // to free up space on the heap
   Wippersnapper_DigitalGPIO *_digitalGPIO; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIO;       ///< Instance of analog io class
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
+#ifdef USE_DISPLAY
+  ws_display_driver *_display = nullptr; ///< Instance of display driver class
+  ws_display_ui_helper *_ui_helper =
+      nullptr; ///< Instance of display UI helper class
+#endif
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
 
+  // TODO: does this really need to be global?
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
   const char *_boardId; /*!< Adafruit IO+ board string */
@@ -330,6 +348,7 @@ public:
   const char *_network_ssid = NULL; /*!< WiFi network SSID */
   const char *_network_pass = NULL; /*!< WiFi network password*/
 
+  // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
   char *_topic_description = NULL; /*!< MQTT topic for the device description */

@@ -575,6 +575,92 @@ void WipperSnapper_Component_I2C::fillEventMessage(
 
 /*******************************************************************************/
 /*!
+    @brief    Displays a sensor event message on the TFT
+    @param    msgi2cResponse
+              A pointer to an I2CResponse message.
+    @param    sensorAddress
+              The unique I2C address of the sensor.
+*/
+/*******************************************************************************/
+void WipperSnapper_Component_I2C::displayDeviceEventMessage(
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+    uint32_t sensorAddress) {
+
+  pb_size_t numEvents =
+      msgi2cResponse->payload.resp_i2c_device_event.sensor_event_count;
+
+  char buffer[100];
+  for (int i = 0; i < numEvents; i++) {
+    float value =
+        msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].value;
+
+    switch (
+        msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].type) {
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f *C\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f *F\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f %% rh\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f hPA\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f m\n", sensorAddress, value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f lux\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppm\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f%%\n", sensorAddress, value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f V\n", sensorAddress, value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f\n", sensorAddress, value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f Ohms\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f NOX\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f VOC\n", sensorAddress,
+               value);
+      break;
+    default:
+      break;
+    }
+#ifdef USE_DISPLAY
+    WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+  }
+}
+
+/*******************************************************************************/
+/*!
     @brief    Queries all I2C device drivers for new values. Fills and sends an
               I2CSensorEvent with the sensor event data.
 */
@@ -1033,6 +1119,8 @@ void WipperSnapper_Component_I2C::update() {
     // Did this driver obtain data from sensors?
     if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count == 0)
       continue;
+
+    displayDeviceEventMessage(&msgi2cResponse, (*iter)->getI2CAddress());
 
     // Encode and publish I2CDeviceEvent message
     if (!encodePublishI2CDeviceEventMsg(&msgi2cResponse,

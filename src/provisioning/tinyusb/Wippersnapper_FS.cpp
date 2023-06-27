@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2023 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -180,8 +180,8 @@ bool Wippersnapper_FS::initFilesystem() {
 
   // Check if secrets.json file already exists
   if (!configFileExists()) {
-    // Create new secrets.json file
-    createConfigFileSkel();
+    // Create new secrets.json file and halt
+    createSecretsFile();
   }
 
   return true;
@@ -290,32 +290,36 @@ bool Wippersnapper_FS::createBootFile() {
 
 /**************************************************************************/
 /*!
-    @brief    Creates a skeleton secret.json file on the filesystem.
+    @brief    Creates a default secrets.json file on the filesystem.
 */
 /**************************************************************************/
-void Wippersnapper_FS::createConfigFileSkel() {
-  // open for writing, create a new file if one doesnt exist
+void Wippersnapper_FS::createSecretsFile() {
+  // Create JSON object
+  StaticJsonDocument<256> doc;
+  doc["io_username"] = "YOUR_IO_USERNAME_HERE";
+  doc["io_key"] = "YOUR_IO_KEY_HERE";
+  JsonObject network_type_wifi = doc.createNestedObject("network_type_wifi");
+  network_type_wifi["network_ssid"] = "YOUR_WIFI_SSID_HERE";
+  network_type_wifi["network_password"] = "YOUR_WIFI_PASS_HERE";
+  doc["status_pixel_brightness"] = "0.2";
+
+  // Serialize JSON object and write secrets.json to file
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
-  if (!secretsFile) {
-    setStatusLEDColor(RED);
-    while (1)
-      yield();
-  }
-  // write out secrets file to USB-MSD
-  // NOTE: This was chunked into sep. lines, had issue with writing the entire
-  // file at once
-  secretsFile.print("{\n\t\"io_username\":\"YOUR_IO_USERNAME_HERE\",\n\t\"io_"
-                    "key\":\"YOUR_IO_KEY_");
-  secretsFile.flush();
-  secretsFile.print("HERE\",\n\t\"network_type_wifi\":{\n\t\t\"network_"
-                    "ssid\":\"YOUR_WIFI_SSID_");
-  secretsFile.flush();
-  secretsFile.print("HERE\",\n\t\t\"network_password\":\"YOUR_WIFI_PASS_"
-                    "HERE\"\n\t},\n\t\"status_pixel_brightness\":\"0.5\"\n}");
+  serializeJsonPretty(doc, secretsFile);
   secretsFile.flush();
   secretsFile.close();
+  delay(2500);
+
   writeToBootOut(
       "* Please edit the secrets.json file. Then, reset your board.\n");
+#ifdef USE_DISPLAY
+  WS._ui_helper->show_scr_error(
+      "INVALID SETTINGS FILE",
+      "The settings.json file on the WIPPER drive contains default values. "
+      "Please edit it to reflect your Adafruit IO and network credentials. "
+      "When you're done, press RESET on the board.");
+#endif
+  fsHalt();
 }
 
 /**************************************************************************/
@@ -336,100 +340,77 @@ void Wippersnapper_FS::parseSecrets() {
   if (err) {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
-
-    writeToBootOut("ERROR: deserializeJson() failed with code\n");
-    writeToBootOut(err.c_str());
     fsHalt();
   }
 
-  // Get io username
+  // Parse io_username
   const char *io_username = doc["io_username"];
   // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_username == nullptr) {
+  if (io_username == nullptr ||
+      strcmp(io_username, "YOUR_IO_USERNAME_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
     writeToBootOut("ERROR: invalid io_username value in secrets.json!\n");
-    while (1) {
-      statusLEDSolid(WS_LED_STATUS_FS_WRITE);
-      yield();
-    }
-  }
-
-  // check if username is from templated json
-  if (doc["io_username"] == "YOUR_IO_USERNAME_HERE") {
-    writeToBootOut(
-        "* ERROR: Default username found in secrets.json, please edit "
-        "the secrets.json file and reset the board for the changes to take "
-        "effect\n");
+#ifdef USE_DISPLAY
+    WS._ui_helper->show_scr_error(
+        "INVALID USERNAME",
+        "The \"io_username\" field within secrets.json is invalid, please "
+        "change it to match your Adafruit IO username and press RESET.");
+#endif
     fsHalt();
   }
+  // Set io_username
   WS._username = io_username;
 
-  writeToBootOut("Adafruit.io Username: ");
-  writeToBootOut(WS._username);
-  writeToBootOut("\n");
-
-  // Get io key
+  // Parse io_key
   const char *io_key = doc["io_key"];
-  // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     writeToBootOut("ERROR: invalid io_key value in secrets.json!\n");
+#ifdef USE_DISPLAY
+    WS._ui_helper->show_scr_error(
+        "INVALID IO KEY",
+        "The \"io_key\" field within secrets.json is invalid, please change it "
+        "to match your Adafruit IO username.");
+#endif
     fsHalt();
   }
   WS._key = io_key;
 
-  // Parse WiFi Network SSID
-  // Check if network type is WiFi
+  // Parse WiFi SSID
   const char *network_type_wifi_ssid = doc["network_type_wifi"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
-  }
-
-  // error check against default values [ArduinoJSON, 3.3.3]
-  if (WS._network_ssid == nullptr) {
+  if (network_type_wifi_ssid == nullptr ||
+      strcmp(network_type_wifi_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid network_ssid value in secrets.json!");
     writeToBootOut("ERROR: invalid network_ssid value in secrets.json!\n");
-    while (1) {
-      statusLEDSolid(WS_LED_STATUS_FS_WRITE);
-      yield();
-    }
-  }
-
-  // error check if SSID is the from templated json
-  if (strcmp(WS._network_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
-    writeToBootOut(
-        "* ERROR: Default SSID found in secrets.json, please edit "
-        "the secrets.json file and reset the board for the changes to take "
-        "effect\n");
+#ifdef USE_DISPLAY
+    WS._ui_helper->show_scr_error(
+        "INVALID SSID",
+        "The \"network_ssid\" field within secrets.json is invalid, please "
+        "change it to match your Adafruit IO username and press RESET.");
+#endif
     fsHalt();
   }
+  // Set network SSID
+  WS._network_ssid = network_type_wifi_ssid;
 
   // Parse WiFi Network Password
-  // Check if network type is WiFi
   const char *network_type_wifi_password =
       doc["network_type_wifi"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
-  }
-
-  // error check against default values [ArduinoJSON, 3.3.3]
-  if (WS._network_pass == nullptr) {
+  if (network_type_wifi_password == nullptr ||
+      strcmp(network_type_wifi_password, "YOUR_WIFI_PASS_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid network_type_wifi_password value in "
                      "secrets.json!");
     writeToBootOut("ERROR: invalid network_type_wifi_password value in "
                    "secrets.json!\n");
+#ifdef USE_DISPLAY
+    WS._ui_helper->show_scr_error(
+        "INVALID SSID",
+        "The \"network_ssid\" field within secrets.json is invalid, please "
+        "change it to match your Adafruit IO username and press RESET.");
+#endif
     fsHalt();
   }
-  // error check if wifi password is from template
-  if (strcmp(WS._network_pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    writeToBootOut("Default SSID found in secrets.json, please edit "
-                   "the secrets.json file and reset the board\n");
-    fsHalt();
-  }
-
-  writeToBootOut("WiFi Network: ");
-  writeToBootOut(WS._network_ssid);
-  writeToBootOut("\n");
+  WS._network_pass = network_type_wifi_password;
 
   // Optionally set the MQTT broker url (used to switch btween prod. and
   // staging)
@@ -442,6 +423,14 @@ void Wippersnapper_FS::parseSecrets() {
 
   // clear the document and release all memory from the memory pool
   doc.clear();
+
+  // Write configuration out to boot_out file
+  writeToBootOut("Adafruit.io Username: ");
+  writeToBootOut(WS._username);
+  writeToBootOut("\n");
+  writeToBootOut("WiFi Network: ");
+  writeToBootOut(WS._network_ssid);
+  writeToBootOut("\n");
 
   // close the tempFile
   secretsFile.close();
@@ -473,11 +462,85 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt() {
   while (1) {
-    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+    // statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }
 }
+
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
+void Wippersnapper_FS::createDisplayConfig() {
+  StaticJsonDocument<256> doc;
+
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
+  doc["driver"] = "ST7789";
+  doc["width"] = 240;
+  doc["height"] = 240;
+  doc["rotation"] = 0;
+  doc["powerMode"] = 0;
+  JsonObject spi = doc.createNestedObject("spi");
+  spi["spiMode"] = 1;
+  spi["pinCs"] = 40;
+  spi["pinDc"] = 39;
+  spi["pinMosi"] = 0;
+  spi["pinSck"] = 0;
+  spi["pinRst"] = 41;
+#endif
+
+  // Write the file out
+  File32 displayFile = wipperFatFs.open("/display_config.json", FILE_WRITE);
+  serializeJsonPretty(doc, displayFile);
+  displayFile.flush();
+  displayFile.close();
+  delay(2500);
+}
+
+void Wippersnapper_FS::parseDisplayConfig(displayConfig& displayFile) {
+  StaticJsonDocument<384> doc;
+  DeserializationError error;
+
+  if (!wipperFatFs.exists("/display_config.json")) {
+    WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
+    #ifdef ARDUINO_FUNHOUSE_ESP32S2
+    createDisplayConfig();
+    #endif
+  }
+
+  File32 file = wipperFatFs.open("/display_config.json", FILE_READ);
+  if (file) {
+    error = deserializeJson(doc, file);
+    file.close();
+  } else {
+    WS_DEBUG_PRINTLN(
+        "FATAL ERROR: Unable to open display_config.json for parsing");
+    while (1)
+      yield();
+  }
+
+  // generic fields
+  strcpy(displayFile.driver, doc["driver"]);
+  displayFile.height = doc["height"];
+  displayFile.width = doc["width"];
+  displayFile.rotation = doc["rotation"];
+
+  // display driver uses SPI, copy all the fields from the json array
+  if (doc["spi"] != nullptr) {
+    displayFile.isSPI = true;
+    displayFile.pinCS = doc["spi"]["pinCs"];
+    displayFile.pinDC = doc["spi"]["pinDc"];
+    displayFile.pinMOSI = doc["spi"]["pinMosi"];
+    displayFile.pinSCK = doc["spi"]["pinSck"];
+    displayFile.pinRST = doc["spi"]["pinRst"];
+  } else if (doc["i2c"] != nullptr) {
+    WS_DEBUG_PRINTLN("I2C display drivers are not implemented yet!");
+    // TODO: Halt?
+  } else {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Display device lacks a hardware interface, failing out...");
+    // TODO: Halt?
+  }
+}
+#endif // ARDUINO_FUNHOUSE_ESP32S2
 
 /**************************************************************************/
 /*!

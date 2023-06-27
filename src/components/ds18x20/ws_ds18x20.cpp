@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2022-2023 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -97,6 +97,13 @@ bool ws_ds18x20::addDS18x20(
   WS_DEBUG_PRINT(msgDs18x20InitReq->onewire_pin);
   WS_DEBUG_PRINTLN(" with DS18x20 attached!");
 
+#ifdef USE_DISPLAY
+  char buffer[100];
+  snprintf(buffer, 100, "[DS18x] Attached DS18x20 sensor to pin %s\n",
+           msgDs18x20InitReq->onewire_pin);
+  WS._ui_helper->add_text_to_terminal(buffer);
+#endif
+
   // Encode and publish response back to broker
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
   pb_ostream_t ostream =
@@ -141,6 +148,13 @@ void ws_ds18x20::deleteDS18x20(
                           idx); // erase vector and re-allocate
     }
   }
+
+#ifdef USE_DISPLAY
+  char buffer[100];
+  snprintf(buffer, 100, "[DS18x] Deleted DS18x20 sensor on pin %s\n",
+           msgDS18x20DeinitReq->onewire_pin);
+  WS._ui_helper->add_text_to_terminal(buffer);
+#endif
 }
 
 /*************************************************************/
@@ -180,10 +194,16 @@ void ws_ds18x20::update() {
         if (tempC == DEVICE_DISCONNECTED_C) {
           WS_DEBUG_PRINTLN("ERROR: Could not read temperature data, is the "
                            "sensor disconnected?");
+#ifdef USE_DISPLAY
+          WS._ui_helper->add_text_to_terminal(
+              "[DS18x ERROR] Unable to read temperature, is the sensor "
+              "disconnected?\n");
+#endif
           break;
         }
 
         // check and pack based on sensorType
+        char buffer[100];
         if ((*iter)->sensorProperties[i].sensor_type ==
             wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
 
@@ -192,6 +212,8 @@ void ws_ds18x20::update() {
           WS_DEBUG_PRINT(") DS18x20 Value: ");
           WS_DEBUG_PRINT(tempC);
           WS_DEBUG_PRINTLN("*C")
+          snprintf(buffer, 100, "[DS18x] Read %0.2f*C on GPIO %s\n", tempC,
+                   (*iter)->onewire_pin);
 
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i].type =
               wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
@@ -214,6 +236,10 @@ void ws_ds18x20::update() {
               msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
                   .value);
           WS_DEBUG_PRINTLN("*F")
+          snprintf(buffer, 100, "[DS18x] Read %0.2f*F on GPIO %s\n",
+                   msgDS18x20Response.payload.resp_ds18x20_event.sensor_event[i]
+                       .value,
+                   (*iter)->onewire_pin);
 
           msgDS18x20Response.payload.resp_ds18x20_event.sensor_event_count++;
         }
@@ -236,6 +262,8 @@ void ws_ds18x20::update() {
                          &msgDS18x20Response)) {
             WS_DEBUG_PRINTLN(
                 "ERROR: Unable to encode DS18x20 event responsemessage!");
+            snprintf(buffer, 100,
+                     "[DS18x ERROR] Unable to encode event message!");
             return;
           }
 
@@ -271,6 +299,9 @@ void ws_ds18x20::update() {
             return;
           };
           WS_DEBUG_PRINTLN("PUBLISHED!");
+#ifdef USE_DISPLAY
+          WS._ui_helper->add_text_to_terminal(buffer);
+#endif
 
           (*iter)->sensorPeriodPrv = curTime; // set prv period
         }
