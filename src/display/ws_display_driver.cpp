@@ -17,15 +17,6 @@
 
 /**************************************************************************/
 /*!
-    @brief    Callback for LVGL logging through USB serial
-    @param    buf
-              Data to write out to serial.
-*/
-/**************************************************************************/
-// static void my_log_cb(const char *buf) { WS_DEBUG_PRINTLN(buf); }
-
-/**************************************************************************/
-/*!
     @brief    Creates a new WipperSnapper display driver object from a
               configuration struct.
     @param    config

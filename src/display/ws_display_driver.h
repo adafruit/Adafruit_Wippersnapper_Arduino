@@ -21,6 +21,7 @@
 #include <Adafruit_ST7789.h>
 #include <lvgl.h>
 
+/** Display driver configuration */
 struct displayConfig {
   char driver[10]; ///< Display driver type
   int width;       ///< Display width

@@ -29,14 +29,14 @@
 #define STATUS_NEOPIXEL_PIN 40
 #define STATUS_NEOPIXEL_NUM 1
 #elif defined(ARDUINO_FUNHOUSE_ESP32S2)
-#define BOARD_ID "funhouse"
-#define USE_TINYUSB
-#define USE_STATUS_DOTSTAR
-#define USE_DISPLAY
-#define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA
-#define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK
-#define STATUS_DOTSTAR_NUM 5
-#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_GBR
+#define BOARD_ID "funhouse"                      ///< Board ID
+#define USE_TINYUSB                              ///< Enable TinyUSB
+#define USE_STATUS_DOTSTAR                       ///< Enable DotStar
+#define USE_DISPLAY                              ///< Enable Display
+#define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA ///< DotStar Data Pin
+#define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK ///< DotStar Clock Pin
+#define STATUS_DOTSTAR_NUM 5                     ///< Number of DotStar LEDs
+#define STATUS_DOTSTAR_COLOR_ORDER DOTSTAR_GBR   ///< DotStar Color Order
 #elif defined(ARDUINO_METRO_ESP32S2)
 #define BOARD_ID "metroesp32s2"
 #define USE_TINYUSB
