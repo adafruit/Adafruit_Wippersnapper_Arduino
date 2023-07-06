@@ -19,7 +19,7 @@ jobs:
       matrix:
         arduino-platform: ["funhouse", "magtag",
                            "metroesp32s2", "feather_esp32s2",
-                           "feather_esp32s2_tft",
+                           "feather_esp32s2_tft", "feather_esp32s2_reverse_tft",
                            "feather_esp32s3", "feather_esp32s3_4mbflash_2mbpsram",
                            "feather_esp32s3_tft",
                            "qtpy_esp32s3", "qtpy_esp32s2", "feather_esp32s3_reverse_tft"]
