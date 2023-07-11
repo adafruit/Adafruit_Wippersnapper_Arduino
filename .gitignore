@@ -39,10 +39,12 @@ html/*
 *.py
 
 # VSCode artifacts
-./vscode/*
+.vscode/*
 src/.vscode/settings.json
 
 .DS_STORE
 
 examples/Wippersnapper_demo/build/
 
+#Platformio artifacts
+.pio/
