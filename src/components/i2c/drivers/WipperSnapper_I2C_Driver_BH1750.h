@@ -14,7 +14,7 @@
             time in this mode is 120ms
 
             This driver uses the One Time Measurement feature of the BH1750. The
-   sensor returns to Power Down mode after each reading.
+            sensor returns to Power Down mode after each reading.
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_BH1750 : public WipperSnapper_I2C_Driver {
