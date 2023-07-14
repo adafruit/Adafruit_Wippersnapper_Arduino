@@ -1,5 +1,5 @@
 # Renames tinyusb's tusb_config.h to tusb_config.h_backup for PlatformIO build environments using TinyUSB
-# see: https://github.com/platformio/platform-espressif32/issues/809#issuecomment-1132079120
+# https://github.com/platformio/platform-espressif32/issues/809#issuecomment-1132079120
 import os
 
 Import("env")
