@@ -280,6 +280,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd30->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd30);
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
+  } else if (strcmp("sgp30", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sgp30 = new WipperSnapper_I2C_Driver_SGP30(this->_i2c, i2cAddress);
+    if (!_sgp30->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize SGP30!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _sgp30->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_sgp30);
+    WS_DEBUG_PRINTLN("SGP30 Initialized Successfully!");
   } else if ((strcmp("sht20", msgDeviceInitReq->i2c_device_name) == 0) ||
              (strcmp("si7021", msgDeviceInitReq->i2c_device_name) == 0)) {
     _si7021 = new WipperSnapper_I2C_Driver_SI7021(this->_i2c, i2cAddress);
