@@ -35,8 +35,6 @@
 *.bak
 html/*
 
-# Clang-format Python Script
-*.py
 
 # VSCode artifacts
 .vscode/*
