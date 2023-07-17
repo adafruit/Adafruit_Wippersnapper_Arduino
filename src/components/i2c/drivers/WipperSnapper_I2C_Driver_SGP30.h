@@ -51,7 +51,7 @@ public:
     return isInit;
   }
 
-  bool getEventeCO2(sensors_event_t *senseEvent) {
+  bool getEventECO2(sensors_event_t *senseEvent) {
     bool result = _sgp30->IAQmeasure();
     if (result) {
       senseEvent->eCO2 = _sgp30->eCO2;
@@ -59,7 +59,7 @@ public:
     return result;
   }
 
-  bool getEventtVOC(sensors_event_t *senseEvent) {
+  bool getEventTVOC(sensors_event_t *senseEvent) {
     bool result = _sgp30->IAQmeasure();
     if (result) {
       senseEvent->tvoc = _sgp30->TVOC;
