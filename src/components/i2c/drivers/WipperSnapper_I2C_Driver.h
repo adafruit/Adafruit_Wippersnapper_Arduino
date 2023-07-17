@@ -1226,11 +1226,11 @@ protected:
   long _ECO2SensorPeriod =
       0L; ///< The time period between reading the eCO2 sensor's value.
   long _ECO2SensorPeriodPrv = 0L; ///< The time when the eCO2 sensor
-                                 ///< was last read.
+                                  ///< was last read.
   long _TVOCSensorPeriod =
       0L; ///< The time period between reading the TVOC sensor's value.
   long _TVOCSensorPeriodPrv = 0L; ///< The time when the TVOC sensor
-                                 ///< was last read.
+                                  ///< was last read.
   long _altitudeSensorPeriod =
       0L; ///< The time period between reading the altitude sensor's value.
   long _altitudeSensorPeriodPrv = 0L;   ///< The time when the altitude sensor
