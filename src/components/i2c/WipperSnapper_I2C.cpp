@@ -635,7 +635,12 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2:
       snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppm\n", sensorAddress,
+               value);
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppb\n", sensorAddress,
                value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
@@ -856,6 +861,48 @@ void WipperSnapper_Component_I2C::update() {
         (*iter)->setSensorCO2PeriodPrv(curTime);
       } else {
         WS_DEBUG_PRINTLN("ERROR: Failed to obtain CO2 sensor reading!");
+      }
+    }
+
+    // eCO2 sensor
+    curTime = millis();
+    if ((*iter)->getSensorECO2Period() != 0L &&
+        curTime - (*iter)->getSensorECO2PeriodPrv() >
+            (*iter)->getSensorECO2Period()) {
+      if ((*iter)->getEventECO2(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\teCO2: ");
+        WS_DEBUG_PRINT(event.eCO2);
+        WS_DEBUG_PRINTLN(" ppm");
+
+        fillEventMessage(&msgi2cResponse, event.eCO2,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2);
+        (*iter)->setSensorECO2PeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to obtain eCO2 sensor reading!");
+      }
+    }
+
+    // TVOC sensor
+    curTime = millis();
+    if ((*iter)->getSensorTVOCPeriod() != 0L &&
+        curTime - (*iter)->getSensorTVOCPeriodPrv() >
+            (*iter)->getSensorTVOCPeriod()) {
+      if ((*iter)->getEventTVOC(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tTVOC: ");
+        WS_DEBUG_PRINT(event.tvoc);
+        WS_DEBUG_PRINTLN(" ppb");
+
+        fillEventMessage(&msgi2cResponse, event.tvoc,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC);
+        (*iter)->setSensorTVOCPeriodPrv(curTime);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to obtain TVOC sensor reading!");
       }
     }
 

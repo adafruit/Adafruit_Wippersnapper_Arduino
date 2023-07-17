@@ -82,6 +82,12 @@ public:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
       _CO2SensorPeriod = sensorPeriod;
       break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2:
+      _ECO2SensorPeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC:
+      _TVOCSensorPeriod = sensorPeriod;
+      break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
       _altitudeSensorPeriod = sensorPeriod;
       break;
@@ -201,6 +207,90 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventCO2(sensors_event_t *co2Event) { return false; }
+
+  /****************************** SENSOR_TYPE: ECO2
+   * *******************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the eCO2 sensor's period, if
+     set.
+      @returns  Time when the eCO2 sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorECO2Period() { return _ECO2SensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the eCO2 sensor was queried last.
+      @returns  Time when the eCO2 sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorECO2PeriodPrv() { return _ECO2SensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the eCO2 sensor was queried.
+      @param    period
+                The time when the CO2 sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorECO2PeriodPrv(long period) {
+    _ECO2SensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets a sensor's eCO2 value.
+      @param    eco2Event
+                The equivalent CO2 value, in ppm.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventECO2(sensors_event_t *eco2Event) { return false; }
+
+  /****************************** SENSOR_TYPE: TVOC
+   * *******************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the TVOC sensor's period, if
+     set.
+      @returns  Time when the TVOC sensor should be polled, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorTVOCPeriod() { return _TVOCSensorPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                    which the TVOC sensor was queried last.
+      @returns  Time when the TVOC sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorTVOCPeriodPrv() { return _TVOCSensorPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the TVOC sensor was queried.
+      @param    period
+                The time when the TVOC sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorTVOCPeriodPrv(long period) {
+    _TVOCSensorPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets a sensor's TVOC value.
+      @param    tvocEvent
+                The Total Volatile Organic Compounds value, in ppb.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventTVOC(sensors_event_t *tvocEvent) { return false; }
 
   /********************** SENSOR_TYPE: AMBIENT TEMPERATURE (°C)
    * ***********************/
@@ -1132,6 +1222,14 @@ protected:
   long _CO2SensorPeriod =
       0L; ///< The time period between reading the CO2 sensor's value.
   long _CO2SensorPeriodPrv = 0L; ///< The time when the CO2 sensor
+                                 ///< was last read.
+  long _ECO2SensorPeriod =
+      0L; ///< The time period between reading the eCO2 sensor's value.
+  long _ECO2SensorPeriodPrv = 0L; ///< The time when the eCO2 sensor
+                                 ///< was last read.
+  long _TVOCSensorPeriod =
+      0L; ///< The time period between reading the TVOC sensor's value.
+  long _TVOCSensorPeriodPrv = 0L; ///< The time when the TVOC sensor
                                  ///< was last read.
   long _altitudeSensorPeriod =
       0L; ///< The time period between reading the altitude sensor's value.
