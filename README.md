@@ -37,7 +37,5 @@ If you have a WiFi-enabled development board with a compatible microcontroller (
 
 ## Building WipperSnapper
 
-There are two options for building WipperSnapper locally:
-
- -  (Preferred) Build WipperSnapper with PlatformIO
+ -  (Preferred Method) [Build WipperSnapper with PlatformIO](https://learn.adafruit.com/how-to-add-a-new-component-to-adafruit-io-wippersnapper/build-wippersnapper-with-platformio)
  - Build WipperSnapper with Arduino
