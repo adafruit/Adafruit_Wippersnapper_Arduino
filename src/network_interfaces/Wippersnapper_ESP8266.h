@@ -33,10 +33,8 @@
  * use them, uncomment the commented out lines within this file and re-compile
  * the library.
  */
-// static const char *fingerprint PROGMEM = "59 3C 48 0A B1 8B 39 4E 0D 58 50 47
-// 9A 13 55 60 CC A0 1D AF"; static const char *fingerprint_staging PROGMEM =
-// "A0 A4 61 E0 D6 F8 94 FF FA C1 F2 DC 09 23 72 E1 CC 23 CD 64"; ///< AIO
-// Staging SSL Fingerprint
+// static const char *fingerprint PROGMEM =  "4E C1 52 73 24 A8 36 D6 7A 4C 67
+// C7 91 0C 0A 22 B9 2D 5B CA";
 
 extern Wippersnapper WS;
 
