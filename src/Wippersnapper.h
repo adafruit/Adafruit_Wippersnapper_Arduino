@@ -371,6 +371,8 @@ public:
                                        from a broker to a device. */
   char *_topic_signal_pixels_brkr = NULL;   /*!< Topic carries pixel messages */
   char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
+  char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
+  char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -452,6 +454,8 @@ protected:
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

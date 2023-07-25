@@ -2115,6 +2115,58 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
+// Create device-to-broker UART topic
+#ifdef USE_PSRAM
+  WS._topic_signal_uart_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
+      strlen("uart") + 1);
+#else
+  WS._topic_signal_uart_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
+      strlen("uart") + 1);
+#endif
+  if (WS._topic_signal_uart_brkr != NULL) {
+    strcpy(WS._topic_signal_uart_brkr, WS._username);
+    strcat(WS._topic_signal_uart_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_uart_brkr, _device_uid);
+    strcat(WS._topic_signal_uart_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_uart_brkr, "broker/uart");
+  } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c UART topic!");
+    return false;
+  }
+
+  // Subscribe to signal's UART sub-topic
+  _topic_signal_uart_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_uart_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_uart_sub);
+  _topic_signal_uart_sub->setCallback(cbSignalDSReq);
+
+// Create broker-to-device UART topic
+#ifdef USE_PSRAM
+  WS._topic_signal_uart_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
+      strlen("uart") + 1);
+#else
+  WS._topic_signal_uart_device = (char *)malloc(
+      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
+      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
+      strlen("uart") + 1);
+#endif
+  if (WS._topic_signal_uart_device != NULL) {
+    strcpy(WS._topic_signal_uart_device, WS._username);
+    strcat(WS._topic_signal_uart_device, TOPIC_WS);
+    strcat(WS._topic_signal_uart_device, _device_uid);
+    strcat(WS._topic_signal_uart_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_uart_device, "device/uart");
+  } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to allocate c2d uart topic!");
+    return false;
+  }
+
   return true;
 }
 
