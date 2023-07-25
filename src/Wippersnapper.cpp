@@ -1468,6 +1468,43 @@ void cbPixelsMsg(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a UART message and executes the callback based on the message's tag.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
+                       void **arg) {
+  if (field->tag ==
+      wippersnapper_signal_v1_UARTRequest_req_uart_device_attach_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_UARTRequest_req_uart_device_attach_tag");
+
+    // attempt to decode create message
+
+    wippersnapper_uart_v1_UARTDeviceAttachRequest msgUARTInitReq = wippersnapper_uart_v1_UARTDeviceAttachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_uart_v1_UARTDeviceAttachRequest_fields,
+                   &msgUARTInitReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type: UARTDeviceAttachRequest!");
+      return false;
+    }
+
+    // TODO: Initialize UART bus
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: UART message type not found!");
+    return false;
+  }
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief    Called when the signal UART sub-topic receives a
@@ -1493,8 +1530,7 @@ void cbSignalUARTReq(char *data, uint16_t len) {
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
-  // TODO: Create cbDecodeUARTMessage() function
-  // WS.msgSignalDS.cb_payload.funcs.decode = cbDecodeDs18x20Msg;
+  WS.msgSignalUART.cb_payload.funcs.decode = cbDecodeUARTMessage;
 
   // Decode DS signal request
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
