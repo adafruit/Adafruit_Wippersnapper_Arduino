@@ -1468,6 +1468,41 @@ void cbPixelsMsg(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when the signal UART sub-topic receives a
+              new message. Performs decoding.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbSignalUARTReq(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE on Signal of type UART: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Zero-out existing UART signal message
+  WS.msgSignalUART = wippersnapper_signal_v1_UARTRequest_init_zero;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  // TODO: Create cbDecodeUARTMessage() function
+  // WS.msgSignalDS.cb_payload.funcs.decode = cbDecodeDs18x20Msg;
+
+  // Decode DS signal request
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_UARTRequest_fields,
+                 &WS.msgSignalUART))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode UART Signal message");
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -2142,7 +2177,7 @@ bool Wippersnapper::generateWSTopics() {
   _topic_signal_uart_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_uart_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_uart_sub);
-  _topic_signal_uart_sub->setCallback(cbSignalDSReq);
+  _topic_signal_uart_sub->setCallback(cbSignalUARTReq);
 
 // Create broker-to-device UART topic
 #ifdef USE_PSRAM
