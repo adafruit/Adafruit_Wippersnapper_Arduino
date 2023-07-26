@@ -1505,8 +1505,6 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
 
-    
-
   } else {
     WS_DEBUG_PRINTLN("ERROR: UART message type not found!");
     return false;
@@ -1535,7 +1533,7 @@ void cbSignalUARTReq(char *data, uint16_t len) {
   WS.bufSize = len;
 
   // Zero-out existing UART signal message
-  WS.msgSignalUART = wippersnapper_signal_v1_UARTRequest_init_zero;
+  // WS.msgSignalUART = wippersnapper_signal_v1_UARTRequest_init_zero;
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known

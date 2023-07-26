@@ -54,6 +54,7 @@
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
+#include "components/uart/ws_uart.h"
 
 // External libraries
 #include "Adafruit_MQTT.h" // MQTT Client
@@ -210,6 +211,7 @@ class ws_servo;
 class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
+class ws_uart;
 
 /**************************************************************************/
 /*!
@@ -330,6 +332,7 @@ public:
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
+  ws_uart *_uartComponent;        ///< Instance of UART class
 
   // TODO: does this really need to be global?
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */

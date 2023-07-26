@@ -24,8 +24,10 @@
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
 #define USE_SW_UART
 #include <SoftwareSerial.h>
+#else
+#include <HardwareSerial.h>
+// HardwareSerial HWSerial(1);
 #endif
-
 
 class Wippersnapper; // forward declaration
 
@@ -47,7 +49,6 @@ private:
 #else
   HardwareSerial *_hwSerial = nullptr;
 #endif
-
 };
 extern Wippersnapper WS;
 

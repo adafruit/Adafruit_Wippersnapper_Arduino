@@ -15,14 +15,30 @@
  */
 #include "ws_uart.h"
 
-ws_uart:ws_uart(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
-  // Parse out message's bus_info
-  int32_t baud = msgUARTRequest->bus_info.baudrate;
+#if !defined(ARDUINO_ARCH_ESP8266) || !defined(ARDUINO_ARCH_RP2040)
+HardwareSerial HWSerial(1); ///< Default HardwareSerial instance
+#endif
 
+ws_uart::ws_uart(
+    wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
+  // Parse out message's bus_info and store in class
+  int32 baud = msgUARTRequest->bus_info.baudrate;
+  int32 rx = msgUARTRequest->bus_info.pin_rx;
+  int32 tx = msgUARTRequest->bus_info.pin_tx;
+  bool invert = msgUARTRequest->bus_info.is_invert;
 
+  // Initialize and begin UART hardware serial bus
+  _hwSerial = &HWSerial;
+  _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
+  // TODO: Create UART software serial bus
+
+  // TODO: Handle parsing out the device's info too
 }
 
 ws_uart::~ws_uart(void) {
-    _swSerial = nullptr;
-    _hwSerial = nullptr;
+#ifdef USE_SW_UART
+  _swSerial = nullptr;
+#else
+  _hwSerial = nullptr;
+#endif
 }
