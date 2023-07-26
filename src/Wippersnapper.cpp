@@ -1506,7 +1506,8 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // Initialize the device's UART Bus
-    WS._uartComponent(&msgUARTInitReq);
+    // TODO!
+    // new WS._uartComponent->begin(&msgUARTInitReq);
     // TODO: send response message back to IO
 
   } else {

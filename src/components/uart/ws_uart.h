@@ -16,6 +16,8 @@
 #ifndef WS_UART_H
 #define WS_UART_H
 
+#include "drivers/ws_uart_driver_base.h"
+
 #include "Wippersnapper.h"
 
 // ESP8266 platform uses SoftwareSerial
@@ -39,16 +41,18 @@ class Wippersnapper; // forward declaration
 /**************************************************************************/
 class ws_uart {
 public:
-  ws_uart(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest);
+  ws_uart() {};
   ~ws_uart(void);
 
-  // TODO: Constructor for using SW serial should be conditionally defined
+  bool begin(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest); ///< Initializes the UART bus.
+  void update(); ///< Updates the UART device at every polling interval, must be called by main app.
 private:
 #ifdef USE_SW_UART
-  SoftwareSerial *_swSerial = nullptr;
+  SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance
 #else
-  HardwareSerial *_hwSerial = nullptr;
+  HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance
 #endif
+int32_t _polling_interval; ///< UART device's polling interval, in milliseconds
 };
 extern Wippersnapper WS;
 

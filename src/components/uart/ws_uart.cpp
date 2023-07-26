@@ -19,26 +19,39 @@
 HardwareSerial HWSerial(1); ///< Default HardwareSerial instance
 #endif
 
-ws_uart::ws_uart(
-    wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
-  // Parse out message's bus_info and store in class
-  int32_t baud = msgUARTRequest->bus_info.baudrate;
-  int32_t rx = msgUARTRequest->bus_info.pin_rx;
-  int32_t tx = msgUARTRequest->bus_info.pin_tx;
-  bool invert = msgUARTRequest->bus_info.is_invert;
-
-  // Initialize and begin UART hardware serial bus
-  _hwSerial = &HWSerial;
-  _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
-  // TODO: Create UART software serial bus
-
-  // TODO: Handle parsing out the device's info too
-}
-
 ws_uart::~ws_uart(void) {
 #ifdef USE_SW_UART
   _swSerial = nullptr;
 #else
   _hwSerial = nullptr;
 #endif
+}
+
+bool ws_uart::begin(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
+  // Parse bus_info
+  int32_t baud = msgUARTRequest->bus_info.baudrate;
+  int32_t rx = msgUARTRequest->bus_info.pin_rx;
+  int32_t tx = msgUARTRequest->bus_info.pin_tx;
+  bool invert = msgUARTRequest->bus_info.is_invert;
+
+  // Initialize and begin UART bus depending on if HW UART or SW UART
+  #ifdef USE_SW_UART
+  // NOTE/TODO: Currently UNTESTED and NOT COMPILED WITH DEFAULT BUILD TARGET, ESP32!
+  pinMode(rx, INPUT);
+  pinMode(tx, OUTPUT);
+  _swSerial = &SoftwareSerial(rx, tx, invert);
+  #else
+  _hwSerial = &HWSerial;
+  _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
+  #endif
+
+  // We've initialized the bus, let's next initialize the device 
+
+  // 
+  // Parse out message's info and store in class
+  // TODO: Strcpy to the class' device_id member
+  //msgUARTRequest->device_id;
+  _polling_interval = msgUARTRequest->polling_interval;
+
+  return true;
 }
