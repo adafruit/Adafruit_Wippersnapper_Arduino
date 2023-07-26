@@ -21,17 +21,6 @@
 
 #include "Wippersnapper.h"
 
-// ESP8266 platform uses SoftwareSerial
-// so does RP2040 (note that this has differences from the pure softwareserial
-// library, see: https://arduino-pico.readthedocs.io/en/latest/piouart.html)
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
-#define USE_SW_UART
-#include <SoftwareSerial.h>
-#else
-#include <HardwareSerial.h>
-// HardwareSerial HWSerial(1);
-#endif
-
 class Wippersnapper; // forward declaration
 
 /**************************************************************************/
@@ -42,18 +31,21 @@ class Wippersnapper; // forward declaration
 /**************************************************************************/
 class ws_uart {
 public:
-  ws_uart() {};
+  ws_uart(){};
   ~ws_uart(void);
 
-  bool begin(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest); ///< Initializes the UART bus.
-  void update(); ///< Updates the UART device at every polling interval, must be called by main app.
+  bool begin(wippersnapper_uart_v1_UARTDeviceAttachRequest
+                 *msgUARTRequest); ///< Initializes the UART bus.
+  void update(); ///< Updates the UART device at every polling interval, must be
+                 ///< called by main app.
 private:
 #ifdef USE_SW_UART
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance
 #else
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance
 #endif
-int32_t _polling_interval; ///< UART device's polling interval, in milliseconds
+  int32_t
+      _polling_interval; ///< UART device's polling interval, in milliseconds
 };
 extern Wippersnapper WS;
 

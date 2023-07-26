@@ -18,6 +18,17 @@
 #include "Wippersnapper.h"
 #include <Adafruit_Sensor.h>
 
+// ESP8266 platform uses SoftwareSerial
+// so does RP2040 (note that this has differences from the pure softwareserial
+// library, see: https://arduino-pico.readthedocs.io/en/latest/piouart.html)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
+#define USE_SW_UART
+#include <SoftwareSerial.h>
+#else
+#include <HardwareSerial.h>
+// HardwareSerial HWSerial(1);
+#endif
+
 /**************************************************************************/
 /*!
     @brief  Base class for UART Device Drivers.
@@ -25,16 +36,25 @@
 /**************************************************************************/
 class ws_uart_drv {
 public:
-ws_uart_drv(void){};
-~ws_uart_drv(void){};
-// TODO! should we configure the serial within constructor or elsewhere..?
-//  void configureSerial(SoftwareSerial *swSerial);
-//  void configureSerial(HardwareSerial *hwSerial);
-// can we just call an update() here or something and then in uart's update() we'd call the driver directly
-// we added ws.h here so maybe we can try to pack and send data within sub-classes
-// we'd also need to pass the sensor types wed be polling, the protos would need an update
+#ifdef USE_SW_UART
+  ws_uart_drv(SoftwareSerial *swSerial){};
+#else
+  ws_uart_drv(HardwareSerial *hwSerial){};
+#endif
+
+  /*******************************************************************************/
+  /*!
+      @brief    Destructor for a UART device driver.
+  */
+  /*******************************************************************************/
+  ~ws_uart_drv(void){};
+
+  // TODO:
+  // can we just call an update() here or something and then in uart's update()
+  // we'd call the driver directly we added ws.h here so maybe we can try to
+  // pack and send data within sub-classes we'd also need to pass the sensor
+  // types wed be polling, the protos would need an update
 private:
-  // TODO
 };
 extern Wippersnapper WS;
 

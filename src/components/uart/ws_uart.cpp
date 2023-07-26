@@ -27,30 +27,32 @@ ws_uart::~ws_uart(void) {
 #endif
 }
 
-bool ws_uart::begin(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
+bool ws_uart::begin(
+    wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   // Parse bus_info
   int32_t baud = msgUARTRequest->bus_info.baudrate;
   int32_t rx = msgUARTRequest->bus_info.pin_rx;
   int32_t tx = msgUARTRequest->bus_info.pin_tx;
   bool invert = msgUARTRequest->bus_info.is_invert;
 
-  // Initialize and begin UART bus depending on if HW UART or SW UART
-  #ifdef USE_SW_UART
-  // NOTE/TODO: Currently UNTESTED and NOT COMPILED WITH DEFAULT BUILD TARGET, ESP32!
+// Initialize and begin UART bus depending on if HW UART or SW UART
+#ifdef USE_SW_UART
+  // NOTE/TODO: Currently UNTESTED and NOT COMPILED WITH DEFAULT BUILD TARGET,
+  // ESP32!
   pinMode(rx, INPUT);
   pinMode(tx, OUTPUT);
   _swSerial = &SoftwareSerial(rx, tx, invert);
-  #else
+#else
   _hwSerial = &HWSerial;
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
-  #endif
+#endif
 
   // TODO!!!
-  // We've initialized the bus, let's next initialize the device 
-  // 
+  // We've initialized the bus, let's next initialize the device
+  //
   // Parse out message's info and store in class
   // TODO: Strcpy to the class' device_id member
-  //msgUARTRequest->device_id;
+  // msgUARTRequest->device_id;
   _polling_interval = msgUARTRequest->polling_interval;
 
   return true;
