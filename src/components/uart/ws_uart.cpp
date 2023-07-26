@@ -45,8 +45,8 @@ bool ws_uart::begin(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTReques
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
   #endif
 
+  // TODO!!!
   // We've initialized the bus, let's next initialize the device 
-
   // 
   // Parse out message's info and store in class
   // TODO: Strcpy to the class' device_id member

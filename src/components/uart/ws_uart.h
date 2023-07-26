@@ -16,7 +16,8 @@
 #ifndef WS_UART_H
 #define WS_UART_H
 
-#include "drivers/ws_uart_driver_base.h"
+#include "drivers/ws_uart_drv.h"
+#include "drivers/ws_uart_drv_pm25aqi.h"
 
 #include "Wippersnapper.h"
 

@@ -1,5 +1,5 @@
 /*!
- * @file WipperSnapper_I2C_Driver.h
+ * @file ws_uart_drv.h
  *
  * Base implementation for UART device drivers
  *
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef WS_UART_DRIVER_BASE_H
-#define WS_UART_DRIVER_BASE_H
+#ifndef WS_UART_DRV_H
+#define WS_UART_DRV_H
 #include "Wippersnapper.h"
 #include <Adafruit_Sensor.h>
 
@@ -23,17 +23,19 @@
     @brief  Base class for UART Device Drivers.
 */
 /**************************************************************************/
-class ws_uart_driver_base {
+class ws_uart_drv {
 public:
-//  void ws_uart_driver_base(void) {};
-//  void ~ws_uart_driver_base(void) {};
+ws_uart_drv(void){};
+~ws_uart_drv(void){};
+// TODO! should we configure the serial within constructor or elsewhere..?
 //  void configureSerial(SoftwareSerial *swSerial);
 //  void configureSerial(HardwareSerial *hwSerial);
 // can we just call an update() here or something and then in uart's update() we'd call the driver directly
 // we added ws.h here so maybe we can try to pack and send data within sub-classes
+// we'd also need to pass the sensor types wed be polling, the protos would need an update
 private:
   // TODO
 };
 extern Wippersnapper WS;
 
-#endif // WS_UART_DRIVER_BASE_H
+#endif // WS_UART_DRV_H
