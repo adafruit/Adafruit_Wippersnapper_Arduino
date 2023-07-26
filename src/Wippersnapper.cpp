@@ -1470,7 +1470,8 @@ void cbPixelsMsg(char *data, uint16_t len) {
 
 /******************************************************************************************/
 /*!
-    @brief    Decodes a UART message and executes the callback based on the message's tag.
+    @brief    Decodes a UART message and executes the callback based on the
+   message's tag.
     @param    stream
               Incoming data stream from buffer.
     @param    field
@@ -1481,7 +1482,7 @@ void cbPixelsMsg(char *data, uint16_t len) {
 */
 /******************************************************************************************/
 bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
-                       void **arg) {
+                         void **arg) {
   if (field->tag ==
       wippersnapper_signal_v1_UARTRequest_req_uart_device_attach_tag) {
     WS_DEBUG_PRINTLN(
@@ -1489,11 +1490,12 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
         "wippersnapper_signal_v1_UARTRequest_req_uart_device_attach_tag");
 
     // attempt to decode create message
-
-    wippersnapper_uart_v1_UARTDeviceAttachRequest msgUARTInitReq = wippersnapper_uart_v1_UARTDeviceAttachRequest_init_zero;
+    wippersnapper_uart_v1_UARTDeviceAttachRequest msgUARTInitReq =
+        wippersnapper_uart_v1_UARTDeviceAttachRequest_init_zero;
     if (!pb_decode(stream, wippersnapper_uart_v1_UARTDeviceAttachRequest_fields,
                    &msgUARTInitReq)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode message of type: UARTDeviceAttachRequest!");
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode message of type: UARTDeviceAttachRequest!");
       return false;
     }
 
