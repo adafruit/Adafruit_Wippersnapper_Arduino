@@ -26,8 +26,8 @@
 #include <SoftwareSerial.h>
 #endif
 
-// forward decl.
-class Wippersnapper;
+
+class Wippersnapper; // forward declaration
 
 /**************************************************************************/
 /*!
@@ -35,13 +35,19 @@ class Wippersnapper;
             and the device's UART bus.
 */
 /**************************************************************************/
-class ws_ds18x20 {
+class ws_uart {
 public:
-  // TODO
+  ws_uart(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest);
+  ~ws_uart(void);
 
   // TODO: Constructor for using SW serial should be conditionally defined
 private:
-  // TODO
+#ifdef USE_SW_UART
+  SoftwareSerial *_swSerial = nullptr;
+#else
+  HardwareSerial *_hwSerial = nullptr;
+#endif
+
 };
 extern Wippersnapper WS;
 

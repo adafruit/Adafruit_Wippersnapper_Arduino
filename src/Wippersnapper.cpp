@@ -1500,6 +1500,13 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // TODO: Initialize UART bus
+    if (!msgUARTInitReq.has_bus_info) {
+      WS_DEBUG_PRINTLN("ERROR: UART bus info not found within message!");
+      return false;
+    }
+
+    
+
   } else {
     WS_DEBUG_PRINTLN("ERROR: UART message type not found!");
     return false;

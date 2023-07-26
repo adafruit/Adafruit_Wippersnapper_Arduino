@@ -14,3 +14,15 @@
  *
  */
 #include "ws_uart.h"
+
+ws_uart:ws_uart(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
+  // Parse out message's bus_info
+  int32_t baud = msgUARTRequest->bus_info.baudrate;
+
+
+}
+
+ws_uart::~ws_uart(void) {
+    _swSerial = nullptr;
+    _hwSerial = nullptr;
+}
