@@ -22,9 +22,9 @@ HardwareSerial HWSerial(1); ///< Default HardwareSerial instance
 ws_uart::ws_uart(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   // Parse out message's bus_info and store in class
-  int32 baud = msgUARTRequest->bus_info.baudrate;
-  int32 rx = msgUARTRequest->bus_info.pin_rx;
-  int32 tx = msgUARTRequest->bus_info.pin_tx;
+  int32_t baud = msgUARTRequest->bus_info.baudrate;
+  int32_t rx = msgUARTRequest->bus_info.pin_rx;
+  int32_t tx = msgUARTRequest->bus_info.pin_tx;
   bool invert = msgUARTRequest->bus_info.is_invert;
 
   // Initialize and begin UART hardware serial bus

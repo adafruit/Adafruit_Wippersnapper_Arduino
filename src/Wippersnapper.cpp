@@ -1499,11 +1499,15 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
 
-    // TODO: Initialize UART bus
+    // Check if bus_info is within the message
     if (!msgUARTInitReq.has_bus_info) {
       WS_DEBUG_PRINTLN("ERROR: UART bus info not found within message!");
       return false;
     }
+
+    // Initialize the device's UART Bus
+    WS._uartComponent(&msgUARTInitReq);
+    // TODO: send response message back to IO
 
   } else {
     WS_DEBUG_PRINTLN("ERROR: UART message type not found!");
