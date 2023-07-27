@@ -411,9 +411,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
     }
-    _pm25->configureDriver(msgDeviceInitReq);
-    drivers.push_back(_pm25);
-    WS_DEBUG_PRINTLN("PM2.5 AQI Sensor Initialized Successfully!");
+    _pct2075->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_pct2075);
+    WS_DEBUG_PRINTLN("PCT2075 Temp Sensor Initialized Successfully!");
   } else if (strcmp("pmsa003i", msgDeviceInitReq->i2c_device_name) == 0) {
     _pm25 = new WipperSnapper_I2C_Driver_PM25(this->_i2c, i2cAddress);
     if (!_pm25->begin()) {
