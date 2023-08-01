@@ -41,6 +41,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_SHTC3.h"
 #include "drivers/WipperSnapper_I2C_Driver_SI7021.h"
 #include "drivers/WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor.h"
+#include "drivers/WipperSnapper_I2C_Driver_TMP117.h"
 #include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
 #include "drivers/WipperSnapper_I2C_Driver_VEML7700.h"
 #include "drivers/WipperSnapper_I2C_Driver_VL53L0X.h"
@@ -100,6 +101,7 @@ private:
   WipperSnapper_I2C_Driver_BME680 *_bme680 = nullptr;
   WipperSnapper_I2C_Driver_HTS221 *_hts221 = nullptr;
   WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
+  WipperSnapper_I2C_Driver_TMP117 *_tmp117 = nullptr;
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
   WipperSnapper_I2C_Driver_VEML7700 *_veml7700 = nullptr;
   WipperSnapper_I2C_Driver_SCD4X *_scd40 = nullptr;
