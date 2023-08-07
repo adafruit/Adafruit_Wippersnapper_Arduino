@@ -259,7 +259,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_bmp280);
     WS_DEBUG_PRINTLN("BMP280 Initialized Successfully!");
   } else if (strcmp("bmp388", msgDeviceInitReq->i2c_device_name) == 0) {
-    _bmp388 = new WipperSnapper_I2C_Driver_BMP388(this->_i2c, i2cAddress);
+    _bmp388 = new WipperSnapper_I2C_Driver_BMP3XX(this->_i2c, i2cAddress);
     if (!_bmp388->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize BMP388!");
       _busStatusResponse =
