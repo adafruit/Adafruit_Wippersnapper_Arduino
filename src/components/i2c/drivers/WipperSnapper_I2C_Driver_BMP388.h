@@ -83,7 +83,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if(!_bmp->performReading())
+    if (!_bmp->performReading())
       return false;
     tempEvent->temperature = _bmp->temperature;
     return true;
@@ -100,7 +100,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-   if(!_bmp->performReading())
+    if (!_bmp->performReading())
       return false;
     pressureEvent->pressure = _bmp->pressure / 100.0F;
     return true;
@@ -116,7 +116,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if(!_bmp->performReading())
+    if (!_bmp->performReading())
       return false;
     // TODO: update once we add an altitude sensor type
     // see https://github.com/adafruit/Adafruit_Sensor/issues/52
