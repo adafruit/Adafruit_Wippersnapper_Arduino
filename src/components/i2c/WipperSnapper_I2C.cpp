@@ -269,7 +269,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _bmp3xx->configureDriver(msgDeviceInitReq);
     drivers.push_back(_bmp3xx);
     WS_DEBUG_PRINTLN("BMP388 Initialized Successfully!");
-  } else if (strcmp("bme680", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if ((strcmp("bme680", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("bme688", msgDeviceInitReq->i2c_device_name) == 0)) {
     _bme680 = new WipperSnapper_I2C_Driver_BME680(this->_i2c, i2cAddress);
     if (!_bme680->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize BME680!");
