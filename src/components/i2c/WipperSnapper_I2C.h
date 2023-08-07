@@ -101,7 +101,7 @@ private:
   WipperSnapper_I2C_Driver_BH1750 *_bh1750 = nullptr;
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
   WipperSnapper_I2C_Driver_BMP280 *_bmp280 = nullptr;
-  WipperSnapper_I2C_Driver_BMP3XX *_bmp388 = nullptr;
+  WipperSnapper_I2C_Driver_BMP3XX *_bmp3xx = nullptr;
   WipperSnapper_I2C_Driver_BME680 *_bme680 = nullptr;
   WipperSnapper_I2C_Driver_HTS221 *_hts221 = nullptr;
   WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
