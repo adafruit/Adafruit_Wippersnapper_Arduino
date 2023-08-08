@@ -15,6 +15,7 @@
 
 #ifndef WS_UART_DRV_H
 #define WS_UART_DRV_H
+#include "Wippersnapper.h"
 #include <Adafruit_Sensor.h>
 
 // ESP8266 platform uses SoftwareSerial
@@ -27,8 +28,6 @@
 #include <HardwareSerial.h>
 #endif
 
-
-
 /**************************************************************************/
 /*!
     @brief  Base class for UART Device Drivers.
@@ -37,9 +36,9 @@
 class ws_uart_drv {
 public:
 #ifdef USE_SW_UART
-  ws_uart_drv(SoftwareSerial *swSerial){};
+  ws_uart_drv(SoftwareSerial *swSerial, int32_t pollingInterval){};
 #else
-  ws_uart_drv(HardwareSerial *hwSerial){};
+  ws_uart_drv(HardwareSerial *hwSerial, int32_t pollingInterval){};
 #endif
 
   /*******************************************************************************/
@@ -54,8 +53,8 @@ public:
   // we'd call the driver directly we added ws.h here so maybe we can try to
   // pack and send data within sub-classes we'd also need to pass the sensor
   // types wed be polling, the protos would need an update
+  int32_t pollingInterval; ///< UART device's polling interval, in milliseconds
 private:
 };
-
 
 #endif // WS_UART_DRV_H

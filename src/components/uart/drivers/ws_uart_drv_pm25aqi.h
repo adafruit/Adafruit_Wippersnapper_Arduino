@@ -29,8 +29,10 @@ public:
 #ifdef USE_SW_UART
   ws_uart_drv_pm25aqi() : ws_uart_drv(SoftwareSerial * swSerial) {}
 #else
-  ws_uart_drv_pm25aqi(HardwareSerial *hwSerial) : ws_uart_drv(hwSerial) {
+  ws_uart_drv_pm25aqi(HardwareSerial *hwSerial, int32_t pollingInterval)
+      : ws_uart_drv(hwSerial, pollingInterval) {
     _hwSerial = hwSerial;
+    pollingInterval = pollingInterval;
   };
 #endif // USE_SW_UART
 
@@ -55,9 +57,8 @@ public:
       return false;
     }
 #endif
-    //Serial.println(WS.bufSize);
+    // Serial.println(WS.bufSize);
     return true;
-
   }
 
 protected:
@@ -65,6 +66,5 @@ protected:
   PM25_AQI_Data _data;                 ///< PM25AQI sensor data struct.
   HardwareSerial *_hwSerial = nullptr; ///< Pointer to UART interface
 };
-
 
 #endif // WipperSnapper_I2C_Driver_VL53L0X

@@ -52,8 +52,20 @@ bool ws_uart::begin(
   //
   // Parse out message's info and store in class
   // TODO: Strcpy to the class' device_id member
-  // msgUARTRequest->device_id;
-  _polling_interval = msgUARTRequest->polling_interval;
+
+  //_polling_interval = msgUARTRequest->polling_interval;
+
+  // Initialize UART device
+  if (strcmp(msgUARTRequest->device_id, "pm25aqi") == 0) {
+    _pm25aqi =
+        new ws_uart_drv_pm25aqi(_hwSerial, msgUARTRequest->polling_interval);
+    // _pm25aqi->begin(msgUARTRequest);
+  } else if (strcmp(msgUARTRequest->device_id, "gps") == 0) {
+    // TODO: GPS UART initialization here
+  } else {
+    WS_DEBUG_PRINTLN("ERROR - Could not find UART device type");
+    return false;
+  }
 
   return true;
 }

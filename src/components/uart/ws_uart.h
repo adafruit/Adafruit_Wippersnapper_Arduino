@@ -44,8 +44,7 @@ private:
 #else
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance
 #endif
-  int32_t
-      _polling_interval; ///< UART device's polling interval, in milliseconds
+  ws_uart_drv_pm25aqi *_pm25aqi = nullptr; ///< Pointer to a PM25 AQI device
 };
 extern Wippersnapper WS;
 
