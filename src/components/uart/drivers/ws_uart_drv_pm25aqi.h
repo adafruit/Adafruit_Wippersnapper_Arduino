@@ -1,5 +1,5 @@
 /*!
- * @file ws_uart_driver_pm25aqi.h
+ * @file ws_uart_drv_pm25aqi.h
  *
  * Device driver for the Adafruit PM25AQI Arduino Library
  *
@@ -26,37 +26,45 @@
 /**************************************************************************/
 class ws_uart_drv_pm25aqi : public ws_uart_drv {
 public:
-  /* The following constructors crash the compiler, this needs investigation on
-  Friday: nstructor 'ws_uart_drv_pm25aqi::ws_uart_drv_pm25aqi()':
-  /Users/brentrubell/Documents/Arduino/libraries/Adafruit_Wippersnapper_Arduino/src/components/uart/drivers/ws_uart_drv_pm25aqi.h:48:54:
-  error: expected primary-expression before '*' token ws_uart_drv_pm25aqi() :
-  ws_uart_drv(HardwareSerial *hwSerial) {}
-                                                        ^
-  /Users/brentrubell/Documents/Arduino/libraries/Adafruit_Wippersnapper_Arduino/src/components/uart/drivers/ws_uart_drv_pm25aqi.h:48:55:
-  error: 'hwSerial' was not declared in this scope ws_uart_drv_pm25aqi() :
-  ws_uart_drv(HardwareSerial *hwSerial) {}
-                                                         ^~~~~~~~
-  /Users/brentrubell/Documents/Arduino/libraries/Adafruit_Wippersnapper_Arduino/src/components/uart/drivers/ws_uart_drv_pm25aqi.h:48:55:
-  note: suggested alternative: 'Serial' ws_uart_drv_pm25aqi() :
-  ws_uart_drv(HardwareSerial *hwSerial) {}
-  */
-  /*
-  #ifdef USE_SW_UART
-  ws_uart_drv_pm25aqi() : ws_uart_drv(SoftwareSerial *swSerial) {}
-  #else
-  ws_uart_drv_pm25aqi() : ws_uart_drv(HardwareSerial *hwSerial) {}
-  #endif // USE_SW_UART
-  */
+#ifdef USE_SW_UART
+  ws_uart_drv_pm25aqi() : ws_uart_drv(SoftwareSerial * swSerial) {}
+#else
+  ws_uart_drv_pm25aqi(HardwareSerial *hwSerial) : ws_uart_drv(hwSerial) {
+    _hwSerial = hwSerial;
+  };
+#endif // USE_SW_UART
 
   /*******************************************************************************/
   /*!
       @brief    Destructor for PM25AQI sensor.
   */
   /*******************************************************************************/
-  ~ws_uart_drv_pm25aqi() { _aqi = nullptr; }
+  ~ws_uart_drv_pm25aqi() {
+    _aqi = nullptr;
+    _hwSerial = nullptr;
+  }
+
+  bool begin() {
+    _aqi = new Adafruit_PM25AQI();
+
+#ifdef USE_SW_UART
+// TODO: Add SW uart path
+#else
+    if (!_aqi->begin_UART(
+            _hwSerial)) { // connect to the sensor over hardware serial
+      return false;
+    }
+#endif
+    //Serial.println(WS.bufSize);
+    return true;
+
+  }
 
 protected:
-  Adafruit_PM25AQI *_aqi = nullptr; ///< Pointer to PM25AQI sensor object
+  Adafruit_PM25AQI *_aqi = nullptr;    ///< Pointer to PM25AQI sensor object
+  PM25_AQI_Data _data;                 ///< PM25AQI sensor data struct.
+  HardwareSerial *_hwSerial = nullptr; ///< Pointer to UART interface
 };
+
 
 #endif // WipperSnapper_I2C_Driver_VL53L0X

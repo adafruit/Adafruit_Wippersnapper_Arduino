@@ -15,7 +15,6 @@
 
 #ifndef WS_UART_DRV_H
 #define WS_UART_DRV_H
-#include "Wippersnapper.h"
 #include <Adafruit_Sensor.h>
 
 // ESP8266 platform uses SoftwareSerial
@@ -26,8 +25,9 @@
 #include <SoftwareSerial.h>
 #else
 #include <HardwareSerial.h>
-// HardwareSerial HWSerial(1);
 #endif
+
+
 
 /**************************************************************************/
 /*!
@@ -56,6 +56,6 @@ public:
   // types wed be polling, the protos would need an update
 private:
 };
-extern Wippersnapper WS;
+
 
 #endif // WS_UART_DRV_H
