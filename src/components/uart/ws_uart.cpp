@@ -47,19 +47,18 @@ bool ws_uart::begin(
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
 #endif
 
-  // TODO!!!
-  // We've initialized the bus, let's next initialize the device
-  //
-  // Parse out message's info and store in class
-  // TODO: Strcpy to the class' device_id member
-
-  //_polling_interval = msgUARTRequest->polling_interval;
-
   // Initialize UART device
   if (strcmp(msgUARTRequest->device_id, "pm25aqi") == 0) {
+    if (_pm25aqi == nullptr) {
+      WS_DEBUG_PRINTLN("ERROR: PM25 AQI UART already initialized on this bus");
+      return false;
+    }
+    // TODO: Add SW serial support below
     _pm25aqi =
         new ws_uart_drv_pm25aqi(_hwSerial, msgUARTRequest->polling_interval);
+    // TODO: Do begin() here
     // _pm25aqi->begin(msgUARTRequest);
+    WS_DEBUG_PRINTLN("INFO - PM25 AQI UART initialized");
   } else if (strcmp(msgUARTRequest->device_id, "gps") == 0) {
     // TODO: GPS UART initialization here
   } else {
