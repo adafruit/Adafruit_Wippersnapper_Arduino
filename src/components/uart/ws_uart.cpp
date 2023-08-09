@@ -62,6 +62,8 @@ bool ws_uart::begin(
       return false;
     }
     WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized");
+    // Set MQTT client in driver TODO: This should be handled better, elsewhere!
+    _pm25aqi->set_mqtt_client(WS._mqtt);
   } else if (strcmp(msgUARTRequest->device_id, "gps") == 0) {
     // TODO: GPS UART initialization here
   } else {

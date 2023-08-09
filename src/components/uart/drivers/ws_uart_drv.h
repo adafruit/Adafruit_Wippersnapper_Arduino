@@ -48,12 +48,15 @@ public:
   /*******************************************************************************/
   ~ws_uart_drv(void){};
 
+  void set_mqtt_client(Adafruit_MQTT *_mqtt) {_mqttClient = _mqtt;}
+
   // TODO:
   // can we just call an update() here or something and then in uart's update()
   // we'd call the driver directly we added ws.h here so maybe we can try to
   // pack and send data within sub-classes we'd also need to pass the sensor
   // types wed be polling, the protos would need an update
   int32_t pollingInterval; ///< UART device's polling interval, in milliseconds
+  Adafruit_MQTT *_mqttClient;
 private:
 };
 

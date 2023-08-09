@@ -30,6 +30,10 @@
 #include <wippersnapper/description/v1/description.pb.h> // description.proto
 #include <wippersnapper/signal/v1/signal.pb.h>           // signal.proto
 
+// External libraries
+#include "Adafruit_MQTT.h" // MQTT Client
+#include "Arduino.h"       // Wiring
+
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
@@ -56,9 +60,6 @@
 #include "components/servo/ws_servo.h"
 #include "components/uart/ws_uart.h"
 
-// External libraries
-#include "Adafruit_MQTT.h" // MQTT Client
-#include "Arduino.h"       // Wiring
 
 // ESP32-IDF components and macros
 #ifdef ARDUINO_ARCH_ESP32
@@ -85,7 +86,6 @@
 
 // Note: These might be better off in their respective wrappers
 #include <SPI.h>
-
 #include "Adafruit_SleepyDog.h"
 
 #if defined(USE_TINYUSB)

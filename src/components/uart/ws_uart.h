@@ -16,12 +16,9 @@
 #ifndef WS_UART_H
 #define WS_UART_H
 
+#include "Wippersnapper.h"
 #include "drivers/ws_uart_drv.h"
 #include "drivers/ws_uart_drv_pm25aqi.h"
-
-#include "Wippersnapper.h"
-
-class Wippersnapper; // forward declaration
 
 /**************************************************************************/
 /*!
@@ -46,6 +43,5 @@ private:
 #endif
   ws_uart_drv_pm25aqi *_pm25aqi = nullptr; ///< Pointer to a PM25 AQI device
 };
-extern Wippersnapper WS;
 
 #endif // WS_UART_H

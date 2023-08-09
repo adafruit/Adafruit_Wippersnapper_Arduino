@@ -15,6 +15,7 @@
 #ifndef WS_UART_DRV_PM25AQI_H
 #define WS_UART_DRV_PM25AQI_H
 
+#include "Wippersnapper.h"
 #include "ws_uart_drv.h"
 #include <Adafruit_PM25AQI.h>
 
@@ -59,6 +60,22 @@ public:
 #endif
     // Serial.println(WS.bufSize);
     return true;
+  }
+
+  void update() {
+    // Attempt to read and pack PM25AQI data
+    if (!_aqi->read(&_data)) {
+      Serial.println("Could not read AQI...");
+      return;
+    }
+    // We have data packed into PM25_AQI_Data struct.
+    // but, let's re-package this data into a sensor_event message for IO
+    
+    // Create a new response message?
+    // TODO: Maybe we import the i2c response message here within the proto wrapper?
+    wippersnapper_signal_v1_I2CResponse msgi2cResponse = wippersnapper_signal_v1_I2CResponse_init_zero;
+    msgi2cResponse.which_payload = wippersnapper_signal_v1_I2CResponse_resp_i2c_device_event_tag;
+
   }
 
 protected:
