@@ -50,19 +50,22 @@ bool ws_uart::begin(
   // Initialize UART device
   if (strcmp(msgUARTRequest->device_id, "pm25aqi") == 0) {
     if (_pm25aqi == nullptr) {
-      WS_DEBUG_PRINTLN("ERROR: PM25 AQI UART already initialized on this bus");
+      WS_DEBUG_PRINTLN(
+          "[ERROR, UART]: PM25AQI driver already initialized on bus!");
       return false;
     }
     // TODO: Add SW serial support below
     _pm25aqi =
         new ws_uart_drv_pm25aqi(_hwSerial, msgUARTRequest->polling_interval);
-    // TODO: Do begin() here
-    // _pm25aqi->begin(msgUARTRequest);
-    WS_DEBUG_PRINTLN("INFO - PM25 AQI UART initialized");
+    if (!_pm25aqi->begin()) {
+      WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized");
   } else if (strcmp(msgUARTRequest->device_id, "gps") == 0) {
     // TODO: GPS UART initialization here
   } else {
-    WS_DEBUG_PRINTLN("ERROR - Could not find UART device type");
+    WS_DEBUG_PRINTLN("[ERROR, UART]: Could not find UART device type");
     return false;
   }
 
