@@ -28,8 +28,26 @@
 class ws_uart_drv_pm25aqi : public ws_uart_drv {
 public:
 #ifdef USE_SW_UART
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes a PM25AQI UART device driver.
+      @param    swSerial
+                Pointer to an instance of a SoftwareSerial object.
+      @param    pollingInterval
+                How often the PM25AQI device will be polled, in milliseconds.
+  */
+  /*******************************************************************************/
   ws_uart_drv_pm25aqi() : ws_uart_drv(SoftwareSerial * swSerial) {}
 #else
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes a PM25AQI UART device driver.
+      @param    hwSerial
+                Pointer to an instance of a HardwareSerial object.
+      @param    pollingInterval
+                How often the PM25AQI device will be polled, in milliseconds.
+  */
+  /*******************************************************************************/
   ws_uart_drv_pm25aqi(HardwareSerial *hwSerial, int32_t pollingInterval)
       : ws_uart_drv(hwSerial, pollingInterval) {
     _hwSerial = hwSerial;

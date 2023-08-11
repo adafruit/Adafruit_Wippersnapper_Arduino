@@ -19,6 +19,11 @@
 HardwareSerial HWSerial(1); ///< Default HardwareSerial instance
 #endif
 
+/*******************************************************************************/
+/*!
+    @brief    UART class destructor.
+*/
+/*******************************************************************************/
 ws_uart::~ws_uart(void) {
 #ifdef USE_SW_UART
   _swSerial = nullptr;
@@ -27,6 +32,15 @@ ws_uart::~ws_uart(void) {
 #endif
 }
 
+// TODO: Maybe we need two begin functions, one for the bus, one for the device?
+/*******************************************************************************/
+/*!
+    @brief    Initializes a UART bus and the device on the bus.
+    @param    msgUARTRequest
+              Pointer to a UARTDeviceAttachRequest message.
+    @returns  True if UART bus initialized successfully, False otherwise.
+*/
+/*******************************************************************************/
 bool ws_uart::begin(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   // Parse bus_info
@@ -73,8 +87,12 @@ bool ws_uart::begin(
   return true;
 }
 
-// Checks each UART driver's polling interval and sends an update of the
-// device's state to IO Called by wippersnapper application loop
+/*******************************************************************************/
+/*!
+    @brief    Checks each UART driver's polling interval and sends an update of
+              the device's state to IO.
+*/
+/*******************************************************************************/
 void ws_uart::update() {
   if (_pm25aqi == nullptr) {
     return; // No driver initialized on bus to update

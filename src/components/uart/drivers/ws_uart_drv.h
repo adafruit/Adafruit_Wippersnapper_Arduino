@@ -36,34 +36,67 @@
 class ws_uart_drv {
 public:
 #ifdef USE_SW_UART
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes a UART device driver.
+      @param    swSerial
+                Pointer to an instance of a SoftwareSerial object.
+      @param    pollingInterval
+                How often the UART device will be polled, in milliseconds.
+  */
+  /*******************************************************************************/
   ws_uart_drv(SoftwareSerial *swSerial, int32_t pollingInterval){};
 #else
+  /*******************************************************************************/
+  /*!
+      @brief    Initializes a UART device driver.
+      @param    hwSerial
+                Pointer to an instance of a HardwareSerial object.
+      @param    pollingInterval
+                How often the UART device will be polled, in milliseconds.
+  */
+  /*******************************************************************************/
   ws_uart_drv(HardwareSerial *hwSerial, int32_t pollingInterval){};
 #endif
+  ~ws_uart_drv(void) {}
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for a UART device driver.
+      @brief   Sets the MQTT client used by the uart device driver for
+     publishing data to Adafruit IO.
+      @param   _mqtt
+              Pointer to an Adafruit_MQTT object.
   */
   /*******************************************************************************/
-  ~ws_uart_drv(void){};
+  virtual void set_mqtt_client(Adafruit_MQTT *_mqtt) { mqttClient = _mqtt; }
 
-  virtual void set_mqtt_client(Adafruit_MQTT *_mqtt) { _mqttClient = _mqtt; }
+  /*******************************************************************************/
+  /*!
+      @brief   Initializes the UART device driver.
+      @returns True if UART device driver initialized successfully, False
+               otherwise.
+  */
+  /*******************************************************************************/
   virtual bool begin() { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief   Checks if the UART device's data is ready.
+      @returns True if data is available, False otherwise.
+  */
+  /*******************************************************************************/
   virtual bool data_available() { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief   Reads the UART device's data then packs and sends it to IO.
+  */
+  /*******************************************************************************/
   virtual void update(){};
 
-  // TODO:
-  // can we just call an update() here or something and then in uart's update()
-  // we'd call the driver directly we added ws.h here so maybe we can try to
-  // pack and send data within sub-classes we'd also need to pass the sensor
-  // types wed be polling, the protos would need an update
   long pollingInterval; ///< UART device's polling interval, in milliseconds
-  long lastPoll;
-
-  Adafruit_MQTT *_mqttClient;
-
-private:
+  long lastPoll; ///< Last time the UART device was polled, in milliseconds
+  Adafruit_MQTT *mqttClient = nullptr; ///< Pointer to MQTT client object
 };
 
 #endif // WS_UART_DRV_H
