@@ -470,6 +470,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _lc->configureDriver(msgDeviceInitReq);
     drivers.push_back(_lc);
     WS_DEBUG_PRINTLN("LC709203F Sensor Initialized Successfully!");
+  } else if (strcmp("lps35hw", msgDeviceInitReq->i2c_device_name) == 0) {
+    _lps3xhw = new WipperSnapper_I2C_Driver_LPS3XHW(this->_i2c, i2cAddress);
+    if (!_lps3xhw->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize LPS3XHW Sensor!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _lps3xhw->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_lps3xhw);
+    WS_DEBUG_PRINTLN("LPS3XHW Sensor Initialized Successfully!");
   } else if (strcmp("stemma_soil", msgDeviceInitReq->i2c_device_name) == 0) {
     _ss =
         new WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor(this->_i2c, i2cAddress);
