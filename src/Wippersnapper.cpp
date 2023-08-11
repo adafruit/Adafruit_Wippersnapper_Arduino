@@ -53,21 +53,26 @@ Wippersnapper::Wippersnapper() {
   _throttle_sub = 0;
 
   // Init. component classes
-
-  // DallasSemi (OneWire)
-  WS._ds18x20Component = new ws_ds18x20();
   // LEDC (ESP32-ONLY)
 #ifdef ARDUINO_ARCH_ESP32
   WS._ledc = new ws_ledc();
 #endif
-  // Servo
-  WS._servoComponent = new ws_servo();
-  // PWM
+
+  // PWM (Arch-specific implementations)
 #ifdef ARDUINO_ARCH_ESP32
   WS._pwmComponent = new ws_pwm(WS._ledc);
 #else
   WS._pwmComponent = new ws_pwm();
 #endif
+
+  // Servo
+  WS._servoComponent = new ws_servo();
+
+  // UART
+  WS._uartComponent = new ws_uart();
+
+  // DallasSemi (OneWire)
+  WS._ds18x20Component = new ws_ds18x20();
 };
 
 /**************************************************************************/
@@ -1505,8 +1510,12 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
 
+    // Have we previously initialized the UART bus?
+    if (! WS._uartComponent->is_bus_initialized)
+        WS._uartComponent->initUARTBus(&msgUARTInitReq); // Init. UART bus
+
     // Attach UART device to the bus specified in the message
-    bool did_begin = WS._uartComponent->begin(&msgUARTInitReq);
+    bool did_begin = WS._uartComponent->initUARTDevice(&msgUARTInitReq);
     if (!did_begin)
       WS_DEBUG_PRINTLN("ERROR: Could not attach UART device to bus!");
 
@@ -2807,6 +2816,9 @@ ws_status_t Wippersnapper::run() {
 
   // Process DS18x20 sensor events
   WS._ds18x20Component->update();
+
+  // Process UART sensor events
+  WS._uartComponent->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

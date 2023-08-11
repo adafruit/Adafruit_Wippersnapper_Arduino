@@ -31,10 +31,13 @@ public:
   ws_uart(){};
   ~ws_uart(void);
 
-  bool begin(wippersnapper_uart_v1_UARTDeviceAttachRequest
-                 *msgUARTRequest); ///< Initializes the UART bus.
+  void initUARTBus(wippersnapper_uart_v1_UARTDeviceAttachRequest
+                 *msgUARTRequest); ///< Initializes the UART bus, called once
+  bool initUARTDevice(wippersnapper_uart_v1_UARTDeviceAttachRequest
+                 *msgUARTRequest); ///< Initializes a UART driver.
   void update(); ///< Updates the UART device at every polling interval, must be
                  ///< called by main app.
+  bool is_bus_initialized = false; ///< True if UART bus is initialized
 private:
 #ifdef USE_SW_UART
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance

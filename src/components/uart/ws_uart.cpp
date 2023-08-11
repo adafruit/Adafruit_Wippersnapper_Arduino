@@ -35,13 +35,12 @@ ws_uart::~ws_uart(void) {
 // TODO: Maybe we need two begin functions, one for the bus, one for the device?
 /*******************************************************************************/
 /*!
-    @brief    Initializes a UART bus and the device on the bus.
+    @brief    Initializes a UART bus.
     @param    msgUARTRequest
               Pointer to a UARTDeviceAttachRequest message.
-    @returns  True if UART bus initialized successfully, False otherwise.
 */
 /*******************************************************************************/
-bool ws_uart::begin(
+void ws_uart::initUARTBus(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   // Parse bus_info
   int32_t baud = msgUARTRequest->bus_info.baudrate;
@@ -60,10 +59,21 @@ bool ws_uart::begin(
   _hwSerial = &HWSerial;
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
 #endif
+  is_bus_initialized = true;
+}
 
-  // Initialize UART device
+/*******************************************************************************/
+/*!
+    @brief    Initializes a device on the UART bus.
+    @param    msgUARTRequest
+              Pointer to a UARTDeviceAttachRequest message.
+    @returns  True if UART driver was successfully initialized.
+*/
+/*******************************************************************************/
+bool ws_uart::initUARTDevice(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
+  // UART Device Type - PM25AQI
   if (strcmp(msgUARTRequest->device_id, "pm25aqi") == 0) {
-    if (_pm25aqi == nullptr) {
+    if (_pm25aqi != nullptr) {
       WS_DEBUG_PRINTLN(
           "[ERROR, UART]: PM25AQI driver already initialized on bus!");
       return false;
@@ -76,7 +86,7 @@ bool ws_uart::begin(
       return false;
     }
     WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized");
-    // Set MQTT client in driver TODO: This should be handled better, elsewhere!
+    // Set MQTT client in driver TODO: This should be handled better, elsewhere!?
     _pm25aqi->set_mqtt_client(WS._mqtt);
   } else if (strcmp(msgUARTRequest->device_id, "gps") == 0) {
     // TODO: GPS UART initialization here
@@ -98,9 +108,8 @@ void ws_uart::update() {
     return; // No driver initialized on bus to update
   }
 
-  long curTime = millis();
   // Check if PM25AQI driver is ready to poll
-  if (curTime - _pm25aqi->lastPoll >= _pm25aqi->pollingInterval) {
+  if (millis() - _pm25aqi->lastPoll >= _pm25aqi->pollingInterval) {
     if (!_pm25aqi->data_available()) {
       WS_DEBUG_PRINTLN("[ERROR, UART]: PM25AQI data not ready yet!");
       return;
@@ -108,6 +117,6 @@ void ws_uart::update() {
     // Update IO with reading
     _pm25aqi->update();
     // Set lastPoll time
-    _pm25aqi->lastPoll = curTime;
+    _pm25aqi->lastPoll = millis();
   }
 }
