@@ -75,28 +75,28 @@ public:
     wippersnapper_signal_v1_UARTResponse msgUARTResponse = wippersnapper_signal_v1_UARTResponse_init_zero;
     msgUARTResponse.which_payload = wippersnapper_signal_v1_UARTResponse_resp_uart_device_event_tag;
     // We'll be sending back six sensor_events: pm10_standard, pm25_standard, pm100_standard, pm10_env, pm25_env, and pm100_env
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event_count = 6;
-    msgUARTResponse.payload.resp_uart_device_event.has_device_event = true;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event_count = 6;
+
 
     // Pack all _data into `device_event` fields
     // pm10_std
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[0].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD;
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[0].value = (float) _data.pm10_standard;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].value = (float) _data.pm10_standard;
     // pm25_std
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[1].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD;
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[1].value = (float) _data.pm25_standard;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].value = (float) _data.pm25_standard;
     // pm100_std
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[2].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD;
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[2].value = (float) _data.pm100_standard;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].value = (float) _data.pm100_standard;
     // pm10_env
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[3].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[3].value = (float) _data.pm10_env;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].value = (float) _data.pm10_env;
     // pm25_env
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[4].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[4].value = (float) _data.pm25_env;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].value = (float) _data.pm25_env;
     // pm100_env
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[5].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.device_event.sensor_event[5].value = (float) _data.pm100_env;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].value = (float) _data.pm100_env;
 
     // Encode data
 
