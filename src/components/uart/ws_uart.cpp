@@ -70,6 +70,26 @@ bool ws_uart::begin(
     WS_DEBUG_PRINTLN("[ERROR, UART]: Could not find UART device type");
     return false;
   }
-
   return true;
+}
+
+// Checks each UART driver's polling interval and sends an update of the
+// device's state to IO Called by wippersnapper application loop
+void ws_uart::update() {
+  if (_pm25aqi == nullptr) {
+    return; // No driver initialized on bus to update
+  }
+
+  long curTime = millis();
+  // Check if PM25AQI driver is ready to poll
+  if (curTime - _pm25aqi->lastPoll >= _pm25aqi->pollingInterval) {
+    if (!_pm25aqi->data_available()) {
+      WS_DEBUG_PRINTLN("[ERROR, UART]: PM25AQI data not ready yet!");
+      return;
+    }
+    // Update IO with reading
+    _pm25aqi->update();
+    // Set lastPoll time
+    _pm25aqi->lastPoll = curTime;
+  }
 }

@@ -47,7 +47,7 @@ public:
     _hwSerial = nullptr;
   }
 
-  bool begin() {
+  bool begin() override {
     _aqi = new Adafruit_PM25AQI();
 
 #ifdef USE_SW_UART
@@ -61,7 +61,7 @@ public:
     return true;
   }
 
-  bool data_available() {
+  bool data_available() override {
     if (!_aqi->read(&_data)) {
       Serial.println("[UART, PM25] Data not available.");
       return false;
@@ -70,7 +70,7 @@ public:
     return true;
   }
 
-  void update() {
+  void update() override {
     // TODO: Print out the results from last read
 
     // Create a new UART response message
