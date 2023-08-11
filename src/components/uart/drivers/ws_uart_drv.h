@@ -48,7 +48,9 @@ public:
   /*******************************************************************************/
   ~ws_uart_drv(void){};
 
-  void set_mqtt_client(Adafruit_MQTT *_mqtt) {_mqttClient = _mqtt;}
+  void set_mqtt_client(Adafruit_MQTT *_mqtt) { _mqttClient = _mqtt; }
+
+  bool data_available() { return false; }
 
   // TODO:
   // can we just call an update() here or something and then in uart's update()
@@ -57,6 +59,7 @@ public:
   // types wed be polling, the protos would need an update
   int32_t pollingInterval; ///< UART device's polling interval, in milliseconds
   Adafruit_MQTT *_mqttClient;
+
 private:
 };
 

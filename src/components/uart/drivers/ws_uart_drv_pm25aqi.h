@@ -58,48 +58,80 @@ public:
       return false;
     }
 #endif
-    // Serial.println(WS.bufSize);
+    return true;
+  }
+
+  bool data_available() {
+    if (!_aqi->read(&_data)) {
+      Serial.println("[UART, PM25] Data not available.");
+      return false;
+    }
+    Serial.println("[UART, PM25] Read data OK");
     return true;
   }
 
   void update() {
-    // Attempt to read and pack PM25AQI data
-    if (!_aqi->read(&_data)) {
-      Serial.println("Could not read AQI...");
-      return;
-    }
-    // TODO: Make this printout more verbose, showing the units
-    Serial.println("[UART, PM25] Got Data");
+    // TODO: Print out the results from last read
 
     // Create a new UART response message
-    wippersnapper_signal_v1_UARTResponse msgUARTResponse = wippersnapper_signal_v1_UARTResponse_init_zero;
-    msgUARTResponse.which_payload = wippersnapper_signal_v1_UARTResponse_resp_uart_device_event_tag;
-    // We'll be sending back six sensor_events: pm10_standard, pm25_standard, pm100_standard, pm10_env, pm25_env, and pm100_env
+    wippersnapper_signal_v1_UARTResponse msgUARTResponse =
+        wippersnapper_signal_v1_UARTResponse_init_zero;
+    msgUARTResponse.which_payload =
+        wippersnapper_signal_v1_UARTResponse_resp_uart_device_event_tag;
+    // We'll be sending back six sensor_events: pm10_standard, pm25_standard,
+    // pm100_standard, pm10_env, pm25_env, and pm100_env
     msgUARTResponse.payload.resp_uart_device_event.sensor_event_count = 6;
-
 
     // Pack all _data into `device_event` fields
     // pm10_std
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].value = (float) _data.pm10_standard;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].type =
+        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].value =
+        (float)_data.pm10_standard;
     // pm25_std
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].value = (float) _data.pm25_standard;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].type =
+        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].value =
+        (float)_data.pm25_standard;
     // pm100_std
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].value = (float) _data.pm100_standard;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].type =
+        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].value =
+        (float)_data.pm100_standard;
     // pm10_env
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].value = (float) _data.pm10_env;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].type =
+        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].value =
+        (float)_data.pm10_env;
     // pm25_env
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].value = (float) _data.pm25_env;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].type =
+        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].value =
+        (float)_data.pm25_env;
     // pm100_env
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].type = wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].value = (float) _data.pm100_env;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].type =
+        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV;
+    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].value =
+        (float)_data.pm100_env;
 
-    // Encode data
+    // Encode message data
+    uint8_t mqttBuffer[512] = {0};
+    pb_ostream_t ostream =
+        pb_ostream_from_buffer(mqttBuffer, sizeof(mqttBuffer));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_UARTResponse_fields,
+                   &msgUARTResponse)) {
+      Serial.println("[ERROR, UART]: Unable to encode device response!");
+      return;
+    }
 
+    // Publish message to IO
+    size_t msgSz;
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_UARTResponse_fields,
+                        &msgUARTResponse);
+    Serial.print("[UART] Publishing event to IO..");
+    // TODO: Re-enable
+    //_mqttClient->publish(WS._topic_signal_i2c_device, mqttBuffer, msgSz, 1);
+    Serial.println("Published!");
   }
 
 protected:
