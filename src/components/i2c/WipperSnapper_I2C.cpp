@@ -482,7 +482,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _lc->configureDriver(msgDeviceInitReq);
     drivers.push_back(_lc);
     WS_DEBUG_PRINTLN("LC709203F Sensor Initialized Successfully!");
-  } else if (strcmp("lps35hw", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if ((strcmp("lps33hw", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("lps35hw", msgDeviceInitReq->i2c_device_name)) == 0) {
     _lps3xhw = new WipperSnapper_I2C_Driver_LPS3XHW(this->_i2c, i2cAddress);
     if (!_lps3xhw->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize LPS3XHW Sensor!");
