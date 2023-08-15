@@ -33,6 +33,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_LPS3XHW.h"
 #include "drivers/WipperSnapper_I2C_Driver_MAX17048.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
+#include "drivers/WipperSnapper_I2C_Driver_MPL115A2.h"
 #include "drivers/WipperSnapper_I2C_Driver_PCT2075.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
@@ -106,6 +107,7 @@ private:
   WipperSnapper_I2C_Driver_BME680 *_bme680 = nullptr;
   WipperSnapper_I2C_Driver_HTS221 *_hts221 = nullptr;
   WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
+  WipperSnapper_I2C_Driver_MPL115A2 *_mpl115a2 = nullptr;
   WipperSnapper_I2C_Driver_TMP117 *_tmp117 = nullptr;
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
   WipperSnapper_I2C_Driver_VEML7700 *_veml7700 = nullptr;
