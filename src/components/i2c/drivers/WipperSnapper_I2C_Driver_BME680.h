@@ -146,8 +146,6 @@ public:
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     if (!bmePerformReading())
       return false;
-    // NOTE: This is hacked onto Adafruit_Sensor and should eventually be
-    // removed
     altitudeEvent->altitude = (float)_bme->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }

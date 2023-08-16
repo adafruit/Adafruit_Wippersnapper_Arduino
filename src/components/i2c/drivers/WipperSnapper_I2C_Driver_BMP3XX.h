@@ -118,8 +118,6 @@ public:
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     if (!_bmp3xx->performReading())
       return false;
-    // TODO: update once we add an altitude sensor type
-    // see https://github.com/adafruit/Adafruit_Sensor/issues/52
     altitudeEvent->altitude = _bmp3xx->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }

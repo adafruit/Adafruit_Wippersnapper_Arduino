@@ -120,8 +120,6 @@ public:
   */
   /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    // TODO: Note, this is a hack into Adafruit_Sensor, we should really add an
-    // altitude sensor type
     altitudeEvent->altitude = _bmp->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
