@@ -46,7 +46,7 @@ ws_pixels::~ws_pixels() {
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
-  for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
+  for (size_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
        strandIdx++) {
     if (strands[strandIdx].type ==
         wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
