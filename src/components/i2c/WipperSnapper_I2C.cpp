@@ -437,7 +437,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _shtc3->configureDriver(msgDeviceInitReq);
     drivers.push_back(_shtc3);
     WS_DEBUG_PRINTLN("SHTC3 Initialized Successfully!");
-  } else if (strcmp("pct2075", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if ((strcmp("pct2075", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("tc74a0", msgDeviceInitReq->i2c_device_name) == 0)) {
     _pct2075 = new WipperSnapper_I2C_Driver_PCT2075(this->_i2c, i2cAddress);
     if (!_pct2075->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize PCT2075 Temp Sensor!");
