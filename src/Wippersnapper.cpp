@@ -346,6 +346,7 @@ bool Wippersnapper::configureDigitalPinReq(
 /*****************************************************************************/
 bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
                           void **arg) {
+  (void) field, arg; // marking unused parameters to avoid compiler warning
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
 
@@ -386,6 +387,7 @@ bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
 bool cbDecodeDigitalPinWriteMsg(pb_istream_t *stream, const pb_field_t *field,
                                 void **arg) {
   bool is_success = true;
+  (void) field, arg; // marking unused parameters to avoid compiler warning
   WS_DEBUG_PRINTLN("cbDecodeDigitalPinWriteMsg");
 
   // Decode stream into a PinEvent
@@ -417,6 +419,7 @@ bool cbDecodeDigitalPinWriteMsg(pb_istream_t *stream, const pb_field_t *field,
 */
 /**************************************************************************/
 bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  (void) arg; // marking unused parameters to avoid compiler warning
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbSignalMsg");
 
@@ -567,15 +570,11 @@ bool encodeI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
     @brief    Initializes an I2C bus component
     @param    msgInitRequest
               A pointer to an i2c bus initialization message.
-    @param    i2cPort
-              Desired I2C port to initialize.
     @return   True if initialized successfully, False otherwise.
 */
 /******************************************************************************************/
-bool initializeI2CBus(wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest,
-                      int i2cPort) {
-  // TODO: i2cPort is not handled right now, we should add support for multiple
-  // i2c ports!
+bool initializeI2CBus(wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest) {
+  // FUTURE TODO:we should add support for multiple i2c ports!
   if (WS._isI2CPort0Init)
     return true;
   // Initialize bus
@@ -599,6 +598,7 @@ bool initializeI2CBus(wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest,
 /******************************************************************************************/
 bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
                                       const pb_field_t *field, void **arg) {
+  (void) field, arg; // marking unused parameters to avoid compiler warning
   WS_DEBUG_PRINTLN("EXEC: cbDecodeI2CDeviceInitRequestList");
   // Decode stream into individual msgI2CDeviceInitRequest messages
   wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
@@ -616,7 +616,7 @@ bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
       wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
 
   // Check I2C bus
-  if (!initializeI2CBus(msgI2CDeviceInitRequest.i2c_bus_init_req, 0)) {
+  if (!initializeI2CBus(msgI2CDeviceInitRequest.i2c_bus_init_req)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to initialize I2C Bus");
     msgi2cResponse.payload.resp_i2c_device_init.bus_response =
         WS._i2cPort0->getBusStatus();
@@ -687,7 +687,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_i2c_v1_I2CBusScanResponse_init_zero;
 
     // Check I2C bus
-    if (!initializeI2CBus(msgScanReq.bus_init_request, 0)) {
+    if (!initializeI2CBus(msgScanReq.bus_init_request)) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize I2C Bus");
       msgi2cResponse.payload.resp_i2c_scan.bus_response =
           WS._i2cPort0->getBusStatus();
@@ -756,7 +756,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_signal_v1_I2CResponse_resp_i2c_device_init_tag;
 
     // Check I2C bus
-    if (!initializeI2CBus(msgI2CDeviceInitRequest.i2c_bus_init_req, 0)) {
+    if (!initializeI2CBus(msgI2CDeviceInitRequest.i2c_bus_init_req)) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize I2C Bus");
       msgi2cResponse.payload.resp_i2c_device_init.bus_response =
           WS._i2cPort0->getBusStatus();

@@ -53,6 +53,8 @@ bool ws_pwm::attach(uint8_t pin, double freq, uint8_t resolution) {
   uint8_t rc = _ledcMgr->attachPin(pin, freq, resolution);
   if (rc == LEDC_CH_ERR)
     is_attached = false;
+#else
+(void) pin; // marking as unused parameter to avoid compiler warning
 #endif
   return is_attached; // always true on non-esp32
 }
