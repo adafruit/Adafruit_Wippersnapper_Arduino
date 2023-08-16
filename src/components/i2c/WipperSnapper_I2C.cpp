@@ -994,11 +994,11 @@ void WipperSnapper_Component_I2C::update() {
         WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
         WS_DEBUG_PRINTLN("");
         WS_DEBUG_PRINT("\tAltitude: ");
-        WS_DEBUG_PRINT(event.data[0]);
+        WS_DEBUG_PRINT(event.altitude);
         WS_DEBUG_PRINTLN(" m");
 
         // pack event data into msg
-        fillEventMessage(&msgi2cResponse, event.data[0],
+        fillEventMessage(&msgi2cResponse, event.altitude,
                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE);
 
         (*iter)->setSensorAltitudePeriodPrv(curTime);
