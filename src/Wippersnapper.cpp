@@ -346,7 +346,7 @@ bool Wippersnapper::configureDigitalPinReq(
 /*****************************************************************************/
 bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
                           void **arg) {
-  (void) field, arg; // marking unused parameters to avoid compiler warning
+  (void) field; // marking unused parameters to avoid compiler warning
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
 
@@ -387,7 +387,7 @@ bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
 bool cbDecodeDigitalPinWriteMsg(pb_istream_t *stream, const pb_field_t *field,
                                 void **arg) {
   bool is_success = true;
-  (void) field, arg; // marking unused parameters to avoid compiler warning
+  (void) field; // marking unused parameters to avoid compiler warning
   WS_DEBUG_PRINTLN("cbDecodeDigitalPinWriteMsg");
 
   // Decode stream into a PinEvent
@@ -598,7 +598,7 @@ bool initializeI2CBus(wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest) {
 /******************************************************************************************/
 bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
                                       const pb_field_t *field, void **arg) {
-  (void) field, arg; // marking unused parameters to avoid compiler warning
+  (void) field; // marking unused parameters to avoid compiler warning
   WS_DEBUG_PRINTLN("EXEC: cbDecodeI2CDeviceInitRequestList");
   // Decode stream into individual msgI2CDeviceInitRequest messages
   wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
