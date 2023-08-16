@@ -346,8 +346,8 @@ bool Wippersnapper::configureDigitalPinReq(
 /*****************************************************************************/
 bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
                           void **arg) {
-  (void) field; // marking unused parameters to avoid compiler warning
-  (void) arg; // marking unused parameters to avoid compiler warning
+  (void)field; // marking unused parameters to avoid compiler warning
+  (void)arg;   // marking unused parameters to avoid compiler warning
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbDecodePinConfigMsg");
 
@@ -388,8 +388,8 @@ bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
 bool cbDecodeDigitalPinWriteMsg(pb_istream_t *stream, const pb_field_t *field,
                                 void **arg) {
   bool is_success = true;
-  (void) field; // marking unused parameters to avoid compiler warning
-  (void) arg; // marking unused parameters to avoid compiler warning
+  (void)field; // marking unused parameters to avoid compiler warning
+  (void)arg;   // marking unused parameters to avoid compiler warning
   WS_DEBUG_PRINTLN("cbDecodeDigitalPinWriteMsg");
 
   // Decode stream into a PinEvent
@@ -421,7 +421,7 @@ bool cbDecodeDigitalPinWriteMsg(pb_istream_t *stream, const pb_field_t *field,
 */
 /**************************************************************************/
 bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  (void) arg; // marking unused parameters to avoid compiler warning
+  (void)arg; // marking unused parameters to avoid compiler warning
   bool is_success = true;
   WS_DEBUG_PRINTLN("cbSignalMsg");
 
@@ -600,8 +600,8 @@ bool initializeI2CBus(wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest) {
 /******************************************************************************************/
 bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
                                       const pb_field_t *field, void **arg) {
-  (void) field; // marking unused parameters to avoid compiler warning
-  (void) arg; // marking unused parameters to avoid compiler warning
+  (void)field; // marking unused parameters to avoid compiler warning
+  (void)arg;   // marking unused parameters to avoid compiler warning
   WS_DEBUG_PRINTLN("EXEC: cbDecodeI2CDeviceInitRequestList");
   // Decode stream into individual msgI2CDeviceInitRequest messages
   wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
@@ -667,7 +667,7 @@ bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
 bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
                               void **arg) {
   bool is_success = true;
-  (void) arg; // marking unused parameter to avoid compiler warning
+  (void)arg; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINTLN("cbDecodeSignalRequestI2C");
   // Create I2C Response
   wippersnapper_signal_v1_I2CResponse msgi2cResponse =
@@ -908,7 +908,7 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
                       void **arg) {
   WS_DEBUG_PRINTLN("Decoding Servo Message...");
-  (void) arg; // marking unused parameter to avoid compiler warning
+  (void)arg; // marking unused parameter to avoid compiler warning
   if (field->tag == wippersnapper_signal_v1_ServoRequest_servo_attach_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Attach");
     // Attempt to decode contents of servo_attach message
@@ -1087,7 +1087,7 @@ void cbServoMsg(char *data, uint16_t len) {
 /******************************************************************************************/
 bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   WS_DEBUG_PRINTLN("Decoding PWM Message...");
-  (void) arg; // marking unused parameter to avoid compiler warning
+  (void)arg; // marking unused parameter to avoid compiler warning
   if (field->tag == wippersnapper_signal_v1_PWMRequest_attach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Attach");
     // Attempt to decode contents of PWM attach message
@@ -1292,7 +1292,7 @@ void cbPWMMsg(char *data, uint16_t len) {
 /******************************************************************************************/
 bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
                         void **arg) {
-  (void) arg; // marking unused parameter to avoid compiler warning
+  (void)arg; // marking unused parameter to avoid compiler warning
   if (field->tag ==
       wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
     WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
@@ -1380,7 +1380,7 @@ void cbSignalDSReq(char *data, uint16_t len) {
 /******************************************************************************************/
 bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
                        void **arg) {
-  (void) arg; // marking unused parameter to avoid compiler warning
+  (void)arg; // marking unused parameter to avoid compiler warning
   if (field->tag ==
       wippersnapper_signal_v1_PixelsRequest_req_pixels_create_tag) {
     WS_DEBUG_PRINTLN(
@@ -1536,7 +1536,7 @@ void cbRegistrationStatus(char *data, uint16_t len) {
 */
 /**************************************************************************/
 void cbErrorTopic(char *errorData, uint16_t len) {
-  (void) len; // marking unused parameter to avoid compiler warning
+  (void)len; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINT("IO Ban Error: ");
   WS_DEBUG_PRINTLN(errorData);
   // Disconnect client from broker
@@ -1567,7 +1567,7 @@ void cbErrorTopic(char *errorData, uint16_t len) {
 */
 /**************************************************************************/
 void cbThrottleTopic(char *throttleData, uint16_t len) {
-  (void) len; // marking unused parameter to avoid compiler warning
+  (void)len; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINT("IO Throttle Error: ");
   WS_DEBUG_PRINTLN(throttleData);
   char *throttleMessage;
