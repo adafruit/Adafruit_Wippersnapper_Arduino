@@ -34,7 +34,7 @@ strand_s strands[MAX_PIXEL_STRANDS]{
 /**************************************************************************/
 ws_pixels::~ws_pixels() {
   // de-allocate all strands
-  for (int i = 0; i < sizeof(strands) / sizeof(strands[0]); i++)
+  for (size_t i = 0; i < sizeof(strands) / sizeof(strands[0]); i++)
     deallocateStrand(i);
 }
 
@@ -46,7 +46,7 @@ ws_pixels::~ws_pixels() {
 */
 /******************************************************************************/
 int16_t ws_pixels::allocateStrand() {
-  for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
+  for (size_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
        strandIdx++) {
     if (strands[strandIdx].type ==
         wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_UNSPECIFIED) {
@@ -338,7 +338,7 @@ bool ws_pixels::addStrand(
 /**************************************************************************/
 int ws_pixels::getStrandIdx(int16_t dataPin,
                             wippersnapper_pixels_v1_PixelsType type) {
-  for (int16_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
+  for (size_t strandIdx = 0; strandIdx < sizeof(strands) / sizeof(strands[0]);
        strandIdx++) {
     if (type == wippersnapper_pixels_v1_PixelsType_PIXELS_TYPE_NEOPIXEL &&
         strands[strandIdx].pinNeoPixel == dataPin)

@@ -49,7 +49,7 @@ public:
       @brief    Destructor for a STEMMA soil sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor() { delete _seesaw; }
+  ~WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor() { _seesaw = nullptr; }
 
   /*******************************************************************************/
   /*!
@@ -99,7 +99,7 @@ public:
   }
 
 protected:
-  Adafruit_seesaw *_seesaw; ///< Seesaw object
+  Adafruit_seesaw *_seesaw = nullptr; ///< Seesaw object
 };
 
 #endif // WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor_H

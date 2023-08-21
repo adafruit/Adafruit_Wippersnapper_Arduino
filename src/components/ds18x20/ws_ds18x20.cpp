@@ -30,7 +30,7 @@ ws_ds18x20::ws_ds18x20() {}
 /*************************************************************/
 ws_ds18x20::~ws_ds18x20() {
   // delete DallasTemp sensors and release onewire buses
-  for (int idx = 0; idx < _ds18xDrivers.size(); idx++) {
+  for (size_t idx = 0; idx < _ds18xDrivers.size(); idx++) {
     delete _ds18xDrivers[idx]->dallasTempObj;
     delete _ds18xDrivers[idx]->oneWire;
   }
@@ -135,7 +135,7 @@ bool ws_ds18x20::addDS18x20(
 void ws_ds18x20::deleteDS18x20(
     wippersnapper_ds18x20_v1_Ds18x20DeInitRequest *msgDS18x20DeinitReq) {
   // Loop thru vector of drivers to find the unique address
-  for (int idx = 0; idx < _ds18xDrivers.size(); idx++) {
+  for (size_t idx = 0; idx < _ds18xDrivers.size(); idx++) {
     if (strcmp(_ds18xDrivers[idx]->onewire_pin,
                msgDS18x20DeinitReq->onewire_pin) == 0) {
       WS_DEBUG_PRINT("Deleting OneWire instance on pin ");
@@ -185,7 +185,7 @@ void ws_ds18x20::update() {
     for (int i = 0; i < (*iter)->sensorPropertiesCount; i++) {
       // has sensor_period elapsed?
       if (curTime - (*iter)->sensorPeriodPrv >
-          (*iter)->sensorProperties[i].sensor_period) {
+          (long)(*iter)->sensorProperties[i].sensor_period) {
         // issue global temperature request to all DS sensors
         WS_DEBUG_PRINTLN("Requesting temperature..");
         (*iter)->dallasTempObj->requestTemperatures();

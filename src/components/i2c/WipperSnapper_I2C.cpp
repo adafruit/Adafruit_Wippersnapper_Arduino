@@ -560,7 +560,7 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
   uint16_t i2cAddress = (uint16_t)msgDeviceUpdateReq->i2c_device_address;
 
   // Loop thru vector of drivers to find the unique address
-  for (int i = 0; i < drivers.size(); i++) {
+  for (size_t i = 0; i < drivers.size(); i++) {
     if (drivers[i]->getI2CAddress() == i2cAddress) {
       // Update the properties of each driver
       for (int j = 0; j < msgDeviceUpdateReq->i2c_device_properties_count;
