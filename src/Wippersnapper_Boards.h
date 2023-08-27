@@ -132,11 +132,11 @@
 #define USE_LITTLEFS
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 0
-#elif defined(ESP8266_SONOFF_TH)
+#elif defined(ARDUINO_ESP8266_SONOFF_TH)
 #define BOARD_ID "sonoff-th"
 #define USE_LITTLEFS
 #define USE_STATUS_LED
-#define STATUS_LED_PIN 0
+#define STATUS_LED_PIN 13 // pull down 
 #elif defined(ARDUINO_FEATHER_ESP32)
 #define BOARD_ID "feather-esp32"
 #define USE_LITTLEFS

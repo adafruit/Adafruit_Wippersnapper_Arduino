@@ -78,7 +78,7 @@ void initStatusLED() {
   pinMode(STATUS_LED_PIN, OUTPUT);
 
 // Turn off LED initially
-#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) || defined(ESP8266_SONOFF_TH)
   analogWrite(STATUS_LED_PIN, 255);
 #elif defined(ARDUINO_ARCH_ESP32)
   WS._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
@@ -305,7 +305,7 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
   }
 
 // Turn status LED off
-#if not defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+#if not(defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(ESP8266_SONOFF_TH))
   setStatusLEDColor(BLACK);
 #else
   // The Adafruit Feather ESP8266's built-in LED is reverse wired
@@ -399,7 +399,7 @@ void statusLEDBlink(ws_led_status_t statusState) {
   while (blinkNum > 0) {
     setStatusLEDColor(ledColor);
     delay(100);
-#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) || defined(ESP8266_SONOFF_TH)
     // The Adafruit Feather ESP8266's built-in LED is reverse wired
     setStatusLEDColor(BLACK ^ 1);
 #else
