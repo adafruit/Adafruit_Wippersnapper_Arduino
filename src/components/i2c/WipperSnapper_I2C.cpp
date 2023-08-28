@@ -216,7 +216,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
   WS_DEBUG_PRINTLN(msgDeviceInitReq->i2c_device_name);
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
-  if (strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) {
+  if ((strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) ||
+      (strcmp("dht20", msgDeviceInitReq->i2c_device_name) == 0)) {
     _ahtx0 = new WipperSnapper_I2C_Driver_AHTX0(this->_i2c, i2cAddress);
     if (!_ahtx0->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize AHTX0 chip!");
