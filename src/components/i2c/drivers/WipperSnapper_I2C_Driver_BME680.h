@@ -1,7 +1,7 @@
 /*!
  * @file WipperSnapper_I2C_Driver_BME680.h
  *
- * Device driver for an AHT Humidity and Temperature sensor.
+ * Device driver for a BME680 Pressure Humidity and Temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing

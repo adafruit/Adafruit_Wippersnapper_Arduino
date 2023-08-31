@@ -1,7 +1,7 @@
 /*!
- * @file WipperSnapper_I2C_Driver_BMP280.h
+ * @file WipperSnapper_I2C_Driver_MS8607.h
  *
- * Device driver for a BMP280 Pressure and Temperature sensor.
+ * Device driver for an MS8607 Pressure Humidity and Temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,33 +13,30 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_BMP280_H
-#define WipperSnapper_I2C_Driver_BMP280_H
+#ifndef WipperSnapper_I2C_Driver_MS8607_H
+#define WipperSnapper_I2C_Driver_MS8607_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <Adafruit_BMP280.h>
-
-#define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
+#include <Adafruit_MS8607.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the BMP280 temperature
-            and pressure sensor.
+    @brief  Class that provides a sensor driver for the MS8607 PHT sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_BMP280 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_MS8607 : public WipperSnapper_I2C_Driver {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an BMP280 sensor.
+      @brief    Constructor for an MS8607 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_BMP280(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_MS8607(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -47,39 +44,32 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an BMP280 sensor.
+      @brief    Destructor for an MS8607 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_BMP280() { delete _bmp; }
+  ~WipperSnapper_I2C_Driver_MS8607() { delete _ms8607; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the BMP280 sensor and begins I2C.
+      @brief    Initializes the MS8607 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() {
-    _bmp = new Adafruit_BMP280(_i2c);
-    // attempt to initialize BMP280
-    if (!_bmp->begin(_sensorAddress))
+    _ms8607 = new Adafruit_MS8607();
+    // attempt to initialize MS8607
+    if (!_ms8607->begin(_i2c))
       return false;
 
-    // set up sampling as recommended in Adafruit library
-    _bmp->setSampling(Adafruit_BMP280::MODE_NORMAL,  /* Operating Mode. */
-                      Adafruit_BMP280::SAMPLING_X2,  /* Temp. oversampling */
-                      Adafruit_BMP280::SAMPLING_X16, /* Pressure oversampling */
-                      Adafruit_BMP280::FILTER_X16,   /* Filtering. */
-                      Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
-
-    // configure BMP280 device
-    _bmp_temp = _bmp->getTemperatureSensor();
-    _bmp_pressure = _bmp->getPressureSensor();
+    _ms8607_temp = _ms8607->getTemperatureSensor();
+    _ms8607_humidity = _ms8607->getHumiditySensor();
+    _ms8607_pressure = _ms8607->getPressureSensor();
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the BMP280's current temperature.
+      @brief    Gets the MS8607's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -87,9 +77,25 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (_bmp_temp == NULL)
+    if (_ms8607_temp == NULL)
       return false;
-    _bmp_temp->getEvent(tempEvent);
+    _ms8607_temp->getEvent(tempEvent);
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the MS8607's current relative humidity reading.
+      @param    humidEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the humidity was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
+    if (_ms8607_humidity == NULL)
+      return false;
+    _ms8607_humidity->getEvent(humidEvent);
     return true;
   }
 
@@ -104,34 +110,20 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_bmp_pressure == NULL)
+    if (_ms8607_pressure == NULL)
       return false;
-    _bmp_pressure->getEvent(pressureEvent);
-    return true;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Reads a the BMP280's altitude sensor into an event.
-      @param    altitudeEvent
-                Pointer to an adafruit sensor event.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    altitudeEvent->altitude = _bmp->readAltitude(SEALEVELPRESSURE_HPA);
+    _ms8607_pressure->getEvent(pressureEvent);
     return true;
   }
 
 protected:
-  Adafruit_BMP280 *_bmp; ///< BMP280  object
-  Adafruit_Sensor *_bmp_temp =
+  Adafruit_MS8607 *_ms8607; ///< MS8607  object
+  Adafruit_Sensor *_ms8607_temp =
       NULL; ///< Ptr to an adafruit_sensor representing the temperature
-  Adafruit_Sensor *_bmp_pressure =
+  Adafruit_Sensor *_ms8607_pressure =
       NULL; ///< Ptr to an adafruit_sensor representing the pressure
-  Adafruit_Sensor *_bmp_humidity =
+  Adafruit_Sensor *_ms8607_humidity =
       NULL; ///< Ptr to an adafruit_sensor representing the humidity
 };
 
-#endif // WipperSnapper_I2C_Driver_BMP280
+#endif // WipperSnapper_I2C_Driver_MS8607
