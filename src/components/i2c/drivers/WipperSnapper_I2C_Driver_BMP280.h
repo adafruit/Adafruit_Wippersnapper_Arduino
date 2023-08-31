@@ -1,7 +1,7 @@
 /*!
  * @file WipperSnapper_I2C_Driver_BMP280.h
  *
- * Device driver for an AHT Humidity and Temperature sensor.
+ * Device driver for a BMP280 Pressure and Temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
