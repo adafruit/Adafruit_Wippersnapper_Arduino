@@ -62,7 +62,7 @@ public:
     _bme = new Adafruit_BME680(_i2c);
 
     // attempt to initialize BME680
-    if (!_bme->begin())
+    if (!_bme->begin(_sensorAddress))
       return false;
 
     // Set up oversampling and filter initialization
