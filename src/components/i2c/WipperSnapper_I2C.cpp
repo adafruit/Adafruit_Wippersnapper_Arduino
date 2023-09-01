@@ -441,7 +441,10 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sht4x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sht4x);
     WS_DEBUG_PRINTLN("SHT4X Initialized Successfully!");
-  } else if (strcmp("sht3x", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if ((strcmp("sht3x", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("sht30_shell", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("sht30_weatherproof", msgDeviceInitReq->i2c_device_name) ==
+              0)) {
     _sht3x = new WipperSnapper_I2C_Driver_SHT3X(this->_i2c, i2cAddress);
     if (!_sht3x->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize sht3x!");
