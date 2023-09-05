@@ -318,6 +318,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd30->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd30);
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
+  } else if (strcmp("ina219", msgDeviceInitReq->i2c_device_name) == 0) {
+    _ina219 = new WipperSnapper_I2C_Driver_INA219(this->_i2c, i2cAddress);
+    if (!_ina219->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize INA219");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _ina219->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_ina219);
+    WS_DEBUG_PRINTLN("INA219 Initialized Successfully!");
   } else if (strcmp("sgp30", msgDeviceInitReq->i2c_device_name) == 0) {
     _sgp30 = new WipperSnapper_I2C_Driver_SGP30(this->_i2c, i2cAddress);
     if (!_sgp30->begin()) {
@@ -769,6 +780,9 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
       snprintf(buffer, 100, "[I2C: %x] Read: %0.3f V\n", sensorAddress, value);
       break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT:
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f mA\n", sensorAddress, value);
+      break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
       snprintf(buffer, 100, "[I2C: %x] Read: %0.3f\n", sensorAddress, value);
@@ -1162,6 +1176,29 @@ void WipperSnapper_Component_I2C::update() {
       }
       // try again in curTime seconds
       (*iter)->setSensorVoltagePeriodPrv(curTime);
+    }
+
+    // Current sensor
+    curTime = millis();
+    if ((*iter)->getSensorCurrentPeriod() != 0L &&
+        curTime - (*iter)->getSensorCurrentPeriodPrv() >
+            (*iter)->getSensorCurrentPeriod()) {
+      if ((*iter)->getEventCurrent(&event)) {
+        WS_DEBUG_PRINT("Sensor 0x");
+        WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+        WS_DEBUG_PRINTLN("");
+        WS_DEBUG_PRINT("\tCurrent: ");
+        WS_DEBUG_PRINT(event.current);
+        WS_DEBUG_PRINTLN(" mA");
+
+        // pack event data into msg
+        fillEventMessage(&msgi2cResponse, event.current,
+                         wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT);
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Failed to get Current sensor reading!");
+      }
+      // try again in curTime seconds
+      (*iter)->setSensorCurrentPeriodPrv(curTime);
     }
 
     // Unitless % sensor
