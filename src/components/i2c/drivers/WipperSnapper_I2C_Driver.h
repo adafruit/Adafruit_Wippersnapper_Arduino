@@ -112,6 +112,9 @@ public:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
       _voltagePeriod = sensorPeriod;
       break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT:
+      _currentPeriod = sensorPeriod;
+      break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
       _proximitySensorPeriod = sensorPeriod;
       break;
@@ -850,6 +853,53 @@ public:
     return false;
   }
 
+  /**************************** SENSOR_TYPE: CURRENT
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the current sensor's period.
+      @returns  Time when the object current sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorCurrentPeriod() { return _currentPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the current sensor was queried last.
+      @returns  Time when the current sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorCurrentPeriodPrv() { return _currentPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the current sensor was queried.
+      @param    period
+                The time when the current sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorCurrentPeriodPrv(long period) {
+    _currentPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a current sensor and converts the
+                reading into the expected SI unit.
+      @param    currentEvent
+                current sensor reading, in volts.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventCurrent(sensors_event_t *currentEvent) {
+    (void)currentEvent; // Parameter is intentionally unused in this virtual
+                        // function.
+    return false;
+  }
+
   /****************************** SENSOR_TYPE: Raw
    * *******************************/
   /*********************************************************************************/
@@ -1322,6 +1372,10 @@ protected:
   long _voltagePeriod = 0L;             ///< The time period between reading the
                                         ///< voltage sensor's value.
   long _voltagePeriodPrv = 0L;          ///< The time when the voltage sensor
+                                        ///< was last read.
+  long _currentPeriod = 0L;             ///< The time period between reading the
+                                        ///< current sensor's value.
+  long _currentPeriodPrv = 0L;          ///< The time when the current sensor
                                         ///< was last read.
   long _rawSensorPeriod =
       0L; ///< The time period between reading the Raw sensor's value.
