@@ -58,11 +58,7 @@ public:
     if (!_ina219->begin(_i2c))
       return false;
 
-    // TODO: When parameters or dual input/output or sensor configuration added
-    //  To use a slightly lower 32V, 1A range (higher precision on amps):
-    // ina219.setCalibration_32V_1A();
-    //  Or to use a lower 16V, 400mA range (higher precision on volts and amps):
-    // ina219.setCalibration_16V_400mA();
+    // TODO: use setCalibration()
 
     return true;
   }
