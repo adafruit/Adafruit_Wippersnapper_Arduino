@@ -329,7 +329,7 @@ void Wippersnapper_AnalogIO::update() {
     if (_analog_input_pins[i].enabled == true) {
 
       // Does the pin execute on-period?
-      if (millis() - _analog_input_pins[i].prvPeriod >
+      if ((long)millis() - _analog_input_pins[i].prvPeriod >
               _analog_input_pins[i].period &&
           _analog_input_pins[i].period != 0L) {
         WS_DEBUG_PRINT("Executing periodic event on A");

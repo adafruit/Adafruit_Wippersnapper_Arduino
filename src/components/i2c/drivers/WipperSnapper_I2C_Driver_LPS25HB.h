@@ -1,67 +1,77 @@
 /*!
- * @file WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor.h
+ * @file WipperSnapper_I2C_Driver_LPS25HB.h
  *
- * Device driver for the STEMMA Soil Sensor
+ * Device driver for a LPS25HB precision pressure sensor breakout.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Marcus Wu 2022
+ * Copyright (c) Tyeth Gundry 2023 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor_H
-#define WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor_H
+#ifndef WipperSnapper_I2C_Driver_LPS25HB_H
+#define WipperSnapper_I2C_Driver_LPS25HB_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <Adafruit_seesaw.h>
+#include <Adafruit_LPS2X.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for the STEMMA soil sensor.
+    @brief  Class that provides a sensor driver for the LPS25HB temperature
+            and pressure sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor
-    : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_LPS25HB : public WipperSnapper_I2C_Driver {
+
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a STEMMA soil sensor.
+      @brief    Constructor for an LPS25HB sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor(TwoWire *i2c,
-                                              uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_LPS25HB(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
-    _seesaw = new Adafruit_seesaw(_i2c);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for a STEMMA soil sensor.
+      @brief    Destructor for an LPS25HB sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor() { _seesaw = nullptr; }
+  ~WipperSnapper_I2C_Driver_LPS25HB() { delete _lps25; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the soil sensor and begins I2C.
+      @brief    Initializes the LPS25HB sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() { return _seesaw->begin(_sensorAddress); }
+  bool begin() {
+    _lps25 = new Adafruit_LPS25();
+    // attempt to initialize LPS25HB
+    if (!_lps25->begin_I2C(_sensorAddress, _i2c))
+      return false;
+
+    // Set up sample rate and filter initialization
+    _lps25->setDataRate(LPS25_RATE_ONE_SHOT);
+    _temp = _lps25->getTemperatureSensor();
+    _pressure = _lps25->getPressureSensor();
+    return true;
+  }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the sensor's current temperature.
+      @brief    Gets the LPS25HB's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -69,37 +79,35 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _seesaw->getTemp();
+    if (_temp == NULL)
+      return false;
+    _temp->getEvent(tempEvent);
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the sensor's current moisture sensor capacitance value.
-      @param    rawEvent
+      @brief    Reads a pressure sensor and converts
+                the reading into the expected SI unit.
+      @param    pressureEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the temperature was obtained successfully, False
+      @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventRaw(sensors_event_t *rawEvent) {
-    uint16_t touchData = _seesaw->touchRead(0);
-
-    // seesaw->touchRead() will return 65535 on a read error
-    // see
-    // https://github.com/adafruit/Adafruit_Seesaw/blob/master/Adafruit_seesaw.cpp
-    if (touchData == 65535) {
+  bool getEventPressure(sensors_event_t *pressureEvent) {
+    if (_pressure == NULL)
       return false;
-    }
-
-    // TODO: Update this should we add a capacitive moisture type to
-    // adafruit_sensor
-    rawEvent->data[0] = (float)touchData;
+    _pressure->getEvent(pressureEvent);
     return true;
   }
 
 protected:
-  Adafruit_seesaw *_seesaw = nullptr; ///< Seesaw object
+  Adafruit_LPS25 *_lps25; ///< LPS25HB  object
+  Adafruit_Sensor *_temp =
+      NULL; ///< Ptr to an adafruit_sensor representing the temperature
+  Adafruit_Sensor *_pressure =
+      NULL; ///< Ptr to an adafruit_sensor representing the pressure
 };
 
-#endif // WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor_H
+#endif // WipperSnapper_I2C_Driver_LPS25HB

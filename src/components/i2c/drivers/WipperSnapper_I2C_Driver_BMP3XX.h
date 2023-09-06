@@ -1,45 +1,45 @@
 /*!
- * @file WipperSnapper_I2C_Driver_BME280.h
+ * @file WipperSnapper_I2C_Driver_BMP3XX.h
  *
- * Device driver for a BME280 Pressure Humidity and Temperature sensor.
+ * Device driver for a BMP3XX precision pressure sensor breakout.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2023 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_BME280_H
-#define WipperSnapper_I2C_Driver_BME280_H
+#ifndef WipperSnapper_I2C_Driver_BMP3XX_H
+#define WipperSnapper_I2C_Driver_BMP3XX_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <Adafruit_BME280.h>
+#include <Adafruit_BMP3XX.h>
 
 #define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the BME280 temperature
-            and humidity sensor.
+    @brief  Class that provides a sensor driver for the BMP3XX temperature
+            and pressure sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_BME280 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_BMP3XX : public WipperSnapper_I2C_Driver {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an BME280 sensor.
+      @brief    Constructor for an BMP3XX sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_BME280(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_BMP3XX(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -47,32 +47,35 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an BME280 sensor.
+      @brief    Destructor for an BMP3XX sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_BME280() { delete _bme; }
+  ~WipperSnapper_I2C_Driver_BMP3XX() { delete _bmp3xx; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the BME280 sensor and begins I2C.
+      @brief    Initializes the BMP3XX sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() {
-    _bme = new Adafruit_BME280();
-    // attempt to initialize BME280
-    if (!_bme->begin(_sensorAddress, _i2c))
+    _bmp3xx = new Adafruit_BMP3XX();
+    // attempt to initialize BMP3XX
+    if (!_bmp3xx->begin_I2C(_sensorAddress, _i2c))
       return false;
-    // configure BME280 device
-    _bme_temp = _bme->getTemperatureSensor();
-    _bme_humidity = _bme->getHumiditySensor();
-    _bme_pressure = _bme->getPressureSensor();
+
+    // Set up oversampling and filter initialization
+    _bmp3xx->setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
+    _bmp3xx->setPressureOversampling(BMP3_OVERSAMPLING_4X);
+    _bmp3xx->setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
+    _bmp3xx->setOutputDataRate(BMP3_ODR_50_HZ);
+
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the BME280's current temperature.
+      @brief    Gets the BMP3XX's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -80,25 +83,9 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (_bme_temp == NULL)
+    if (!_bmp3xx->performReading())
       return false;
-    _bme_temp->getEvent(tempEvent);
-    return true;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the BME280's current relative humidity reading.
-      @param    humidEvent
-                Pointer to an Adafruit_Sensor event.
-      @returns  True if the humidity was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (_bme_humidity == NULL)
-      return false;
-    _bme_humidity->getEvent(humidEvent);
+    tempEvent->temperature = _bmp3xx->temperature;
     return true;
   }
 
@@ -113,15 +100,15 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_bme_pressure == NULL)
+    if (!_bmp3xx->performReading())
       return false;
-    _bme_pressure->getEvent(pressureEvent);
+    pressureEvent->pressure = _bmp3xx->pressure / 100.0F;
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a the BME280's altitude sensor into an event.
+      @brief    Reads a the BMP3XX's altitude sensor into an event.
       @param    altitudeEvent
                 Pointer to an adafruit sensor event.
       @returns  True if the sensor event was obtained successfully, False
@@ -129,18 +116,14 @@ public:
   */
   /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    altitudeEvent->altitude = _bme->readAltitude(SEALEVELPRESSURE_HPA);
+    if (!_bmp3xx->performReading())
+      return false;
+    altitudeEvent->altitude = _bmp3xx->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
 
 protected:
-  Adafruit_BME280 *_bme; ///< BME280  object
-  Adafruit_Sensor *_bme_temp =
-      NULL; ///< Ptr to an adafruit_sensor representing the temperature
-  Adafruit_Sensor *_bme_pressure =
-      NULL; ///< Ptr to an adafruit_sensor representing the pressure
-  Adafruit_Sensor *_bme_humidity =
-      NULL; ///< Ptr to an adafruit_sensor representing the humidity
+  Adafruit_BMP3XX *_bmp3xx; ///< BMP3XX  object
 };
 
-#endif // WipperSnapper_I2C_Driver_BME280
+#endif // WipperSnapper_I2C_Driver_BMP3XX

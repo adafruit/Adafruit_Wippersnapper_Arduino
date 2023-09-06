@@ -36,7 +36,7 @@ ws_servo::~ws_servo() {
 */
 /**************************************************************************/
 servoComponent *ws_servo::getServoComponent(uint8_t pin) {
-  for (int i = 0; i < sizeof(_servos) / sizeof(_servos[0]); i++) {
+  for (size_t i = 0; i < sizeof(_servos) / sizeof(_servos[0]); i++) {
     WS_DEBUG_PRINTLN(_servos[i].pin);
     if (_servos[i].pin == pin)
       return &_servos[i];
@@ -72,6 +72,7 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
 #ifdef ARDUINO_ARCH_ESP32
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
 #else
+  (void)freq; // supress warning when we don't use the frequency parameter
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth);
 #endif
   if (rc == ERR_SERVO_ATTACH)

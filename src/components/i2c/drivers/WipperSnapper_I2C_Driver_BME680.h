@@ -1,7 +1,7 @@
 /*!
  * @file WipperSnapper_I2C_Driver_BME680.h
  *
- * Device driver for an AHT Humidity and Temperature sensor.
+ * Device driver for a BME680 Pressure Humidity and Temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -62,7 +62,7 @@ public:
     _bme = new Adafruit_BME680(_i2c);
 
     // attempt to initialize BME680
-    if (!_bme->begin())
+    if (!_bme->begin(_sensorAddress))
       return false;
 
     // Set up oversampling and filter initialization
@@ -146,9 +146,7 @@ public:
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     if (!bmePerformReading())
       return false;
-    // NOTE: This is hacked onto Adafruit_Sensor and should eventually be
-    // removed
-    altitudeEvent->data[0] = (float)_bme->readAltitude(SEALEVELPRESSURE_HPA);
+    altitudeEvent->altitude = (float)_bme->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
 

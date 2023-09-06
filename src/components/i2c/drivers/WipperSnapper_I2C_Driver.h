@@ -46,7 +46,7 @@ public:
       @brief    Destructor for an I2C sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver() { _sensorAddress = 0; }
+  virtual ~WipperSnapper_I2C_Driver() {}
 
   /*******************************************************************************/
   /*!
@@ -111,6 +111,9 @@ public:
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
       _voltagePeriod = sensorPeriod;
+      break;
+    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT:
+      _currentPeriod = sensorPeriod;
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
       _proximitySensorPeriod = sensorPeriod;
@@ -206,7 +209,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventCO2(sensors_event_t *co2Event) { return false; }
+  virtual bool getEventCO2(sensors_event_t *co2Event) {
+    (void)
+        co2Event; // Parameter is intentionally unused in this virtual function.
+    return false;
+  }
 
   /****************************** SENSOR_TYPE: ECO2
    * *******************************/
@@ -248,7 +255,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventECO2(sensors_event_t *eco2Event) { return false; }
+  virtual bool getEventECO2(sensors_event_t *eco2Event) {
+    (void)eco2Event; // Parameter is intentionally unused in this virtual
+                     // function.
+    return false;
+  }
 
   /****************************** SENSOR_TYPE: TVOC
    * *******************************/
@@ -290,7 +301,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventTVOC(sensors_event_t *tvocEvent) { return false; }
+  virtual bool getEventTVOC(sensors_event_t *tvocEvent) {
+    (void)tvocEvent; // Parameter is intentionally unused in this virtual
+                     // function.
+    return false;
+  }
 
   /********************** SENSOR_TYPE: AMBIENT TEMPERATURE (°C)
    * ***********************/
@@ -336,7 +351,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
+  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    (void)tempEvent; // Parameter is intentionally unused in this virtual
+                     // function.
+    return false;
+  }
 
   /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
    * ***********************/
@@ -382,6 +401,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
+    (void)humidEvent; // Parameter is intentionally unused in this virtual
+                      // function.
     return false;
   }
 
@@ -427,6 +448,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventPressure(sensors_event_t *pressureEvent) {
+    (void)pressureEvent; // Parameter is intentionally unused in this virtual
+                         // function.
     return false;
   }
 
@@ -472,6 +495,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventAltitude(sensors_event_t *altitudeEvent) {
+    (void)altitudeEvent; // Parameter is intentionally unused in this virtual
+                         // function.
     return false;
   }
 
@@ -522,6 +547,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) {
+    (void)objectTempEvent; // Parameter is intentionally unused in this virtual
+                           // function.
     return false;
   }
 
@@ -569,7 +596,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventLight(sensors_event_t *lightEvent) { return false; }
+  virtual bool getEventLight(sensors_event_t *lightEvent) {
+    (void)lightEvent; // Parameter is intentionally unused in this virtual
+                      // function.
+    return false;
+  }
 
   /**************************** SENSOR_TYPE: PM10_STD
    * ****************************/
@@ -615,7 +646,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
+  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
+    (void)pm10StdEvent; // Parameter is intentionally unused in this virtual
+                        // function.
+    return false;
+  }
 
   /**************************** SENSOR_TYPE: PM25_STD
    * ****************************/
@@ -661,7 +696,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) { return false; }
+  virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
+    (void)pm25StdEvent; // Parameter is intentionally unused in this virtual
+                        // function.
+    return false;
+  }
 
   /**************************** SENSOR_TYPE: PM100_STD
    * ****************************/
@@ -708,6 +747,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
+    (void)pm100StdEvent; // Parameter is intentionally unused in this virtual
+                         // function.
     return false;
   }
 
@@ -760,6 +801,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
+    (void)unitlessPercentEvent; // Parameter is intentionally unused in this
+                                // virtual function.
     return false;
   }
 
@@ -804,7 +847,58 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventVoltage(sensors_event_t *voltageEvent) { return false; }
+  virtual bool getEventVoltage(sensors_event_t *voltageEvent) {
+    (void)voltageEvent; // Parameter is intentionally unused in this virtual
+                        // function.
+    return false;
+  }
+
+  /**************************** SENSOR_TYPE: CURRENT
+   * ****************************/
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the current sensor's period.
+      @returns  Time when the object current sensor should be polled, in
+     seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorCurrentPeriod() { return _currentPeriod; }
+
+  /*********************************************************************************/
+  /*!
+      @brief    Base implementation - Returns the previous time interval at
+                which the current sensor was queried last.
+      @returns  Time when the current sensor was last queried, in seconds.
+  */
+  /*********************************************************************************/
+  virtual long getSensorCurrentPeriodPrv() { return _currentPeriodPrv; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets a timestamp for when the current sensor was queried.
+      @param    period
+                The time when the current sensor was queried last.
+  */
+  /*******************************************************************************/
+  virtual void setSensorCurrentPeriodPrv(long period) {
+    _currentPeriodPrv = period;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a current sensor and converts the
+                reading into the expected SI unit.
+      @param    currentEvent
+                current sensor reading, in volts.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventCurrent(sensors_event_t *currentEvent) {
+    (void)currentEvent; // Parameter is intentionally unused in this virtual
+                        // function.
+    return false;
+  }
 
   /****************************** SENSOR_TYPE: Raw
    * *******************************/
@@ -846,7 +940,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
+  virtual bool getEventRaw(sensors_event_t *rawEvent) {
+    (void)
+        rawEvent; // Parameter is intentionally unused in this virtual function.
+    return false;
+  }
 
   /****************************** SENSOR_TYPE: Ambient Temp (°F)
    * *******************************/
@@ -1019,6 +1117,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
+    (void)
+        gasEvent; // Parameter is intentionally unused in this virtual function.
     return false;
   }
 
@@ -1067,7 +1167,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) { return false; }
+  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) {
+    (void)
+        gasEvent; // Parameter is intentionally unused in this virtual function.
+    return false;
+  }
 
   /****************************** SENSOR_TYPE: VOC Index (index)
    * *******************************/
@@ -1114,7 +1218,11 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) { return false; }
+  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) {
+    (void)
+        gasEvent; // Parameter is intentionally unused in this virtual function.
+    return false;
+  }
 
   /**************************** SENSOR_TYPE: PROXIMITY
    * ****************************/
@@ -1189,6 +1297,8 @@ public:
   */
   /*******************************************************************************/
   virtual bool getEventProximity(sensors_event_t *proximityEvent) {
+    (void)proximityEvent; // Parameter is intentionally unused in this virtual
+                          // function.
     return false;
   }
 
@@ -1262,6 +1372,10 @@ protected:
   long _voltagePeriod = 0L;             ///< The time period between reading the
                                         ///< voltage sensor's value.
   long _voltagePeriodPrv = 0L;          ///< The time when the voltage sensor
+                                        ///< was last read.
+  long _currentPeriod = 0L;             ///< The time period between reading the
+                                        ///< current sensor's value.
+  long _currentPeriodPrv = 0L;          ///< The time when the current sensor
                                         ///< was last read.
   long _rawSensorPeriod =
       0L; ///< The time period between reading the Raw sensor's value.
