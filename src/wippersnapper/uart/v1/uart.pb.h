@@ -47,15 +47,6 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-<<<<<<< HEAD
-#define wippersnapper_uart_v1_UARTBusData_init_default {0, 0, 0, 0}
-#define wippersnapper_uart_v1_UARTDeviceAttachRequest_init_default {false, wippersnapper_uart_v1_UARTBusData_init_default, "", 0}
-#define wippersnapper_uart_v1_UARTDeviceAttachResponse_init_default {"", 0}
-#define wippersnapper_uart_v1_UARTDeviceEvent_init_default {"", 0, {wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default, wippersnapper_i2c_v1_SensorEvent_init_default}}
-#define wippersnapper_uart_v1_UARTBusData_init_zero {0, 0, 0, 0}
-#define wippersnapper_uart_v1_UARTDeviceAttachRequest_init_zero {false, wippersnapper_uart_v1_UARTBusData_init_zero, "", 0}
-#define wippersnapper_uart_v1_UARTDeviceAttachResponse_init_zero {"", 0}
-=======
 #define wippersnapper_uart_v1_UARTBusData_init_default {0, "", "", 0}
 #define wippersnapper_uart_v1_UARTDeviceAttachRequest_init_default {false, wippersnapper_uart_v1_UARTBusData_init_default, "", 0}
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_init_default {"", 0}
@@ -65,7 +56,6 @@ extern "C" {
 #define wippersnapper_uart_v1_UARTDeviceAttachRequest_init_zero {false, wippersnapper_uart_v1_UARTBusData_init_zero, "", 0}
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_init_zero {"", 0}
 #define wippersnapper_uart_v1_UARTDeviceDetachRequest_init_zero {""}
->>>>>>> b4cc4ef7c5ddd6ff630e9801de6d5524ba53ca1a
 #define wippersnapper_uart_v1_UARTDeviceEvent_init_zero {"", 0, {wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero, wippersnapper_i2c_v1_SensorEvent_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -75,10 +65,7 @@ extern "C" {
 #define wippersnapper_uart_v1_UARTBusData_is_invert_tag 4
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_device_id_tag 1
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_is_success_tag 2
-<<<<<<< HEAD
-=======
 #define wippersnapper_uart_v1_UARTDeviceDetachRequest_device_id_tag 1
->>>>>>> b4cc4ef7c5ddd6ff630e9801de6d5524ba53ca1a
 #define wippersnapper_uart_v1_UARTDeviceEvent_device_id_tag 1
 #define wippersnapper_uart_v1_UARTDeviceEvent_sensor_event_tag 2
 #define wippersnapper_uart_v1_UARTDeviceAttachRequest_bus_info_tag 1
@@ -88,13 +75,8 @@ extern "C" {
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_uart_v1_UARTBusData_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, INT32,    baudrate,          1) \
-<<<<<<< HEAD
-X(a, STATIC,   SINGULAR, INT32,    pin_rx,            2) \
-X(a, STATIC,   SINGULAR, INT32,    pin_tx,            3) \
-=======
 X(a, STATIC,   SINGULAR, STRING,   pin_rx,            2) \
 X(a, STATIC,   SINGULAR, STRING,   pin_tx,            3) \
->>>>>>> b4cc4ef7c5ddd6ff630e9801de6d5524ba53ca1a
 X(a, STATIC,   SINGULAR, BOOL,     is_invert,         4)
 #define wippersnapper_uart_v1_UARTBusData_CALLBACK NULL
 #define wippersnapper_uart_v1_UARTBusData_DEFAULT NULL
@@ -113,14 +95,11 @@ X(a, STATIC,   SINGULAR, BOOL,     is_success,        2)
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_CALLBACK NULL
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_DEFAULT NULL
 
-<<<<<<< HEAD
-=======
 #define wippersnapper_uart_v1_UARTDeviceDetachRequest_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   device_id,         1)
 #define wippersnapper_uart_v1_UARTDeviceDetachRequest_CALLBACK NULL
 #define wippersnapper_uart_v1_UARTDeviceDetachRequest_DEFAULT NULL
 
->>>>>>> b4cc4ef7c5ddd6ff630e9801de6d5524ba53ca1a
 #define wippersnapper_uart_v1_UARTDeviceEvent_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   device_id,         1) \
 X(a, STATIC,   REPEATED, MESSAGE,  sensor_event,      2)
@@ -131,24 +110,13 @@ X(a, STATIC,   REPEATED, MESSAGE,  sensor_event,      2)
 extern const pb_msgdesc_t wippersnapper_uart_v1_UARTBusData_msg;
 extern const pb_msgdesc_t wippersnapper_uart_v1_UARTDeviceAttachRequest_msg;
 extern const pb_msgdesc_t wippersnapper_uart_v1_UARTDeviceAttachResponse_msg;
-<<<<<<< HEAD
-=======
 extern const pb_msgdesc_t wippersnapper_uart_v1_UARTDeviceDetachRequest_msg;
->>>>>>> b4cc4ef7c5ddd6ff630e9801de6d5524ba53ca1a
 extern const pb_msgdesc_t wippersnapper_uart_v1_UARTDeviceEvent_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define wippersnapper_uart_v1_UARTBusData_fields &wippersnapper_uart_v1_UARTBusData_msg
 #define wippersnapper_uart_v1_UARTDeviceAttachRequest_fields &wippersnapper_uart_v1_UARTDeviceAttachRequest_msg
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_fields &wippersnapper_uart_v1_UARTDeviceAttachResponse_msg
-<<<<<<< HEAD
-#define wippersnapper_uart_v1_UARTDeviceEvent_fields &wippersnapper_uart_v1_UARTDeviceEvent_msg
-
-/* Maximum encoded size of messages (where known) */
-#define wippersnapper_uart_v1_UARTBusData_size   35
-#define wippersnapper_uart_v1_UARTDeviceAttachRequest_size 64
-#define wippersnapper_uart_v1_UARTDeviceAttachResponse_size 18
-=======
 #define wippersnapper_uart_v1_UARTDeviceDetachRequest_fields &wippersnapper_uart_v1_UARTDeviceDetachRequest_msg
 #define wippersnapper_uart_v1_UARTDeviceEvent_fields &wippersnapper_uart_v1_UARTDeviceEvent_msg
 
@@ -157,7 +125,6 @@ extern const pb_msgdesc_t wippersnapper_uart_v1_UARTDeviceEvent_msg;
 #define wippersnapper_uart_v1_UARTDeviceAttachRequest_size 56
 #define wippersnapper_uart_v1_UARTDeviceAttachResponse_size 18
 #define wippersnapper_uart_v1_UARTDeviceDetachRequest_size 16
->>>>>>> b4cc4ef7c5ddd6ff630e9801de6d5524ba53ca1a
 #define wippersnapper_uart_v1_UARTDeviceEvent_size 151
 
 #ifdef __cplusplus

@@ -44,6 +44,7 @@ void ws_uart::initUARTBus(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   // Parse bus_info
   int32_t baud = msgUARTRequest->bus_info.baudrate;
+  // TODO: These should be strings instead of int32_t type
   int32_t rx = msgUARTRequest->bus_info.pin_rx;
   int32_t tx = msgUARTRequest->bus_info.pin_tx;
   bool invert = msgUARTRequest->bus_info.is_invert;
