@@ -62,6 +62,29 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief   Checks if the UART device is ready to be polled at its time
+     interval.
+      @returns True if the UART device is ready to be polled, False otherwise.
+  */
+  /*******************************************************************************/
+  bool isReady() {
+    if (millis() - lastPoll >= pollingInterval) {
+      return true;
+    }
+    return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief   Sets the last time a UART device driver was polled
+      @param   pollingInterval
+               The last time a UART device was polled, in milliseconds.
+  */
+  /*******************************************************************************/
+  void setPrvPollTime(long curTime) { lastPoll = curTime; }
+
+  /*******************************************************************************/
+  /*!
       @brief   Sets the MQTT client used by the uart device driver for
      publishing data to Adafruit IO.
       @param   _mqtt

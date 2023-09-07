@@ -44,9 +44,8 @@ void ws_uart::initUARTBus(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   // Parse bus_info
   int32_t baud = msgUARTRequest->bus_info.baudrate;
-  // TODO: These should be strings instead of int32_t type
-  int32_t rx = msgUARTRequest->bus_info.pin_rx;
-  int32_t tx = msgUARTRequest->bus_info.pin_tx;
+  int32_t rx = atoi(msgUARTRequest->bus_info.pin_rx + 1);
+  int32_t tx = atoi(msgUARTRequest->bus_info.pin_tx + 1);
   bool invert = msgUARTRequest->bus_info.is_invert;
 
 // Initialize and begin UART bus depending on if HW UART or SW UART
@@ -65,32 +64,48 @@ void ws_uart::initUARTBus(
 
 /*******************************************************************************/
 /*!
+    @brief    Initializes the PM25AQI device driver.
+    @param    hwSerial
+              Pointer to a HardwareSerial instance.
+    @param    pollingInterval
+              Polling interval for the PM25AQI device.
+    @returns  True if PM25AQI driver was successfully initialized, False
+   otherwise.
+*/
+/*******************************************************************************/
+bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
+                                    int32_t pollingInterval) {
+  if (_pm25aqi != nullptr) {
+    WS_DEBUG_PRINTLN(
+        "[ERROR, UART]: PM25AQI driver already initialized on bus!");
+    return false;
+  }
+  _pm25aqi = new ws_uart_drv_pm25aqi(hwSerial, pollingInterval);
+  if (!_pm25aqi->begin()) {
+    WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
+    return false;
+  }
+  // Set MQTT client in driver TODO: This should be handled better, elsewhere!?
+  _pm25aqi->set_mqtt_client(WS._mqtt);
+  return true;
+}
+
+/*******************************************************************************/
+/*!
     @brief    Initializes a device on the UART bus.
     @param    msgUARTRequest
               Pointer to a UARTDeviceAttachRequest message.
     @returns  True if UART driver was successfully initialized.
 */
 /*******************************************************************************/
-bool ws_uart::initUARTDevice(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
-  // UART Device Type - PM25AQI
+bool ws_uart::initUARTDevice(
+    wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   if (strcmp(msgUARTRequest->device_id, "pm25aqi") == 0) {
-    if (_pm25aqi != nullptr) {
-      WS_DEBUG_PRINTLN(
-          "[ERROR, UART]: PM25AQI driver already initialized on bus!");
+    // Attempt to initialize PM25AQI driver
+    if (!initUARTDevicePM25AQI(_hwSerial, msgUARTRequest->polling_interval))
       return false;
-    }
-    // TODO: Add SW serial support below
-    _pm25aqi =
-        new ws_uart_drv_pm25aqi(_hwSerial, msgUARTRequest->polling_interval);
-    if (!_pm25aqi->begin()) {
-      WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
-      return false;
-    }
-    WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized");
-    // Set MQTT client in driver TODO: This should be handled better, elsewhere!?
-    _pm25aqi->set_mqtt_client(WS._mqtt);
-  } else if (strcmp(msgUARTRequest->device_id, "gps") == 0) {
-    // TODO: GPS UART initialization here
+    WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized!");
+    uartDrivers.push_back(_pm25aqi);
   } else {
     WS_DEBUG_PRINTLN("[ERROR, UART]: Could not find UART device type");
     return false;
@@ -105,19 +120,15 @@ bool ws_uart::initUARTDevice(wippersnapper_uart_v1_UARTDeviceAttachRequest *msgU
 */
 /*******************************************************************************/
 void ws_uart::update() {
-  if (_pm25aqi == nullptr) {
-    return; // No driver initialized on bus to update
-  }
-
-  // Check if PM25AQI driver is ready to poll
-  if (millis() - _pm25aqi->lastPoll >= _pm25aqi->pollingInterval) {
-    if (!_pm25aqi->data_available()) {
-      WS_DEBUG_PRINTLN("[ERROR, UART]: PM25AQI data not ready yet!");
-      return;
+  for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
+    // Is the UART driver ready to be polled?
+    if (ptrUARTDriver->isReady()) {
+      // Does our driver contain new data?
+      if (ptrUARTDriver->data_available()) {
+        // Update driver's data and send to Adafruit IO
+        ptrUARTDriver->update();
+        ptrUARTDriver->setPrvPollTime(millis());
+      }
     }
-    // Update IO with reading
-    _pm25aqi->update();
-    // Set lastPoll time
-    _pm25aqi->lastPoll = millis();
   }
 }

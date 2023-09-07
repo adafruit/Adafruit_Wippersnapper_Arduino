@@ -31,10 +31,12 @@ public:
   ws_uart(){};
   ~ws_uart(void);
 
-  void initUARTBus(wippersnapper_uart_v1_UARTDeviceAttachRequest
-                 *msgUARTRequest); ///< Initializes the UART bus, called once
+  void
+  initUARTBus(wippersnapper_uart_v1_UARTDeviceAttachRequest
+                  *msgUARTRequest); ///< Initializes the UART bus, called once
   bool initUARTDevice(wippersnapper_uart_v1_UARTDeviceAttachRequest
-                 *msgUARTRequest); ///< Initializes a UART driver.
+                          *msgUARTRequest); ///< Initializes a UART driver.
+  bool initUARTDevicePM25AQI(HardwareSerial *hwSerial, int32_t pollingInterval);
   void update(); ///< Updates the UART device at every polling interval, must be
                  ///< called by main app.
   bool is_bus_initialized = false; ///< True if UART bus is initialized
@@ -45,6 +47,8 @@ private:
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance
 #endif
   ws_uart_drv_pm25aqi *_pm25aqi = nullptr; ///< Pointer to a PM25 AQI device
+private:
+  std::vector<ws_uart_drv *> uartDrivers; ///< Vector of UART drivers
 };
 
 #endif // WS_UART_H
