@@ -85,6 +85,23 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief   Gets the UART device's unique identifier.
+      @returns The UART device's unique identifier.
+  */
+  /*******************************************************************************/
+  const char *getDeviceID() { return _deviceID; }
+
+  /*******************************************************************************/
+  /*!
+      @brief   Sets the UART device's unique identifier.
+      @param   id
+               The UART device's unique identifier.
+  */
+  /*******************************************************************************/
+  void setDeviceID(const char *id) { _deviceID = id; }
+
+  /*******************************************************************************/
+  /*!
       @brief   Sets the MQTT client used by the uart device driver for
      publishing data to Adafruit IO.
       @param   _mqtt
@@ -119,6 +136,7 @@ public:
 
   long pollingInterval; ///< UART device's polling interval, in milliseconds
   long lastPoll; ///< Last time the UART device was polled, in milliseconds
+  const char *_deviceID = nullptr;     ///< UART device's ID
   Adafruit_MQTT *mqttClient = nullptr; ///< Pointer to MQTT client object
 };
 

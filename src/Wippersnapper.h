@@ -60,7 +60,6 @@
 #include "components/servo/ws_servo.h"
 #include "components/uart/ws_uart.h"
 
-
 // ESP32-IDF components and macros
 #ifdef ARDUINO_ARCH_ESP32
 #define MEMCK                                                                  \
@@ -85,8 +84,8 @@
 #endif // ARDUINO_ARCH_ESP32
 
 // Note: These might be better off in their respective wrappers
-#include <SPI.h>
 #include "Adafruit_SleepyDog.h"
+#include <SPI.h>
 
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"

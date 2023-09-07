@@ -1519,8 +1519,8 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // Have we previously initialized the UART bus?
-    if (! WS._uartComponent->is_bus_initialized)
-        WS._uartComponent->initUARTBus(&msgUARTInitReq); // Init. UART bus
+    if (!WS._uartComponent->is_bus_initialized)
+      WS._uartComponent->initUARTBus(&msgUARTInitReq); // Init. UART bus
 
     // Attach UART device to the bus specified in the message
     bool did_begin = WS._uartComponent->initUARTDevice(&msgUARTInitReq);
@@ -1549,6 +1549,20 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
                       1);
     WS_DEBUG_PRINTLN("Published!");
 
+  } else if (field->tag ==
+             wippersnapper_signal_v1_UARTRequest_req_uart_device_detach_tag) {
+    WS_DEBUG_PRINTLN("[New Message] UART Detach");
+    // attempt to decode uart detach request message
+    wippersnapper_uart_v1_UARTDeviceDetachRequest msgUARTDetachReq =
+        wippersnapper_uart_v1_UARTDeviceDetachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_uart_v1_UARTDeviceDetachRequest_fields,
+                   &msgUARTDetachReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message!");
+      return false;
+    }
+    // detach UART device
+    WS._uartComponent->detachUARTDevice(&msgUARTDetachReq);
+    WS_DEBUG_PRINTLN("Detached uart device from bus");
   } else {
     WS_DEBUG_PRINTLN("ERROR: UART message type not found!");
     return false;

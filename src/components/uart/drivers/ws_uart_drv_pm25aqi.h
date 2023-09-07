@@ -76,6 +76,8 @@ public:
       return false;
     }
 #endif
+    // Set device's ID
+    setDeviceID("pm25aqi");
     return true;
   }
 

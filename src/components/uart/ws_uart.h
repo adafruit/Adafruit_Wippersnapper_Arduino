@@ -37,6 +37,9 @@ public:
   bool initUARTDevice(wippersnapper_uart_v1_UARTDeviceAttachRequest
                           *msgUARTRequest); ///< Initializes a UART driver.
   bool initUARTDevicePM25AQI(HardwareSerial *hwSerial, int32_t pollingInterval);
+  void detachUARTDevice(
+      wippersnapper_uart_v1_UARTDeviceDetachRequest
+          *msgUARTDetachReq); ///< Detaches a UART device from the UART bus
   void update(); ///< Updates the UART device at every polling interval, must be
                  ///< called by main app.
   bool is_bus_initialized = false; ///< True if UART bus is initialized

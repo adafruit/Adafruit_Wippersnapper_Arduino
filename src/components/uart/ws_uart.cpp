@@ -87,6 +87,7 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
   }
   // Set MQTT client in driver TODO: This should be handled better, elsewhere!?
   _pm25aqi->set_mqtt_client(WS._mqtt);
+  uartDrivers.push_back(_pm25aqi);
   return true;
 }
 
@@ -105,7 +106,6 @@ bool ws_uart::initUARTDevice(
     if (!initUARTDevicePM25AQI(_hwSerial, msgUARTRequest->polling_interval))
       return false;
     WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized!");
-    uartDrivers.push_back(_pm25aqi);
   } else {
     WS_DEBUG_PRINTLN("[ERROR, UART]: Could not find UART device type");
     return false;
@@ -113,10 +113,26 @@ bool ws_uart::initUARTDevice(
   return true;
 }
 
+void ws_uart::detachUARTDevice(
+    wippersnapper_uart_v1_UARTDeviceDetachRequest *msgUARTDetachReq) {
+  // this is the device ID and the only thing in the msg:
+  // msgUARTDetachReq->device_id;
+  for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
+    // TODO: Add getDeviceID() function to ws_uart_drv
+    if (strcmp(ptrUARTDriver->getDeviceID(), msgUARTDetachReq->device_id) ==
+        0) {
+      // TODO:
+      // Remove the driver from the vector of drivers
+      // TODO:
+      // Then, delete the driver and assign nullptr
+    }
+  }
+}
+
 /*******************************************************************************/
 /*!
-    @brief    Checks each UART driver's polling interval and sends an update of
-              the device's state to IO.
+    @brief    Checks each UART driver's polling interval and sends an update
+   of the device's state to IO.
 */
 /*******************************************************************************/
 void ws_uart::update() {
