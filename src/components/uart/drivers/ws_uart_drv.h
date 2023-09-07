@@ -81,7 +81,7 @@ public:
                The last time a UART device was polled, in milliseconds.
   */
   /*******************************************************************************/
-  void setPrvPollTime(long curTime) { lastPoll = curTime; }
+  void setPrvPollTime(long pollingInterval) { lastPoll = pollingInterval; }
 
   /*******************************************************************************/
   /*!

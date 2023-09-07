@@ -113,18 +113,28 @@ bool ws_uart::initUARTDevice(
   return true;
 }
 
+/*******************************************************************************/
+/*!
+    @brief    Detaches a UART device from the bus and frees its memory.
+    @param    msgUARTDetachReq
+              Pointer to a UARTDeviceDetachRequest message.
+*/
+/*******************************************************************************/
 void ws_uart::detachUARTDevice(
     wippersnapper_uart_v1_UARTDeviceDetachRequest *msgUARTDetachReq) {
-  // this is the device ID and the only thing in the msg:
-  // msgUARTDetachReq->device_id;
-  for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
-    // TODO: Add getDeviceID() function to ws_uart_drv
+  // Start an iterator on the first driver within the uartDrivers vector
+  std::vector<ws_uart_drv *>::iterator iter = uartDrivers.begin();
+  // Iterate through the vector
+  while (iter != uartDrivers.end()) {
+    ws_uart_drv *ptrUARTDriver = *iter; // Get a pointer to the driver
     if (strcmp(ptrUARTDriver->getDeviceID(), msgUARTDetachReq->device_id) ==
         0) {
-      // TODO:
-      // Remove the driver from the vector of drivers
-      // TODO:
-      // Then, delete the driver and assign nullptr
+      // Deallocate the memory pointed to by the driver
+      delete ptrUARTDriver;
+      // Erase the driver from the vector of drivers
+      iter = uartDrivers.erase(iter);
+    } else {
+      ++iter;
     }
   }
 }
