@@ -144,11 +144,15 @@ public:
           MQTT client identifier
   */
   /********************************************************/
-  // TODO: This needs to switch between staging and production URLS again
   void setupMQTTClient(const char *clientID) {
-    WS._mqttBrokerURL = "io.adafruit.us";
-    _mqtt_client->setCACert(_aio_root_ca_staging);
-
+    if (WS._mqttBrokerURL == nullptr) {
+      WS._mqttBrokerURL = "io.adafruit.com";
+      _mqtt_client->setCACert(_aio_root_ca_prod);
+    } else {
+      WS._mqttBrokerURL = "io.adafruit.us";
+      _mqtt_client->setCACert(_aio_root_ca_staging);
+    }
+    // Construct MQTT client
     WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, 8883,
                                         clientID, WS._username, WS._key);
   }

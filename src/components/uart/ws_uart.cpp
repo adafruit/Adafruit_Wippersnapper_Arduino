@@ -63,7 +63,7 @@ void ws_uart::initUARTBus(
   WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
 
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
-  WS_DEBUG_PRINT("UART Topic: " );
+  WS_DEBUG_PRINT("UART Topic: ");
   WS_DEBUG_PRINTLN(WS._topic_signal_uart_device);
 #endif
   is_bus_initialized = true;
@@ -159,7 +159,6 @@ void ws_uart::update() {
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
     // Is the UART driver ready to be polled?
     if (ptrUARTDriver->isReady()) {
-      //WS_DEBUG_PRINTLN("[INFO, UART]: UART driver is ready to be polled.");
       // Does our driver contain new data?
       if (ptrUARTDriver->data_available()) {
         WS_DEBUG_PRINTLN("[INFO, UART]: UART driver has new data.");
