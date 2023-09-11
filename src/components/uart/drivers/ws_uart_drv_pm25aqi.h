@@ -51,7 +51,7 @@ public:
   ws_uart_drv_pm25aqi(HardwareSerial *hwSerial, int32_t interval)
       : ws_uart_drv(hwSerial, pollingInterval) {
     _hwSerial = hwSerial;
-    pollingInterval = (long) interval;
+    pollingInterval = (long)interval;
   };
 #endif // USE_SW_UART
 
@@ -81,28 +81,50 @@ public:
     return true;
   }
 
-  bool data_available() override {
+  bool read_data() override {
+    // Attempt to read the PM2.5 Sensor
     if (!_aqi->read(&_data)) {
-      //Serial.println("[UART, PM25] Data not available.");
+      // Serial.println("[UART, PM25] Data not available.");
       return false;
     }
     Serial.println("[UART, PM25] Read data OK");
-    return true;
-  }
-
-  void update() override {
-    
-
-    Serial.println("AQI reading success");
-    // TODO: Optionally print out all the results from last read
     Serial.println();
     Serial.println(F("---------------------------------------"));
     Serial.println(F("Concentration Units (standard)"));
     Serial.println(F("---------------------------------------"));
-    Serial.print(F("PM 1.0: ")); Serial.print(_data.pm10_standard);
-    Serial.print(F("\t\tPM 2.5: ")); Serial.print(_data.pm25_standard);
-    Serial.print(F("\t\tPM 10: ")); Serial.println(_data.pm100_standard);
+    Serial.print(F("PM 1.0: "));
+    Serial.print(_data.pm10_standard);
+    Serial.print(F("\t\tPM 2.5: "));
+    Serial.print(_data.pm25_standard);
+    Serial.print(F("\t\tPM 10: "));
+    Serial.println(_data.pm100_standard);
+    Serial.println(F("Concentration Units (environmental)"));
+    Serial.println(F("---------------------------------------"));
+    Serial.print(F("PM 1.0: "));
+    Serial.print(_data.pm10_env);
+    Serial.print(F("\t\tPM 2.5: "));
+    Serial.print(_data.pm25_env);
+    Serial.print(F("\t\tPM 10: "));
+    Serial.println(_data.pm100_env);
+    Serial.println(F("---------------------------------------"));
+    Serial.print(F("Particles > 0.3um / 0.1L air:"));
+    Serial.println(_data.particles_03um);
+    Serial.print(F("Particles > 0.5um / 0.1L air:"));
+    Serial.println(_data.particles_05um);
+    Serial.print(F("Particles > 1.0um / 0.1L air:"));
+    Serial.println(_data.particles_10um);
+    Serial.print(F("Particles > 2.5um / 0.1L air:"));
+    Serial.println(_data.particles_25um);
+    Serial.print(F("Particles > 5.0um / 0.1L air:"));
+    Serial.println(_data.particles_50um);
+    Serial.print(F("Particles > 10 um / 0.1L air:"));
+    Serial.println(_data.particles_100um);
+    Serial.println(F("---------------------------------------"));
 
+    return true;
+  }
+
+  void send_data() override {
     // Create a new UART response message
     wippersnapper_signal_v1_UARTResponse msgUARTResponse =
         wippersnapper_signal_v1_UARTResponse_init_zero;
@@ -115,37 +137,30 @@ public:
     strcpy(msgUARTResponse.payload.resp_uart_device_event.device_id,
            getDeviceID());
 
-    // Pack all _data into `device_event` fields
-    // pm10_std
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].type =
-        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[0].value =
-        (float)_data.pm10_standard;
-    // pm25_std
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].type =
-        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[1].value =
-        (float)_data.pm25_standard;
-    // pm100_std
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].type =
-        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[2].value =
-        (float)_data.pm100_standard;
-    // pm10_env
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].type =
-        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[3].value =
-        (float)_data.pm10_env;
-    // pm25_env
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].type =
-        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[4].value =
-        (float)_data.pm25_env;
-    // pm100_env
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].type =
-        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV;
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event[5].value =
-        (float)_data.pm100_env;
+    // Pack sensor data into UART response message
+    packUARTResponse(&msgUARTResponse, 0,
+                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD,
+                     (float)_data.pm10_standard);
+
+    packUARTResponse(&msgUARTResponse, 1,
+                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD,
+                     (float)_data.pm25_standard);
+
+    packUARTResponse(&msgUARTResponse, 2,
+                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD,
+                     (float)_data.pm100_standard);
+
+    packUARTResponse(&msgUARTResponse, 3,
+                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV,
+                     (float)_data.pm10_env);
+
+    packUARTResponse(&msgUARTResponse, 4,
+                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV,
+                     (float)_data.pm25_env);
+
+    packUARTResponse(&msgUARTResponse, 5,
+                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV,
+                     (float)_data.pm100_env);
 
     // Encode message data
     uint8_t mqttBuffer[512] = {0};
@@ -162,9 +177,11 @@ public:
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_UARTResponse_fields,
                         &msgUARTResponse);
     Serial.print("[UART] Publishing event to IO..");
-    // TODO: Re-enable
-    mqttClient->publish("brentrubell/wprsnpr/io-wipper-feather-esp32s3220185245/signals/device/uart", mqttBuffer, msgSz, 1);
+    // TODO: Test this with new uartTopic
+    mqttClient->publish(uartTopic, mqttBuffer, msgSz, 1);
     Serial.println("Published!");
+
+    setPrvPollTime(millis());
   }
 
 protected:

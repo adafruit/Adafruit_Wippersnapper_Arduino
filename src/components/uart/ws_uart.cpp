@@ -63,6 +63,7 @@ void ws_uart::initUARTBus(
   WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
 
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
+  // TODO: This could get passed to the client or something instead?
   WS_DEBUG_PRINT("UART Topic: ");
   WS_DEBUG_PRINTLN(WS._topic_signal_uart_device);
 #endif
@@ -92,12 +93,10 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
     WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
     return false;
   }
-  // Set MQTT client in driver TODO: This should be handled better, elsewhere!?
-  _pm25aqi->set_mqtt_client(WS._mqtt);
+  // TODO: Test this
+  _pm25aqi->set_mqtt_client(WS._mqtt, WS._topic_signal_uart_device);
   uartDrivers.push_back(_pm25aqi);
 
-  WS_DEBUG_PRINT("[INFO, UART]: Polling Interval: ");
-  WS_DEBUG_PRINTLN(pollingInterval);
   return true;
 }
 
@@ -151,20 +150,18 @@ void ws_uart::detachUARTDevice(
 
 /*******************************************************************************/
 /*!
-    @brief    Checks each UART driver's polling interval and sends an update
-   of the device's state to IO.
+    @brief    Polls the UART driver for new data and sends it to IO.
 */
 /*******************************************************************************/
 void ws_uart::update() {
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
     // Is the UART driver ready to be polled?
     if (ptrUARTDriver->isReady()) {
-      // Does our driver contain new data?
-      if (ptrUARTDriver->data_available()) {
+      // Attempt to poll the UART driver for new data
+      if (ptrUARTDriver->read_data()) {
+        // Send UART driver's data to IO
         WS_DEBUG_PRINTLN("[INFO, UART]: UART driver has new data.");
-        // Update driver's data and send to Adafruit IO
-        ptrUARTDriver->update();
-        ptrUARTDriver->setPrvPollTime(millis());
+        ptrUARTDriver->send_data();
       }
     }
   }
