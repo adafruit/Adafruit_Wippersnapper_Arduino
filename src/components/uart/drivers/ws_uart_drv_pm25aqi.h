@@ -44,14 +44,14 @@ public:
       @brief    Initializes a PM25AQI UART device driver.
       @param    hwSerial
                 Pointer to an instance of a HardwareSerial object.
-      @param    pollingInterval
+      @param    interval
                 How often the PM25AQI device will be polled, in milliseconds.
   */
   /*******************************************************************************/
-  ws_uart_drv_pm25aqi(HardwareSerial *hwSerial, int32_t pollingInterval)
+  ws_uart_drv_pm25aqi(HardwareSerial *hwSerial, int32_t interval)
       : ws_uart_drv(hwSerial, pollingInterval) {
     _hwSerial = hwSerial;
-    pollingInterval = pollingInterval;
+    pollingInterval = (long) interval;
   };
 #endif // USE_SW_UART
 
@@ -77,13 +77,13 @@ public:
     }
 #endif
     // Set device's ID
-    setDeviceID("pm25aqi");
+    setDeviceID("pms5003");
     return true;
   }
 
   bool data_available() override {
     if (!_aqi->read(&_data)) {
-      Serial.println("[UART, PM25] Data not available.");
+      //Serial.println("[UART, PM25] Data not available.");
       return false;
     }
     Serial.println("[UART, PM25] Read data OK");
@@ -91,7 +91,17 @@ public:
   }
 
   void update() override {
-    // TODO: Print out the results from last read
+    
+
+    Serial.println("AQI reading success");
+    // TODO: Optionally print out all the results from last read
+    Serial.println();
+    Serial.println(F("---------------------------------------"));
+    Serial.println(F("Concentration Units (standard)"));
+    Serial.println(F("---------------------------------------"));
+    Serial.print(F("PM 1.0: ")); Serial.print(_data.pm10_standard);
+    Serial.print(F("\t\tPM 2.5: ")); Serial.print(_data.pm25_standard);
+    Serial.print(F("\t\tPM 10: ")); Serial.println(_data.pm100_standard);
 
     // Create a new UART response message
     wippersnapper_signal_v1_UARTResponse msgUARTResponse =
@@ -101,6 +111,9 @@ public:
     // We'll be sending back six sensor_events: pm10_standard, pm25_standard,
     // pm100_standard, pm10_env, pm25_env, and pm100_env
     msgUARTResponse.payload.resp_uart_device_event.sensor_event_count = 6;
+    // getDeviceID();
+    strcpy(msgUARTResponse.payload.resp_uart_device_event.device_id,
+           getDeviceID());
 
     // Pack all _data into `device_event` fields
     // pm10_std
@@ -150,7 +163,7 @@ public:
                         &msgUARTResponse);
     Serial.print("[UART] Publishing event to IO..");
     // TODO: Re-enable
-    //_mqttClient->publish(WS._topic_signal_i2c_device, mqttBuffer, msgSz, 1);
+    mqttClient->publish("brentrubell/wprsnpr/io-wipper-feather-esp32s3220185245/signals/device/uart", mqttBuffer, msgSz, 1);
     Serial.println("Published!");
   }
 
@@ -160,4 +173,4 @@ protected:
   HardwareSerial *_hwSerial = nullptr; ///< Pointer to UART interface
 };
 
-#endif // WipperSnapper_I2C_Driver_VL53L0X
+#endif // WS_UART_DRV_PM25AQI_H

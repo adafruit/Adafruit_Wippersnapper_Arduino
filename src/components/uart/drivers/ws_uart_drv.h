@@ -41,22 +41,22 @@ public:
       @brief    Initializes a UART device driver.
       @param    swSerial
                 Pointer to an instance of a SoftwareSerial object.
-      @param    pollingInterval
+      @param    interval
                 How often the UART device will be polled, in milliseconds.
   */
   /*******************************************************************************/
-  ws_uart_drv(SoftwareSerial *swSerial, int32_t pollingInterval){};
+  ws_uart_drv(SoftwareSerial *swSerial, int32_t interval){};
 #else
   /*******************************************************************************/
   /*!
       @brief    Initializes a UART device driver.
       @param    hwSerial
                 Pointer to an instance of a HardwareSerial object.
-      @param    pollingInterval
+      @param    interval
                 How often the UART device will be polled, in milliseconds.
   */
   /*******************************************************************************/
-  ws_uart_drv(HardwareSerial *hwSerial, int32_t pollingInterval){};
+  ws_uart_drv(HardwareSerial *hwSerial, int32_t interval){};
 #endif
   ~ws_uart_drv(void) {}
 
@@ -68,7 +68,7 @@ public:
   */
   /*******************************************************************************/
   bool isReady() {
-    if (millis() - lastPoll >= pollingInterval) {
+    if (millis() - prvPoll > pollingInterval) {
       return true;
     }
     return false;
@@ -77,11 +77,11 @@ public:
   /*******************************************************************************/
   /*!
       @brief   Sets the last time a UART device driver was polled
-      @param   pollingInterval
-               The last time a UART device was polled, in milliseconds.
+      @param   curTime
+               The current time, in milliseconds.
   */
   /*******************************************************************************/
-  void setPrvPollTime(long pollingInterval) { lastPoll = pollingInterval; }
+  void setPrvPollTime(long curTime) { prvPoll = curTime; }
 
   /*******************************************************************************/
   /*!
@@ -135,7 +135,7 @@ public:
   virtual void update(){};
 
   long pollingInterval; ///< UART device's polling interval, in milliseconds
-  long lastPoll; ///< Last time the UART device was polled, in milliseconds
+  long prvPoll; ///< Last time the UART device was polled, in milliseconds
   const char *_deviceID = nullptr;     ///< UART device's ID
   Adafruit_MQTT *mqttClient = nullptr; ///< Pointer to MQTT client object
 };

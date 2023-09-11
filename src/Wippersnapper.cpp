@@ -1524,15 +1524,18 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
 
     // Attach UART device to the bus specified in the message
     bool did_begin = WS._uartComponent->initUARTDevice(&msgUARTInitReq);
-    if (!did_begin)
+    
+    if (! did_begin)
       WS_DEBUG_PRINTLN("ERROR: Could not attach UART device to bus!");
 
-    // Create and send UARTResponse message back to IO
+    // Create a UARTResponse message
     wippersnapper_signal_v1_UARTResponse msgUARTResponse =
         wippersnapper_signal_v1_UARTResponse_init_zero;
     msgUARTResponse.which_payload =
         wippersnapper_signal_v1_UARTResponse_resp_uart_device_attach_tag;
-    msgUARTResponse.payload.resp_uart_device_attach.is_success = did_begin;
+    msgUARTResponse.payload.resp_uart_device_attach.is_success = true;
+    strcpy(msgUARTResponse.payload.resp_uart_device_attach.device_id,
+           msgUARTInitReq.device_id);
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
                                                   sizeof(WS._buffer_outgoing));

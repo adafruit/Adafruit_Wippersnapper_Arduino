@@ -57,19 +57,26 @@ void ws_uart::initUARTBus(
   _swSerial = &SoftwareSerial(rx, tx, invert);
 #else
   _hwSerial = &HWSerial;
+  WS_DEBUG_PRINTLN("[INFO, UART]: Initializing HW UART bus...");
+  WS_DEBUG_PRINTLN("[INFO, UART]: Baud Rate: " + String(baud));
+  WS_DEBUG_PRINTLN("[INFO, UART]: RX Pin: " + String(rx));
+  WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
+
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
+  WS_DEBUG_PRINT("UART Topic: " );
+  WS_DEBUG_PRINTLN(WS._topic_signal_uart_device);
 #endif
   is_bus_initialized = true;
 }
 
 /*******************************************************************************/
 /*!
-    @brief    Initializes the PM25AQI device driver.
+    @brief    Initializes the pms5003 device driver.
     @param    hwSerial
               Pointer to a HardwareSerial instance.
     @param    pollingInterval
-              Polling interval for the PM25AQI device.
-    @returns  True if PM25AQI driver was successfully initialized, False
+              Polling interval for the pms5003 device.
+    @returns  True if pms5003 driver was successfully initialized, False
    otherwise.
 */
 /*******************************************************************************/
@@ -77,7 +84,7 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
                                     int32_t pollingInterval) {
   if (_pm25aqi != nullptr) {
     WS_DEBUG_PRINTLN(
-        "[ERROR, UART]: PM25AQI driver already initialized on bus!");
+        "[ERROR, UART]: pms5003 driver already initialized on bus!");
     return false;
   }
   _pm25aqi = new ws_uart_drv_pm25aqi(hwSerial, pollingInterval);
@@ -88,6 +95,9 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
   // Set MQTT client in driver TODO: This should be handled better, elsewhere!?
   _pm25aqi->set_mqtt_client(WS._mqtt);
   uartDrivers.push_back(_pm25aqi);
+
+  WS_DEBUG_PRINT("[INFO, UART]: Polling Interval: ");
+  WS_DEBUG_PRINTLN(pollingInterval);
   return true;
 }
 
@@ -101,8 +111,8 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
 /*******************************************************************************/
 bool ws_uart::initUARTDevice(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
-  if (strcmp(msgUARTRequest->device_id, "pm25aqi") == 0) {
-    // Attempt to initialize PM25AQI driver
+  if (strcmp(msgUARTRequest->device_id, "pms5003") == 0) {
+    // Attempt to initialize pms5003 driver
     if (!initUARTDevicePM25AQI(_hwSerial, msgUARTRequest->polling_interval))
       return false;
     WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized!");
@@ -149,8 +159,10 @@ void ws_uart::update() {
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
     // Is the UART driver ready to be polled?
     if (ptrUARTDriver->isReady()) {
+      //WS_DEBUG_PRINTLN("[INFO, UART]: UART driver is ready to be polled.");
       // Does our driver contain new data?
       if (ptrUARTDriver->data_available()) {
+        WS_DEBUG_PRINTLN("[INFO, UART]: UART driver has new data.");
         // Update driver's data and send to Adafruit IO
         ptrUARTDriver->update();
         ptrUARTDriver->setPrvPollTime(millis());

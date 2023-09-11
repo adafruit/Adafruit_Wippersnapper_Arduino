@@ -24,7 +24,7 @@ void setup() {
   wipper.provision();
 
   Serial.begin(115200);
-  //while (!Serial) delay(10);
+  while (!Serial) delay(10);
 
   wipper.connect();
 
