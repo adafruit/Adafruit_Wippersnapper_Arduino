@@ -98,7 +98,7 @@ public:
                The UART device's unique identifier.
   */
   /*******************************************************************************/
-  void setDeviceID(const char *id) { _deviceID = id; }
+  void setDriverID(const char *id) { _deviceID = id; }
 
   /*******************************************************************************/
   /*!
@@ -133,18 +133,18 @@ public:
   virtual bool read_data() { return false; }
 
   /*******************************************************************************/
-    /*!
-        @brief   Packs the UART device's data into a UARTResponse message.
-        @param   msgUARTResponse
-                 Pointer to a UARTResponse message.
-        @param   event_index
-                 Index of the UART device's event.
-        @param   sensor_type
-                 Type of sensor data.
-        @param   sensor_value
-                 Sensor data value.
-    */
-    /*******************************************************************************/
+  /*!
+      @brief   Packs the UART device's data into a UARTResponse message.
+      @param   msgUARTResponse
+               Pointer to a UARTResponse message.
+      @param   event_index
+               Index of the UART device's event.
+      @param   sensor_type
+               Type of sensor data.
+      @param   sensor_value
+               Sensor data value.
+  */
+  /*******************************************************************************/
   void packUARTResponse(wippersnapper_signal_v1_UARTResponse *msgUARTResponse,
                         int event_index,
                         wippersnapper_i2c_v1_SensorType sensor_type,

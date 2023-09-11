@@ -1,7 +1,7 @@
 /*!
  * @file ws_uart_drv_pm25aqi.h
  *
- * Device driver for the Adafruit PM25AQI Arduino Library
+ * WipperSnapper device driver for the Adafruit_PM25AQI Arduino Library
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -21,13 +21,13 @@
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for a
-            UART PM25 AQI sensor.
+    @brief  Class that provides an interface for a PM25 AQI UART sensor.
 */
 /**************************************************************************/
 class ws_uart_drv_pm25aqi : public ws_uart_drv {
 public:
 #ifdef USE_SW_UART
+  // TODO: Add the software serial implementation
   /*******************************************************************************/
   /*!
       @brief    Initializes a PM25AQI UART device driver.
@@ -41,7 +41,7 @@ public:
 #else
   /*******************************************************************************/
   /*!
-      @brief    Initializes a PM25AQI UART device driver.
+      @brief    Initializes the PM25AQI UART device driver.
       @param    hwSerial
                 Pointer to an instance of a HardwareSerial object.
       @param    interval
@@ -52,22 +52,30 @@ public:
       : ws_uart_drv(hwSerial, pollingInterval) {
     _hwSerial = hwSerial;
     pollingInterval = (long)interval;
+    // Set driver ID
+    setDriverID("pms5003");
   };
 #endif // USE_SW_UART
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for PM25AQI sensor.
+      @brief    Destructor for a PM25AQI sensor.
   */
   /*******************************************************************************/
   ~ws_uart_drv_pm25aqi() {
-    _aqi = nullptr;
+    delete _aqi;
     _hwSerial = nullptr;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief   Initializes a PM25AQI sensor.
+      @returns True if the PM25AQI sensor was successfully initialized,
+                False otherwise.
+  */
+  /*******************************************************************************/
   bool begin() override {
     _aqi = new Adafruit_PM25AQI();
-
 #ifdef USE_SW_UART
 // TODO: Add SW uart path
 #else
@@ -76,11 +84,15 @@ public:
       return false;
     }
 #endif
-    // Set device's ID
-    setDeviceID("pms5003");
     return true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief   Attempts to read data from the PM25AQI sensor.
+      @returns True if data was successfully read, False otherwise.
+  */
+  /*******************************************************************************/
   bool read_data() override {
     // Attempt to read the PM2.5 Sensor
     if (!_aqi->read(&_data)) {
@@ -124,6 +136,11 @@ public:
     return true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief   Packs and sends the device's event data to Adafruit IO.
+  */
+  /*******************************************************************************/
   void send_data() override {
     // Create a new UART response message
     wippersnapper_signal_v1_UARTResponse msgUARTResponse =
