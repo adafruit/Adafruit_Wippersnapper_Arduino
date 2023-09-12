@@ -50,29 +50,60 @@ void ws_uart::initUARTBus(
 
 // Initialize and begin UART bus depending on if HW UART or SW UART
 #ifdef USE_SW_UART
-  // NOTE/TODO: Currently UNTESTED and NOT COMPILED WITH DEFAULT BUILD TARGET,
-  // ESP32!
+  // TODO: Test with ESP8266
+  WS_DEBUG_PRINTLN("[INFO, UART]: Initializing SW UART bus...");
+  WS_DEBUG_PRINTLN("[INFO, UART]: Baud Rate: " + String(baud));
+  WS_DEBUG_PRINTLN("[INFO, UART]: RX Pin: " + String(rx));
+  WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
   pinMode(rx, INPUT);
   pinMode(tx, OUTPUT);
   _swSerial = &SoftwareSerial(rx, tx, invert);
+  _swSerial->begin(baud);
 #else
   _hwSerial = &HWSerial;
   WS_DEBUG_PRINTLN("[INFO, UART]: Initializing HW UART bus...");
   WS_DEBUG_PRINTLN("[INFO, UART]: Baud Rate: " + String(baud));
   WS_DEBUG_PRINTLN("[INFO, UART]: RX Pin: " + String(rx));
   WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
-
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
-  // TODO: This could get passed to the client or something instead?
-  WS_DEBUG_PRINT("UART Topic: ");
-  WS_DEBUG_PRINTLN(WS._topic_signal_uart_device);
 #endif
   is_bus_initialized = true;
 }
 
+#ifdef USE_SW_UART
 /*******************************************************************************/
 /*!
-    @brief    Initializes the pms5003 device driver.
+    @brief    Initializes the pms5003 device driver using SoftwareSerial.
+    @param    swSerial
+              Pointer to a SoftwareSerial instance.
+    @param    pollingInterval
+              Polling interval for the pms5003 device.
+    @returns  True if pms5003 driver was successfully initialized, False
+   otherwise.
+*/
+/*******************************************************************************/
+// TODO: Software serial implementation needs to be tested on hardware!
+bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
+                                    int32_t pollingInterval) {
+  if (_pm25aqi != nullptr) {
+    WS_DEBUG_PRINTLN(
+        "[ERROR, UART]: pms5003 driver already initialized on bus!");
+    return false;
+  }
+  _pm25aqi = new ws_uart_drv_pm25aqi(swSerial, pollingInterval);
+  if (!_pm25aqi->begin()) {
+    WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
+    return false;
+  }
+  _pm25aqi->set_mqtt_client(WS._mqtt, WS._topic_signal_uart_device);
+  uartDrivers.push_back(_pm25aqi);
+  return true;
+}
+#endif
+
+/*******************************************************************************/
+/*!
+    @brief    Initializes the pms5003 device driver using HardwareSerial.
     @param    hwSerial
               Pointer to a HardwareSerial instance.
     @param    pollingInterval
@@ -111,9 +142,14 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
 bool ws_uart::initUARTDevice(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   if (strcmp(msgUARTRequest->device_id, "pms5003") == 0) {
-    // Attempt to initialize pms5003 driver
+    // Attempt to initialize PMS5003 driver with either SW or HW UART
+    #ifdef USE_SW_UART
+    if (!initUARTDevicePM25AQI(_swSerial, msgUARTRequest->polling_interval))
+      return false;
+    #else
     if (!initUARTDevicePM25AQI(_hwSerial, msgUARTRequest->polling_interval))
       return false;
+    #endif
     WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized!");
   } else {
     WS_DEBUG_PRINTLN("[ERROR, UART]: Could not find UART device type");

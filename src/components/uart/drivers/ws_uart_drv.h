@@ -68,7 +68,7 @@ public:
   */
   /*******************************************************************************/
   bool isReady() {
-    if (millis() - prvPoll > pollingInterval) {
+    if (millis() - _prvPoll > pollingInterval) {
       return true;
     }
     return false;
@@ -81,7 +81,7 @@ public:
                The current time, in milliseconds.
   */
   /*******************************************************************************/
-  void setPrvPollTime(long curTime) { prvPoll = curTime; }
+  void setPrvPollTime(long curTime) { _prvPoll = curTime; }
 
   /*******************************************************************************/
   /*!
@@ -162,12 +162,12 @@ public:
   /*******************************************************************************/
   virtual void send_data(){};
 
-  // TODO: Make these private member variables/objects?
-  long pollingInterval; ///< UART device's polling interval, in milliseconds
-  long prvPoll; ///< Last time the UART device was polled, in milliseconds
-  const char *_deviceID = nullptr;     ///< UART device's ID
   const char *uartTopic = nullptr;     ///< UART device's MQTT topic
   Adafruit_MQTT *mqttClient = nullptr; ///< Pointer to MQTT client object
+  long pollingInterval; ///< UART device's polling interval, in milliseconds
+private:
+  long _prvPoll; ///< Last time the UART device was polled, in milliseconds
+  const char *_deviceID = nullptr; ///< UART device's ID
 };
 
 #endif // WS_UART_DRV_H

@@ -2,5 +2,6 @@
     "files.associations": {
         "limits": "c",
         "type_traits": "c"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }

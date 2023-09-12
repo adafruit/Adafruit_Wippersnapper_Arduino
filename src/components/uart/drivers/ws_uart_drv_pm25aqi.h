@@ -27,7 +27,6 @@
 class ws_uart_drv_pm25aqi : public ws_uart_drv {
 public:
 #ifdef USE_SW_UART
-  // TODO: Add the software serial implementation
   /*******************************************************************************/
   /*!
       @brief    Initializes a PM25AQI UART device driver.
@@ -37,7 +36,13 @@ public:
                 How often the PM25AQI device will be polled, in milliseconds.
   */
   /*******************************************************************************/
-  ws_uart_drv_pm25aqi() : ws_uart_drv(SoftwareSerial * swSerial) {}
+    ws_uart_drv_pm25aqi(SoftwareSerial *swSerial, int32_t interval)
+      : ws_uart_drv(swSerial, pollingInterval) {
+    _swSerial = swSerial;
+    pollingInterval = (long)interval;
+    // Set driver ID
+    setDriverID("pms5003");
+  };
 #else
   /*******************************************************************************/
   /*!
@@ -204,7 +209,10 @@ public:
 protected:
   Adafruit_PM25AQI *_aqi = nullptr;    ///< Pointer to PM25AQI sensor object
   PM25_AQI_Data _data;                 ///< PM25AQI sensor data struct.
-  HardwareSerial *_hwSerial = nullptr; ///< Pointer to UART interface
+  HardwareSerial *_hwSerial = nullptr; ///< Pointer to Hardware UART interface
+  #ifdef USE_SW_UART
+  SoftwareSerial *_swSerial = nullptr; ///< Pointer to Software UART interface
+  #endif
 };
 
 #endif // WS_UART_DRV_PM25AQI_H
