@@ -40,6 +40,7 @@ public:
   void detachUARTDevice(
       wippersnapper_uart_v1_UARTDeviceDetachRequest
           *msgUARTDetachReq); ///< Detaches a UART device from the UART bus
+  void deinitUARTDevice(const char *device_id);
   void update(); ///< Updates the UART device at every polling interval, must be
                  ///< called by main app.
   bool is_bus_initialized = false; ///< True if UART bus is initialized

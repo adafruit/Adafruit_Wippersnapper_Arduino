@@ -141,21 +141,64 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
 /*******************************************************************************/
 bool ws_uart::initUARTDevice(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
+  // Ensure the protobuf contains a device identifier
+  if (strlen(msgUARTRequest->device_id) == 0) {
+    WS_DEBUG_PRINTLN("[ERROR, UART]: Device ID is empty!");
+    return false;
+  }
+
+  // Do we already have a device with this ID?
+  for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
+    if (strcmp(ptrUARTDriver->getDeviceID(), msgUARTRequest->device_id) == 0) {
+      WS_DEBUG_PRINTLN("[INFO, UART]: Device ID already exists on the bus, "
+                       "disconnecting...");
+      deinitUARTDevice(
+          msgUARTRequest->device_id); // Deinit the device and free resources
+      WS_DEBUG_PRINT("Disconnected!");
+      return false;
+    }
+  }
+
+  // Check which device type we are initializing
   if (strcmp(msgUARTRequest->device_id, "pms5003") == 0) {
-    // Attempt to initialize PMS5003 driver with either SW or HW UART
-    #ifdef USE_SW_UART
+// Attempt to initialize PMS5003 driver with either SW or HW UART
+#ifdef USE_SW_UART
     if (!initUARTDevicePM25AQI(_swSerial, msgUARTRequest->polling_interval))
       return false;
-    #else
+#else
     if (!initUARTDevicePM25AQI(_hwSerial, msgUARTRequest->polling_interval))
       return false;
-    #endif
+#endif
     WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized!");
   } else {
     WS_DEBUG_PRINTLN("[ERROR, UART]: Could not find UART device type");
     return false;
   }
   return true;
+}
+
+/*******************************************************************************/
+/*!
+    @brief    Deinitializes a UART device.
+    @param    device_id
+              Device identifier of the UART device to deinitialize.
+*/
+/*******************************************************************************/
+void ws_uart::deinitUARTDevice(const char *device_id) {
+  // Start an iterator on the first driver within the uartDrivers vector
+  std::vector<ws_uart_drv *>::iterator iter = uartDrivers.begin();
+  // Iterate through the vector
+  while (iter != uartDrivers.end()) {
+    ws_uart_drv *ptrUARTDriver = *iter; // Get a pointer to the driver
+    if (strcmp(ptrUARTDriver->getDeviceID(), device_id) == 0) {
+      // Deallocate the memory pointed to by the driver
+      delete ptrUARTDriver;
+      // Erase the driver from the vector of drivers
+      iter = uartDrivers.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
 }
 
 /*******************************************************************************/
@@ -167,21 +210,8 @@ bool ws_uart::initUARTDevice(
 /*******************************************************************************/
 void ws_uart::detachUARTDevice(
     wippersnapper_uart_v1_UARTDeviceDetachRequest *msgUARTDetachReq) {
-  // Start an iterator on the first driver within the uartDrivers vector
-  std::vector<ws_uart_drv *>::iterator iter = uartDrivers.begin();
-  // Iterate through the vector
-  while (iter != uartDrivers.end()) {
-    ws_uart_drv *ptrUARTDriver = *iter; // Get a pointer to the driver
-    if (strcmp(ptrUARTDriver->getDeviceID(), msgUARTDetachReq->device_id) ==
-        0) {
-      // Deallocate the memory pointed to by the driver
-      delete ptrUARTDriver;
-      // Erase the driver from the vector of drivers
-      iter = uartDrivers.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
+  // Deallocate the memory pointed to by the driver and detach it from the bus
+  deinitUARTDevice(msgUARTDetachReq->device_id);
 }
 
 /*******************************************************************************/
