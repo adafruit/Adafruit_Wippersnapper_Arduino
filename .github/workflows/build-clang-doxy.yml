@@ -36,7 +36,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -98,7 +98,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-        repository: brentru/ci-arduino
+        repository: adafruit/ci-arduino
         path: ci
     - name: Checkout Board Definitions
       uses: actions/checkout@v2
@@ -213,7 +213,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["rpi_pico_w"]
+        arduino-platform: ["picow_rp2040_tinyusb"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -226,7 +226,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -300,7 +300,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
