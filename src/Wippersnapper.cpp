@@ -1519,14 +1519,11 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // Have we previously initialized the UART bus?
-    if (!WS._uartComponent->is_bus_initialized)
+    if (!WS._uartComponent->isUARTBusInitialized())
       WS._uartComponent->initUARTBus(&msgUARTInitReq); // Init. UART bus
 
     // Attach UART device to the bus specified in the message
     bool did_begin = WS._uartComponent->initUARTDevice(&msgUARTInitReq);
-    
-    if (! did_begin)
-      WS_DEBUG_PRINTLN("ERROR: Could not attach UART device to bus!");
 
     // Create a UARTResponse message
     wippersnapper_signal_v1_UARTResponse msgUARTResponse =

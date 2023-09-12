@@ -36,6 +36,7 @@ public:
                   *msgUARTRequest); ///< Initializes the UART bus, called once
   bool initUARTDevice(wippersnapper_uart_v1_UARTDeviceAttachRequest
                           *msgUARTRequest); ///< Initializes a UART driver.
+  bool isUARTBusInitialized(); ///< Returns true if the UART bus is initialized
   bool initUARTDevicePM25AQI(HardwareSerial *hwSerial, int32_t pollingInterval);
   void detachUARTDevice(
       wippersnapper_uart_v1_UARTDeviceDetachRequest
@@ -43,16 +44,15 @@ public:
   void deinitUARTDevice(const char *device_id);
   void update(); ///< Updates the UART device at every polling interval, must be
                  ///< called by main app.
-  bool is_bus_initialized = false; ///< True if UART bus is initialized
 private:
 #ifdef USE_SW_UART
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance
 #else
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance
 #endif
+  bool _is_bus_initialized = false; ///< True if UART bus is initialized
+  std::vector<ws_uart_drv *> uartDrivers;  ///< Vector of UART drivers
   ws_uart_drv_pm25aqi *_pm25aqi = nullptr; ///< Pointer to a PM25 AQI device
-private:
-  std::vector<ws_uart_drv *> uartDrivers; ///< Vector of UART drivers
 };
 
 #endif // WS_UART_H

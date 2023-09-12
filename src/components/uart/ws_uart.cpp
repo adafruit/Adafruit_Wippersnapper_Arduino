@@ -67,7 +67,7 @@ void ws_uart::initUARTBus(
   WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
 #endif
-  is_bus_initialized = true;
+  _is_bus_initialized = true;
 }
 
 #ifdef USE_SW_UART
@@ -100,6 +100,16 @@ bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
   return true;
 }
 #endif
+
+/*******************************************************************************/
+/*!
+    @brief    Checks if the UART bus has been initialized.
+    @returns  True if the UART bus is initialized, False otherwise.
+*/
+/*******************************************************************************/
+bool ws_uart::isUARTBusInitialized() {
+    return _is_bus_initialized;
+}
 
 /*******************************************************************************/
 /*!
@@ -155,7 +165,6 @@ bool ws_uart::initUARTDevice(
       deinitUARTDevice(
           msgUARTRequest->device_id); // Deinit the device and free resources
       WS_DEBUG_PRINT("Disconnected!");
-      return false;
     }
   }
 
@@ -179,7 +188,7 @@ bool ws_uart::initUARTDevice(
 
 /*******************************************************************************/
 /*!
-    @brief    Deinitializes a UART device.
+    @brief    Deinitializes a device from the UART bus and frees its memory.
     @param    device_id
               Device identifier of the UART device to deinitialize.
 */
