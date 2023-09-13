@@ -37,7 +37,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
          repository: brentru/ci-arduino
-         ref: switch-to-adafruit-upstream
+         ref: sync-brentru-branch
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -100,7 +100,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         repository: brentru/ci-arduino
-        ref: switch-to-adafruit-upstream
+        ref: sync-brentru-branch
         path: ci
     - name: Checkout Board Definitions
       uses: actions/checkout@v2
@@ -186,7 +186,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
          repository: brentru/ci-arduino
-         ref: switch-to-adafruit-upstream
+         ref: sync-brentru-branch
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -231,7 +231,7 @@ jobs:
       with:
          repository: brentru/ci-arduino
          path: ci
-         ref: switch-to-adafruit-upstream
+         ref: sync-brentru-branch
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
       # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
@@ -273,7 +273,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
          repository: brentru/ci-arduino
-         ref: switch-to-adafruit-upstream
+         ref: sync-brentru-branch
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -306,7 +306,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
          repository: brentru/ci-arduino
-         ref: switch-to-adafruit-upstream
+         ref: sync-brentru-branch
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -349,7 +349,7 @@ jobs:
       with:
          repository: brentru/ci-arduino
          path: ci
-         ref: switch-to-adafruit-upstream
+         ref: sync-brentru-branch
     - name: pre-install
       run: bash ci/actions_install.sh
 
