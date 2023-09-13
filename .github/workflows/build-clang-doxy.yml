@@ -36,7 +36,8 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
+         ref: switch-to-adafruit-upstream
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -58,7 +59,7 @@ jobs:
       run: |
         cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
     - name: Build for ESP32-Sx
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py --build_timeout 4800 ${{ matrix.arduino-platform }}
     - name: list
       run: |
             ls
@@ -98,7 +99,8 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-        repository: adafruit/ci-arduino
+        repository: brentru/ci-arduino
+        ref: switch-to-adafruit-upstream
         path: ci
     - name: Checkout Board Definitions
       uses: actions/checkout@v2
@@ -183,7 +185,8 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
+         ref: switch-to-adafruit-upstream
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -226,8 +229,9 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
+         ref: switch-to-adafruit-upstream
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
       # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
@@ -268,7 +272,8 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
+         ref: switch-to-adafruit-upstream
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -300,7 +305,8 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
+         ref: switch-to-adafruit-upstream
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -341,9 +347,9 @@ jobs:
 
     - uses: actions/checkout@v2
       with:
-         repository: adafruit/ci-arduino
+         repository: brentru/ci-arduino
          path: ci
-
+         ref: switch-to-adafruit-upstream
     - name: pre-install
       run: bash ci/actions_install.sh
 
