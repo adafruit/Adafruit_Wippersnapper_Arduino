@@ -36,8 +36,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
-         ref: sync-brentru-branch
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -99,8 +98,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-        repository: brentru/ci-arduino
-        ref: sync-brentru-branch
+        repository: adafruit/ci-arduino
         path: ci
     - name: Checkout Board Definitions
       uses: actions/checkout@v2
@@ -185,8 +183,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
-         ref: sync-brentru-branch
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -229,9 +226,8 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
-         ref: sync-brentru-branch
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
       # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
@@ -272,8 +268,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
-         ref: sync-brentru-branch
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -305,8 +300,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
-         ref: sync-brentru-branch
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -347,9 +341,8 @@ jobs:
 
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
-         ref: sync-brentru-branch
     - name: pre-install
       run: bash ci/actions_install.sh
 
