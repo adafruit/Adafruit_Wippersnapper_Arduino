@@ -53,8 +53,8 @@ public:
     if (!_sgp40->begin(_i2c)) {
       return false;
     }
-    
-    //TODO: update to use setCalibration() and pass in temp/humidity
+
+    // TODO: update to use setCalibration() and pass in temp/humidity
 
     return true;
   }
