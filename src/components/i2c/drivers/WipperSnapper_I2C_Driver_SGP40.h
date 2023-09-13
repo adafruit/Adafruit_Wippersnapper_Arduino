@@ -54,7 +54,7 @@ public:
       return false;
     }
     
-    //TODO: update to use setCalibration() and pass in temp/humidity each reading
+    //TODO: update to use setCalibration() and pass in temp/humidity
 
     return true;
   }
