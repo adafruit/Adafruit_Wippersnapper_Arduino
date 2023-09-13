@@ -60,7 +60,7 @@ jobs:
         cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
     - name: Build for ESP32-Sx
       # Write a run step taking in a build_timeout of 4800 seconds
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 4800
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: list
       run: |
             ls
@@ -118,7 +118,7 @@ jobs:
       run: |
         pip3 install esptool
     - name: build ESP32 platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
@@ -198,7 +198,7 @@ jobs:
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -241,7 +241,7 @@ jobs:
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
     - name: build platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -285,7 +285,7 @@ jobs:
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
 
   build-esp8266:
     name: Build WipperSnapper ESP8266
