@@ -59,7 +59,7 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _ens160 = new ScioSense_ENS160(_i2c, _sensorAddress);
+    _ens160 = new ScioSense_ENS160((TwoWire *)_i2c, (uint8_t)_sensorAddress);
 
     // attempt to initialize ENS160
     if (!_ens160->begin())
