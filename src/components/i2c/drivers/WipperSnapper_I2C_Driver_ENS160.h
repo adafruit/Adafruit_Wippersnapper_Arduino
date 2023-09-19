@@ -17,7 +17,7 @@
 #define WipperSnapper_I2C_Driver_ENS160_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <Sciosense_ENS160.h>
+#include <ScioSense_ENS160.h>
 
 #define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
@@ -64,7 +64,7 @@ public:
     // attempt to initialize ENS160
     if (!_ens160->begin())
       return false;
-    
+
     // Set the mode to standard
     return _ens160->setMode(ENS160_OPMODE_STD);
   }
@@ -75,7 +75,9 @@ public:
       @returns  True if the reading succeeded, False otherwise.
   */
   /*******************************************************************************/
-  bool ensPerformReading() { return _ens160->available() && _ens160->measure(true); }
+  bool ensPerformReading() {
+    return _ens160->available() && _ens160->measure(true);
+  }
 
   /*******************************************************************************/
   /*!
@@ -93,7 +95,6 @@ public:
     return true;
   }
 
-
   /*******************************************************************************/
   /*!
       @brief    Reads the ENS160's TVOC sensor into an event.
@@ -110,7 +111,6 @@ public:
     return true;
   }
 
-
   /*******************************************************************************/
   /*!
       @brief    Reads the ENS160's AQI value into an event.
@@ -126,7 +126,6 @@ public:
     rawEvent->data[0] = (float)_ens160->getAQI();
     return true;
   }
-
 
 protected:
   ScioSense_ENS160 *_ens160; ///< ENS160 object
