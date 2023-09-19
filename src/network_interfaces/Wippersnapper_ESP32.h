@@ -149,7 +149,6 @@ public:
       WS._mqttBrokerURL = "io.adafruit.com";
       _mqtt_client->setCACert(_aio_root_ca_prod);
     } else {
-      WS._mqttBrokerURL = "io.adafruit.us";
       _mqtt_client->setCACert(_aio_root_ca_staging);
     }
     // Construct MQTT client
