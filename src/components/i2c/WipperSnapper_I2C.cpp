@@ -296,6 +296,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _dps310->configureDriver(msgDeviceInitReq);
     drivers.push_back(_dps310);
     WS_DEBUG_PRINTLN("DPS310 Initialized Successfully!");
+  } else if (strcmp("ens160", msgDeviceInitReq->i2c_device_name) == 0) {
+    _ens160 = new WipperSnapper_I2C_Driver_ENS160(this->_i2c, i2cAddress);
+    if (!_ens160->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize ENS160!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _ens160->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_ens160);
+    WS_DEBUG_PRINTLN("ENS160 Initialized Successfully!");
   } else if (strcmp("hts221", msgDeviceInitReq->i2c_device_name) == 0) {
     _hts221 = new WipperSnapper_I2C_Driver_HTS221(this->_i2c, i2cAddress);
     if (!_hts221->begin()) {

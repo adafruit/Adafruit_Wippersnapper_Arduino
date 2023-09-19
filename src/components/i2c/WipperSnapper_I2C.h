@@ -28,6 +28,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_BMP280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP3XX.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
+#include "drivers/WipperSnapper_I2C_Driver_ENS160.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTS221.h"
 #include "drivers/WipperSnapper_I2C_Driver_INA219.h"
 #include "drivers/WipperSnapper_I2C_Driver_LC709203F.h"
@@ -105,6 +106,7 @@ private:
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
+  WipperSnapper_I2C_Driver_ENS160 *_ens160= nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
   WipperSnapper_I2C_Driver_BH1750 *_bh1750 = nullptr;
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
