@@ -1530,7 +1530,8 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_signal_v1_UARTResponse_init_zero;
     msgUARTResponse.which_payload =
         wippersnapper_signal_v1_UARTResponse_resp_uart_device_attach_tag;
-    msgUARTResponse.payload.resp_uart_device_attach.is_success = true; // TODO: This should take did_begin instead?
+    msgUARTResponse.payload.resp_uart_device_attach.is_success =
+        true; // TODO: This should take did_begin instead?
     strcpy(msgUARTResponse.payload.resp_uart_device_attach.device_id,
            msgUARTInitReq.device_id);
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
@@ -2253,28 +2254,28 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-// Create device-to-broker UART topic
+  // Create device-to-broker UART topic
 
-// Calculate size for dynamic MQTT topic 
-size_t topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
-                     strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/uart") + 2;
+  // Calculate size for dynamic MQTT topic
+  size_t topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+                    strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+                    strlen("broker/uart") + 2;
 
 // Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
   WS._topic_signal_uart_brkr = (char *)ps_malloc(topicLen);
 #else
-    WS._topic_signal_uart_brkr = (char *)malloc(topicLen);
+  WS._topic_signal_uart_brkr = (char *)malloc(topicLen);
 #endif
 
-if (WS._topic_signal_uart_brkr != NULL) {
-    // generate the topic
-        snprintf(WS._topic_signal_uart_brkr, topicLen, "%s/wprsnpr/%s%sbroker/uart",
+  // Generate the topic if memory was allocated successfully
+  if (WS._topic_signal_uart_brkr != NULL) {
+    snprintf(WS._topic_signal_uart_brkr, topicLen, "%s/wprsnpr/%s%sbroker/uart",
              WS._username, _device_uid, TOPIC_SIGNALS);
-} else {
+  } else {
     WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
     return false;
-}
-
+  }
 
   // Subscribe to signal's UART sub-topic
   _topic_signal_uart_sub =
@@ -2283,28 +2284,34 @@ if (WS._topic_signal_uart_brkr != NULL) {
   // Set MQTT callback function
   _topic_signal_uart_sub->setCallback(cbSignalUARTReq);
 
-// Create broker-to-device UART topic
+  // Create broker-to-device UART topic
+  // Calculate size for dynamic MQTT topic
+  topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+             strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+             strlen("device/uart") + 2;
+
+// Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
-  WS._topic_signal_uart_device = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
-      strlen("uart") + 1);
+  WS._topic_signal_uart_device = (char *)ps_malloc(topicLen);
 #else
-  WS._topic_signal_uart_device = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
-      strlen("uart") + 1);
+  WS._topic_signal_uart_device = (char *)malloc(topicLen);
 #endif
+
+  // Generate the topic if memory was allocated successfully
   if (WS._topic_signal_uart_device != NULL) {
-    strcpy(WS._topic_signal_uart_device, WS._username);
-    strcat(WS._topic_signal_uart_device, TOPIC_WS);
-    strcat(WS._topic_signal_uart_device, _device_uid);
-    strcat(WS._topic_signal_uart_device, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_uart_device, "device/uart");
-  } else { // malloc failed
-    WS_DEBUG_PRINTLN("ERROR: Failed to allocate c2d uart topic!");
+    snprintf(WS._topic_signal_uart_device, topicLen,
+             "%s/wprsnpr/%s%sdevice/uart", WS._username, _device_uid,
+             TOPIC_SIGNALS);
+  } else {
+    WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
     return false;
   }
+
+  Serial.print("UART TOPIC Device: ");
+  Serial.println(WS._topic_signal_uart_device);
+
+  Serial.print("UART TOPIC BROKER: ");
+  Serial.println(WS._topic_signal_uart_device);
 
   return true;
 }

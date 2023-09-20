@@ -107,9 +107,7 @@ bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
     @returns  True if the UART bus is initialized, False otherwise.
 */
 /*******************************************************************************/
-bool ws_uart::isUARTBusInitialized() {
-    return _is_bus_initialized;
-}
+bool ws_uart::isUARTBusInitialized() { return _is_bus_initialized; }
 
 /*******************************************************************************/
 /*!

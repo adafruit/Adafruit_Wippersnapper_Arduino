@@ -50,7 +50,7 @@ private:
 #else
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance
 #endif
-  bool _is_bus_initialized = false; ///< True if UART bus is initialized
+  bool _is_bus_initialized = false;        ///< True if UART bus is initialized
   std::vector<ws_uart_drv *> uartDrivers;  ///< Vector of UART drivers
   ws_uart_drv_pm25aqi *_pm25aqi = nullptr; ///< Pointer to a PM25 AQI device
 };
