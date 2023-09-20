@@ -2254,32 +2254,33 @@ bool Wippersnapper::generateWSTopics() {
   }
 
 // Create device-to-broker UART topic
+
+// Calculate size for dynamic MQTT topic 
+size_t topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+                     strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/uart") + 2;
+
+// Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
-  WS._topic_signal_uart_brkr = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
-      strlen("uart") + 1);
+  WS._topic_signal_uart_brkr = (char *)ps_malloc(topicLen);
 #else
-  WS._topic_signal_uart_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._username) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
-      strlen("uart") + 1);
+    WS._topic_signal_uart_brkr = (char *)malloc(topicLen);
 #endif
-  if (WS._topic_signal_uart_brkr != NULL) {
-    strcpy(WS._topic_signal_uart_brkr, WS._username);
-    strcat(WS._topic_signal_uart_brkr, TOPIC_WS);
-    strcat(WS._topic_signal_uart_brkr, _device_uid);
-    strcat(WS._topic_signal_uart_brkr, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_uart_brkr, "broker/uart");
-  } else { // malloc failed
-    WS_DEBUG_PRINTLN("ERROR: Failed to allocate d2c UART topic!");
+
+if (WS._topic_signal_uart_brkr != NULL) {
+    // generate the topic
+        snprintf(WS._topic_signal_uart_brkr, topicLen, "%s/wprsnpr/%s%sbroker/uart",
+             WS._username, _device_uid, TOPIC_SIGNALS);
+} else {
+    WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
     return false;
-  }
+}
+
 
   // Subscribe to signal's UART sub-topic
   _topic_signal_uart_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_uart_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_uart_sub);
+  // Set MQTT callback function
   _topic_signal_uart_sub->setCallback(cbSignalUARTReq);
 
 // Create broker-to-device UART topic
