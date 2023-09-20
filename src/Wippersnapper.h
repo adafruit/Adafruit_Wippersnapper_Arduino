@@ -31,8 +31,10 @@
 #include <wippersnapper/signal/v1/signal.pb.h>           // signal.proto
 
 // External libraries
-#include "Adafruit_MQTT.h" // MQTT Client
-#include "Arduino.h"       // Wiring
+#include "Adafruit_MQTT.h"      // MQTT Client
+#include "Arduino.h"            // Wiring
+#include "Adafruit_SleepyDog.h" // Watchdog
+#include <SPI.h>                // SPI
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
@@ -60,33 +62,6 @@
 #include "components/servo/ws_servo.h"
 #include "components/uart/ws_uart.h"
 
-// ESP32-IDF components and macros
-#ifdef ARDUINO_ARCH_ESP32
-#define MEMCK                                                                  \
-  Serial.printf("Free: %d\tMaxAlloc: %d\t PSFree: %d\n", ESP.getFreeHeap(),    \
-                ESP.getMaxAllocHeap(),                                         \
-                ESP.getFreePsram()) ///< ESP32 memory check macro
-#ifdef ESP_IDF_VERSION_MAJOR        // IDF 4+
-#if CONFIG_IDF_TARGET_ESP32         // ESP32/PICO-D4
-#include "esp32/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32C3
-#include "esp32c3/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rtc.h"
-#else
-#error Target CONFIG_IDF_TARGET is not supported
-#endif
-#else // ESP32 Before IDF 4.0
-#include "rom/rtc.h"
-#endif // ESP_IDF_VERSION_MAJOR
-#endif // ARDUINO_ARCH_ESP32
-
-// Note: These might be better off in their respective wrappers
-#include "Adafruit_SleepyDog.h"
-#include <SPI.h>
-
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
@@ -96,7 +71,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.71" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.73" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
