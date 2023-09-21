@@ -70,9 +70,9 @@ public:
   ~ws_uart_drv_pm25aqi() {
     delete _aqi;
     _hwSerial = nullptr;
-    #ifdef USE_SW_UART
+#ifdef USE_SW_UART
     _swSerial = nullptr;
-    #endif
+#endif
   }
 
   /*******************************************************************************/

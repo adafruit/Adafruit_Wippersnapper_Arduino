@@ -198,6 +198,9 @@ void ws_uart::deinitUARTDevice(const char *device_id) {
   while (iter != uartDrivers.end()) {
     ws_uart_drv *ptrUARTDriver = *iter; // Get a pointer to the driver
     if (strcmp(ptrUARTDriver->getDeviceID(), device_id) == 0) {
+      if (ptrUARTDriver == _pm25aqi) {
+        _pm25aqi = nullptr;
+      }
       // Deallocate the memory pointed to by the driver
       delete ptrUARTDriver;
       // Erase the driver from the vector of drivers
@@ -228,7 +231,6 @@ void ws_uart::detachUARTDevice(
 /*******************************************************************************/
 void ws_uart::update() {
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
-    // Is the UART driver ready to be polled?
     if (ptrUARTDriver->isReady()) {
       // Attempt to poll the UART driver for new data
       if (ptrUARTDriver->read_data()) {
