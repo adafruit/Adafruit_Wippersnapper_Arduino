@@ -57,8 +57,8 @@ void ws_uart::initUARTBus(
   WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
   pinMode(rx, INPUT);
   pinMode(tx, OUTPUT);
-  _swSerial = &SoftwareSerial(rx, tx, invert);
-  _swSerial->begin(baud);
+  SoftwareSerial _swSerial(rx, tx, invert);
+  _swSerial.begin(baud);
 #else
   _hwSerial = &HWSerial;
   WS_DEBUG_PRINTLN("[INFO, UART]: Initializing HW UART bus...");
@@ -99,16 +99,7 @@ bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
   uartDrivers.push_back(_pm25aqi);
   return true;
 }
-#endif
-
-/*******************************************************************************/
-/*!
-    @brief    Checks if the UART bus has been initialized.
-    @returns  True if the UART bus is initialized, False otherwise.
-*/
-/*******************************************************************************/
-bool ws_uart::isUARTBusInitialized() { return _is_bus_initialized; }
-
+#else
 /*******************************************************************************/
 /*!
     @brief    Initializes the pms5003 device driver using HardwareSerial.
@@ -138,6 +129,15 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
 
   return true;
 }
+#endif
+
+/*******************************************************************************/
+/*!
+    @brief    Checks if the UART bus has been initialized.
+    @returns  True if the UART bus is initialized, False otherwise.
+*/
+/*******************************************************************************/
+bool ws_uart::isUARTBusInitialized() { return _is_bus_initialized; }
 
 /*******************************************************************************/
 /*!
