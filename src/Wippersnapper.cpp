@@ -2259,7 +2259,7 @@ bool Wippersnapper::generateWSTopics() {
   // Calculate size for dynamic MQTT topic
   size_t topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
                     strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-                    strlen("broker/uart") + 2;
+                    strlen("broker/uart") + 1;
 
 // Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
@@ -2288,7 +2288,7 @@ bool Wippersnapper::generateWSTopics() {
   // Calculate size for dynamic MQTT topic
   topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
              strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-             strlen("device/uart") + 2;
+             strlen("device/uart") + 1;
 
 // Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
