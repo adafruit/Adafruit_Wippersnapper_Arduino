@@ -28,6 +28,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_BMP280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP3XX.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
+#include "drivers/WipperSnapper_I2C_Driver_ENS160.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTS221.h"
 #include "drivers/WipperSnapper_I2C_Driver_INA219.h"
 #include "drivers/WipperSnapper_I2C_Driver_LC709203F.h"
@@ -45,6 +46,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_SCD4X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SEN5X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SGP30.h"
+#include "drivers/WipperSnapper_I2C_Driver_SGP40.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT3X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHT4X.h"
 #include "drivers/WipperSnapper_I2C_Driver_SHTC3.h"
@@ -104,6 +106,7 @@ private:
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
+  WipperSnapper_I2C_Driver_ENS160 *_ens160 = nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
   WipperSnapper_I2C_Driver_BH1750 *_bh1750 = nullptr;
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
@@ -122,6 +125,7 @@ private:
   WipperSnapper_I2C_Driver_SCD4X *_scd40 = nullptr;
   WipperSnapper_I2C_Driver_SEN5X *_sen5x = nullptr;
   WipperSnapper_I2C_Driver_SGP30 *_sgp30 = nullptr;
+  WipperSnapper_I2C_Driver_SGP40 *_sgp40 = nullptr;
   WipperSnapper_I2C_Driver_PCT2075 *_pct2075 = nullptr;
   WipperSnapper_I2C_Driver_PM25 *_pm25 = nullptr;
   WipperSnapper_I2C_Driver_SI7021 *_si7021 = nullptr;

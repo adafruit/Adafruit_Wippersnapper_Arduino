@@ -36,7 +36,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -57,8 +57,8 @@ jobs:
     - name: Copy lv_conf.h file in Adafruit_LittlevGL_Glue_Library to the arduino library folder
       run: |
         cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
-    - name: Build for ESP32-Sx
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+    - name: Build for ESP32-SX
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: list
       run: |
             ls
@@ -98,7 +98,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-        repository: brentru/ci-arduino
+        repository: adafruit/ci-arduino
         path: ci
     - name: Checkout Board Definitions
       uses: actions/checkout@v2
@@ -115,7 +115,7 @@ jobs:
       run: |
         pip3 install esptool
     - name: build ESP32 platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
@@ -194,7 +194,7 @@ jobs:
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -213,7 +213,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["rpi_pico_w"]
+        arduino-platform: ["picow_rp2040_tinyusb"]
     steps:
     - uses: actions/setup-python@v1
       with:
@@ -226,7 +226,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -236,7 +236,7 @@ jobs:
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
     - name: build platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
@@ -279,7 +279,7 @@ jobs:
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
 
   build-esp8266:
     name: Build WipperSnapper ESP8266
@@ -300,7 +300,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v2
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -309,7 +309,7 @@ jobs:
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: build platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: list build artifacts
       run: |
             ls
@@ -343,7 +343,6 @@ jobs:
       with:
          repository: adafruit/ci-arduino
          path: ci
-
     - name: pre-install
       run: bash ci/actions_install.sh
 
