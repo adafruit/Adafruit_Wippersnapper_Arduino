@@ -48,23 +48,25 @@ void ws_uart::initUARTBus(
   int32_t tx = atoi(msgUARTRequest->bus_info.pin_tx + 1);
   bool invert = msgUARTRequest->bus_info.is_invert;
 
-// Initialize and begin UART bus depending on if HW UART or SW UART
-#ifdef USE_SW_UART
-  // TODO: Test with ESP8266
+  // Print bus_info
   WS_DEBUG_PRINTLN("[INFO, UART]: Initializing SW UART bus...");
   WS_DEBUG_PRINTLN("[INFO, UART]: Baud Rate: " + String(baud));
   WS_DEBUG_PRINTLN("[INFO, UART]: RX Pin: " + String(rx));
   WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
-  pinMode(rx, INPUT);
-  pinMode(tx, OUTPUT);
-  SoftwareSerial _swSerial(rx, tx, invert);
-  _swSerial.begin(baud);
+  WS_DEBUG_PRINTLN("[INFO, UART]: Invert? " + String(invert));
+
+// TODO: Switch the RX and tx in the definition for ESP8266
+
+// Initialize and begin UART bus depending if the platform supports either HW UART or SW UART
+#ifdef USE_SW_UART
+  #ifndef ARDUINO_ARCH_RP2040
+  _swSerial = new SoftwareSerial(rx, tx, invert);
+  #else // RP2040 SoftwareSerial emulation does not support inverted mode
+  _swSerial = new SoftwareSerial(rx, tx);
+  #endif
+  _swSerial->begin(baud);
 #else
   _hwSerial = &HWSerial;
-  WS_DEBUG_PRINTLN("[INFO, UART]: Initializing HW UART bus...");
-  WS_DEBUG_PRINTLN("[INFO, UART]: Baud Rate: " + String(baud));
-  WS_DEBUG_PRINTLN("[INFO, UART]: RX Pin: " + String(rx));
-  WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
 #endif
   _is_bus_initialized = true;
@@ -82,7 +84,6 @@ void ws_uart::initUARTBus(
    otherwise.
 */
 /*******************************************************************************/
-// TODO: Software serial implementation needs to be tested on hardware!
 bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
                                     int32_t pollingInterval) {
   if (_pm25aqi != nullptr) {
@@ -90,6 +91,7 @@ bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
         "[ERROR, UART]: pms5003 driver already initialized on bus!");
     return false;
   }
+  WS_DEBUG_PRINTLN("[INFO, UART]: Initializing PM25AQI driver...");
   _pm25aqi = new ws_uart_drv_pm25aqi(swSerial, pollingInterval);
   if (!_pm25aqi->begin()) {
     WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
@@ -123,10 +125,8 @@ bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
     WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
     return false;
   }
-  // TODO: Test this
   _pm25aqi->set_mqtt_client(WS._mqtt, WS._topic_signal_uart_device);
   uartDrivers.push_back(_pm25aqi);
-
   return true;
 }
 #endif
@@ -201,8 +201,6 @@ void ws_uart::deinitUARTDevice(const char *device_id) {
       if (ptrUARTDriver == _pm25aqi) {
         _pm25aqi = nullptr;
       }
-      // Deallocate the memory pointed to by the driver
-      delete ptrUARTDriver;
       // Erase the driver from the vector of drivers
       iter = uartDrivers.erase(iter);
     } else {
@@ -232,6 +230,7 @@ void ws_uart::detachUARTDevice(
 void ws_uart::update() {
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
     if (ptrUARTDriver->isReady()) {
+      WS_DEBUG_PRINTLN("[INFO, UART]: UART driver is ready.");
       // Attempt to poll the UART driver for new data
       if (ptrUARTDriver->read_data()) {
         // Send UART driver's data to IO

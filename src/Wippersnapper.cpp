@@ -1531,7 +1531,7 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     msgUARTResponse.which_payload =
         wippersnapper_signal_v1_UARTResponse_resp_uart_device_attach_tag;
     msgUARTResponse.payload.resp_uart_device_attach.is_success =
-        true; // TODO: This should take did_begin instead?
+        did_begin; // TODO: Test around this for HW uart
     strcpy(msgUARTResponse.payload.resp_uart_device_attach.device_id,
            msgUARTInitReq.device_id);
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));

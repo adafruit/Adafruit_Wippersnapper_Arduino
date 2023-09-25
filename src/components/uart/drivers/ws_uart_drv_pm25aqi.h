@@ -69,9 +69,10 @@ public:
   /*******************************************************************************/
   ~ws_uart_drv_pm25aqi() {
     delete _aqi;
-    _hwSerial = nullptr;
 #ifdef USE_SW_UART
     _swSerial = nullptr;
+#else
+    _hwSerial = nullptr;
 #endif
   }
 
@@ -85,7 +86,11 @@ public:
   bool begin() override {
     _aqi = new Adafruit_PM25AQI();
 #ifdef USE_SW_UART
-// TODO: Add SW uart path
+    Serial.println("use sw uart init");
+    if (!_aqi->begin_UART(
+            _swSerial)) { // connect to the sensor over software serial
+      return false;
+    }
 #else
     if (!_aqi->begin_UART(
             _hwSerial)) { // connect to the sensor over hardware serial
@@ -102,9 +107,11 @@ public:
   */
   /*******************************************************************************/
   bool read_data() override {
+    Serial.println("[UART, PM25] Reading data...");
     // Attempt to read the PM2.5 Sensor
     if (!_aqi->read(&_data)) {
-      // Serial.println("[UART, PM25] Data not available.");
+      Serial.println("[UART, PM25] Data not available.");
+      delay(500);
       return false;
     }
     Serial.println("[UART, PM25] Read data OK");
@@ -199,9 +206,10 @@ public:
 protected:
   Adafruit_PM25AQI *_aqi = nullptr;    ///< Pointer to PM25AQI sensor object
   PM25_AQI_Data _data;                 ///< PM25AQI sensor data struct.
-  HardwareSerial *_hwSerial = nullptr; ///< Pointer to Hardware UART interface
 #ifdef USE_SW_UART
   SoftwareSerial *_swSerial = nullptr; ///< Pointer to Software UART interface
+#else
+  HardwareSerial *_hwSerial = nullptr; ///< Pointer to Hardware UART interface
 #endif
 };
 

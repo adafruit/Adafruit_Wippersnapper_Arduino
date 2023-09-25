@@ -171,8 +171,6 @@ public:
   void setupMQTTClient(const char *clientID) {
     if (WS._mqttBrokerURL == nullptr) {
       WS._mqttBrokerURL = "io.adafruit.com";
-    } else {
-      WS._mqttBrokerURL = "io.adafruit.us";
     }
 
     // Uncomment the following lines to use MQTT/SSL. You will need to
