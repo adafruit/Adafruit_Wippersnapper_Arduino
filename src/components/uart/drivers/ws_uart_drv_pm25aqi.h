@@ -37,9 +37,9 @@ public:
   */
   /*******************************************************************************/
   ws_uart_drv_pm25aqi(SoftwareSerial *swSerial, int32_t interval)
-      : ws_uart_drv(swSerial, pollingInterval) {
+      : ws_uart_drv(swSerial, interval) {
     _swSerial = swSerial;
-    pollingInterval = (long)interval;
+    pollingInterval = (unsigned long)interval;
     // Set driver ID
     setDriverID("pms5003");
   };
@@ -54,9 +54,9 @@ public:
   */
   /*******************************************************************************/
   ws_uart_drv_pm25aqi(HardwareSerial *hwSerial, int32_t interval)
-      : ws_uart_drv(hwSerial, pollingInterval) {
+      : ws_uart_drv(hwSerial, interval) {
     _hwSerial = hwSerial;
-    pollingInterval = (long)interval;
+    pollingInterval = (unsigned long)interval;
     // Set driver ID
     setDriverID("pms5003");
   };
