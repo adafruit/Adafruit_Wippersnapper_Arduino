@@ -55,15 +55,14 @@ void ws_uart::initUARTBus(
   WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
   WS_DEBUG_PRINTLN("[INFO, UART]: Invert? " + String(invert));
 
-// TODO: Switch the RX and tx in the definition for ESP8266
-
-// Initialize and begin UART bus depending if the platform supports either HW UART or SW UART
+// Initialize and begin UART bus depending if the platform supports either HW
+// UART or SW UART
 #ifdef USE_SW_UART
-  #ifndef ARDUINO_ARCH_RP2040
+#ifndef ARDUINO_ARCH_RP2040
   _swSerial = new SoftwareSerial(rx, tx, invert);
-  #else // RP2040 SoftwareSerial emulation does not support inverted mode
+#else // RP2040 SoftwareSerial emulation does not support inverted mode
   _swSerial = new SoftwareSerial(rx, tx);
-  #endif
+#endif
   _swSerial->begin(baud);
 #else
   _hwSerial = &HWSerial;
