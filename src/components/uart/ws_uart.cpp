@@ -60,8 +60,13 @@ void ws_uart::initUARTBus(
 #endif
   _swSerial->begin(baud);
 #else
+#ifndef ARDUINO_ARCH_SAMD
   _hwSerial = new HardwareSerial(1);
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
+#else
+  _hwSerial = &Serial1;
+  _hwSerial->begin(baud);
+#endif
 #endif
   _is_bus_initialized = true;
 }
