@@ -15,7 +15,7 @@
  */
 #include "ws_uart.h"
 
-#if !defined(ARDUINO_ARCH_ESP8266) || !defined(ARDUINO_ARCH_RP2040)
+#if !defined(ARDUINO_ARCH_ESP8266) || !defined(ARDUINO_RASPBERRY_PI_PICO_W)
 HardwareSerial HWSerial(1); ///< Default HardwareSerial instance
 #endif
 
@@ -32,7 +32,6 @@ ws_uart::~ws_uart(void) {
 #endif
 }
 
-// TODO: Maybe we need two begin functions, one for the bus, one for the device?
 /*******************************************************************************/
 /*!
     @brief    Initializes a UART bus.
