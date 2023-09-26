@@ -164,9 +164,11 @@ public:
 
   const char *uartTopic = nullptr;     ///< UART device's MQTT topic
   Adafruit_MQTT *mqttClient = nullptr; ///< Pointer to MQTT client object
-  unsigned long pollingInterval; ///< UART device's polling interval, in milliseconds
+  unsigned long
+      pollingInterval; ///< UART device's polling interval, in milliseconds
 private:
-  unsigned long _prvPoll; ///< Last time the UART device was polled, in milliseconds
+  unsigned long
+      _prvPoll; ///< Last time the UART device was polled, in milliseconds
   const char *_deviceID = nullptr; ///< UART device's ID
 };
 

@@ -32,8 +32,8 @@
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
-#include "Arduino.h"            // Wiring
 #include "Adafruit_SleepyDog.h" // Watchdog
+#include "Arduino.h"            // Wiring
 #include <SPI.h>                // SPI
 
 // Wippersnapper API Helpers

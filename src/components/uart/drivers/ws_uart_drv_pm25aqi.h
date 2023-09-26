@@ -204,8 +204,8 @@ public:
   }
 
 protected:
-  Adafruit_PM25AQI *_aqi = nullptr;    ///< Pointer to PM25AQI sensor object
-  PM25_AQI_Data _data;                 ///< PM25AQI sensor data struct.
+  Adafruit_PM25AQI *_aqi = nullptr; ///< Pointer to PM25AQI sensor object
+  PM25_AQI_Data _data;              ///< PM25AQI sensor data struct.
 #ifdef USE_SW_UART
   SoftwareSerial *_swSerial = nullptr; ///< Pointer to Software UART interface
 #else
