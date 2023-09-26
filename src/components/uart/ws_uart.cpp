@@ -15,10 +15,6 @@
  */
 #include "ws_uart.h"
 
-#if !defined(ARDUINO_ARCH_ESP8266) || !defined(ARDUINO_RASPBERRY_PI_PICO_W)
-HardwareSerial HWSerial(1); ///< Default HardwareSerial instance
-#endif
-
 /*******************************************************************************/
 /*!
     @brief    UART class destructor.
@@ -64,7 +60,7 @@ void ws_uart::initUARTBus(
 #endif
   _swSerial->begin(baud);
 #else
-  _hwSerial = &HWSerial;
+  _hwSerial = new HardwareSerial(1);
   _hwSerial->begin(baud, SERIAL_8N1, rx, tx, invert);
 #endif
   _is_bus_initialized = true;
