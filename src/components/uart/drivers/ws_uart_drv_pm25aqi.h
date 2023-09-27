@@ -196,7 +196,6 @@ public:
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_UARTResponse_fields,
                         &msgUARTResponse);
     Serial.print("[UART] Publishing event to IO..");
-    // TODO: Test this with new uartTopic
     mqttClient->publish(uartTopic, mqttBuffer, msgSz, 1);
     Serial.println("Published!");
 

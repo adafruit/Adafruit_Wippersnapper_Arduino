@@ -1530,8 +1530,7 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_signal_v1_UARTResponse_init_zero;
     msgUARTResponse.which_payload =
         wippersnapper_signal_v1_UARTResponse_resp_uart_device_attach_tag;
-    msgUARTResponse.payload.resp_uart_device_attach.is_success =
-        did_begin; // TODO: Test around this for HW uart
+    msgUARTResponse.payload.resp_uart_device_attach.is_success = did_begin;
     strcpy(msgUARTResponse.payload.resp_uart_device_attach.device_id,
            msgUARTInitReq.device_id);
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
@@ -1590,9 +1589,6 @@ void cbSignalUARTReq(char *data, uint16_t len) {
   // copy mqtt data into buffer
   memcpy(WS._buffer, data, len);
   WS.bufSize = len;
-
-  // Zero-out existing UART signal message
-  // WS.msgSignalUART = wippersnapper_signal_v1_UARTRequest_init_zero;
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
@@ -2306,13 +2302,6 @@ bool Wippersnapper::generateWSTopics() {
     WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
     return false;
   }
-
-  Serial.print("UART TOPIC Device: ");
-  Serial.println(WS._topic_signal_uart_device);
-
-  Serial.print("UART TOPIC BROKER: ");
-  Serial.println(WS._topic_signal_uart_device);
-
   return true;
 }
 
