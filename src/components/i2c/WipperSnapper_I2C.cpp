@@ -486,6 +486,28 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _tsl2591->configureDriver(msgDeviceInitReq);
     drivers.push_back(_tsl2591);
     WS_DEBUG_PRINTLN("TSL2591 Initialized Successfully!");
+  } else if (strcmp("vcnl4020", msgDeviceInitReq->i2c_device_name) == 0) {
+    _vcnl4020 = new WipperSnapper_I2C_Driver_VCNL4020(this->_i2c, i2cAddress);
+    if (!_vcnl4020->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize VCNL4020!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _vcnl4020->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_vcnl4020);
+    WS_DEBUG_PRINTLN("VCNL4020 Initialized Successfully!");
+  } else if (strcmp("vcnl4040", msgDeviceInitReq->i2c_device_name) == 0) {
+    _vcnl4040 = new WipperSnapper_I2C_Driver_VCNL4040(this->_i2c, i2cAddress);
+    if (!_vcnl4040->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize VCNL4040!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _vcnl4040->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_vcnl4040);
+    WS_DEBUG_PRINTLN("VCNL4040 Initialized Successfully!");
   } else if (strcmp("veml7700", msgDeviceInitReq->i2c_device_name) == 0) {
     _veml7700 = new WipperSnapper_I2C_Driver_VEML7700(this->_i2c, i2cAddress);
     if (!_veml7700->begin()) {

@@ -3,5 +3,6 @@
         "limits": "c",
         "type_traits": "c"
     },
-    "C_Cpp.dimInactiveRegions": false
+    "C_Cpp.dimInactiveRegions": false,
+    "dotnet.defaultSolution": "disable"
 }
