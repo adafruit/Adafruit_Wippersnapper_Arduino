@@ -30,6 +30,12 @@
 #include <wippersnapper/description/v1/description.pb.h> // description.proto
 #include <wippersnapper/signal/v1/signal.pb.h>           // signal.proto
 
+// External libraries
+#include "Adafruit_MQTT.h"      // MQTT Client
+#include "Adafruit_SleepyDog.h" // Watchdog
+#include "Arduino.h"            // Wiring
+#include <SPI.h>                // SPI
+
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
@@ -54,38 +60,7 @@
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
-
-// External libraries
-#include "Adafruit_MQTT.h" // MQTT Client
-#include "Arduino.h"       // Wiring
-
-// ESP32-IDF components and macros
-#ifdef ARDUINO_ARCH_ESP32
-#define MEMCK                                                                  \
-  Serial.printf("Free: %d\tMaxAlloc: %d\t PSFree: %d\n", ESP.getFreeHeap(),    \
-                ESP.getMaxAllocHeap(),                                         \
-                ESP.getFreePsram()) ///< ESP32 memory check macro
-#ifdef ESP_IDF_VERSION_MAJOR        // IDF 4+
-#if CONFIG_IDF_TARGET_ESP32         // ESP32/PICO-D4
-#include "esp32/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32C3
-#include "esp32c3/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rtc.h"
-#else
-#error Target CONFIG_IDF_TARGET is not supported
-#endif
-#else // ESP32 Before IDF 4.0
-#include "rom/rtc.h"
-#endif // ESP_IDF_VERSION_MAJOR
-#endif // ARDUINO_ARCH_ESP32
-
-// Note: These might be better off in their respective wrappers
-#include <SPI.h>
-
-#include "Adafruit_SleepyDog.h"
+#include "components/uart/ws_uart.h"
 
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -96,7 +71,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.72" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.73" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -210,6 +185,7 @@ class ws_servo;
 class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
+class ws_uart;
 
 /**************************************************************************/
 /*!
@@ -330,6 +306,7 @@ public:
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
+  ws_uart *_uartComponent;        ///< Instance of UART class
 
   // TODO: does this really need to be global?
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
@@ -371,6 +348,8 @@ public:
                                        from a broker to a device. */
   char *_topic_signal_pixels_brkr = NULL;   /*!< Topic carries pixel messages */
   char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
+  char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
+  char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -393,6 +372,9 @@ public:
   // pixels signal message
   wippersnapper_signal_v1_PixelsRequest
       msgPixels; ///< PixelsRequest wrapper message
+
+  wippersnapper_signal_v1_UARTRequest
+      msgSignalUART; ///< UARTReq wrapper message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -452,6 +434,8 @@ protected:
       *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

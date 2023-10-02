@@ -53,21 +53,26 @@ Wippersnapper::Wippersnapper() {
   _throttle_sub = 0;
 
   // Init. component classes
-
-  // DallasSemi (OneWire)
-  WS._ds18x20Component = new ws_ds18x20();
   // LEDC (ESP32-ONLY)
 #ifdef ARDUINO_ARCH_ESP32
   WS._ledc = new ws_ledc();
 #endif
-  // Servo
-  WS._servoComponent = new ws_servo();
-  // PWM
+
+  // PWM (Arch-specific implementations)
 #ifdef ARDUINO_ARCH_ESP32
   WS._pwmComponent = new ws_pwm(WS._ledc);
 #else
   WS._pwmComponent = new ws_pwm();
 #endif
+
+  // Servo
+  WS._servoComponent = new ws_servo();
+
+  // UART
+  WS._uartComponent = new ws_uart();
+
+  // DallasSemi (OneWire)
+  WS._ds18x20Component = new ws_ds18x20();
 };
 
 /**************************************************************************/
@@ -1476,6 +1481,126 @@ void cbPixelsMsg(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
 
+/******************************************************************************************/
+/*!
+    @brief    Decodes a UART message and executes the callback based on the
+   message's tag.
+    @param    stream
+              Incoming data stream from buffer.
+    @param    field
+              Protobuf message's tag type.
+    @param    arg
+              Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+/******************************************************************************************/
+bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
+                         void **arg) {
+  if (field->tag ==
+      wippersnapper_signal_v1_UARTRequest_req_uart_device_attach_tag) {
+    WS_DEBUG_PRINTLN(
+        "[Message Type]: "
+        "wippersnapper_signal_v1_UARTRequest_req_uart_device_attach_tag");
+
+    // attempt to decode create message
+    wippersnapper_uart_v1_UARTDeviceAttachRequest msgUARTInitReq =
+        wippersnapper_uart_v1_UARTDeviceAttachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_uart_v1_UARTDeviceAttachRequest_fields,
+                   &msgUARTInitReq)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Could not decode message of type: UARTDeviceAttachRequest!");
+      return false;
+    }
+
+    // Check if bus_info is within the message
+    if (!msgUARTInitReq.has_bus_info) {
+      WS_DEBUG_PRINTLN("ERROR: UART bus info not found within message!");
+      return false;
+    }
+
+    // Have we previously initialized the UART bus?
+    if (!WS._uartComponent->isUARTBusInitialized())
+      WS._uartComponent->initUARTBus(&msgUARTInitReq); // Init. UART bus
+
+    // Attach UART device to the bus specified in the message
+    bool did_begin = WS._uartComponent->initUARTDevice(&msgUARTInitReq);
+
+    // Create a UARTResponse message
+    wippersnapper_signal_v1_UARTResponse msgUARTResponse =
+        wippersnapper_signal_v1_UARTResponse_init_zero;
+    msgUARTResponse.which_payload =
+        wippersnapper_signal_v1_UARTResponse_resp_uart_device_attach_tag;
+    msgUARTResponse.payload.resp_uart_device_attach.is_success = did_begin;
+    strcpy(msgUARTResponse.payload.resp_uart_device_attach.device_id,
+           msgUARTInitReq.device_id);
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                  sizeof(WS._buffer_outgoing));
+    if (!pb_encode(&ostream, wippersnapper_signal_v1_UARTResponse_fields,
+                   &msgUARTResponse)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode UART response message!");
+      return false;
+    }
+    size_t msgSz; // message's encoded size
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_UARTResponse_fields,
+                        &msgUARTResponse);
+    WS_DEBUG_PRINT("PUBLISHING: UART Attach Response...");
+    WS._mqtt->publish(WS._topic_signal_uart_device, WS._buffer_outgoing, msgSz,
+                      1);
+    WS_DEBUG_PRINTLN("Published!");
+
+  } else if (field->tag ==
+             wippersnapper_signal_v1_UARTRequest_req_uart_device_detach_tag) {
+    WS_DEBUG_PRINTLN("[New Message] UART Detach");
+    // attempt to decode uart detach request message
+    wippersnapper_uart_v1_UARTDeviceDetachRequest msgUARTDetachReq =
+        wippersnapper_uart_v1_UARTDeviceDetachRequest_init_zero;
+    if (!pb_decode(stream, wippersnapper_uart_v1_UARTDeviceDetachRequest_fields,
+                   &msgUARTDetachReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Could not decode message!");
+      return false;
+    }
+    // detach UART device
+    WS._uartComponent->detachUARTDevice(&msgUARTDetachReq);
+    WS_DEBUG_PRINTLN("Detached uart device from bus");
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: UART message type not found!");
+    return false;
+  }
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Called when the signal UART sub-topic receives a
+              new message. Performs decoding.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+/**************************************************************************/
+void cbSignalUARTReq(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE on Signal of type UART: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgSignalUART.cb_payload.funcs.decode = cbDecodeUARTMessage;
+
+  // Decode DS signal request
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!pb_decode(&istream, wippersnapper_signal_v1_UARTRequest_fields,
+                 &WS.msgSignalUART))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode UART Signal message");
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -2125,6 +2250,58 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
+  // Create device-to-broker UART topic
+
+  // Calculate size for dynamic MQTT topic
+  size_t topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+                    strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+                    strlen("broker/uart") + 1;
+
+// Allocate memory for dynamic MQTT topic
+#ifdef USE_PSRAM
+  WS._topic_signal_uart_brkr = (char *)ps_malloc(topicLen);
+#else
+  WS._topic_signal_uart_brkr = (char *)malloc(topicLen);
+#endif
+
+  // Generate the topic if memory was allocated successfully
+  if (WS._topic_signal_uart_brkr != NULL) {
+    snprintf(WS._topic_signal_uart_brkr, topicLen, "%s/wprsnpr/%s%sbroker/uart",
+             WS._username, _device_uid, TOPIC_SIGNALS);
+  } else {
+    WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
+    return false;
+  }
+
+  // Subscribe to signal's UART sub-topic
+  _topic_signal_uart_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_uart_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_uart_sub);
+  // Set MQTT callback function
+  _topic_signal_uart_sub->setCallback(cbSignalUARTReq);
+
+  // Create broker-to-device UART topic
+  // Calculate size for dynamic MQTT topic
+  topicLen = strlen(WS._username) + strlen("/") + strlen(_device_uid) +
+             strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+             strlen("device/uart") + 1;
+
+// Allocate memory for dynamic MQTT topic
+#ifdef USE_PSRAM
+  WS._topic_signal_uart_device = (char *)ps_malloc(topicLen);
+#else
+  WS._topic_signal_uart_device = (char *)malloc(topicLen);
+#endif
+
+  // Generate the topic if memory was allocated successfully
+  if (WS._topic_signal_uart_device != NULL) {
+    snprintf(WS._topic_signal_uart_device, topicLen,
+             "%s/wprsnpr/%s%sdevice/uart", WS._username, _device_uid,
+             TOPIC_SIGNALS);
+  } else {
+    WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
+    return false;
+  }
   return true;
 }
 
@@ -2660,6 +2837,9 @@ ws_status_t Wippersnapper::run() {
 
   // Process DS18x20 sensor events
   WS._ds18x20Component->update();
+
+  // Process UART sensor events
+  WS._uartComponent->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
