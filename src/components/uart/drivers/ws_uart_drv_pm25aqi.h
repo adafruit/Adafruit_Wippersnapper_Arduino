@@ -86,7 +86,6 @@ public:
   bool begin() override {
     _aqi = new Adafruit_PM25AQI();
 #ifdef USE_SW_UART
-    Serial.println("use sw uart init");
     if (!_aqi->begin_UART(
             _swSerial)) { // connect to the sensor over software serial
       return false;
