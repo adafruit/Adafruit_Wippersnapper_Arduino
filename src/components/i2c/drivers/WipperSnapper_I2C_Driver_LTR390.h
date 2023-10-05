@@ -62,7 +62,7 @@ public:
     // Configure LTR390 sensor
     // Note: This driver uses the default configuration from
     // https://github.com/adafruit/Adafruit_LTR390/blob/master/examples/ltr390_test/ltr390_test.ino
-    _ltr390->setMode(LTR390_MODE_ALS);
+    _ltr390->setMode(LTR390_MODE_UVS);
     _ltr390->setGain(LTR390_GAIN_3);
     _ltr390->setResolution(LTR390_RESOLUTION_16BIT);
     return true;
@@ -81,7 +81,7 @@ public:
   bool getEventLight(sensors_event_t *lightEvent) {
     if (_ltr390->getMode() != LTR390_MODE_ALS) {
       _ltr390->setMode(LTR390_MODE_ALS);
-      delay(100);
+      delay(110);
     }
 
     if (!_ltr390->newDataAvailable())
@@ -103,7 +103,7 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) {
     if (_ltr390->getMode() != LTR390_MODE_UVS) {
       _ltr390->setMode(LTR390_MODE_UVS);
-      delay(100);
+      delay(110);
     }
 
     if (!_ltr390->newDataAvailable())
