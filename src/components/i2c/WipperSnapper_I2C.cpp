@@ -318,6 +318,28 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _hts221->configureDriver(msgDeviceInitReq);
     drivers.push_back(_hts221);
     WS_DEBUG_PRINTLN("HTS221 Initialized Successfully!");
+  } else if (strcmp("htu21d", msgDeviceInitReq->i2c_device_name) == 0) {
+    _htu21d = new WipperSnapper_I2C_Driver_HTU21D(this->_i2c, i2cAddress);
+    if (!_htu21d->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize HTU21D!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _htu21d->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_htu21d);
+    WS_DEBUG_PRINTLN("HTU21D Initialized Successfully!");
+  } else if (strcmp("htu31d", msgDeviceInitReq->i2c_device_name) == 0) {
+    _htu31d = new WipperSnapper_I2C_Driver_HTU31D(this->_i2c, i2cAddress);
+    if (!_htu31d->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize HTU31D!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _htu31d->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_htu31d);
+    WS_DEBUG_PRINTLN("HTU31D Initialized Successfully!");
   } else if (strcmp("scd30", msgDeviceInitReq->i2c_device_name) == 0) {
     _scd30 = new WipperSnapper_I2C_Driver_SCD30(this->_i2c, i2cAddress);
     if (!_scd30->begin()) {
