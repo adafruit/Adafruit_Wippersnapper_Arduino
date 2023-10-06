@@ -59,11 +59,12 @@ public:
     if (!_LTR329->begin(_i2c))
       return false;
 
-    // Configure LTR329 sensor - Note: This uses the default configuration from
-    // https://github.com/adafruit/Adafruit_LTR329_LTR303/blob/main/examples/ltr329_simpletest/ltr329_simpletest.ino
-    _LTR329->setGain(LTR3XX_GAIN_2);
+    // Configure LTR329 sensor - tested on a dull British day Oct'23 @7kLux
+    // Matches similar lux value from LTR390 with default configuration.
+    _LTR329->setGain(LTR3XX_GAIN_48);
     _LTR329->setIntegrationTime(LTR3XX_INTEGTIME_100);
-    _LTR329->setMeasurementRate(LTR3XX_MEASRATE_200);
+    _LTR329->setMeasurementRate(LTR3XX_MEASRATE_100);
+    _delayBetweenReads = 110; // 100ms measurement time + 10ms fudge-factor
     return true;
   }
 
@@ -96,8 +97,13 @@ public:
   */
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
-    if (!_LTR329->newDataAvailable())
-      return false;
+
+    if (!_LTR329->newDataAvailable()) {
+      delay(
+          _delayBetweenReads); // Raw comes after Light event and needs new data
+      if (!_LTR329->newDataAvailable())
+        return false;
+    }
 
     uint16_t visible_plus_ir, infrared;
     _LTR329->readBothChannels(visible_plus_ir, infrared);
@@ -106,7 +112,8 @@ public:
   }
 
 protected:
-  Adafruit_LTR329 *_LTR329; ///< Pointer to LTR329 light sensor object
+  Adafruit_LTR329 *_LTR329;    ///< Pointer to LTR329 light sensor object
+  uint16_t _delayBetweenReads; /// This will be calculated based on params
 };
 
 #endif // WipperSnapper_I2C_Driver_LTR329
