@@ -373,7 +373,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _ltr390->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ltr390);
     WS_DEBUG_PRINTLN("LTR390 Initialized Successfully!");
-  } else if (strcmp("ltr329", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if ((strcmp("ltr329", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("ltr303", msgDeviceInitReq->i2c_device_name) == 0)) {
     _ltr329 = new WipperSnapper_I2C_Driver_LTR329(this->_i2c, i2cAddress);
     if (!_ltr329->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize LTR329");
