@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Written by Brent Rubell for Adafruit Industries, 2022.
+ * Written by Brent Rubell for Adafruit Industries, 2022-2023
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -22,18 +22,14 @@
     @brief  Constructor
 */
 /**************************************************************************/
-ws_ledc::ws_ledc() {
-  // TODO
-}
+ws_ledc::ws_ledc() {}
 
 /**************************************************************************/
 /*!
     @brief  Destructor
 */
 /**************************************************************************/
-ws_ledc::~ws_ledc() {
-  // TODO
-}
+ws_ledc::~ws_ledc() {}
 
 /**************************************************************************/
 /*!

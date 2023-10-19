@@ -36,8 +36,8 @@ class Wippersnapper;
 /**************************************************************************/
 class ws_ledc {
 public:
-  ws_ledc();
-  ~ws_ledc();
+  ws_ledc(){};
+  ~ws_ledc(){};
   bool attachPin(uint8_t pin, uint32_t freq, uint8_t resolution);
   bool detachPin(uint8_t pin);
   // LEDC-API
