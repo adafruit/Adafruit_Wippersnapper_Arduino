@@ -845,12 +845,12 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppm\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppm\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppb\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppb\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
       snprintf(buffer, 100, "[I2C: %x] Read: %0.3f%%\n",
