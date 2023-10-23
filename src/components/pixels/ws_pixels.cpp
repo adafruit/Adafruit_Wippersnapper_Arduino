@@ -434,7 +434,7 @@ void ws_pixels::fillStrand(
 #ifdef USE_DISPLAY
   char buffer[100];
   snprintf(buffer, 100, "[Pixel] Filling strand on pin %s with color %u\n",
-           pixelsWriteMsg->pixels_pin_data, pixelsWriteMsg->pixels_color);
+           pixelsWriteMsg->pixels_pin_data, (unsigned int)pixelsWriteMsg->pixels_color);
   WS._ui_helper->add_text_to_terminal(buffer);
 #endif
 
