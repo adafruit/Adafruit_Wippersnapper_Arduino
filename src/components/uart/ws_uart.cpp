@@ -26,6 +26,14 @@ ws_uart::~ws_uart(void) {
 #else
   _hwSerial = nullptr;
 #endif
+
+// setPins() will detach any previous pins that have been changed.
+#ifdef USE_SW_UART
+  _swSerial->setPins();
+#else
+#ifndef ARDUINO_ARCH_SAMD
+  _hwSerial->setPins();
+#endif
 }
 
 /*******************************************************************************/
