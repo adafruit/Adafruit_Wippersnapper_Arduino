@@ -17,12 +17,12 @@
 
 #define WS_LOADING_TIP_1                                                       \
   "Name components in IO using emojis to differentiate them!" ///< Loading tip
-#define WS_LOADING_TIP_2                                                       \
+/* #define WS_LOADING_TIP_2                                                       \
   "WipperSnapper now supports TFT displays on some boards (more to come)." ///< Loading tip 2
 #define WS_LOADING_TIP_3                                                       \
   "Getting throttle errors? Try reducing a sensor's polling time." ///< Loading
                                                                    ///< tip 3
 #define WS_LOADING_TIP_4                                                       \
-  "\"Be quick, but don't hurry\" - John Wooden " ///< Loading tip 4
+  "\"Be quick, but don't hurry\" - John Wooden " ///< Loading tip 4 */
 
 #endif // WS_LOADING_TOOLTIPS_H
