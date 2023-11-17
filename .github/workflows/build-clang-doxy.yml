@@ -59,6 +59,9 @@ jobs:
         cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
     - name: Build for ESP32-SX
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+    - name: list version of neopixl lib
+      run: |
+        cat /home/runner/Arduino/libraries/Adafruit_NeoPixel/library.properties
     - name: list
       run: |
             ls
