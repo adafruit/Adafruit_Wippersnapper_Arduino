@@ -386,9 +386,9 @@ jobs:
             mv examples/*/build/*/wippersnapper_debug.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             mv examples/*/build/*/wippersnapper_debug.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
     - name: upload build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: build-files
+        name: build-files-dev
         path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
