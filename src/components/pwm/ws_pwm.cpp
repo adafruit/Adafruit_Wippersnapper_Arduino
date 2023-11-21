@@ -51,9 +51,9 @@ bool ws_pwm::attach(uint8_t pin, double freq, uint8_t resolution) {
   // Future TODO: Maybe this function should be within #ifdef for ARCH_ESP32
   bool is_attached = true;
 #if defined(ARDUINO_ARCH_ESP32)
-  uint8_t rc = _ledcMgr->attachPin(pin, freq, resolution);
-  if (rc == LEDC_CH_ERR)
-    is_attached = false;
+  bool rc = _ledcMgr->attachPin(pin, (uint32_t)freq, resolution);
+  if (!rc)
+    return false;
 #else
   (void)pin;        // marking as unused parameter to avoid compiler warning
   (void)freq;       // marking as unused parameter to avoid compiler warning

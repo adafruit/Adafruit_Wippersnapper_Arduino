@@ -816,65 +816,70 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
         msgi2cResponse->payload.resp_i2c_device_event.sensor_event[i].type) {
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f *C\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f *C\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f *F\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f *F\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f %% rh\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f %% rh\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
-      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f hPA\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %#x] Read: %0.3f hPA\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f m\n", sensorAddress, value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f m\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f lux\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f lux\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppm\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppm\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppb\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f ppb\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f%%\n", sensorAddress, value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f%%\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f V\n", sensorAddress, value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f V\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f mA\n", sensorAddress, value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f mA\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f\n", sensorAddress, value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f Ohms\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f Ohms\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f NOX\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f NOX\n",
+               (unsigned int)sensorAddress, value);
       break;
     case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX:
-      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f VOC\n", sensorAddress,
-               value);
+      snprintf(buffer, 100, "[I2C: %x] Read: %0.3f VOC\n",
+               (unsigned int)sensorAddress, value);
       break;
     default:
       break;

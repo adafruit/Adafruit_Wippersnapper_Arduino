@@ -1210,7 +1210,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
 #ifdef USE_DISPLAY
     char buffer[100];
-    snprintf(buffer, 100, "[PWM] Writing %u Hz to pin %s\n.",
+    snprintf(buffer, 100, "[PWM] Writing %ld Hz to pin %s\n.",
              msgPWMWriteFreqRequest.frequency, msgPWMWriteFreqRequest.pin);
     WS._ui_helper->add_text_to_terminal(buffer);
 #endif

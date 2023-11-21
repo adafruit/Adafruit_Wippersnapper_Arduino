@@ -43,13 +43,6 @@ void ws_uart::initUARTBus(
   int32_t tx = atoi(msgUARTRequest->bus_info.pin_tx + 1);
   bool invert = msgUARTRequest->bus_info.is_invert;
 
-  // Print bus_info
-  WS_DEBUG_PRINTLN("[INFO, UART]: Initializing SW UART bus...");
-  WS_DEBUG_PRINTLN("[INFO, UART]: Baud Rate: " + String(baud));
-  WS_DEBUG_PRINTLN("[INFO, UART]: RX Pin: " + String(rx));
-  WS_DEBUG_PRINTLN("[INFO, UART]: TX Pin: " + String(tx));
-  WS_DEBUG_PRINTLN("[INFO, UART]: Invert? " + String(invert));
-
 // Initialize and begin UART bus depending if the platform supports either HW
 // UART or SW UART
 #ifdef USE_SW_UART
@@ -150,18 +143,14 @@ bool ws_uart::initUARTDevice(
     wippersnapper_uart_v1_UARTDeviceAttachRequest *msgUARTRequest) {
   // Ensure the protobuf contains a device identifier
   if (strlen(msgUARTRequest->device_id) == 0) {
-    WS_DEBUG_PRINTLN("[ERROR, UART]: Device ID is empty!");
     return false;
   }
 
   // Do we already have a device with this ID?
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
     if (strcmp(ptrUARTDriver->getDeviceID(), msgUARTRequest->device_id) == 0) {
-      WS_DEBUG_PRINTLN("[INFO, UART]: Device ID already exists on the bus, "
-                       "disconnecting...");
       deinitUARTDevice(
           msgUARTRequest->device_id); // Deinit the device and free resources
-      WS_DEBUG_PRINT("Disconnected!");
     }
   }
 
@@ -229,11 +218,9 @@ void ws_uart::detachUARTDevice(
 void ws_uart::update() {
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
     if (ptrUARTDriver->isReady()) {
-      WS_DEBUG_PRINTLN("[INFO, UART]: UART driver is ready.");
       // Attempt to poll the UART driver for new data
       if (ptrUARTDriver->read_data()) {
         // Send UART driver's data to IO
-        WS_DEBUG_PRINTLN("[INFO, UART]: UART driver has new data.");
         ptrUARTDriver->send_data();
       }
     }
