@@ -143,8 +143,8 @@ jobs:
           board_name=${{ matrix.arduino-platform }}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           # content="${content//'%'/'%25'}"
-          # content="${content//$'\n'/''}"
-          # content="${content//$'\r'/''}"
+          content="${content//$'\n'/''}"
+          content="${content//$'\r'/''}"
           echo "boardJson=${content}" >> $GITHUB_OUTPUT
           # echo "::set-output name=boardJson::$content"
           echo "$content"
