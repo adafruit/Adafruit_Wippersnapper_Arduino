@@ -142,14 +142,16 @@ jobs:
       run: |
           board_name=${{ matrix.arduino-platform }}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=boardJson::$content"
+          # content="${content//'%'/'%25'}"
+          # content="${content//$'\n'/''}"
+          # content="${content//$'\r'/''}"
+          echo "boardJson=${content}" >> $GITHUB_OUTPUT
+          # echo "::set-output name=boardJson::$content"
           echo "$content"
     - name: Create combined binary using Esptool merge_bin
       run: |
-          echo ${{fromJson(steps.get_board_json.outputs.boardJson)}}
+          echo ${{ steps.get_board_json.outputs.boardJson }}      
+          echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
           python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
             --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
             --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
