@@ -149,7 +149,7 @@ jobs:
           echo "$content"
     - name: Create combined binary using Esptool merge_bin
       run: |
-          echo "$steps.get_board_json.outputs.boardJson"
+          echo "{$steps.get_board_json.outputs.boardJson}"
           python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
             --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
             --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
