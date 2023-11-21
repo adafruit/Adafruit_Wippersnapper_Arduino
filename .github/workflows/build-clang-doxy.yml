@@ -145,7 +145,7 @@ jobs:
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=boardJson::$content"
+          echo "boardJson=${content}" >> $GITHUB_OUTPUT
           echo "$content"
     - name: Create combined binary using Esptool merge_bin
       run: |
