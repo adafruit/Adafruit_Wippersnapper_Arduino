@@ -141,9 +141,10 @@ jobs:
       id: get_board_json
       run: |
           board_name=${{ matrix.arduino-platform }}
+          content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
-            $(cat ws-boards/boards/${board_name//_/-}/definition.json)
+            echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
     - name: Create combined binary using Esptool merge_bin
