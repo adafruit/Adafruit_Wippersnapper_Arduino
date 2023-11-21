@@ -21,7 +21,7 @@ jobs:
 #                            "metroesp32s2", "feather_esp32s2",
 #                            "feather_esp32s2_tft", "feather_esp32s2_reverse_tft",
 #                            "feather_esp32s3", "feather_esp32s3_4mbflash_2mbpsram",
-#                            "feather_esp32s3_tft", "qtpy_esp32s3", 
+#                            "feather_esp32s3_tft", "qtpy_esp32s3",
 #                            "qtpy_esp32s2", "feather_esp32s3_reverse_tft",
 #                            "qtpy_esp32s3_n4r2"]
 #     steps:
@@ -105,38 +105,38 @@ jobs:
       with:
         repository: adafruit/Wippersnapper_Boards
         path: ws-boards
-    # - name: Install CI-Arduino
-    #   run: bash ci/actions_install.sh
-    # - name: Install extra Arduino libraries
-    #   run: |
-    #     git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-    #     git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+    - name: Install CI-Arduino
+      run: bash ci/actions_install.sh
+    - name: Install extra Arduino libraries
+      run: |
+        git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+        git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
     - name: Install Dependencies
       run: |
         pip3 install esptool
-    # - name: build ESP32 platforms
-    #   run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
-    # - name: Check artifacts
-    #   run: |
-    #     ls examples/Wippersnapper_demo/build/*
-    # - name: Rename build artifacts to reflect the platform name
-    #   run: |
-    #         mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
-    #         mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
-    #         mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
-    #         mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
-    #         mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
-    # - name: Check boot_app0 file existence (esp32 built from core, not-source)
-    #   id: check_files
-    #   uses: andstor/file-existence-action@v2
-    #   with:
-    #     files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
-    # - name: boot_app0 file from arduino-cli core
-    #   if: steps.check_files.outputs.files_exists == 'true'
-    #   run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
-    # - name: boot_app0 file from esp32 source bsp
-    #   if: steps.check_files.outputs.files_exists == 'false'
-    #   run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
+    - name: build ESP32 platforms
+      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
+    - name: Check artifacts
+      run: |
+        ls examples/Wippersnapper_demo/build/*
+    - name: Rename build artifacts to reflect the platform name
+      run: |
+            mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
+            mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.elf
+            mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.map
+            mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin
+            mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
+    - name: Check boot_app0 file existence (esp32 built from core, not-source)
+      id: check_files
+      uses: andstor/file-existence-action@v2
+      with:
+        files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
+    - name: boot_app0 file from arduino-cli core
+      if: steps.check_files.outputs.files_exists == 'true'
+      run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
+    - name: boot_app0 file from esp32 source bsp
+      if: steps.check_files.outputs.files_exists == 'false'
+      run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin
     - name: Get Board Flash Parameters
       id: get_board_json
       run: |
@@ -150,7 +150,7 @@ jobs:
           echo "$content"
     - name: Create combined binary using Esptool merge_bin
       run: |
-          echo ${{ steps.get_board_json.outputs.boardJson }}      
+          echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
           python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
             --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
