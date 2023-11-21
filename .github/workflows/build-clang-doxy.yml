@@ -146,8 +146,6 @@ jobs:
             $(cat ws-boards/boards/${board_name//_/-}/definition.json)
             echo EOF
           } >> "$GITHUB_OUTPUT"
-          # echo "::set-output name=boardJson::$content"
-          echo "$content"
     - name: Create combined binary using Esptool merge_bin
       run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
