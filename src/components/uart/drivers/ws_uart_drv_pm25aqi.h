@@ -144,21 +144,18 @@ public:
         wippersnapper_signal_v1_UARTResponse_init_zero;
     msgUARTResponse.which_payload =
         wippersnapper_signal_v1_UARTResponse_resp_uart_device_event_tag;
-    // We'll be sending back six sensor_events: pm10_standard, pm25_standard,
-    // pm100_standard, pm10_env, pm25_env, and pm100_env
-    msgUARTResponse.payload.resp_uart_device_event.sensor_event_count = 6;
-    Serial.print("Device ID: ");
-    Serial.println(getDriverID());
     strcpy(msgUARTResponse.payload.resp_uart_device_event.device_id,
-           "pm1006"); // TODO: Change to non-fixed value
+           getDriverID());
 
     // check if driverID is pm1006
     if (strcmp(getDriverID(), "pm1006") == 0) {
       // PM1006 returns only PM2.5_ENV readings
-      packUARTResponse(&msgUARTResponse, 4,
+      msgUARTResponse.payload.resp_uart_device_event.sensor_event_count = 1;
+      packUARTResponse(&msgUARTResponse, 0,
                        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV,
                        (float)_data.pm25_env);
     } else {
+      msgUARTResponse.payload.resp_uart_device_event.sensor_event_count = 6;
       packUARTResponse(&msgUARTResponse, 0,
                        wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD,
                        (float)_data.pm10_standard);
