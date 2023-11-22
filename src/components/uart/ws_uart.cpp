@@ -67,11 +67,13 @@ void ws_uart::initUARTBus(
 #ifdef USE_SW_UART
 /*******************************************************************************/
 /*!
-    @brief    Initializes the pms5003 device driver using SoftwareSerial.
+    @brief    Initializes the PM25AQI device driver using SoftwareSerial.
     @param    swSerial
               Pointer to a SoftwareSerial instance.
     @param    pollingInterval
               Polling interval for the pms5003 device.
+    @param    device_id
+              Which PM25 device are we communicating with?
     @returns  True if pms5003 driver was successfully initialized, False
    otherwise.
 */
@@ -105,6 +107,8 @@ bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
               Pointer to a HardwareSerial instance.
     @param    pollingInterval
               Polling interval for the pms5003 device.
+    @param    device_id
+              Which PM25 device are we communicating with?
     @returns  True if pms5003 driver was successfully initialized, False
    otherwise.
 */
