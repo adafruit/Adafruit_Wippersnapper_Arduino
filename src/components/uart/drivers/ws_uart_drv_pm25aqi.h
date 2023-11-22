@@ -40,8 +40,6 @@ public:
       : ws_uart_drv(swSerial, interval) {
     _swSerial = swSerial;
     pollingInterval = (unsigned long)interval;
-    // Set driver ID
-    setDriverID("pms5003");
   };
 #else
   /*******************************************************************************/
@@ -57,8 +55,6 @@ public:
       : ws_uart_drv(hwSerial, interval) {
     _hwSerial = hwSerial;
     pollingInterval = (unsigned long)interval;
-    // Set driver ID
-    setDriverID("pms5003");
   };
 #endif // USE_SW_UART
 
@@ -151,34 +147,42 @@ public:
     // We'll be sending back six sensor_events: pm10_standard, pm25_standard,
     // pm100_standard, pm10_env, pm25_env, and pm100_env
     msgUARTResponse.payload.resp_uart_device_event.sensor_event_count = 6;
-    // getDeviceID();
+    Serial.print("Device ID: ");
+    Serial.println(getDriverID());
     strcpy(msgUARTResponse.payload.resp_uart_device_event.device_id,
-           getDeviceID());
+           "pm1006"); // TODO: Change to non-fixed value
 
-    // Pack sensor data into UART response message
-    packUARTResponse(&msgUARTResponse, 0,
-                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD,
-                     (float)_data.pm10_standard);
+    // check if driverID is pm1006
+    if (strcmp(getDriverID(), "pm1006") == 0) {
+      // PM1006 returns only PM2.5_ENV readings
+      packUARTResponse(&msgUARTResponse, 4,
+                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV,
+                       (float)_data.pm25_env);
+    } else {
+      packUARTResponse(&msgUARTResponse, 0,
+                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD,
+                       (float)_data.pm10_standard);
 
-    packUARTResponse(&msgUARTResponse, 1,
-                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD,
-                     (float)_data.pm25_standard);
+      packUARTResponse(&msgUARTResponse, 1,
+                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD,
+                       (float)_data.pm25_standard);
 
-    packUARTResponse(&msgUARTResponse, 2,
-                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD,
-                     (float)_data.pm100_standard);
+      packUARTResponse(&msgUARTResponse, 2,
+                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD,
+                       (float)_data.pm100_standard);
 
-    packUARTResponse(&msgUARTResponse, 3,
-                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV,
-                     (float)_data.pm10_env);
+      packUARTResponse(&msgUARTResponse, 3,
+                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_ENV,
+                       (float)_data.pm10_env);
 
-    packUARTResponse(&msgUARTResponse, 4,
-                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV,
-                     (float)_data.pm25_env);
+      packUARTResponse(&msgUARTResponse, 4,
+                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_ENV,
+                       (float)_data.pm25_env);
 
-    packUARTResponse(&msgUARTResponse, 5,
-                     wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV,
-                     (float)_data.pm100_env);
+      packUARTResponse(&msgUARTResponse, 5,
+                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_ENV,
+                       (float)_data.pm100_env);
+    }
 
     // Encode message data
     uint8_t mqttBuffer[512] = {0};

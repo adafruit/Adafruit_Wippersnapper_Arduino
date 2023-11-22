@@ -44,9 +44,11 @@ public:
   void update(); ///< Updates the UART device at every polling interval, must be
                  ///< called by main app.
 #ifdef USE_SW_UART
-  bool initUARTDevicePM25AQI(SoftwareSerial *swSerial, int32_t pollingInterval);
+  bool initUARTDevicePM25AQI(SoftwareSerial *swSerial, int32_t pollingInterval,
+                             const char *device_id);
 #else
-  bool initUARTDevicePM25AQI(HardwareSerial *hwSerial, int32_t pollingInterval);
+  bool initUARTDevicePM25AQI(HardwareSerial *hwSerial, int32_t pollingInterval,
+                             const char *device_id);
 #endif
 private:
 #ifdef USE_SW_UART

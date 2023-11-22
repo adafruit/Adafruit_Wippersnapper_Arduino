@@ -89,16 +89,16 @@ public:
       @returns The UART device's unique identifier.
   */
   /*******************************************************************************/
-  const char *getDeviceID() { return _deviceID; }
+  const char *getDriverID() { return _driverID; }
 
   /*******************************************************************************/
   /*!
-      @brief   Sets the UART device's unique identifier.
+      @brief   Sets the UART driver's identifer.
       @param   id
                The UART device's unique identifier.
   */
   /*******************************************************************************/
-  void setDriverID(const char *id) { _deviceID = id; }
+  void setDriverID(const char *id) { _driverID = strdup(id); }
 
   /*******************************************************************************/
   /*!
@@ -169,7 +169,7 @@ public:
 private:
   unsigned long
       _prvPoll; ///< Last time the UART device was polled, in milliseconds
-  const char *_deviceID = nullptr; ///< UART device's ID
+  const char *_driverID = nullptr; ///< UART device's ID
 };
 
 #endif // WS_UART_DRV_H
