@@ -1314,8 +1314,9 @@ public:
     setSensorProximityPeriod(period);
   }
 
-  long SENSOR_STARTING_PERIOD_PRV = millis() - (24 * 60 * 60 * 1000); ///< The time
-                                              ///< when the sensor was last read.
+  long SENSOR_STARTING_PERIOD_PRV =
+      millis() - (24 * 60 * 60 * 1000); ///< The time
+                                        ///< when the sensor was last read.
 
 protected:
   TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
@@ -1323,91 +1324,113 @@ protected:
   long _tempSensorPeriod =
       0L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =
-      SENSOR_STARTING_PERIOD_PRV; ///< The time when the temperature sensor was last read
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the temperature sensor was
+                                  ///< last read
   long _humidSensorPeriod =
       0L; ///< The time period between reading the humidity sensor's value.
-  long _humidSensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the humidity sensor was
-                                   ///< last read.
+  long _humidSensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the humidity sensor was
+                                  ///< last read.
   long _pressureSensorPeriod =
       0L; ///< The time period between reading the pressure sensor's value.
-  long _pressureSensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the pressure sensor
-                                      ///< was last read.
+  long _pressureSensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the pressure sensor
+                                  ///< was last read.
   long _CO2SensorPeriod =
       0L; ///< The time period between reading the CO2 sensor's value.
-  long _CO2SensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the CO2 sensor
-                                 ///< was last read.
+  long _CO2SensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the CO2 sensor
+                                  ///< was last read.
   long _ECO2SensorPeriod =
       0L; ///< The time period between reading the eCO2 sensor's value.
-  long _ECO2SensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the eCO2 sensor
+  long _ECO2SensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the eCO2 sensor
                                   ///< was last read.
   long _TVOCSensorPeriod =
       0L; ///< The time period between reading the TVOC sensor's value.
-  long _TVOCSensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the TVOC sensor
+  long _TVOCSensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the TVOC sensor
                                   ///< was last read.
   long _altitudeSensorPeriod =
       0L; ///< The time period between reading the altitude sensor's value.
-  long _altitudeSensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV;   ///< The time when the altitude sensor
-                                        ///< was last read.
-  long _objectTempSensorPeriod = 0L;    ///< The time period between reading the
-                                        ///< object temperature sensor's value.
-  long _objectTempSensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the object
-                                        ///< temperature sensor was last read.
-  long _lightSensorPeriod = 0L;         ///< The time period between reading the
-                                        ///< light sensor's value.
-  long _lightSensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV;      ///< The time when the light sensor
-                                        ///< was last read.
-  long _PM10SensorPeriod = 0L;          ///< The time period between reading the
-                                        ///< pm25 sensor's value.
-  long _PM10SensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV;       ///< The time when the pm25 sensor
-                                        ///< was last read.
-  long _PM25SensorPeriod = 0L;          ///< The time period between reading the
-                                        ///< pm25 sensor's value.
-  long _PM25SensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV;       ///< The time when the pm25 sensor
-                                        ///< was last read.
-  long _PM100SensorPeriod = 0L;         ///< The time period between reading the
-                                        ///< pm100_std sensor's value.
-  long _PM100SensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV;      ///< The time when the pm100_std sensor
-                                        ///< was last read.
-  long _unitlessPercentPeriod = 0L;     ///< The time period between reading the
-                                        ///< unitless % sensor's value.
-  long _unitlessPercentPeriodPrv = SENSOR_STARTING_PERIOD_PRV;  ///< The time when the unitless % sensor
-                                        ///< was last read.
-  long _voltagePeriod = 0L;             ///< The time period between reading the
-                                        ///< voltage sensor's value.
-  long _voltagePeriodPrv = SENSOR_STARTING_PERIOD_PRV;          ///< The time when the voltage sensor
-                                        ///< was last read.
-  long _currentPeriod = 0L;             ///< The time period between reading the
-                                        ///< current sensor's value.
-  long _currentPeriodPrv = SENSOR_STARTING_PERIOD_PRV;          ///< The time when the current sensor
-                                        ///< was last read.
+  long _altitudeSensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV;    ///< The time when the altitude sensor
+                                     ///< was last read.
+  long _objectTempSensorPeriod = 0L; ///< The time period between reading the
+                                     ///< object temperature sensor's value.
+  long _objectTempSensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the object
+                                  ///< temperature sensor was last read.
+  long _lightSensorPeriod = 0L;   ///< The time period between reading the
+                                  ///< light sensor's value.
+  long _lightSensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the light sensor
+                                  ///< was last read.
+  long _PM10SensorPeriod = 0L;    ///< The time period between reading the
+                                  ///< pm25 sensor's value.
+  long _PM10SensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the pm25 sensor
+                                  ///< was last read.
+  long _PM25SensorPeriod = 0L;    ///< The time period between reading the
+                                  ///< pm25 sensor's value.
+  long _PM25SensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the pm25 sensor
+                                  ///< was last read.
+  long _PM100SensorPeriod = 0L;   ///< The time period between reading the
+                                  ///< pm100_std sensor's value.
+  long _PM100SensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV;   ///< The time when the pm100_std sensor
+                                    ///< was last read.
+  long _unitlessPercentPeriod = 0L; ///< The time period between reading the
+                                    ///< unitless % sensor's value.
+  long _unitlessPercentPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the unitless % sensor
+                                  ///< was last read.
+  long _voltagePeriod = 0L;       ///< The time period between reading the
+                                  ///< voltage sensor's value.
+  long _voltagePeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the voltage sensor
+                                  ///< was last read.
+  long _currentPeriod = 0L;       ///< The time period between reading the
+                                  ///< current sensor's value.
+  long _currentPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the current sensor
+                                  ///< was last read.
   long _rawSensorPeriod =
       0L; ///< The time period between reading the Raw sensor's value.
-  long _rawSensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV;     ///< The time when the Raw sensor
-                                     ///< was last read.
-  long _ambientTempFPeriod = 0L;     ///< The time period between reading the
-                                     ///< ambient temp. (°F) sensor's value.
-  long _ambientTempFPeriodPrv = SENSOR_STARTING_PERIOD_PRV;  ///< The time when the ambient temp. (°F)
-                                     ///< sensor was last read.
-  long _objectTempFPeriod = 0L;      ///< The time period between reading the
-                                     ///< object temp. (°F) sensor's value.
-  long _objectTempFPeriodPrv = SENSOR_STARTING_PERIOD_PRV;   ///< The time when the object temp. (°F)
-                                     ///< sensor was last read.
-  long _gasResistancePeriod = 0L;    ///< The time period between reading the
-                                     ///< gas resistance sensor's value.
-  long _gasResistancePeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the gas resistance
-                                     ///< sensor was last read.
-  long _NOxIndexPeriod = 0L;         ///< The time period between reading the
-                                     ///< NOx Index sensor's value.
-  long _NOxIndexPeriodPrv = SENSOR_STARTING_PERIOD_PRV;      ///< The time when the NOx Index
-                                     ///< sensor was last read.
-  long _VOCIndexPeriod = 0L;         ///< The time period between reading the
-                                     ///< VOC Index sensor's value.
-  long _VOCIndexPeriodPrv = SENSOR_STARTING_PERIOD_PRV;      ///< The time when the VOC Index
-                                     ///< sensor was last read.
-  long _proximitySensorPeriod = 0L;  ///< The time period between reading the
-                                     ///< proximity sensor's value.
-  long _proximitySensorPeriodPrv = SENSOR_STARTING_PERIOD_PRV; ///< The time when the proximity sensor
-                                       ///< was last read.
+  long _rawSensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the Raw sensor
+                                  ///< was last read.
+  long _ambientTempFPeriod = 0L;  ///< The time period between reading the
+                                  ///< ambient temp. (°F) sensor's value.
+  long _ambientTempFPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the ambient temp. (°F)
+                                  ///< sensor was last read.
+  long _objectTempFPeriod = 0L;   ///< The time period between reading the
+                                  ///< object temp. (°F) sensor's value.
+  long _objectTempFPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the object temp. (°F)
+                                  ///< sensor was last read.
+  long _gasResistancePeriod = 0L; ///< The time period between reading the
+                                  ///< gas resistance sensor's value.
+  long _gasResistancePeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the gas resistance
+                                  ///< sensor was last read.
+  long _NOxIndexPeriod = 0L;      ///< The time period between reading the
+                                  ///< NOx Index sensor's value.
+  long _NOxIndexPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the NOx Index
+                                  ///< sensor was last read.
+  long _VOCIndexPeriod = 0L;      ///< The time period between reading the
+                                  ///< VOC Index sensor's value.
+  long _VOCIndexPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV;   ///< The time when the VOC Index
+                                    ///< sensor was last read.
+  long _proximitySensorPeriod = 0L; ///< The time period between reading the
+                                    ///< proximity sensor's value.
+  long _proximitySensorPeriodPrv =
+      SENSOR_STARTING_PERIOD_PRV; ///< The time when the proximity sensor
+                                  ///< was last read.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
