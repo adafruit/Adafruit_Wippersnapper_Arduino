@@ -168,7 +168,7 @@ public:
       pollingInterval; ///< UART device's polling interval, in milliseconds
 private:
   unsigned long
-      _prvPoll; ///< Last time the UART device was polled, in milliseconds
+      _prvPoll = millis() - (24*60*60*1000); ///< Last time the UART device was polled, in milliseconds
   const char *_driverID = nullptr; ///< UART device's ID
 };
 

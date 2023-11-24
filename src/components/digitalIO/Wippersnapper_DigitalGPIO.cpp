@@ -116,12 +116,15 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
              pinName, periodMs);
     WS._ui_helper->add_text_to_terminal(buffer);
 #endif
+    // get current time
+    long curtime = millis() - 1;
 
     // attempt to allocate a pinName within _digital_input_pins[]
     for (int i = 0; i < _totalDigitalInputPins; i++) {
       if (_digital_input_pins[i].period == -1L) {
         _digital_input_pins[i].pinName = pinName;
         _digital_input_pins[i].period = periodMs;
+        _digital_input_pins[i].prvPeriod = curtime - periodMs;
         break;
       }
     }
