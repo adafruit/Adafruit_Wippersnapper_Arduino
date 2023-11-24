@@ -67,17 +67,20 @@ void ws_uart::initUARTBus(
 #ifdef USE_SW_UART
 /*******************************************************************************/
 /*!
-    @brief    Initializes the pms5003 device driver using SoftwareSerial.
+    @brief    Initializes the PM25AQI device driver using SoftwareSerial.
     @param    swSerial
               Pointer to a SoftwareSerial instance.
     @param    pollingInterval
               Polling interval for the pms5003 device.
+    @param    device_id
+              Which PM25 device are we communicating with?
     @returns  True if pms5003 driver was successfully initialized, False
    otherwise.
 */
 /*******************************************************************************/
 bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
-                                    int32_t pollingInterval) {
+                                    int32_t pollingInterval,
+                                    const char *device_id) {
   if (_pm25aqi != nullptr) {
     WS_DEBUG_PRINTLN(
         "[ERROR, UART]: pms5003 driver already initialized on bus!");
@@ -85,6 +88,9 @@ bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
   }
   WS_DEBUG_PRINTLN("[INFO, UART]: Initializing PM25AQI driver...");
   _pm25aqi = new ws_uart_drv_pm25aqi(swSerial, pollingInterval);
+  _pm25aqi->setDriverID(
+      device_id); // Since the AdafruitPM25 driver works with both Adafruit PM
+                  // sensor and PM1006, we need to set the driver ID
   if (!_pm25aqi->begin()) {
     WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
     return false;
@@ -101,18 +107,24 @@ bool ws_uart::initUARTDevicePM25AQI(SoftwareSerial *swSerial,
               Pointer to a HardwareSerial instance.
     @param    pollingInterval
               Polling interval for the pms5003 device.
+    @param    device_id
+              Which PM25 device are we communicating with?
     @returns  True if pms5003 driver was successfully initialized, False
    otherwise.
 */
 /*******************************************************************************/
 bool ws_uart::initUARTDevicePM25AQI(HardwareSerial *hwSerial,
-                                    int32_t pollingInterval) {
+                                    int32_t pollingInterval,
+                                    const char *device_id) {
   if (_pm25aqi != nullptr) {
     WS_DEBUG_PRINTLN(
         "[ERROR, UART]: pms5003 driver already initialized on bus!");
     return false;
   }
   _pm25aqi = new ws_uart_drv_pm25aqi(hwSerial, pollingInterval);
+  _pm25aqi->setDriverID(
+      device_id); // Since the AdafruitPM25 driver works with both Adafruit PM
+                  // sensor and PM1006, we need to set the driver ID
   if (!_pm25aqi->begin()) {
     WS_DEBUG_PRINTLN("[ERROR, UART]: PM25 driver initialization failed!");
     return false;
@@ -148,20 +160,23 @@ bool ws_uart::initUARTDevice(
 
   // Do we already have a device with this ID?
   for (ws_uart_drv *ptrUARTDriver : uartDrivers) {
-    if (strcmp(ptrUARTDriver->getDeviceID(), msgUARTRequest->device_id) == 0) {
+    if (strcmp(ptrUARTDriver->getDriverID(), msgUARTRequest->device_id) == 0) {
       deinitUARTDevice(
           msgUARTRequest->device_id); // Deinit the device and free resources
     }
   }
 
   // Check which device type we are initializing
-  if (strcmp(msgUARTRequest->device_id, "pms5003") == 0) {
-// Attempt to initialize PMS5003 driver with either SW or HW UART
+  if (strcmp(msgUARTRequest->device_id, "pms5003") == 0 ||
+      strcmp(msgUARTRequest->device_id, "pm1006") == 0) {
+// Attempt to initialize Adafruit_PM25 driver with either SW or HW UART
 #ifdef USE_SW_UART
-    if (!initUARTDevicePM25AQI(_swSerial, msgUARTRequest->polling_interval))
+    if (!initUARTDevicePM25AQI(_swSerial, msgUARTRequest->polling_interval,
+                               msgUARTRequest->device_id))
       return false;
 #else
-    if (!initUARTDevicePM25AQI(_hwSerial, msgUARTRequest->polling_interval))
+    if (!initUARTDevicePM25AQI(_hwSerial, msgUARTRequest->polling_interval,
+                               msgUARTRequest->device_id))
       return false;
 #endif
     WS_DEBUG_PRINTLN("[INFO, UART]: PM25 UART driver initialized!");
@@ -185,7 +200,7 @@ void ws_uart::deinitUARTDevice(const char *device_id) {
   // Iterate through the vector
   while (iter != uartDrivers.end()) {
     ws_uart_drv *ptrUARTDriver = *iter; // Get a pointer to the driver
-    if (strcmp(ptrUARTDriver->getDeviceID(), device_id) == 0) {
+    if (strcmp(ptrUARTDriver->getDriverID(), device_id) == 0) {
       if (ptrUARTDriver == _pm25aqi) {
         _pm25aqi = nullptr;
       }
