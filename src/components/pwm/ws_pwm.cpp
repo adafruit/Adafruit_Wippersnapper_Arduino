@@ -88,6 +88,10 @@ void ws_pwm::detach(uint8_t pin) {
 void ws_pwm::writeDutyCycle(uint8_t pin, int dutyCycle) {
 #if defined(ARDUINO_ARCH_ESP32)
   _ledcMgr->analogWrite(pin, dutyCycle);
+#elif defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+  // Adafruit Feather ESP8266's analogWrite() is inverted because LED pin is
+  // reverse-wired
+  analogWrite(pin, 255 - dutyCycle);
 #else
   analogWrite(pin, dutyCycle);
 #endif
