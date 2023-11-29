@@ -1,7 +1,7 @@
 /*!
- * @file WipperSnapper_I2C_Driver_LTR329.h
+ * @file WipperSnapper_I2C_Driver_LTR329_LTR303.h
  *
- * Device driver for the LTR329 light sensor.
+ * Device driver for the LTR329 + LTR303 (329+interrupt) light sensors.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -12,29 +12,29 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef WipperSnapper_I2C_Driver_LTR329_H
-#define WipperSnapper_I2C_Driver_LTR329_H
+#ifndef WipperSnapper_I2C_Driver_LTR329_LTR303_H
+#define WipperSnapper_I2C_Driver_LTR329_LTR303_H
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_LTR329_LTR303.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for a LTR329 sensor.
+    @brief  Class that provides a driver interface for a LTR329/303 sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_LTR329 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_LTR329_LTR303 : public WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a LTR329 sensor.
+      @brief    Constructor for a LTR329/303 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 The 7-bit I2C address of the sensor.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_LTR329(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_LTR329_LTR303(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -42,14 +42,14 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an LTR329 sensor.
+      @brief    Destructor for an LTR329/303 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_LTR329() { delete _LTR329; }
+  ~WipperSnapper_I2C_Driver_LTR329_LTR303() { delete _LTR329; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the LTR329 sensor and begins I2C.
+      @brief    Initializes the LTR329/303 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
@@ -72,7 +72,7 @@ public:
   /*!
       @brief    Reads the LTR329's ambient light level ([Visible+IR] - IR-only)
       @param    lightEvent
-                Light sensor reading, in lux.
+                Light sensor reading.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
@@ -120,4 +120,4 @@ protected:
   uint16_t _delayBetweenReads;
 };
 
-#endif // WipperSnapper_I2C_Driver_LTR329
+#endif // WipperSnapper_I2C_Driver_LTR329_LTR303
