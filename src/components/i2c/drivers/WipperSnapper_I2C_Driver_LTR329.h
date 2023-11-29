@@ -112,8 +112,12 @@ public:
   }
 
 protected:
-  Adafruit_LTR329 *_LTR329;    ///< Pointer to LTR329 light sensor object
-  uint16_t _delayBetweenReads; /// This will be calculated based on params
+  Adafruit_LTR329 *_LTR329; ///< Pointer to LTR329 light sensor object
+
+  /**
+   * @brief The delay between consecutive reads in milliseconds.
+   */
+  uint16_t _delayBetweenReads;
 };
 
 #endif // WipperSnapper_I2C_Driver_LTR329
