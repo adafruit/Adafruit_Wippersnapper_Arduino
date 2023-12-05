@@ -2370,8 +2370,8 @@ void Wippersnapper::runNetFSM() {
 #endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
-       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
-       if (!check_valid_ssid()) {
+      WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
+      if (!check_valid_ssid()) {
 #ifdef USE_DISPLAY
         WS._ui_helper->show_scr_error("ERROR",
                                       "Unable to find WiFi network listed in "
@@ -2389,7 +2389,7 @@ void Wippersnapper::runNetFSM() {
         feedWDT();
         // attempt to connect
         WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
-        WS_DEBUG_PRINT(5-maxAttempts);
+        WS_DEBUG_PRINT(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         feedWDT();
@@ -2425,7 +2425,7 @@ void Wippersnapper::runNetFSM() {
       maxAttempts = 5;
       while (maxAttempts > 0) {
         WS_DEBUG_PRINT("Connecting to AIO MQTT (attempt #");
-        WS_DEBUG_PRINT(5-maxAttempts);
+        WS_DEBUG_PRINT(5 - maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         WS_DEBUG_PRINT("WiFi Status: ");
