@@ -105,6 +105,10 @@
   {} ///< Prints line from debug output.
 #endif
 
+#ifdef ARDUINO_ARCH_RP2040
+#define delay(ms) delayMicroseconds(ms * 1000); // Use non-blocking delay() call for RP2040 architectures
+#endif
+
 /** Defines the Adafruit IO connection status */
 typedef enum {
   WS_IDLE = 0,               // Waiting for connection establishement
