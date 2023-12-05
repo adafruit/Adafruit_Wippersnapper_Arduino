@@ -97,7 +97,7 @@ public:
     // connected
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    delay(100);
+    delayMicroseconds(100000);
 
     // Perform a network scan
     int n = WiFi.scanNetworks();
@@ -286,7 +286,7 @@ protected:
   /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
-    delay(500);
+    delayMicroseconds(500000);
   }
 };
 
