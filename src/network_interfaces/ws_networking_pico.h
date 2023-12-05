@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2023 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -261,10 +261,21 @@ protected:
       _status = WS_SSID_INVALID;
     } else {
       _disconnect();
-      delay(100);
+      WS.feedWDT();
+      delayMicroseconds(5000000);
+      WS.feedWDT();
+      WiFi.mode(WIFI_STA);
+      WS.feedWDT();
+      WiFi.setTimeout(20000);
+      WS.feedWDT();
       WiFi.begin(_ssid, _pass);
+      for (int i = 0; i < 4; i++) {
+        // WS_DEBUG_PRINTLN("Delaying 5 seconds...");
+        delayMicroseconds(5000000);
+        WS.feedWDT();
+      }
       _status = WS_NET_DISCONNECTED;
-      delay(5000);
+      
     }
   }
 
