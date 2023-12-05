@@ -97,7 +97,7 @@ public:
     // connected
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    delayMicroseconds(100000);
+    delay(100);
 
     // Perform a network scan
     int n = WiFi.scanNetworks();
@@ -261,21 +261,22 @@ protected:
       _status = WS_SSID_INVALID;
     } else {
       _disconnect();
-      WS.feedWDT();
-      delayMicroseconds(5000000);
+      delay(5000);
       WS.feedWDT();
       WiFi.mode(WIFI_STA);
       WS.feedWDT();
       WiFi.setTimeout(20000);
       WS.feedWDT();
       WiFi.begin(_ssid, _pass);
+      // Here, we're going to wait 20 seconds total, matching the value within
+      // setTimeout().
+      // However, due to the global WDT of 6 sec., we need to feed the WDT
+      // after every 5 seconds.
       for (int i = 0; i < 4; i++) {
-        // WS_DEBUG_PRINTLN("Delaying 5 seconds...");
-        delayMicroseconds(5000000);
+        delay(5000);
         WS.feedWDT();
       }
       _status = WS_NET_DISCONNECTED;
-      
     }
   }
 
@@ -285,8 +286,10 @@ protected:
   */
   /**************************************************************************/
   void _disconnect() {
+    WS.feedWDT();
     WiFi.disconnect();
-    delayMicroseconds(500000);
+    delay(5000);
+    WS.feedWDT();
   }
 };
 

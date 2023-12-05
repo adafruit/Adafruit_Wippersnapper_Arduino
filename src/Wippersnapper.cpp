@@ -2362,7 +2362,7 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_ESTABLISH_NETWORK;
       break;
     case FSM_NET_ESTABLISH_NETWORK:
-      WS_DEBUG_PRINTLN("Connecting to WiFi...");
+      WS_DEBUG_PRINTLN("Establishing network connection...");
       WS_PRINTER.flush();
 #ifdef USE_DISPLAY
       if (WS._ui_helper->getLoadingState())
@@ -2370,7 +2370,8 @@ void Wippersnapper::runNetFSM() {
 #endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
-/*       if (!check_valid_ssid()) {
+       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
+       if (!check_valid_ssid()) {
 #ifdef USE_DISPLAY
         WS._ui_helper->show_scr_error("ERROR",
                                       "Unable to find WiFi network listed in "
@@ -2378,20 +2379,22 @@ void Wippersnapper::runNetFSM() {
 #endif
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
-      } */
+      }
+      WS_DEBUG_PRINTLN("SSID found!");
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
         // blink before we connect
-        //statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
-        WS.feedWDT();
+        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
+        feedWDT();
         // attempt to connect
         WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
         WS_DEBUG_PRINT(5-maxAttempts);
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
+        feedWDT();
         _connect();
-        WS.feedWDT();
+        feedWDT();
         // did we connect?
         if (networkStatus() == WS_NET_CONNECTED)
           break;
@@ -2428,7 +2431,8 @@ void Wippersnapper::runNetFSM() {
         WS_DEBUG_PRINT("WiFi Status: ");
         WS_DEBUG_PRINTLN(networkStatus());
         WS_PRINTER.flush();
-        // statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        feedWDT();
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         feedWDT();
         int8_t mqttRC = WS._mqtt->connect();
         feedWDT();
@@ -2438,7 +2442,7 @@ void Wippersnapper::runNetFSM() {
         }
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
-        //statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
