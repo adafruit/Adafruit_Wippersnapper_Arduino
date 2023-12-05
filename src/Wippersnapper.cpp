@@ -2383,7 +2383,7 @@ void Wippersnapper::runNetFSM() {
       maxAttempts = 5;
       while (maxAttempts > 0) {
         // blink before we connect
-        statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
+        //statusLEDBlink(WS_LED_STATUS_WIFI_CONNECTING);
         WS.feedWDT();
         // attempt to connect
         WS_DEBUG_PRINT("Connecting to WiFi (attempt #");
