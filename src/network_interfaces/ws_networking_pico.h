@@ -271,6 +271,7 @@ protected:
       // Wait setTimeout duration for a connection and check if connected every
       // 5 seconds
       for (int i = 0; i < 4; i++) {
+        WS.feedWDT();
         delay(5000);
         WS.feedWDT();
         if (WiFi.status() == WL_CONNECTED) {
