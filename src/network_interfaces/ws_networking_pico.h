@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2022 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2023 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -261,10 +261,25 @@ protected:
       _status = WS_SSID_INVALID;
     } else {
       _disconnect();
-      delay(100);
-      WiFi.begin(_ssid, _pass);
-      _status = WS_NET_DISCONNECTED;
       delay(5000);
+      WS.feedWDT();
+      WiFi.mode(WIFI_STA);
+      WS.feedWDT();
+      WiFi.setTimeout(20000);
+      WS.feedWDT();
+      WiFi.begin(_ssid, _pass);
+      // Wait setTimeout duration for a connection and check if connected every
+      // 5 seconds
+      for (int i = 0; i < 4; i++) {
+        WS.feedWDT();
+        delay(5000);
+        WS.feedWDT();
+        if (WiFi.status() == WL_CONNECTED) {
+          _status = WS_NET_CONNECTED;
+          return;
+        }
+      }
+      _status = WS_NET_DISCONNECTED;
     }
   }
 
@@ -274,8 +289,10 @@ protected:
   */
   /**************************************************************************/
   void _disconnect() {
+    WS.feedWDT();
     WiFi.disconnect();
-    delay(500);
+    delay(5000);
+    WS.feedWDT();
   }
 };
 
