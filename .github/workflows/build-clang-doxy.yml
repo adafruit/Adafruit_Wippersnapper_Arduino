@@ -232,7 +232,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-         repository: brentru/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
