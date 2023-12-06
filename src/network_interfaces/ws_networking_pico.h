@@ -268,13 +268,15 @@ protected:
       WiFi.setTimeout(20000);
       WS.feedWDT();
       WiFi.begin(_ssid, _pass);
-      // Here, we're going to wait 20 seconds total, matching the value within
-      // setTimeout().
-      // However, due to the global WDT of 6 sec., we need to feed the WDT
-      // after every 5 seconds.
+      // Wait setTimeout duration for a connection and check if connected every
+      // 5 seconds
       for (int i = 0; i < 4; i++) {
         delay(5000);
         WS.feedWDT();
+        if (WiFi.status() == WL_CONNECTED) {
+          _status = WS_NET_CONNECTED;
+          return;
+        }
       }
       _status = WS_NET_DISCONNECTED;
     }
