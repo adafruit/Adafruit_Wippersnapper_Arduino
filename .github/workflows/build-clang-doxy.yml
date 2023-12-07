@@ -54,11 +54,11 @@ jobs:
     - name: Download and install stable Nanopb
       run: |
         wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-        tar -xvf nanopb-0.4.8.tar.gz
-        cp nanopb-0.4.8/pb_encode.* src/nanopb
-        cp nanopb-0.4.8/pb_decode.* src/nanopb
-        cp nanopb-0.4.8/pb_common.* src/nanopb
-        cp nanopb-0.4.8/pb.h src/nanopb/nanopb.pb.h
+        tar -xf nanopb-0.4.8.tar.gz
+        cp nanopb/pb_encode.* src/nanopb
+        cp nanopb/pb_decode.* src/nanopb
+        cp nanopb/pb_common.* src/nanopb
+        cp nanopb/pb.h src/nanopb/nanopb.pb.h
     - name: List all files in Adafruit_LittlevGL_Glue_Library folder
       run: |
         ls /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
