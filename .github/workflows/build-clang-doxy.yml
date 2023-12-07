@@ -51,6 +51,11 @@ jobs:
         git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
         git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
         git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
+    - name: Download and install stable Nanopb
+      run: |
+        wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+        tar -xvf nanopb-0.4.8.tar.gz
+        ls
     - name: List all files in Adafruit_LittlevGL_Glue_Library folder
       run: |
         ls /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
