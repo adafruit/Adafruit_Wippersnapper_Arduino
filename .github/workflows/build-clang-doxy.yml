@@ -55,7 +55,8 @@ jobs:
       run: |
         wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
         tar -xvf nanopb-0.4.8.tar.gz
-        ls
+        ls /home/runner/work/Adafruit_Wippersnapper_Arduino/Adafruit_Wippersnapper_Arduino
+        ls /home/runner/work/Adafruit_Wippersnapper_Arduino/
     - name: List all files in Adafruit_LittlevGL_Glue_Library folder
       run: |
         ls /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
