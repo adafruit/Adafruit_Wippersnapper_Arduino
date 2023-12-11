@@ -349,18 +349,21 @@ void ws_display_ui_helper::build_scr_monitor() {
   lv_canvas_draw_rect(canvas, 0, 0, 240, 25, &rect_dsc);
 
   // Add battery icon to status bar
-  // Future TODO: Optional timer to check battery level on some boards
-  // Note: FunHouse won't require this and should always be have a full battery
-  // displayed
   statusbar_icon_bat = lv_label_create(lv_scr_act());
   lv_label_set_text(statusbar_icon_bat, LV_SYMBOL_BATTERY_FULL);
+  static lv_style_t styleIconBat;
+  lv_style_init(&styleIconBat);
+  lv_style_set_text_color(&styleIconBat, lv_color_hex(0x000000));
+  lv_obj_add_style(statusbar_icon_bat, &styleIconBat, LV_PART_MAIN);
   lv_obj_align(statusbar_icon_bat, LV_ALIGN_TOP_RIGHT, -5, 6);
 
   // Add WiFi icon to status bar
-  // Future TODO: Timer to check if we are still connected to WiFi levels every
-  // 2000ms
   statusbar_icon_wifi = lv_label_create(lv_scr_act());
   lv_label_set_text(statusbar_icon_wifi, LV_SYMBOL_WIFI);
+  static lv_style_t styleIconWiFiStatusbar;
+  lv_style_init(&styleIconWiFiStatusbar);
+  lv_style_set_text_color(&styleIconWiFiStatusbar, lv_color_hex(0x000000));
+  lv_obj_add_style(statusbar_icon_wifi, &styleIconWiFiStatusbar, LV_PART_MAIN);
   lv_obj_align(statusbar_icon_wifi, LV_ALIGN_TOP_RIGHT, -30, 5);
 
   // Add Turtle icon to status bar
