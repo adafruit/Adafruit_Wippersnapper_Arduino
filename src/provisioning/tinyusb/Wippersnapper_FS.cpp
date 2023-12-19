@@ -95,7 +95,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
-  if (!initFilesystem()) {
+  if (!initFilesystem() || !initFilesystem(true)) {
     WS_DEBUG_PRINTLN("ERROR Initializing Filesystem");
     setStatusLEDColor(RED);
     while (1)
@@ -123,13 +123,13 @@ Wippersnapper_FS::~Wippersnapper_FS() {}
     @return   True if filesystem initialized correctly, false otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_FS::initFilesystem() {
+bool Wippersnapper_FS::initFilesystem(bool force_format) {
   // Init. flash library
   if (!flash.begin())
     return false;
 
   // Check if FS exists
-  if (!wipperFatFs.begin(&flash)) {
+  if (force_format || !wipperFatFs.begin(&flash)) {
     // No filesystem exists - create a new FS
     // NOTE: THIS WILL ERASE ALL DATA ON THE FLASH
     if (!makeFilesystem())

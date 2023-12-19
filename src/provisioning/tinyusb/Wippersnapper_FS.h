@@ -44,7 +44,7 @@ public:
   Wippersnapper_FS();
   ~Wippersnapper_FS();
 
-  bool initFilesystem();
+  bool initFilesystem(bool force_format = false);
   void initUSBMSC();
 
   void eraseCPFS();
