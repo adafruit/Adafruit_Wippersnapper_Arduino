@@ -647,6 +647,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _vl53l0x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_vl53l0x);
     WS_DEBUG_PRINTLN("VL53L0X Initialized Successfully!");
+  } else if (strcmp("vl6180x", msgDeviceInitReq->i2c_device_name) == 0) {
+    _vl6180x = new WipperSnapper_I2C_Driver_VL6180X(this->_i2c, i2cAddress);
+    if (!_vl6180x->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize VL6180X!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _vl6180x->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_vl6180x);
+    WS_DEBUG_PRINTLN("VL6180X Initialized Successfully!");
   } else if (strcmp("max17048", msgDeviceInitReq->i2c_device_name) == 0) {
     _max17048 = new WipperSnapper_I2C_Driver_MAX17048(this->_i2c, i2cAddress);
     if (!_max17048->begin()) {
