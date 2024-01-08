@@ -40,6 +40,24 @@
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 
+#define WS_DEBUG          ///< Define to enable debugging to serial terminal
+#define WS_PRINTER Serial ///< Where debug messages will be printed
+
+// Define actual debug output functions when necessary.
+#ifdef WS_DEBUG
+#define WS_DEBUG_PRINT(...)                                                    \
+  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
+#define WS_DEBUG_PRINTLN(...)                                                  \
+  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+#else
+#define WS_DEBUG_PRINT(...)                                                    \
+  {} ///< Prints debug output
+#define WS_DEBUG_PRINTLN(...)                                                  \
+  {} ///< Prints line from debug output.
+#endif
+
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
@@ -86,24 +104,6 @@
   "/signals/device/pixel" ///< Pixels device->broker topic
 #define MQTT_TOPIC_PIXELS_BROKER                                               \
   "/signals/broker/pixel" ///< Pixels broker->device topic
-
-#define WS_DEBUG          ///< Define to enable debugging to serial terminal
-#define WS_PRINTER Serial ///< Where debug messages will be printed
-
-// Define actual debug output functions when necessary.
-#ifdef WS_DEBUG
-#define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
-#define WS_DEBUG_PRINTLN(...)                                                  \
-  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
-#define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
-#else
-#define WS_DEBUG_PRINT(...)                                                    \
-  {} ///< Prints debug output
-#define WS_DEBUG_PRINTLN(...)                                                  \
-  {} ///< Prints line from debug output.
-#endif
 
 /** Defines the Adafruit IO connection status */
 typedef enum {
