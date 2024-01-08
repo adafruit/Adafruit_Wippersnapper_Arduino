@@ -389,10 +389,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["feather_esp32s2_dev", "feather_esp32s2_tft_dev",
-                           "feather_esp32s2_reverse_tft_dev", "feather_esp32s3_dev",
-                           "feather_esp32s3_4mbflash_2mbpsram_dev", "feather_esp32s3_tft_dev",
-                           "feather_esp32s3_reverse_tft_dev"]
+        arduino-platform: ["feather_esp32s2_debug", "feather_esp32s2_tft_debug",
+                           "feather_esp32s3_debug", "feather_esp32s3_4mbflash_2mbpsram_dev", "feather_esp32s3_tft_debug",
+                           "feather_esp32s3_tft_debug"]
     steps:
     - uses: actions/setup-python@v4
       with:
