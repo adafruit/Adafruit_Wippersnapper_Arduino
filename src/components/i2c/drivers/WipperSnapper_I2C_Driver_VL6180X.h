@@ -19,7 +19,6 @@
 #include "Wippersnapper.h"
 #include <Adafruit_VL6180X.h>
 
-
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VL6180X sensor.
@@ -117,7 +116,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
-    //TODO: Update when I2C Sensor Properties allow setting custom Gain, etc.
+    // TODO: Update when I2C Sensor Properties allow setting custom Gain, etc.
     float notRealLux = _vl6180x->readLux(VL6180X_ALS_GAIN_5);
     // Gain_5 results in max 41.6klux with cover glass - See 2.10.3 in datasheet
     if (notRealLux < 0 || notRealLux > 41600) {
