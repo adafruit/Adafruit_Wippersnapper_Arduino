@@ -64,18 +64,19 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
 
-  //JsonDocument doc;
-
+  JsonDocument doc;
   // check if we can deserialize the secrets.json file
-  DeserializationError err = deserializeJson(_doc, secretsFile);
-  if (err) {
+  DeserializationError error = deserializeJson(doc, secretsFile);
+  if (error) {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
-    WS_DEBUG_PRINTLN(err.c_str());
+    WS_DEBUG_PRINTLN(error.c_str());
     fsHalt();
   }
+  // close the file
+  secretsFile.close();
 
   // Get IO username from JSON
-  const char *io_username = _doc["io_username"];
+  const char *io_username = doc["io_username"]; // "YOUR_IO_USERNAME_HERE"
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: io_username not set!");
@@ -85,7 +86,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
   WS._username = io_username;
 
   // Get IO key from JSON
-  const char *io_key = _doc["io_key"];
+  const char *io_key = doc["io_key"]; // "YOUR_IO_KEY_HERE"
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: io_key not set!");
@@ -96,10 +97,10 @@ void WipperSnapper_LittleFS::parseSecrets() {
 
   // Parse SSID
   // Check if network type is WiFi
-  const char *network_type_wifi_ssid =
-      _doc["network_type_wifi"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
+  const char *network_type_wifi_network_ssid =
+      doc["network_type_wifi"]["network_ssid"];
+  if (network_type_wifi_network_ssid != nullptr) {
+    WS._network_ssid = network_type_wifi_network_ssid;
   }
 
   if (WS._network_ssid == nullptr) {
@@ -108,10 +109,10 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
 
   // Parse WiFi network password
-  const char *network_type_wifi_password =
-      _doc["network_type_wifi"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
+  const char *network_type_wifi_network_password =
+      doc["network_type_wifi"]["network_password"];
+  if (network_type_wifi_network_password != nullptr) {
+    WS._network_pass = network_type_wifi_network_password;
   }
 
   // error check WiFi network password
@@ -121,18 +122,12 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
 
   // Optionally set the Adafruit.io URL
-  WS._mqttBrokerURL = _doc["io_url"];
+  WS._mqttBrokerURL = doc["io_url"];
 
   // Get (optional) setting for the status pixel brightness
-  float status_pixel_brightness = _doc["status_pixel_brightness"];
+  float status_pixel_brightness = doc["status_pixel_brightness"];
   // Note: ArduinoJSON's default value on failure to find is 0.0
   setStatusLEDBrightness(status_pixel_brightness);
-
-  // close the file
-  secretsFile.close();
-
-  // clear the document and release all memory from the memory pool
-  _doc.clear();
 
   // stop LittleFS, we no longer need it
   LittleFS.end();

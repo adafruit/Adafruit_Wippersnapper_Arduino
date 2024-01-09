@@ -400,8 +400,7 @@ void Wippersnapper_FS::parseSecrets() {
   WS._network_ssid = network_type_wifi_network_ssid;
 
   // Parse WiFi Network Password
-  const char *network_type_wifi_network_password =
-      doc["network_type_wifi"]["network_password"];
+  const char *network_type_wifi_network_password = doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_network_password == nullptr ||
       strcmp(network_type_wifi_network_password, "YOUR_WIFI_PASS_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid network_type_wifi_password value in "
@@ -426,9 +425,6 @@ void Wippersnapper_FS::parseSecrets() {
   float status_pixel_brightness = doc["status_pixel_brightness"]; // default is "0.2"
   // Note: ArduinoJSON's default value on failure to find is 0.0
   setStatusLEDBrightness(status_pixel_brightness);
-
-  // clear the document and release all memory from the memory pool
-  doc.clear();
 
   // Write configuration out to boot_out file
   writeToBootOut("Adafruit.io Username: ");

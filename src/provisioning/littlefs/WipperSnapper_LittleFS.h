@@ -16,6 +16,8 @@
 #define WIPPERSNAPPER_LITTLEFS_H
 
 #include "Wippersnapper.h"
+#define ARDUINOJSON_USE_DOUBLE 0
+#define ARDUINOJSON_USE_LONG_LONG 1
 #include <ArduinoJson.h>
 #include <FS.h>
 #include <LittleFS.h>
@@ -32,15 +34,8 @@ class WipperSnapper_LittleFS {
 public:
   WipperSnapper_LittleFS();
   ~WipperSnapper_LittleFS();
-
   void parseSecrets();
   void fsHalt();
-
-private:
-  // NOTE: calculated capacity with maximum
-  // length of usernames/passwords/tokens
-  // is 382 bytes, rounded to nearest power of 2.
-  StaticJsonDocument<512> _doc; /*!< Json configuration file */
 };
 
 extern Wippersnapper WS;
