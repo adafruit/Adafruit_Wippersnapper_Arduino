@@ -17,11 +17,13 @@
 
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
+#define ARDUINOJSON_USE_DOUBLE 0
+#define ARDUINOJSON_USE_LONG_LONG 1
 #include "ArduinoJson.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
+#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 
 #include "Wippersnapper.h"
 
@@ -59,15 +61,10 @@ public:
 
   void parseSecrets();
 
-  #ifdef ARDUINO_FUNHOUSE_ESP32S2
-  void parseDisplayConfig(displayConfig& displayFile);
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
+  void parseDisplayConfig(displayConfig &displayFile);
   void createDisplayConfig();
-  #endif
-
-  // NOTE: calculated capacity with maximum
-  // length of usernames/passwords/tokens
-  // is 382 bytes, rounded to nearest power of 2.
-  StaticJsonDocument<512> doc; /*!< Json configuration file */
+#endif
 private:
   bool _freshFS = false; /*!< True if filesystem was initialized by
                             WipperSnapper, False otherwise. */

@@ -296,14 +296,16 @@ bool Wippersnapper_FS::createBootFile() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createSecretsFile() {
-  // Create JSON object
-  StaticJsonDocument<256> doc;
+  // Create JSON document
+  JsonDocument doc;
+  // Fill with JSON key values
   doc["io_username"] = "YOUR_IO_USERNAME_HERE";
   doc["io_key"] = "YOUR_IO_KEY_HERE";
-  JsonObject network_type_wifi = doc.createNestedObject("network_type_wifi");
+  JsonObject network_type_wifi = doc["network_type_wifi"].to<JsonObject>();
   network_type_wifi["network_ssid"] = "YOUR_WIFI_SSID_HERE";
   network_type_wifi["network_password"] = "YOUR_WIFI_PASS_HERE";
   doc["status_pixel_brightness"] = "0.2";
+  doc.shrinkToFit();
 
   // Serialize JSON object and write secrets.json to file
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
@@ -337,16 +339,17 @@ void Wippersnapper_FS::parseSecrets() {
     fsHalt();
   }
 
-  // check if we can deserialize the secrets.json file
-  DeserializationError err = deserializeJson(doc, secretsFile);
-  if (err) {
+  JsonDocument doc;
+
+  // Can we deserialize secrets.json?
+  DeserializationError error = deserializeJson(doc, secretsFile);
+  if (error) {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(err.c_str());
     fsHalt();
   }
 
-  // Parse io_username
-  const char *io_username = doc["io_username"];
+  const char *io_username = doc["io_username"]; // "YOUR_IO_USERNAME_HERE"
   // error check against default values [ArduinoJSON, 3.3.3]
   if (io_username == nullptr ||
       strcmp(io_username, "YOUR_IO_USERNAME_HERE") == 0) {
@@ -364,7 +367,7 @@ void Wippersnapper_FS::parseSecrets() {
   WS._username = io_username;
 
   // Parse io_key
-  const char *io_key = doc["io_key"];
+  const char *io_key = doc["io_key"]; // "YOUR_IO_KEY_HERE"
   if (io_key == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
     writeToBootOut("ERROR: invalid io_key value in secrets.json!\n");
@@ -379,7 +382,8 @@ void Wippersnapper_FS::parseSecrets() {
   WS._key = io_key;
 
   // Parse WiFi SSID
-  const char *network_type_wifi_ssid = doc["network_type_wifi"]["network_ssid"];
+  const char *network_type_wifi_network_ssid =
+      doc["network_type_wifi"]["network_ssid"];
   if (network_type_wifi_ssid == nullptr ||
       strcmp(network_type_wifi_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
     WS_DEBUG_PRINTLN("ERROR: invalid network_ssid value in secrets.json!");
@@ -396,7 +400,7 @@ void Wippersnapper_FS::parseSecrets() {
   WS._network_ssid = network_type_wifi_ssid;
 
   // Parse WiFi Network Password
-  const char *network_type_wifi_password =
+  const char *network_type_wifi_network_password =
       doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_password == nullptr ||
       strcmp(network_type_wifi_password, "YOUR_WIFI_PASS_HERE") == 0) {
@@ -419,7 +423,8 @@ void Wippersnapper_FS::parseSecrets() {
   WS._mqttBrokerURL = doc["io_url"];
 
   // Get (optional) setting for the status pixel brightness
-  float status_pixel_brightness = doc["status_pixel_brightness"];
+  const char *status_pixel_brightness =
+      doc["status_pixel_brightness"]; // default is "0.2"
   // Note: ArduinoJSON's default value on failure to find is 0.0
   setStatusLEDBrightness(status_pixel_brightness);
 
@@ -472,21 +477,21 @@ void Wippersnapper_FS::fsHalt() {
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 void Wippersnapper_FS::createDisplayConfig() {
-  StaticJsonDocument<256> doc;
+  JsonDocument doc;
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
   doc["driver"] = "ST7789";
   doc["width"] = 240;
   doc["height"] = 240;
   doc["rotation"] = 0;
-  doc["powerMode"] = 0;
-  JsonObject spi = doc.createNestedObject("spi");
+  JsonObject spi = doc["spi"].to<JsonObject>();
   spi["spiMode"] = 1;
   spi["pinCs"] = 40;
   spi["pinDc"] = 39;
   spi["pinMosi"] = 0;
   spi["pinSck"] = 0;
   spi["pinRst"] = 41;
+  doc.shrinkToFit();
 #endif
 
   // Write the file out
@@ -498,9 +503,6 @@ void Wippersnapper_FS::createDisplayConfig() {
 }
 
 void Wippersnapper_FS::parseDisplayConfig(displayConfig &displayFile) {
-  StaticJsonDocument<384> doc;
-  DeserializationError error;
-
   if (!wipperFatFs.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
@@ -509,37 +511,42 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &displayFile) {
   }
 
   File32 file = wipperFatFs.open("/display_config.json", FILE_READ);
-  if (file) {
-    error = deserializeJson(doc, file);
-    file.close();
-  } else {
+  if (!file) {
     WS_DEBUG_PRINTLN(
         "FATAL ERROR: Unable to open display_config.json for parsing");
-    while (1)
-      yield();
+    fsHalt();
   }
 
-  // generic fields
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, file);
+  if (error) {
+    WS_DEBUG_PRINTLN("deserializeJson() of display file failed, rc:")
+    Serial.println(error.c_str());
+    fsHalt();
+  }
+  file.close(); // close .json file
+
+  // Copy all fields from the JSON array to the displayFile struct
   strcpy(displayFile.driver, doc["driver"]);
   displayFile.height = doc["height"];
   displayFile.width = doc["width"];
   displayFile.rotation = doc["rotation"];
-
-  // display driver uses SPI, copy all the fields from the json array
-  if (doc["spi"] != nullptr) {
-    displayFile.isSPI = true;
-    displayFile.pinCS = doc["spi"]["pinCs"];
-    displayFile.pinDC = doc["spi"]["pinDc"];
-    displayFile.pinMOSI = doc["spi"]["pinMosi"];
-    displayFile.pinSCK = doc["spi"]["pinSck"];
-    displayFile.pinRST = doc["spi"]["pinRst"];
+  JsonObject spi = doc["spi"];
+  if (spi != nullptr) {
+    displayFile.isSPI = true;             // indicate that we're using SPI bus
+    int spi_spiMode = spi["spiMode"];     // 1
+    displayFile.pinCS = spi["pinCs"];     // 40
+    displayFile.pinDC = spi["pinDc"];     // 39
+    displayFile.pinMOSI = spi["pinMosi"]; // 0
+    displayFile.pinSCK = spi["pinSck"];   // 0
+    displayFile.pinRST = spi["pinRst"];   // 41
   } else if (doc["i2c"] != nullptr) {
     WS_DEBUG_PRINTLN("I2C display drivers are not implemented yet!");
-    // TODO: Halt?
+    fsHalt();
   } else {
     WS_DEBUG_PRINTLN(
         "ERROR: Display device lacks a hardware interface, failing out...");
-    // TODO: Halt?
+    fsHalt();
   }
 }
 #endif // ARDUINO_FUNHOUSE_ESP32S2
