@@ -64,6 +64,8 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
 
+  //JsonDocument doc;
+
   // check if we can deserialize the secrets.json file
   DeserializationError err = deserializeJson(_doc, secretsFile);
   if (err) {

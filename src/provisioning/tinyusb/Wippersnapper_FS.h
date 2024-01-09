@@ -17,13 +17,13 @@
 
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
+#include "SdFat.h"
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 1
 #include "ArduinoJson.h"
-#include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/diskio.h"
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
+#include "fatfs/diskio.h"
 
 #include "Wippersnapper.h"
 
