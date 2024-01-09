@@ -480,7 +480,6 @@ void Wippersnapper_FS::createDisplayConfig() {
   doc["height"] = 240;
   doc["rotation"] = 0;
   JsonObject spi = doc["spi"].to<JsonObject>();
-  spi["spiMode"] = 1;
   spi["pinCs"] = 40;
   spi["pinDc"] = 39;
   spi["pinMosi"] = 0;
@@ -529,7 +528,6 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &displayFile) {
   JsonObject spi = doc["spi"];
   if (spi != nullptr) {
     displayFile.isSPI = true;             // indicate that we're using SPI bus
-    displayFile.spiMode= spi["spiMode"];  // 1
     displayFile.pinCS = spi["pinCs"];     // 40
     displayFile.pinDC = spi["pinDc"];     // 39
     displayFile.pinMOSI = spi["pinMosi"]; // 0
