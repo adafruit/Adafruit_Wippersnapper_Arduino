@@ -10,8 +10,8 @@ void convertToJson(const networkConfig &src, JsonVariant dst) {
 // Extracts an ApConfig from JSON
 // (automatically called by `dst.accessPoint[dst.accessPoints] = ap`)
 void convertFromJson(JsonVariantConst src, networkConfig &dst) {
-  strlcpy(dst.ssid, src["network_type_wifi"]["network_ssid"] | "testvar", sizeof(dst.ssid));
-  strlcpy(dst.pass, src["network_type_wifi"]["network_password"] | "testvar", sizeof(dst.pass));
+  strlcpy(dst.ssid, src["network_ssid"] | "testvar", sizeof(dst.ssid));
+  strlcpy(dst.pass, src["network_password"] | "testvar", sizeof(dst.pass));
 }
 
 // Extracts a ServerConfig to JSON
@@ -42,6 +42,6 @@ void convertToJson(const Config &src, JsonVariant dst) {
 // Extracts a Config from JSON
 // (automatically called by `doc.set(config)`)
 void convertFromJson(JsonVariantConst src, Config &dst) {
-  dst.network = src["network"];
+  dst.network = src["network_type_wifi"];
   dst.mqtt = src["mqtt"];
 }

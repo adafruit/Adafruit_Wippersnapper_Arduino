@@ -343,7 +343,8 @@ void Wippersnapper_FS::parseSecrets() {
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    return false;
+    // TODO: Catch error here!
+    fsHalt();
   }
   
   // Extract config struct from the JSON document
