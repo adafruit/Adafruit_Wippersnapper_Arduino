@@ -49,6 +49,7 @@ jobs:
         git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
         git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
         git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+        git clone --depth 1 --branch 6.x https://github.com/bblanchon/ArduinoJson.git /home/runner/Arduino/libraries/ArduinoJson
         git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
         git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
     - name: Download and install stable Nanopb
@@ -117,6 +118,7 @@ jobs:
       run: bash ci/actions_install.sh
     - name: Install extra Arduino libraries
       run: |
+        git clone --depth 1 --branch 6.x https://github.com/bblanchon/ArduinoJson.git /home/runner/Arduino/libraries/ArduinoJson
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
     - name: Download and install stable Nanopb
@@ -212,6 +214,7 @@ jobs:
       # manually install Adafruit WiFiNINA library fork
     - name: Install extra Arduino libraries
       run: |
+        git clone --depth 1 --branch 6.x https://github.com/bblanchon/ArduinoJson.git /home/runner/Arduino/libraries/ArduinoJson
         git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
@@ -263,6 +266,7 @@ jobs:
       # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
     - name: Install extra Arduino libraries
       run: |
+        git clone --depth 1 --branch 6.x https://github.com/bblanchon/ArduinoJson.git /home/runner/Arduino/libraries/ArduinoJson
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
     - name: Download and install stable Nanopb
@@ -312,6 +316,7 @@ jobs:
       run: bash ci/actions_install.sh
     - name: Install extra Arduino libraries
       run: |
+        git clone --depth 1 --branch 6.x https://github.com/bblanchon/ArduinoJson.git /home/runner/Arduino/libraries/ArduinoJson
         git clone --quiet https://github.com/arduino-libraries/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/arduino-libraries/Servo.git /home/runner/Arduino/libraries/Servo
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
@@ -352,6 +357,7 @@ jobs:
       run: bash ci/actions_install.sh
     - name: Install extra Arduino library
       run: |
+        git clone --depth 1 --branch 6.x https://github.com/bblanchon/ArduinoJson.git /home/runner/Arduino/libraries/ArduinoJson
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
     - name: Download and install stable Nanopb
@@ -390,8 +396,7 @@ jobs:
       fail-fast: false
       matrix:
         arduino-platform: ["feather_esp32s2_debug", "feather_esp32s2_tft_debug",
-                           "feather_esp32s3_debug", "feather_esp32s3_4mbflash_2mbpsram_debug", "feather_esp32s3_tft_debug",
-                           "feather_esp32s3_tft_debug"]
+                           "feather_esp32s3_debug", "feather_esp32s3_4mbflash_2mbpsram_debug", "feather_esp32s3_tft_debug"]
     steps:
     - uses: actions/setup-python@v4
       with:
@@ -410,6 +415,7 @@ jobs:
       run: bash ci/actions_install.sh
     - name: Install extra Arduino libraries
       run: |
+        git clone --depth 1 --branch 6.x https://github.com/bblanchon/ArduinoJson.git /home/runner/Arduino/libraries/ArduinoJson
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
