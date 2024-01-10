@@ -36,7 +36,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-         repository: tyeth/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -107,7 +107,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-        repository: tyeth/ci-arduino
+        repository: adafruit/ci-arduino
         path: ci
     - name: Checkout Board Definitions
       uses: actions/checkout@v4
@@ -207,7 +207,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-         repository: tyeth/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -259,7 +259,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-         repository: tyeth/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -310,7 +310,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-         repository: tyeth/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -351,7 +351,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-         repository: tyeth/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -409,7 +409,7 @@ jobs:
         echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
     - uses: actions/checkout@v4
       with:
-         repository: tyeth/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -470,7 +470,7 @@ jobs:
 
     - uses: actions/checkout@v4
       with:
-         repository: tyeth/ci-arduino
+         repository: adafruit/ci-arduino
          path: ci
     - name: pre-install
       run: bash ci/actions_install.sh
