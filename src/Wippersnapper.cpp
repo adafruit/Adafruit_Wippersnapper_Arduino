@@ -2688,9 +2688,9 @@ void printDeviceInfo() {
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");
-  WS_DEBUG_PRINTLN(WS._username);
+  WS_DEBUG_PRINTLN(WS._config.mqtt.aio_user);
   WS_DEBUG_PRINT("WiFi Network: ");
-  WS_DEBUG_PRINTLN(WS._network_ssid);
+  WS_DEBUG_PRINTLN(WS._config.network.ssid);
 
   char sMAC[18] = {0};
   sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0], WS._macAddr[1],

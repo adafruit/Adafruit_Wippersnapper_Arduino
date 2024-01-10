@@ -332,6 +332,7 @@ void Wippersnapper_FS::createSecretsFile() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::parseSecrets() {
+
   // open file for parsing
   File32 secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
@@ -340,82 +341,13 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   JsonDocument doc;
-
-  // Can we deserialize secrets.json?
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
-    WS_DEBUG_PRINTLN(error.c_str());
-    fsHalt();
+    return false;
   }
-
-  const char *io_username = doc["io_username"]; // "YOUR_IO_USERNAME_HERE"
-  // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_username == nullptr ||
-      strcmp(io_username, "YOUR_IO_USERNAME_HERE") == 0) {
-    WS_DEBUG_PRINTLN("ERROR: invalid io_username value in secrets.json!");
-    writeToBootOut("ERROR: invalid io_username value in secrets.json!\n");
-#ifdef USE_DISPLAY
-    WS._ui_helper->show_scr_error(
-        "INVALID USERNAME",
-        "The \"io_username\" field within secrets.json is invalid, please "
-        "change it to match your Adafruit IO username and press RESET.");
-#endif
-    fsHalt();
-  }
-  // Set io_username
-  WS._username = io_username;
-
-  // Parse io_key
-  const char *io_key = doc["io_key"]; // "YOUR_IO_KEY_HERE"
-  if (io_key == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: invalid io_key value in secrets.json!");
-    writeToBootOut("ERROR: invalid io_key value in secrets.json!\n");
-#ifdef USE_DISPLAY
-    WS._ui_helper->show_scr_error(
-        "INVALID IO KEY",
-        "The \"io_key\" field within secrets.json is invalid, please change it "
-        "to match your Adafruit IO username.");
-#endif
-    fsHalt();
-  }
-  WS._key = io_key;
-
-  // Parse WiFi SSID
-  const char *network_type_wifi_network_ssid =
-      doc["network_type_wifi"]["network_ssid"];
-  if (network_type_wifi_network_ssid == nullptr ||
-      strcmp(network_type_wifi_network_ssid, "YOUR_WIFI_SSID_HERE") == 0) {
-    WS_DEBUG_PRINTLN("ERROR: invalid network_ssid value in secrets.json!");
-    writeToBootOut("ERROR: invalid network_ssid value in secrets.json!\n");
-#ifdef USE_DISPLAY
-    WS._ui_helper->show_scr_error(
-        "INVALID SSID",
-        "The \"network_ssid\" field within secrets.json is invalid, please "
-        "change it to match your Adafruit IO username and press RESET.");
-#endif
-    fsHalt();
-  }
-  // Set network SSID
-  WS._network_ssid = network_type_wifi_network_ssid;
-
-  // Parse WiFi Network Password
-  const char *network_type_wifi_network_password = doc["network_type_wifi"]["network_password"];
-  if (network_type_wifi_network_password == nullptr ||
-      strcmp(network_type_wifi_network_password, "YOUR_WIFI_PASS_HERE") == 0) {
-    WS_DEBUG_PRINTLN("ERROR: invalid network_type_wifi_password value in "
-                     "secrets.json!");
-    writeToBootOut("ERROR: invalid network_type_wifi_password value in "
-                   "secrets.json!\n");
-#ifdef USE_DISPLAY
-    WS._ui_helper->show_scr_error(
-        "INVALID SSID",
-        "The \"network_ssid\" field within secrets.json is invalid, please "
-        "change it to match your Adafruit IO username and press RESET.");
-#endif
-    fsHalt();
-  }
-  WS._network_pass = network_type_wifi_network_password;
+  
+  // Extract config struct from the JSON document
+   WS._config =  doc.as<Config>();
 
   // Optionally set the MQTT broker url (used to switch btween prod. and
   // staging)
@@ -425,14 +357,6 @@ void Wippersnapper_FS::parseSecrets() {
   float status_pixel_brightness = doc["status_pixel_brightness"]; // default is "0.2"
   // Note: ArduinoJSON's default value on failure to find is 0.0
   setStatusLEDBrightness(status_pixel_brightness);
-
-  // Write configuration out to boot_out file
-  writeToBootOut("Adafruit.io Username: ");
-  writeToBootOut(WS._username);
-  writeToBootOut("\n");
-  writeToBootOut("WiFi Network: ");
-  writeToBootOut(WS._network_ssid);
-  writeToBootOut("\n");
 
   // close the tempFile
   secretsFile.close();
