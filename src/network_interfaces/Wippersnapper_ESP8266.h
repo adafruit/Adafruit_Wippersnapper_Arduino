@@ -172,9 +172,9 @@ public:
     // Uncomment the following lines to use MQTT/SSL. You will need to
     // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
     // new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url, _mqtt_port,
-    // clientID, WS._username, WS._key);
+    // clientID, WS._config.aio_user, WS._config.aio_key);
 
-    WS._mqtt = new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url, 1883, clientID, WS._username, WS._key);
+    WS._mqtt = new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url, 1883, clientID, WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/

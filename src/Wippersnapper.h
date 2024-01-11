@@ -316,12 +316,9 @@ public:
   const char *_boardId; /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
-  Config _config; /*!< Pointer to Config object */
+  Config _config; /*!< Wippersnapper secrets.json as a struct. */
+  // TODO: Should this be in config, too?
   uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
-
-  // AIO credentials
-  const char *_username = NULL; /*!< Adafruit IO username */
-  const char *_key = NULL;      /*!< Adafruit IO key */
 
   // WiFi credentials
   const char *_network_ssid = NULL; /*!< WiFi network SSID */

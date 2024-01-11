@@ -79,8 +79,8 @@ public:
   */
   /****************************************************************************/
   void set_user_key() {
-    WS._username = _username;
-    WS._key = _key;
+    WS._config.aio_user = _username;
+    WS._config.aio_key = _key;
   }
 
   /**********************************************************/
@@ -194,7 +194,7 @@ public:
   void setupMQTTClient(const char *clientID) {
     WS._mqtt =
         new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._mqtt_port,
-                                 clientID, WS._username, WS._key);
+                                 clientID, WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/

@@ -83,7 +83,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
   // Set IO username
-  WS._username = io_username;
+  WS._config.aio_user = io_username;
 
   // Get IO key from JSON
   const char *io_key = doc["io_key"]; // "YOUR_IO_KEY_HERE"
@@ -93,7 +93,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
   // Set IO key
-  WS._key = io_key;
+  WS._config.aio_key = io_key;
 
   // Parse SSID
   // Check if network type is WiFi
