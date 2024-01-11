@@ -320,10 +320,6 @@ public:
   // TODO: Should this be in config, too?
   uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
 
-  // WiFi credentials
-  const char *_network_ssid = NULL; /*!< WiFi network SSID */
-  const char *_network_pass = NULL; /*!< WiFi network password*/
-
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 

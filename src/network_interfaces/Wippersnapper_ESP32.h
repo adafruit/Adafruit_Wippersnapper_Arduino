@@ -82,8 +82,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._network_ssid;
-    _pass = WS._network_pass;
+    _ssid = WS._config.network.ssid;
+    _pass = WS._config.network.pass;
   }
 
   /***********************************************************/

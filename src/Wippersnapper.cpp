@@ -2404,6 +2404,12 @@ void Wippersnapper::runNetFSM() {
         WS._ui_helper->set_label_status("Connecting to IO...");
 #endif
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
+      // print mqtt config
+      // WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._mqtt_port, clientID, WS._config.aio_user, WS._config.aio_key);
+      WS_DEBUG_PRINTLN(WS._config.aio_url);
+      WS_DEBUG_PRINTLN(WS._mqtt_port);
+      WS_DEBUG_PRINTLN(WS._config.aio_user);
+      WS_DEBUG_PRINTLN(WS._config.aio_key);
       // Attempt to connect
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2425,7 +2431,7 @@ void Wippersnapper::runNetFSM() {
         }
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
-        statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
+        delay(3000);
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {

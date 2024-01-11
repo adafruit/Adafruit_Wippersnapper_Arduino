@@ -100,10 +100,10 @@ void WipperSnapper_LittleFS::parseSecrets() {
   const char *network_type_wifi_network_ssid =
       doc["network_type_wifi"]["network_ssid"];
   if (network_type_wifi_network_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_network_ssid;
+    WS._config.network.ssid = network_type_wifi_network_ssid;
   }
 
-  if (WS._network_ssid == nullptr) {
+  if (WS._config.network.ssid == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: network_ssid not set!");
     fsHalt();
   }
@@ -112,11 +112,11 @@ void WipperSnapper_LittleFS::parseSecrets() {
   const char *network_type_wifi_network_password =
       doc["network_type_wifi"]["network_password"];
   if (network_type_wifi_network_password != nullptr) {
-    WS._network_pass = network_type_wifi_network_password;
+    WS._config.network.pass = network_type_wifi_network_password;
   }
 
   // error check WiFi network password
-  if (WS._network_pass == nullptr) {
+  if (WS._config.network.pass == nullptr) {
     WS_DEBUG_PRINTLN("ERROR: network_password not set!");
     fsHalt();
   }

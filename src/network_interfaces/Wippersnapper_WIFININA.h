@@ -93,8 +93,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    WS._network_ssid = ssid;
-    WS._network_pass = ssidPassword;
+    WS._config.network.ssid = ssid;
+    WS._config.network.pass = ssidPassword;
   }
 
   /**********************************************************/
@@ -104,8 +104,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    WS._network_ssid = _ssid;
-    WS._network_pass = _pass;
+    WS._config.network.ssid = _ssid;
+    WS._config.network.pass = _pass;
   }
 
   /***********************************************************/
