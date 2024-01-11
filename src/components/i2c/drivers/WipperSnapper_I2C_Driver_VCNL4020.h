@@ -56,21 +56,7 @@ public:
   bool begin() {
     _vcnl4020 = new Adafruit_VCNL4020();
     // Attempt to initialize and configure VCNL4020
-    if (!_vcnl4020->begin(_sensorAddress, _i2c))
-      return false;
-
-    // Power saving: this could be lower, but for reliability 200mA(max, 50mA
-    // min)
-    _vcnl4020->setProximityLEDCurrent(VCNL4020_LED_CURRENT_200MA);
-    _vcnl4020->setProximityLEDDutyCycle(VCNL4020_LED_DUTY_1_40);
-    // This could be 1T integration time (default), but set to 8T for
-    // reliability
-    _vcnl4020->setProximityIntegrationTime(
-        VCNL4020_PROXIMITY_INTEGRATION_TIME_8T);
-    _vcnl4020->setProximityHighResolution(true); // 12bit or 16bit resolution
-    _vcnl4020->setAmbientIntegrationTime(
-        VCNL4020_AMBIENT_INTEGRATION_TIME_80MS);
-    return true;
+    return _vcnl4020->begin(_i2c, _sensorAddress);
   }
 
   /*******************************************************************************/
@@ -85,7 +71,7 @@ public:
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event populated in lux via AUTO integration and gain
-    lightEvent->light = _vcnl4020->getLux();
+    lightEvent->light = _vcnl4020->readAmbient();
 
     return true;
   }
@@ -100,7 +86,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    proximityEvent->data[0] (float)_vcnl4020->getProximity();
+    proximityEvent->data[0] = (float)_vcnl4020->readProximity();
     return true;
   }
 

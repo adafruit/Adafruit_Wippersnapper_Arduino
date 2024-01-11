@@ -90,21 +90,6 @@ public:
     return true;
   }
 
-  // /*******************************************************************************/
-  // /*!
-  //     @brief    Reads the VCNL4040's proximity value into an event.
-  //     @param    rawEvent
-  //               Pointer to an adafruit sensor event.
-  //     @returns  True if the sensor event was obtained successfully, False
-  //               otherwise.
-  // */
-  // /*******************************************************************************/
-  // bool getEventRaw(sensors_event_t *rawEvent) {
-  //   rawEvent->data[0] = (float)_vcnl4040->getProximity();
-  //   return true;
-  // }
-
-
   /*******************************************************************************/
   /*!
       @brief    Reads the VCNL4040's proximity value into an event (no unit).
@@ -115,10 +100,9 @@ public:
   */
   /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
-    proximityEvent->data[0] (float)_vcnl4040->getProximity();
+    proximityEvent->data[0] = (float)_vcnl4040->getProximity();
     return true;
   }
-
 
 protected:
   Adafruit_VCNL4040 *_vcnl4040; ///< Pointer to VCNL4040 light sensor object
