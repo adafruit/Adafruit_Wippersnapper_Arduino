@@ -348,9 +348,8 @@ void Wippersnapper_FS::parseSecrets() {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
     WS_DEBUG_PRINTLN(error.c_str());
     fsHalt();
-    fsHalt();
   }
-  
+
   // Extract a config struct from the JSON document
    WS._config =  doc.as<Config>();
 
