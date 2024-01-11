@@ -298,10 +298,10 @@ void Wippersnapper_FS::createSecretsFile() {
   
   // Create a default Config structure
   Config secretsConfig;
-  strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
-  strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
   strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
   strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
+  strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
+  strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
   secretsConfig.status_pixel_brightness = 0.2;
 
   // Create and fill JSON document from Config
@@ -353,6 +353,29 @@ void Wippersnapper_FS::parseSecrets() {
   
   // Extract a config struct from the JSON document
    WS._config =  doc.as<Config>();
+
+  // Validate the config struct is not filled with default values
+  if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 || strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
+    writeToBootOut("ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change io_username and io_key to match your Adafruit IO credentials!\n");
+#ifdef USE_DISPLAY
+    WS._ui_helper->show_scr_error(
+        "INVALID IO CREDS",
+        "The \"io_username/io_key\" fields within secrets.json are invalid, please "
+        "change it to match your Adafruit IO credentials. Then, press RESET.");
+#endif
+    fsHalt();
+  }
+
+  if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 || strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
+    writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO FIX: Please change network_ssid and network_password to match your Adafruit IO credentials!\n");
+#ifdef USE_DISPLAY
+    WS._ui_helper->show_scr_error(
+        "INVALID NETWORK",
+        "The \"network_ssid and network_password\" fields within secrets.json are invalid, please "
+        "change it to match your WiFi credentials. Then, press RESET.");
+#endif
+    fsHalt();
+  }
 
   // Close secrets.json file
   secretsFile.close();
