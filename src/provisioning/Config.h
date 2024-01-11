@@ -7,9 +7,9 @@ struct networkConfig {
 
 struct Config {
     networkConfig network;
-    char server_url[64];
+    char aio_url[64];
     char aio_user[64];
-    char aio_pass[30];
+    char aio_key[30];
     float status_pixel_brightness;
 };
 #endif // CONFIG_H

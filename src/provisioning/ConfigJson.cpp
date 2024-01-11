@@ -23,8 +23,8 @@ void convertFromJson(JsonVariantConst src, Config &dst) {
   dst.network = src["network_type_wifi"];
   // Parse IO credentials from secrets
   strlcpy(dst.aio_user, src["io_username"] | "YOUR_IO_USERNAME_HERE", sizeof(dst.aio_user));
-  strlcpy(dst.aio_user, src["io_key"] | "YOUR_IO_KEY_HERE", sizeof(dst.aio_pass));
-  strlcpy(dst.aio_user, src["io_url"] | "io.adafruit.com", sizeof(dst.server_url));
+  strlcpy(dst.aio_key, src["io_key"] | "YOUR_IO_KEY_HERE", sizeof(dst.aio_key));
+  strlcpy(dst.aio_url, src["io_url"] | "io.adafruit.com", sizeof(dst.aio_url));
   // Parse status pixel brightness from secrets
   dst.status_pixel_brightness = src["status_pixel_brightness"] | 0.2;
 }
