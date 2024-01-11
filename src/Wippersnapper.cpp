@@ -134,6 +134,8 @@ void Wippersnapper::provision() {
 #else
   set_user_key(); // non-fs-backed, sets global credentials within network iface
 #endif
+  // Set the status pixel's brightness
+  setStatusLEDBrightness(WS._config.status_pixel_brightness);
   // Set device's wireless credentials
   set_ssid_pass();
 

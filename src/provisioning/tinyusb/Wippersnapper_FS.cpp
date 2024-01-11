@@ -115,10 +115,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
     @brief    Filesystem destructor
 */
 /************************************************************/
-Wippersnapper_FS::~Wippersnapper_FS() {
-  // io_username = NULL;
-  // io_key = NULL;
-}
+Wippersnapper_FS::~Wippersnapper_FS() {}
 
 /**************************************************************************/
 /*!
@@ -296,26 +293,31 @@ bool Wippersnapper_FS::createBootFile() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::createSecretsFile() {
-  // Create JSON document
-  JsonDocument doc;
-  // Fill with JSON key values
-  doc["io_username"] = "YOUR_IO_USERNAME_HERE";
-  doc["io_key"] = "YOUR_IO_KEY_HERE";
-  JsonObject network_type_wifi = doc["network_type_wifi"].to<JsonObject>();
-  network_type_wifi["network_ssid"] = "YOUR_WIFI_SSID_HERE";
-  network_type_wifi["network_password"] = "YOUR_WIFI_PASS_HERE";
-  doc["status_pixel_brightness"] = "0.2";
-  doc.shrinkToFit();
-
-  // Serialize JSON object and write secrets.json to file
+  // Open file for writing
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
+  
+  // Create a default Config structure
+  Config secretsConfig;
+  strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
+  strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
+  strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
+  strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
+  secretsConfig.status_pixel_brightness = 0.2;
+
+  // Create and fill JSON document from Config
+  JsonDocument doc;
+  doc.set(secretsConfig);
+
+  // Serialize JSON to file
   serializeJsonPretty(doc, secretsFile);
+
+  // Flush and close file
   secretsFile.flush();
   secretsFile.close();
   delay(2500);
 
-  writeToBootOut(
-      "* Please edit the secrets.json file. Then, reset your board.\n");
+  // Signal to user that action must be taken (edit secrets.json)
+  writeToBootOut("ERROR: Please edit the secrets.json file. Then, reset your board.\n");
 #ifdef USE_DISPLAY
   WS._ui_helper->show_scr_error(
       "INVALID SETTINGS FILE",
@@ -343,7 +345,9 @@ void Wippersnapper_FS::parseSecrets() {
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    // TODO: Catch error here!
+    WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
+    WS_DEBUG_PRINTLN(error.c_str());
+    fsHalt();
     fsHalt();
   }
   
@@ -352,9 +356,6 @@ void Wippersnapper_FS::parseSecrets() {
 
   // Close secrets.json file
   secretsFile.close();
-
-  // Set the status pixel brightness
-  setStatusLEDBrightness(WS._config.status_pixel_brightness);
 }
 
 /**************************************************************************/

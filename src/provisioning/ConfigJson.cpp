@@ -2,8 +2,8 @@
 
 // Converts a network configuration structure to a JSON variant
 void convertToJson(const networkConfig &src, JsonVariant dst) {
-  dst["network_type_wifi"]["network_ssid"] = src.ssid;
-  dst["network_type_wifi"]["network_password"] = src.pass;
+  dst["network_ssid"] = src.ssid;
+  dst["network_password"] = src.pass;
 }
 
 // Extracts a network configuration structure from a JSON variant
@@ -14,13 +14,10 @@ void convertFromJson(JsonVariantConst src, networkConfig &dst) {
 
 // Converts a Config structure to a JSON variant
 void convertToJson(const Config &src, JsonVariant dst) {
-  dst["network_type_wifi"] = src.network;
   dst["io_username"] = src.aio_user;
   dst["io_key"] = src.aio_key;
-  // Parse status pixel brightness from secrets
+  dst["network_type_wifi"] = src.network;
   dst["status_pixel_brightness"] = src.status_pixel_brightness;
-  // Parse MQTT port from secrets, if exists
-  dst["io_port"] = src.io_port;
 }
 
 // Extracts a JSON file to a Config structure
