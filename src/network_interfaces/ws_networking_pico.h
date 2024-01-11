@@ -153,7 +153,7 @@ public:
     }
 
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS.WS._config.io_port,
                                  clientID, WS._config.aio_user, WS._config.aio_key);
   }
 

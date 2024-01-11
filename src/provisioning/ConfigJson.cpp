@@ -27,4 +27,6 @@ void convertFromJson(JsonVariantConst src, Config &dst) {
   strlcpy(dst.aio_url, src["io_url"] | "io.adafruit.com", sizeof(dst.aio_url));
   // Parse status pixel brightness from secrets
   dst.status_pixel_brightness = src["status_pixel_brightness"] | 0.2;
+  // Parse MQTT port from secrets, if exists
+  dst.io_port = src["io_port"] | 8883;
 }

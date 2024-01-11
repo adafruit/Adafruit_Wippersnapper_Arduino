@@ -317,8 +317,6 @@ public:
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   Config _config; /*!< Wippersnapper secrets.json as a struct. */
-  // TODO: Should this be in config, too?
-  uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
