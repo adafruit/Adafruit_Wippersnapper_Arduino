@@ -2688,7 +2688,7 @@ void printDeviceInfo() {
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");
-  WS_DEBUG_PRINTLN(WS._config.mqtt.aio_user);
+  WS_DEBUG_PRINTLN(WS._config.aio_user);
   WS_DEBUG_PRINT("WiFi Network: ");
   WS_DEBUG_PRINTLN(WS._config.network.ssid);
 

@@ -5,15 +5,11 @@ struct networkConfig {
     char pass[64];
 };
 
-struct mqttConfig {
-    char server_url[64];
-    char port[6];
-    char aio_user[64];
-    char aio_pass[30];
-};
-
 struct Config {
     networkConfig network;
-    mqttConfig mqtt;
+    char server_url[64];
+    char aio_user[64];
+    char aio_pass[30];
+    float status_pixel_brightness;
 };
 #endif // CONFIG_H

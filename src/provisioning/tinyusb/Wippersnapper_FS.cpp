@@ -332,14 +332,14 @@ void Wippersnapper_FS::createSecretsFile() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::parseSecrets() {
-
-  // open file for parsing
+  // Attempt to open the secrets.json file for reading
   File32 secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
     fsHalt();
   }
 
+  // Attempt to deserialize the file's JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
@@ -347,20 +347,19 @@ void Wippersnapper_FS::parseSecrets() {
     fsHalt();
   }
   
-  // Extract config struct from the JSON document
+  // Extract a config struct from the JSON document
    WS._config =  doc.as<Config>();
+
+  // Close secrets.json file
+  secretsFile.close();
 
   // Optionally set the MQTT broker url (used to switch btween prod. and
   // staging)
+  // TODO: this needs to be changed
   WS._mqttBrokerURL = doc["io_url"];
 
-  // Get (optional) setting for the status pixel brightness
-  float status_pixel_brightness = doc["status_pixel_brightness"]; // default is "0.2"
-  // Note: ArduinoJSON's default value on failure to find is 0.0
-  setStatusLEDBrightness(status_pixel_brightness);
-
-  // close the tempFile
-  secretsFile.close();
+  // Set the status pixel brightness
+  setStatusLEDBrightness(WS._config.status_pixel_brightness);
 }
 
 /**************************************************************************/
