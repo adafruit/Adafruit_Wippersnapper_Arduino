@@ -121,9 +121,6 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
 
-  // Optionally set the Adafruit.io URL
-  WS._mqttBrokerURL = doc["io_url"];
-
   // Get (optional) setting for the status pixel brightness
   float status_pixel_brightness = doc["status_pixel_brightness"];
   // Note: ArduinoJSON's default value on failure to find is 0.0

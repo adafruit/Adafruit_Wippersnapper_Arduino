@@ -317,8 +317,6 @@ public:
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   Config _config; /*!< Pointer to Config object */
-
-  const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
   uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
 
   // AIO credentials

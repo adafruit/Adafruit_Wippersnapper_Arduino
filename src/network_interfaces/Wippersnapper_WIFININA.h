@@ -59,7 +59,6 @@ public:
 
     _wifi = &SPIWIFI;
     _mqtt_client = new WiFiSSLClient;
-    WS._mqttBrokerURL = "io.adafruit.com";
   }
 
   /**************************************************************************/
@@ -194,7 +193,7 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
   }
 
@@ -228,7 +227,6 @@ public:
 protected:
   const char *_ssid;          /*!< Network SSID. */
   const char *_pass;          /*!< Network password. */
-  const char *_mqttBrokerURL; /*!< MQTT broker URL. */
 
   WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the ublox. */

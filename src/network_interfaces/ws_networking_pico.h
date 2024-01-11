@@ -145,15 +145,15 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (WS._mqttBrokerURL == nullptr) {
-      WS._mqttBrokerURL = "io.adafruit.com";
+    // Set CA cert depending on the server we're connecting to
+    if (WS._config.aio_url= nullptr) {
       _mqtt_client->setCACert(_aio_root_ca_prod);
     } else {
       _mqtt_client->setCACert(_aio_root_ca_staging);
     }
 
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
+        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._mqtt_port,
                                  clientID, WS._username, WS._key);
   }
 
@@ -187,7 +187,6 @@ public:
 protected:
   const char *_ssid;              ///< WiFi SSID
   const char *_pass;              ///< WiFi password
-  const char *_mqttBrokerURL;     ///< MQTT broker URL
   WiFiClientSecure *_mqtt_client; ///< Pointer to a secure MQTT client object
 
   const char *_aio_root_ca_staging =

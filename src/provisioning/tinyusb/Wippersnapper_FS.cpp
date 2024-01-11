@@ -353,11 +353,6 @@ void Wippersnapper_FS::parseSecrets() {
   // Close secrets.json file
   secretsFile.close();
 
-  // Optionally set the MQTT broker url (used to switch btween prod. and
-  // staging)
-  // TODO: this needs to be changed
-  WS._mqttBrokerURL = doc["io_url"];
-
   // Set the status pixel brightness
   setStatusLEDBrightness(WS._config.status_pixel_brightness);
 }
