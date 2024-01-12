@@ -79,8 +79,8 @@ public:
   */
   /****************************************************************************/
   void set_user_key() {
-    WS._config.aio_user = _username;
-    WS._config.aio_key = _key;
+    strlcpy(WS._config.aio_user, _username, sizeof(WS._config.aio_user));
+    strlcpy(WS._config.aio_key, _key, sizeof(WS._config.aio_key));
   }
 
   /**********************************************************/
