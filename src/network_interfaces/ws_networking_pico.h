@@ -146,7 +146,8 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     // Set CA cert depending on the server we're connecting to
-    if (WS._config.aio_url= nullptr) {
+    // compare WS._config.aio_url to "io.adafruit.com"
+    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0) {
       _mqtt_client->setCACert(_aio_root_ca_prod);
     } else {
       _mqtt_client->setCACert(_aio_root_ca_staging);
