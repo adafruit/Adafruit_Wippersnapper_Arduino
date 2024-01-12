@@ -104,8 +104,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    WS._config.network.ssid = _ssid;
-    WS._config.network.pass = _pass;
+    strlcpy(WS._config.network.ssid, _ssid, sizeof(WS._config.network.ssid));
+    strlcpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
   }
 
   /***********************************************************/
