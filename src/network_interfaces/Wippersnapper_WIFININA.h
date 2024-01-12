@@ -93,8 +93,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    WS._config.network.ssid = ssid;
-    WS._config.network.pass = ssidPassword;
+    strlcpy(WS._config.network.ssid, ssid, sizeof(WS._config.network.ssid));
+    strlcpy(WS._config.network.pass, ssidPassword, sizeof(WS._config.network.pass));
   }
 
   /**********************************************************/
@@ -193,8 +193,7 @@ public:
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
     WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS.WS._config.io_port,
-                                 clientID, WS._config.aio_user, WS._config.aio_key);
+        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
