@@ -145,14 +145,22 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
+    u_int16_t port = 8883;
     if (WS._mqttBrokerURL == nullptr) {
       WS._mqttBrokerURL = "io.adafruit.com";
       _mqtt_client->setCACert(_aio_root_ca_prod);
-    } else {
+    } else if (WS._mqttBrokerURL == "io.adafruit.vm"){
+      // Set port to 1883 for non-ssl, or set SSL cert below
+      //port = 1883;
+      _mqtt_client->setCACert(_aio_root_ca_vm);
+    } else if (WS._mqttBrokerURL == "io.adafruit.us") {
       _mqtt_client->setCACert(_aio_root_ca_staging);
+    } else {
+      // Assume non-ssl IP based testing
+      port = 1883;
     }
     // Construct MQTT client
-    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, 8883,
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, port,
                                         clientID, WS._username, WS._key);
   }
 
@@ -246,6 +254,35 @@ protected:
       "7h4SeM6Y8l/7MBRpPCz6l8Y=\n"
       "-----END CERTIFICATE-----\n"; ///< Root certificate for io.adafruit.com
 
+  const char *_aio_root_ca_vm =
+      "-----BEGIN CERTIFICATE-----\n"
+      "MIIEZTCCAs2gAwIBAgIQek/t0uNiCDR9fE8Rm5Np3DANBgkqhkiG9w0BAQsFADCB\n"
+      "lzEeMBwGA1UEChMVbWtjZXJ0IGRldmVsb3BtZW50IENBMTYwNAYDVQQLDC10eWV0\n"
+      "aEBUeWV0aHMtTWFjQm9vay1Qcm8ubG9jYWwgKFR5ZXRoIEd1bmRyeSkxPTA7BgNV\n"
+      "BAMMNG1rY2VydCB0eWV0aEBUeWV0aHMtTWFjQm9vay1Qcm8ubG9jYWwgKFR5ZXRo\n"
+      "IEd1bmRyeSkwHhcNMjMxMjE1MTM1MzQ1WhcNMjYwMzE1MTM1MzQ0WjBhMScwJQYD\n"
+      "VQQKEx5ta2NlcnQgZGV2ZWxvcG1lbnQgY2VydGlmaWNhdGUxNjA0BgNVBAsMLXR5\n"
+      "ZXRoQFR5ZXRocy1NYWNCb29rLVByby5sb2NhbCAoVHlldGggR3VuZHJ5KTCCASIw\n"
+      "DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKppU4wb6XV8Ac1pxj91NDZ+s3Yd\n"
+      "AgSq/RqLZzjamoIAObOuc/tXJaDnqpHboS9+STO0+jg9Mx5Lz9qUBC0jiBHJX2SF\n"
+      "HN4Qea4Vub9KaeK2clRZO6Xmm+Hhcr0jhWDZZTXhyFg6g5/KJ61U5KjQiUr/kY7r\n"
+      "tZPoRDcQvfLS5xX+qznqH6aHH7n0WNsSF6OUzbOxCcueOBpYLVFmf4aoNAfxYUEI\n"
+      "K8gDVYoAszE1yp9ii0fsLZ6IT9Gko6aIZ4ovBstC07yZ9E2tfhHzUJvSbi/vTudm\n"
+      "Q/aQQKT/0zSstjx8nFXrvgqnDbkJ0uwdky7roldEyC4jZHhu/FsMrT2rxkkCAwEA\n"
+      "AaNiMGAwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMBMB8GA1Ud\n"
+      "IwQYMBaAFAG/zRoUGs2SLwCskpRk49ZDuG70MBgGA1UdEQQRMA+CDSouYWRhZnJ1\n"
+      "aXQudm0wDQYJKoZIhvcNAQELBQADggGBAAOroe4O3IqZZ8d+cuXGMnv6LsBAmKHn\n"
+      "JnwxyCi6pmWNaexDZ0KIj9d5MIAA1f48YJUVGX7Y0H9YPNUeqv3pS6JvbWUj59kl\n"
+      "oUj6uAZQgConA6vPJkm/pMTktnBWYYF68gCvTZRhtH7qXuTKL21X1/6l5cTOLijs\n"
+      "mVq/ERZadHiogCxA+5c3QINNbev4xsf/pmw/ap3vfAnsyHneWKKCbi63jtGhbn4g\n"
+      "SCoJsvH35i4hWXr9ddbW3Kfa01JhwsONryUtRN4SGi58lIRT07e9qciLAqxH+7Ka\n"
+      "EE3eNOX61QOxbVMfJAeMPEMuG8iuqEtalXb+Dheosapac3irPpHIt47leLsVL5Le\n"
+      "TeTUPhirSlJj35C6Xi2OfI5jCAvM62HV7AYjyimQttunLr24qwU4LqgM3i9ZUaPj\n"
+      "ovBjEvjjy1vp0wKeS4Q8nUtZvwc5LgWW4ZH7KSTHS/adFU6qWOyPHwxxTjdSxhMB\n"
+      "Sl3erUxbD7UgyDQQonzUBDI6I/lBnY58eQ==\n"
+      "-----END CERTIFICATE-----\n";
+
+
   /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
@@ -255,7 +292,7 @@ protected:
 
     if (WiFi.status() == WL_CONNECTED)
       return;
-
+    
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {

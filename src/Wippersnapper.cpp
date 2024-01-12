@@ -2420,6 +2420,12 @@ void Wippersnapper::runNetFSM() {
       if (WS._ui_helper->getLoadingState())
         WS._ui_helper->set_label_status("Connecting to IO...");
 #endif
+      WS_DEBUG_PRINT("IO Address: ");
+      WS_DEBUG_PRINT(WS._mqttBrokerURL);
+      WS_DEBUG_PRINT(":");
+      WS_DEBUG_PRINTLN(WS._mqtt_port);
+      WS_PRINTER.flush();
+
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;

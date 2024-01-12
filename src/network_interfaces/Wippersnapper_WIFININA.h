@@ -59,7 +59,7 @@ public:
 
     _wifi = &SPIWIFI;
     _mqtt_client = new WiFiSSLClient;
-    WS._mqttBrokerURL = "io.adafruit.com";
+    // WS._mqttBrokerURL = "io.adafruit.com";
   }
 
   /**************************************************************************/
@@ -193,9 +193,15 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
-                                 clientID, WS._username, WS._key);
+    u_int16_t port = 8883;
+    if (WS._mqttBrokerURL == nullptr) {
+      WS._mqttBrokerURL = "io.adafruit.com";
+    } else if (WS._mqttBrokerURL == "io.adafruit.vm"){
+      port = 1883;
+    }
+    // Construct MQTT client
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, port,
+                                        clientID, WS._username, WS._key);
   }
 
   /********************************************************/
