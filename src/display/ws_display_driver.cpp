@@ -28,7 +28,9 @@ ws_display_driver::ws_display_driver(displayConfig config) {
   if (strcmp(config.driver, "ST7789") == 0) {
     WS_DEBUG_PRINTLN("Creating ST7789 driver");
     // create a new ST7789 driver
-    _tft_st7789 = new Adafruit_ST7789((uint8_t)config.spiConfig.pinCs, (uint8_t)config.spiConfig.pinDc, (uint8_t)config.spiConfig.pinRst);
+    _tft_st7789 = new Adafruit_ST7789((uint8_t)config.spiConfig.pinCs,
+                                      (uint8_t)config.spiConfig.pinDc,
+                                      (uint8_t)config.spiConfig.pinRst);
   } else {
     Serial.println("ERROR: Display driver type not implemented!");
   }
