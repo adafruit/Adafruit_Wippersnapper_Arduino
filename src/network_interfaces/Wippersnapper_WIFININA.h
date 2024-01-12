@@ -224,8 +224,10 @@ public:
   const char *connectionType() { return "AIRLIFT"; }
 
 protected:
-  const char *_ssid;          /*!< Network SSID. */
-  const char *_pass;          /*!< Network password. */
+  const char *_ssid;         /*!< Network SSID. */
+  const char *_pass;         /*!< Network password. */
+  const char* _username;     /*!< Adafruit IO username. */
+  const char* _key;          /*!< Adafruit IO key. */
 
   WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the ublox. */
