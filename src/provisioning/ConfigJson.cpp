@@ -11,7 +11,7 @@
  *
  * BSD license, all text here must be included in any redistribution.
  *
-*/
+ */
 #include "ConfigJson.h"
 
 // Converts a network configuration structure to a JSON variant
@@ -39,7 +39,8 @@ void convertFromJson(JsonVariantConst src, secretsConfig &dst) {
   // Parse network credentials from secrets
   dst.network = src["network_type_wifi"];
   // Parse IO credentials from secrets
-  strlcpy(dst.aio_user, src["io_username"] | "YOUR_IO_USERNAME_HERE", sizeof(dst.aio_user));
+  strlcpy(dst.aio_user, src["io_username"] | "YOUR_IO_USERNAME_HERE",
+          sizeof(dst.aio_user));
   strlcpy(dst.aio_key, src["io_key"] | "YOUR_IO_KEY_HERE", sizeof(dst.aio_key));
   strlcpy(dst.aio_url, src["io_url"] | "io.adafruit.com", sizeof(dst.aio_url));
   // Parse status pixel brightness from secrets

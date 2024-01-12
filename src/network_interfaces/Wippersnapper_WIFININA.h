@@ -94,7 +94,8 @@ public:
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     strlcpy(WS._config.network.ssid, ssid, sizeof(WS._config.network.ssid));
-    strlcpy(WS._config.network.pass, ssidPassword, sizeof(WS._config.network.pass));
+    strlcpy(WS._config.network.pass, ssidPassword,
+            sizeof(WS._config.network.pass));
   }
 
   /**********************************************************/
@@ -192,8 +193,9 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
+    WS._mqtt = new Adafruit_MQTT_Client(
+        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
+        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
@@ -224,10 +226,10 @@ public:
   const char *connectionType() { return "AIRLIFT"; }
 
 protected:
-  const char *_ssid;         /*!< Network SSID. */
-  const char *_pass;         /*!< Network password. */
-  const char* _username;     /*!< Adafruit IO username. */
-  const char* _key;          /*!< Adafruit IO key. */
+  const char *_ssid;     /*!< Network SSID. */
+  const char *_pass;     /*!< Network password. */
+  const char *_username; /*!< Adafruit IO username. */
+  const char *_key;      /*!< Adafruit IO key. */
 
   WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the ublox. */

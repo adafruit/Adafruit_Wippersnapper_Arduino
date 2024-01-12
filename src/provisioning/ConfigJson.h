@@ -11,13 +11,13 @@
  *
  * BSD license, all text here must be included in any redistribution.
  *
-*/
+ */
 #ifndef CONFIGJSON_H
 #define CONFIGJSON_H
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 1
-#include <ArduinoJson.h>
 #include "Config.h"
+#include <ArduinoJson.h>
 
 // Convert secretsConfig from/to JSON
 void convertToJson(const secretsConfig &src, JsonVariant dst);

@@ -152,7 +152,9 @@ public:
     }
 
     // Construct MQTT client
-    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, 8883, clientID, WS._config.aio_user, WS._config.aio_key);
+    WS._mqtt = new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, 8883,
+                                        clientID, WS._config.aio_user,
+                                        WS._config.aio_key);
   }
 
   /********************************************************/

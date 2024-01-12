@@ -153,9 +153,9 @@ public:
       _mqtt_client->setCACert(_aio_root_ca_staging);
     }
 
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._config.aio_url, WS._config.io_port,
-                                 clientID, WS._config.aio_user, WS._config.aio_key);
+    WS._mqtt = new Adafruit_MQTT_Client(
+        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
+        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/

@@ -11,20 +11,20 @@
  *
  * BSD license, all text here must be included in any redistribution.
  *
-*/
+ */
 #ifndef CONFIG_H
 #define CONFIG_H
 struct networkConfig {
-    char ssid[32];
-    char pass[64];
+  char ssid[32];
+  char pass[64];
 };
 
 struct secretsConfig {
-    networkConfig network;
-    char aio_url[64];
-    char aio_user[31];
-    char aio_key[33];
-    uint16_t io_port;
-    float status_pixel_brightness;
+  networkConfig network;
+  char aio_url[64];
+  char aio_user[31];
+  char aio_key[33];
+  uint16_t io_port;
+  float status_pixel_brightness;
 };
 #endif // CONFIG_H

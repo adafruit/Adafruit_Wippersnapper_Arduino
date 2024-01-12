@@ -1746,11 +1746,12 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
 bool Wippersnapper::generateWSErrorTopics() {
 // dynamically allocate memory for err topic
 #ifdef USE_PSRAM
-  WS._err_topic = (char *)ps_malloc(
-      sizeof(char) * (strlen(WS._config.aio_user) + strlen(TOPIC_IO_ERRORS) + 1));
+  WS._err_topic =
+      (char *)ps_malloc(sizeof(char) * (strlen(WS._config.aio_user) +
+                                        strlen(TOPIC_IO_ERRORS) + 1));
 #else
-  WS._err_topic = (char *)malloc(
-      sizeof(char) * (strlen(WS._config.aio_user) + strlen(TOPIC_IO_ERRORS) + 1));
+  WS._err_topic = (char *)malloc(sizeof(char) * (strlen(WS._config.aio_user) +
+                                                 strlen(TOPIC_IO_ERRORS) + 1));
 #endif
 
   if (WS._err_topic) { // build error topic
@@ -1768,11 +1769,13 @@ bool Wippersnapper::generateWSErrorTopics() {
 
 // dynamically allocate memory for throttle topic
 #ifdef USE_PSRAM
-  WS._throttle_topic = (char *)ps_malloc(
-      sizeof(char) * (strlen(WS._config.aio_user) + strlen(TOPIC_IO_THROTTLE) + 1));
+  WS._throttle_topic =
+      (char *)ps_malloc(sizeof(char) * (strlen(WS._config.aio_user) +
+                                        strlen(TOPIC_IO_THROTTLE) + 1));
 #else
-  WS._throttle_topic = (char *)malloc(
-      sizeof(char) * (strlen(WS._config.aio_user) + strlen(TOPIC_IO_THROTTLE) + 1));
+  WS._throttle_topic =
+      (char *)malloc(sizeof(char) * (strlen(WS._config.aio_user) +
+                                     strlen(TOPIC_IO_THROTTLE) + 1));
 #endif
 
   if (WS._throttle_topic) { // build throttle topic
@@ -1846,9 +1849,9 @@ bool Wippersnapper::generateWSTopics() {
       sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr") +
       strlen(TOPIC_INFO) + strlen("status") + 1);
 #else
-  WS._topic_description =
-      (char *)malloc(sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr") +
-                     strlen(TOPIC_INFO) + strlen("status") + 1);
+  WS._topic_description = (char *)malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr") +
+      strlen(TOPIC_INFO) + strlen("status") + 1);
 #endif
   if (WS._topic_description != NULL) {
     strcpy(WS._topic_description, WS._config.aio_user);
@@ -1867,10 +1870,10 @@ bool Wippersnapper::generateWSTopics() {
       strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status/") +
       strlen("broker") + 1);
 #else
-  WS._topic_description_status =
-      (char *)malloc(sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status/") + strlen("broker") + 1);
+  WS._topic_description_status = (char *)malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status/") +
+      strlen("broker") + 1);
 #endif
   if (WS._topic_description_status != NULL) {
     strcpy(WS._topic_description_status, WS._config.aio_user);
@@ -1897,10 +1900,10 @@ bool Wippersnapper::generateWSTopics() {
       strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status") +
       strlen("/device/complete") + 1);
 #else
-  WS._topic_description_status_complete =
-      (char *)malloc(sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_INFO) +
-                     strlen("status") + strlen("/device/complete") + 1);
+  WS._topic_description_status_complete = (char *)malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_INFO) + strlen("status") +
+      strlen("/device/complete") + 1);
 #endif
   if (WS._topic_description_status_complete != NULL) {
     strcpy(WS._topic_description_status_complete, WS._config.aio_user);
@@ -1942,10 +1945,10 @@ bool Wippersnapper::generateWSTopics() {
       strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
       strlen("device/pinConfigComplete") + 1);
 #else
-  WS._topic_device_pin_config_complete =
-      (char *)malloc(sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr/") +
-                     strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
-                     strlen("device/pinConfigComplete") + 1);
+  WS._topic_device_pin_config_complete = (char *)malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/wprsnpr/") +
+      strlen(_device_uid) + strlen(TOPIC_SIGNALS) +
+      strlen("device/pinConfigComplete") + 1);
 #endif
   if (WS._topic_device_pin_config_complete != NULL) {
     strcpy(WS._topic_device_pin_config_complete, WS._config.aio_user);
@@ -1989,14 +1992,14 @@ bool Wippersnapper::generateWSTopics() {
 // Create device-to-broker i2c signal topic
 #ifdef USE_PSRAM
   WS._topic_signal_i2c_brkr = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
-      strlen(TOPIC_I2C) + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("broker") + strlen(TOPIC_I2C) + 1);
 #else
   WS._topic_signal_i2c_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
-      strlen(TOPIC_I2C) + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("broker") + strlen(TOPIC_I2C) + 1);
 #endif
   if (WS._topic_signal_i2c_brkr != NULL) {
     strcpy(WS._topic_signal_i2c_brkr, WS._config.aio_user);
@@ -2019,14 +2022,14 @@ bool Wippersnapper::generateWSTopics() {
 // Create broker-to-device i2c signal topic
 #ifdef USE_PSRAM
   WS._topic_signal_i2c_device = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
-      strlen(TOPIC_I2C) + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device") + strlen(TOPIC_I2C) + 1);
 #else
   WS._topic_signal_i2c_device = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
-      strlen(TOPIC_I2C) + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device") + strlen(TOPIC_I2C) + 1);
 #endif
   if (WS._topic_signal_i2c_device != NULL) {
     strcpy(WS._topic_signal_i2c_device, WS._config.aio_user);
@@ -2043,14 +2046,14 @@ bool Wippersnapper::generateWSTopics() {
 // Create device-to-broker ds18x20 topic
 #ifdef USE_PSRAM
   WS._topic_signal_ds18_brkr = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
-      strlen("ds18x20") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("broker/") + strlen("ds18x20") + 1);
 #else
   WS._topic_signal_ds18_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker/") +
-      strlen("ds18x20") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("broker/") + strlen("ds18x20") + 1);
 #endif
   if (WS._topic_signal_ds18_brkr != NULL) {
     strcpy(WS._topic_signal_ds18_brkr, WS._config.aio_user);
@@ -2072,14 +2075,14 @@ bool Wippersnapper::generateWSTopics() {
 // Create broker-to-device ds18x20 topic
 #ifdef USE_PSRAM
   WS._topic_signal_ds18_device = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
-      strlen("ds18x20") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device/") + strlen("ds18x20") + 1);
 #else
   WS._topic_signal_ds18_device = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device/") +
-      strlen("ds18x20") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + +strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device/") + strlen("ds18x20") + 1);
 #endif
   if (WS._topic_signal_ds18_device != NULL) {
     strcpy(WS._topic_signal_ds18_device, WS._config.aio_user);
@@ -2095,12 +2098,12 @@ bool Wippersnapper::generateWSTopics() {
 // Create device-to-broker servo signal topic
 #ifdef USE_PSRAM
   WS._topic_signal_servo_brkr = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/servo") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/broker/servo") + 1);
 #else
   WS._topic_signal_servo_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/servo") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/broker/servo") + 1);
 #endif
   if (WS._topic_signal_servo_brkr != NULL) {
     strcpy(WS._topic_signal_servo_brkr, WS._config.aio_user);
@@ -2122,12 +2125,12 @@ bool Wippersnapper::generateWSTopics() {
 // Create broker-to-device servo signal topic
 #ifdef USE_PSRAM
   WS._topic_signal_servo_device = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/servo") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/device/servo") + 1);
 #else
   WS._topic_signal_servo_device = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/servo") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/device/servo") + 1);
 #endif
   if (WS._topic_signal_servo_device != NULL) {
     strcpy(WS._topic_signal_servo_device, WS._config.aio_user);
@@ -2143,12 +2146,12 @@ bool Wippersnapper::generateWSTopics() {
 // Topic for pwm messages from broker->device
 #ifdef USE_PSRAM
   WS._topic_signal_pwm_brkr = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/pwm") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/broker/pwm") + 1);
 #else
   WS._topic_signal_pwm_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/pwm") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/broker/pwm") + 1);
 #endif
   // Create device-to-broker pwm signal topic
   if (WS._topic_signal_pwm_brkr != NULL) {
@@ -2171,12 +2174,12 @@ bool Wippersnapper::generateWSTopics() {
 // Topic for pwm messages from device->broker
 #ifdef USE_PSRAM
   WS._topic_signal_pwm_device = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/pwm") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/device/pwm") + 1);
 #else
   WS._topic_signal_pwm_device = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/pwm") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/device/pwm") + 1);
 #endif
   if (WS._topic_signal_pwm_device != NULL) {
     strcpy(WS._topic_signal_pwm_device, WS._config.aio_user);
@@ -2192,12 +2195,12 @@ bool Wippersnapper::generateWSTopics() {
 // Topic for pixel messages from broker->device
 #ifdef USE_PSRAM
   WS._topic_signal_pixels_brkr = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/pixels") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/broker/pixels") + 1);
 #else
   WS._topic_signal_pixels_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/broker/pixels") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/broker/pixels") + 1);
 #endif
   if (WS._topic_signal_pixels_brkr != NULL) {
     strcpy(WS._topic_signal_pixels_brkr, WS._config.aio_user);
@@ -2218,12 +2221,12 @@ bool Wippersnapper::generateWSTopics() {
 // Topic for pixel messages from device->broker
 #ifdef USE_PSRAM
   WS._topic_signal_pixels_device = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/pixels") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/device/pixels") + 1);
 #else
   WS._topic_signal_pixels_device = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-      strlen("/wprsnpr/signals/device/pixels") + 1);
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/signals/device/pixels") + 1);
 #endif
   if (WS._topic_signal_pixels_device != NULL) {
     strcpy(WS._topic_signal_pixels_device, WS._config.aio_user);
@@ -2238,9 +2241,9 @@ bool Wippersnapper::generateWSTopics() {
   // Create device-to-broker UART topic
 
   // Calculate size for dynamic MQTT topic
-  size_t topicLen = strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
-                    strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-                    strlen("broker/uart") + 1;
+  size_t topicLen = strlen(WS._config.aio_user) + strlen("/") +
+                    strlen(_device_uid) + strlen("/wprsnpr/") +
+                    strlen(TOPIC_SIGNALS) + strlen("broker/uart") + 1;
 
 // Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
