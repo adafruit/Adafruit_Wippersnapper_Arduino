@@ -66,16 +66,22 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
 
   // Extract a config struct from the JSON document
-   WS._config =  doc.as<secretsConfig>();
+  WS._config = doc.as<secretsConfig>();
 
   // Validate the config struct is not filled with default values
-  if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 || strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
-    WS_DEBUG_PRINTLN("ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change io_username and io_key to match your Adafruit IO credentials!\n");
+  if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
+      strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
+        "io_username and io_key to match your Adafruit IO credentials!\n");
     fsHalt();
   }
 
-  if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 || strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    WS_DEBUG_PRINTLN("ERROR: Invalid network credentials in secrets.json! TO FIX: Please change network_ssid and network_password to match your Adafruit IO credentials!\n");
+  if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
+      strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
+    WS_DEBUG_PRINTLN("ERROR: Invalid network credentials in secrets.json! TO "
+                     "FIX: Please change network_ssid and network_password to "
+                     "match your Adafruit IO credentials!\n");
     fsHalt();
   }
 
