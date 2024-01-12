@@ -27,4 +27,20 @@ struct secretsConfig {
   int io_port;
   float status_pixel_brightness;
 };
+
+struct displayConfigSPI {
+    int pinCs;
+    int pinDc;
+    int pinMosi;
+    int pinSck;
+    int pinRst;
+};
+
+struct displayConfig {
+    char driver[10];
+    int width;
+    int height;
+    int rotation;
+    displayConfigSPI spiConfig;
+};
 #endif // CONFIG_H

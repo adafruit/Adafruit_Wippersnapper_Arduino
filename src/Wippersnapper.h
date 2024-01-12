@@ -39,6 +39,7 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
+#include "provisioning/ConfigJson.h"
 
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -69,8 +70,6 @@
 #if defined(USE_LITTLEFS)
 #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
-
-#include "provisioning/ConfigJson.h"
 
 #define WS_VERSION                                                             \
   "1.0.0-beta.75" ///< WipperSnapper app. version (semver-formatted)

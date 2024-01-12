@@ -19,7 +19,10 @@
 #include "Config.h"
 #include <ArduinoJson.h>
 
-// Convert secretsConfig from/to JSON
+// Converters for secrets configuration
 void convertToJson(const secretsConfig &src, JsonVariant dst);
 void convertFromJson(JsonVariantConst src, secretsConfig &dst);
+// Converters for display configuration
+void convertToJson(const displayConfig &src, JsonVariant dst);
+void convertFromJson(JsonVariantConst src, displayConfig &dst);
 #endif // CONFIGJSON_H

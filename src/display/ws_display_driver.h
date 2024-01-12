@@ -16,25 +16,10 @@
 #define WIPPERSNAPPER_DISPLAY_H
 
 #include "Wippersnapper.h"
-
+#include "provisioning/Config.h"
 #include <Adafruit_LvGL_Glue.h> // Always include this BEFORE lvgl.h!
 #include <Adafruit_ST7789.h>
 #include <lvgl.h>
-
-/** Display driver configuration */
-struct displayConfig {
-  char driver[10]; ///< Display driver type
-  int width;       ///< Display width
-  int height;      ///< Display height
-  int rotation;    ///< Display rotation
-  bool isSPI;      ///< Is the display SPI?
-  bool isI2C;      ///< Is the display I2C?
-  uint8_t pinCS;   ///< Display CS pin
-  uint8_t pinDC;   ///< Display DC pin
-  uint8_t pinMOSI; ///< Display MOSI pin
-  uint8_t pinSCK;  ///< Display SCK pin
-  uint8_t pinRST;  ///< Display RST pin
-};
 
 LV_FONT_DECLARE(errorTriangle); ///< Error triangle symbol/font
 

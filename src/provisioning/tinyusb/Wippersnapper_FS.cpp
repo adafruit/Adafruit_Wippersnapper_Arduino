@@ -414,38 +414,44 @@ void Wippersnapper_FS::fsHalt() {
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 void Wippersnapper_FS::createDisplayConfig() {
-  JsonDocument doc;
-
-#ifdef ARDUINO_FUNHOUSE_ESP32S2
-  doc["driver"] = "ST7789";
-  doc["width"] = 240;
-  doc["height"] = 240;
-  doc["rotation"] = 0;
-  JsonObject spi = doc["spi"].to<JsonObject>();
-  spi["pinCs"] = 40;
-  spi["pinDc"] = 39;
-  spi["pinMosi"] = 0;
-  spi["pinSck"] = 0;
-  spi["pinRst"] = 41;
-  doc.shrinkToFit();
-#endif
-
-  // Write the file out
+  // Open file for writing
   File32 displayFile = wipperFatFs.open("/display_config.json", FILE_WRITE);
+
+  // Create a default displayConfig structure
+  displayConfig displayConfig;
+  strcpy(displayConfig.driver, "ST7789");
+  displayConfig.width = 240;
+  displayConfig.height = 240;
+  displayConfig.rotation = 0;
+  displayConfig.spiConfig.pinCs = 40;
+  displayConfig.spiConfig.pinDc = 39;
+  displayConfig.spiConfig.pinMosi = 0;
+  displayConfig.spiConfig.pinSck = 0;
+  displayConfig.spiConfig.pinRst = 41;
+
+  // Create and fill JSON document from displayConfig
+  JsonDocument doc;
+  if (!doc.set(displayConfig)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to set displayConfig, no space in arduinoJSON document!");
+    fsHalt();
+  }
+  // Write the file out to the filesystem
   serializeJsonPretty(doc, displayFile);
   displayFile.flush();
   displayFile.close();
-  delay(2500);
+  delay(2500); // give FS some time to write the file
 }
 
-void Wippersnapper_FS::parseDisplayConfig(displayConfig &displayFile) {
+void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
+  // Check if display_config.json file exists, if not, generate it
   if (!wipperFatFs.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
-    createDisplayConfig();
+    createDisplayConfig(); // generate a default display_config.json for FunHouse
 #endif
   }
 
+  // Attempt to open file for JSON parsing
   File32 file = wipperFatFs.open("/display_config.json", FILE_READ);
   if (!file) {
     WS_DEBUG_PRINTLN(
@@ -453,6 +459,7 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &displayFile) {
     fsHalt();
   }
 
+  // Attempt to deserialize the file's json document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file);
   if (error) {
@@ -460,29 +467,10 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &displayFile) {
     Serial.println(error.c_str());
     fsHalt();
   }
-  file.close(); // close .json file
-
-  // Copy all fields from the JSON array to the displayFile struct
-  strcpy(displayFile.driver, doc["driver"]);
-  displayFile.height = doc["height"];
-  displayFile.width = doc["width"];
-  displayFile.rotation = doc["rotation"];
-  JsonObject spi = doc["spi"];
-  if (spi != nullptr) {
-    displayFile.isSPI = true;             // indicate that we're using SPI bus
-    displayFile.pinCS = spi["pinCs"];     // 40
-    displayFile.pinDC = spi["pinDc"];     // 39
-    displayFile.pinMOSI = spi["pinMosi"]; // 0
-    displayFile.pinSCK = spi["pinSck"];   // 0
-    displayFile.pinRST = spi["pinRst"];   // 41
-  } else if (doc["i2c"] != nullptr) {
-    WS_DEBUG_PRINTLN("I2C display drivers are not implemented yet!");
-    fsHalt();
-  } else {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Display device lacks a hardware interface, failing out...");
-    fsHalt();
-  }
+  // Close the file, we're done with it
+  file.close();
+  // Extract a displayConfig struct from the JSON document
+  dispCfg = doc.as<displayConfig>();
 }
 #endif // ARDUINO_FUNHOUSE_ESP32S2
 

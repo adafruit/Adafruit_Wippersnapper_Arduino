@@ -26,13 +26,14 @@
 ws_display_driver::ws_display_driver(displayConfig config) {
   // dynamically create the display driver from the configuration file
   if (strcmp(config.driver, "ST7789") == 0) {
-    Serial.println("Configuring the Adafruit_ST7789 driver");
-    _tft_st7789 =
-        new Adafruit_ST7789(config.pinCS, config.pinDC, config.pinRST);
+    WS_DEBUG_PRINTLN("Creating ST7789 driver");
+    // create a new ST7789 driver
+    _tft_st7789 = new Adafruit_ST7789((uint8_t)config.spiConfig.pinCs, (uint8_t)config.spiConfig.pinDc, (uint8_t)config.spiConfig.pinRst);
   } else {
     Serial.println("ERROR: Display driver type not implemented!");
   }
 
+  // set display resolution and rotation
   setResolution(config.width, config.height);
   setRotation(config.rotation);
 }

@@ -49,6 +49,13 @@ WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
 */
 /**************************************************************************/
 void WipperSnapper_LittleFS::parseSecrets() {
+  // Check if `secrets.json` file exists on FS
+  if (!LittleFS.exists("/secrets.json")) {
+    WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem - did you "
+                     "upload credentials?");
+    fsHalt();
+  }
+
   // Attempt to open secrets.json file for reading
   File secretsFile = LittleFS.open("/secrets.json", "r");
   if (!secretsFile) {
