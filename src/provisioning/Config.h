@@ -1,5 +1,5 @@
 /*!
- * @file Config.h
+ * @file secretsConfig.h
  *
  * Contains user-defined structures for WipperSnapper JSON configuration files.
  *
@@ -19,7 +19,7 @@ struct networkConfig {
     char pass[64];
 };
 
-struct Config {
+struct secretsConfig {
     networkConfig network;
     char aio_url[64];
     char aio_user[31];

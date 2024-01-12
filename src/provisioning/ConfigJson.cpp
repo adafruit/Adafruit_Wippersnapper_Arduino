@@ -26,16 +26,16 @@ void convertFromJson(JsonVariantConst src, networkConfig &dst) {
   strlcpy(dst.pass, src["network_password"] | "testvar", sizeof(dst.pass));
 }
 
-// Converts a Config structure to a JSON variant
-void convertToJson(const Config &src, JsonVariant dst) {
+// Converts a secretsConfig structure to a JSON variant
+void convertToJson(const secretsConfig &src, JsonVariant dst) {
   dst["io_username"] = src.aio_user;
   dst["io_key"] = src.aio_key;
   dst["network_type_wifi"] = src.network;
   dst["status_pixel_brightness"] = src.status_pixel_brightness;
 }
 
-// Extracts a JSON file to a Config structure
-void convertFromJson(JsonVariantConst src, Config &dst) {
+// Extracts a JSON file to a secretsConfig structure
+void convertFromJson(JsonVariantConst src, secretsConfig &dst) {
   // Parse network credentials from secrets
   dst.network = src["network_type_wifi"];
   // Parse IO credentials from secrets

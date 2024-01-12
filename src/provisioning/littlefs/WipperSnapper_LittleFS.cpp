@@ -66,7 +66,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
 
   // Extract a config struct from the JSON document
-   WS._config =  doc.as<Config>();
+   WS._config =  doc.as<secretsConfig>();
 
   // Validate the config struct is not filled with default values
   if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 || strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {

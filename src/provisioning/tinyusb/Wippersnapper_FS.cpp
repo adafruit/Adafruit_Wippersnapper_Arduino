@@ -296,15 +296,15 @@ void Wippersnapper_FS::createSecretsFile() {
   // Open file for writing
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
   
-  // Create a default Config structure
-  Config secretsConfig;
+  // Create a default secretsConfig structure
+  secretsConfig secretsConfig;
   strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
   strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
   strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
   strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
   secretsConfig.status_pixel_brightness = 0.2;
 
-  // Create and fill JSON document from Config
+  // Create and fill JSON document from secretsConfig
   JsonDocument doc;
   doc.set(secretsConfig);
 
@@ -351,7 +351,7 @@ void Wippersnapper_FS::parseSecrets() {
   }
 
   // Extract a config struct from the JSON document
-   WS._config =  doc.as<Config>();
+   WS._config =  doc.as<secretsConfig>();
 
   // Validate the config struct is not filled with default values
   if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 || strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {

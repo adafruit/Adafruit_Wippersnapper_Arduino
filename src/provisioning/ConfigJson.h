@@ -1,7 +1,7 @@
 /*!
  * @file ConfigJson.h
  *
- * Wippersnapper JSON Config File Converters
+ * Wippersnapper JSON secretsConfig File Converters
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -19,7 +19,7 @@
 #include <ArduinoJson.h>
 #include "Config.h"
 
-// Convert Config from/to JSON
-void convertToJson(const Config &src, JsonVariant dst);
-void convertFromJson(JsonVariantConst src, Config &dst);
+// Convert secretsConfig from/to JSON
+void convertToJson(const secretsConfig &src, JsonVariant dst);
+void convertFromJson(JsonVariantConst src, secretsConfig &dst);
 #endif // CONFIGJSON_H
