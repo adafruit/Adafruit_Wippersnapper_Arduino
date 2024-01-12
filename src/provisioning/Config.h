@@ -29,18 +29,18 @@ struct secretsConfig {
 };
 
 struct displayConfigSPI {
-    int pinCs;
-    int pinDc;
-    int pinMosi;
-    int pinSck;
-    int pinRst;
+  int pinCs;
+  int pinDc;
+  int pinMosi;
+  int pinSck;
+  int pinRst;
 };
 
 struct displayConfig {
-    char driver[10];
-    int width;
-    int height;
-    int rotation;
-    displayConfigSPI spiConfig;
+  char driver[10];
+  int width;
+  int height;
+  int rotation;
+  displayConfigSPI spiConfig;
 };
 #endif // CONFIG_H
