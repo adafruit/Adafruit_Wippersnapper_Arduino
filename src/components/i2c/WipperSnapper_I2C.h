@@ -62,6 +62,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4040.h"
 #include "drivers/WipperSnapper_I2C_Driver_VEML7700.h"
 #include "drivers/WipperSnapper_I2C_Driver_VL53L0X.h"
+#include "drivers/WipperSnapper_I2C_Driver_VL6180X.h"
 
 #define I2C_TIMEOUT_MS 50 ///< Default I2C timeout, in milliseconds.
 
@@ -150,6 +151,7 @@ private:
   WipperSnapper_I2C_Driver_LPS3XHW *_lps3xhw = nullptr;
   WipperSnapper_I2C_Driver_STEMMA_Soil_Sensor *_ss = nullptr;
   WipperSnapper_I2C_Driver_VL53L0X *_vl53l0x = nullptr;
+  WipperSnapper_I2C_Driver_VL6180X *_vl6180x = nullptr;
   WipperSnapper_I2C_Driver_MAX17048 *_max17048 = nullptr;
   WipperSnapper_I2C_Driver_ADT7410 *_adt7410 = nullptr;
 };
