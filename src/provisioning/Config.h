@@ -24,7 +24,7 @@ struct secretsConfig {
   char aio_url[64];
   char aio_user[31];
   char aio_key[33];
-  uint16_t io_port;
+  int io_port;
   float status_pixel_brightness;
 };
 #endif // CONFIG_H
