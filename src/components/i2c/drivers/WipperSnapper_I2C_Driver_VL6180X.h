@@ -96,13 +96,10 @@ public:
       } else if (status == VL6180X_ERROR_RANGEOFLOW) {
         WS_DEBUG_PRINTLN("VL6180X: Range reading overflow");
       }
-      return false;
+      proximityEvent->data[0] = NAN;
+    } else {
+      proximityEvent->data[0] = range;
     }
-
-    if (range <= 0 || range > 150) {
-      return false;
-    }
-    proximityEvent->data[0] = range;
     return true;
   }
 
@@ -117,12 +114,13 @@ public:
   /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // TODO: Update when I2C Sensor Properties allow setting custom Gain, etc.
-    float notRealLux = _vl6180x->readLux(VL6180X_ALS_GAIN_5);
     // Gain_5 results in max 41.6klux with cover glass - See 2.10.3 in datasheet
-    if (notRealLux < 0 || notRealLux > 41600) {
-      return false;
+    float notRealLux = _vl6180x->readLux(VL6180X_ALS_GAIN_5);
+    if (notRealLux < 0 || notRealLux > 41700) {
+      lightEvent->light = NAN;
+    } else {
+      lightEvent->light = notRealLux;
     }
-    lightEvent->light = notRealLux;
     return true;
   }
 

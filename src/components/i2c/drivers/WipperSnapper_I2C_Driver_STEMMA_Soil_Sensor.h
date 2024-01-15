@@ -85,16 +85,15 @@ public:
   bool getEventRaw(sensors_event_t *rawEvent) {
     uint16_t touchData = _seesaw->touchRead(0);
 
-    // seesaw->touchRead() will return 65535 on a read error
-    // see
+    // seesaw->touchRead() will return 65535 on a read error. See more at
     // https://github.com/adafruit/Adafruit_Seesaw/blob/master/Adafruit_seesaw.cpp
     if (touchData == 65535) {
-      return false;
+      rawEvent->data[0] = NAN;
+    } else {
+      // TODO: Update this should we add a capacitive moisture type to
+      // adafruit_sensor
+      rawEvent->data[0] = (float)touchData;
     }
-
-    // TODO: Update this should we add a capacitive moisture type to
-    // adafruit_sensor
-    rawEvent->data[0] = (float)touchData;
     return true;
   }
 
