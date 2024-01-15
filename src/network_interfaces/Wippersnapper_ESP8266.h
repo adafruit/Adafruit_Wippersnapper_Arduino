@@ -106,8 +106,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._network_ssid;
-    _pass = WS._network_pass;
+    _ssid = WS._config.network.ssid;
+    _pass = WS._config.network.pass;
   }
 
   /***********************************************************/
@@ -169,17 +169,14 @@ public:
   */
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (WS._mqttBrokerURL == nullptr) {
-      WS._mqttBrokerURL = "io.adafruit.com";
-    }
-
     // Uncomment the following lines to use MQTT/SSL. You will need to
     // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
-    // new Adafruit_MQTT_Client(_wifi_client, WS._mqttBrokerURL, _mqtt_port,
-    // clientID, WS._username, WS._key);
+    // new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url,
+    // WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
 
-    WS._mqtt = new Adafruit_MQTT_Client(_wifi_client, WS._mqttBrokerURL, 1883,
-                                        clientID, WS._username, WS._key);
+    WS._mqtt = new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url, 1883,
+                                        clientID, WS._config.aio_user,
+                                        WS._config.aio_key);
   }
 
   /********************************************************/
@@ -212,7 +209,6 @@ public:
 protected:
   const char *_ssid = NULL;
   const char *_pass = NULL;
-  const char *_mqttBrokerURL = NULL;
   WiFiClient *_wifi_client;
 
   /**************************************************************************/

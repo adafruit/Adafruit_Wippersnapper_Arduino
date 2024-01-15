@@ -59,7 +59,6 @@ public:
 
     _wifi = &SPIWIFI;
     _mqtt_client = new WiFiSSLClient;
-    WS._mqttBrokerURL = "io.adafruit.com";
   }
 
   /**************************************************************************/
@@ -80,8 +79,8 @@ public:
   */
   /****************************************************************************/
   void set_user_key() {
-    WS._username = _username;
-    WS._key = _key;
+    strlcpy(WS._config.aio_user, _username, sizeof(WS._config.aio_user));
+    strlcpy(WS._config.aio_key, _key, sizeof(WS._config.aio_key));
   }
 
   /**********************************************************/
@@ -94,8 +93,9 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    WS._network_ssid = ssid;
-    WS._network_pass = ssidPassword;
+    strlcpy(WS._config.network.ssid, ssid, sizeof(WS._config.network.ssid));
+    strlcpy(WS._config.network.pass, ssidPassword,
+            sizeof(WS._config.network.pass));
   }
 
   /**********************************************************/
@@ -105,8 +105,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    WS._network_ssid = _ssid;
-    WS._network_pass = _pass;
+    strlcpy(WS._config.network.ssid, _ssid, sizeof(WS._config.network.ssid));
+    strlcpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
   }
 
   /***********************************************************/
@@ -193,9 +193,9 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
-                                 clientID, WS._username, WS._key);
+    WS._mqtt = new Adafruit_MQTT_Client(
+        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
+        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
@@ -226,9 +226,10 @@ public:
   const char *connectionType() { return "AIRLIFT"; }
 
 protected:
-  const char *_ssid;          /*!< Network SSID. */
-  const char *_pass;          /*!< Network password. */
-  const char *_mqttBrokerURL; /*!< MQTT broker URL. */
+  const char *_ssid;     /*!< Network SSID. */
+  const char *_pass;     /*!< Network password. */
+  const char *_username; /*!< Adafruit IO username. */
+  const char *_key;      /*!< Adafruit IO key. */
 
   WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the ublox. */

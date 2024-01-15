@@ -49,7 +49,6 @@ WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
 */
 /**************************************************************************/
 void WipperSnapper_LittleFS::parseSecrets() {
-
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
     WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem - did you "
@@ -57,82 +56,46 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt();
   }
 
-  // open file for parsing
+  // Attempt to open secrets.json file for reading
   File secretsFile = LittleFS.open("/secrets.json", "r");
   if (!secretsFile) {
     WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
     fsHalt();
   }
 
-  // check if we can deserialize the secrets.json file
-  DeserializationError err = deserializeJson(_doc, secretsFile);
-  if (err) {
+  // Attempt to deserialize the file's JSON document
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, secretsFile);
+  if (error) {
     WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
-    WS_DEBUG_PRINTLN(err.c_str());
+    WS_DEBUG_PRINTLN(error.c_str());
     fsHalt();
   }
 
-  // Get IO username from JSON
-  const char *io_username = _doc["io_username"];
-  // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_username == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: io_username not set!");
-    fsHalt();
-  }
-  // Set IO username
-  WS._username = io_username;
+  // Extract a config struct from the JSON document
+  WS._config = doc.as<secretsConfig>();
 
-  // Get IO key from JSON
-  const char *io_key = _doc["io_key"];
-  // error check against default values [ArduinoJSON, 3.3.3]
-  if (io_key == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: io_key not set!");
-    fsHalt();
-  }
-  // Set IO key
-  WS._key = io_key;
-
-  // Parse SSID
-  // Check if network type is WiFi
-  const char *network_type_wifi_ssid =
-      _doc["network_type_wifi"]["network_ssid"];
-  if (network_type_wifi_ssid != nullptr) {
-    WS._network_ssid = network_type_wifi_ssid;
-  }
-
-  if (WS._network_ssid == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: network_ssid not set!");
+  // Validate the config struct is not filled with default values
+  if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
+      strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
+        "io_username and io_key to match your Adafruit IO credentials!\n");
     fsHalt();
   }
 
-  // Parse WiFi network password
-  const char *network_type_wifi_password =
-      _doc["network_type_wifi"]["network_password"];
-  if (network_type_wifi_password != nullptr) {
-    WS._network_pass = network_type_wifi_password;
-  }
-
-  // error check WiFi network password
-  if (WS._network_pass == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: network_password not set!");
+  if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
+      strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
+    WS_DEBUG_PRINTLN("ERROR: Invalid network credentials in secrets.json! TO "
+                     "FIX: Please change network_ssid and network_password to "
+                     "match your Adafruit IO credentials!\n");
     fsHalt();
   }
 
-  // Optionally set the Adafruit.io URL
-  WS._mqttBrokerURL = _doc["io_url"];
-
-  // Get (optional) setting for the status pixel brightness
-  float status_pixel_brightness = _doc["status_pixel_brightness"];
-  // Note: ArduinoJSON's default value on failure to find is 0.0
-  setStatusLEDBrightness(status_pixel_brightness);
-
-  // close the file
+  // Close the file
   secretsFile.close();
 
-  // clear the document and release all memory from the memory pool
-  _doc.clear();
-
-  // stop LittleFS, we no longer need it
+  // Stop LittleFS, we no longer need it
   LittleFS.end();
 }
 

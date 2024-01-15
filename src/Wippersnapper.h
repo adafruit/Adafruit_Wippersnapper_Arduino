@@ -9,7 +9,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2023 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -39,6 +39,7 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
+#include "provisioning/ConfigJson.h"
 
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
@@ -89,7 +90,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.74" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.75" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -314,16 +315,7 @@ public:
   const char *_boardId; /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
-  const char *_mqttBrokerURL = nullptr; /*!< MQTT Broker URL */
-  uint16_t _mqtt_port = 8883;           /*!< MQTT Broker Port */
-
-  // AIO credentials
-  const char *_username = NULL; /*!< Adafruit IO username */
-  const char *_key = NULL;      /*!< Adafruit IO key */
-
-  // WiFi credentials
-  const char *_network_ssid = NULL; /*!< WiFi network SSID */
-  const char *_network_pass = NULL; /*!< WiFi network password*/
+  secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */

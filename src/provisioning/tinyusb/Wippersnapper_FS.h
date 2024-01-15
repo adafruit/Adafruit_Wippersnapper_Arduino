@@ -7,17 +7,16 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021-2023 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2024 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
- */
+*/
 #ifndef WIPPERSNAPPER_FS_H
 #define WIPPERSNAPPER_FS_H
 
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
-#include "ArduinoJson.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
@@ -59,15 +58,10 @@ public:
 
   void parseSecrets();
 
-  #ifdef ARDUINO_FUNHOUSE_ESP32S2
-  void parseDisplayConfig(displayConfig& displayFile);
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
+  void parseDisplayConfig(displayConfig &displayFile);
   void createDisplayConfig();
-  #endif
-
-  // NOTE: calculated capacity with maximum
-  // length of usernames/passwords/tokens
-  // is 382 bytes, rounded to nearest power of 2.
-  StaticJsonDocument<512> doc; /*!< Json configuration file */
+#endif
 private:
   bool _freshFS = false; /*!< True if filesystem was initialized by
                             WipperSnapper, False otherwise. */

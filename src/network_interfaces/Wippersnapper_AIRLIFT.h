@@ -91,8 +91,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._network_ssid;
-    _pass = WS._network_pass;
+    _ssid = WS._config.network.ssid;
+    _pass = WS._config.network.pass;
   }
 
   /***********************************************************/
@@ -199,12 +199,9 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (WS._mqttBrokerURL == nullptr)
-      WS._mqttBrokerURL = "io.adafruit.com";
-
-    WS._mqtt =
-        new Adafruit_MQTT_Client(_mqtt_client, WS._mqttBrokerURL, WS._mqtt_port,
-                                 clientID, WS._username, WS._key);
+    WS._mqtt = new Adafruit_MQTT_Client(
+        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
+        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
@@ -237,7 +234,6 @@ public:
 protected:
   const char *_ssid;           /*!< Network SSID. */
   const char *_pass;           /*!< Network password. */
-  const char *_mqttBrokerURL;  /*!< MQTT broker URL. */
   String _fv;                  /*!< nina-fw firmware version. */
   int _ssPin = -1;             /*!< SPI S.S. pin. */
   int _ackPin = -1;            /*!< SPI ACK pin. */
