@@ -192,7 +192,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["pyportal_tinyusb", "metro_m4_airliftlite_tinyusb"]
+        arduino-platform: ["pyportal_tinyusb", "pyportal_titano_tinyusb", "metro_m4_airliftlite_tinyusb"]
     steps:
     - uses: actions/setup-python@v4
       with:

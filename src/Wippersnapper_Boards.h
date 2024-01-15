@@ -22,6 +22,12 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 2
 #define STATUS_NEOPIXEL_NUM 1
+#elif defined(ADAFRUIT_PYPORTAL_TITANO)
+#define BOARD_ID "pyportal-titano-tinyusb"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN 2
+#define STATUS_NEOPIXEL_NUM 1
 #elif defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE)
 #define BOARD_ID "metro-m4-airliftlite-tinyusb"
 #define USE_TINYUSB

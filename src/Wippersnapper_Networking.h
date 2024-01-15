@@ -17,7 +17,8 @@
 #define WIPPERSNAPPER_NETWORKING_H
 
 #if defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
-    defined(ADAFRUIT_METRO_M4_EXPRESS) || defined(USE_AIRLIFT)
+    defined(ADAFRUIT_PYPORTAL_TITANO) || defined(ADAFRUIT_METRO_M4_EXPRESS) || \
+    defined(USE_AIRLIFT)
 #include "network_interfaces/Wippersnapper_AIRLIFT.h"
 /** Nina-FW (adafruit fork) networking class */
 typedef Wippersnapper_AIRLIFT Wippersnapper_WiFi;
