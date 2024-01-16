@@ -22,7 +22,7 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN 2
 #define STATUS_NEOPIXEL_NUM 1
-#elif defined(ADAFRUIT_PYPORTAL_TITANO)
+#elif defined(ADAFRUIT_PYPORTAL_M4_TITANO)
 #define BOARD_ID "pyportal-titano-tinyusb"
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
