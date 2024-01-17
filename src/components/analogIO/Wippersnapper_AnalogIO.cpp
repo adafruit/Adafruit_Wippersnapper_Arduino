@@ -145,6 +145,7 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
     if (_analog_input_pins[i].enabled == false) {
       _analog_input_pins[i].pinName = pin;
       _analog_input_pins[i].period = periodMs;
+      _analog_input_pins[i].prvPeriod = 0L;
       _analog_input_pins[i].readMode = analogReadMode;
       _analog_input_pins[i].enabled = true;
       break;
