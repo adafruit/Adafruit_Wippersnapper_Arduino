@@ -95,7 +95,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
-  if (!initFilesystem() || !initFilesystem(true)) {
+  if (!initFilesystem() && !initFilesystem(true)) {
     WS_DEBUG_PRINTLN("ERROR Initializing Filesystem");
     setStatusLEDColor(RED);
     while (1)
