@@ -177,6 +177,11 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#define SPIWIFI       SPI  // The SPI port
+#define SPIWIFI_SS    11   // Chip select pin
+#define ESP32_RESETN  10   // Reset pin
+#define SPIWIFI_ACK   9   // a.k.a BUSY or READY pin
+#define ESP32_GPIO0   -1   // N/C - Solder jumper then D10 on ItsyBitsy
 // #define USE_STATUS_LED
 // #define STATUS_LED_PIN 11
 #endif
