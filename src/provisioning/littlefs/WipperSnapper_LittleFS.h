@@ -33,7 +33,7 @@ public:
   WipperSnapper_LittleFS();
   ~WipperSnapper_LittleFS();
   void parseSecrets();
-  void fsHalt(String msg = "");
+  void fsHalt(String msg);
 };
 
 extern Wippersnapper WS;

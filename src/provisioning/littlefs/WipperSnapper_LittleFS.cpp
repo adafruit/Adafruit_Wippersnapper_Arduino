@@ -30,8 +30,6 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   if (!LittleFS.begin()) {
     setStatusLEDColor(RED);
     fsHalt("ERROR: Failure initializing LittleFS!");
-    while (1)
-      ;
   }
 }
 
@@ -94,11 +92,18 @@ void WipperSnapper_LittleFS::parseSecrets() {
   LittleFS.end();
 }
 
+/**************************************************************************/
+/*!
+    @brief    Halts execution and blinks the status LEDs yellow.
+    @param    msg
+                Error message to print to serial console.
+*/
+/**************************************************************************/
 void WipperSnapper_LittleFS::fsHalt(String msg) {
+  statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
-    WS_DEBUG_PRINTLN("ERROR: Halted execution!");
+    WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
     WS_DEBUG_PRINTLN(msg.c_str());
-    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }

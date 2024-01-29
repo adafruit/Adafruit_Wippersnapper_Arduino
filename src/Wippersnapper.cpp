@@ -2306,7 +2306,6 @@ void Wippersnapper::errorWriteHang(String error) {
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
   _fileSystem->writeToBootOut(error.c_str());
-  delay(500);
   TinyUSBDevice.attach();
   delay(500);
 #endif

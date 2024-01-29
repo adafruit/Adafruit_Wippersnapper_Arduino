@@ -98,8 +98,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   if (!initFilesystem() && !initFilesystem(true)) {
     setStatusLEDColor(RED);
     fsHalt("ERROR Initializing Filesystem");
-    while (1)
-      ;
   }
 
   // Initialize USB-MSD
@@ -107,7 +105,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If we created a new filesystem, halt until user RESETs device.
   if (_freshFS)
-    fsHalt("New filesystem created! Please RESET your board.");
+    fsHalt("New filesystem created! Press the reset button on your board.");
 }
 
 /************************************************************/
@@ -120,6 +118,8 @@ Wippersnapper_FS::~Wippersnapper_FS() {}
 /**************************************************************************/
 /*!
     @brief    Initializes the flash filesystem.
+    @param    force_format
+                If true, forces a new filesystem to be created. [DESTRUCTIVE]
     @return   True if filesystem initialized correctly, false otherwise.
 */
 /**************************************************************************/
@@ -407,11 +407,11 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg) {
   TinyUSBDevice.attach();
-  delay(1500);
+  delay(500);
+  statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
-    WS_DEBUG_PRINTLN("ERROR: Halted execution!");
+    WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
     WS_DEBUG_PRINTLN(msg.c_str());
-    // statusLEDSolid(WS_LED_STATUS_FS_WRITE);
     delay(1000);
     yield();
   }
