@@ -44,7 +44,7 @@ public:
   Wippersnapper_FS();
   ~Wippersnapper_FS();
 
-  bool initFilesystem();
+  bool initFilesystem(bool force_format = false);
   void initUSBMSC();
 
   void eraseCPFS();
@@ -54,7 +54,7 @@ public:
   void createSecretsFile();
   bool createBootFile();
   void writeToBootOut(PGM_P str);
-  void fsHalt();
+  void fsHalt(String msg);
 
   void parseSecrets();
 

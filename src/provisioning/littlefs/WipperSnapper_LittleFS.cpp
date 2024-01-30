@@ -28,10 +28,8 @@
 WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
-    WS_DEBUG_PRINTLN("ERROR: Failure initializing LittleFS!");
     setStatusLEDColor(RED);
-    while (1)
-      ;
+    fsHalt("ERROR: Failure initializing LittleFS!");
   }
 }
 
@@ -51,25 +49,22 @@ WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
 void WipperSnapper_LittleFS::parseSecrets() {
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
-    WS_DEBUG_PRINTLN("ERROR: No secrets.json found on filesystem - did you "
-                     "upload credentials?");
-    fsHalt();
+    fsHalt("ERROR: No secrets.json found on filesystem - did you upload "
+           "credentials?");
   }
 
   // Attempt to open secrets.json file for reading
   File secretsFile = LittleFS.open("/secrets.json", "r");
   if (!secretsFile) {
-    WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
-    fsHalt();
+    fsHalt("ERROR: Could not open secrets.json file for reading!");
   }
 
   // Attempt to deserialize the file's JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
-    WS_DEBUG_PRINTLN(error.c_str());
-    fsHalt();
+    fsHalt(String("ERROR: deserializeJson() failed with code ") +
+           error.c_str());
   }
 
   // Extract a config struct from the JSON document
@@ -78,18 +73,16 @@ void WipperSnapper_LittleFS::parseSecrets() {
   // Validate the config struct is not filled with default values
   if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
       strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
-    WS_DEBUG_PRINTLN(
+    fsHalt(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
-    fsHalt();
   }
 
   if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    WS_DEBUG_PRINTLN("ERROR: Invalid network credentials in secrets.json! TO "
-                     "FIX: Please change network_ssid and network_password to "
-                     "match your Adafruit IO credentials!\n");
-    fsHalt();
+    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
+           "change network_ssid and network_password to match your Adafruit IO "
+           "credentials!\n");
   }
 
   // Close the file
@@ -99,11 +92,21 @@ void WipperSnapper_LittleFS::parseSecrets() {
   LittleFS.end();
 }
 
-void WipperSnapper_LittleFS::fsHalt() {
+/**************************************************************************/
+/*!
+    @brief    Halts execution and blinks the status LEDs yellow.
+    @param    msg
+                Error message to print to serial console.
+*/
+/**************************************************************************/
+void WipperSnapper_LittleFS::fsHalt(String msg) {
+  statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
-    statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+    WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
+    WS_DEBUG_PRINTLN(msg.c_str());
     delay(1000);
     yield();
   }
 }
+
 #endif

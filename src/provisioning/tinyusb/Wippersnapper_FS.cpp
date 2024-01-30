@@ -13,7 +13,7 @@
  *
  */
 #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
-    defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
+    defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ADAFRUIT_PYPORTAL_M4_TITANO) ||  \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
@@ -95,11 +95,9 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
-  if (!initFilesystem()) {
-    WS_DEBUG_PRINTLN("ERROR Initializing Filesystem");
+  if (!initFilesystem() && !initFilesystem(true)) {
     setStatusLEDColor(RED);
-    while (1)
-      ;
+    fsHalt("ERROR Initializing Filesystem");
   }
 
   // Initialize USB-MSD
@@ -107,7 +105,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If we created a new filesystem, halt until user RESETs device.
   if (_freshFS)
-    fsHalt();
+    fsHalt("New filesystem created! Press the reset button on your board.");
 }
 
 /************************************************************/
@@ -120,16 +118,18 @@ Wippersnapper_FS::~Wippersnapper_FS() {}
 /**************************************************************************/
 /*!
     @brief    Initializes the flash filesystem.
+    @param    force_format
+                If true, forces a new filesystem to be created. [DESTRUCTIVE]
     @return   True if filesystem initialized correctly, false otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_FS::initFilesystem() {
+bool Wippersnapper_FS::initFilesystem(bool force_format) {
   // Init. flash library
   if (!flash.begin())
     return false;
 
   // Check if FS exists
-  if (!wipperFatFs.begin(&flash)) {
+  if (force_format || !wipperFatFs.begin(&flash)) {
     // No filesystem exists - create a new FS
     // NOTE: THIS WILL ERASE ALL DATA ON THE FLASH
     if (!makeFilesystem())
@@ -325,7 +325,7 @@ void Wippersnapper_FS::createSecretsFile() {
       "Please edit it to reflect your Adafruit IO and network credentials. "
       "When you're done, press RESET on the board.");
 #endif
-  fsHalt();
+  fsHalt("ERROR: Please edit the secrets.json file. Then, reset your board.");
 }
 
 /**************************************************************************/
@@ -337,17 +337,14 @@ void Wippersnapper_FS::parseSecrets() {
   // Attempt to open the secrets.json file for reading
   File32 secretsFile = wipperFatFs.open("/secrets.json");
   if (!secretsFile) {
-    WS_DEBUG_PRINTLN("ERROR: Could not open secrets.json file for reading!");
-    fsHalt();
+    fsHalt("ERROR: Could not open secrets.json file for reading!");
   }
 
   // Attempt to deserialize the file's JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    WS_DEBUG_PRINT("ERROR: deserializeJson() failed with code ");
-    WS_DEBUG_PRINTLN(error.c_str());
-    fsHalt();
+    fsHalt(String("ERROR: Unable to parse secrets.json file - deserializeJson() failed with code") + error.c_str());
   }
 
   // Extract a config struct from the JSON document
@@ -362,7 +359,7 @@ void Wippersnapper_FS::parseSecrets() {
         "The \"io_username/io_key\" fields within secrets.json are invalid, please "
         "change it to match your Adafruit IO credentials. Then, press RESET.");
 #endif
-    fsHalt();
+    fsHalt("ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change io_username and io_key to match your Adafruit IO credentials!");
   }
 
   if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 || strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
@@ -373,7 +370,7 @@ void Wippersnapper_FS::parseSecrets() {
         "The \"network_ssid and network_password\" fields within secrets.json are invalid, please "
         "change it to match your WiFi credentials. Then, press RESET.");
 #endif
-    fsHalt();
+    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please change network_ssid and network_password to match your Adafruit IO credentials!");
   }
 
   // Close secrets.json file
@@ -396,17 +393,25 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
     bootFile.close();
   } else {
     WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
+    // feels like we should check why, if good use-case ok, otherwise fsHalt
+    // as indicates fs corruption or disc access issue (maybe latter is okay)
   }
 }
 
 /**************************************************************************/
 /*!
     @brief    Halts execution and blinks the status LEDs yellow.
+    @param    msg
+                Error message to print to serial console.
 */
 /**************************************************************************/
-void Wippersnapper_FS::fsHalt() {
+void Wippersnapper_FS::fsHalt(String msg) {
+  TinyUSBDevice.attach();
+  delay(500);
+  statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
-    // statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+    WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
+    WS_DEBUG_PRINTLN(msg.c_str());
     delay(1000);
     yield();
   }
@@ -432,8 +437,7 @@ void Wippersnapper_FS::createDisplayConfig() {
   // Create and fill JSON document from displayConfig
   JsonDocument doc;
   if (!doc.set(displayConfig)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to set displayConfig, no space in arduinoJSON document!");
-    fsHalt();
+    fsHalt("ERROR: Unable to set displayConfig, no space in arduinoJSON document!");
   }
   // Write the file out to the filesystem
   serializeJsonPretty(doc, displayFile);
@@ -454,18 +458,14 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   // Attempt to open file for JSON parsing
   File32 file = wipperFatFs.open("/display_config.json", FILE_READ);
   if (!file) {
-    WS_DEBUG_PRINTLN(
-        "FATAL ERROR: Unable to open display_config.json for parsing");
-    fsHalt();
+    fsHalt("FATAL ERROR: Unable to open display_config.json for parsing");
   }
 
   // Attempt to deserialize the file's json document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file);
   if (error) {
-    WS_DEBUG_PRINTLN("deserializeJson() of display file failed, rc:")
-    Serial.println(error.c_str());
-    fsHalt();
+    fsHalt(String("FATAL ERROR: Unable to parse display_config.json - deserializeJson() failed with code") + error.c_str());
   }
   // Close the file, we're done with it
   file.close();

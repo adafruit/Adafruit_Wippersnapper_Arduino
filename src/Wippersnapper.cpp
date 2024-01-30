@@ -2306,9 +2306,13 @@ void Wippersnapper::errorWriteHang(String error) {
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
   _fileSystem->writeToBootOut(error.c_str());
+  TinyUSBDevice.attach();
+  delay(500);
 #endif
   // Signal and hang forever
   while (1) {
+    WS_DEBUG_PRINTLN("ERROR: Halted execution");
+    WS_DEBUG_PRINTLN(error.c_str());
     WS.feedWDT();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
