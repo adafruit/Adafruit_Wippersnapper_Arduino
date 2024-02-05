@@ -171,8 +171,10 @@
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 32
 #elif defined(ARDUINO_ADAFRUIT_ITSYBITSY_RP2040)
-#if defined(USE_AIRLIFT) || defined(USE_WIFI_NINA)
 #define BOARD_ID "itsybitsy-rp2040-airlift"
+#if !defined(USE_AIRLIFT)
+#define USE_AIRLIFT
+#endif
 #define USE_TINYUSB
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
@@ -182,9 +184,6 @@
 #define ESP32_RESETN  10   // Reset pin
 #define SPIWIFI_ACK   9   // a.k.a BUSY or READY pin
 #define ESP32_GPIO0   -1   // N/C - Solder jumper then D10 on ItsyBitsy
-// #define USE_STATUS_LED
-// #define STATUS_LED_PIN 11
-#endif
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

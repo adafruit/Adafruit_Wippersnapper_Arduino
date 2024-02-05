@@ -17,7 +17,7 @@
 #ifndef WS_NETWORKING_PICO_H
 #define WS_NETWORKING_PICO_H
 
-#ifdef ARDUINO_ARCH_RP2040 && !defined(USE_AIRLIFT)
+#if defined(ARDUINO_ARCH_RP2040) && !defined(USE_AIRLIFT)
 #include "Wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
