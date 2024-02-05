@@ -38,6 +38,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -108,6 +109,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: adafruit/ci-arduino
+        ref: add-itsybitsy-rp2040
         path: ci
     - name: Checkout Board Definitions
       uses: actions/checkout@v4
@@ -207,6 +209,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -258,6 +261,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -309,6 +313,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -349,6 +354,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -406,6 +412,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -466,6 +473,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: pre-install
       run: bash ci/actions_install.sh
