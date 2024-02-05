@@ -244,7 +244,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["picow_rp2040_tinyusb"]
+        arduino-platform: ["picow_rp2040_tinyusb", "itsybitsy_rp2040_tinyusb"]
     steps:
     - uses: actions/setup-python@v4
       with:
@@ -264,6 +264,7 @@ jobs:
       # manually install OneWireNG/TempControlLib for OneWireNg (RP2040 Supported OneWire w/backwards compat.)
     - name: Install extra Arduino libraries
       run: |
+        git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
     - name: Download and install stable Nanopb
