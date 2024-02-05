@@ -47,10 +47,20 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_AIRLIFT() : Wippersnapper() {
+  #if defined(SPIWIFI_SS) && defined(SPIWIFI_ACK) && defined(ESP32_RESETN)
+    _ssPin = SPIWIFI_SS;
+    _ackPin = SPIWIFI_ACK;
+    _rstPin = ESP32_RESETN;
+  #else
     _ssPin = 10;
     _ackPin = 7;
     _rstPin = 5;
+  #endif
+  #if defined(ESP32_GPIO0)
+    _gpio0Pin = ESP32_GPIO0;
+  #else
     _gpio0Pin = -1;
+  #endif
     _wifi = &SPIWIFI;
     _ssid = 0;
     _pass = 0;
