@@ -52,6 +52,11 @@ jobs:
         git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
         git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
         git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -120,6 +125,11 @@ jobs:
       run: |
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -216,6 +226,11 @@ jobs:
         git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -266,6 +281,11 @@ jobs:
       run: |
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -317,6 +337,11 @@ jobs:
         git clone --quiet https://github.com/arduino-libraries/Servo.git /home/runner/Arduino/libraries/Servo
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
           # Download and extract nanopb
@@ -355,6 +380,11 @@ jobs:
       run: |
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -419,6 +449,11 @@ jobs:
         git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
         git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
         git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
