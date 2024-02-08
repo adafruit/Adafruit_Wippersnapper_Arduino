@@ -106,7 +106,38 @@ public:
     // Attempt to read the PM2.5 Sensor
     if (!_aqi->read(&_data)) {
       Serial.println("[UART, PM25] Data not available.");
-      delay(500);
+#ifdef USE_SW_UART
+      if (_swSerial->available()) {
+        WS_DEBUG_PRINTLN("[UART, PM25] Flushing Software Serial..");
+        _swSerial->flush();
+        WS_DEBUG_PRINTLN("[UART, PM25] Uart Available. Attempting to clear write errors");
+        _swSerial->clearWriteError();
+      } else {
+        WS_DEBUG_PRINTLN("[UART, PM25] Uart Unavailable. Attempting to clear write errors");
+        _swSerial->clearWriteError();
+        if (!_swSerial->isListening()) {
+          WS_DEBUG_PRINTLN("[UART, PM25] Re-listening on Software Serial..");
+          _swSerial->listen();
+        }
+        // delay(500);
+      }
+#else
+      WS_DEBUG_PRINTLN("[UART, PM25] Setting Hardware Serial to debug mode..");
+      _hwSerial->setDebugOutput(true);
+      if (_hwSerial->available()) {
+        WS_DEBUG_PRINTLN("[UART, PM25] Uart available, flushing Hardware Serial..");
+        _hwSerial->flush();
+        WS_DEBUG_PRINTLN("[UART, PM25] Uart available, clearing write errors..");
+        _hwSerial->clearWriteError();
+        WS_DEBUG_PRINTLN("[UART, PM25] Uart available, resetting event queue..");
+        _hwSerial->eventQueueReset();
+      } else {
+        WS_DEBUG_PRINTLN("[UART, PM25] Uart Unavailable. Attempting to reset event queue...");
+        _hwSerial->eventQueueReset();
+        WS_DEBUG_PRINTLN("[UART, PM25] Uart Unavailable. Attempting to clear write errors");
+        _hwSerial->clearWriteError();
+      }
+#endif      
       return false;
     }
     Serial.println("[UART, PM25] Read data OK");
