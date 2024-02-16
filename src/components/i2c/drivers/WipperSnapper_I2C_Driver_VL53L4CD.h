@@ -18,6 +18,57 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <vl53l4cd_class.h>
 
+// Status codes for VL53L4CD sensor measurements
+#define VL53L4CD_STATUS_VALID 0 // Returned distance is valid
+#define VL53L4CD_STATUS_WARNING_SIGMA_THRESHOLD 1 // Sigma is above the defined threshold
+#define VL53L4CD_STATUS_WARNING_SIGNAL_LOW 2 // Signal is below the defined threshold
+#define VL53L4CD_STATUS_ERROR_DISTANCE_LOW 3 // Measured distance is below detection threshold
+#define VL53L4CD_STATUS_ERROR_PHASE_OUT_OF_LIMIT 4 // Phase out of valid limit
+#define VL53L4CD_STATUS_ERROR_HARDWARE_FAIL 5 // Hardware failure
+#define VL53L4CD_STATUS_WARNING_NO_WRAP_CHECK 6 // Phase valid but no wrap around check performed
+#define VL53L4CD_STATUS_ERROR_WRAP_TARGET 7 // Wrapped target, phase does not match
+#define VL53L4CD_STATUS_ERROR_PROCESSING_FAIL 8 // Processing failure
+#define VL53L4CD_STATUS_ERROR_CROSSTALK_FAIL 9 // Crosstalk signal failure
+#define VL53L4CD_STATUS_ERROR_INTERRUPT 10 // Interrupt error
+#define VL53L4CD_STATUS_ERROR_MERGED_TARGET 11 // Merged target detected
+#define VL53L4CD_STATUS_ERROR_SIGNAL_TOO_LOW 12 // Signal is too low for accurate measurement
+#define VL53L4CD_STATUS_ERROR_OTHER 255 // Other error (e.g., boot error)
+
+const char* getVL53L4CDStatusDescription(int statusCode) {
+    switch (statusCode) {
+        case VL53L4CD_STATUS_VALID:
+            return "Returned distance is valid";
+        case VL53L4CD_STATUS_WARNING_SIGMA_THRESHOLD:
+            return "Sigma is above the defined threshold";
+        case VL53L4CD_STATUS_WARNING_SIGNAL_LOW:
+            return "Signal is below the defined threshold";
+        case VL53L4CD_STATUS_ERROR_DISTANCE_LOW:
+            return "Measured distance is below detection threshold";
+        case VL53L4CD_STATUS_ERROR_PHASE_OUT_OF_LIMIT:
+            return "Phase out of valid limit";
+        case VL53L4CD_STATUS_ERROR_HARDWARE_FAIL:
+            return "Hardware failure";
+        case VL53L4CD_STATUS_WARNING_NO_WRAP_CHECK:
+            return "Phase valid but no wrap around check performed";
+        case VL53L4CD_STATUS_ERROR_WRAP_TARGET:
+            return "Wrapped target, phase does not match";
+        case VL53L4CD_STATUS_ERROR_PROCESSING_FAIL:
+            return "Processing failure";
+        case VL53L4CD_STATUS_ERROR_CROSSTALK_FAIL:
+            return "Crosstalk signal failure";
+        case VL53L4CD_STATUS_ERROR_INTERRUPT:
+            return "Interrupt error";
+        case VL53L4CD_STATUS_ERROR_MERGED_TARGET:
+            return "Merged target detected";
+        case VL53L4CD_STATUS_ERROR_SIGNAL_TOO_LOW:
+            return "Signal is too low for accurate measurement";
+        case VL53L4CD_STATUS_ERROR_OTHER:
+            return "Other error (e.g., boot error)";
+        default:
+            return "Unknown status";
+    }
+}
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VL53L4CD sensor.
@@ -100,7 +151,9 @@ public:
 
       // Read measured distance. RangeStatus = 0 means valid data
       if (_VL53L4CD->VL53L4CD_GetResult(&results) == VL53L4CD_ERROR_NONE) {
-        if (results.range_status != 0) {
+        if (results.range_status != VL53L4CD_STATUS_VALID) {
+          WS_DEBUG_PRINT("VL53L4CD range status: ");
+          WS_DEBUG_PRINTLN(getVL53L4CDStatusDescription(results.range_status));
           return false;
         }
         proximityEvent->data[0] = (float)results.distance_mm;
