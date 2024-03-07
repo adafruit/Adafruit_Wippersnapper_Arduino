@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["feather_esp32", "qtpy_esp32", "feather_esp32_v2", "qtpy_esp32c3"]
+        arduino-platform: ["feather_esp32", "qtpy_esp32", "feather_esp32_v2", "itsybitsy_esp32", "qtpy_esp32c3"]
         include:
           - offset: "0x1000"
           - offset: "0x0"
