@@ -56,11 +56,28 @@ public:
   /*******************************************************************************/
   bool begin() {
     _maxlipo = new Adafruit_MAX17048();
-    if (!_maxlipo->begin(_i2c))
+    if (!_maxlipo->begin(_i2c) or deviceNotReady()) {
       return false;
+    }
     return true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief Checks the response of the MAX17048 chip by verifying ID and version.
+      @returns true if the chip ID or version is invalid, false otherwise.
+   */
+  /*******************************************************************************/
+  bool deviceNotReady() {
+    uint8_t chipID = _maxlipo->getChipID();
+    if (chipID == 0x00 || chipID == 0xFF)
+      return true;
+    uint16_t chipVersion = _maxlipo->getICversion();
+    if (chipVersion == 0x0000 || chipVersion == 0xFFFF)
+      return true;
+    return false;
+  }
+  
   /*******************************************************************************/
   /*!
       @brief    Reads a voltage sensor and converts the
@@ -72,7 +89,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventVoltage(sensors_event_t *voltageEvent) {
-    voltageEvent->voltage = _maxlipo->cellVoltage();
+    if (deviceNotReady()) {
+      voltageEvent->voltage = NAN;
+    } else {
+      voltageEvent->voltage = _maxlipo->cellVoltage();
+    }
     return true;
   }
 
@@ -87,7 +108,11 @@ public:
   */
   /*******************************************************************************/
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    unitlessPercentEvent->unitless_percent = _maxlipo->cellPercent();
+    if (deviceNotReady()) {
+      unitlessPercentEvent->unitless_percent = NAN;
+    } else {
+      unitlessPercentEvent->unitless_percent = _maxlipo->cellPercent();
+    }
     return true;
   }
 
