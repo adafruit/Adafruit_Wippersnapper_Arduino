@@ -1,17 +1,5 @@
-// Adafruit IO WipperSnapper Beta
-//
-//
-// NOTE: This software is a BETA release and in active development.
-// Please report bugs or errors to https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/issues
-//
-//
-// Adafruit invests time and resources providing this open source code.
-// Please support Adafruit and open source hardware by purchasing
-// products from Adafruit!
-//
-// Brent Rubell for Adafruit Industries, 2021-2022
-//
-// All text above must be included in any redistribution.
+// Adafruit IO WipperSnapper Beta (DEBUG BUILD ONLY!)
+// Brent Rubell for Adafruit Industries, 2021 - 2023
 
 #include "Wippersnapper_Networking.h"
 Wippersnapper_WiFi wipper;
@@ -23,11 +11,12 @@ void setup() {
   // Provisioning must occur prior to serial init.
   wipper.provision();
 
-  Serial.begin(115200);
+  Serial.begin(115200); // wippersnapper serial
+  // Serial1.begin(115200);  // ESP-IDF messages serial
+  // Serial1.setDebugOutput(true); // Enable ESP-IDF messages over Serial1
   //while (!Serial) delay(10);
 
   wipper.connect();
-
 }
 
 void loop() {
