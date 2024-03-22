@@ -56,7 +56,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _maxlipo = new Adafruit_MAX17048();
-    if (!_maxlipo->begin(_i2c) or !_maxlipo->isDeviceReady()) {
+    if (!_maxlipo->begin(_i2c)) {
       return false;
     }
     return true;
@@ -73,11 +73,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVoltage(sensors_event_t *voltageEvent) {
-    if (!_maxlipo->isDeviceReady()) {
-      voltageEvent->voltage = NAN;
-    } else {
-      voltageEvent->voltage = _maxlipo->cellVoltage();
-    }
+    voltageEvent->voltage = _maxlipo->cellVoltage();
     return true;
   }
 
@@ -92,11 +88,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    if (!_maxlipo->isDeviceReady()) {
-      unitlessPercentEvent->unitless_percent = NAN;
-    } else {
-      unitlessPercentEvent->unitless_percent = _maxlipo->cellPercent();
-    }
+    unitlessPercentEvent->unitless_percent = _maxlipo->cellPercent();
     return true;
   }
 
