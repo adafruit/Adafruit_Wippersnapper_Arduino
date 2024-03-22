@@ -1,6 +1,11 @@
 var searchData=
 [
-  ['sealevelpressure_5fhpa',['SEALEVELPRESSURE_HPA',['../_wipper_snapper___i2_c___driver___b_m_e280_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'WipperSnapper_I2C_Driver_BME280.h']]],
-  ['spiwifi',['SPIWIFI',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#a02a0537d71f1fad2ceb5cef4950f4f18',1,'SPIWIFI():&#160;Wippersnapper_AIRLIFT.h'],['../_wippersnapper___w_i_f_i_n_i_n_a_8h.html#a02a0537d71f1fad2ceb5cef4950f4f18',1,'SPIWIFI():&#160;Wippersnapper_WIFININA.h']]],
-  ['status_5fled_5fkat_5fblink_5ftime',['STATUS_LED_KAT_BLINK_TIME',['../_wippersnapper___status_l_e_d___colors_8h.html#a8e55f35b622e41481fb79d87b42a8b81',1,'Wippersnapper_StatusLED_Colors.h']]]
+  ['max_5fconsole_5ftext_5flen',['MAX_CONSOLE_TEXT_LEN',['../ws__display__ui__helper_8h.html#ab37e4a96f931f79fc7045efab0f1b508',1,'ws_display_ui_helper.h']]],
+  ['max_5fpixel_5fstrands',['MAX_PIXEL_STRANDS',['../ws__pixels_8h.html#a2688f011c6f4be88e9174f561271acdf',1,'ws_pixels.h']]],
+  ['max_5fpulse_5fwidth',['MAX_PULSE_WIDTH',['../ws__ledc__servo_8h.html#a57a10261e6511f97317cee9076692315',1,'ws_ledc_servo.h']]],
+  ['max_5fservo_5fnum',['MAX_SERVO_NUM',['../ws__servo_8h.html#a370f21f733ccdef61c51379250ef9337',1,'ws_servo.h']]],
+  ['min_5fpulse_5fwidth',['MIN_PULSE_WIDTH',['../ws__ledc__servo_8h.html#ad95c8286fc30ece77d632ad00a94d80e',1,'ws_ledc_servo.h']]],
+  ['min_5fservo_5fpulse_5fwidth',['MIN_SERVO_PULSE_WIDTH',['../ws__servo_8h.html#ad36fae4afd51482fa7f740dfc2e6e64a',1,'ws_servo.h']]],
+  ['mqtt_5ftopic_5fpixels_5fbroker',['MQTT_TOPIC_PIXELS_BROKER',['../_wippersnapper_8h.html#a7a328bba9e4ae79bf15cea0dd97fbdb6',1,'Wippersnapper.h']]],
+  ['mqtt_5ftopic_5fpixels_5fdevice',['MQTT_TOPIC_PIXELS_DEVICE',['../_wippersnapper_8h.html#afbe0fa765a3b3027a61cef4823d4a2a1',1,'Wippersnapper.h']]]
 ];

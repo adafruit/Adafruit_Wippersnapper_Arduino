@@ -77,19 +77,26 @@ $(function() {
 <code>#include &lt;nanopb/pb_encode.h&gt;</code><br />
 <code>#include &lt;pb.h&gt;</code><br />
 <code>#include &lt;wippersnapper/description/v1/description.pb.h&gt;</code><br />
-<code>#include &lt;wippersnapper/pin/v1/pin.pb.h&gt;</code><br />
 <code>#include &lt;wippersnapper/signal/v1/signal.pb.h&gt;</code><br />
+<code>#include &quot;Adafruit_MQTT.h&quot;</code><br />
+<code>#include &quot;Adafruit_SleepyDog.h&quot;</code><br />
+<code>#include &quot;Arduino.h&quot;</code><br />
+<code>#include &lt;SPI.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="_wippersnapper___boards_8h_source.html">Wippersnapper_Boards.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="_wippersnapper___status_l_e_d___colors_8h_source.html">components/statusLED/Wippersnapper_StatusLED_Colors.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_wippersnapper___status_l_e_d_8h_source.html">components/statusLED/Wippersnapper_StatusLED.h</a>&quot;</code><br />
+<code>#include &quot;provisioning/ConfigJson.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="_wippersnapper___analog_i_o_8h_source.html">components/analogIO/Wippersnapper_AnalogIO.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_wippersnapper___digital_g_p_i_o_8h_source.html">components/digitalIO/Wippersnapper_DigitalGPIO.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_wipper_snapper___i2_c_8h_source.html">components/i2c/WipperSnapper_I2C.h</a>&quot;</code><br />
-<code>#include &quot;Adafruit_MQTT.h&quot;</code><br />
-<code>#include &quot;Arduino.h&quot;</code><br />
-<code>#include &lt;Adafruit_DotStar.h&gt;</code><br />
-<code>#include &lt;Adafruit_NeoPixel.h&gt;</code><br />
-<code>#include &lt;SPI.h&gt;</code><br />
-<code>#include &quot;Adafruit_SleepyDog.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="ws__ledc_8h_source.html">components/ledc/ws_ledc.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ws__display__driver_8h_source.html">display/ws_display_driver.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ws__display__ui__helper_8h_source.html">display/ws_display_ui_helper.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ws__ds18x20_8h_source.html">components/ds18x20/ws_ds18x20.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ws__pixels_8h_source.html">components/pixels/ws_pixels.h</a>&quot;</code><br />
+<code>#include &quot;components/pwm/ws_pwm.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="ws__servo_8h_source.html">components/servo/ws_servo.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ws__uart_8h_source.html">components/uart/ws_uart.h</a>&quot;</code><br />
+<code>#include &quot;provisioning/tinyusb/Wippersnapper_FS.h&quot;</code><br />
 </div>
 <p><a href="_wippersnapper_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -101,8 +108,28 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:a588e957b4cb40edf5d7ce01584a1793e"><td class="memItemLeft" align="right" valign="top"><a id="a588e957b4cb40edf5d7ce01584a1793e"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a588e957b4cb40edf5d7ce01584a1793e">WS_DEBUG</a></td></tr>
+<tr class="memdesc:a588e957b4cb40edf5d7ce01584a1793e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define to enable debugging to serial terminal. <br /></td></tr>
+<tr class="separator:a588e957b4cb40edf5d7ce01584a1793e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae04b6b322705e95cdf2d837493a55a57"><td class="memItemLeft" align="right" valign="top"><a id="ae04b6b322705e95cdf2d837493a55a57"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#ae04b6b322705e95cdf2d837493a55a57">WS_PRINTER</a>&#160;&#160;&#160;Serial</td></tr>
+<tr class="memdesc:ae04b6b322705e95cdf2d837493a55a57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where debug messages will be printed. <br /></td></tr>
+<tr class="separator:ae04b6b322705e95cdf2d837493a55a57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b57776de6f8948ef3dc51df4d35e0d3"><td class="memItemLeft" align="right" valign="top"><a id="a4b57776de6f8948ef3dc51df4d35e0d3"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a4b57776de6f8948ef3dc51df4d35e0d3">WS_DEBUG_PRINT</a>(...)&#160;&#160;&#160;{ WS_PRINTER.print(__VA_ARGS__); }</td></tr>
+<tr class="memdesc:a4b57776de6f8948ef3dc51df4d35e0d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints debug output. <br /></td></tr>
+<tr class="separator:a4b57776de6f8948ef3dc51df4d35e0d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2a23384400df93a7df6062b0975a04d"><td class="memItemLeft" align="right" valign="top"><a id="ad2a23384400df93a7df6062b0975a04d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#ad2a23384400df93a7df6062b0975a04d">WS_DEBUG_PRINTLN</a>(...)&#160;&#160;&#160;{ WS_PRINTER.println(__VA_ARGS__); }</td></tr>
+<tr class="memdesc:ad2a23384400df93a7df6062b0975a04d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints line from debug output. <br /></td></tr>
+<tr class="separator:ad2a23384400df93a7df6062b0975a04d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a217ae461d78158c231756891179debb6"><td class="memItemLeft" align="right" valign="top"><a id="a217ae461d78158c231756891179debb6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a217ae461d78158c231756891179debb6">WS_DEBUG_PRINTHEX</a>(...)&#160;&#160;&#160;{ WS_PRINTER.print(__VA_ARGS__, HEX); }</td></tr>
+<tr class="memdesc:a217ae461d78158c231756891179debb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints debug output. <br /></td></tr>
+<tr class="separator:a217ae461d78158c231756891179debb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea527b2900703a26fe8c38d065b4f9e7"><td class="memItemLeft" align="right" valign="top"><a id="aea527b2900703a26fe8c38d065b4f9e7"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#aea527b2900703a26fe8c38d065b4f9e7">WS_VERSION</a>&#160;&#160;&#160;&quot;1.0.0-beta.30&quot;</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#aea527b2900703a26fe8c38d065b4f9e7">WS_VERSION</a>&#160;&#160;&#160;&quot;1.0.0-beta.78&quot;</td></tr>
 <tr class="memdesc:aea527b2900703a26fe8c38d065b4f9e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">WipperSnapper app. version (semver-formatted) <br /></td></tr>
 <tr class="separator:aea527b2900703a26fe8c38d065b4f9e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51f191d073d2da08b445e665133b5452"><td class="memItemLeft" align="right" valign="top"><a id="a51f191d073d2da08b445e665133b5452"></a>
@@ -129,36 +156,20 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a32a0a525a3293ab5a136d3cfbb077b87">TOPIC_I2C</a>&#160;&#160;&#160;&quot;/i2c&quot;</td></tr>
 <tr class="memdesc:a32a0a525a3293ab5a136d3cfbb077b87"><td class="mdescLeft">&#160;</td><td class="mdescRight">I2C sub-topic. <br /></td></tr>
 <tr class="separator:a32a0a525a3293ab5a136d3cfbb077b87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a588e957b4cb40edf5d7ce01584a1793e"><td class="memItemLeft" align="right" valign="top"><a id="a588e957b4cb40edf5d7ce01584a1793e"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a588e957b4cb40edf5d7ce01584a1793e">WS_DEBUG</a></td></tr>
-<tr class="memdesc:a588e957b4cb40edf5d7ce01584a1793e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define to enable debugging to serial terminal. <br /></td></tr>
-<tr class="separator:a588e957b4cb40edf5d7ce01584a1793e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae04b6b322705e95cdf2d837493a55a57"><td class="memItemLeft" align="right" valign="top"><a id="ae04b6b322705e95cdf2d837493a55a57"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#ae04b6b322705e95cdf2d837493a55a57">WS_PRINTER</a>&#160;&#160;&#160;Serial</td></tr>
-<tr class="memdesc:ae04b6b322705e95cdf2d837493a55a57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where debug messages will be printed. <br /></td></tr>
-<tr class="separator:ae04b6b322705e95cdf2d837493a55a57"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b57776de6f8948ef3dc51df4d35e0d3"><td class="memItemLeft" align="right" valign="top"><a id="a4b57776de6f8948ef3dc51df4d35e0d3"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a4b57776de6f8948ef3dc51df4d35e0d3">WS_DEBUG_PRINT</a>(...)&#160;&#160;&#160;{ WS_PRINTER.print(__VA_ARGS__); }</td></tr>
-<tr class="memdesc:a4b57776de6f8948ef3dc51df4d35e0d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints debug output. <br /></td></tr>
-<tr class="separator:a4b57776de6f8948ef3dc51df4d35e0d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2a23384400df93a7df6062b0975a04d"><td class="memItemLeft" align="right" valign="top"><a id="ad2a23384400df93a7df6062b0975a04d"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#ad2a23384400df93a7df6062b0975a04d">WS_DEBUG_PRINTLN</a>(...)&#160;&#160;&#160;{ WS_PRINTER.println(__VA_ARGS__); }</td></tr>
-<tr class="memdesc:ad2a23384400df93a7df6062b0975a04d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints line from debug output. <br /></td></tr>
-<tr class="separator:ad2a23384400df93a7df6062b0975a04d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a217ae461d78158c231756891179debb6"><td class="memItemLeft" align="right" valign="top"><a id="a217ae461d78158c231756891179debb6"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a217ae461d78158c231756891179debb6">WS_DEBUG_PRINTHEX</a>(...)&#160;&#160;&#160;{ WS_PRINTER.print(__VA_ARGS__, HEX); }</td></tr>
-<tr class="memdesc:a217ae461d78158c231756891179debb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints debug output. <br /></td></tr>
-<tr class="separator:a217ae461d78158c231756891179debb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbe0fa765a3b3027a61cef4823d4a2a1"><td class="memItemLeft" align="right" valign="top"><a id="afbe0fa765a3b3027a61cef4823d4a2a1"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#afbe0fa765a3b3027a61cef4823d4a2a1">MQTT_TOPIC_PIXELS_DEVICE</a>&#160;&#160;&#160;&quot;/signals/device/pixel&quot;</td></tr>
+<tr class="memdesc:afbe0fa765a3b3027a61cef4823d4a2a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pixels device-&gt;broker topic. <br /></td></tr>
+<tr class="separator:afbe0fa765a3b3027a61cef4823d4a2a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a328bba9e4ae79bf15cea0dd97fbdb6"><td class="memItemLeft" align="right" valign="top"><a id="a7a328bba9e4ae79bf15cea0dd97fbdb6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a7a328bba9e4ae79bf15cea0dd97fbdb6">MQTT_TOPIC_PIXELS_BROKER</a>&#160;&#160;&#160;&quot;/signals/broker/pixel&quot;</td></tr>
+<tr class="memdesc:a7a328bba9e4ae79bf15cea0dd97fbdb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pixels broker-&gt;device topic. <br /></td></tr>
+<tr class="separator:a7a328bba9e4ae79bf15cea0dd97fbdb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54f9fdefbcf023cac9afac805602da36"><td class="memItemLeft" align="right" valign="top"><a id="a54f9fdefbcf023cac9afac805602da36"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a54f9fdefbcf023cac9afac805602da36">WS_WDT_TIMEOUT</a>&#160;&#160;&#160;60000</td></tr>
 <tr class="memdesc:a54f9fdefbcf023cac9afac805602da36"><td class="mdescLeft">&#160;</td><td class="mdescRight">WDT timeout. <br /></td></tr>
 <tr class="separator:a54f9fdefbcf023cac9afac805602da36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab12e6ab2ab9c4e528e26e645397c707c"><td class="memItemLeft" align="right" valign="top"><a id="ab12e6ab2ab9c4e528e26e645397c707c"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#ab12e6ab2ab9c4e528e26e645397c707c">WS_KEEPALIVE_INTERVAL</a>&#160;&#160;&#160;4</td></tr>
-<tr class="memdesc:ab12e6ab2ab9c4e528e26e645397c707c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Session keepalive interval time, in seconds. <br /></td></tr>
-<tr class="separator:ab12e6ab2ab9c4e528e26e645397c707c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0915836cfab6a06783749f8d3c72324b"><td class="memItemLeft" align="right" valign="top"><a id="a0915836cfab6a06783749f8d3c72324b"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a0915836cfab6a06783749f8d3c72324b">WS_KEEPALIVE_INTERVAL_MS</a>&#160;&#160;&#160;4000</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a0915836cfab6a06783749f8d3c72324b">WS_KEEPALIVE_INTERVAL_MS</a>&#160;&#160;&#160;5000</td></tr>
 <tr class="memdesc:a0915836cfab6a06783749f8d3c72324b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Session keepalive interval time, in milliseconds. <br /></td></tr>
 <tr class="separator:a0915836cfab6a06783749f8d3c72324b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07b8444860c318fdff531a3d0c4f2e4a"><td class="memItemLeft" align="right" valign="top"><a id="a07b8444860c318fdff531a3d0c4f2e4a"></a>
@@ -237,7 +248,7 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This is the documentation for Adafruit's <a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> firmware for the Arduino platform. It is designed specifically to work with Adafruit IO <a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> IoT platform.</p>
 <p>Adafruit invests time and resources providing this open source code, please support Adafruit and open-source hardware by purchasing products from Adafruit!</p>
-<p>Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.</p>
+<p>Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.</p>
 <p>BSD license, all text here must be included in any redistribution. </p>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="ad985319e938a8de903c1196d34249569"></a>

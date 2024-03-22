@@ -76,9 +76,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a4119cb829deac63ce5df0ea0dc59b7ba"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a4119cb829deac63ce5df0ea0dc59b7ba">cbDecodePinConfigMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
 <tr class="memdesc:a4119cb829deac63ce5df0ea0dc59b7ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a repeated ConfigurePinRequests messages.  <a href="#a4119cb829deac63ce5df0ea0dc59b7ba">More...</a><br /></td></tr>
 <tr class="separator:a4119cb829deac63ce5df0ea0dc59b7ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae7a5e87a7061f6a08a16efab3f69d411"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ae7a5e87a7061f6a08a16efab3f69d411">cbDecodePinEventMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
-<tr class="memdesc:ae7a5e87a7061f6a08a16efab3f69d411"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes repeated PinEvents messages.  <a href="#ae7a5e87a7061f6a08a16efab3f69d411">More...</a><br /></td></tr>
-<tr class="separator:ae7a5e87a7061f6a08a16efab3f69d411"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10bcdf641a00178a2051f9c913c3ce1b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a10bcdf641a00178a2051f9c913c3ce1b">cbDecodeDigitalPinWriteMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:a10bcdf641a00178a2051f9c913c3ce1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes repeated PinEvents (digital pin write) messages.  <a href="#a10bcdf641a00178a2051f9c913c3ce1b">More...</a><br /></td></tr>
+<tr class="separator:a10bcdf641a00178a2051f9c913c3ce1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74f1f636bcc81659cd0a9bff4ffc00e0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a74f1f636bcc81659cd0a9bff4ffc00e0">cbSignalMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
 <tr class="memdesc:a74f1f636bcc81659cd0a9bff4ffc00e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets payload callbacks inside the signal message's submessage.  <a href="#a74f1f636bcc81659cd0a9bff4ffc00e0">More...</a><br /></td></tr>
 <tr class="separator:a74f1f636bcc81659cd0a9bff4ffc00e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -91,9 +91,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ac626c8c36ad03f06e38b263e4e79287a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ac626c8c36ad03f06e38b263e4e79287a">encodeI2CResponse</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse)</td></tr>
 <tr class="memdesc:ac626c8c36ad03f06e38b263e4e79287a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an wippersnapper_signal_v1_I2CResponse message.  <a href="#ac626c8c36ad03f06e38b263e4e79287a">More...</a><br /></td></tr>
 <tr class="separator:ac626c8c36ad03f06e38b263e4e79287a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0bf599ce0a2501b5e12be07891208947"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a0bf599ce0a2501b5e12be07891208947">initializeI2CBus</a> (wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest, int i2cPort)</td></tr>
-<tr class="memdesc:a0bf599ce0a2501b5e12be07891208947"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an I2C bus component.  <a href="#a0bf599ce0a2501b5e12be07891208947">More...</a><br /></td></tr>
-<tr class="separator:a0bf599ce0a2501b5e12be07891208947"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc5a5e97d342b73193c79edc3af04dac"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#acc5a5e97d342b73193c79edc3af04dac">initializeI2CBus</a> (wippersnapper_i2c_v1_I2CBusInitRequest msgInitRequest)</td></tr>
+<tr class="memdesc:acc5a5e97d342b73193c79edc3af04dac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an I2C bus component.  <a href="#acc5a5e97d342b73193c79edc3af04dac">More...</a><br /></td></tr>
+<tr class="separator:acc5a5e97d342b73193c79edc3af04dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a847c2a4449caffd9e61983089a72a3ed"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a847c2a4449caffd9e61983089a72a3ed">cbDecodeI2CDeviceInitRequestList</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
 <tr class="memdesc:a847c2a4449caffd9e61983089a72a3ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a list of I2C Device Initialization messages.  <a href="#a847c2a4449caffd9e61983089a72a3ed">More...</a><br /></td></tr>
 <tr class="separator:a847c2a4449caffd9e61983089a72a3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -103,22 +103,52 @@ Functions</h2></td></tr>
 <tr class="memitem:a56e4a00e871c8f415e1d3707b97009b5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a56e4a00e871c8f415e1d3707b97009b5">cbSignalI2CReq</a> (char *data, uint16_t len)</td></tr>
 <tr class="memdesc:a56e4a00e871c8f415e1d3707b97009b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when i2c signal sub-topic receives a new message and attempts to decode a signal request message.  <a href="#a56e4a00e871c8f415e1d3707b97009b5">More...</a><br /></td></tr>
 <tr class="separator:a56e4a00e871c8f415e1d3707b97009b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1296455612191b75bfe6354d37db47e4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a1296455612191b75bfe6354d37db47e4">cbDecodeServoMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:a1296455612191b75bfe6354d37db47e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a servo message and dispatches to the servo component.  <a href="#a1296455612191b75bfe6354d37db47e4">More...</a><br /></td></tr>
+<tr class="separator:a1296455612191b75bfe6354d37db47e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ab730fbf0ca127b71cb3c8bdcfc1b02"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a5ab730fbf0ca127b71cb3c8bdcfc1b02">cbServoMsg</a> (char *data, uint16_t len)</td></tr>
+<tr class="memdesc:a5ab730fbf0ca127b71cb3c8bdcfc1b02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the device recieves a new message from the /servo/ topic.  <a href="#a5ab730fbf0ca127b71cb3c8bdcfc1b02">More...</a><br /></td></tr>
+<tr class="separator:a5ab730fbf0ca127b71cb3c8bdcfc1b02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3009e9444bf35743246af165d994675c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a3009e9444bf35743246af165d994675c">cbPWMDecodeMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:a3009e9444bf35743246af165d994675c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a servo message and dispatches to the servo component.  <a href="#a3009e9444bf35743246af165d994675c">More...</a><br /></td></tr>
+<tr class="separator:a3009e9444bf35743246af165d994675c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0009cd0388ef4d985741c804f7f86e21"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a0009cd0388ef4d985741c804f7f86e21">cbPWMMsg</a> (char *data, uint16_t len)</td></tr>
+<tr class="memdesc:a0009cd0388ef4d985741c804f7f86e21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the device recieves a new message from the /pwm/ topic.  <a href="#a0009cd0388ef4d985741c804f7f86e21">More...</a><br /></td></tr>
+<tr class="separator:a0009cd0388ef4d985741c804f7f86e21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9f35382d74f2d8914948038f9fc6d24"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ae9f35382d74f2d8914948038f9fc6d24">cbDecodeDs18x20Msg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:ae9f35382d74f2d8914948038f9fc6d24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a Dallas Sensor (ds18x20) signal request message and executes the callback based on the message's tag.  <a href="#ae9f35382d74f2d8914948038f9fc6d24">More...</a><br /></td></tr>
+<tr class="separator:ae9f35382d74f2d8914948038f9fc6d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54c40c8e9cfdb99eca599d6e79f67bf6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a54c40c8e9cfdb99eca599d6e79f67bf6">cbSignalDSReq</a> (char *data, uint16_t len)</td></tr>
+<tr class="memdesc:a54c40c8e9cfdb99eca599d6e79f67bf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when DallasSensor (DS) signal sub-topic receives a new message and attempts to decode the message.  <a href="#a54c40c8e9cfdb99eca599d6e79f67bf6">More...</a><br /></td></tr>
+<tr class="separator:a54c40c8e9cfdb99eca599d6e79f67bf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78c3991643b517dcdd7e3eb849f58613"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a78c3991643b517dcdd7e3eb849f58613">cbDecodePixelsMsg</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:a78c3991643b517dcdd7e3eb849f58613"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a pixel strand request message and executes the callback based on the message's tag.  <a href="#a78c3991643b517dcdd7e3eb849f58613">More...</a><br /></td></tr>
+<tr class="separator:a78c3991643b517dcdd7e3eb849f58613"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a379c5abd8f8e6424fc7a7d695f5d22e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a379c5abd8f8e6424fc7a7d695f5d22e8">cbPixelsMsg</a> (char *data, uint16_t len)</td></tr>
+<tr class="memdesc:a379c5abd8f8e6424fc7a7d695f5d22e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the device recieves a new message from the /pixels/ topic.  <a href="#a379c5abd8f8e6424fc7a7d695f5d22e8">More...</a><br /></td></tr>
+<tr class="separator:a379c5abd8f8e6424fc7a7d695f5d22e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6bf26cc09b9047de9c6558fc821fad8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#af6bf26cc09b9047de9c6558fc821fad8">cbDecodeUARTMessage</a> (pb_istream_t *stream, const pb_field_t *field, void **arg)</td></tr>
+<tr class="memdesc:af6bf26cc09b9047de9c6558fc821fad8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a UART message and executes the callback based on the message's tag.  <a href="#af6bf26cc09b9047de9c6558fc821fad8">More...</a><br /></td></tr>
+<tr class="separator:af6bf26cc09b9047de9c6558fc821fad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbca6f75bec609c0af55ff815be2e964"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#afbca6f75bec609c0af55ff815be2e964">cbSignalUARTReq</a> (char *data, uint16_t len)</td></tr>
+<tr class="memdesc:afbca6f75bec609c0af55ff815be2e964"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when the signal UART sub-topic receives a new message. Performs decoding.  <a href="#afbca6f75bec609c0af55ff815be2e964">More...</a><br /></td></tr>
+<tr class="separator:afbca6f75bec609c0af55ff815be2e964"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae010560fd4d00eb3e86a9e3332906a3a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ae010560fd4d00eb3e86a9e3332906a3a">cbRegistrationStatus</a> (char *data, uint16_t len)</td></tr>
 <tr class="memdesc:ae010560fd4d00eb3e86a9e3332906a3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when broker responds to a device's publish across the registration topic.  <a href="#ae010560fd4d00eb3e86a9e3332906a3a">More...</a><br /></td></tr>
 <tr class="separator:ae010560fd4d00eb3e86a9e3332906a3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5bfeece9bfec751f300aee569f1885cf"><td class="memItemLeft" align="right" valign="top"><a id="a5bfeece9bfec751f300aee569f1885cf"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a5bfeece9bfec751f300aee569f1885cf">retryMQTTConnection</a> ()</td></tr>
-<tr class="memdesc:a5bfeece9bfec751f300aee569f1885cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to re-connect to the MQTT broker, retries with an exponential backoff + jitter interval. <br /></td></tr>
-<tr class="separator:a5bfeece9bfec751f300aee569f1885cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f075084f2197b1e0925518dff1cecc4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#a8f075084f2197b1e0925518dff1cecc4">cbErrorTopic</a> (char *errorData, uint16_t len)</td></tr>
 <tr class="memdesc:a8f075084f2197b1e0925518dff1cecc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when client receives a message published across the Adafruit IO MQTT /error special topic.  <a href="#a8f075084f2197b1e0925518dff1cecc4">More...</a><br /></td></tr>
 <tr class="separator:a8f075084f2197b1e0925518dff1cecc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1e37658221dffced66cc9e1548e5be1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#aa1e37658221dffced66cc9e1548e5be1">cbThrottleTopic</a> (char *throttleData, uint16_t len)</td></tr>
 <tr class="memdesc:aa1e37658221dffced66cc9e1548e5be1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when client receives a message published across the Adafruit IO MQTT /throttle special topic. Delays until throttle is released.  <a href="#aa1e37658221dffced66cc9e1548e5be1">More...</a><br /></td></tr>
 <tr class="separator:aa1e37658221dffced66cc9e1548e5be1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad98d8ca0eab78c08264cc3a98b589966"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ad98d8ca0eab78c08264cc3a98b589966">validateAppCreds</a> ()</td></tr>
-<tr class="memdesc:ad98d8ca0eab78c08264cc3a98b589966"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks validity of WipperSnapper application credentials.  <a href="#ad98d8ca0eab78c08264cc3a98b589966">More...</a><br /></td></tr>
-<tr class="separator:ad98d8ca0eab78c08264cc3a98b589966"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad64098879da23fc915d537341b99ddd7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ad64098879da23fc915d537341b99ddd7">print_reset_reason</a> (int reason)</td></tr>
+<tr class="memdesc:ad64098879da23fc915d537341b99ddd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints last reset reason of ESP32.  <a href="#ad64098879da23fc915d537341b99ddd7">More...</a><br /></td></tr>
+<tr class="separator:ad64098879da23fc915d537341b99ddd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad879f229a33d9dcede7f40aec4ea49ba"><td class="memItemLeft" align="right" valign="top"><a id="ad879f229a33d9dcede7f40aec4ea49ba"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8cpp.html#ad879f229a33d9dcede7f40aec4ea49ba">printDeviceInfo</a> ()</td></tr>
+<tr class="memdesc:ad879f229a33d9dcede7f40aec4ea49ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints information about the WS device to the serial monitor. <br /></td></tr>
+<tr class="separator:ad879f229a33d9dcede7f40aec4ea49ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -172,14 +202,14 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ae7a5e87a7061f6a08a16efab3f69d411"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae7a5e87a7061f6a08a16efab3f69d411">&#9670;&nbsp;</a></span>cbDecodePinEventMsg()</h2>
+<a id="a10bcdf641a00178a2051f9c913c3ce1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10bcdf641a00178a2051f9c913c3ce1b">&#9670;&nbsp;</a></span>cbDecodeDigitalPinWriteMsg()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool cbDecodePinEventMsg </td>
+          <td class="memname">bool cbDecodeDigitalPinWriteMsg </td>
           <td>(</td>
           <td class="paramtype">pb_istream_t *&#160;</td>
           <td class="paramname"><em>stream</em>, </td>
@@ -204,7 +234,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Decodes repeated PinEvents messages. </p>
+<p>Decodes repeated PinEvents (digital pin write) messages. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">stream</td><td>Input stream to read from. </td></tr>
@@ -352,8 +382,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a0bf599ce0a2501b5e12be07891208947"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0bf599ce0a2501b5e12be07891208947">&#9670;&nbsp;</a></span>initializeI2CBus()</h2>
+<a id="acc5a5e97d342b73193c79edc3af04dac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc5a5e97d342b73193c79edc3af04dac">&#9670;&nbsp;</a></span>initializeI2CBus()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -362,18 +392,8 @@ Variables</h2></td></tr>
           <td class="memname">bool initializeI2CBus </td>
           <td>(</td>
           <td class="paramtype">wippersnapper_i2c_v1_I2CBusInitRequest&#160;</td>
-          <td class="paramname"><em>msgInitRequest</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>msgInitRequest</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>i2cPort</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -382,7 +402,6 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">msgInitRequest</td><td>A pointer to an i2c bus initialization message. </td></tr>
-    <tr><td class="paramname">i2cPort</td><td>Desired I2C port to initialize. </td></tr>
   </table>
   </dd>
 </dl>
@@ -517,6 +536,416 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a1296455612191b75bfe6354d37db47e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1296455612191b75bfe6354d37db47e4">&#9670;&nbsp;</a></span>cbDecodeServoMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbDecodeServoMsg </td>
+          <td>(</td>
+          <td class="paramtype">pb_istream_t *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const pb_field_t *&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void **&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decodes a servo message and dispatches to the servo component. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>Incoming data stream from buffer. </td></tr>
+    <tr><td class="paramname">field</td><td>Protobuf message's tag type. </td></tr>
+    <tr><td class="paramname">arg</td><td>Optional arguments from decoder calling function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if decoded and executed successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a5ab730fbf0ca127b71cb3c8bdcfc1b02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ab730fbf0ca127b71cb3c8bdcfc1b02">&#9670;&nbsp;</a></span>cbServoMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cbServoMsg </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Called when the device recieves a new message from the /servo/ topic. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Incoming data from MQTT broker. </td></tr>
+    <tr><td class="paramname">len</td><td>Length of incoming data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a3009e9444bf35743246af165d994675c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3009e9444bf35743246af165d994675c">&#9670;&nbsp;</a></span>cbPWMDecodeMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbPWMDecodeMsg </td>
+          <td>(</td>
+          <td class="paramtype">pb_istream_t *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const pb_field_t *&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void **&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decodes a servo message and dispatches to the servo component. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>Incoming data stream from buffer. </td></tr>
+    <tr><td class="paramname">field</td><td>Protobuf message's tag type. </td></tr>
+    <tr><td class="paramname">arg</td><td>Optional arguments from decoder calling function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if decoded and executed successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a0009cd0388ef4d985741c804f7f86e21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0009cd0388ef4d985741c804f7f86e21">&#9670;&nbsp;</a></span>cbPWMMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cbPWMMsg </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Called when the device recieves a new message from the /pwm/ topic. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Incoming data from MQTT broker. </td></tr>
+    <tr><td class="paramname">len</td><td>Length of incoming data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae9f35382d74f2d8914948038f9fc6d24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9f35382d74f2d8914948038f9fc6d24">&#9670;&nbsp;</a></span>cbDecodeDs18x20Msg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbDecodeDs18x20Msg </td>
+          <td>(</td>
+          <td class="paramtype">pb_istream_t *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const pb_field_t *&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void **&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decodes a Dallas Sensor (ds18x20) signal request message and executes the callback based on the message's tag. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>Incoming data stream from buffer. </td></tr>
+    <tr><td class="paramname">field</td><td>Protobuf message's tag type. </td></tr>
+    <tr><td class="paramname">arg</td><td>Optional arguments from decoder calling function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if decoded successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a54c40c8e9cfdb99eca599d6e79f67bf6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54c40c8e9cfdb99eca599d6e79f67bf6">&#9670;&nbsp;</a></span>cbSignalDSReq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cbSignalDSReq </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Called when DallasSensor (DS) signal sub-topic receives a new message and attempts to decode the message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Incoming data from MQTT broker. </td></tr>
+    <tr><td class="paramname">len</td><td>Length of incoming data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a78c3991643b517dcdd7e3eb849f58613"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78c3991643b517dcdd7e3eb849f58613">&#9670;&nbsp;</a></span>cbDecodePixelsMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbDecodePixelsMsg </td>
+          <td>(</td>
+          <td class="paramtype">pb_istream_t *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const pb_field_t *&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void **&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decodes a pixel strand request message and executes the callback based on the message's tag. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>Incoming data stream from buffer. </td></tr>
+    <tr><td class="paramname">field</td><td>Protobuf message's tag type. </td></tr>
+    <tr><td class="paramname">arg</td><td>Optional arguments from decoder calling function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if decoded successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a379c5abd8f8e6424fc7a7d695f5d22e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a379c5abd8f8e6424fc7a7d695f5d22e8">&#9670;&nbsp;</a></span>cbPixelsMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cbPixelsMsg </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Called when the device recieves a new message from the /pixels/ topic. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Incoming data from MQTT broker. </td></tr>
+    <tr><td class="paramname">len</td><td>Length of incoming data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af6bf26cc09b9047de9c6558fc821fad8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6bf26cc09b9047de9c6558fc821fad8">&#9670;&nbsp;</a></span>cbDecodeUARTMessage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool cbDecodeUARTMessage </td>
+          <td>(</td>
+          <td class="paramtype">pb_istream_t *&#160;</td>
+          <td class="paramname"><em>stream</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const pb_field_t *&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void **&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decodes a UART message and executes the callback based on the message's tag. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stream</td><td>Incoming data stream from buffer. </td></tr>
+    <tr><td class="paramname">field</td><td>Protobuf message's tag type. </td></tr>
+    <tr><td class="paramname">arg</td><td>Optional arguments from decoder calling function. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if decoded successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="afbca6f75bec609c0af55ff815be2e964"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbca6f75bec609c0af55ff815be2e964">&#9670;&nbsp;</a></span>cbSignalUARTReq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cbSignalUARTReq </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Called when the signal UART sub-topic receives a new message. Performs decoding. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Incoming data from MQTT broker. </td></tr>
+    <tr><td class="paramname">len</td><td>Length of incoming data. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ae010560fd4d00eb3e86a9e3332906a3a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae010560fd4d00eb3e86a9e3332906a3a">&#9670;&nbsp;</a></span>cbRegistrationStatus()</h2>
 
@@ -628,23 +1057,44 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ad98d8ca0eab78c08264cc3a98b589966"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad98d8ca0eab78c08264cc3a98b589966">&#9670;&nbsp;</a></span>validateAppCreds()</h2>
+<a id="ad64098879da23fc915d537341b99ddd7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad64098879da23fc915d537341b99ddd7">&#9670;&nbsp;</a></span>print_reset_reason()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool validateAppCreds </td>
+          <td class="memname">void print_reset_reason </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>reason</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Checks validity of WipperSnapper application credentials. </p>
-<dl class="section return"><dt>Returns</dt><dd>True if WipperSnapper application credentials exist and are valid, False otherwise. </dd></dl>
+<p>Prints last reset reason of ESP32. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reason</td><td>The return code of rtc_get_reset_reason(coreNum) </td></tr>
+  </table>
+  </dd>
+</dl>
+<p>&lt;1, Vbat power on reset</p>
+<p>&lt;3, Software reset digital core</p>
+<p>&lt;4, Legacy watch dog reset digital core</p>
+<p>&lt;5, Deep Sleep reset digital core</p>
+<p>&lt;6, Reset by SLC module, reset digital core</p>
+<p>&lt;7, Timer Group0 Watch dog reset digital core</p>
+<p>&lt;8, Timer Group1 Watch dog reset digital core</p>
+<p>&lt;9, RTC Watch dog Reset digital core</p>
+<p>&lt;10, Instrusion tested to reset CPU</p>
+<p>&lt;11, Time Group reset CPU</p>
+<p>&lt;12, Software reset CPU</p>
+<p>&lt;13, RTC Watch dog Reset CPU</p>
+<p>&lt;14, for APP CPU, reseted by PRO CPU</p>
+<p>&lt;15, Reset when the vdd voltage is not stable</p>
+<p>&lt;16, RTC Watch dog reset digital core and rtc module </p>
 
 </div>
 </div>

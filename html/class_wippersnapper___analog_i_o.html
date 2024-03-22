@@ -60,7 +60,6 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_wippersnapper___analog_i_o-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Wippersnapper_AnalogIO Class Reference</div>  </div>
@@ -87,24 +86,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6d829ddc6f46a249a811345edbbdcc15"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a6d829ddc6f46a249a811345edbbdcc15">getAref</a> ()</td></tr>
 <tr class="memdesc:a6d829ddc6f46a249a811345edbbdcc15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the device's reference voltage.  <a href="#a6d829ddc6f46a249a811345edbbdcc15">More...</a><br /></td></tr>
 <tr class="separator:a6d829ddc6f46a249a811345edbbdcc15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33bd9e07677f30b9eda44c1b5e4dcbe3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a33bd9e07677f30b9eda44c1b5e4dcbe3">initAnalogOutputPin</a> (int pin)</td></tr>
-<tr class="memdesc:a33bd9e07677f30b9eda44c1b5e4dcbe3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an analog output pin.  <a href="#a33bd9e07677f30b9eda44c1b5e4dcbe3">More...</a><br /></td></tr>
-<tr class="separator:a33bd9e07677f30b9eda44c1b5e4dcbe3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea66aa2e818ed403bddc9af235756acc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#aea66aa2e818ed403bddc9af235756acc">initAnalogInputPin</a> (int pin, float period, wippersnapper_pin_v1_ConfigurePinRequest_Pull pullMode, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode analogReadMode)</td></tr>
 <tr class="memdesc:aea66aa2e818ed403bddc9af235756acc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an analog input pin.  <a href="#aea66aa2e818ed403bddc9af235756acc">More...</a><br /></td></tr>
 <tr class="separator:aea66aa2e818ed403bddc9af235756acc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac683ebba2de7f1cb25a6482da9b94c5f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#ac683ebba2de7f1cb25a6482da9b94c5f">deinitAnalogPin</a> (wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin)</td></tr>
 <tr class="memdesc:ac683ebba2de7f1cb25a6482da9b94c5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitializes an analog pin.  <a href="#ac683ebba2de7f1cb25a6482da9b94c5f">More...</a><br /></td></tr>
 <tr class="separator:ac683ebba2de7f1cb25a6482da9b94c5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a548f4dceb1e0df0687d1290ffddd2576"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a548f4dceb1e0df0687d1290ffddd2576">deinitAnalogInputPinObj</a> (int pin)</td></tr>
-<tr class="memdesc:a548f4dceb1e0df0687d1290ffddd2576"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitializes an analog input pin.  <a href="#a548f4dceb1e0df0687d1290ffddd2576">More...</a><br /></td></tr>
-<tr class="separator:a548f4dceb1e0df0687d1290ffddd2576"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa38ac42068ef10fea7c0f4f420af4a4b"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#aa38ac42068ef10fea7c0f4f420af4a4b">readAnalogPinRaw</a> (int pin)</td></tr>
-<tr class="memdesc:aa38ac42068ef10fea7c0f4f420af4a4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the value of an analog pin. Value is always scaled to 16-bit.  <a href="#aa38ac42068ef10fea7c0f4f420af4a4b">More...</a><br /></td></tr>
-<tr class="separator:aa38ac42068ef10fea7c0f4f420af4a4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a82cbd683874b9e4bf627b5cf7ecd7ec3"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a82cbd683874b9e4bf627b5cf7ecd7ec3">getAnalogPinVoltage</a> (uint16_t rawValue)</td></tr>
-<tr class="memdesc:a82cbd683874b9e4bf627b5cf7ecd7ec3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates analog pin's voltage provided a 16-bit ADC value.  <a href="#a82cbd683874b9e4bf627b5cf7ecd7ec3">More...</a><br /></td></tr>
-<tr class="separator:a82cbd683874b9e4bf627b5cf7ecd7ec3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af14e1b2a73ca273a249cdbe9968f30d6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#af14e1b2a73ca273a249cdbe9968f30d6">disableAnalogInPin</a> (int pin)</td></tr>
+<tr class="memdesc:af14e1b2a73ca273a249cdbe9968f30d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disables an analog input pin from sampling.  <a href="#af14e1b2a73ca273a249cdbe9968f30d6">More...</a><br /></td></tr>
+<tr class="separator:af14e1b2a73ca273a249cdbe9968f30d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab915060e10cc7808d27e3a983d62b027"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#ab915060e10cc7808d27e3a983d62b027">getPinValue</a> (int pin)</td></tr>
+<tr class="memdesc:ab915060e10cc7808d27e3a983d62b027"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the raw ADC value of an analog pin. Value is always scaled to 16-bit.  <a href="#ab915060e10cc7808d27e3a983d62b027">More...</a><br /></td></tr>
+<tr class="separator:ab915060e10cc7808d27e3a983d62b027"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06a1f019ab0b2dac68e46c6a5901abb0"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a06a1f019ab0b2dac68e46c6a5901abb0">getPinValueVolts</a> (int pin)</td></tr>
+<tr class="memdesc:a06a1f019ab0b2dac68e46c6a5901abb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates analog pin's voltage provided a 16-bit ADC value.  <a href="#a06a1f019ab0b2dac68e46c6a5901abb0">More...</a><br /></td></tr>
+<tr class="separator:a06a1f019ab0b2dac68e46c6a5901abb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a883d16afad81abb3b8fe6398427580cb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a883d16afad81abb3b8fe6398427580cb">setADCResolution</a> (int resolution)</td></tr>
 <tr class="memdesc:a883d16afad81abb3b8fe6398427580cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the device's ADC resolution, either natively via calling Arduino API's analogReadResolution() or via scaling.  <a href="#a883d16afad81abb3b8fe6398427580cb">More...</a><br /></td></tr>
 <tr class="separator:a883d16afad81abb3b8fe6398427580cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -114,21 +110,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a79251a27be95ce1ba49fa8421f5c14cf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a79251a27be95ce1ba49fa8421f5c14cf">getNativeResolution</a> ()</td></tr>
 <tr class="memdesc:a79251a27be95ce1ba49fa8421f5c14cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the device's native ADC resolution.  <a href="#a79251a27be95ce1ba49fa8421f5c14cf">More...</a><br /></td></tr>
 <tr class="separator:a79251a27be95ce1ba49fa8421f5c14cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ada0266cdb2e0d2bf95bd00d6d08762"><td class="memItemLeft" align="right" valign="top"><a id="a1ada0266cdb2e0d2bf95bd00d6d08762"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a1ada0266cdb2e0d2bf95bd00d6d08762">processAnalogInputs</a> ()</td></tr>
-<tr class="memdesc:a1ada0266cdb2e0d2bf95bd00d6d08762"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates thru analog inputs. <br /></td></tr>
-<tr class="separator:a1ada0266cdb2e0d2bf95bd00d6d08762"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10fc119c3eea68410c31032ddc715853"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a10fc119c3eea68410c31032ddc715853">encodePinEvent</a> (wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, float pinVal)</td></tr>
-<tr class="memdesc:a10fc119c3eea68410c31032ddc715853"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an analog input pin event into a signal message.  <a href="#a10fc119c3eea68410c31032ddc715853">More...</a><br /></td></tr>
-<tr class="separator:a10fc119c3eea68410c31032ddc715853"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6b954c6cd4e81c2c8d7be1bca453b63"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#ae6b954c6cd4e81c2c8d7be1bca453b63">encodePinEvent</a> (wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, uint16_t pinVal)</td></tr>
-<tr class="memdesc:ae6b954c6cd4e81c2c8d7be1bca453b63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an analog input pin event into a signal message.  <a href="#ae6b954c6cd4e81c2c8d7be1bca453b63">More...</a><br /></td></tr>
-<tr class="separator:ae6b954c6cd4e81c2c8d7be1bca453b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a1ead0e465d5dd59c24c7fdc87c5fe546"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structanalog_input_pin.html">analogInputPin</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a1ead0e465d5dd59c24c7fdc87c5fe546">_analog_input_pins</a></td></tr>
-<tr class="separator:a1ead0e465d5dd59c24c7fdc87c5fe546"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b9a2a52d3d0ffac5c8a21ef8b74e43b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a7b9a2a52d3d0ffac5c8a21ef8b74e43b">timerExpired</a> (long currentTime, <a class="el" href="structanalog_input_pin.html">analogInputPin</a> pin)</td></tr>
+<tr class="memdesc:a7b9a2a52d3d0ffac5c8a21ef8b74e43b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if pin's period is expired.  <a href="#a7b9a2a52d3d0ffac5c8a21ef8b74e43b">More...</a><br /></td></tr>
+<tr class="separator:a7b9a2a52d3d0ffac5c8a21ef8b74e43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab4ad7852708862ccda06a510a4b3d59"><td class="memItemLeft" align="right" valign="top"><a id="aab4ad7852708862ccda06a510a4b3d59"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#aab4ad7852708862ccda06a510a4b3d59">update</a> ()</td></tr>
+<tr class="memdesc:aab4ad7852708862ccda06a510a4b3d59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates thru analog inputs. <br /></td></tr>
+<tr class="separator:aab4ad7852708862ccda06a510a4b3d59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fe6e7a4508652a878ce2b2a4792d8cb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a0fe6e7a4508652a878ce2b2a4792d8cb">encodePinEvent</a> (uint8_t pinName, wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode readMode, uint16_t pinValRaw=0, float pinValVolts=0.0)</td></tr>
+<tr class="memdesc:a0fe6e7a4508652a878ce2b2a4792d8cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes an analog input pin event into a signal message and publish it to IO.  <a href="#a0fe6e7a4508652a878ce2b2a4792d8cb">More...</a><br /></td></tr>
+<tr class="separator:a0fe6e7a4508652a878ce2b2a4792d8cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that provides an interface for reading and controlling analog pins. Stores information about analog input pins. </p>
@@ -214,32 +205,6 @@ Public Attributes</h2></td></tr>
 
 <p>Returns the device's reference voltage. </p>
 <dl class="section return"><dt>Returns</dt><dd>Analog reference voltage, in volts. </dd></dl>
-
-</div>
-</div>
-<a id="a33bd9e07677f30b9eda44c1b5e4dcbe3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33bd9e07677f30b9eda44c1b5e4dcbe3">&#9670;&nbsp;</a></span>initAnalogOutputPin()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Wippersnapper_AnalogIO::initAnalogOutputPin </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>pin</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Initializes an analog output pin. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">pin</td><td>The analog pin to read from. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -331,14 +296,14 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a548f4dceb1e0df0687d1290ffddd2576"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a548f4dceb1e0df0687d1290ffddd2576">&#9670;&nbsp;</a></span>deinitAnalogInputPinObj()</h2>
+<a id="af14e1b2a73ca273a249cdbe9968f30d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af14e1b2a73ca273a249cdbe9968f30d6">&#9670;&nbsp;</a></span>disableAnalogInPin()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void Wippersnapper_AnalogIO::deinitAnalogInputPinObj </td>
+          <td class="memname">void Wippersnapper_AnalogIO::disableAnalogInPin </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>pin</em></td><td>)</td>
@@ -347,24 +312,24 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Deinitializes an analog input pin. </p>
+<p>Disables an analog input pin from sampling. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pin</td><td>The analog input pin to deinitialize. </td></tr>
+    <tr><td class="paramname">pin</td><td>The analog input pin to disable. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="aa38ac42068ef10fea7c0f4f420af4a4b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa38ac42068ef10fea7c0f4f420af4a4b">&#9670;&nbsp;</a></span>readAnalogPinRaw()</h2>
+<a id="ab915060e10cc7808d27e3a983d62b027"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab915060e10cc7808d27e3a983d62b027">&#9670;&nbsp;</a></span>getPinValue()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t Wippersnapper_AnalogIO::readAnalogPinRaw </td>
+          <td class="memname">uint16_t Wippersnapper_AnalogIO::getPinValue </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>pin</em></td><td>)</td>
@@ -373,7 +338,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Reads the value of an analog pin. Value is always scaled to 16-bit. </p>
+<p>Reads the raw ADC value of an analog pin. Value is always scaled to 16-bit. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pin</td><td>The pin to be read. </td></tr>
@@ -384,17 +349,17 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a82cbd683874b9e4bf627b5cf7ecd7ec3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82cbd683874b9e4bf627b5cf7ecd7ec3">&#9670;&nbsp;</a></span>getAnalogPinVoltage()</h2>
+<a id="a06a1f019ab0b2dac68e46c6a5901abb0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06a1f019ab0b2dac68e46c6a5901abb0">&#9670;&nbsp;</a></span>getPinValueVolts()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Wippersnapper_AnalogIO::getAnalogPinVoltage </td>
+          <td class="memname">float Wippersnapper_AnalogIO::getPinValueVolts </td>
           <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>rawValue</em></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>pin</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -403,7 +368,7 @@ Public Attributes</h2></td></tr>
 <p>Calculates analog pin's voltage provided a 16-bit ADC value. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">rawValue</td><td>The value from a previous ADC reading. </td></tr>
+    <tr><td class="paramname">pin</td><td>The value from a previous ADC reading. </td></tr>
   </table>
   </dd>
 </dl>
@@ -477,29 +442,23 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a10fc119c3eea68410c31032ddc715853"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a10fc119c3eea68410c31032ddc715853">&#9670;&nbsp;</a></span>encodePinEvent() <span class="overload">[1/2]</span></h2>
+<a id="a7b9a2a52d3d0ffac5c8a21ef8b74e43b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b9a2a52d3d0ffac5c8a21ef8b74e43b">&#9670;&nbsp;</a></span>timerExpired()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool Wippersnapper_AnalogIO::encodePinEvent </td>
+          <td class="memname">bool Wippersnapper_AnalogIO::timerExpired </td>
           <td>(</td>
-          <td class="paramtype">wippersnapper_signal_v1_CreateSignalRequest *&#160;</td>
-          <td class="paramname"><em>outgoingSignalMsg</em>, </td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>currentTime</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>pinName</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>pinVal</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structanalog_input_pin.html">analogInputPin</a>&#160;</td>
+          <td class="paramname"><em>pin</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -509,21 +468,20 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Encodes an analog input pin event into a signal message. </p>
+<p>Checks if pin's period is expired. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">outgoingSignalMsg</td><td>Pointer to an empty CreateSignalRequest message. </td></tr>
-    <tr><td class="paramname">pinName</td><td>Specifies the pin's name. </td></tr>
-    <tr><td class="paramname">pinVal</td><td>Pin voltage, in volts. </td></tr>
+    <tr><td class="paramname">currentTime</td><td>The current software timer value. </td></tr>
+    <tr><td class="paramname">pin</td><td>The desired analog pin to check </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if encoded successfully, False otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True if pin's period expired, False otherwise. </dd></dl>
 
 </div>
 </div>
-<a id="ae6b954c6cd4e81c2c8d7be1bca453b63"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6b954c6cd4e81c2c8d7be1bca453b63">&#9670;&nbsp;</a></span>encodePinEvent() <span class="overload">[2/2]</span></h2>
+<a id="a0fe6e7a4508652a878ce2b2a4792d8cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fe6e7a4508652a878ce2b2a4792d8cb">&#9670;&nbsp;</a></span>encodePinEvent()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -531,20 +489,26 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="memname">bool Wippersnapper_AnalogIO::encodePinEvent </td>
           <td>(</td>
-          <td class="paramtype">wippersnapper_signal_v1_CreateSignalRequest *&#160;</td>
-          <td class="paramname"><em>outgoingSignalMsg</em>, </td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>pinName</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t&#160;</td>
-          <td class="paramname"><em>pinName</em>, </td>
+          <td class="paramtype">wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode&#160;</td>
+          <td class="paramname"><em>readMode</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>pinVal</em>&#160;</td>
+          <td class="paramname"><em>pinValRaw</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>pinValVolts</em> = <code>0.0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -554,32 +518,17 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Encodes an analog input pin event into a signal message. </p>
+<p>Encodes an analog input pin event into a signal message and publish it to IO. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">outgoingSignalMsg</td><td>Pointer to an empty CreateSignalRequest message. </td></tr>
     <tr><td class="paramname">pinName</td><td>Specifies the pin's name. </td></tr>
-    <tr><td class="paramname">pinVal</td><td>Pin value. </td></tr>
+    <tr><td class="paramname">readMode</td><td>Read mode - raw ADC or voltage. </td></tr>
+    <tr><td class="paramname">pinValRaw</td><td>Raw pin value, used if readmode is raw. </td></tr>
+    <tr><td class="paramname">pinValVolts</td><td>Raw pin value expressed in Volts, used if readmode is volts. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if successfully encoded a PinEvent signal message, False otherwise. </dd></dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a1ead0e465d5dd59c24c7fdc87c5fe546"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ead0e465d5dd59c24c7fdc87c5fe546">&#9670;&nbsp;</a></span>_analog_input_pins</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structanalog_input_pin.html">analogInputPin</a>* Wippersnapper_AnalogIO::_analog_input_pins</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Array of analog pin objects </p>
 
 </div>
 </div>

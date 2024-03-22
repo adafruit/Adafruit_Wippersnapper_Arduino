@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ninafwver',['NINAFWVER',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#a7a7f6b12d2e1ea5d55d80bb4a239daae',1,'Wippersnapper_AIRLIFT.h']]]
+  ['green',['GREEN',['../_wippersnapper___status_l_e_d_8h.html#acfbc006ea433ad708fdee3e82996e721',1,'Wippersnapper_StatusLED.h']]]
 ];

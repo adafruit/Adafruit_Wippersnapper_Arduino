@@ -1,17 +1,7 @@
 var searchData=
 [
-  ['wippersnapper',['Wippersnapper',['../class_wippersnapper.html',1,'']]],
-  ['wippersnapper_5fairlift',['Wippersnapper_AIRLIFT',['../class_wippersnapper___a_i_r_l_i_f_t.html',1,'']]],
-  ['wippersnapper_5fanalogio',['Wippersnapper_AnalogIO',['../class_wippersnapper___analog_i_o.html',1,'']]],
-  ['wippersnapper_5fcomponent_5fi2c',['WipperSnapper_Component_I2C',['../class_wipper_snapper___component___i2_c.html',1,'']]],
-  ['wippersnapper_5fdigitalgpio',['Wippersnapper_DigitalGPIO',['../class_wippersnapper___digital_g_p_i_o.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver',['WipperSnapper_I2C_Driver',['../class_wipper_snapper___i2_c___driver.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5fahtx0',['WipperSnapper_I2C_Driver_AHTX0',['../class_wipper_snapper___i2_c___driver___a_h_t_x0.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5fbme280',['WipperSnapper_I2C_Driver_BME280',['../class_wipper_snapper___i2_c___driver___b_m_e280.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5fdps310',['WipperSnapper_I2C_Driver_DPS310',['../class_wipper_snapper___i2_c___driver___d_p_s310.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5fmcp9601',['WipperSnapper_I2C_Driver_MCP9601',['../class_wipper_snapper___i2_c___driver___m_c_p9601.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5fmcp9808',['WipperSnapper_I2C_Driver_MCP9808',['../class_wipper_snapper___i2_c___driver___m_c_p9808.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5fscd30',['WipperSnapper_I2C_Driver_SCD30',['../class_wipper_snapper___i2_c___driver___s_c_d30.html',1,'']]],
-  ['wippersnapper_5fi2c_5fdriver_5ftsl2591',['WipperSnapper_I2C_Driver_TSL2591',['../class_wipper_snapper___i2_c___driver___t_s_l2591.html',1,'']]],
-  ['wippersnapper_5fwifinina',['Wippersnapper_WIFININA',['../class_wippersnapper___w_i_f_i_n_i_n_a.html',1,'']]]
+  ['servo_5ft',['servo_t',['../structservo__t.html',1,'']]],
+  ['servocomponent',['servoComponent',['../structservo_component.html',1,'']]],
+  ['servopin_5ft',['ServoPin_t',['../struct_servo_pin__t.html',1,'']]],
+  ['strand_5fs',['strand_s',['../structstrand__s.html',1,'']]]
 ];

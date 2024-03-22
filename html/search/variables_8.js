@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['throttlemessage',['throttleMessage',['../class_wippersnapper.html#a4143bb10fd2cc88f19c79cfc61cbf16f',1,'Wippersnapper']]],
-  ['throttletime',['throttleTime',['../class_wippersnapper.html#a192df644cf517a81649fe5a4f8b32d4b',1,'Wippersnapper']]],
-  ['totaldigitalpins',['totalDigitalPins',['../class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6',1,'Wippersnapper']]]
+  ['onewire',['oneWire',['../structds18x20_obj.html#a80d56c197ccc8d69df20d9611ea81244',1,'ds18x20Obj']]],
+  ['onewire_5fpin',['onewire_pin',['../structds18x20_obj.html#a8176ea7af2704d9f950bc725a112d2b0',1,'ds18x20Obj']]],
+  ['ordering',['ordering',['../structstrand__s.html#a1770b55462d56d5d1209ec2c6cd01a23',1,'strand_s']]]
 ];

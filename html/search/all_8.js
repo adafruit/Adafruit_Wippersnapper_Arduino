@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['halterror',['haltError',['../class_wippersnapper.html#afe5e4fb34dd8685718b7cf779ace5bf7',1,'Wippersnapper']]]
+  ['halterror',['haltError',['../class_wippersnapper.html#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835',1,'Wippersnapper']]]
 ];

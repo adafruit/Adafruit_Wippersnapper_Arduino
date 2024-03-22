@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['msgsignali2c',['msgSignalI2C',['../class_wippersnapper.html#a71e758d3d2bb5f05c6ac804de7ae9e99',1,'Wippersnapper']]]
+  ['i2ccomponents',['i2cComponents',['../class_wippersnapper.html#ab71c06b6b7776879be79d88bf689d815',1,'Wippersnapper']]],
+  ['isactive',['isActive',['../struct_servo_pin__t.html#aaf3c1889bb99bc6f936a3cfb6eba532a',1,'ServoPin_t']]]
 ];

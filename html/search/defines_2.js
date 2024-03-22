@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['green',['GREEN',['../_wippersnapper___status_l_e_d___colors_8h.html#acfbc006ea433ad708fdee3e82996e721',1,'Wippersnapper_StatusLED_Colors.h']]]
+  ['cyan',['CYAN',['../_wippersnapper___status_l_e_d_8h.html#ad243f93c16bc4c1d3e0a13b84421d760',1,'Wippersnapper_StatusLED.h']]]
 ];

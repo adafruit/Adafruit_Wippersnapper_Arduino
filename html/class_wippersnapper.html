@@ -79,7 +79,8 @@ Inheritance diagram for Wippersnapper:</div>
   <img src="class_wippersnapper.png" usemap="#Wippersnapper_map" alt=""/>
   <map id="Wippersnapper_map" name="Wippersnapper_map">
 <area href="class_wippersnapper___a_i_r_l_i_f_t.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_AIRLIFT" shape="rect" coords="0,56,160,80"/>
-<area href="class_wippersnapper___w_i_f_i_n_i_n_a.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_WIFININA" shape="rect" coords="170,56,330,80"/>
+<area href="class_wippersnapper___e_s_p32.html" title="Class for using the ESP32 network interface. " alt="Wippersnapper_ESP32" shape="rect" coords="170,56,330,80"/>
+<area href="class_wippersnapper___w_i_f_i_n_i_n_a.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_WIFININA" shape="rect" coords="340,56,500,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -93,22 +94,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ac85607d165af964fbf68f484cbcaa8b4">provision</a> ()</td></tr>
 <tr class="memdesc:ac85607d165af964fbf68f484cbcaa8b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provisions a WipperSnapper device with its network configuration and Adafruit IO credentials. <br /></td></tr>
 <tr class="separator:ac85607d165af964fbf68f484cbcaa8b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78daa3dc5bcfa2a67418c5c11b807cb3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a78daa3dc5bcfa2a67418c5c11b807cb3">statusLEDInit</a> ()</td></tr>
-<tr class="memdesc:a78daa3dc5bcfa2a67418c5c11b807cb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes board-specific status LED.  <a href="#a78daa3dc5bcfa2a67418c5c11b807cb3">More...</a><br /></td></tr>
-<tr class="separator:a78daa3dc5bcfa2a67418c5c11b807cb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a258144a4711ed7f452f0484680f436e1"><td class="memItemLeft" align="right" valign="top"><a id="a258144a4711ed7f452f0484680f436e1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a258144a4711ed7f452f0484680f436e1">statusLEDDeinit</a> ()</td></tr>
-<tr class="memdesc:a258144a4711ed7f452f0484680f436e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">De-initializes status LED. The usingStatus flag is also reset. <br /></td></tr>
-<tr class="separator:a258144a4711ed7f452f0484680f436e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4433b0f8093d02770fb7b81adb9478bc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a4433b0f8093d02770fb7b81adb9478bc">setStatusLEDColor</a> (uint32_t color)</td></tr>
-<tr class="memdesc:a4433b0f8093d02770fb7b81adb9478bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a status RGB LED's color.  <a href="#a4433b0f8093d02770fb7b81adb9478bc">More...</a><br /></td></tr>
-<tr class="separator:a4433b0f8093d02770fb7b81adb9478bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87a70aebcc7459fb338e195d6b3f7b63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a87a70aebcc7459fb338e195d6b3f7b63">statusLEDBlink</a> (<a class="el" href="_wippersnapper___status_l_e_d___colors_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a> statusState)</td></tr>
-<tr class="memdesc:a87a70aebcc7459fb338e195d6b3f7b63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blinks a status LED a specific color depending on the hardware's state.  <a href="#a87a70aebcc7459fb338e195d6b3f7b63">More...</a><br /></td></tr>
-<tr class="separator:a87a70aebcc7459fb338e195d6b3f7b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae17c82aa45ff311c9cc8a23b98acca92"><td class="memItemLeft" align="right" valign="top"><a id="ae17c82aa45ff311c9cc8a23b98acca92"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ae17c82aa45ff311c9cc8a23b98acca92">set_user_key</a> ()</td></tr>
-<tr class="memdesc:ae17c82aa45ff311c9cc8a23b98acca92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the device's Adafruit IO credentials. This method should be used only if filesystem-backed provisioning is not avaliable. /*. <br /></td></tr>
+<tr class="memdesc:ae17c82aa45ff311c9cc8a23b98acca92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the device's Adafruit IO credentials. This method should be used only if filesystem-backed provisioning is not avaliable. <br /></td></tr>
 <tr class="separator:ae17c82aa45ff311c9cc8a23b98acca92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50aca7f9bc2ced0a2928c1f85624c9b8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a50aca7f9bc2ced0a2928c1f85624c9b8">set_ssid_pass</a> (const char *ssid, const char *ssidPassword)</td></tr>
 <tr class="memdesc:a50aca7f9bc2ced0a2928c1f85624c9b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the device's wireless network credentials.  <a href="#a50aca7f9bc2ced0a2928c1f85624c9b8">More...</a><br /></td></tr>
@@ -117,6 +105,9 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aed020a82571d3b7fc1ee9038b857f9fa">set_ssid_pass</a> ()</td></tr>
 <tr class="memdesc:aed020a82571d3b7fc1ee9038b857f9fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the device's wireless network credentials from the secrets.json configuration file. <br /></td></tr>
 <tr class="separator:aed020a82571d3b7fc1ee9038b857f9fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a288ccdd64ddcec63c3cd2b7a74182a66"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a288ccdd64ddcec63c3cd2b7a74182a66">check_valid_ssid</a> ()</td></tr>
+<tr class="memdesc:a288ccdd64ddcec63c3cd2b7a74182a66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a scan of local WiFi networks.  <a href="#a288ccdd64ddcec63c3cd2b7a74182a66">More...</a><br /></td></tr>
+<tr class="separator:a288ccdd64ddcec63c3cd2b7a74182a66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad87ad173ce1969274e5d83af2621c265"><td class="memItemLeft" align="right" valign="top"><a id="ad87ad173ce1969274e5d83af2621c265"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ad87ad173ce1969274e5d83af2621c265">_connect</a> ()</td></tr>
 <tr class="memdesc:ad87ad173ce1969274e5d83af2621c265"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connects to wireless network. <br /></td></tr>
@@ -146,20 +137,15 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memitem:a6c731e9f9444318b3fe3e8c3245582b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_wippersnapper_8h.html#ae5fa98c35b5a16565b5b06cd75008b2d">ws_board_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a6c731e9f9444318b3fe3e8c3245582b4">getBoardStatus</a> ()</td></tr>
 <tr class="memdesc:a6c731e9f9444318b3fe3e8c3245582b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the board definition status.  <a href="#a6c731e9f9444318b3fe3e8c3245582b4">More...</a><br /></td></tr>
 <tr class="separator:a6c731e9f9444318b3fe3e8c3245582b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7047a2aeb6b595811f4adb92595561cd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a7047a2aeb6b595811f4adb92595561cd">buildWSTopics</a> ()</td></tr>
-<tr class="memdesc:a7047a2aeb6b595811f4adb92595561cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates device-specific <a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> control topics.  <a href="#a7047a2aeb6b595811f4adb92595561cd">More...</a><br /></td></tr>
-<tr class="separator:a7047a2aeb6b595811f4adb92595561cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a924b605f54c64b5510c63df492827606"><td class="memItemLeft" align="right" valign="top"><a id="a924b605f54c64b5510c63df492827606"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a924b605f54c64b5510c63df492827606">subscribeWSTopics</a> ()</td></tr>
-<tr class="memdesc:a924b605f54c64b5510c63df492827606"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subscribes to device-specific MQTT control topics. <br /></td></tr>
-<tr class="separator:a924b605f54c64b5510c63df492827606"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99658bdea2e433bfee8d8f074a6784eb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a99658bdea2e433bfee8d8f074a6784eb">buildErrorTopics</a> ()</td></tr>
-<tr class="memdesc:a99658bdea2e433bfee8d8f074a6784eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds MQTT topics for handling errors returned from the Adafruit IO broker.  <a href="#a99658bdea2e433bfee8d8f074a6784eb">More...</a><br /></td></tr>
-<tr class="separator:a99658bdea2e433bfee8d8f074a6784eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6298de8364e13ca6d9b7da5ac2758cb7"><td class="memItemLeft" align="right" valign="top"><a id="a6298de8364e13ca6d9b7da5ac2758cb7"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a6298de8364e13ca6d9b7da5ac2758cb7">subscribeErrorTopics</a> ()</td></tr>
-<tr class="memdesc:a6298de8364e13ca6d9b7da5ac2758cb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subscribes to user-specific Adafruit IO MQTT topics. <br /></td></tr>
-<tr class="separator:a6298de8364e13ca6d9b7da5ac2758cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85b39ac3bc4753a2215750d99f3b4c3c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a85b39ac3bc4753a2215750d99f3b4c3c">generateDeviceUID</a> ()</td></tr>
+<tr class="memdesc:a85b39ac3bc4753a2215750d99f3b4c3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to generate unique device identifier.  <a href="#a85b39ac3bc4753a2215750d99f3b4c3c">More...</a><br /></td></tr>
+<tr class="separator:a85b39ac3bc4753a2215750d99f3b4c3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4aeb461117d0afcb2282ba43e3b87d36"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a4aeb461117d0afcb2282ba43e3b87d36">generateWSTopics</a> ()</td></tr>
+<tr class="memdesc:a4aeb461117d0afcb2282ba43e3b87d36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates device-specific <a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> control topics and subscribes to them.  <a href="#a4aeb461117d0afcb2282ba43e3b87d36">More...</a><br /></td></tr>
+<tr class="separator:a4aeb461117d0afcb2282ba43e3b87d36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1cd716ab3a454649e071064c593938d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ac1cd716ab3a454649e071064c593938d">generateWSErrorTopics</a> ()</td></tr>
+<tr class="memdesc:ac1cd716ab3a454649e071064c593938d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds MQTT topics for handling errors returned from the Adafruit IO broker and subscribes to them.  <a href="#ac1cd716ab3a454649e071064c593938d">More...</a><br /></td></tr>
+<tr class="separator:ac1cd716ab3a454649e071064c593938d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6947062bd97c64de61e9689d18af3780"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a6947062bd97c64de61e9689d18af3780">registerBoard</a> ()</td></tr>
 <tr class="memdesc:a6947062bd97c64de61e9689d18af3780"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to register hardware with Adafruit.io WipperSnapper.  <a href="#a6947062bd97c64de61e9689d18af3780">More...</a><br /></td></tr>
 <tr class="separator:a6947062bd97c64de61e9689d18af3780"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -201,11 +187,11 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ab3e122ca0d602d5ee3e2a0b82bbc32ad">feedWDT</a> ()</td></tr>
 <tr class="memdesc:ab3e122ca0d602d5ee3e2a0b82bbc32ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Feeds the WDT to prevent hardware reset. <br /></td></tr>
 <tr class="separator:ab3e122ca0d602d5ee3e2a0b82bbc32ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe5e4fb34dd8685718b7cf779ace5bf7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#afe5e4fb34dd8685718b7cf779ace5bf7">haltError</a> (String error)</td></tr>
-<tr class="memdesc:afe5e4fb34dd8685718b7cf779ace5bf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error to the serial and halts the hardware until the WDT bites.  <a href="#afe5e4fb34dd8685718b7cf779ace5bf7">More...</a><br /></td></tr>
-<tr class="separator:afe5e4fb34dd8685718b7cf779ace5bf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">haltError</a> (String error, <a class="el" href="_wippersnapper___status_l_e_d_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a> ledStatusColor=WS_LED_STATUS_ERROR_RUNTIME)</td></tr>
+<tr class="memdesc:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error to the serial and halts the hardware until the WDT bites.  <a href="#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">More...</a><br /></td></tr>
+<tr class="separator:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accf1a53e54aef5140f68f6511c3406fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#accf1a53e54aef5140f68f6511c3406fc">errorWriteHang</a> (String error)</td></tr>
-<tr class="memdesc:accf1a53e54aef5140f68f6511c3406fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes an error message to the serial and the filesystem, blinks WS_LED_STATUS_ERROR pattern and hangs.  <a href="#accf1a53e54aef5140f68f6511c3406fc">More...</a><br /></td></tr>
+<tr class="memdesc:accf1a53e54aef5140f68f6511c3406fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes an error message to the serial and the filesystem, blinks WS_LED_STATUS_ERROR_RUNTIME pattern and hangs.  <a href="#accf1a53e54aef5140f68f6511c3406fc">More...</a><br /></td></tr>
 <tr class="separator:accf1a53e54aef5140f68f6511c3406fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8a19b40207a6dd0c20b7c5b518f5d0a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ad8a19b40207a6dd0c20b7c5b518f5d0a">decodeSignalMsg</a> (wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg)</td></tr>
 <tr class="memdesc:ad8a19b40207a6dd0c20b7c5b518f5d0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a signal buffer protobuf message. NOTE: Should be executed in-order after a new _buffer is recieved.  <a href="#ad8a19b40207a6dd0c20b7c5b518f5d0a">More...</a><br /></td></tr>
@@ -213,22 +199,29 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a0ce26acc8d727adf813c4617cca91df0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a0ce26acc8d727adf813c4617cca91df0">encodePinEvent</a> (wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg, uint8_t pinName, int pinVal)</td></tr>
 <tr class="memdesc:a0ce26acc8d727adf813c4617cca91df0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles MQTT messages on signal topic until timeout.  <a href="#a0ce26acc8d727adf813c4617cca91df0">More...</a><br /></td></tr>
 <tr class="separator:a0ce26acc8d727adf813c4617cca91df0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c0734f96682aaed52945d659ba6917e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a0c0734f96682aaed52945d659ba6917e">configurePinRequest</a> (wippersnapper_pin_v1_ConfigurePinRequest *pinMsg)</td></tr>
-<tr class="memdesc:a0c0734f96682aaed52945d659ba6917e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures a pin according to a wippersnapper_pin_v1_ConfigurePinRequest message.  <a href="#a0c0734f96682aaed52945d659ba6917e">More...</a><br /></td></tr>
-<tr class="separator:a0c0734f96682aaed52945d659ba6917e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9577669dd1d91be1a80e4bae9f47f26a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9577669dd1d91be1a80e4bae9f47f26a">configureDigitalPinReq</a> (wippersnapper_pin_v1_ConfigurePinRequest *pinMsg)</td></tr>
+<tr class="memdesc:a9577669dd1d91be1a80e4bae9f47f26a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures a pin according to a wippersnapper_pin_v1_ConfigurePinRequest message.  <a href="#a9577669dd1d91be1a80e4bae9f47f26a">More...</a><br /></td></tr>
+<tr class="separator:a9577669dd1d91be1a80e4bae9f47f26a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a089cb6c8b641aa22762f00dda783bb12"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a089cb6c8b641aa22762f00dda783bb12">configAnalogInPinReq</a> (wippersnapper_pin_v1_ConfigurePinRequest *pinMsg)</td></tr>
+<tr class="memdesc:a089cb6c8b641aa22762f00dda783bb12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures an analog input pin according to a wippersnapper_pin_v1_ConfigurePinRequest message.  <a href="#a089cb6c8b641aa22762f00dda783bb12">More...</a><br /></td></tr>
+<tr class="separator:a089cb6c8b641aa22762f00dda783bb12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a115869c2a6bcdf7b500caca65d5f9ab9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a115869c2a6bcdf7b500caca65d5f9ab9">lockStatusNeoPixel</a></td></tr>
-<tr class="memdesc:a115869c2a6bcdf7b500caca65d5f9ab9"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if status LED is using the status neopixel.  <a href="#a115869c2a6bcdf7b500caca65d5f9ab9">More...</a><br /></td></tr>
+<tr class="memitem:a115869c2a6bcdf7b500caca65d5f9ab9"><td class="memItemLeft" align="right" valign="top"><a id="a115869c2a6bcdf7b500caca65d5f9ab9"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a115869c2a6bcdf7b500caca65d5f9ab9">lockStatusNeoPixel</a></td></tr>
+<tr class="memdesc:a115869c2a6bcdf7b500caca65d5f9ab9"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if status LED is using the status neopixel. <br /></td></tr>
 <tr class="separator:a115869c2a6bcdf7b500caca65d5f9ab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a118e66d9ca105e5056e256b5126e7502"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a118e66d9ca105e5056e256b5126e7502">lockStatusDotStar</a></td></tr>
-<tr class="memdesc:a118e66d9ca105e5056e256b5126e7502"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if status LED is using the status dotstar.  <a href="#a118e66d9ca105e5056e256b5126e7502">More...</a><br /></td></tr>
+<tr class="memitem:a118e66d9ca105e5056e256b5126e7502"><td class="memItemLeft" align="right" valign="top"><a id="a118e66d9ca105e5056e256b5126e7502"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a118e66d9ca105e5056e256b5126e7502">lockStatusDotStar</a></td></tr>
+<tr class="memdesc:a118e66d9ca105e5056e256b5126e7502"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if status LED is using the status dotstar. <br /></td></tr>
 <tr class="separator:a118e66d9ca105e5056e256b5126e7502"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60b5ba446db929076121abed29dd294d"><td class="memItemLeft" align="right" valign="top"><a id="a60b5ba446db929076121abed29dd294d"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a60b5ba446db929076121abed29dd294d">lockStatusLED</a> = false</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a60b5ba446db929076121abed29dd294d">lockStatusLED</a></td></tr>
 <tr class="memdesc:a60b5ba446db929076121abed29dd294d"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if status LED is using the built-in LED. <br /></td></tr>
 <tr class="separator:a60b5ba446db929076121abed29dd294d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b97878e67ff8113c43164d71c132ccf"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a1b97878e67ff8113c43164d71c132ccf">status_pixel_brightness</a></td></tr>
+<tr class="separator:a1b97878e67ff8113c43164d71c132ccf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab71c06b6b7776879be79d88bf689d815"><td class="memItemLeft" align="right" valign="top"><a id="ab71c06b6b7776879be79d88bf689d815"></a>
 std::vector&lt; <a class="el" href="class_wipper_snapper___component___i2_c.html">WipperSnapper_Component_I2C</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ab71c06b6b7776879be79d88bf689d815">i2cComponents</a></td></tr>
 <tr class="memdesc:ab71c06b6b7776879be79d88bf689d815"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing all I2C components. <br /></td></tr>
@@ -251,9 +244,8 @@ std::vector&lt; <a class="el" href="class_wipper_snapper___component___i2_c.html
 <tr class="separator:aaa2457dd50c526cbc0f207c32f70b3e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2b29424014f638d87eb6ddd7c56a8d2"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#af2b29424014f638d87eb6ddd7c56a8d2">bufSize</a></td></tr>
 <tr class="separator:af2b29424014f638d87eb6ddd7c56a8d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d6352dd0a8b5045665dedeafd13c2b2"><td class="memItemLeft" align="right" valign="top"><a id="a0d6352dd0a8b5045665dedeafd13c2b2"></a>
-<a class="el" href="_wippersnapper_8h.html#ae5fa98c35b5a16565b5b06cd75008b2d">ws_board_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a0d6352dd0a8b5045665dedeafd13c2b2">_boardStatus</a></td></tr>
-<tr class="memdesc:a0d6352dd0a8b5045665dedeafd13c2b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hardware's registration status. <br /></td></tr>
+<tr class="memitem:a0d6352dd0a8b5045665dedeafd13c2b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_wippersnapper_8h.html#ae5fa98c35b5a16565b5b06cd75008b2d">ws_board_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a0d6352dd0a8b5045665dedeafd13c2b2">_boardStatus</a></td></tr>
+<tr class="memdesc:a0d6352dd0a8b5045665dedeafd13c2b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hardware's registration status.  <a href="#a0d6352dd0a8b5045665dedeafd13c2b2">More...</a><br /></td></tr>
 <tr class="separator:a0d6352dd0a8b5045665dedeafd13c2b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b20da8a2d56194d6d8d08a15c3d1ea5"><td class="memItemLeft" align="right" valign="top"><a id="a7b20da8a2d56194d6d8d08a15c3d1ea5"></a>
 <a class="el" href="class_wippersnapper___digital_g_p_i_o.html">Wippersnapper_DigitalGPIO</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a7b20da8a2d56194d6d8d08a15c3d1ea5">_digitalGPIO</a></td></tr>
@@ -271,6 +263,33 @@ Wippersnapper_FS *&#160;</td><td class="memItemRight" valign="bottom"><a class="
 WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a98a40aae300a312aa87f4480d18a4c14">_littleFS</a></td></tr>
 <tr class="memdesc:a98a40aae300a312aa87f4480d18a4c14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of LittleFS Filesystem (non-native USB) <br /></td></tr>
 <tr class="separator:a98a40aae300a312aa87f4480d18a4c14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd97f2e25ddcb123759f1bb417c761b6"><td class="memItemLeft" align="right" valign="top"><a id="abd97f2e25ddcb123759f1bb417c761b6"></a>
+<a class="el" href="classws__display__driver.html">ws_display_driver</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#abd97f2e25ddcb123759f1bb417c761b6">_display</a> = nullptr</td></tr>
+<tr class="memdesc:abd97f2e25ddcb123759f1bb417c761b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of display driver class. <br /></td></tr>
+<tr class="separator:abd97f2e25ddcb123759f1bb417c761b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac82ed8f8ce5f18a34f696cfc385038de"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classws__display__ui__helper.html">ws_display_ui_helper</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ac82ed8f8ce5f18a34f696cfc385038de">_ui_helper</a></td></tr>
+<tr class="memdesc:ac82ed8f8ce5f18a34f696cfc385038de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of display UI helper class.  <a href="#ac82ed8f8ce5f18a34f696cfc385038de">More...</a><br /></td></tr>
+<tr class="separator:ac82ed8f8ce5f18a34f696cfc385038de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acba8bb65ab39d1adc9c40890dddad99f"><td class="memItemLeft" align="right" valign="top"><a id="acba8bb65ab39d1adc9c40890dddad99f"></a>
+<a class="el" href="classws__pixels.html">ws_pixels</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#acba8bb65ab39d1adc9c40890dddad99f">_ws_pixelsComponent</a></td></tr>
+<tr class="memdesc:acba8bb65ab39d1adc9c40890dddad99f"><td class="mdescLeft">&#160;</td><td class="mdescRight">ptr to instance of <a class="el" href="classws__pixels.html" title="friend class ">ws_pixels</a> class <br /></td></tr>
+<tr class="separator:acba8bb65ab39d1adc9c40890dddad99f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ad75e439f62057edc8079f936fe011a"><td class="memItemLeft" align="right" valign="top"><a id="a5ad75e439f62057edc8079f936fe011a"></a>
+<a class="el" href="classws__pwm.html">ws_pwm</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a5ad75e439f62057edc8079f936fe011a">_pwmComponent</a></td></tr>
+<tr class="memdesc:a5ad75e439f62057edc8079f936fe011a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of pwm class. <br /></td></tr>
+<tr class="separator:a5ad75e439f62057edc8079f936fe011a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb20c02d9bbe7ed659a0d75de7fba140"><td class="memItemLeft" align="right" valign="top"><a id="acb20c02d9bbe7ed659a0d75de7fba140"></a>
+<a class="el" href="classws__servo.html">ws_servo</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#acb20c02d9bbe7ed659a0d75de7fba140">_servoComponent</a></td></tr>
+<tr class="memdesc:acb20c02d9bbe7ed659a0d75de7fba140"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of servo class. <br /></td></tr>
+<tr class="separator:acb20c02d9bbe7ed659a0d75de7fba140"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd11f10fbdd2ad7be7af1a49d0cf2623"><td class="memItemLeft" align="right" valign="top"><a id="afd11f10fbdd2ad7be7af1a49d0cf2623"></a>
+<a class="el" href="classws__ds18x20.html">ws_ds18x20</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#afd11f10fbdd2ad7be7af1a49d0cf2623">_ds18x20Component</a></td></tr>
+<tr class="memdesc:afd11f10fbdd2ad7be7af1a49d0cf2623"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of DS18x20 class. <br /></td></tr>
+<tr class="separator:afd11f10fbdd2ad7be7af1a49d0cf2623"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2625dc32e7a2454fc9438145f5a06db3"><td class="memItemLeft" align="right" valign="top"><a id="a2625dc32e7a2454fc9438145f5a06db3"></a>
+<a class="el" href="classws__uart.html">ws_uart</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a2625dc32e7a2454fc9438145f5a06db3">_uartComponent</a></td></tr>
+<tr class="memdesc:a2625dc32e7a2454fc9438145f5a06db3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance of UART class. <br /></td></tr>
+<tr class="separator:a2625dc32e7a2454fc9438145f5a06db3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c0144ecf93d8650ac79676f7775f48a"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a1c0144ecf93d8650ac79676f7775f48a">_macAddr</a> [6]</td></tr>
 <tr class="separator:a1c0144ecf93d8650ac79676f7775f48a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af14c0ae10d0fd58619add280acf6c461"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#af14c0ae10d0fd58619add280acf6c461">sUID</a> [13]</td></tr>
@@ -279,21 +298,11 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 <tr class="separator:a6457c3bdf6c7a89d3503d7776f11c09b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4aae92d295fa7740aef1bd6e45a13349"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a4aae92d295fa7740aef1bd6e45a13349">_mqtt</a></td></tr>
 <tr class="separator:a4aae92d295fa7740aef1bd6e45a13349"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9c4a5ba5c17a08fc2079d149a094e9d6"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9c4a5ba5c17a08fc2079d149a094e9d6">_mqttBrokerURL</a> = nullptr</td></tr>
-<tr class="separator:a9c4a5ba5c17a08fc2079d149a094e9d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13a4074ad97215f51d4fa76b65052b76"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a13a4074ad97215f51d4fa76b65052b76">_mqtt_port</a> = 8883</td></tr>
-<tr class="separator:a13a4074ad97215f51d4fa76b65052b76"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9380123bb67437ece953f46e32bad6fe"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9380123bb67437ece953f46e32bad6fe">_username</a> = NULL</td></tr>
-<tr class="separator:a9380123bb67437ece953f46e32bad6fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac70eead5aa5a98fe062dcebefc6c0b6"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aac70eead5aa5a98fe062dcebefc6c0b6">_key</a> = NULL</td></tr>
-<tr class="separator:aac70eead5aa5a98fe062dcebefc6c0b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8667f030177bfd31a0842821ead74cd4"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a8667f030177bfd31a0842821ead74cd4">_network_ssid</a> = NULL</td></tr>
-<tr class="separator:a8667f030177bfd31a0842821ead74cd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34ee03c04d7cf32ebc458955c6d54ac6"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a34ee03c04d7cf32ebc458955c6d54ac6">_network_pass</a> = NULL</td></tr>
-<tr class="separator:a34ee03c04d7cf32ebc458955c6d54ac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c96d5d9235b21de6dc3dd33362c5c56"><td class="memItemLeft" align="right" valign="top">secretsConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a7c96d5d9235b21de6dc3dd33362c5c56">_config</a></td></tr>
+<tr class="separator:a7c96d5d9235b21de6dc3dd33362c5c56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e053f9eba8982c74a7df1289a9d64b6"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6">totalDigitalPins</a></td></tr>
 <tr class="separator:a9e053f9eba8982c74a7df1289a9d64b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43fcd6eb7b8a2b63c548677cb2b600ab"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a43fcd6eb7b8a2b63c548677cb2b600ab">_topic_description</a></td></tr>
+<tr class="memitem:a43fcd6eb7b8a2b63c548677cb2b600ab"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a43fcd6eb7b8a2b63c548677cb2b600ab">_topic_description</a> = NULL</td></tr>
 <tr class="separator:a43fcd6eb7b8a2b63c548677cb2b600ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea47e2067acb00e1754a4995fb2d865a"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aea47e2067acb00e1754a4995fb2d865a">_topic_signal_device</a> = NULL</td></tr>
 <tr class="separator:aea47e2067acb00e1754a4995fb2d865a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -301,16 +310,56 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 <tr class="separator:a697a73c42f195234d4b1043cd31742f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a666524aedd9e7c2d2349f77b5c70d179"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a666524aedd9e7c2d2349f77b5c70d179">_topic_signal_i2c_device</a> = NULL</td></tr>
 <tr class="separator:a666524aedd9e7c2d2349f77b5c70d179"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00de6443ae89fa56316c57a9482ca8ad"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a00de6443ae89fa56316c57a9482ca8ad">_topic_signal_servo_brkr</a> = NULL</td></tr>
+<tr class="separator:a00de6443ae89fa56316c57a9482ca8ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefac0452ea11e220d2a6de1bec68c78a"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aefac0452ea11e220d2a6de1bec68c78a">_topic_signal_servo_device</a> = NULL</td></tr>
+<tr class="separator:aefac0452ea11e220d2a6de1bec68c78a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa88f12ad9c13869ea094a9c602bdd9e1"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aa88f12ad9c13869ea094a9c602bdd9e1">_topic_signal_pwm_brkr</a></td></tr>
+<tr class="separator:aa88f12ad9c13869ea094a9c602bdd9e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22d8a2eb078de8b63a7957847a069488"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a22d8a2eb078de8b63a7957847a069488">_topic_signal_pwm_device</a></td></tr>
+<tr class="separator:a22d8a2eb078de8b63a7957847a069488"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa93f425e037c1d4fe4fbba3f24a322a0"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aa93f425e037c1d4fe4fbba3f24a322a0">_topic_signal_ds18_brkr</a> = NULL</td></tr>
+<tr class="separator:aa93f425e037c1d4fe4fbba3f24a322a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a700b88c1f51a5037dca121fe3dbaf248"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a700b88c1f51a5037dca121fe3dbaf248">_topic_signal_ds18_device</a> = NULL</td></tr>
+<tr class="separator:a700b88c1f51a5037dca121fe3dbaf248"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec6f76f6817c96e9eaad1d3019b7c235"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aec6f76f6817c96e9eaad1d3019b7c235">_topic_signal_pixels_brkr</a> = NULL</td></tr>
+<tr class="separator:aec6f76f6817c96e9eaad1d3019b7c235"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0c42b1e2cd47ab31991690723a681ca"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ab0c42b1e2cd47ab31991690723a681ca">_topic_signal_pixels_device</a> = NULL</td></tr>
+<tr class="separator:ab0c42b1e2cd47ab31991690723a681ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a323d64322836ea73a88c8c04948baa26"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a323d64322836ea73a88c8c04948baa26">_topic_signal_uart_brkr</a> = NULL</td></tr>
+<tr class="separator:a323d64322836ea73a88c8c04948baa26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad89b3128a9d8b55fc5d7e8861bff8d6c"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ad89b3128a9d8b55fc5d7e8861bff8d6c">_topic_signal_uart_device</a> = NULL</td></tr>
+<tr class="separator:ad89b3128a9d8b55fc5d7e8861bff8d6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb987fecbdafe073df8432d5a25da694"><td class="memItemLeft" align="right" valign="top">wippersnapper_signal_v1_CreateSignalRequest&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#acb987fecbdafe073df8432d5a25da694">_incomingSignalMsg</a></td></tr>
 <tr class="separator:acb987fecbdafe073df8432d5a25da694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71e758d3d2bb5f05c6ac804de7ae9e99"><td class="memItemLeft" align="right" valign="top">wippersnapper_signal_v1_I2CRequest&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a71e758d3d2bb5f05c6ac804de7ae9e99">msgSignalI2C</a></td></tr>
 <tr class="separator:a71e758d3d2bb5f05c6ac804de7ae9e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97c38139a93520aeb37c81348835ee83"><td class="memItemLeft" align="right" valign="top">wippersnapper_signal_v1_Ds18x20Request&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a97c38139a93520aeb37c81348835ee83">msgSignalDS</a></td></tr>
+<tr class="separator:a97c38139a93520aeb37c81348835ee83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff37029a511d788654d8c843ef4c3cc3"><td class="memItemLeft" align="right" valign="top"><a id="aff37029a511d788654d8c843ef4c3cc3"></a>
+wippersnapper_signal_v1_ServoRequest&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aff37029a511d788654d8c843ef4c3cc3">msgServo</a></td></tr>
+<tr class="memdesc:aff37029a511d788654d8c843ef4c3cc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">ServoRequest wrapper message. <br /></td></tr>
+<tr class="separator:aff37029a511d788654d8c843ef4c3cc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9745920a99d12d045ea1d1770b0a3b98"><td class="memItemLeft" align="right" valign="top">wippersnapper_signal_v1_PWMRequest&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9745920a99d12d045ea1d1770b0a3b98">msgPWM</a></td></tr>
+<tr class="separator:a9745920a99d12d045ea1d1770b0a3b98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a317f5a38d66e0edfedc9ff8e02903cd1"><td class="memItemLeft" align="right" valign="top"><a id="a317f5a38d66e0edfedc9ff8e02903cd1"></a>
+wippersnapper_signal_v1_PixelsRequest&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a317f5a38d66e0edfedc9ff8e02903cd1">msgPixels</a></td></tr>
+<tr class="memdesc:a317f5a38d66e0edfedc9ff8e02903cd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">PixelsRequest wrapper message. <br /></td></tr>
+<tr class="separator:a317f5a38d66e0edfedc9ff8e02903cd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a824ff860481cc634d5827755d4fa0677"><td class="memItemLeft" align="right" valign="top"><a id="a824ff860481cc634d5827755d4fa0677"></a>
+wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a824ff860481cc634d5827755d4fa0677">msgSignalUART</a></td></tr>
+<tr class="memdesc:a824ff860481cc634d5827755d4fa0677"><td class="mdescLeft">&#160;</td><td class="mdescRight">UARTReq wrapper message. <br /></td></tr>
+<tr class="separator:a824ff860481cc634d5827755d4fa0677"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4143bb10fd2cc88f19c79cfc61cbf16f"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a4143bb10fd2cc88f19c79cfc61cbf16f">throttleMessage</a></td></tr>
 <tr class="separator:a4143bb10fd2cc88f19c79cfc61cbf16f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a192df644cf517a81649fe5a4f8b32d4b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a192df644cf517a81649fe5a4f8b32d4b">throttleTime</a></td></tr>
 <tr class="separator:a192df644cf517a81649fe5a4f8b32d4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae625ae372c5aa19eb0a8713f25b1fca9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ae625ae372c5aa19eb0a8713f25b1fca9">pinCfgCompleted</a> = false</td></tr>
 <tr class="separator:ae625ae372c5aa19eb0a8713f25b1fca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27aeace901deb384576a12cca33290fa"><td class="memItemLeft" align="right" valign="top"><a id="a27aeace901deb384576a12cca33290fa"></a>
+<a class="el" href="classws__ledc.html">ws_ledc</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a27aeace901deb384576a12cca33290fa">_ledc</a> = nullptr</td></tr>
+<tr class="memdesc:a27aeace901deb384576a12cca33290fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to LEDC object. <br /></td></tr>
+<tr class="separator:a27aeace901deb384576a12cca33290fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -346,6 +395,16 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a7cd538558a086a4775b7c9fd27c17a6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad2d8a69238e2019579af498634b5510"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aad2d8a69238e2019579af498634b5510">_topic_signal_i2c_sub</a></td></tr>
 <tr class="separator:aad2d8a69238e2019579af498634b5510"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2275cf6923473ab79644555cfed13048"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a2275cf6923473ab79644555cfed13048">_topic_signal_servo_sub</a></td></tr>
+<tr class="separator:a2275cf6923473ab79644555cfed13048"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a758718ec9f0b11023621773ee4b7ca09"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a758718ec9f0b11023621773ee4b7ca09">_topic_signal_pwm_sub</a></td></tr>
+<tr class="separator:a758718ec9f0b11023621773ee4b7ca09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62bf28eaf2b0968817f7dc82277e7897"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a62bf28eaf2b0968817f7dc82277e7897">_topic_signal_ds18_sub</a></td></tr>
+<tr class="separator:a62bf28eaf2b0968817f7dc82277e7897"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad9962c137d6d7a9e389e3ac7e331147"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aad9962c137d6d7a9e389e3ac7e331147">_topic_signal_pixels_sub</a></td></tr>
+<tr class="separator:aad9962c137d6d7a9e389e3ac7e331147"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e174586c7a322502a68103af4f54537"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a2e174586c7a322502a68103af4f54537">_topic_signal_uart_sub</a></td></tr>
+<tr class="separator:a2e174586c7a322502a68103af4f54537"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1185983de9f6fee944b779340f347de7"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a1185983de9f6fee944b779340f347de7">_err_sub</a></td></tr>
 <tr class="separator:a1185983de9f6fee944b779340f347de7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e579b73e95e0f1e60a3b63e86566985"><td class="memItemLeft" align="right" valign="top">Adafruit_MQTT_Subscribe *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a0e579b73e95e0f1e60a3b63e86566985">_throttle_sub</a></td></tr>
@@ -356,78 +415,6 @@ Protected Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class that provides storage and functions for the Adafruit IO <a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> interface. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a78daa3dc5bcfa2a67418c5c11b807cb3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a78daa3dc5bcfa2a67418c5c11b807cb3">&#9670;&nbsp;</a></span>statusLEDInit()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Wippersnapper::statusLEDInit </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Initializes board-specific status LED. </p>
-<dl class="section return"><dt>Returns</dt><dd>True if initialized, False if status LED hardware is already in-use. </dd></dl>
-
-</div>
-</div>
-<a id="a4433b0f8093d02770fb7b81adb9478bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4433b0f8093d02770fb7b81adb9478bc">&#9670;&nbsp;</a></span>setStatusLEDColor()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Wippersnapper::setStatusLEDColor </td>
-          <td>(</td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>color</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Sets a status RGB LED's color. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">color</td><td>Desired RGB color. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a87a70aebcc7459fb338e195d6b3f7b63"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a87a70aebcc7459fb338e195d6b3f7b63">&#9670;&nbsp;</a></span>statusLEDBlink()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Wippersnapper::statusLEDBlink </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="_wippersnapper___status_l_e_d___colors_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a>&#160;</td>
-          <td class="paramname"><em>statusState</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Blinks a status LED a specific color depending on the hardware's state. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">statusState</td><td>Hardware's status state. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a50aca7f9bc2ced0a2928c1f85624c9b8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a50aca7f9bc2ced0a2928c1f85624c9b8">&#9670;&nbsp;</a></span>set_ssid_pass()</h2>
 
@@ -471,7 +458,37 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#a12f2c625c55546f1cc318ed352db7be4">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5d98c8d0158c551f78c242ed57e42165">Wippersnapper_AIRLIFT</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#a12f2c625c55546f1cc318ed352db7be4">Wippersnapper_WIFININA</a>, <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5d98c8d0158c551f78c242ed57e42165">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a6e93f243e49a45ad4a41a1e1f48a9bcf">Wippersnapper_ESP32</a>.</p>
+
+</div>
+</div>
+<a id="a288ccdd64ddcec63c3cd2b7a74182a66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a288ccdd64ddcec63c3cd2b7a74182a66">&#9670;&nbsp;</a></span>check_valid_ssid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Wippersnapper::check_valid_ssid </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs a scan of local WiFi networks. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if <code>_network_ssid</code> is found, False otherwise. </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#aaee5680c8abe5ec08f34166f1d669adf">Wippersnapper_WIFININA</a>, <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -507,7 +524,7 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#af93ea859ff730b169c2ff1bfec455e11">Wippersnapper_WIFININA</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">Wippersnapper_AIRLIFT</a>, <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#af93ea859ff730b169c2ff1bfec455e11">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a7b0795b00c8de7f3f3523a6ef567700b">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -537,7 +554,7 @@ Protected Attributes</h2></td></tr>
 <p>Returns the network's connection status. </p>
 <dl class="section return"><dt>Returns</dt><dd>Network status as ws_status_t. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac238fc561ddcd654a47b474f74ec37fb">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#aa33a4dfb0f3d2857deafdd4847baa07c">Wippersnapper_WIFININA</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac238fc561ddcd654a47b474f74ec37fb">Wippersnapper_AIRLIFT</a>, <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#aa33a4dfb0f3d2857deafdd4847baa07c">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#aa8d043c0f7516489964bd4eeb465bb6d">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -561,14 +578,14 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a7047a2aeb6b595811f4adb92595561cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7047a2aeb6b595811f4adb92595561cd">&#9670;&nbsp;</a></span>buildWSTopics()</h2>
+<a id="a85b39ac3bc4753a2215750d99f3b4c3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85b39ac3bc4753a2215750d99f3b4c3c">&#9670;&nbsp;</a></span>generateDeviceUID()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool Wippersnapper::buildWSTopics </td>
+          <td class="memname">bool Wippersnapper::generateDeviceUID </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -576,19 +593,39 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Generates device-specific <a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> control topics. </p>
+<p>Attempts to generate unique device identifier. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if device identifier generated successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a4aeb461117d0afcb2282ba43e3b87d36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4aeb461117d0afcb2282ba43e3b87d36">&#9670;&nbsp;</a></span>generateWSTopics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Wippersnapper::generateWSTopics </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generates device-specific <a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> control topics and subscribes to them. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if memory for control topics allocated successfully, False otherwise. </dd></dl>
 
 </div>
 </div>
-<a id="a99658bdea2e433bfee8d8f074a6784eb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a99658bdea2e433bfee8d8f074a6784eb">&#9670;&nbsp;</a></span>buildErrorTopics()</h2>
+<a id="ac1cd716ab3a454649e071064c593938d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1cd716ab3a454649e071064c593938d">&#9670;&nbsp;</a></span>generateWSErrorTopics()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool Wippersnapper::buildErrorTopics </td>
+          <td class="memname">bool Wippersnapper::generateWSErrorTopics </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -596,7 +633,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Builds MQTT topics for handling errors returned from the Adafruit IO broker. </p>
+<p>Builds MQTT topics for handling errors returned from the Adafruit IO broker and subscribes to them. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if memory for error topics allocated successfully, False otherwise. </dd></dl>
 
 </div>
@@ -796,8 +833,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="afe5e4fb34dd8685718b7cf779ace5bf7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afe5e4fb34dd8685718b7cf779ace5bf7">&#9670;&nbsp;</a></span>haltError()</h2>
+<a id="ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">&#9670;&nbsp;</a></span>haltError()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -806,8 +843,18 @@ Protected Attributes</h2></td></tr>
           <td class="memname">void Wippersnapper::haltError </td>
           <td>(</td>
           <td class="paramtype">String&#160;</td>
-          <td class="paramname"><em>error</em></td><td>)</td>
+          <td class="paramname"><em>error</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="_wippersnapper___status_l_e_d_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a>&#160;</td>
+          <td class="paramname"><em>ledStatusColor</em> = <code>WS_LED_STATUS_ERROR_RUNTIME</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -816,6 +863,7 @@ Protected Attributes</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">error</td><td>The desired error to print to serial. </td></tr>
+    <tr><td class="paramname">ledStatusColor</td><td>The desired color to blink. </td></tr>
   </table>
   </dd>
 </dl>
@@ -838,7 +886,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Writes an error message to the serial and the filesystem, blinks WS_LED_STATUS_ERROR pattern and hangs. </p>
+<p>Writes an error message to the serial and the filesystem, blinks WS_LED_STATUS_ERROR_RUNTIME pattern and hangs. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">error</td><td>The error message to write to the serial and filesystem. </td></tr>
@@ -920,14 +968,14 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a0c0734f96682aaed52945d659ba6917e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0c0734f96682aaed52945d659ba6917e">&#9670;&nbsp;</a></span>configurePinRequest()</h2>
+<a id="a9577669dd1d91be1a80e4bae9f47f26a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9577669dd1d91be1a80e4bae9f47f26a">&#9670;&nbsp;</a></span>configureDigitalPinReq()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool Wippersnapper::configurePinRequest </td>
+          <td class="memname">bool Wippersnapper::configureDigitalPinReq </td>
           <td>(</td>
           <td class="paramtype">wippersnapper_pin_v1_ConfigurePinRequest *&#160;</td>
           <td class="paramname"><em>pinMsg</em></td><td>)</td>
@@ -947,36 +995,46 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a089cb6c8b641aa22762f00dda783bb12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a089cb6c8b641aa22762f00dda783bb12">&#9670;&nbsp;</a></span>configAnalogInPinReq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Wippersnapper::configAnalogInPinReq </td>
+          <td>(</td>
+          <td class="paramtype">wippersnapper_pin_v1_ConfigurePinRequest *&#160;</td>
+          <td class="paramname"><em>pinMsg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Configures an analog input pin according to a wippersnapper_pin_v1_ConfigurePinRequest message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pinMsg</td><td>Pointer to a wippersnapper_pin_v1_ConfigurePinRequest message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if analog pin configured successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a115869c2a6bcdf7b500caca65d5f9ab9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a115869c2a6bcdf7b500caca65d5f9ab9">&#9670;&nbsp;</a></span>lockStatusNeoPixel</h2>
+<a id="a1b97878e67ff8113c43164d71c132ccf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b97878e67ff8113c43164d71c132ccf">&#9670;&nbsp;</a></span>status_pixel_brightness</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool Wippersnapper::lockStatusNeoPixel</td>
+          <td class="memname">float Wippersnapper::status_pixel_brightness</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <span class="keyword">false</span></div></div><!-- fragment -->
-<p>True if status LED is using the status neopixel. </p>
-
-</div>
-</div>
-<a id="a118e66d9ca105e5056e256b5126e7502"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a118e66d9ca105e5056e256b5126e7502">&#9670;&nbsp;</a></span>lockStatusDotStar</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Wippersnapper::lockStatusDotStar</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <span class="keyword">false</span></div></div><!-- fragment -->
-<p>True if status LED is using the status dotstar. </p>
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <a class="code" href="_wippersnapper___status_l_e_d_8h.html#aafd035c81983f8b3976a192e9305e44d">STATUS_PIXEL_BRIGHTNESS_DEFAULT</a></div></div><!-- fragment --><p>Global status pixel's brightness (from 0.0 to 1.0) </p>
 
 </div>
 </div>
@@ -1089,6 +1147,38 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a0d6352dd0a8b5045665dedeafd13c2b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d6352dd0a8b5045665dedeafd13c2b2">&#9670;&nbsp;</a></span>_boardStatus</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_wippersnapper_8h.html#ae5fa98c35b5a16565b5b06cd75008b2d">ws_board_status_t</a> Wippersnapper::_boardStatus</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      WS_BOARD_DEF_IDLE</div></div><!-- fragment -->
+<p>Hardware's registration status. </p>
+
+</div>
+</div>
+<a id="ac82ed8f8ce5f18a34f696cfc385038de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac82ed8f8ce5f18a34f696cfc385038de">&#9670;&nbsp;</a></span>_ui_helper</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classws__display__ui__helper.html">ws_display_ui_helper</a>* Wippersnapper::_ui_helper</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <span class="keyword">nullptr</span></div></div><!-- fragment -->
+<p>Instance of display UI helper class. </p>
+
+</div>
+</div>
 <a id="a1c0144ecf93d8650ac79676f7775f48a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1c0144ecf93d8650ac79676f7775f48a">&#9670;&nbsp;</a></span>_macAddr</h2>
 
@@ -1149,93 +1239,18 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a9c4a5ba5c17a08fc2079d149a094e9d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c4a5ba5c17a08fc2079d149a094e9d6">&#9670;&nbsp;</a></span>_mqttBrokerURL</h2>
+<a id="a7c96d5d9235b21de6dc3dd33362c5c56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c96d5d9235b21de6dc3dd33362c5c56">&#9670;&nbsp;</a></span>_config</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const char* Wippersnapper::_mqttBrokerURL = nullptr</td>
+          <td class="memname">secretsConfig Wippersnapper::_config</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>MQTT Broker URL </p>
-
-</div>
-</div>
-<a id="a13a4074ad97215f51d4fa76b65052b76"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a13a4074ad97215f51d4fa76b65052b76">&#9670;&nbsp;</a></span>_mqtt_port</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint16_t Wippersnapper::_mqtt_port = 8883</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>MQTT Broker Port </p>
-
-</div>
-</div>
-<a id="a9380123bb67437ece953f46e32bad6fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9380123bb67437ece953f46e32bad6fe">&#9670;&nbsp;</a></span>_username</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* Wippersnapper::_username = NULL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Adafruit IO username </p>
-
-</div>
-</div>
-<a id="aac70eead5aa5a98fe062dcebefc6c0b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac70eead5aa5a98fe062dcebefc6c0b6">&#9670;&nbsp;</a></span>_key</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* Wippersnapper::_key = NULL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Adafruit IO key </p>
-
-</div>
-</div>
-<a id="a8667f030177bfd31a0842821ead74cd4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8667f030177bfd31a0842821ead74cd4">&#9670;&nbsp;</a></span>_network_ssid</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* Wippersnapper::_network_ssid = NULL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>WiFi network SSID </p>
-
-</div>
-</div>
-<a id="a34ee03c04d7cf32ebc458955c6d54ac6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a34ee03c04d7cf32ebc458955c6d54ac6">&#9670;&nbsp;</a></span>_network_pass</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* Wippersnapper::_network_pass = NULL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>WiFi network password </p>
+<p><a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> secrets.json as a struct. </p>
 
 </div>
 </div>
@@ -1261,11 +1276,11 @@ Protected Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* Wippersnapper::_topic_description</td>
+          <td class="memname">char* Wippersnapper::_topic_description = NULL</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      NULL</div></div><!-- fragment --><p>MQTT topic for the device description </p>
+<p>MQTT topic for the device description </p>
 
 </div>
 </div>
@@ -1314,6 +1329,156 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a00de6443ae89fa56316c57a9482ca8ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00de6443ae89fa56316c57a9482ca8ad">&#9670;&nbsp;</a></span>_topic_signal_servo_brkr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_servo_brkr = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries messages from a device to a broker. </p>
+
+</div>
+</div>
+<a id="aefac0452ea11e220d2a6de1bec68c78a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aefac0452ea11e220d2a6de1bec68c78a">&#9670;&nbsp;</a></span>_topic_signal_servo_device</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_servo_device = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries messages from a broker to a device. </p>
+
+</div>
+</div>
+<a id="aa88f12ad9c13869ea094a9c602bdd9e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa88f12ad9c13869ea094a9c602bdd9e1">&#9670;&nbsp;</a></span>_topic_signal_pwm_brkr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_pwm_brkr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      NULL</div></div><!-- fragment --><p>Topic carries PWM messages from a device to a broker. </p>
+
+</div>
+</div>
+<a id="a22d8a2eb078de8b63a7957847a069488"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22d8a2eb078de8b63a7957847a069488">&#9670;&nbsp;</a></span>_topic_signal_pwm_device</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_pwm_device</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      NULL</div></div><!-- fragment --><p>Topic carries PWM messages from a broker to a device. </p>
+
+</div>
+</div>
+<a id="aa93f425e037c1d4fe4fbba3f24a322a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa93f425e037c1d4fe4fbba3f24a322a0">&#9670;&nbsp;</a></span>_topic_signal_ds18_brkr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_ds18_brkr = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries ds18x20 messages from a device to a broker. </p>
+
+</div>
+</div>
+<a id="a700b88c1f51a5037dca121fe3dbaf248"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a700b88c1f51a5037dca121fe3dbaf248">&#9670;&nbsp;</a></span>_topic_signal_ds18_device</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_ds18_device = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries ds18x20 messages from a broker to a device. </p>
+
+</div>
+</div>
+<a id="aec6f76f6817c96e9eaad1d3019b7c235"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec6f76f6817c96e9eaad1d3019b7c235">&#9670;&nbsp;</a></span>_topic_signal_pixels_brkr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_pixels_brkr = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries pixel messages </p>
+
+</div>
+</div>
+<a id="ab0c42b1e2cd47ab31991690723a681ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0c42b1e2cd47ab31991690723a681ca">&#9670;&nbsp;</a></span>_topic_signal_pixels_device</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_pixels_device = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries pixel messages </p>
+
+</div>
+</div>
+<a id="a323d64322836ea73a88c8c04948baa26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a323d64322836ea73a88c8c04948baa26">&#9670;&nbsp;</a></span>_topic_signal_uart_brkr</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_uart_brkr = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries UART messages </p>
+
+</div>
+</div>
+<a id="ad89b3128a9d8b55fc5d7e8861bff8d6c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad89b3128a9d8b55fc5d7e8861bff8d6c">&#9670;&nbsp;</a></span>_topic_signal_uart_device</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* Wippersnapper::_topic_signal_uart_device = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Topic carries UART messages </p>
+
+</div>
+</div>
 <a id="acb987fecbdafe073df8432d5a25da694"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb987fecbdafe073df8432d5a25da694">&#9670;&nbsp;</a></span>_incomingSignalMsg</h2>
 
@@ -1341,6 +1506,36 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      wippersnapper_signal_v1_I2CRequest_init_zero</div></div><!-- fragment --><p>I2C request wrapper message </p>
+
+</div>
+</div>
+<a id="a97c38139a93520aeb37c81348835ee83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97c38139a93520aeb37c81348835ee83">&#9670;&nbsp;</a></span>msgSignalDS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">wippersnapper_signal_v1_Ds18x20Request Wippersnapper::msgSignalDS</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      wippersnapper_signal_v1_Ds18x20Request_init_zero</div></div><!-- fragment --><p>DS request message wrapper </p>
+
+</div>
+</div>
+<a id="a9745920a99d12d045ea1d1770b0a3b98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9745920a99d12d045ea1d1770b0a3b98">&#9670;&nbsp;</a></span>msgPWM</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">wippersnapper_signal_v1_PWMRequest Wippersnapper::msgPWM</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      wippersnapper_signal_v1_PWMRequest_init_zero</div></div><!-- fragment --><p>PWM request wrapper message. </p>
 
 </div>
 </div>
@@ -1684,7 +1879,7 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Subscription for registration topic. </p>
+<p>Subscription callback for registration topic. </p>
 
 </div>
 </div>
@@ -1707,7 +1902,7 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Subscription for D2C signal topic. </p>
+<p>Subscription callback for D2C signal topic. </p>
 
 </div>
 </div>
@@ -1730,7 +1925,7 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Subscription for C2D signal topic. </p>
+<p>Subscription callback for C2D signal topic. </p>
 
 </div>
 </div>
@@ -1753,7 +1948,122 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Subscribes to signal's I2C topic. </p>
+<p>Subscription callback for I2C topic. </p>
+
+</div>
+</div>
+<a id="a2275cf6923473ab79644555cfed13048"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2275cf6923473ab79644555cfed13048">&#9670;&nbsp;</a></span>_topic_signal_servo_sub</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Adafruit_MQTT_Subscribe* Wippersnapper::_topic_signal_servo_sub</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Subscription callback for servo topic. </p>
+
+</div>
+</div>
+<a id="a758718ec9f0b11023621773ee4b7ca09"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a758718ec9f0b11023621773ee4b7ca09">&#9670;&nbsp;</a></span>_topic_signal_pwm_sub</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Adafruit_MQTT_Subscribe* Wippersnapper::_topic_signal_pwm_sub</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Subscription callback for pwm topic. </p>
+
+</div>
+</div>
+<a id="a62bf28eaf2b0968817f7dc82277e7897"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62bf28eaf2b0968817f7dc82277e7897">&#9670;&nbsp;</a></span>_topic_signal_ds18_sub</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Adafruit_MQTT_Subscribe* Wippersnapper::_topic_signal_ds18_sub</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Subscribes to signal's ds18x20 topic. </p>
+
+</div>
+</div>
+<a id="aad9962c137d6d7a9e389e3ac7e331147"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad9962c137d6d7a9e389e3ac7e331147">&#9670;&nbsp;</a></span>_topic_signal_pixels_sub</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Adafruit_MQTT_Subscribe* Wippersnapper::_topic_signal_pixels_sub</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Subscribes to pixel device topic. </p>
+
+</div>
+</div>
+<a id="a2e174586c7a322502a68103af4f54537"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e174586c7a322502a68103af4f54537">&#9670;&nbsp;</a></span>_topic_signal_uart_sub</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Adafruit_MQTT_Subscribe* Wippersnapper::_topic_signal_uart_sub</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Subscribes to signal's UART topic. </p>
 
 </div>
 </div>
@@ -1829,7 +2139,6 @@ Protected Attributes</h2></td></tr>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/<a class="el" href="_wippersnapper_8h_source.html">Wippersnapper.h</a></li>
 <li>src/components/register/<a class="el" href="_wippersnapper___register_8cpp.html">Wippersnapper_Register.cpp</a></li>
-<li>src/components/statusLED/<a class="el" href="_wippersnapper___status_l_e_d_8cpp.html">Wippersnapper_StatusLED.cpp</a></li>
 <li>src/<a class="el" href="_wippersnapper_8cpp.html">Wippersnapper.cpp</a></li>
 </ul>
 </div><!-- contents -->
