@@ -86,7 +86,6 @@ public:
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event populated in lux via AUTO integration and gain
     lightEvent->light = _vcnl4040->getLux();
-
     return true;
   }
 
