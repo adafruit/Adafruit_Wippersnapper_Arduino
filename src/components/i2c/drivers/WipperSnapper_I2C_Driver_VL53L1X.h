@@ -81,7 +81,7 @@ public:
       return false;
     }
     int16_t proximityMM = _VL53L1X->distance();
-    if (proximityMM <= 0 || proximityMM > 4000) {
+    if (proximityMM == -1) {
       WS_DEBUG_PRINT("VL53L1X: Invalid proximity value:");
       WS_DEBUG_PRINTLN(proximityMM);
       WS_DEBUG_PRINT("VL53L1X status: ");
@@ -89,8 +89,8 @@ public:
       proximityEvent->data[0] = NAN;
     } else {
       proximityEvent->data[0] = proximityMM;
+      _VL53L1X->clearInterrupt();
     }
-    _VL53L1X->clearInterrupt();
     return true;
   }
 
