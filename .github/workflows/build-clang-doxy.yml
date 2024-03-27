@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["funhouse", "funhouse_noota", "magtag",
+        arduino-platform: ["funhouse_noota", "magtag",
                            "metroesp32s2", "feather_esp32s2",
                            "feather_esp32s2_tft", "feather_esp32s2_reverse_tft",
                            "feather_esp32s3", "feather_esp32s3_4mbflash_2mbpsram",
