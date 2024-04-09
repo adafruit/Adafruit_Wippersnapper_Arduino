@@ -430,7 +430,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _mcp9601->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mcp9601);
-    WS_DEBUG_PRINTLN("MCP9601 Initialized with K-Type thermocouple successfully!");
+    WS_DEBUG_PRINTLN(
+        "MCP9601 Initialized with K-Type thermocouple successfully!");
   } else if (strcmp("mcp9808", msgDeviceInitReq->i2c_device_name) == 0) {
     _mcp9808 = new WipperSnapper_I2C_Driver_MCP9808(this->_i2c, i2cAddress);
     if (!_mcp9808->begin()) {

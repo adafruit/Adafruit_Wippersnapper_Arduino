@@ -23,8 +23,7 @@
     @brief  Class that provides a driver interface for a MCP9601 sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_MCP9601 : public WipperSnapper_I2C_Driver
-{
+class WipperSnapper_I2C_Driver_MCP9601 : public WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
@@ -36,8 +35,7 @@ public:
   */
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_MCP9601(TwoWire *i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(i2c, sensorAddress)
-  {
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
   }
@@ -47,8 +45,7 @@ public:
       @brief    Destructor for an MCP9601 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_MCP9601()
-  {
+  ~WipperSnapper_I2C_Driver_MCP9601() {
     // Called when a MCP9601 component is deleted.
     delete _MCP9601;
   }
@@ -59,11 +56,9 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin()
-  {
+  bool begin() {
     _MCP9601 = new Adafruit_MCP9601();
-    if (!_MCP9601->begin((uint8_t)_sensorAddress, _i2c))
-    {
+    if (!_MCP9601->begin((uint8_t)_sensorAddress, _i2c)) {
       return false;
     }
     _MCP9601->setADCresolution(MCP9600_ADCRESOLUTION_18);
@@ -81,8 +76,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemp(sensors_event_t *tempEvent)
-  {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     tempEvent->temperature = _MCP9601->readAmbient();
     return true;
   }
@@ -90,22 +84,19 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets the MCP9601's current thermocouple temperature.
-      @param    tempEvent
+      @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventRaw(sensors_event_t *rawEvent)
-  {
+  bool getEventRaw(sensors_event_t *rawEvent) {
     uint8_t status = _MCP9601->getStatus();
-    if (status & MCP9601_STATUS_OPENCIRCUIT)
-    {
+    if (status & MCP9601_STATUS_OPENCIRCUIT) {
       WS_DEBUG_PRINTLN("Thermocouple open!");
       return false;
     }
-    if (status & MCP9601_STATUS_SHORTCIRCUIT)
-    {
+    if (status & MCP9601_STATUS_SHORTCIRCUIT) {
       WS_DEBUG_PRINTLN("Thermocouple shorted to ground!");
       return false;
     }
