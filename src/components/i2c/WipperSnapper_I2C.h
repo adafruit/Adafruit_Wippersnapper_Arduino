@@ -40,6 +40,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_LTR329_LTR303.h"
 #include "drivers/WipperSnapper_I2C_Driver_LTR390.h"
 #include "drivers/WipperSnapper_I2C_Driver_MAX17048.h"
+#include "drivers/WipperSnapper_I2C_Driver_MCP9601.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
 #include "drivers/WipperSnapper_I2C_Driver_MPL115A2.h"
 #include "drivers/WipperSnapper_I2C_Driver_MPRLS.h"
@@ -127,6 +128,7 @@ private:
   WipperSnapper_I2C_Driver_INA219 *_ina219 = nullptr;
   WipperSnapper_I2C_Driver_LTR329_LTR303 *_ltr329 = nullptr;
   WipperSnapper_I2C_Driver_LTR390 *_ltr390 = nullptr;
+  WipperSnapper_I2C_Driver_MCP9601 *_mcp9601 = nullptr;
   WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
   WipperSnapper_I2C_Driver_MPL115A2 *_mpl115a2 = nullptr;
   WipperSnapper_I2C_Driver_MPRLS *_mprls = nullptr;
