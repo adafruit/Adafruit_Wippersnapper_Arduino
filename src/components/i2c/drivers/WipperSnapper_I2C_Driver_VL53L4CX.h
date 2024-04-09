@@ -60,38 +60,38 @@ public:
   */
   const char *getVL53L4CXStatusDescription(int statusCode) {
     switch (statusCode) {
-      case VL53L4CX_RANGESTATUS_RANGE_VALID:
-        return "VL53L4CX_RANGESTATUS_RANGE_VALID";
-      case VL53L4CX_RANGESTATUS_SIGMA_FAIL:
-        return "VL53L4CX_RANGESTATUS_SIGMA_FAIL";
-      case VL53L4CX_RANGESTATUS_RANGE_VALID_MIN_RANGE_CLIPPED:
-        return "VL53L4CX_RANGESTATUS_RANGE_VALID_MIN_RANGE_CLIPPED";
-      case VL53L4CX_RANGESTATUS_OUTOFBOUNDS_FAIL:
-        return "VL53L4CX_RANGESTATUS_OUTOFBOUNDS_FAIL";
-      case VL53L4CX_RANGESTATUS_HARDWARE_FAIL:
-        return "VL53L4CX_RANGESTATUS_HARDWARE_FAIL";
-      case VL53L4CX_RANGESTATUS_RANGE_VALID_NO_WRAP_CHECK_FAIL:
-        return "VL53L4CX_RANGESTATUS_RANGE_VALID_NO_WRAP_CHECK_FAIL";
-      case VL53L4CX_RANGESTATUS_WRAP_TARGET_FAIL:
-        return "VL53L4CX_RANGESTATUS_WRAP_TARGET_FAIL";
-      case VL53L4CX_RANGESTATUS_PROCESSING_FAIL:
-        return "VL53L4CX_RANGESTATUS_PROCESSING_FAIL";
-      case VL53L4CX_RANGESTATUS_XTALK_SIGNAL_FAIL:
-        return "VL53L4CX_RANGESTATUS_XTALK_SIGNAL_FAIL";
-      case VL53L4CX_RANGESTATUS_SYNCRONISATION_INT:
-        return "VL53L4CX_RANGESTATUS_SYNCRONISATION_INT";
-      case VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE:
-        return "VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE";
-      case VL53L4CX_RANGESTATUS_TARGET_PRESENT_LACK_OF_SIGNAL:
-        return "VL53L4CX_RANGESTATUS_TARGET_PRESENT_LACK_OF_SIGNAL";
-      case VL53L4CX_RANGESTATUS_MIN_RANGE_FAIL:
-        return "VL53L4CX_RANGESTATUS_MIN_RANGE_FAIL";
-      case VL53L4CX_RANGESTATUS_RANGE_INVALID:
-        return "VL53L4CX_RANGESTATUS_RANGE_INVALID";
-      case VL53L4CX_RANGESTATUS_NONE:
-        return "VL53L4CX_RANGESTATUS_NONE";
-      default:
-        return (("UNKNOWN STATUS: ") + String(statusCode)).c_str();
+    case VL53L4CX_RANGESTATUS_RANGE_VALID:
+      return "VL53L4CX_RANGESTATUS_RANGE_VALID";
+    case VL53L4CX_RANGESTATUS_SIGMA_FAIL:
+      return "VL53L4CX_RANGESTATUS_SIGMA_FAIL";
+    case VL53L4CX_RANGESTATUS_RANGE_VALID_MIN_RANGE_CLIPPED:
+      return "VL53L4CX_RANGESTATUS_RANGE_VALID_MIN_RANGE_CLIPPED";
+    case VL53L4CX_RANGESTATUS_OUTOFBOUNDS_FAIL:
+      return "VL53L4CX_RANGESTATUS_OUTOFBOUNDS_FAIL";
+    case VL53L4CX_RANGESTATUS_HARDWARE_FAIL:
+      return "VL53L4CX_RANGESTATUS_HARDWARE_FAIL";
+    case VL53L4CX_RANGESTATUS_RANGE_VALID_NO_WRAP_CHECK_FAIL:
+      return "VL53L4CX_RANGESTATUS_RANGE_VALID_NO_WRAP_CHECK_FAIL";
+    case VL53L4CX_RANGESTATUS_WRAP_TARGET_FAIL:
+      return "VL53L4CX_RANGESTATUS_WRAP_TARGET_FAIL";
+    case VL53L4CX_RANGESTATUS_PROCESSING_FAIL:
+      return "VL53L4CX_RANGESTATUS_PROCESSING_FAIL";
+    case VL53L4CX_RANGESTATUS_XTALK_SIGNAL_FAIL:
+      return "VL53L4CX_RANGESTATUS_XTALK_SIGNAL_FAIL";
+    case VL53L4CX_RANGESTATUS_SYNCRONISATION_INT:
+      return "VL53L4CX_RANGESTATUS_SYNCRONISATION_INT";
+    case VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE:
+      return "VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE";
+    case VL53L4CX_RANGESTATUS_TARGET_PRESENT_LACK_OF_SIGNAL:
+      return "VL53L4CX_RANGESTATUS_TARGET_PRESENT_LACK_OF_SIGNAL";
+    case VL53L4CX_RANGESTATUS_MIN_RANGE_FAIL:
+      return "VL53L4CX_RANGESTATUS_MIN_RANGE_FAIL";
+    case VL53L4CX_RANGESTATUS_RANGE_INVALID:
+      return "VL53L4CX_RANGESTATUS_RANGE_INVALID";
+    case VL53L4CX_RANGESTATUS_NONE:
+      return "VL53L4CX_RANGESTATUS_NONE";
+    default:
+      return (("UNKNOWN STATUS: ") + String(statusCode)).c_str();
     }
   }
 
@@ -172,10 +172,10 @@ public:
     return getProximity(proximityEvent, 0);
   }
 
-
   /*******************************************************************************/
   /*!
-      @brief    Gets the VL53L4CX's current proximity for second object if found.
+      @brief    Gets the VL53L4CX's current proximity for second object if
+     found.
       @param    proximityEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the proximity was obtained successfully, False
@@ -185,7 +185,6 @@ public:
   bool getEventRaw(sensors_event_t *proximityEvent) {
     return getProximity(proximityEvent, 1);
   }
-  
 
   /*******************************************************************************/
   /*!
@@ -210,11 +209,10 @@ public:
     WS_DEBUG_PRINT("Waiting for VL53L4CX data ready...");
     delay(250);
 
-    for (uint8_t i = 0;
-         (status = _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady)) &&
-         !NewDataReady && i < 3;
-         i++) 
-    {
+    for (uint8_t i = 0; (status = _VL53L4CX->VL53L4CX_GetMeasurementDataReady(
+                             &NewDataReady)) &&
+                        !NewDataReady && i < 3;
+         i++) {
       delay(300);
       WS_DEBUG_PRINT(" .");
     }
@@ -224,8 +222,10 @@ public:
       no_of_object_found = pMultiRangingData->NumberOfObjectsFound;
 
       for (j = 0; j < no_of_object_found; j++) {
-        if (pMultiRangingData->RangeData[j].RangeStatus == VL53L4CX_RANGESTATUS_RANGE_VALID ||
-            pMultiRangingData->RangeData[j].RangeStatus == VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE) {
+        if (pMultiRangingData->RangeData[j].RangeStatus ==
+                VL53L4CX_RANGESTATUS_RANGE_VALID ||
+            pMultiRangingData->RangeData[j].RangeStatus ==
+                VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE) {
           int16_t mm = pMultiRangingData->RangeData[j].RangeMilliMeter;
           if (j == index) {
             proximityEvent->data[0] = (float)mm;
@@ -236,13 +236,14 @@ public:
       // TODO: Once I2C sensors fire all data points during a single call, we
       // can return both distances and other metrics like the std deviation
     } else {
-      WS_DEBUG_PRINTLN("VL53L4CX Error: " + String(getVL53L4CXStatusDescription(status)));
+      WS_DEBUG_PRINTLN("VL53L4CX Error: " +
+                       String(getVL53L4CXStatusDescription(status)));
     }
     return false;
   }
 
 protected:
-  VL53L4CX *_VL53L4CX = nullptr; ///< Pointer to VL53L4CX temperature sensor object
+  VL53L4CX *_VL53L4CX; ///< Pointer to VL53L4CX temperature sensor object
 };
 
 #endif // WipperSnapper_I2C_Driver_VL53L4CX
