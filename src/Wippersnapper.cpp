@@ -1673,9 +1673,7 @@ void cbErrorTopic(char *errorData, uint16_t len) {
 #endif
 
   // WDT reset
-  for (;;) {
-    delay(100);
-  }
+  WS.haltError("IO MQTT Ban Error");
 }
 
 /**************************************************************************/
@@ -2468,17 +2466,17 @@ void Wippersnapper::runNetFSM() {
 */
 /**************************************************************************/
 void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
-  WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
-  WS_DEBUG_PRINTLN(error);
   for (;;) {
+    WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
+    WS_DEBUG_PRINTLN(error);
     // let the WDT fail out and reset!
     statusLEDSolid(ledStatusColor);
 #ifndef ARDUINO_ARCH_ESP8266
-    delay(100);
+    delay(1000);
 #else
     // Calls to delay() and yield() feed the ESP8266's
     // hardware and software watchdog timers, delayMicroseconds does not.
-    delayMicroseconds(100);
+    delayMicroseconds(1000);
 #endif
   }
 }
@@ -2562,11 +2560,7 @@ void Wippersnapper::enableWDT(int timeoutMS) {
   Watchdog.disable();
 #endif
   if (Watchdog.enable(timeoutMS) == 0) {
-    WS_DEBUG_PRINTLN("ERROR: WDT initialization failure!");
-    setStatusLEDColor(LED_ERROR);
-    for (;;) {
-      delay(100);
-    }
+    WS.haltError("WDT initialization failure!");
   }
 }
 

@@ -158,6 +158,15 @@ WipperSnapper_Component_I2C::scanAddresses() {
   // those that respond.
   WS_DEBUG_PRINTLN("EXEC: I2C Scan");
   for (address = 0x08; address < 0x7F; address++) {
+    if (address >= 0x60 and address <= 0x67) {
+      WS_DEBUG_PRINT("attempting to scan unhappy sensors at address");
+      WS_DEBUG_PRINTLN(address);
+      _i2c->endTransmission();
+      _i2c->endTransmission();
+      _i2c->endTransmission();
+      delay(20);
+    }
+    
     _i2c->beginTransmission(address);
     endTransmissionRC = _i2c->endTransmission();
 
@@ -189,7 +198,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
     }
   }
 
-#ifndef ARDUINO_ARCH_ESP32
+#if (!defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_RP2040))
   // re-enable WipperSnapper SAMD WDT global timeout
   WS.enableWDT(WS_WDT_TIMEOUT);
   WS.feedWDT();
