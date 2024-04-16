@@ -51,8 +51,6 @@ public:
     delete _VL53L4CD;
   }
 
-
-
   /*******************************************************************************/
   /*!
       @brief    Initializes the VL53L4CD sensor and begins I2C.
