@@ -159,6 +159,10 @@ jobs:
       id: get_board_json
       run: |
           board_name=${{ matrix.arduino-platform }}
+          # Remove '_noota' suffix if present
+          board_name=${board_name%_noota}
+          # Remove 'wippersnapper_' prefix if present
+          board_name=${board_name#wippersnapper_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
