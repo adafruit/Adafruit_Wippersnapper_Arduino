@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["feather_esp32", "qtpy_esp32", "feather_esp32_v2", "itsybitsy_esp32", "qtpy_esp32c3"]
+        arduino-platform: ["wippersnapper_feather_esp32", "qtpy_esp32", "feather_esp32_v2", "itsybitsy_esp32", "wippersnapper_qtpy_esp32c3"]
         include:
           - offset: "0x1000"
           - offset: "0x0"
@@ -158,6 +158,10 @@ jobs:
       id: get_board_json
       run: |
           board_name=${{ matrix.arduino-platform }}
+          # Remove '_noota' suffix if present
+          board_name=${board_name%_noota}
+          # Remove 'wippersnapper_' prefix if present
+          board_name=${board_name#wippersnapper_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
           {
             echo 'boardJson<<EOF'
