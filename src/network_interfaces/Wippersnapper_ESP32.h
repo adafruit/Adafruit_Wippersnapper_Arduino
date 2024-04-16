@@ -23,6 +23,7 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
+#include "WiFi.h"
 #include <WiFiClientSecure.h>
 extern Wippersnapper WS;
 
@@ -133,7 +134,7 @@ public:
   /********************************************************/
   void getMacAddr() {
     uint8_t mac[6] = {0};
-    WiFi.macAddress(mac);
+    Network.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));
   }
 
