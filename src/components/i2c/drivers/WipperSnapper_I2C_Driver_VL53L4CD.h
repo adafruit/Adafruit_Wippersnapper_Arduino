@@ -70,28 +70,29 @@ public:
       return false;
     }
 
-    uint16_t signalThreshold = -1;
-    if (_VL53L4CD->VL53L4CD_GetSignalThreshold(&signalThreshold) !=
+    if (uint16_t signalThreshold;
+        _VL53L4CD->VL53L4CD_GetSignalThreshold(&signalThreshold) ==
         VL53L4CD_ERROR_NONE) {
-      WS_DEBUG_PRINTLN("Failed to get VL53L4CD signal threshold!");
-    } else {
       WS_DEBUG_PRINT("VL53L4CD old signal threshold: ");
       WS_DEBUG_PRINTLN(signalThreshold);
-    }
-    if (_VL53L4CD->VL53L4CD_SetSignalThreshold(50) != VL53L4CD_ERROR_NONE) {
-      WS_DEBUG_PRINTLN("Failed to set new VL53L4CD signal threshold!");
+      WS_DEBUG_PRINTLN("Setting VL53L4CD signal threshold to 50");
+      if (_VL53L4CD->VL53L4CD_SetSignalThreshold(50) != VL53L4CD_ERROR_NONE) {
+        WS_DEBUG_PRINTLN("Failed to set new VL53L4CD signal threshold!");
+      }
+    } else {
+      WS_DEBUG_PRINTLN("Failed to get VL53L4CD signal threshold!");
     }
 
-    uint16_t sigmaThreshold = -1;
-    if (_VL53L4CD->VL53L4CD_GetSigmaThreshold(&sigmaThreshold) !=
-        VL53L4CD_ERROR_NONE) {
-      WS_DEBUG_PRINTLN("Failed to get VL53L4CD sigma threshold!");
-    } else {
+    if (uint16_t sigmaThreshold; _VL53L4CD->VL53L4CD_GetSigmaThreshold(
+                                     &sigmaThreshold) == VL53L4CD_ERROR_NONE) {
       WS_DEBUG_PRINT("VL53L4CD old sigma threshold: ");
       WS_DEBUG_PRINTLN(sigmaThreshold);
-    }
-    if (_VL53L4CD->VL53L4CD_SetSigmaThreshold(100) != VL53L4CD_ERROR_NONE) {
-      WS_DEBUG_PRINTLN("Failed to set VL53L4CD sigma threshold!");
+      WS_DEBUG_PRINTLN("Setting VL53L4CD sigma threshold to 100");
+      if (_VL53L4CD->VL53L4CD_SetSigmaThreshold(100) != VL53L4CD_ERROR_NONE) {
+        WS_DEBUG_PRINTLN("Failed to set VL53L4CD sigma threshold!");
+      }
+    } else {
+      WS_DEBUG_PRINTLN("Failed to get VL53L4CD sigma threshold!");
     }
 
     if (_VL53L4CD->VL53L4CD_StartRanging() != VL53L4CD_ERROR_NONE) {
