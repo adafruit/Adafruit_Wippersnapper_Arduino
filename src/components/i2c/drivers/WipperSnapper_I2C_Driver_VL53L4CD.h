@@ -17,7 +17,6 @@
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <vl53l4cd_class.h>
-#define VL53L4CD_STATUS_VALID 0 ///< Returned distance is valid
 
 /**************************************************************************/
 /*!
@@ -134,7 +133,7 @@ public:
 
       // Read measured distance. RangeStatus = 0 means valid data
       if (_VL53L4CD->VL53L4CD_GetResult(&results) == VL53L4CD_ERROR_NONE) {
-        if (results.range_status != VL53L4CD_STATUS_VALID) {
+        if (results.range_status != 0) {
           WS_DEBUG_PRINT("VL53L4CD range status: ");
           WS_DEBUG_PRINTLN(results.range_status);
           return false;
