@@ -173,10 +173,11 @@ public:
     // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
     // new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url,
     // WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
-
-    WS._mqtt = new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url, 1883,
-                                        clientID, WS._config.aio_user,
-                                        WS._config.aio_key);
+    if (WS._config.io_port == 8883)
+      WS._config.io_port = 1883;
+    WS._mqtt = new Adafruit_MQTT_Client(
+        _wifi_client, WS._config.aio_url, WS._config.io_port, clientID,
+        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
