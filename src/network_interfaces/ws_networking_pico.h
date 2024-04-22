@@ -149,8 +149,10 @@ public:
     // compare WS._config.aio_url to "io.adafruit.com"
     if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0) {
       _mqtt_client->setCACert(_aio_root_ca_prod);
-    } else {
+    } else if (strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client->setCACert(_aio_root_ca_staging);
+    } else {
+      _mqtt_client->setInsecure();
     }
 
     WS._mqtt = new Adafruit_MQTT_Client(
