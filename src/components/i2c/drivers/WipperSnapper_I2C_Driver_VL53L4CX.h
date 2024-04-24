@@ -64,14 +64,16 @@ public:
       WS_DEBUG_PRINTLN("Failed to initialize VL53L4CX sensor!");
       return false;
     }
-    
-    // Set 1 second measurement time, the highest possible TimingBudget is 10seconds
-    if (_VL53L4CX->VL53L4CX_SetMeasurementTimingBudgetMicroSeconds(1000000) != VL53L4CX_ERROR_NONE) {
+
+    // Set 1 second measurement time, the highest possible TimingBudget is 10s
+    if (_VL53L4CX->VL53L4CX_SetMeasurementTimingBudgetMicroSeconds(1000000) !=
+        VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINTLN("Failed to set VL53L4CX timing budget!");
       return false;
     }
 
-    if (_VL53L4CX->VL53L4CX_SetDistanceMode(VL53L4CX_DISTANCEMODE_LONG) != VL53L4CX_ERROR_NONE) {
+    if (_VL53L4CX->VL53L4CX_SetDistanceMode(VL53L4CX_DISTANCEMODE_LONG) !=
+        VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINTLN("Failed to set VL53L4CX distance mode to long!");
     }
 
@@ -133,10 +135,11 @@ public:
     delay(250);
 
     for (uint8_t retries = 0;
-         (status = _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady)) &&
+         (status =
+              _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady)) &&
          !NewDataReady && retries < 3;
          retries++) {
-      delay(300);
+      delay(350);
       WS_DEBUG_PRINT(" .");
     }
     WS_DEBUG_PRINTLN("");
