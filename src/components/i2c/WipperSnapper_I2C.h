@@ -45,6 +45,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_MPL115A2.h"
 #include "drivers/WipperSnapper_I2C_Driver_MPRLS.h"
 #include "drivers/WipperSnapper_I2C_Driver_MS8607.h"
+#include "drivers/WipperSnapper_I2C_Driver_NAU7802.h"
 #include "drivers/WipperSnapper_I2C_Driver_PCT2075.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
@@ -134,6 +135,7 @@ private:
   WipperSnapper_I2C_Driver_MPL115A2 *_mpl115a2 = nullptr;
   WipperSnapper_I2C_Driver_MPRLS *_mprls = nullptr;
   WipperSnapper_I2C_Driver_MS8607 *_ms8607 = nullptr;
+  WipperSnapper_I2C_Driver_NAU7802 *_nau7802 = nullptr;
   WipperSnapper_I2C_Driver_TMP117 *_tmp117 = nullptr;
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4020 *_vcnl4020 = nullptr;
