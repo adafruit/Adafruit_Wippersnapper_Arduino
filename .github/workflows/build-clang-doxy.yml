@@ -225,7 +225,7 @@ jobs:
         include:
           - offset: "0x1000"
           - offset: "0x0"
-            arduino-platform: "qtpy_esp32c3"
+            arduino-platform: "wippersnapper_qtpy_esp32c3"
     steps:
     - uses: actions/setup-python@v4
       with:
@@ -245,6 +245,7 @@ jobs:
       with:
         repository: adafruit/Wippersnapper_Boards
         path: ws-boards
+        ref: funhouse-web-native-usb
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
     - name: Install extra Arduino libraries
