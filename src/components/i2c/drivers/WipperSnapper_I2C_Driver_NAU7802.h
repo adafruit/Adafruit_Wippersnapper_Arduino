@@ -19,6 +19,8 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_NAU7802.h>
 
+#define NAU7802_TIMEOUT_MS 250 // Timeout waiting for data from NAU7802
+
 /**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the NAU7802.
@@ -55,20 +57,23 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
-    if (!_nau7802->begin(_i2c))
-      return false;
+  bool begin() { return _nau7802->begin(_i2c) && configure_nau7802(); }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Configures the NAU7802 sensor.
+      @returns  True if configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configure_nau7802() {
     if (!_nau7802->setLDO(NAU7802_3V0)) {
       WS_DEBUG_PRINTLN("Failed to set LDO to 3V0");
+      return false;
     }
 
     if (!_nau7802->setGain(NAU7802_GAIN_128)) {
       WS_DEBUG_PRINTLN("Failed to set gain to 128");
-    }
-
-    if (!_nau7802->setRate(NAU7802_RATE_10SPS)) {
-      WS_DEBUG_PRINTLN("Failed to set sample rate to 10SPS");
+      return false;
     }
     return true;
   }
@@ -86,8 +91,8 @@ public:
 
     // Wait for the sensor to be ready
     while (!_nau7802->available()) {
-      if (millis() - start > 1000) {
-        WS_DEBUG_PRINTLN("NAU7802 not available");
+      if (millis() - start > NAU7802_TIMEOUT_MS) {
+        WS_DEBUG_PRINTLN("NAU7802 data not available");
         return false;
       }
     }
