@@ -2430,6 +2430,9 @@ void Wippersnapper::runNetFSM() {
           fsmNetwork = FSM_NET_CHECK_MQTT;
           break;
         }
+        WS_DEBUG_PRINT("MQTT Connection Error: ");
+        WS_DEBUG_PRINTLN(mqttRC);
+        WS_DEBUG_PRINTLN(WS._mqtt->connectErrorString(mqttRC));
         WS_DEBUG_PRINTLN(
             "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
         delay(3000);
