@@ -75,6 +75,26 @@ public:
       WS_DEBUG_PRINTLN("Failed to set gain to 128");
       return false;
     }
+
+    if (!_nau7802->setRate(NAU7802_RATE_10SPS) &&
+        !_nau7802->setRate(NAU7802_RATE_10SPS)) {
+      WS_DEBUG_PRINTLN("Failed to set sample rate to 10SPS");
+      return false;
+    }
+
+    // Take 10 readings to flush out old readings (10 samples per second)
+    for (uint8_t skipCounter = 0; skipCounter < 10; skipCounter++) {
+      while (!_nau7802->available())
+        delay(1);
+      _nau7802->read();
+    }
+
+    while (!_nau7802->calibrate(NAU7802_CALMOD_INTERNAL)) {
+      WS_DEBUG_PRINTLN("Failed to calibrate internal offset, retrying!");
+      delay(1000);
+    }
+    WS_DEBUG_PRINTLN("Calibrated internal offset");
+
     return true;
   }
 
