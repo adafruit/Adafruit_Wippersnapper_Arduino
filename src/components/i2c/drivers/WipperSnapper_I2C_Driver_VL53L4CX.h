@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) 2022 Tyeth Gundry for Adafruit Industries
+ * Copyright (c) 2024 Tyeth Gundry for Adafruit Industries
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -18,6 +18,9 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <vl53l4cx_class.h>
 #include <vl53l4cx_def.h>
+
+#define VL53_SHUTDOWN_PIN -1
+#define VL53_READING_DELAY 350
 
 /**************************************************************************/
 /*!
@@ -58,7 +61,7 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _VL53L4CX = new VL53L4CX(_i2c, -1);
+    _VL53L4CX = new VL53L4CX(_i2c, VL53_SHUTDOWN_PIN);
 
     if (_VL53L4CX->InitSensor((uint8_t)_sensorAddress) != VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINTLN("Failed to initialize VL53L4CX sensor!");
@@ -75,6 +78,7 @@ public:
     if (_VL53L4CX->VL53L4CX_SetDistanceMode(VL53L4CX_DISTANCEMODE_LONG) !=
         VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINTLN("Failed to set VL53L4CX distance mode to long!");
+      return false;
     }
 
     if (_VL53L4CX->VL53L4CX_StartMeasurement() != VL53L4CX_ERROR_NONE) {
@@ -126,46 +130,70 @@ public:
     VL53L4CX_MultiRangingData_t MultiRangingData;
     VL53L4CX_MultiRangingData_t *pMultiRangingData = &MultiRangingData;
     uint8_t NewDataReady = 0;
-    int no_of_object_found = 0;
-    int currentObject = 0;
     int status;
     // Start fresh reading, seemed to be accepting stale value
     status = _VL53L4CX->VL53L4CX_ClearInterruptAndStartMeasurement();
     WS_DEBUG_PRINT("Waiting for VL53L4CX data ready...");
-    delay(250);
+    delay(VL53_READING_DELAY);
 
-    for (uint8_t retries = 0;
-         (status =
-              _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady)) &&
-         !NewDataReady && retries < 3;
-         retries++) {
-      delay(350);
-      WS_DEBUG_PRINT(" .");
-    }
-    WS_DEBUG_PRINTLN("");
+    awaitDataReady(status, NewDataReady);
     if ((status == VL53L4CX_ERROR_NONE) && (NewDataReady != 0)) {
       status = _VL53L4CX->VL53L4CX_GetMultiRangingData(pMultiRangingData);
-      no_of_object_found = pMultiRangingData->NumberOfObjectsFound;
-
-      for (currentObject = 0; currentObject < no_of_object_found;
-           currentObject++) {
-        if (pMultiRangingData->RangeData[currentObject].RangeStatus ==
-                VL53L4CX_RANGESTATUS_RANGE_VALID ||
-            pMultiRangingData->RangeData[currentObject].RangeStatus ==
-                VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE) {
-          int16_t mm =
-              pMultiRangingData->RangeData[currentObject].RangeMilliMeter;
-          if (currentObject == index) {
-            proximityEvent->data[0] = (float)mm;
-            return true;
-          }
-        }
+      int no_of_object_found = pMultiRangingData->NumberOfObjectsFound;
+      if (no_of_object_found - 1 < index) {
+        WS_DEBUG_PRINT("Object not found at index #");
+        WS_DEBUG_PRINTLN(index);
+        return false;
       }
+      bool retVal = updateDataPointIfValid(pMultiRangingData->RangeData[index],
+                                           proximityEvent);
     } else {
       WS_DEBUG_PRINT("VL53L4CX Error: ");
       WS_DEBUG_PRINTLN(status);
     }
     return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the VL53L4CX's current proximity (first or second object).
+      @param    rangingData
+                The ranging data to check.
+      @param    proximityEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the proximity was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool updateDataPointIfValid(VL53L4CX_TargetRangeData_t rangingData,
+                              sensors_event_t *proximityEvent) {
+    if (rangingData.RangeStatus == VL53L4CX_RANGESTATUS_RANGE_VALID ||
+        rangingData.RangeStatus ==
+            VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE) {
+      int16_t mm = rangingData.RangeMilliMeter;
+      proximityEvent->data[0] = (float)mm;
+      return true;
+    }
+    return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the sensor_t data for the VL53L4CX sensor.
+      @param    sensor
+                Pointer to an Adafruit_Sensor sensor_t structure.
+  */
+  /*******************************************************************************/
+  void awaitDataReady(int &status, uint8_t &NewDataReady) {
+    for (uint8_t retries = 0;
+         (status =
+              _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady)) &&
+         !NewDataReady && retries < 3;
+         retries++) {
+      delay(VL53_READING_DELAY);
+      WS_DEBUG_PRINT(" .");
+    }
+    WS_DEBUG_PRINTLN("");
   }
 
 protected:
