@@ -59,6 +59,9 @@
   {} ///< Prints line from debug output.
 #endif
 
+// Wippersnapper pb helpers
+#include <nanopb/ws_pb_encode.h>
+
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"

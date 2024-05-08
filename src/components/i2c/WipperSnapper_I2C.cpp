@@ -848,12 +848,10 @@ bool WipperSnapper_Component_I2C::encodePublishI2CDeviceEventMsg(
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
   pb_ostream_t ostream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
+  if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
                  msgi2cResponse)) {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to encode I2C device event response message!");
-    WS_DEBUG_PRINT("Protobuf Encode Error: ");
-    WS_DEBUG_PRINTLN(PB_GET_ERROR(&ostream));
     return false;
   }
 
