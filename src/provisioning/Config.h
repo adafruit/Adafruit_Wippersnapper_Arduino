@@ -23,7 +23,7 @@ struct secretsConfig {
   networkConfig network;
   char aio_url[64];
   char aio_user[31];
-  char aio_key[33];
+  char aio_key[41];
   int io_port;
   float status_pixel_brightness;
 };
