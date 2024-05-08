@@ -852,6 +852,8 @@ bool WipperSnapper_Component_I2C::encodePublishI2CDeviceEventMsg(
                  msgi2cResponse)) {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to encode I2C device event response message!");
+    WS_DEBUG_PRINT("Protobuf Encode Error: ");
+    WS_DEBUG_PRINTLN(PB_GET_ERROR(&ostream));
     return false;
   }
 
