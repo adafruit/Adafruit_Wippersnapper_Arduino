@@ -420,6 +420,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _si7021->configureDriver(msgDeviceInitReq);
     drivers.push_back(_si7021);
     WS_DEBUG_PRINTLN("SI7021/SHT20 Initialized Successfully!");
+  } else if (strcmp("mcp3421", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mcp3421 = new WipperSnapper_I2C_Driver_MCP3421(this->_i2c, i2cAddress);
+    if (!_mcp3421->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MCP3421!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mcp3421->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mcp3421);
+    WS_DEBUG_PRINTLN("MCP3421 Initialized Successfully!");
   } else if (strcmp("mcp9808", msgDeviceInitReq->i2c_device_name) == 0) {
     _mcp9808 = new WipperSnapper_I2C_Driver_MCP9808(this->_i2c, i2cAddress);
     if (!_mcp9808->begin()) {
