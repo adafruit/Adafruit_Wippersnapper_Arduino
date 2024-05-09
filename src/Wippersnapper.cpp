@@ -357,7 +357,7 @@ bool cbDecodePinConfigMsg(pb_istream_t *stream, const pb_field_t *field,
   // pb_decode the stream into a pinReqMessage
   wippersnapper_pin_v1_ConfigurePinRequest pinReqMsg =
       wippersnapper_pin_v1_ConfigurePinRequest_init_zero;
-  if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequest_fields,
+  if (!ws_pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequest_fields,
                  &pinReqMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
     is_success = false;
@@ -398,7 +398,7 @@ bool cbDecodeDigitalPinWriteMsg(pb_istream_t *stream, const pb_field_t *field,
   // Decode stream into a PinEvent
   wippersnapper_pin_v1_PinEvent pinEventMsg =
       wippersnapper_pin_v1_PinEvent_init_zero;
-  if (!pb_decode(stream, wippersnapper_pin_v1_PinEvent_fields, &pinEventMsg)) {
+  if (!ws_pb_decode(stream, wippersnapper_pin_v1_PinEvent_fields, &pinEventMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Could not decode PinEvents")
     is_success = false;
   }
@@ -442,7 +442,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     msg.list.funcs.decode = cbDecodePinConfigMsg;
     msg.list.arg = field->pData;
     // decode each ConfigurePinRequest sub-message
-    if (!pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pin_v1_ConfigurePinRequests_fields,
                    &msg)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSignalRequest")
       is_success = false;
@@ -463,7 +463,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     msg.list.funcs.decode = cbDecodeDigitalPinWriteMsg;
     msg.list.arg = field->pData;
     // decode each PinEvents sub-message
-    if (!pb_decode(stream, wippersnapper_pin_v1_PinEvents_fields, &msg)) {
+    if (!ws_pb_decode(stream, wippersnapper_pin_v1_PinEvents_fields, &msg)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode CreateSign2alRequest")
       is_success = false;
     }
@@ -496,7 +496,7 @@ bool Wippersnapper::decodeSignalMsg(
 
   // decode the CreateSignalRequest, calls cbSignalMessage and assoc. callbacks
   pb_istream_t stream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
+  if (!ws_pb_decode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
                  encodedSignalMsg)) {
     WS_DEBUG_PRINTLN(
         "ERROR (decodeSignalMsg):, Could not decode CreateSignalRequest")
@@ -609,7 +609,7 @@ bool cbDecodeI2CDeviceInitRequestList(pb_istream_t *stream,
   // Decode stream into individual msgI2CDeviceInitRequest messages
   wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
       wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero;
-  if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
+  if (!ws_pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
                  &msgI2CDeviceInitRequest)) {
     WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequest message.");
     return false;
@@ -682,7 +682,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     // Decode I2CBusScanRequest
     wippersnapper_i2c_v1_I2CBusScanRequest msgScanReq =
         wippersnapper_i2c_v1_I2CBusScanRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CBusScanRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_i2c_v1_I2CBusScanRequest_fields,
                    &msgScanReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_i2c_v1_I2CBusScanRequest");
@@ -735,7 +735,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         cbDecodeI2CDeviceInitRequestList;
     msgI2CDeviceInitRequestList.list.arg = field->pData;
     // Decode each sub-message
-    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequests_fields,
+    if (!ws_pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequests_fields,
                    &msgI2CDeviceInitRequestList)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequests");
       is_success = false;
@@ -751,7 +751,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     wippersnapper_i2c_v1_I2CDeviceInitRequest msgI2CDeviceInitRequest =
         wippersnapper_i2c_v1_I2CDeviceInitRequest_init_zero;
     // Decode stream into struct, msgI2CDeviceInitRequest
-    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceInitRequest_fields,
                    &msgI2CDeviceInitRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode I2CDeviceInitRequest message.");
       return false; // fail out if we can't decode
@@ -797,7 +797,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
         wippersnapper_i2c_v1_I2CDeviceUpdateRequest_init_zero;
 
     // Decode stream into message
-    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceUpdateRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceUpdateRequest_fields,
                    &msgI2CDeviceUpdateRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode I2CDeviceUpdateRequest message.");
@@ -829,7 +829,7 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest msgI2CDeviceDeinitRequest =
         wippersnapper_i2c_v1_I2CDeviceDeinitRequest_init_zero;
     // Decode stream into struct, msgI2CDeviceDeinitRequest
-    if (!pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceDeinitRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceDeinitRequest_fields,
                    &msgI2CDeviceDeinitRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode I2CDeviceDeinitRequest message.");
@@ -891,7 +891,7 @@ void cbSignalI2CReq(char *data, uint16_t len) {
 
   // Decode I2C signal request
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_I2CRequest_fields,
                  &WS.msgSignalI2C))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode I2C message");
 }
@@ -917,7 +917,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     // Attempt to decode contents of servo_attach message
     wippersnapper_servo_v1_ServoAttachRequest msgServoAttachReq =
         wippersnapper_servo_v1_ServoAttachRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_servo_v1_ServoAttachRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_servo_v1_ServoAttachRequest_fields,
                    &msgServoAttachReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachRequest");
@@ -988,7 +988,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     wippersnapper_servo_v1_ServoWriteRequest msgServoWriteReq =
         wippersnapper_servo_v1_ServoWriteRequest_init_zero;
 
-    if (!pb_decode(stream, wippersnapper_servo_v1_ServoWriteRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_servo_v1_ServoWriteRequest_fields,
                    &msgServoWriteReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoWriteRequest");
@@ -1018,7 +1018,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     // Attempt to decode contents of servo detach message
     wippersnapper_servo_v1_ServoDetachRequest msgServoDetachReq =
         wippersnapper_servo_v1_ServoDetachRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_servo_v1_ServoDetachRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_servo_v1_ServoDetachRequest_fields,
                    &msgServoDetachReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoDetachRequest");
@@ -1071,7 +1071,7 @@ void cbServoMsg(char *data, uint16_t len) {
 
   // Decode servo message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_ServoRequest_fields,
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_ServoRequest_fields,
                  &WS.msgServo))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode servo message");
 }
@@ -1096,7 +1096,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // Attempt to decode contents of PWM attach message
     wippersnapper_pwm_v1_PWMAttachRequest msgPWMAttachRequest =
         wippersnapper_pwm_v1_PWMAttachRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMAttachRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pwm_v1_PWMAttachRequest_fields,
                    &msgPWMAttachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
@@ -1160,7 +1160,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // Attempt to decode contents of PWM detach message
     wippersnapper_pwm_v1_PWMDetachRequest msgPWMDetachRequest =
         wippersnapper_pwm_v1_PWMDetachRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMDetachRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pwm_v1_PWMDetachRequest_fields,
                    &msgPWMDetachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMDetachRequest");
@@ -1187,7 +1187,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // Attempt to decode contents of PWM detach message
     wippersnapper_pwm_v1_PWMWriteFrequencyRequest msgPWMWriteFreqRequest =
         wippersnapper_pwm_v1_PWMWriteFrequencyRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMWriteFrequencyRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pwm_v1_PWMWriteFrequencyRequest_fields,
                    &msgPWMWriteFreqRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteFrequencyRequest");
@@ -1220,7 +1220,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     // Attempt to decode contents of PWM detach message
     wippersnapper_pwm_v1_PWMWriteDutyCycleRequest msgPWMWriteDutyCycleRequest =
         wippersnapper_pwm_v1_PWMWriteDutyCycleRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_pwm_v1_PWMWriteDutyCycleRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pwm_v1_PWMWriteDutyCycleRequest_fields,
                    &msgPWMWriteDutyCycleRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteDutyCycleRequest");
@@ -1275,7 +1275,7 @@ void cbPWMMsg(char *data, uint16_t len) {
 
   // Decode servo message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_PWMRequest_fields,
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_PWMRequest_fields,
                  &WS.msgPWM))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode PWM message");
 }
@@ -1303,7 +1303,7 @@ bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
     wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDS18xInitReq =
         wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
 
-    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
                    &msgDS18xInitReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_ds18x20_v1_Ds18x20InitRequest");
@@ -1319,7 +1319,7 @@ bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
     // Attempt to decode contents of message
     wippersnapper_ds18x20_v1_Ds18x20DeInitRequest msgDS18xDeInitReq =
         wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_fields,
                    &msgDS18xDeInitReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_ds18x20_v1_Ds18x20DeInitRequest");
@@ -1363,7 +1363,7 @@ void cbSignalDSReq(char *data, uint16_t len) {
 
   // Decode DS signal request
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_Ds18x20Request_fields,
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_Ds18x20Request_fields,
                  &WS.msgSignalDS))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode DS message");
 }
@@ -1393,7 +1393,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     // attempt to decode create message
     wippersnapper_pixels_v1_PixelsCreateRequest msgPixelsCreateReq =
         wippersnapper_pixels_v1_PixelsCreateRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsCreateRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pixels_v1_PixelsCreateRequest_fields,
                    &msgPixelsCreateReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
                        "wippersnapper_pixels_v1_PixelsCreateRequest!");
@@ -1414,7 +1414,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     // attempt to decode delete strand message
     wippersnapper_pixels_v1_PixelsDeleteRequest msgPixelsDeleteReq =
         wippersnapper_pixels_v1_PixelsDeleteRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsDeleteRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pixels_v1_PixelsDeleteRequest_fields,
                    &msgPixelsDeleteReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
                        "wippersnapper_pixels_v1_PixelsDeleteRequest!");
@@ -1432,7 +1432,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
     // attempt to decode pixel write message
     wippersnapper_pixels_v1_PixelsWriteRequest msgPixelsWritereq =
         wippersnapper_pixels_v1_PixelsWriteRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_pixels_v1_PixelsWriteRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_pixels_v1_PixelsWriteRequest_fields,
                    &msgPixelsWritereq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
                        "wippersnapper_pixels_v1_PixelsWriteRequest!");
@@ -1474,7 +1474,7 @@ void cbPixelsMsg(char *data, uint16_t len) {
 
   // Decode pixel message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_PixelsRequest_fields,
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_PixelsRequest_fields,
                  &WS.msgPixels))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode pixel topic message");
 }
@@ -1503,7 +1503,7 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     // attempt to decode create message
     wippersnapper_uart_v1_UARTDeviceAttachRequest msgUARTInitReq =
         wippersnapper_uart_v1_UARTDeviceAttachRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_uart_v1_UARTDeviceAttachRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_uart_v1_UARTDeviceAttachRequest_fields,
                    &msgUARTInitReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode message of type: UARTDeviceAttachRequest!");
@@ -1553,7 +1553,7 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     // attempt to decode uart detach request message
     wippersnapper_uart_v1_UARTDeviceDetachRequest msgUARTDetachReq =
         wippersnapper_uart_v1_UARTDeviceDetachRequest_init_zero;
-    if (!pb_decode(stream, wippersnapper_uart_v1_UARTDeviceDetachRequest_fields,
+    if (!ws_pb_decode(stream, wippersnapper_uart_v1_UARTDeviceDetachRequest_fields,
                    &msgUARTDetachReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode message!");
       return false;
@@ -1594,7 +1594,7 @@ void cbSignalUARTReq(char *data, uint16_t len) {
 
   // Decode DS signal request
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  if (!pb_decode(&istream, wippersnapper_signal_v1_UARTRequest_fields,
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_UARTRequest_fields,
                  &WS.msgSignalUART))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode UART Signal message");
 }

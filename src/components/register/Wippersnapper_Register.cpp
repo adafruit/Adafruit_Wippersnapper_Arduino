@@ -107,7 +107,7 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
   // create input stream for buffer
   pb_istream_t stream = pb_istream_from_buffer(buffer, len);
   // decode the stream
-  if (!pb_decode(&stream,
+  if (!ws_pb_decode(&stream,
                  wippersnapper_description_v1_CreateDescriptionResponse_fields,
                  &message)) {
     WS.haltError("Could not decode registration response");

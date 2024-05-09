@@ -60,7 +60,7 @@
 #endif
 
 // Wippersnapper pb helpers
-#include <nanopb/ws_pb_encode.h>
+#include <nanopb/ws_pb_helpers.h>
 
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
