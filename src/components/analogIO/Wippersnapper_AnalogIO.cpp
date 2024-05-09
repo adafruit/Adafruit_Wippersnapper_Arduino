@@ -280,8 +280,8 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // Encode signal message
   pb_ostream_t stream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
-                 &outgoingSignalMsg)) {
+  if (!ws_pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
+                    &outgoingSignalMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
     return false;
   }

@@ -563,8 +563,8 @@ bool encodeI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
   pb_ostream_t ostream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
-                 msgi2cResponse)) {
+  if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_I2CResponse_fields,
+                    msgi2cResponse)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode I2C response message!");
     return false;
   }
@@ -972,8 +972,8 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
                                                   sizeof(WS._buffer_outgoing));
-    if (!pb_encode(&ostream, wippersnapper_signal_v1_ServoResponse_fields,
-                   &msgServoResp)) {
+    if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_ServoResponse_fields,
+                      &msgServoResp)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode servo response message!");
       return false;
     }
@@ -1137,8 +1137,8 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
                                                   sizeof(WS._buffer_outgoing));
-    if (!pb_encode(&ostream, wippersnapper_signal_v1_PWMResponse_fields,
-                   &msgPWMResponse)) {
+    if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_PWMResponse_fields,
+                      &msgPWMResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode PWM response message!");
       return false;
     }
@@ -1544,8 +1544,8 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
     pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
                                                   sizeof(WS._buffer_outgoing));
-    if (!pb_encode(&ostream, wippersnapper_signal_v1_UARTResponse_fields,
-                   &msgUARTResponse)) {
+    if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_UARTResponse_fields,
+                      &msgUARTResponse)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to encode UART response message!");
       return false;
     }
@@ -1635,8 +1635,8 @@ bool Wippersnapper::encodePinEvent(
   // Encode signal message
   pb_ostream_t stream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
-                 outgoingSignalMsg)) {
+  if (!ws_pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
+                    outgoingSignalMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
     is_success = false;
   }
@@ -2803,9 +2803,9 @@ void Wippersnapper::publishPinConfigComplete() {
   pb_ostream_t _msg_stream =
       pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
-  bool _status =
-      pb_encode(&_msg_stream,
-                wippersnapper_description_v1_RegistrationComplete_fields, &msg);
+  bool _status = ws_pb_encode(
+      &_msg_stream, wippersnapper_description_v1_RegistrationComplete_fields,
+      &msg);
   size_t _message_len = _msg_stream.bytes_written;
 
   // verify message encoded correctly

@@ -185,8 +185,8 @@ public:
     uint8_t mqttBuffer[512] = {0};
     pb_ostream_t ostream =
         pb_ostream_from_buffer(mqttBuffer, sizeof(mqttBuffer));
-    if (!pb_encode(&ostream, wippersnapper_signal_v1_UARTResponse_fields,
-                   &msgUARTResponse)) {
+    if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_UARTResponse_fields,
+                      &msgUARTResponse)) {
       Serial.println("[ERROR, UART]: Unable to encode device response!");
       return;
     }

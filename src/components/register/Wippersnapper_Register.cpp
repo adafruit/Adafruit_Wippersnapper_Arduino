@@ -46,7 +46,7 @@ bool Wippersnapper::encodePubRegistrationReq() {
   pb_ostream_t _msg_stream =
       pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
-  _status = pb_encode(
+  _status = ws_pb_encode(
       &_msg_stream,
       wippersnapper_description_v1_CreateDescriptionRequest_fields, &_message);
   size_t _message_len = _msg_stream.bytes_written;
@@ -141,7 +141,7 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
     pb_ostream_t _msg_stream =
         pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
 
-    bool _status = pb_encode(
+    bool _status = ws_pb_encode(
         &_msg_stream, wippersnapper_description_v1_RegistrationComplete_fields,
         &msg);
     size_t _message_len = _msg_stream.bytes_written;
