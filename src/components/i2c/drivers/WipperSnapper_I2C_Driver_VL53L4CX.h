@@ -19,8 +19,8 @@
 #include <vl53l4cx_class.h>
 #include <vl53l4cx_def.h>
 
-#define VL53_SHUTDOWN_PIN -1
-#define VL53_READING_DELAY 350
+#define VL53_SHUTDOWN_PIN -1 // No shutdown pin
+#define VL53_READING_DELAY 350 // Delay for reading data attempts
 
 /**************************************************************************/
 /*!
@@ -179,9 +179,11 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the sensor_t data for the VL53L4CX sensor.
-      @param    sensor
-                Pointer to an Adafruit_Sensor sensor_t structure.
+      @brief    Ensures the data is available for the VL53L4CX sensor.
+      @param    status
+                Pointer to the returned error status
+      @param    NewDataReady
+                Pointer to the returned data ready status
   */
   /*******************************************************************************/
   void awaitDataReady(int &status, uint8_t &NewDataReady) {
