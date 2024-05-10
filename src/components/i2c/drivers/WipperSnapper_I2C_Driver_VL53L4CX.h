@@ -74,8 +74,8 @@ public:
       return false;
     }
 
-    // Set 1 second measurement time, the highest possible TimingBudget is 10s
-    if (_VL53L4CX->VL53L4CX_SetMeasurementTimingBudgetMicroSeconds(1000000) !=
+    // Set 200ms measurement time, the possible TimingBudget is 8-200ms
+    if (_VL53L4CX->VL53L4CX_SetMeasurementTimingBudgetMicroSeconds(200000) !=
         VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINTLN("Failed to set VL53L4CX timing budget!");
       return false;
