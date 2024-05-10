@@ -19,8 +19,8 @@
 #include <vl53l4cx_class.h>
 #include <vl53l4cx_def.h>
 
-#define VL53_SHUTDOWN_PIN -1   // No shutdown pin
-#define VL53_READING_DELAY 350 // Delay for reading data attempts
+#define VL53_SHUTDOWN_PIN -1   ///< Shutdown pin for VL53L4CX sensor
+#define VL53_READING_DELAY 350 ///< Delay for reading data attempts
 
 /**************************************************************************/
 /*!
