@@ -33,7 +33,7 @@
     @return   True if decode was successful, false otherwise.
 !*/
 // *****************************************************************************
-static bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
+bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
                          void *dest_struct) {
   bool status = pb_decode(stream, fields, dest_struct);
   if (!status) {
@@ -55,7 +55,7 @@ static bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
     @return   True if encode was successful, false otherwise.
 !*/
 // *****************************************************************************
-static bool ws_pb_encode(pb_ostream_t *stream, const pb_msgdesc_t *fields,
+bool ws_pb_encode(pb_ostream_t *stream, const pb_msgdesc_t *fields,
                          const void *src_struct) {
   bool status = pb_encode(stream, fields, src_struct);
   if (!status) {
