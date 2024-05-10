@@ -142,11 +142,14 @@ public:
       int no_of_object_found = pMultiRangingData->NumberOfObjectsFound;
       if (no_of_object_found - 1 < index) {
         WS_DEBUG_PRINT("Object not found at index #");
-        WS_DEBUG_PRINTLN(index);
-        return false;
+        WS_DEBUG_PRINT(index);
+        WS_DEBUG_PRINTLN(", returning NaN");
+        proximityEvent->data[0] = NAN;
+        return true;
       }
       bool retVal = updateDataPointIfValid(pMultiRangingData->RangeData[index],
                                            proximityEvent);
+      return retVal;
     } else {
       WS_DEBUG_PRINT("VL53L4CX Error: ");
       WS_DEBUG_PRINTLN(status);
