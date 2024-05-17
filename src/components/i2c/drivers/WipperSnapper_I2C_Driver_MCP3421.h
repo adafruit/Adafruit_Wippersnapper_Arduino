@@ -47,7 +47,6 @@ public:
   */
   /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_MCP3421() {
-    // Called when a MCP3421 component is deleted.
     delete _mcp3421;
   }
 
