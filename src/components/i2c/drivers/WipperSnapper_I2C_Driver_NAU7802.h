@@ -89,13 +89,16 @@ public:
       _nau7802->read();
     }
 
-    while (!_nau7802->calibrate(NAU7802_CALMOD_INTERNAL)) {
+    for (int retries = 0; retries < 3; retries++) {
+      if (_nau7802->calibrate(NAU7802_CALMOD_INTERNAL)) {
+        WS_DEBUG_PRINTLN("Calibrated internal offset");
+        return true;
+      }
       WS_DEBUG_PRINTLN("Failed to calibrate internal offset, retrying!");
       delay(1000);
     }
-    WS_DEBUG_PRINTLN("Calibrated internal offset");
-
-    return true;
+    WS_DEBUG_PRINTLN("ERROR: Failed to calibrate internal offset of NAU7802.");
+    return false;
   }
 
   /*******************************************************************************/
