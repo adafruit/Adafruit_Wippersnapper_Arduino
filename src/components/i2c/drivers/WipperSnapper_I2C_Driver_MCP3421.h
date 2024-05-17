@@ -46,9 +46,7 @@ public:
       @brief    Destructor for an MCP3421 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_MCP3421() {
-    delete _mcp3421;
-  }
+  ~WipperSnapper_I2C_Driver_MCP3421() { delete _mcp3421; }
 
   /*******************************************************************************/
   /*!
