@@ -100,6 +100,8 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Gets datapoints from sensor and discards (flushes old data).
+      @param    count
+                Number of readings to discard.
   */
   /*******************************************************************************/
   void flushNAU7802(uint8_t count) {
