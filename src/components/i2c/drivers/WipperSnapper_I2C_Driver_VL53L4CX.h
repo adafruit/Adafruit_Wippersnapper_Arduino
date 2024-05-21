@@ -120,38 +120,54 @@ public:
       @brief    Gets the VL53L4CX's current proximity (first or second object).
       @param    proximityEvent
                 Pointer to an Adafruit_Sensor event.
-      @param    index
-                Index of the proximity to get (0 or 1).
+      @param    whichObject
+                Index of the proximity object to get (0, or 1 for second
+     object).
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getProximity(sensors_event_t *proximityEvent, int index = 0) {
+  bool getProximity(sensors_event_t *proximityEvent, int whichObject = 0) {
     VL53L4CX_MultiRangingData_t MultiRangingData;
     VL53L4CX_MultiRangingData_t *pMultiRangingData = &MultiRangingData;
     uint8_t NewDataReady = 0;
     int status;
+
     // Start fresh reading, seemed to be accepting stale value
     status = _VL53L4CX->VL53L4CX_ClearInterruptAndStartMeasurement();
+    if (status != VL53L4CX_ERROR_NONE) {
+      WS_DEBUG_PRINT(
+          "VL53L4CX Error clearing interrupt and starting measurement: ");
+      { USBSerial.println(status); };
+      return false;
+    }
     WS_DEBUG_PRINT("Waiting for VL53L4CX data ready...");
     delay(VL53_READING_DELAY);
 
     awaitDataReady(status, NewDataReady);
+
     if ((status == VL53L4CX_ERROR_NONE) && (NewDataReady != 0)) {
+      // data ready - still to verify if one or two objects found and which
       status = _VL53L4CX->VL53L4CX_GetMultiRangingData(pMultiRangingData);
       int no_of_object_found = pMultiRangingData->NumberOfObjectsFound;
-      if (no_of_object_found - 1 < index) {
+
+      // zero based index, return NaN / (Object not found) if too few objects
+      if (no_of_object_found - 1 < whichObject) {
         WS_DEBUG_PRINT("Object not found at index #");
-        WS_DEBUG_PRINT(index);
+        WS_DEBUG_PRINT(whichObject);
         WS_DEBUG_PRINTLN(", returning NaN");
         proximityEvent->data[0] = NAN;
         return true;
       }
-      bool retVal = updateDataPointIfValid(pMultiRangingData->RangeData[index],
-                                           proximityEvent);
-      return retVal;
+
+      // take the first or second detected object from ranging data, verify if
+      // valid and then set the event data in proximityEvent or return false
+      return updateDataPointIfValid(pMultiRangingData->RangeData[whichObject],
+                                    proximityEvent);
+
     } else {
-      WS_DEBUG_PRINT("VL53L4CX Error: ");
+      // error or no data ready
+      WS_DEBUG_PRINT("VL53L4CX Error checking for data ready: ");
       WS_DEBUG_PRINTLN(status);
     }
     return false;
@@ -170,9 +186,7 @@ public:
   /*******************************************************************************/
   bool updateDataPointIfValid(VL53L4CX_TargetRangeData_t rangingData,
                               sensors_event_t *proximityEvent) {
-    if (rangingData.RangeStatus == VL53L4CX_RANGESTATUS_RANGE_VALID ||
-        rangingData.RangeStatus ==
-            VL53L4CX_RANGESTATUS_RANGE_VALID_MERGED_PULSE) {
+    if (rangingData.RangeStatus == VL53L4CX_RANGESTATUS_RANGE_VALID) {
       int16_t mm = rangingData.RangeMilliMeter;
       proximityEvent->data[0] = (float)mm;
       return true;
