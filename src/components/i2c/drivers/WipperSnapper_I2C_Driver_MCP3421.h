@@ -61,7 +61,7 @@ public:
       return false;
     }
 
-    if (!configureSensor()){
+    if (!configureSensor()) {
       WS_DEBUG_PRINTLN("Failed to configure MCP3421 sensor");
       return false;
     }
