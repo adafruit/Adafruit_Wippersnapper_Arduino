@@ -56,7 +56,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _mcp3421 = new Adafruit_MCP3421();
-    if (_mcp3421->begin((uint8_t)_sensorAddress, _i2c)) {
+    if (!_mcp3421->begin((uint8_t)_sensorAddress, _i2c)) {
       WS_DEBUG_PRINTLN("Failed to find MCP3421 chip");
       return false;
     }
@@ -79,32 +79,35 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a voltage sensor and converts the
-                reading into the expected SI unit.
-      @param    voltageEvent
-                voltage sensor reading, in volts.
+      @brief    Reads the ADC sensor with short wait for data.
+      @param    rawEvent
+                ADC sensor reading
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventVoltage(sensors_event_t *voltageEvent) {
+  bool getEventRaw(sensors_event_t *rawEvent) {
     ulong start = millis();
     if (!_mcp3421->startOneShotConversion()) {
       WS_DEBUG_PRINTLN("Failed to start one-shot conversion");
       return false;
     }
     while (!_mcp3421->isReady()) {
-      if (millis() - start > 1000) {
+      ulong newMillis = millis();
+      if (newMillis - start > 500) {
         WS_DEBUG_PRINTLN("Timeout waiting for conversion to complete");
         return false;
+      } else if (start > newMillis) {
+        start = millis(); // rollover
       }
+      delay(50);
     }
-    voltageEvent->voltage = (float)_mcp3421->readADC();
+    rawEvent->data[0] = (float)_mcp3421->readADC();
     return true;
   }
 
 protected:
-  Adafruit_MCP3421 *_mcp3421; ///< Pointer to MCP3421 temperature sensor object
+  Adafruit_MCP3421 *_mcp3421; ///< Pointer to MCP3421 sensor object
 };
 
 #endif // WipperSnapper_I2C_Driver_MCP3421
