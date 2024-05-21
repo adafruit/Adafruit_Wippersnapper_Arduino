@@ -83,11 +83,7 @@ public:
     }
 
     // Take 10 readings to flush out old readings (10 samples per second)
-    for (uint8_t skipCounter = 0; skipCounter < 10; skipCounter++) {
-      while (!_nau7802->available())
-        delay(1);
-      _nau7802->read();
-    }
+    flushNAU7802(10);
 
     for (int retries = 0; retries < 3; retries++) {
       if (_nau7802->calibrate(NAU7802_CALMOD_INTERNAL)) {
@@ -99,6 +95,19 @@ public:
     }
     WS_DEBUG_PRINTLN("ERROR: Failed to calibrate internal offset of NAU7802.");
     return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets datapoints from sensor and discards (flushes old data).
+  */
+  /*******************************************************************************/
+  void flushNAU7802(uint8_t count) {
+    for (uint8_t skipCounter = 0; skipCounter < count; skipCounter++) {
+      while (!_nau7802->available())
+        delay(1);
+      _nau7802->read();
+    }
   }
 
   /*******************************************************************************/
