@@ -296,6 +296,8 @@ void ws_ds18x20::update() {
           WS_DEBUG_PRINT("PUBLISHING -> msgDS18x20Response Event Message...");
           if (!WS._mqtt->publish(WS._topic_signal_ds18_device,
                                  WS._buffer_outgoing, msgSz, 1)) {
+            WS_DEBUG_PRINTLN("ERROR: Unable to publish DS18x20 event message - "
+                             "MQTT Publish failed!");
             return;
           };
           WS_DEBUG_PRINTLN("PUBLISHED!");
