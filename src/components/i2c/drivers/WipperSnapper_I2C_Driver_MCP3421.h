@@ -61,17 +61,37 @@ public:
       return false;
     }
 
+    if (!configureSensor()){
+      WS_DEBUG_PRINTLN("Failed to configure MCP3421 sensor");
+      return false;
+    }
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Configures the MCP3421 sensor.
+      @returns  True if the sensor was configured successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool configureSensor() {
     // NOTE: We should allow the gain to be set in future, like resolution
     //  12_BIT (240 SPS), 14_BIT (60 SPS), 16_BIT (15 SPS), 18_BIT (3.75 SPS)
     _mcp3421->setResolution(RESOLUTION_18_BIT);
     if (_mcp3421->getResolution() != RESOLUTION_18_BIT) {
-      WS_DEBUG_PRINTLN("Failed to set resolution");
+      WS_DEBUG_PRINTLN("Failed to set resolution to 18-bit");
+      return false;
+    }
+
+    _mcp3421->setGain(GAIN_8X);
+    if (_mcp3421->getGain() != GAIN_8X) {
+      WS_DEBUG_PRINTLN("Failed to set gain to 8x");
       return false;
     }
 
     _mcp3421->setMode(MODE_ONE_SHOT);
     if (_mcp3421->getMode() != MODE_ONE_SHOT) {
-      WS_DEBUG_PRINTLN("Failed to set mode");
+      WS_DEBUG_PRINTLN("Failed to set mode to One-Shot");
       return false;
     }
     return true;
