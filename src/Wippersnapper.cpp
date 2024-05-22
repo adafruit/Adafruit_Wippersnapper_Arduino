@@ -547,8 +547,8 @@ void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       msgi2cResponse);
   WS_DEBUG_PRINT("Publishing Message: I2CResponse...");
-  if (WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing, msgSz,
-                        1)) {
+  if (!WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
+                         msgSz, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish I2C Response!");
   } else {
     WS_DEBUG_PRINTLN("Published!");
