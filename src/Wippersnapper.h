@@ -219,6 +219,7 @@ public:
   void disconnect();
 
   virtual void getMacAddr();
+  virtual void getRSSI();
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
@@ -310,6 +311,7 @@ public:
   ws_uart *_uartComponent;        ///< Instance of UART class
 
   // TODO: does this really need to be global?
+  int32_t _RSSI = 0; ///< RSSI value of the network connection
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
   char sUID[13];        /*!< Unique network iface identifier */
   const char *_boardId; /*!< Adafruit IO+ board string */
