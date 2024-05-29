@@ -108,9 +108,10 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         WS._RSSI = WiFi.RSSI(i);
-      return true;
+        return true;
+      }
     }
 
     // User-set network not found, print scan results to serial console
