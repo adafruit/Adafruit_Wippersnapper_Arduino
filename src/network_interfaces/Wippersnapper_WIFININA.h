@@ -256,6 +256,22 @@ protected:
       // disconnect from possible previous connection
       _disconnect();
 
+#if defined(ESP32_RESETN)
+      // reset the esp32 if possible, better if we didn't do this first time
+      if (ESP32_RESETN != -1) {
+        WS_DEBUG("Resetting ESP32...");
+        pinMode(ESP32_RESETN, OUTPUT);
+        digitalWrite(ESP32_RESETN, LOW);
+        delay(10);
+        digitalWrite(ESP32_RESETN, HIGH);
+        delay(10);
+      }
+      // wait for the ESP32 to boot
+      delay(1000);
+#endif
+
+      WS_DEBUG_PRINT("Connecting to ");
+      WS_DEBUG_PRINTLN(_ssid);
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
     }
