@@ -19,7 +19,7 @@
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_NAU7802.h>
 
-#define NAU7802_TIMEOUT_MS 250 ///< Timeout waiting for data from NAU7802
+#define NAU7802_TIMEOUT_MS 250 //> Timeout waiting for data from NAU7802
 
 /**************************************************************************/
 /*!
