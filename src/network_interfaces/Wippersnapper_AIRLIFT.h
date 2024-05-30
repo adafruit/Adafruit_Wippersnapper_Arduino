@@ -294,6 +294,7 @@ protected:
       _disconnect();
       delay(100);
       WiFi.end();
+      _wifi->end();
       delay(100);
       _wifi->begin();
       feedWDT();
