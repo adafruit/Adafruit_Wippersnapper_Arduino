@@ -280,6 +280,7 @@ protected:
     } else {
       // disconnect from possible previous connection
       _disconnect();
+      WiFi.end();
       feedWDT();
       WS_DEBUG_PRINT("Reset Pin: ");
       WS_DEBUG_PRINTLN(_rstPin);
@@ -289,8 +290,7 @@ protected:
         WS_PRINTER.flush();
         // Chip select for esp32
         pinMode(_ssPin, OUTPUT);
-        digitalWrite(_ssPin, HIGH);
-        // Do we need to set SS low again?
+        digitalWrite(_ssPin, HIGH); // Do we need to set SS low again?
         if (_gpio0Pin != -1) {
           pinMode(_gpio0Pin, OUTPUT);
           digitalWrite(_gpio0Pin, LOW);
@@ -304,7 +304,7 @@ protected:
           pinMode(_gpio0Pin, INPUT);
         }
         // wait for the ESP32 to boot
-        delay(1000);
+        delay(2000);
       }
       feedWDT();
       // WS_DEBUG_PRINT("ESP32 booted, version: ");
