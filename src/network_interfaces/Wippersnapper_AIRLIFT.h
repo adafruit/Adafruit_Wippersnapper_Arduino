@@ -47,14 +47,14 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_AIRLIFT() : Wippersnapper() {
-    _ssPin = SPIWIFI_SS; // 10;
-    _ackPin = SPIWIFI_ACK; //7;
+    _ssPin = SPIWIFI_SS;     // 10;
+    _ackPin = SPIWIFI_ACK;   // 7;
     _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
-    #ifdef ESP32_GPIO0
+#ifdef ESP32_GPIO0
     _gpio0Pin = ESP32_GPIO0;
-    #else
+#else
     _gpio0Pin = -1;
-    #endif
+#endif
     _wifi = &SPIWIFI;
     _ssid = 0;
     _pass = 0;
@@ -193,17 +193,21 @@ public:
           equal to the required version, False otherwise.
   */
   /********************************************************/
-  bool compareVersions(const String& currentVersion, const String& requiredVersion) {
-      int curMajor, curMinor, curPatch;
-      int reqMajor, reqMinor, reqPatch;
-      int per_major, per_minor, per_patch;
-      
-      sscanf(currentVersion.c_str(), "%d.%d.%d", &curMajor, &curMinor, &curPatch);
-      sscanf(requiredVersion.c_str(), "%d.%d.%d", &reqMajor, &reqMinor, &reqPatch);
+  bool compareVersions(const String &currentVersion,
+                       const String &requiredVersion) {
+    int curMajor, curMinor, curPatch;
+    int reqMajor, reqMinor, reqPatch;
+    int per_major, per_minor, per_patch;
 
-      if (curMajor != reqMajor) return curMajor > reqMajor;
-      if (curMinor != reqMinor) return curMinor > reqMinor;
-      return curPatch >= reqPatch;
+    sscanf(currentVersion.c_str(), "%d.%d.%d", &curMajor, &curMinor, &curPatch);
+    sscanf(requiredVersion.c_str(), "%d.%d.%d", &reqMajor, &reqMinor,
+           &reqPatch);
+
+    if (curMajor != reqMajor)
+      return curMajor > reqMajor;
+    if (curMinor != reqMinor)
+      return curMinor > reqMinor;
+    return curPatch >= reqPatch;
   }
 
   /********************************************************/
@@ -276,7 +280,8 @@ protected:
   /**************************************************************************/
   void _connect() {
     if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID;  // possibly unneccesary  as already checking elsewhere
+      _status = WS_SSID_INVALID; // possibly unneccesary  as already checking
+                                 // elsewhere
     } else {
       // disconnect from possible previous connection
       _disconnect();
