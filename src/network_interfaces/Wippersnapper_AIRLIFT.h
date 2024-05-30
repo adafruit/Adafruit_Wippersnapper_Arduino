@@ -292,7 +292,10 @@ protected:
     } else {
       // disconnect from possible previous connection
       _disconnect();
+      delay(100);
       WiFi.end();
+      delay(100);
+      _wifi->begin();
       feedWDT();
       WS_DEBUG_PRINT("Reset Pin: ");
       WS_DEBUG_PRINTLN(_rstPin);
@@ -319,11 +322,11 @@ protected:
         delay(2000);
       }
       feedWDT();
-      // WS_DEBUG_PRINT("ESP32 booted, version: ");
-      // WS_PRINTER.flush();
-      // WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
-      // WS_PRINTER.flush();
-      // feedWDT();
+      WS_DEBUG_PRINT("ESP32 booted, version: ");
+      WS_PRINTER.flush();
+      WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
+      WS_PRINTER.flush();
+      feedWDT();
 
       // // validate co-processor is physically connected connection
       // if (WiFi.status() == WL_NO_MODULE) {
