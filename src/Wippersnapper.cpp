@@ -2541,7 +2541,7 @@ void Wippersnapper::pingBroker() {
     // TODO: Add back, is crashing currently
     WS._mqtt->ping();
     _prv_ping = millis();
-    WS.getRSSI();
+    getRSSI(); // update RSSI
     WS_DEBUG_PRINT("WiFi RSSI: ");
     WS_DEBUG_PRINTLN(WS._RSSI);
   }
