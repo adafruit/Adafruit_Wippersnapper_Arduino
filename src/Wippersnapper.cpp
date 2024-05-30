@@ -2563,7 +2563,9 @@ void Wippersnapper::pingBroker() {
     if (WS._mqtt->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
     } else {
-      WS_DEBUG_PRINTLN("FAILURE!");
+      WS_DEBUG_PRINTLN("FAILURE! Running network FSM...");
+      WS._mqtt->disconnect();
+      runNetFSM();
     }
     _prv_ping = millis();
     getRSSI(); // update RSSI
