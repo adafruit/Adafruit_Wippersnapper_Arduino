@@ -28,7 +28,7 @@
 #include "Wippersnapper.h"
 
 #define NINAFWVER                                                              \
-  "1.6.0" /*!< min. nina-fw version compatible with this library. */
+  "1.7.7" /*!< min. nina-fw version compatible with this library. */
 
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
@@ -47,10 +47,14 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_AIRLIFT() : Wippersnapper() {
-    _ssPin = 10;
-    _ackPin = 7;
-    _rstPin = 5;
+    _ssPin = SPIWIFI_SS; // 10;
+    _ackPin = SPIWIFI_ACK; //7;
+    _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
+    #ifdef ESP32_GPIO0
+    _gpio0Pin = ESP32_GPIO0;
+    #else
     _gpio0Pin = -1;
+    #endif
     _wifi = &SPIWIFI;
     _ssid = 0;
     _pass = 0;
@@ -58,6 +62,7 @@ public:
 
     // setup ESP32 co-processor pins during init.
     WiFi.setPins(_ssPin, _ackPin, _rstPin, _gpio0Pin, _wifi);
+    delay(1000);
   }
 
   /**************************************************************************/
@@ -174,9 +179,31 @@ public:
   /********************************************************/
   bool firmwareCheck() {
     _fv = WiFi.firmwareVersion();
-    if (_fv < NINAFWVER)
-      return false;
-    return true;
+    return compareVersions(_fv, NINAFWVER);
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Compares two version strings.
+  @param  currentVersion
+          Current version string.
+  @param  requiredVersion
+          Required version string.
+  @returns True if the current version is greater than or
+          equal to the required version, False otherwise.
+  */
+  /********************************************************/
+  bool compareVersions(const String& currentVersion, const String& requiredVersion) {
+      int curMajor, curMinor, curPatch;
+      int reqMajor, reqMinor, reqPatch;
+      int per_major, per_minor, per_patch;
+      
+      sscanf(currentVersion.c_str(), "%d.%d.%d", &curMajor, &curMinor, &curPatch);
+      sscanf(requiredVersion.c_str(), "%d.%d.%d", &reqMajor, &reqMinor, &reqPatch);
+
+      if (curMajor != reqMajor) return curMajor > reqMajor;
+      if (curMinor != reqMinor) return curMinor > reqMinor;
+      return curPatch >= reqPatch;
   }
 
   /********************************************************/
@@ -249,39 +276,67 @@ protected:
   /**************************************************************************/
   void _connect() {
     if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID;
+      _status = WS_SSID_INVALID;  // possibly unneccesary  as already checking elsewhere
     } else {
-
-      // validate co-processor is physically connected connection
-      if (WiFi.status() == WL_NO_MODULE) {
-        WS_DEBUG_PRINT("No ESP32 module detected!");
-        return;
+      // disconnect from possible previous connection
+      _disconnect();
+      feedWDT();
+      WS_DEBUG_PRINT("Reset Pin: ");
+      WS_DEBUG_PRINTLN(_rstPin);
+      // reset the esp32 if possible
+      if (_rstPin != -1) {
+        WS_DEBUG_PRINTLN("Resetting ESP32...");
+        WS_PRINTER.flush();
+        // Chip select for esp32
+        pinMode(_ssPin, OUTPUT);
+        digitalWrite(_ssPin, HIGH);
+        // Do we need to set SS low again?
+        if (_gpio0Pin != -1) {
+          pinMode(_gpio0Pin, OUTPUT);
+          digitalWrite(_gpio0Pin, LOW);
+        }
+        pinMode(_rstPin, OUTPUT);
+        digitalWrite(_rstPin, LOW);
+        delay(50);
+        digitalWrite(_rstPin, HIGH);
+        delay(10);
+        if (_gpio0Pin != -1) {
+          pinMode(_gpio0Pin, INPUT);
+        }
+        // wait for the ESP32 to boot
+        delay(1000);
       }
+      feedWDT();
+      // WS_DEBUG_PRINT("ESP32 booted, version: ");
+      // WS_PRINTER.flush();
+      // WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
+      // WS_PRINTER.flush();
+      // feedWDT();
+
+      // // validate co-processor is physically connected connection
+      // if (WiFi.status() == WL_NO_MODULE) {
+      //   WS_DEBUG_PRINT("No ESP32 module detected!");
+      //   WS_DEBUG_PRINT("Current Module Status:");
+      //   WS_DEBUG_PRINTLN(WiFi.status());
+      //   return;
+      // }
 
       // validate co-processor's firmware version
       if (!firmwareCheck())
         WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
                          "latest version.");
 
-      // disconnect from possible previous connection
-      _disconnect();
-
-      // reset the esp32 if possible
-      if (_rstPin != -1) {
-        WS_DEBUG("Resetting ESP32...");
-        pinMode(_rstPin, OUTPUT);
-        digitalWrite(_rstPin, LOW);
-        delay(10);
-        digitalWrite(_rstPin, HIGH);
-        delay(10);
-      }
-      // wait for the ESP32 to boot
-      delay(1000);
-
       WS_DEBUG_PRINT("Connecting to ");
       WS_DEBUG_PRINTLN(_ssid);
+      WS_PRINTER.flush();
+      feedWDT();
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
+      feedWDT();
+      delay(5000);
+      feedWDT();
+      delay(5000);
+      feedWDT();
     }
   }
 

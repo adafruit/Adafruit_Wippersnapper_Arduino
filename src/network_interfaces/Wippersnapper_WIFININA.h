@@ -268,21 +268,28 @@ protected:
 #if defined(NINA_RESET_PIN)
       // reset the esp32 if possible, better if we didn't do this first time
       if (NINA_RESET_PIN != -1) {
-        WS_DEBUG("Resetting ESP32...");
+        WS_DEBUG_PRINTLN("Resetting ESP32...");
+        WS_PRINTER.flush();
         pinMode(NINA_RESET_PIN, OUTPUT);
         digitalWrite(NINA_RESET_PIN, LOW);
-        delay(10);
+        delay(50);
         digitalWrite(NINA_RESET_PIN, HIGH);
         delay(10);
       }
       // wait for the ESP32 to boot
-      delay(1000);
+      delay(2000);
+      feedWDT();
 #endif
 
       WS_DEBUG_PRINT("Connecting to ");
       WS_DEBUG_PRINTLN(_ssid);
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
+      feedWDT();
+      delay(5000);
+      feedWDT();
+      delay(5000);
+      feedWDT();
     }
   }
 

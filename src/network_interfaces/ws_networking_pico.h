@@ -282,6 +282,9 @@ protected:
         }
       }
       _status = WS_NET_DISCONNECTED;
+      WS.feedWDT();
+      delay(5000);
+      WS.feedWDT();
     }
   }
 
