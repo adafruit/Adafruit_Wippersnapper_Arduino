@@ -190,6 +190,7 @@ void Wippersnapper::getMacAddr() {
 /****************************************************************************/
 int32_t Wippersnapper::getRSSI() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return 0;
 }
 
 /****************************************************************************/
