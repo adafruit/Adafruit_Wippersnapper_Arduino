@@ -138,7 +138,7 @@ public:
     if (status != VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINT(
           "VL53L4CX Error clearing interrupt and starting measurement: ");
-      { USBSerial.println(status); };
+      WS_DEBUG_PRINTLN(status);
       return false;
     }
     WS_DEBUG_PRINT("Waiting for VL53L4CX data ready...");
