@@ -20,7 +20,7 @@
 #include <vl53l4cx_def.h>
 
 #define VL53_SHUTDOWN_PIN -1   ///< Shutdown pin for VL53L4CX sensor
-#define VL53_READING_DELAY 350 ///< Delay for reading data attempts
+#define VL53_READING_DELAY 250 ///< Delay for reading data attempts
 
 /**************************************************************************/
 /*!
@@ -141,41 +141,45 @@ public:
       WS_DEBUG_PRINTLN(status);
       return false;
     }
+
+    // Wait for data read period then update data ready status
     WS_DEBUG_PRINT("Waiting for VL53L4CX data ready...");
     delay(VL53_READING_DELAY);
+    status = _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady);
 
-    awaitDataReady(status, NewDataReady);
-
-    if ((status == VL53L4CX_ERROR_NONE) && (NewDataReady != 0)) {
-      // data ready - still to verify if one or two objects found and which
-      status = _VL53L4CX->VL53L4CX_GetMultiRangingData(pMultiRangingData);
-      int no_of_object_found = pMultiRangingData->NumberOfObjectsFound;
-
-      // zero based index, return NaN / (Object not found) if too few objects
-      if (no_of_object_found - 1 < whichObject) {
-        WS_DEBUG_PRINT("Object not found at index #");
-        WS_DEBUG_PRINT(whichObject);
-        WS_DEBUG_PRINTLN(", returning NaN");
-        proximityEvent->data[0] = NAN;
-        return true;
-      }
-
-      // take the first or second detected object from ranging data, verify if
-      // valid and then set the event data in proximityEvent or return false
-      return updateDataPointIfValid(pMultiRangingData->RangeData[whichObject],
-                                    proximityEvent);
-
-    } else {
+    if ((status != VL53L4CX_ERROR_NONE) || (NewDataReady == 0)) {
       // error or no data ready
       WS_DEBUG_PRINT("VL53L4CX Error checking for data ready: ");
       WS_DEBUG_PRINTLN(status);
+      return false;
     }
-    return false;
+
+    // get data - still to verify which of one or two objects found
+    status = _VL53L4CX->VL53L4CX_GetMultiRangingData(pMultiRangingData);
+    if (status != VL53L4CX_ERROR_NONE) {
+      WS_DEBUG_PRINT("VL53L4CX Error getting multi ranging data: ");
+      WS_DEBUG_PRINTLN(status);
+      return false;
+    }
+
+    // whichObject: 0-based index, return NaN(Object not found) if too few found
+    if (pMultiRangingData->NumberOfObjectsFound - 1 < whichObject) {
+      WS_DEBUG_PRINT("Object not found at index #");
+      WS_DEBUG_PRINT(whichObject + 1); // human readable 1-based index
+      WS_DEBUG_PRINTLN(", returning NaN");
+      proximityEvent->data[0] = NAN;
+      return true;
+    }
+
+    // RESULT: take the first or second detected object from ranging data,
+    // if valid then set event data in proximityEvent or return false
+    return updateDataPointIfValid(pMultiRangingData->RangeData[whichObject],
+                                  proximityEvent);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the VL53L4CX's current proximity (first or second object).
+      @brief    Checks the VL53L4CX's proximity result and sets event value.
       @param    rangingData
                 The ranging data to check.
       @param    proximityEvent
@@ -192,27 +196,6 @@ public:
       return true;
     }
     return false;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Ensures the data is available for the VL53L4CX sensor.
-      @param    status
-                Pointer to the returned error status
-      @param    NewDataReady
-                Pointer to the returned data ready status
-  */
-  /*******************************************************************************/
-  void awaitDataReady(int &status, uint8_t &NewDataReady) {
-    for (uint8_t retries = 0;
-         (status =
-              _VL53L4CX->VL53L4CX_GetMeasurementDataReady(&NewDataReady)) &&
-         !NewDataReady && retries < 3;
-         retries++) {
-      delay(VL53_READING_DELAY);
-      WS_DEBUG_PRINT(" .");
-    }
-    WS_DEBUG_PRINTLN("");
   }
 
 protected:
