@@ -1036,7 +1036,7 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(
               "ERROR: Failed to get ambient temperature sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorAmbientTempPeriodPrv(curTime);
           }
         }
@@ -1064,7 +1064,7 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(
               "ERROR: Failed to obtain ambient temp. (°F)) sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorAmbientTempFPeriodPrv(curTime);
           }
         }
@@ -1093,7 +1093,7 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(
               "ERROR: Failed to get object temperature sensor (°C) reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorObjectTempPeriodPrv(curTime);
           }
         }
@@ -1122,7 +1122,7 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(
               "ERROR: Failed to get object temperature sensor (°F) reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorObjectTempFPeriodPrv(curTime);
           }
         }
@@ -1166,14 +1166,15 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" hPa");
 
           // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.pressure,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE);
+          fillEventMessage(
+              &msgi2cResponse, event.pressure,
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE);
 
           (*iter)->setSensorPressurePeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get Pressure sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorPressurePeriodPrv(curTime);
           }
         }
@@ -1193,12 +1194,12 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" ppm");
 
           fillEventMessage(&msgi2cResponse, event.CO2,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
           (*iter)->setSensorCO2PeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to obtain CO2 sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorCO2PeriodPrv(curTime);
           }
         }
@@ -1218,12 +1219,12 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" ppm");
 
           fillEventMessage(&msgi2cResponse, event.eCO2,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2);
           (*iter)->setSensorECO2PeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to obtain eCO2 sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorECO2PeriodPrv(curTime);
           }
         }
@@ -1243,12 +1244,12 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" ppb");
 
           fillEventMessage(&msgi2cResponse, event.tvoc,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC);
           (*iter)->setSensorTVOCPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to obtain TVOC sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorTVOCPeriodPrv(curTime);
           }
         }
@@ -1268,14 +1269,15 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" m");
 
           // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.altitude,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE);
+          fillEventMessage(
+              &msgi2cResponse, event.altitude,
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE);
 
           (*iter)->setSensorAltitudePeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get altitude sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorAltitudePeriodPrv(curTime);
           }
         }
@@ -1296,13 +1298,13 @@ void WipperSnapper_Component_I2C::update() {
 
           // pack event data into msg
           fillEventMessage(&msgi2cResponse, event.light,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT);
 
           (*iter)->setSensorLightPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get light sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorLightPeriodPrv(curTime);
           }
         }
@@ -1322,14 +1324,15 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" ppm");
 
           // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.pm10_std,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD);
+          fillEventMessage(
+              &msgi2cResponse, event.pm10_std,
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD);
           // try again in curTime seconds
           (*iter)->setSensorPM10_STDPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get PM1.0 sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorPM10_STDPeriodPrv(curTime);
           }
         }
@@ -1349,14 +1352,15 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" ppm");
 
           // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.pm25_std,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD);
+          fillEventMessage(
+              &msgi2cResponse, event.pm25_std,
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD);
           // try again in curTime seconds
           (*iter)->setSensorPM25_STDPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get PM2.5 sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorPM25_STDPeriodPrv(curTime);
           }
         }
@@ -1376,14 +1380,15 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(" ppm");
 
           // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.pm25_std,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD);
+          fillEventMessage(
+              &msgi2cResponse, event.pm25_std,
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD);
           (*iter)->setSensorPM100_STDPeriodPrv(
               curTime); // try again in curTime seconds
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get PM10.0 sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorPM100_STDPeriodPrv(curTime);
           }
         }
@@ -1404,13 +1409,13 @@ void WipperSnapper_Component_I2C::update() {
 
           // pack event data into msg
           fillEventMessage(&msgi2cResponse, event.voltage,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE);
           // try again in curTime seconds
           (*iter)->setSensorVoltagePeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get voltage sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorVoltagePeriodPrv(curTime);
           }
         }
@@ -1431,13 +1436,13 @@ void WipperSnapper_Component_I2C::update() {
 
           // pack event data into msg
           fillEventMessage(&msgi2cResponse, event.current,
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT);
           // try again in curTime seconds
           (*iter)->setSensorCurrentPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get Current sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorCurrentPeriodPrv(curTime);
           }
         }
@@ -1466,7 +1471,7 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(
               "ERROR: Failed to get unitless percent sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
           }
         }
@@ -1485,12 +1490,12 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(event.data[0]);
 
           fillEventMessage(&msgi2cResponse, event.data[0],
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW);
+                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW);
           (*iter)->setSensorRawPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to obtain Raw sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorRawPeriodPrv(curTime);
           }
         }
@@ -1517,7 +1522,7 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINTLN(
               "ERROR: Failed to obtain gas resistance sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorGasResistancePeriodPrv(curTime);
           }
         }
@@ -1535,13 +1540,14 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINT("\tNOx Index: ");
           WS_DEBUG_PRINT(event.nox_index);
 
-          fillEventMessage(&msgi2cResponse, event.data[0],
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX);
+          fillEventMessage(
+              &msgi2cResponse, event.data[0],
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX);
           (*iter)->setSensorNOxIndexPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to obtain NOx index sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorNOxIndexPeriodPrv(curTime);
           }
         }
@@ -1559,13 +1565,14 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINT("\tVOC Index: ");
           WS_DEBUG_PRINT(event.voc_index);
 
-          fillEventMessage(&msgi2cResponse, event.data[0],
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX);
+          fillEventMessage(
+              &msgi2cResponse, event.data[0],
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX);
           (*iter)->setSensorVOCIndexPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to obtain VOC index sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorVOCIndexPeriodPrv(curTime);
           }
         }
@@ -1584,14 +1591,15 @@ void WipperSnapper_Component_I2C::update() {
           WS_DEBUG_PRINT(event.data[0]);
 
           // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.data[0],
-                          wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY);
+          fillEventMessage(
+              &msgi2cResponse, event.data[0],
+              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY);
 
           (*iter)->setSensorProximityPeriodPrv(curTime);
         } else {
           WS_DEBUG_PRINTLN("ERROR: Failed to get proximity sensor reading!");
           sensorsReturningFalse = true;
-          if (retries==1) {
+          if (retries == 1) {
             (*iter)->setSensorProximityPeriodPrv(curTime);
           }
         }
