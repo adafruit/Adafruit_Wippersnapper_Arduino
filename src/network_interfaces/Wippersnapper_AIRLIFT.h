@@ -62,7 +62,6 @@ public:
 
     // setup ESP32 co-processor pins during init.
     WiFi.setPins(_ssPin, _ackPin, _rstPin, _gpio0Pin, _wifi);
-    delay(1000);
   }
 
   /**************************************************************************/
@@ -199,7 +198,6 @@ public:
                        const String &requiredVersion) {
     int curMajor, curMinor, curPatch;
     int reqMajor, reqMinor, reqPatch;
-    int per_major, per_minor, per_patch;
 
     sscanf(currentVersion.c_str(), "%d.%d.%d", &curMajor, &curMinor, &curPatch);
     sscanf(requiredVersion.c_str(), "%d.%d.%d", &reqMajor, &reqMinor,
