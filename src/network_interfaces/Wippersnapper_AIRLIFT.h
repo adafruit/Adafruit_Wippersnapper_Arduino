@@ -304,27 +304,7 @@ protected:
       WS_DEBUG_PRINT("Reset Pin: ");
       WS_DEBUG_PRINTLN(_rstPin);
       // reset the esp32 if possible
-      if (_rstPin != -1) {
-        WS_DEBUG_PRINTLN("Resetting ESP32...");
-        WS_PRINTER.flush();
-        // Chip select for esp32
-        pinMode(_ssPin, OUTPUT);
-        digitalWrite(_ssPin, HIGH); // Do we need to set SS low again?
-        if (_gpio0Pin != -1) {
-          pinMode(_gpio0Pin, OUTPUT);
-          digitalWrite(_gpio0Pin, LOW);
-        }
-        pinMode(_rstPin, OUTPUT);
-        digitalWrite(_rstPin, LOW);
-        delay(50);
-        digitalWrite(_rstPin, HIGH);
-        delay(10);
-        if (_gpio0Pin != -1) {
-          pinMode(_gpio0Pin, INPUT);
-        }
-        // wait for the ESP32 to boot
-        delay(2000);
-      }
+      resetESP32();
       feedWDT();
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
@@ -356,6 +336,35 @@ protected:
       feedWDT();
       delay(5000);
       feedWDT();
+    }
+  }
+
+  /**************************************************************************/
+  /*!
+      @brief  Resets the ESP32 module.
+  */
+  /**************************************************************************/
+  void resetESP32(){
+    if (_rstPin != -1) {
+      WS_DEBUG_PRINTLN("Resetting ESP32...");
+      WS_PRINTER.flush();
+      // Chip select for esp32
+      pinMode(_ssPin, OUTPUT);
+      digitalWrite(_ssPin, HIGH); // Do we need to set SS low again?
+      if (_gpio0Pin != -1) {
+        pinMode(_gpio0Pin, OUTPUT);
+        digitalWrite(_gpio0Pin, LOW);
+      }
+      pinMode(_rstPin, OUTPUT);
+      digitalWrite(_rstPin, LOW);
+      delay(50);
+      digitalWrite(_rstPin, HIGH);
+      delay(10);
+      if (_gpio0Pin != -1) {
+        pinMode(_gpio0Pin, INPUT);
+      }
+      // wait for the ESP32 to boot
+      delay(2000);
     }
   }
 
