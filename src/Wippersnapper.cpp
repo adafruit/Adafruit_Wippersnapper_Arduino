@@ -2558,8 +2558,7 @@ void Wippersnapper::pingBroker() {
   // ping within keepalive-10% to keep connection open
   if (millis() > (_prv_ping + (WS_KEEPALIVE_INTERVAL_MS -
                                (WS_KEEPALIVE_INTERVAL_MS * 0.10)))) {
-    WS_DEBUG_PRINT("Sending PING: ");
-    // TODO: Add back, is crashing currently
+    WS_DEBUG_PRINT("Sending MQTT PING: ");
     if (WS._mqtt->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
     } else {
