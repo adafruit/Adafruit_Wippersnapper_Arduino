@@ -324,11 +324,19 @@ protected:
       feedWDT();
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
-      feedWDT();
-      delay(5000);
-      feedWDT();
-      delay(5000);
-      feedWDT();
+
+      // Use the macro to retry the status check until connected / timed out
+      int lastResult;
+      RETRY_FUNCTION_UNTIL_TIMEOUT(
+          []() -> int { /* no-op */ }, // Function to call each cycle
+          int,                         // return type
+          lastResult,                  // return variable (unused here)
+          [](int status) { return WiFi.status() == WL_CONNECTED; }, // check
+          15000, // timeout interval (ms)
+          200);  // interval between retries
+
+      // wait 2seconds for connection to stabilize
+      WS_DELAY_WITH_WDT(2000);
     }
   }
 
