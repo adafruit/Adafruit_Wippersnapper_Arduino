@@ -289,9 +289,9 @@ protected:
           []() -> int { return WiFi.status(); }, // Function call each cycle
           int,                                   // return type
           lastResult, // return variable (unused here)
-          [](int status) { status == WL_CONNECTED; }, // check
-          20000,                                      // timeout interval (ms)
-          200); // interval between retries
+          [](int status) { return status == WL_CONNECTED; }, // check
+          20000, // timeout interval (ms)
+          200);  // interval between retries
 
       if (lastResult == WL_CONNECTED) {
         _status = WS_NET_CONNECTED;
