@@ -282,21 +282,24 @@ protected:
       WiFi.setTimeout(20000);
       WS.feedWDT();
       WiFi.begin(_ssid, _pass);
-      // Wait setTimeout duration for a connection and check if connected every
-      // 5 seconds
-      for (int i = 0; i < 4; i++) {
-        WS.feedWDT();
-        delay(5000);
-        WS.feedWDT();
-        if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
-          return;
-        }
+
+      // Use the macro to retry the status check until connected / timed out
+      int lastResult;
+      RETRY_FUNCTION_UNTIL_TIMEOUT(
+          []() -> int { return WiFi.status(); }, // Function call each cycle
+          int,                       // return type
+          lastResult,                // return variable (unused here)
+          [](int status) { status == WL_CONNECTED; }, // check
+          20000, // timeout interval (ms)
+          200);  // interval between retries
+
+      if (lastResult == WL_CONNECTED) {
+        _status = WS_NET_CONNECTED;
+        // wait 2seconds for connection to stabilize
+        WS_DELAY_WITH_WDT(2000);
+      } else {
+        _status = WS_NET_DISCONNECTED;
       }
-      _status = WS_NET_DISCONNECTED;
-      WS.feedWDT();
-      delay(5000);
-      WS.feedWDT();
     }
   }
 
