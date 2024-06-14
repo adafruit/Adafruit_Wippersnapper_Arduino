@@ -304,21 +304,13 @@ protected:
       WS_DEBUG_PRINT("Reset Pin: ");
       WS_DEBUG_PRINTLN(_rstPin);
       // reset the esp32 if possible
-      resetESP32();
+      resetAirLift();
       feedWDT();
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
       WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
       WS_PRINTER.flush();
       feedWDT();
-
-      // // validate co-processor is physically connected connection
-      // if (WiFi.status() == WL_NO_MODULE) {
-      //   WS_DEBUG_PRINT("No ESP32 module detected!");
-      //   WS_DEBUG_PRINT("Current Module Status:");
-      //   WS_DEBUG_PRINTLN(WiFi.status());
-      //   return;
-      // }
 
       // validate co-processor's firmware version
       if (!firmwareCheck())
@@ -344,7 +336,7 @@ protected:
       @brief  Resets the ESP32 module.
   */
   /**************************************************************************/
-  void resetESP32(){
+  void resetAirLift(){
     if (_rstPin != -1) {
       WS_DEBUG_PRINTLN("Resetting ESP32...");
       WS_PRINTER.flush();
