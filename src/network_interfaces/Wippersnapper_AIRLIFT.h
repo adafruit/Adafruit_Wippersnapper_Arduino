@@ -120,7 +120,6 @@ public:
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
-        WS._RSSI = WiFi.RSSI(i);
         return true;
       }
     }
@@ -225,12 +224,10 @@ public:
   /********************************************************/
   /*!
   @brief  Gets the current network RSSI value
+  @return int32_t RSSI value
   */
   /********************************************************/
-  void getRSSI() {
-    // test if this fails when disconnected or returns something sensible
-    WS._RSSI = WiFi.RSSI();
-  }
+  int32_t getRSSI() { return WiFi.RSSI(); }
 
   /********************************************************/
   /*!

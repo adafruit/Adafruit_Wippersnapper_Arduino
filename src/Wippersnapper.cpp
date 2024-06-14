@@ -185,10 +185,12 @@ void Wippersnapper::getMacAddr() {
 /****************************************************************************/
 /*!
     @brief    Gets the network's RSSI.
+    @return   int32_t RSSI value
 */
 /****************************************************************************/
-void Wippersnapper::getRSSI() {
+int32_t Wippersnapper::getRSSI() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+  return 0;
 }
 
 /****************************************************************************/
@@ -2401,7 +2403,7 @@ void Wippersnapper::runNetFSM() {
                   WS_LED_STATUS_WIFI_CONNECTING);
       }
       WS_DEBUG_PRINT("SSID found! RSSI: ");
-      WS_DEBUG_PRINTLN(WS._RSSI);
+      WS_DEBUG_PRINTLN(WS.getRSSI());
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2567,9 +2569,8 @@ void Wippersnapper::pingBroker() {
       runNetFSM();
     }
     _prv_ping = millis();
-    getRSSI(); // update RSSI
     WS_DEBUG_PRINT("WiFi RSSI: ");
-    WS_DEBUG_PRINTLN(WS._RSSI);
+    WS_DEBUG_PRINTLN(WS.getRSSI());
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
