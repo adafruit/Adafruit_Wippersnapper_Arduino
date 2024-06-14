@@ -115,8 +115,9 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         return true;
+      }
     }
 
     // User-set network not found, print scan results to serial console
@@ -189,6 +190,16 @@ public:
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Gets the current network RSSI value
+  @return RSSI as int32_t (usually negative dBm value)
+  */
+  /********************************************************/
+  int32_t getRSSI() {
+    return WiFi.RSSI();
   }
 
   /********************************************************/

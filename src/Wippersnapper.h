@@ -219,6 +219,7 @@ public:
   void disconnect();
 
   virtual void getMacAddr();
+  virtual int32_t getRSSI();
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
