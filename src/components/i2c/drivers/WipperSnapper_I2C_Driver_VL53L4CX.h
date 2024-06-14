@@ -19,8 +19,9 @@
 #include <vl53l4cx_class.h>
 #include <vl53l4cx_def.h>
 
-#define VL53_SHUTDOWN_PIN -1   ///< Shutdown pin for VL53L4CX sensor
-#define VL53_READING_DELAY 250 ///< Delay for reading data attempts
+#define VL53_SHUTDOWN_PIN -1         ///< Shutdown pin for VL53L4CX sensor
+#define VL53_READING_DELAY 250       ///< Delay for reading data attempts
+#define VL53_TIMING_BUDGET_NS 200000 ///< Timing budget for VL53L4CX sensor
 
 /**************************************************************************/
 /*!
@@ -75,8 +76,8 @@ public:
     }
 
     // Set 200ms measurement time, the possible TimingBudget is 8-200ms
-    if (_VL53L4CX->VL53L4CX_SetMeasurementTimingBudgetMicroSeconds(200000) !=
-        VL53L4CX_ERROR_NONE) {
+    if (_VL53L4CX->VL53L4CX_SetMeasurementTimingBudgetMicroSeconds(
+            VL53_TIMING_BUDGET_NS) != VL53L4CX_ERROR_NONE) {
       WS_DEBUG_PRINTLN("Failed to set VL53L4CX timing budget!");
       return false;
     }
