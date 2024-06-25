@@ -23,8 +23,10 @@ var searchData=
   ['check_5fvalid_5fssid',['check_valid_ssid',['../class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a',1,'Wippersnapper_AIRLIFT::check_valid_ssid()'],['../class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b',1,'Wippersnapper_ESP32::check_valid_ssid()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#aaee5680c8abe5ec08f34166f1d669adf',1,'Wippersnapper_WIFININA::check_valid_ssid()'],['../class_wippersnapper.html#a288ccdd64ddcec63c3cd2b7a74182a66',1,'Wippersnapper::check_valid_ssid()']]],
   ['clear_5fscr_5fload',['clear_scr_load',['../classws__display__ui__helper.html#a9afaed92b8e6de31aa5b87cc58e615d8',1,'ws_display_ui_helper']]],
   ['configanaloginpinreq',['configAnalogInPinReq',['../class_wippersnapper.html#a089cb6c8b641aa22762f00dda783bb12',1,'Wippersnapper']]],
+  ['configure_5fnau7802',['configure_nau7802',['../class_wipper_snapper___i2_c___driver___n_a_u7802.html#a6dac8ec40fe4ba4c46f8c3f61a1fcc1f',1,'WipperSnapper_I2C_Driver_NAU7802']]],
   ['configuredigitalpinreq',['configureDigitalPinReq',['../class_wippersnapper.html#a9577669dd1d91be1a80e4bae9f47f26a',1,'Wippersnapper']]],
   ['configuredriver',['configureDriver',['../class_wipper_snapper___i2_c___driver.html#a86ede95ee6f5495739c16a3cf47a8c5a',1,'WipperSnapper_I2C_Driver']]],
+  ['configuresensor',['configureSensor',['../class_wipper_snapper___i2_c___driver___m_c_p3421.html#a06d957e925f7505b2e3cc4c0d017ad3d',1,'WipperSnapper_I2C_Driver_MCP3421']]],
   ['connect',['connect',['../class_wippersnapper.html#add749b3d330161a132fd7e0114618ec0',1,'Wippersnapper']]],
   ['connectiontype',['connectionType',['../class_wippersnapper___a_i_r_l_i_f_t.html#adf8d75a7530ff367f8a03e8e9afca7b1',1,'Wippersnapper_AIRLIFT::connectionType()'],['../class_wippersnapper___e_s_p32.html#a3ae46effd5e7bd00898ed5967898a58a',1,'Wippersnapper_ESP32::connectionType()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#ab003b4b439f438ffef72779b0adb179f',1,'Wippersnapper_WIFININA::connectionType()']]],
   ['cyan',['CYAN',['../_wippersnapper___status_l_e_d_8h.html#ad243f93c16bc4c1d3e0a13b84421d760',1,'Wippersnapper_StatusLED.h']]]
