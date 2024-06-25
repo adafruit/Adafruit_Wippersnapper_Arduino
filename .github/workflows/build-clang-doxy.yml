@@ -182,6 +182,11 @@ jobs:
         git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
         git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
         git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -200,7 +205,7 @@ jobs:
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: list
       run: |
-            ls
+            ls -R
             ls examples/*/build/
     - name: Rename build artifacts to reflect the platform name
       run: |
@@ -250,6 +255,11 @@ jobs:
       run: |
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -265,6 +275,7 @@ jobs:
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: Check artifacts
       run: |
+        ls -R
         ls examples/Wippersnapper_demo/build/*
     - name: Rename build artifacts to reflect the platform name
       run: |
@@ -350,6 +361,11 @@ jobs:
         git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -400,6 +416,11 @@ jobs:
       run: |
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -451,6 +472,11 @@ jobs:
         git clone --quiet https://github.com/arduino-libraries/Servo.git /home/runner/Arduino/libraries/Servo
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
           # Download and extract nanopb
@@ -489,6 +515,11 @@ jobs:
       run: |
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -501,7 +532,7 @@ jobs:
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: list build artifacts
       run: |
-            ls
+            ls -R
             ls examples/*
     - name: Rename build artifacts to reflect the platform name
       run: |
@@ -524,7 +555,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["feather_esp32s2_debug", "feather_esp32s2_tft_debug",
+        arduino-platform: ["feather_esp32s2_debug", "feather_esp32s2_tft_debug", "feather_esp32s3_reverse_tft_debug",
                            "feather_esp32s3_debug", "feather_esp32s3_4mbflash_2mbpsram_debug", "feather_esp32s3_tft_debug"]
     steps:
     - uses: actions/setup-python@v4
@@ -539,6 +570,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
          repository: adafruit/ci-arduino
+         ref: add-itsybitsy-rp2040
          path: ci
     - name: Install CI-Arduino
       run: bash ci/actions_install.sh
@@ -547,12 +579,18 @@ jobs:
         git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
         git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
         git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
+        git clone --quiet https://github.com/adafruit/Adafruit_VCNL4020.git /home/runner/Arduino/libraries/Adafruit_VCNL4020
         git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
         git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
         git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
         git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
         git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
         git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
+    - name: Enable Debug flag for libraries
+      run: |
+        # BusIO
+        git clone --quiet https://github.com/adafruit/Adafruit_BusIO.git /home/runner/Arduino/libraries/Adafruit_BusIO
+        sed -i 's/\/\/#define DEBUG_SERIAL Serial/#define DEBUG_SERIAL Serial/g' /home/runner/Arduino/libraries/Adafruit_BusIO/*.cpp
     - name: Download and install stable Nanopb
       run: |
         # Download and extract nanopb
@@ -571,12 +609,14 @@ jobs:
       run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
     - name: list
       run: |
-            ls
+            ls -R
             ls examples/*/build/
     - name: Rename build artifacts to reflect the platform name
       run: |
             mv examples/*/build/*/wippersnapper_debug.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             mv examples/*/build/*/wippersnapper_debug.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
+            mv examples/*/build/*/wippersnapper_debug.ino.elf wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.elf
+            mv examples/*/build/*/wippersnapper_debug.ino.map wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.map
     - name: upload build artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -584,8 +624,8 @@ jobs:
         path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
-
-
+            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.elf
+            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.map
 
   clang_and_doxy:
     runs-on: ubuntu-latest
