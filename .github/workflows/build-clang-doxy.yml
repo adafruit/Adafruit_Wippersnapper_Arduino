@@ -550,6 +550,7 @@ jobs:
             "feather_esp32s3_debug",
             "feather_esp32s3_4mbflash_2mbpsram_debug",
             "feather_esp32s3_tft_debug",
+            "feather_esp32s3_reverse_tft_debug",
           ]
     steps:
       - uses: actions/setup-python@v4
@@ -563,7 +564,7 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: adafruit/ci-arduino
+          repository: brentru/ci-arduino
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
