@@ -328,15 +328,20 @@ protected:
       // Use the macro to retry the status check until connected / timed out
       int lastResult;
       RETRY_FUNCTION_UNTIL_TIMEOUT(
-          []() -> int { /* no-op */ }, // Function to call each cycle
-          int,                         // return type
-          lastResult,                  // return variable (unused here)
-          [](int status) { return WiFi.status() == WL_CONNECTED; }, // check
-          15000, // timeout interval (ms)
+          []() -> int { return WiFi.status(); }, // Function call each cycle
+          int,                       // return type
+          lastResult,                // return variable (unused here)
+          [](int status) { status == WL_CONNECTED; }, // check
+          20000, // timeout interval (ms)
           200);  // interval between retries
 
-      // wait 2seconds for connection to stabilize
-      WS_DELAY_WITH_WDT(2000);
+      if (lastResult == WL_CONNECTED) {
+        _status = WS_NET_CONNECTED;
+        // wait 2seconds for connection to stabilize
+        WS_DELAY_WITH_WDT(2000);
+      } else {
+        _status = WS_NET_DISCONNECTED; // maybe connect failed instead?
+      }
     }
   }
 
