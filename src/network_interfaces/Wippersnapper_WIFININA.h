@@ -268,40 +268,8 @@ protected:
       // disconnect from possible previous connection
       _disconnect();
 
-// no clear recommendation, all three defined for both boards, future-proofing
-#if defined(NINA_RESETN)
-#define NINA_RESET_PIN NINA_RESETN
-#elif defined(SPIWIFI_RESET)
-#define NINA_RESET_PIN SPIWIFI_RESET
-#elif defined(ESP32_RESETN)
-#define NINA_RESET_PIN ESP32_RESETN
-#endif
-
-#if defined(NINA_RESET_PIN)
-      // reset the esp32 if possible, better if we didn't do this first time
-      if (NINA_RESET_PIN != -1) {
-        WS_DEBUG_PRINTLN("Resetting ESP32...");
-        WS_PRINTER.flush();
-        pinMode(NINA_RESET_PIN, OUTPUT);
-        digitalWrite(NINA_RESET_PIN, LOW);
-        delay(50);
-        digitalWrite(NINA_RESET_PIN, HIGH);
-        delay(10);
-      }
-      // wait for the ESP32 to boot
-      delay(2000);
-      feedWDT();
-#endif
-
-      WS_DEBUG_PRINT("Connecting to ");
-      WS_DEBUG_PRINTLN(_ssid);
       WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
-      feedWDT();
-      delay(5000);
-      feedWDT();
-      delay(5000);
-      feedWDT();
     }
   }
 
