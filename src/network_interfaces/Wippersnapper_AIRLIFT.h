@@ -298,11 +298,10 @@ protected:
       delay(100);
       _wifi->begin();
       feedWDT();
-      WS_DEBUG_PRINT("Reset Pin: ");
-      WS_DEBUG_PRINTLN(_rstPin);
       // reset the esp32 if possible
       resetAirLift();
       feedWDT();
+
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
       WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
