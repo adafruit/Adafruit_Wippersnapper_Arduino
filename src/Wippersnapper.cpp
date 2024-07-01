@@ -2566,7 +2566,7 @@ void Wippersnapper::pingBroker() {
       WS_DEBUG_PRINTLN("FAILURE!");
     }
     _prv_ping = millis();
-    WS.getRSSI();
+    getRSSI(); // update RSSI
     WS_DEBUG_PRINT("WiFi RSSI: ");
     WS_DEBUG_PRINTLN(WS._RSSI);
   }
