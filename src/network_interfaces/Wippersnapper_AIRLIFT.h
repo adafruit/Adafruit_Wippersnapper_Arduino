@@ -193,14 +193,23 @@ public:
           equal to the required version, False otherwise.
   */
   /********************************************************/
-  bool compareVersions(const String &currentVersion,
-                       const String &requiredVersion) {
-    int curMajor, curMinor, curPatch;
-    int reqMajor, reqMinor, reqPatch;
+  bool compareVersions(const char *currentVersion,
+                       const char *requiredVersion) {
+    int curMajor, curMinor, curPatch = 0;
+    int reqMajor, reqMinor, reqPatch = 0;
 
-    sscanf(currentVersion.c_str(), "%d.%d.%d", &curMajor, &curMinor, &curPatch);
-    sscanf(requiredVersion.c_str(), "%d.%d.%d", &reqMajor, &reqMinor,
-           &reqPatch);
+    if (!sscanf(currentVersion, "%d.%d.%d", &curMajor, &curMinor, &curPatch) ||
+        !sscanf(requiredVersion, "%d.%d.%d", &reqMajor, &reqMinor, &reqPatch)) {
+      WS_DEBUG_PRINTLN("Error parsing firmware version strings");
+      WS_PRINTER.flush();
+      WS_DEBUG_PRINT("Required version: ");
+      WS_DEBUG_PRINTLN(requiredVersion);
+      WS_PRINTER.flush();
+      WS_DEBUG_PRINT("Current version: ");
+      WS_DEBUG_PRINTLN(currentVersion);
+      WS_PRINTER.flush();
+      return false;
+    }
 
     if (curMajor != reqMajor)
       return curMajor > reqMajor;
@@ -272,7 +281,7 @@ public:
 protected:
   const char *_ssid;           /*!< Network SSID. */
   const char *_pass;           /*!< Network password. */
-  String _fv;                  /*!< nina-fw firmware version. */
+  const char *_fv;             /*!< nina-fw firmware version. */
   int _ssPin = -1;             /*!< SPI S.S. pin. */
   int _ackPin = -1;            /*!< SPI ACK pin. */
   int _rstPin = -1;            /*!< SPI RST pin. */
@@ -326,7 +335,7 @@ protected:
       RETRY_FUNCTION_UNTIL_TIMEOUT(
           []() -> int { return WiFi.status(); }, // Function call each cycle
           int,                                   // return type
-          lastResult, // return variable (unused here)
+          lastResult,                            // return variable
           [](int status) { return status == WL_CONNECTED; }, // check
           20000, // timeout interval (ms)
           200);  // interval between retries

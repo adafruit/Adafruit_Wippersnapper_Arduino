@@ -1,5 +1,5 @@
 /*!
- * @file ws_pb_helpers.h
+ * @file ws_pb_helpers.cpp
  *
  * Protobuf encode/decode helpers with error logging for Wippersnapper.
  *
@@ -12,12 +12,9 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-#include "pb.h"
-#include "pb_decode.h"
-#include "pb_encode.h"
-#include "ws_pb_helpers.h"
-#include <Wippersnapper.h>
 
+#include "ws_pb_helpers.h"
+#include "../Wippersnapper.h"
 
 // *****************************************************************************
 /*!
@@ -32,7 +29,7 @@
 !*/
 // *****************************************************************************
 bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
-                         void *dest_struct) {
+                  void *dest_struct) {
   bool status = pb_decode(stream, fields, dest_struct);
   if (!status) {
     WS_DEBUG_PRINT("Protobuf decode error: ");
@@ -54,7 +51,7 @@ bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
 !*/
 // *****************************************************************************
 bool ws_pb_encode(pb_ostream_t *stream, const pb_msgdesc_t *fields,
-                         const void *src_struct) {
+                  const void *src_struct) {
   bool status = pb_encode(stream, fields, src_struct);
   if (!status) {
     WS_DEBUG_PRINT("Protobuf encode error: ");
