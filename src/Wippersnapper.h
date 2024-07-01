@@ -72,7 +72,6 @@
     }                                                                          \
   } ///< Delay function
 
-
 /**************************************************************************/
 /*!
     @brief  Retry a function until a condition is met or a timeout is reached.
@@ -107,7 +106,6 @@
       WS_DELAY_WITH_WDT(interval);                                             \
     }                                                                          \
   } ///< Retry a function until a condition is met or a timeout is reached.
-
 
 // Wippersnapper pb helpers
 #include <nanopb/ws_pb_helpers.h>
