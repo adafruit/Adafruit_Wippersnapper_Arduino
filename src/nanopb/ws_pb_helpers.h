@@ -16,6 +16,8 @@
 #define WS_PB_ENCODE_H
 
 #include "pb.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
 
 bool ws_pb_decode(pb_istream_t *stream, const pb_msgdesc_t *fields,
                          void *dest_struct);

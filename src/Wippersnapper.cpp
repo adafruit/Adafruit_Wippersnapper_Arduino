@@ -185,7 +185,7 @@ void Wippersnapper::getMacAddr() {
 /****************************************************************************/
 /*!
     @brief    Gets the network's RSSI.
-    @return   int32_t RSSI value
+    @return   int32_t RSSI value, 0 to 255, in dB
 */
 /****************************************************************************/
 int32_t Wippersnapper::getRSSI() {
