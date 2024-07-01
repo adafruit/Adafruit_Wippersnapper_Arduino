@@ -184,6 +184,15 @@ void Wippersnapper::getMacAddr() {
 
 /****************************************************************************/
 /*!
+    @brief    Gets the network's RSSI.
+*/
+/****************************************************************************/
+void Wippersnapper::getRSSI() {
+  WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
+}
+
+/****************************************************************************/
+/*!
     @brief    Sets up the MQTT client session.
     @param    clientID
               A unique client identifier string.
@@ -2391,7 +2400,8 @@ void Wippersnapper::runNetFSM() {
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
       }
-      WS_DEBUG_PRINTLN("SSID found!");
+      WS_DEBUG_PRINT("SSID found! RSSI: ");
+      WS_DEBUG_PRINTLN(WS._RSSI);
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2556,6 +2566,9 @@ void Wippersnapper::pingBroker() {
       WS_DEBUG_PRINTLN("FAILURE!");
     }
     _prv_ping = millis();
+    WS.getRSSI();
+    WS_DEBUG_PRINT("WiFi RSSI: ");
+    WS_DEBUG_PRINTLN(WS._RSSI);
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
@@ -2865,9 +2878,11 @@ ws_status_t Wippersnapper::run() {
 
   // Process DS18x20 sensor events
   WS._ds18x20Component->update();
+  WS.feedWDT();
 
   // Process UART sensor events
   WS._uartComponent->update();
+  WS.feedWDT();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

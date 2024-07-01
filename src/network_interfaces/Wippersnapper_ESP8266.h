@@ -133,6 +133,7 @@ public:
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+        WS._RSSI = WiFi.RSSI(i);
         return true;
     }
 
@@ -159,6 +160,16 @@ public:
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Gets the current network RSSI value
+  */
+  /********************************************************/
+  void getRSSI() {
+    // test if this fails when disconnected or returns something sensible
+    WS._RSSI = WiFi.RSSI();
   }
 
   /*******************************************************************/
