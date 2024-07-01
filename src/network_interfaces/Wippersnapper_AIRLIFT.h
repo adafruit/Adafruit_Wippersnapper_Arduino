@@ -313,9 +313,10 @@ protected:
       feedWDT();
 
       // validate co-processor's firmware version
-      if (!firmwareCheck())
+      if (!firmwareCheck()) {
         WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
                          "latest version.");
+      }
 
       WS_DEBUG_PRINT("Connecting to ");
       WS_DEBUG_PRINTLN(_ssid);
@@ -336,7 +337,7 @@ protected:
       @brief  Resets the ESP32 module.
   */
   /**************************************************************************/
-  void resetAirLift(){
+  void resetAirLift() {
     if (_rstPin != -1) {
       WS_DEBUG_PRINTLN("Resetting ESP32...");
       WS_PRINTER.flush();
