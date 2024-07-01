@@ -46,7 +46,7 @@ public:
     _sgp30 = new Adafruit_SGP30();
     bool isInit = _sgp30->begin(_i2c);
     if (isInit) {
-      _sgp30->IAQinit();
+      isInit = _sgp30->IAQinit();
     }
     return isInit;
   }
