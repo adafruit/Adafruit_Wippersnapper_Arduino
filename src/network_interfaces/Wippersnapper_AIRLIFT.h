@@ -195,8 +195,8 @@ public:
   /********************************************************/
   bool compareVersions(const char *currentVersion,
                        const char *requiredVersion) {
-    int curMajor, curMinor, curPatch = 0;
-    int reqMajor, reqMinor, reqPatch = 0;
+    int curMajor = 0, curMinor = 0, curPatch = 0;
+    int reqMajor = 0, reqMinor = 0, reqPatch = 0;
 
     if (!sscanf(currentVersion, "%d.%d.%d", &curMajor, &curMinor, &curPatch) ||
         !sscanf(requiredVersion, "%d.%d.%d", &reqMajor, &reqMinor, &reqPatch)) {
