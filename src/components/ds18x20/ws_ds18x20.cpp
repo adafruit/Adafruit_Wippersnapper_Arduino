@@ -108,8 +108,8 @@ bool ws_ds18x20::addDS18x20(
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
   pb_ostream_t ostream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
-                 &msgInitResp)) {
+  if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_Ds18x20Response_fields,
+                    &msgInitResp)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode msg_init response message!");
     return false;
   }
@@ -257,9 +257,9 @@ void ws_ds18x20::update() {
           memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
           pb_ostream_t ostream = pb_ostream_from_buffer(
               WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-          if (!pb_encode(&ostream,
-                         wippersnapper_signal_v1_Ds18x20Response_fields,
-                         &msgDS18x20Response)) {
+          if (!ws_pb_encode(&ostream,
+                            wippersnapper_signal_v1_Ds18x20Response_fields,
+                            &msgDS18x20Response)) {
             WS_DEBUG_PRINTLN(
                 "ERROR: Unable to encode DS18x20 event responsemessage!");
             snprintf(buffer, 100,
@@ -296,6 +296,8 @@ void ws_ds18x20::update() {
           WS_DEBUG_PRINT("PUBLISHING -> msgDS18x20Response Event Message...");
           if (!WS._mqtt->publish(WS._topic_signal_ds18_device,
                                  WS._buffer_outgoing, msgSz, 1)) {
+            WS_DEBUG_PRINTLN("ERROR: Unable to publish DS18x20 event message - "
+                             "MQTT Publish failed!");
             return;
           };
           WS_DEBUG_PRINTLN("PUBLISHED!");
