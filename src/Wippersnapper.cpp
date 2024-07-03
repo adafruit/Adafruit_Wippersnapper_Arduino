@@ -2402,8 +2402,6 @@ void Wippersnapper::runNetFSM() {
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
       }
-      WS_DEBUG_PRINT("SSID found! RSSI: ");
-      WS_DEBUG_PRINTLN(WS.getRSSI());
       // Attempt to connect to wireless network
       maxAttempts = 5;
       while (maxAttempts > 0) {
@@ -2570,7 +2568,7 @@ void Wippersnapper::pingBroker() {
     }
     _prv_ping = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
-    WS_DEBUG_PRINTLN(WS.getRSSI());
+    WS_DEBUG_PRINTLN(getRSSI());
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {

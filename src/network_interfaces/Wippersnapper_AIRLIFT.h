@@ -120,6 +120,8 @@ public:
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
+        WS_DEBUG_PRINT("SSID found! RSSI: ");
+        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
     }
@@ -331,7 +333,7 @@ protected:
       _status = WS_NET_DISCONNECTED;
 
       // Use the macro to retry the status check until connected / timed out
-      int lastResult;
+      int lastResult = -1;
       RETRY_FUNCTION_UNTIL_TIMEOUT(
           []() -> int { return WiFi.status(); }, // Function call each cycle
           int,                                   // return type

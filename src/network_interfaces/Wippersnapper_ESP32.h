@@ -110,6 +110,8 @@ public:
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
+        WS_DEBUG_PRINT("SSID found! RSSI: ");
+        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
     }
