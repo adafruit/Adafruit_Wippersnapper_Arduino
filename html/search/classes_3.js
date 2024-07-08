@@ -53,6 +53,7 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fvl53l0x',['WipperSnapper_I2C_Driver_VL53L0X',['../class_wipper_snapper___i2_c___driver___v_l53_l0_x.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fvl53l1x',['WipperSnapper_I2C_Driver_VL53L1X',['../class_wipper_snapper___i2_c___driver___v_l53_l1_x.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fvl53l4cd',['WipperSnapper_I2C_Driver_VL53L4CD',['../class_wipper_snapper___i2_c___driver___v_l53_l4_c_d.html',1,'']]],
+  ['wippersnapper_5fi2c_5fdriver_5fvl53l4cx',['WipperSnapper_I2C_Driver_VL53L4CX',['../class_wipper_snapper___i2_c___driver___v_l53_l4_c_x.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fvl6180x',['WipperSnapper_I2C_Driver_VL6180X',['../class_wipper_snapper___i2_c___driver___v_l6180_x.html',1,'']]],
   ['wippersnapper_5fwifinina',['Wippersnapper_WIFININA',['../class_wippersnapper___w_i_f_i_n_i_n_a.html',1,'']]],
   ['ws_5fdisplay_5fdriver',['ws_display_driver',['../classws__display__driver.html',1,'']]],

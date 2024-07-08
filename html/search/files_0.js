@@ -57,6 +57,7 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fvl53l0x_2eh',['WipperSnapper_I2C_Driver_VL53L0X.h',['../_wipper_snapper___i2_c___driver___v_l53_l0_x_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fvl53l1x_2eh',['WipperSnapper_I2C_Driver_VL53L1X.h',['../_wipper_snapper___i2_c___driver___v_l53_l1_x_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fvl53l4cd_2eh',['WipperSnapper_I2C_Driver_VL53L4CD.h',['../_wipper_snapper___i2_c___driver___v_l53_l4_c_d_8h.html',1,'']]],
+  ['wippersnapper_5fi2c_5fdriver_5fvl53l4cx_2eh',['WipperSnapper_I2C_Driver_VL53L4CX.h',['../_wipper_snapper___i2_c___driver___v_l53_l4_c_x_8h.html',1,'']]],
   ['wippersnapper_5fi2c_5fdriver_5fvl6180x_2eh',['WipperSnapper_I2C_Driver_VL6180X.h',['../_wipper_snapper___i2_c___driver___v_l6180_x_8h.html',1,'']]],
   ['wippersnapper_5fnetworking_2eh',['Wippersnapper_Networking.h',['../_wippersnapper___networking_8h.html',1,'']]],
   ['wippersnapper_5fregister_2ecpp',['Wippersnapper_Register.cpp',['../_wippersnapper___register_8cpp.html',1,'']]],

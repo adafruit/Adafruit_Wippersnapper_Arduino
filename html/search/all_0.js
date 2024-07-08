@@ -187,6 +187,7 @@ var searchData=
   ['_5fvl53l0x',['_vl53l0x',['../class_wipper_snapper___i2_c___driver___v_l53_l0_x.html#ad3c6acc57106862138f4974b9ad76b31',1,'WipperSnapper_I2C_Driver_VL53L0X']]],
   ['_5fvl53l1x',['_VL53L1X',['../class_wipper_snapper___i2_c___driver___v_l53_l1_x.html#a3dfd5af1e3e99b6bff347eeda39a0185',1,'WipperSnapper_I2C_Driver_VL53L1X']]],
   ['_5fvl53l4cd',['_VL53L4CD',['../class_wipper_snapper___i2_c___driver___v_l53_l4_c_d.html#a1ee5398529b1039da05ecdc9605626e9',1,'WipperSnapper_I2C_Driver_VL53L4CD']]],
+  ['_5fvl53l4cx',['_VL53L4CX',['../class_wipper_snapper___i2_c___driver___v_l53_l4_c_x.html#a29ee4614e6d39d43144c66ca3d50f40a',1,'WipperSnapper_I2C_Driver_VL53L4CX']]],
   ['_5fvl6180x',['_vl6180x',['../class_wipper_snapper___i2_c___driver___v_l6180_x.html#a589cdf015918813d3a6c144d6b4c8017',1,'WipperSnapper_I2C_Driver_VL6180X']]],
   ['_5fvocindexperiod',['_VOCIndexPeriod',['../class_wipper_snapper___i2_c___driver.html#aef8cf36fa7c933d58e9a57b5de60bcc4',1,'WipperSnapper_I2C_Driver']]],
   ['_5fvocindexperiodprv',['_VOCIndexPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a4cee6abb91a33770472b4db891f39b06',1,'WipperSnapper_I2C_Driver']]],
