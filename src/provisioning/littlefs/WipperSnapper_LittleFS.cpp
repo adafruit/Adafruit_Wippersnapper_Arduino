@@ -68,6 +68,24 @@ void WipperSnapper_LittleFS::parseSecrets() {
            error.c_str());
   }
 
+  if (doc.containsKey("network_type_wifi")) {
+    if (doc["network_type_wifi"].is<JsonObjectConst>()) {
+      WS_DEBUG_PRINTLN("Found single wifi network in secrets.json");
+      // Parse network credentials from secrets
+      convertFromJson(doc["network_type_wifi"], WS._config.network);
+    } else if (doc["network_type_wifi"].is<JsonArrayConst>()) {
+      WS_DEBUG_PRINTLN("Found multiple wifi networks in secrets.json");
+      // Parse network credentials from secrets
+      int8_t networkCount = doc["network_type_wifi"].size();
+      convertFromJson(doc["network_type_wifi"][networkCount - 1],
+                      WS._config.network);
+    } else {
+      fsHalt("ERROR: Unrecognised value type for network_type_wifi in "
+             "secrets.json!");
+    }
+  } else {
+    fsHalt("ERROR: Could not find network_type_wifi in secrets.json!");
+  }
   // Extract a config struct from the JSON document
   WS._config = doc.as<secretsConfig>();
 
