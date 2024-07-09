@@ -20,6 +20,7 @@
 #ifdef ARDUINO_ARCH_ESP8266
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
+#include "ESP8266WiFiMulti.h"
 #include "ESP8266WiFi.h"
 #include "Wippersnapper.h"
 
@@ -64,6 +65,9 @@ public:
     _ssid = 0;
     _pass = 0;
     _wifi_client = new WiFiClient;
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_STA);
+    // _wifiMulti
   }
 
   /**************************************************************************/
@@ -211,6 +215,7 @@ protected:
   const char *_ssid = NULL;
   const char *_pass = NULL;
   WiFiClient *_wifi_client;
+  ESP8266WiFiMulti _wifiMulti;
 
   /**************************************************************************/
   /*!
