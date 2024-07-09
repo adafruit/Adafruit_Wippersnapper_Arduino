@@ -316,7 +316,7 @@ public:
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
-  networkConfig _multiNetworks[5]; /*!< Wippersnapper network.json as a struct. */
+  networkConfig _multiNetworks[5]; /*!< Wippersnapper networks as structs. */
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
