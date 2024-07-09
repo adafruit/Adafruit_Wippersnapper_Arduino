@@ -111,11 +111,11 @@ public:
       if (strlen(WS._multiNetworks[0].ssid) > 0) {
         // multi network mode
         for (int j = 0; j < 5; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0)
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0)
             return true;
         }
       } // else single network mode
-      else if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+      else if (strcmp(_ssid, WiFi.SSID(i)) == 0)
         return true;
     }
 
@@ -198,6 +198,7 @@ protected:
   const char *_ssid;              ///< WiFi SSID
   const char *_pass;              ///< WiFi password
   WiFiClientSecure *_mqtt_client; ///< Pointer to a secure MQTT client object
+  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -289,8 +290,8 @@ protected:
         }
       } else {
         WiFi.begin(_ssid, _pass);
-        // Wait setTimeout duration for a connection and check if connected every
-        // 5 seconds
+        // Wait setTimeout duration for a connection and check if connected
+        // every 5 seconds
         for (int i = 0; i < 4; i++) {
           WS.feedWDT();
           delay(5000);
@@ -316,9 +317,6 @@ protected:
     delay(5000);
     WS.feedWDT();
   }
-
-  private:
-  WiFiMulti _wifiMulti;
 };
 
 #endif // ARDUINO_ARCH_RP2040

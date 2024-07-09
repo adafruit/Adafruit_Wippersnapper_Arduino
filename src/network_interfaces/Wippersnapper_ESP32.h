@@ -199,6 +199,7 @@ protected:
   const char *_ssid;              ///< WiFi SSID
   const char *_pass;              ///< WiFi password
   WiFiClientSecure *_mqtt_client; ///< Pointer to a WiFi client object (TLS/SSL)
+  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -308,9 +309,6 @@ protected:
     WiFi.disconnect();
     delay(500);
   }
-
-  private:
-  WiFiMulti _wifiMulti;
 };
 
 #endif // ARDUINO_ARCH_ESP32_H
