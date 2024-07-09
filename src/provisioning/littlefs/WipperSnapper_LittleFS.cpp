@@ -68,17 +68,50 @@ void WipperSnapper_LittleFS::parseSecrets() {
            error.c_str());
   }
 
-  if (doc.containsKey("network_type_wifi")) {
-    if (doc["network_type_wifi"].is<JsonObjectConst>()) {
+if (doc.containsKey("network_type_wifi")) {
+    if (doc["network_type_wifi"].is<JsonObject>()) {
       WS_DEBUG_PRINTLN("Found single wifi network in secrets.json");
       // Parse network credentials from secrets
       convertFromJson(doc["network_type_wifi"], WS._config.network);
-    } else if (doc["network_type_wifi"].is<JsonArrayConst>()) {
+    } else if (doc["network_type_wifi"].is<JsonArray>()) {
       WS_DEBUG_PRINTLN("Found multiple wifi networks in secrets.json");
       // Parse network credentials from secrets
       int8_t networkCount = doc["network_type_wifi"].size();
+      WS_DEBUG_PRINT("Network count: ");
+      WS_DEBUG_PRINTLN(networkCount);
+      if (networkCount == 0) {
+        fsHalt("ERROR: No networks found in network_type_wifi in secrets.json!");
+      } else
+      // check if over 5, warn user and take first five
+      for (int i = 0; i < networkCount; i++) {
+        if (i > 4) {
+          WS_DEBUG_PRINT("WARNING: More than 5 networks in secrets.json, "
+                           "only the first 5 will be used. Not using ");
+          WS_DEBUG_PRINTLN(doc["network_type_wifi"][i]["ssid"].as<const char*>());
+          break;
+        }
+        convertFromJson(doc["network_type_wifi"][i], WS._multiNetworks[i]);
+        WS_DEBUG_PRINT("Added SSID: ");
+        WS_DEBUG_PRINTLN(WS._multiNetworks[i].ssid);
+        WS_DEBUG_PRINT("PASS: ");
+        WS_DEBUG_PRINTLN(WS._multiNetworks[i].pass);
+      }
+
+      WS_DEBUG_PRINTLN("Parsing last network in array");
       convertFromJson(doc["network_type_wifi"][networkCount - 1],
                       WS._config.network);
+      WS_DEBUG_PRINTLN("Parsed last network in array");
+      WS_DEBUG_PRINT("SSID: ");
+      WS_DEBUG_PRINTLN(WS._config.network.ssid);
+      WS_DEBUG_PRINT("PASS: ");
+      WS_DEBUG_PRINTLN(WS._config.network.pass);
+      WS_DEBUG_PRINTLN("removing network_type_wifi");
+      doc.remove("network_type_wifi");
+      WS_DEBUG_PRINTLN("removed network_type_wifi, creating new flat object");
+      doc["network_type_wifi"].to<JsonObject>();
+      WS_DEBUG_PRINTLN("created new object, setting network");
+      doc["network_type_wifi"].set(WS._config.network);
+
     } else {
       fsHalt("ERROR: Unrecognised value type for network_type_wifi in "
              "secrets.json!");
@@ -86,6 +119,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
   } else {
     fsHalt("ERROR: Could not find network_type_wifi in secrets.json!");
   }
+
   // Extract a config struct from the JSON document
   WS._config = doc.as<secretsConfig>();
 

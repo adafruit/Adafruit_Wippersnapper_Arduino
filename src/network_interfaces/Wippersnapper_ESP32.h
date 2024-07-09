@@ -24,6 +24,7 @@
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "WiFi.h"
+#include "WiFiMulti.h"
 #include <WiFiClientSecure.h>
 extern Wippersnapper WS;
 
@@ -109,7 +110,14 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+        // multi network mode
+        for (int j = 0; j < 5; j++) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0)
+            return true;
+        }
+      } // else single network mode
+      else if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
         return true;
     }
 
@@ -262,11 +270,32 @@ protected:
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
+      WiFi.setAutoReconnect(false);
       _disconnect();
       delay(100);
-      WiFi.begin(_ssid, _pass);
-      _status = WS_NET_DISCONNECTED;
-      delay(5000);
+      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+        // multi network mode
+        _wifiMulti.APlistClean();
+        _wifiMulti.setAllowOpenAP(false);
+        for (int i = 0; i < 5; i++) {
+          if (strlen(WS._multiNetworks[i].ssid) > 0) {
+            _wifiMulti.addAP(WS._multiNetworks[i].ssid,
+                             WS._multiNetworks[i].pass);
+          }
+        }
+        if (_wifiMulti.run(20000) == WL_CONNECTED) {
+          _status = WS_NET_CONNECTED;
+        } else {
+          _status = WS_NET_CONNECT_FAILED;
+        }
+      } else {
+        // single network mode
+        WiFi.begin(_ssid, _pass);
+        _status = WS_NET_DISCONNECTED;
+        WS.feedWDT();
+        delay(5000);
+      }
+      WS.feedWDT();
     }
   }
 
@@ -279,6 +308,9 @@ protected:
     WiFi.disconnect();
     delay(500);
   }
+
+  private:
+  WiFiMulti _wifiMulti;
 };
 
 #endif // ARDUINO_ARCH_ESP32_H

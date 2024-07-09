@@ -108,7 +108,14 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
+      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+        // multi network mode
+        for (int j = 0; j < 5; j++) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0)
+            return true;
+        }
+      } // else single network mode
+      else if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
         return true;
     }
 
@@ -259,26 +266,39 @@ protected:
     if (WiFi.status() == WL_CONNECTED)
       return;
 
+    WiFi.mode(WIFI_STA);
+    WS.feedWDT();
+    WiFi.setTimeout(20000);
+    WS.feedWDT();
+
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
       _disconnect();
       delay(5000);
       WS.feedWDT();
-      WiFi.mode(WIFI_STA);
-      WS.feedWDT();
-      WiFi.setTimeout(20000);
-      WS.feedWDT();
-      WiFi.begin(_ssid, _pass);
-      // Wait setTimeout duration for a connection and check if connected every
-      // 5 seconds
-      for (int i = 0; i < 4; i++) {
-        WS.feedWDT();
-        delay(5000);
-        WS.feedWDT();
-        if (WiFi.status() == WL_CONNECTED) {
+      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+        // multi network mode
+        for (int i = 0; i < 5; i++) {
+          _wifiMulti.addAP(WS._multiNetworks[i].ssid,
+                           WS._multiNetworks[i].pass);
+        }
+        if (_wifiMulti.run(20000) == WL_CONNECTED) {
           _status = WS_NET_CONNECTED;
           return;
+        }
+      } else {
+        WiFi.begin(_ssid, _pass);
+        // Wait setTimeout duration for a connection and check if connected every
+        // 5 seconds
+        for (int i = 0; i < 4; i++) {
+          WS.feedWDT();
+          delay(5000);
+          WS.feedWDT();
+          if (WiFi.status() == WL_CONNECTED) {
+            _status = WS_NET_CONNECTED;
+            return;
+          }
         }
       }
       _status = WS_NET_DISCONNECTED;
@@ -296,6 +316,9 @@ protected:
     delay(5000);
     WS.feedWDT();
   }
+
+  private:
+  WiFiMulti _wifiMulti;
 };
 
 #endif // ARDUINO_ARCH_RP2040
