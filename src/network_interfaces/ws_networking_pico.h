@@ -283,6 +283,9 @@ protected:
       if (strlen(WS._multiNetworks[0].ssid) > 0) {
         // multi network mode
         _wifiMulti.clearAPList();
+        // add default network
+        _wifiMulti.addAP(_ssid, _pass);
+        // add array of alternative networks
         for (int i = 0; i < 5; i++) {
           _wifiMulti.addAP(WS._multiNetworks[i].ssid,
                            WS._multiNetworks[i].pass);

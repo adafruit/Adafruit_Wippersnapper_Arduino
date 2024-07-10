@@ -257,9 +257,14 @@ protected:
                              WS._multiNetworks[i].pass);
           }
         }
+        // add default network
+        if (_wifiMulti.existsAP(_ssid) == false){
+          _wifiMulti.addAP(_ssid, _pass);
+        }
         long startRetry = millis();
         WS_DEBUG_PRINTLN("CONNECTING");
-        while (_wifiMulti.run(5000) != WL_CONNECTED && millis() - startRetry < 10000) {
+        while (_wifiMulti.run(5000) != WL_CONNECTED &&
+               millis() - startRetry < 10000) {
           // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
           yield();
         }
