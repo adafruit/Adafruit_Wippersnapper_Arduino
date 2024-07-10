@@ -67,12 +67,11 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt(String("ERROR: deserializeJson() failed with code ") +
            error.c_str());
   }
-
   if (doc.containsKey("network_type_wifi")) {
     // set default network config
     convertFromJson(doc["network_type_wifi"], WS._config.network);
 
-    if (!doc["network_type_wifi"].containsKey("alternate_networks")) {
+    if (!doc["network_type_wifi"].containsKey("alternative_networks")) {
       // do nothing extra, we already have the only network
       WS_DEBUG_PRINTLN("Found single wifi network in secrets.json");
 
