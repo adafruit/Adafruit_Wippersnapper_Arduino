@@ -287,7 +287,7 @@ protected:
         if (_wifiMulti.run(20000) == WL_CONNECTED) {
           _status = WS_NET_CONNECTED;
         } else {
-          _status = WS_NET_CONNECT_FAILED;
+          _status = WS_NET_DISCONNECTED;
         }
       } else {
         // single network mode

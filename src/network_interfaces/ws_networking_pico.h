@@ -43,9 +43,8 @@ public:
     _ssid = 0;
     _pass = 0;
     _mqtt_client = new WiFiClientSecure;
-    WiFi.noLowPowerMode();
-    WiFi.persistent(false);
-    _wifiMulti.clearAPList();
+    // WiFi.persistent(false);
+    // _wifiMulti.clearAPList();
   }
 
   /**************************************************************************/
@@ -283,6 +282,7 @@ protected:
       WS.feedWDT();
       if (strlen(WS._multiNetworks[0].ssid) > 0) {
         // multi network mode
+        _wifiMulti.clearAPList();
         for (int i = 0; i < 5; i++) {
           _wifiMulti.addAP(WS._multiNetworks[i].ssid,
                            WS._multiNetworks[i].pass);

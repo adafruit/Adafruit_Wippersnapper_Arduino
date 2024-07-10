@@ -20,8 +20,8 @@
 #ifdef ARDUINO_ARCH_ESP8266
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
-#include "ESP8266WiFiMulti.h"
 #include "ESP8266WiFi.h"
+#include "ESP8266WiFiMulti.h"
 #include "Wippersnapper.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
@@ -136,7 +136,14 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
+      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+        // multi network mode
+        for (int j = 0; j < 5; j++) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0)
+            return true;
+        }
+      } // else single network mode
+      else if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
         return true;
     }
 
@@ -227,21 +234,57 @@ protected:
     if (WiFi.status() == WL_CONNECTED)
       return;
 
-    // Attempt connection
-    _disconnect();
-    delay(100);
-    // ESP8266 MUST be in STA mode to avoid device acting as client/server
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(_ssid, _pass);
-    _status = WS_NET_DISCONNECTED;
-    delay(100);
+    if (strlen(_ssid) == 0) {
+      _status = WS_SSID_INVALID;
+    } else {
+      WiFi.setAutoReconnect(false);
+      // Attempt connection
+      _disconnect();
+      delay(100);
+      // ESP8266 MUST be in STA mode to avoid device acting as client/server
+      WiFi.mode(WIFI_STA);
+      WiFi.begin(_ssid, _pass);
+      _status = WS_NET_DISCONNECTED;
+      delay(100);
 
-    // wait for a connection to be established
-    long startRetry = millis();
-    WS_DEBUG_PRINTLN("CONNECTING");
-    while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
-      // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-      yield();
+      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+        // multi network mode
+        for (int i = 0; i < 5; i++) {
+          if (strlen(WS._multiNetworks[i].ssid) > 0 &&
+              (_wifiMulti.existsAP(WS._multiNetworks[i].ssid) == false)) {
+            // doesn't exist, add it
+            _wifiMulti.addAP(WS._multiNetworks[i].ssid,
+                             WS._multiNetworks[i].pass);
+          }
+        }
+        long startRetry = millis();
+        WS_DEBUG_PRINTLN("CONNECTING");
+        while (_wifiMulti.run(5000) != WL_CONNECTED && millis() - startRetry < 10000) {
+          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
+          yield();
+        }
+        if (_wifiMulti.run(5000) == WL_CONNECTED) {
+          _status = WS_NET_CONNECTED;
+        } else {
+          _status = WS_NET_DISCONNECTED;
+        }
+      } else {
+        // single network mode
+
+        // wait for a connection to be established
+        long startRetry = millis();
+        WS_DEBUG_PRINTLN("CONNECTING");
+        while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
+          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
+          yield();
+        }
+        if (WiFi.status() == WL_CONNECTED) {
+          _status = WS_NET_CONNECTED;
+        } else {
+          _status = WS_NET_DISCONNECTED;
+        }
+      }
+      WS.feedWDT();
     }
   }
 
