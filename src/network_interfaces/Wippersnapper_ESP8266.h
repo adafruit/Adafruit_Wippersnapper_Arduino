@@ -258,7 +258,7 @@ protected:
           }
         }
         // add default network
-        if (_wifiMulti.existsAP(_ssid) == false){
+        if (_wifiMulti.existsAP(_ssid) == false) {
           _wifiMulti.addAP(_ssid, _pass);
         }
         long startRetry = millis();
