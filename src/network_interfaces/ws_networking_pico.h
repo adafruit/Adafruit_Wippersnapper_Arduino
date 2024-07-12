@@ -43,8 +43,6 @@ public:
     _ssid = 0;
     _pass = 0;
     _mqtt_client = new WiFiClientSecure;
-    // WiFi.persistent(false);
-    // _wifiMulti.clearAPList();
   }
 
   /**************************************************************************/
