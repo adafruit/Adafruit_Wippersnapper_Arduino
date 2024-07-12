@@ -1032,8 +1032,8 @@ void WipperSnapper_Component_I2C::update() {
           &WipperSnapper_I2C_Driver::getSensorAmbientTempFPeriodPrv,
           &WipperSnapper_I2C_Driver::setSensorAmbientTempFPeriodPrv,
           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
-          "Ambient Temperature", " degrees F", event, &sensors_event_t::temperature,
-          sensorsReturningFalse, retries);
+          "Ambient Temperature", " degrees F", event,
+          &sensors_event_t::temperature, sensorsReturningFalse, retries);
 
       // OBJECT_TEMPERATURE sensor (°C)
       sensorEventRead(
@@ -1054,8 +1054,8 @@ void WipperSnapper_Component_I2C::update() {
           &WipperSnapper_I2C_Driver::getSensorObjectTempFPeriodPrv,
           &WipperSnapper_I2C_Driver::setSensorObjectTempFPeriodPrv,
           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
-          "Object Temperature", " degrees F", event, &sensors_event_t::temperature,
-          sensorsReturningFalse, retries);
+          "Object Temperature", " degrees F", event,
+          &sensors_event_t::temperature, sensorsReturningFalse, retries);
 
       // RELATIVE_HUMIDITY sensor
       sensorEventRead(
