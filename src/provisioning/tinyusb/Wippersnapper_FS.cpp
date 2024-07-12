@@ -424,8 +424,8 @@ void Wippersnapper_FS::parseSecrets() {
     WS._ui_helper->show_scr_error(
         "INVALID NETWORK",
         "The \"network_ssid and network_password\" fields within secrets.json "
-        "are invalid, please "
-        "change it to match your WiFi credentials. Then, press RESET.");
+        "are invalid, please change it to match your WiFi credentials. Then, "
+        "press RESET.");
 #endif
     fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
            "change network_ssid and network_password to match your Adafruit IO "
