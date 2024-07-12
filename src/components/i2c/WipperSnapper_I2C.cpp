@@ -1260,7 +1260,8 @@ void WipperSnapper_Component_I2C::sensorEventRead(
       WS_DEBUG_PRINTLN(unit);
 
       // pack event data into msg
-      if (sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW) {
+      if (sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW ||
+          sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY) {
         fillEventMessage(msgi2cResponse, event.data[0], sensorType);
       } else {
         fillEventMessage(msgi2cResponse, event.*valueMember, sensorType);
