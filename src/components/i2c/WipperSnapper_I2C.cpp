@@ -1256,7 +1256,7 @@ void WipperSnapper_Component_I2C::sensorEventRead(
           sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY) {
         value = event.data[0];
       } else {
-        value = event.*valueMember;
+        value = (float)event.*valueMember;
       }
       WS_DEBUG_PRINT("Sensor 0x");
       WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
