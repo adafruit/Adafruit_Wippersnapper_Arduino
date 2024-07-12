@@ -1251,11 +1251,12 @@ void WipperSnapper_Component_I2C::sensorEventRead(
       curTime - ((*iter)->*getPeriodPrvFunc)() > ((*iter)->*getPeriodFunc)()) {
     // within the period, read the sensor
     if (((*iter)->*getEventFunc)(&event)) {
+      float value;
       if (sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW ||
           sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY) {
-        float value = event.data[0];
+        value = event.data[0];
       } else {
-        float value = event.*valueMember;
+        value = event.*valueMember;
       }
       WS_DEBUG_PRINT("Sensor 0x");
       WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
