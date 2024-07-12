@@ -288,10 +288,13 @@ protected:
           _wifiMulti.addAP(WS._multiNetworks[i].ssid,
                            WS._multiNetworks[i].pass);
         }
+        WS.feedWDT();
         if (_wifiMulti.run(10000) == WL_CONNECTED) {
+          WS.feedWDT();
           _status = WS_NET_CONNECTED;
           return;
         }
+        WS.feedWDT();
       } else {
         WiFi.begin(_ssid, _pass);
         // Wait setTimeout duration for a connection and check if connected

@@ -377,7 +377,7 @@ void Wippersnapper_FS::parseSecrets() {
         if (i >= 3) {
           WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
                          "only the first 3 will be used. Not using ");
-          WS_DEBUG_PRINTLN(networks[i]["ssid"].as<const char *>());
+          WS_DEBUG_PRINTLN(networks[i]["network_ssid"].as<const char *>());
           break;
         }
         convertFromJson(networks[i], WS._multiNetworks[i]);
