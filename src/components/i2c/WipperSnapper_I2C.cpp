@@ -1177,7 +1177,7 @@ void WipperSnapper_Component_I2C::update() {
                       &WipperSnapper_I2C_Driver::getSensorRawPeriodPrv,
                       &WipperSnapper_I2C_Driver::setSensorRawPeriodPrv,
                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW,
-                      "Raw", "", event, &sensors_event_t::data, sensorsReturningFalse, retries);
+                      "Raw", "", event, nullptr, sensorsReturningFalse, retries);
 
       // Gas sensor
       sensorEventRead(iter, curTime, &msgi2cResponse,
@@ -1213,7 +1213,7 @@ void WipperSnapper_Component_I2C::update() {
                       &WipperSnapper_I2C_Driver::SensorProximityPeriodPrv,
                       &WipperSnapper_I2C_Driver::setSensorProximityPeriodPrv,
                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY,
-                      "Proximity", "", event, &sensors_event_t::distance, sensorsReturningFalse, retries);
+                      "Proximity", "", event, nullptr, sensorsReturningFalse, retries);
 
 
       // Did this driver obtain data from sensors?
@@ -1244,7 +1244,7 @@ void WipperSnapper_Component_I2C::sensorEventRead(
     void (WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long),
     wippersnapper_i2c_v1_SensorType sensorType,
     const char* sensorName, const char* unit, sensors_event_t event,
-    auto sensors_event_t::*valueMember, bool &sensorsReturningFalse, int &retries) {
+    float sensors_event_t::*valueMember, bool &sensorsReturningFalse, int &retries) {
   // sensorName is a prefix and error message, units is a suffix when logging value
   curTime = millis();
   if (((*iter)->*getPeriodFunc)() != 0L &&
@@ -1256,7 +1256,7 @@ void WipperSnapper_Component_I2C::sensorEventRead(
           sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY) {
         value = event.data[0];
       } else {
-        value = (float)event.*valueMember;
+        value = event.*valueMember;
       }
       WS_DEBUG_PRINT("Sensor 0x");
       WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());

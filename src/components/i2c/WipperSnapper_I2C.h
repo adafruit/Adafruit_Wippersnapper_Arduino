@@ -107,7 +107,7 @@ public:
       void (WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long),
       wippersnapper_i2c_v1_SensorType sensorType, const char *sensorName,
       const char *unit, sensors_event_t event,
-      auto sensors_event_t::*valueMember, bool &sensorsReturningFalse,
+      float sensors_event_t::*valueMember, bool &sensorsReturningFalse,
       int &retries);
 
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
