@@ -1013,581 +1013,212 @@ void WipperSnapper_Component_I2C::update() {
       // Event struct
       sensors_event_t event;
 
-      // AMBIENT_TEMPERATURE sensor (°C)
-      curTime = millis();
-      if ((*iter)->getSensorAmbientTempPeriod() != 0L &&
-          curTime - (*iter)->getSensorAmbientTempPeriodPrv() >
-              (*iter)->getSensorAmbientTempPeriod()) {
-        if ((*iter)->getEventAmbientTemp(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tTemperature: ");
-          WS_DEBUG_PRINT(event.temperature);
-          WS_DEBUG_PRINTLN(" degrees C");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.temperature,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE);
-
-          (*iter)->setSensorAmbientTempPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Failed to get ambient temperature sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorAmbientTempPeriodPrv(curTime);
-          }
-        }
-      }
+        // AMBIENT_TEMPERATURE sensor (°C)
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventAmbientTemp,
+                      &WipperSnapper_I2C_Driver::getSensorAmbientTempPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorAmbientTempPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorAmbientTempPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+                      "Ambient Temperature", " degrees C", event,
+                      &sensors_event_t::temperature, sensorsReturningFalse, retries);
 
       // Ambient Temperature sensor (°F)
-      curTime = millis();
-      if ((*iter)->getSensorAmbientTempFPeriod() != 0L &&
-          curTime - (*iter)->getSensorAmbientTempFPeriodPrv() >
-              (*iter)->getSensorAmbientTempFPeriod()) {
-        if ((*iter)->getEventAmbientTempF(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tAmbient Temp.: ");
-          WS_DEBUG_PRINT(event.temperature);
-          WS_DEBUG_PRINTLN("°F");
-
-          (*iter)->setSensorAmbientTempFPeriodPrv(curTime);
-
-          fillEventMessage(
-              &msgi2cResponse, event.temperature,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT);
-        } else {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Failed to obtain ambient temp. (°F)) sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorAmbientTempFPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventAmbientTempF,
+                      &WipperSnapper_I2C_Driver::getSensorAmbientTempFPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorAmbientTempFPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorAmbientTempFPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+                      "Ambient Temperature", "°F", event,
+                      &sensors_event_t::temperature, sensorsReturningFalse, retries);
 
       // OBJECT_TEMPERATURE sensor (°C)
-      curTime = millis();
-      if ((*iter)->getSensorObjectTempPeriod() != 0L &&
-          curTime - (*iter)->getSensorObjectTempPeriodPrv() >
-              (*iter)->getSensorObjectTempPeriod()) {
-        if ((*iter)->getEventObjectTemp(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tTemperature: ");
-          WS_DEBUG_PRINT(event.temperature);
-          WS_DEBUG_PRINTLN("°C");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.temperature,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE);
-
-          (*iter)->setSensorObjectTempPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Failed to get object temperature sensor (°C) reading!");
-          if (retries == 1) {
-            (*iter)->setSensorObjectTempPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventObjectTemp,
+                      &WipperSnapper_I2C_Driver::getSensorObjectTempPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorObjectTempPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorObjectTempPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE,
+                      "Object Temperature", " degrees C", event,
+                      &sensors_event_t::temperature, sensorsReturningFalse, retries);
 
       // OBJECT_TEMPERATURE sensor (°F)
-      curTime = millis();
-      if ((*iter)->getSensorObjectTempFPeriod() != 0L &&
-          curTime - (*iter)->getSensorObjectTempFPeriodPrv() >
-              (*iter)->getSensorObjectTempFPeriod()) {
-        if ((*iter)->getEventObjectTempF(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tTemperature: ");
-          WS_DEBUG_PRINT(event.temperature);
-          WS_DEBUG_PRINTLN("°F");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.temperature,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT);
-
-          (*iter)->setSensorObjectTempFPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Failed to get object temperature sensor (°F) reading!");
-          if (retries == 1) {
-            (*iter)->setSensorObjectTempFPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventObjectTempF,
+                      &WipperSnapper_I2C_Driver::getSensorObjectTempFPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorObjectTempFPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorObjectTempFPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
+                      "Object Temperature", "°F", event,
+                      &sensors_event_t::temperature, sensorsReturningFalse, retries);
 
       // RELATIVE_HUMIDITY sensor
-      curTime = millis();
-      if ((*iter)->getSensorRelativeHumidityPeriod() != 0L &&
-          curTime - (*iter)->getSensorRelativeHumidityPeriodPrv() >
-              (*iter)->getSensorRelativeHumidityPeriod()) {
-        if ((*iter)->getEventRelativeHumidity(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tHumidity: ");
-          WS_DEBUG_PRINT(event.relative_humidity);
-          WS_DEBUG_PRINTLN("%RH");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.relative_humidity,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY);
-
-          (*iter)->setSensorRelativeHumidityPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get humidity sensor reading!");
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventRelativeHumidity,
+                      &WipperSnapper_I2C_Driver::getSensorRelativeHumidityPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorRelativeHumidityPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorRelativeHumidityPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY,
+                      "Humidity", " %RH", event, &sensors_event_t::relative_humidity, sensorsReturningFalse, retries);
 
       // PRESSURE sensor
-      curTime = millis();
-      if ((*iter)->getSensorPressurePeriod() != 0L &&
-          curTime - (*iter)->getSensorPressurePeriodPrv() >
-              (*iter)->getSensorPressurePeriod()) {
-        if ((*iter)->getEventPressure(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tPressure: ");
-          WS_DEBUG_PRINT(event.pressure);
-          WS_DEBUG_PRINTLN(" hPa");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.pressure,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE);
-
-          (*iter)->setSensorPressurePeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get Pressure sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorPressurePeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventPressure,
+                      &WipperSnapper_I2C_Driver::getSensorPressurePeriod,
+                      &WipperSnapper_I2C_Driver::getSensorPressurePeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorPressurePeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE,
+                      "Pressure", " hPa", event, &sensors_event_t::pressure, sensorsReturningFalse, retries);
 
       // CO2 sensor
-      curTime = millis();
-      if ((*iter)->getSensorCO2Period() != 0L &&
-          curTime - (*iter)->getSensorCO2PeriodPrv() >
-              (*iter)->getSensorCO2Period()) {
-        if ((*iter)->getEventCO2(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tCO2: ");
-          WS_DEBUG_PRINT(event.CO2);
-          WS_DEBUG_PRINTLN(" ppm");
-
-          fillEventMessage(&msgi2cResponse, event.CO2,
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2);
-          (*iter)->setSensorCO2PeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to obtain CO2 sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorCO2PeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventCO2,
+                      &WipperSnapper_I2C_Driver::getSensorCO2Period,
+                      &WipperSnapper_I2C_Driver::getSensorCO2PeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorCO2PeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2,
+                      "CO2", " ppm", event, &sensors_event_t::CO2, sensorsReturningFalse, retries);
 
       // eCO2 sensor
-      curTime = millis();
-      if ((*iter)->getSensorECO2Period() != 0L &&
-          curTime - (*iter)->getSensorECO2PeriodPrv() >
-              (*iter)->getSensorECO2Period()) {
-        if ((*iter)->getEventECO2(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\teCO2: ");
-          WS_DEBUG_PRINT(event.eCO2);
-          WS_DEBUG_PRINTLN(" ppm");
-
-          fillEventMessage(&msgi2cResponse, event.eCO2,
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2);
-          (*iter)->setSensorECO2PeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to obtain eCO2 sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorECO2PeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventECO2,
+                      &WipperSnapper_I2C_Driver::getSensorECO2Period,
+                      &WipperSnapper_I2C_Driver::getSensorECO2PeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorECO2PeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2,
+                      "eCO2", " ppm", event, &sensors_event_t::eCO2, sensorsReturningFalse, retries);
 
       // TVOC sensor
-      curTime = millis();
-      if ((*iter)->getSensorTVOCPeriod() != 0L &&
-          curTime - (*iter)->getSensorTVOCPeriodPrv() >
-              (*iter)->getSensorTVOCPeriod()) {
-        if ((*iter)->getEventTVOC(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tTVOC: ");
-          WS_DEBUG_PRINT(event.tvoc);
-          WS_DEBUG_PRINTLN(" ppb");
-
-          fillEventMessage(&msgi2cResponse, event.tvoc,
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC);
-          (*iter)->setSensorTVOCPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to obtain TVOC sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorTVOCPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventTVOC,
+                      &WipperSnapper_I2C_Driver::getSensorTVOCPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorTVOCPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorTVOCPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC,
+                      "TVOC", " ppb", event, &sensors_event_t::tvoc, sensorsReturningFalse, retries);
 
       // Altitude sensor
-      curTime = millis();
-      if ((*iter)->getSensorAltitudePeriod() != 0L &&
-          curTime - (*iter)->getSensorAltitudePeriodPrv() >
-              (*iter)->getSensorAltitudePeriod()) {
-        if ((*iter)->getEventAltitude(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tAltitude: ");
-          WS_DEBUG_PRINT(event.altitude);
-          WS_DEBUG_PRINTLN(" m");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.altitude,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE);
-
-          (*iter)->setSensorAltitudePeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get altitude sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorAltitudePeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventAltitude,
+                      &WipperSnapper_I2C_Driver::getSensorAltitudePeriod,
+                      &WipperSnapper_I2C_Driver::getSensorAltitudePeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorAltitudePeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE,
+                      "Altitude", " m", event, &sensors_event_t::altitude, sensorsReturningFalse, retries);
 
       // Light sensor
-      curTime = millis();
-      if ((*iter)->getSensorLightPeriod() != 0L &&
-          curTime - (*iter)->getSensorLightPeriodPrv() >
-              (*iter)->getSensorLightPeriod()) {
-        if ((*iter)->getEventLight(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tLight: ");
-          WS_DEBUG_PRINT(event.light);
-          WS_DEBUG_PRINTLN(" lux");
-
-          // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.light,
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT);
-
-          (*iter)->setSensorLightPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get light sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorLightPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventLight,
+                      &WipperSnapper_I2C_Driver::getSensorLightPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorLightPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorLightPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT,
+                      "Light", " lux", event, &sensors_event_t::light, sensorsReturningFalse, retries);
 
       // PM10_STD sensor
-      curTime = millis();
-      if ((*iter)->getSensorPM10_STDPeriod() != 0L &&
-          curTime - (*iter)->getSensorPM10_STDPeriodPrv() >
-              (*iter)->getSensorPM10_STDPeriod()) {
-        if ((*iter)->getEventPM10_STD(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tPM1.0: ");
-          WS_DEBUG_PRINT(event.pm10_std);
-          WS_DEBUG_PRINTLN(" ppm");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.pm10_std,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD);
-          // try again in curTime seconds
-          (*iter)->setSensorPM10_STDPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get PM1.0 sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorPM10_STDPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventPM10_STD,
+                      &WipperSnapper_I2C_Driver::getSensorPM10_STDPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorPM10_STDPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorPM10_STDPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD,
+                      "PM1.0", " ppm", event, &sensors_event_t::pm10_std, sensorsReturningFalse, retries);
 
       // PM25_STD sensor
-      curTime = millis();
-      if ((*iter)->getSensorPM25_STDPeriod() != 0L &&
-          curTime - (*iter)->getSensorPM25_STDPeriodPrv() >
-              (*iter)->getSensorPM25_STDPeriod()) {
-        if ((*iter)->getEventPM25_STD(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tPM2.5: ");
-          WS_DEBUG_PRINT(event.pm25_std);
-          WS_DEBUG_PRINTLN(" ppm");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.pm25_std,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD);
-          // try again in curTime seconds
-          (*iter)->setSensorPM25_STDPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get PM2.5 sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorPM25_STDPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventPM25_STD,
+                      &WipperSnapper_I2C_Driver::getSensorPM25_STDPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorPM25_STDPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorPM25_STDPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD,
+                      "PM2.5", " ppm", event, &sensors_event_t::pm25_std, sensorsReturningFalse, retries);
 
       // PM100_STD sensor
-      curTime = millis();
-      if ((*iter)->getSensorPM100_STDPeriod() != 0L &&
-          curTime - (*iter)->getSensorPM100_STDPeriodPrv() >
-              (*iter)->getSensorPM100_STDPeriod()) {
-        if ((*iter)->getEventPM100_STD(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tPM10.0: ");
-          WS_DEBUG_PRINT(event.pm25_std);
-          WS_DEBUG_PRINTLN(" ppm");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.pm25_std,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD);
-          (*iter)->setSensorPM100_STDPeriodPrv(
-              curTime); // try again in curTime seconds
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get PM10.0 sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorPM100_STDPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventPM100_STD,
+                      &WipperSnapper_I2C_Driver::getSensorPM100_STDPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorPM100_STDPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorPM100_STDPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD,
+                      "PM10.0", " ppm", event, &sensors_event_t::pm100_std, sensorsReturningFalse, retries);
 
       // Voltage sensor
-      curTime = millis();
-      if ((*iter)->getSensorVoltagePeriod() != 0L &&
-          curTime - (*iter)->getSensorVoltagePeriodPrv() >
-              (*iter)->getSensorVoltagePeriod()) {
-        if ((*iter)->getEventVoltage(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tVoltage: ");
-          WS_DEBUG_PRINT(event.voltage);
-          WS_DEBUG_PRINTLN(" v");
-
-          // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.voltage,
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE);
-          // try again in curTime seconds
-          (*iter)->setSensorVoltagePeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get voltage sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorVoltagePeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventVoltage,
+                      &WipperSnapper_I2C_Driver::getSensorVoltagePeriod,
+                      &WipperSnapper_I2C_Driver::getSensorVoltagePeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorVoltagePeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE,
+                      "Voltage", " V", event, &sensors_event_t::voltage, sensorsReturningFalse, retries);
 
       // Current sensor
-      curTime = millis();
-      if ((*iter)->getSensorCurrentPeriod() != 0L &&
-          curTime - (*iter)->getSensorCurrentPeriodPrv() >
-              (*iter)->getSensorCurrentPeriod()) {
-        if ((*iter)->getEventCurrent(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tCurrent: ");
-          WS_DEBUG_PRINT(event.current);
-          WS_DEBUG_PRINTLN(" mA");
-
-          // pack event data into msg
-          fillEventMessage(&msgi2cResponse, event.current,
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT);
-          // try again in curTime seconds
-          (*iter)->setSensorCurrentPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get Current sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorCurrentPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventCurrent,
+                      &WipperSnapper_I2C_Driver::getSensorCurrentPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorCurrentPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorCurrentPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT,
+                      "Current", " mA", event, &sensors_event_t::current, sensorsReturningFalse, retries);
 
       // Unitless % sensor
-      curTime = millis();
-      if ((*iter)->getSensorUnitlessPercentPeriod() != 0L &&
-          curTime - (*iter)->getSensorUnitlessPercentPeriodPrv() >
-              (*iter)->getSensorUnitlessPercentPeriod()) {
-        if ((*iter)->getEventUnitlessPercent(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tRead: ");
-          WS_DEBUG_PRINT(event.unitless_percent);
-          WS_DEBUG_PRINTLN(" %");
-
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.unitless_percent,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT);
-          // try again in curTime seconds
-          (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Failed to get unitless percent sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorUnitlessPercentPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventUnitlessPercent,
+                      &WipperSnapper_I2C_Driver::getSensorUnitlessPercentPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorUnitlessPercentPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorUnitlessPercentPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT,
+                      "Unitless Percent", " %", event, &sensors_event_t::unitless_percent, sensorsReturningFalse, retries);
 
       // Raw sensor
-      curTime = millis();
-      if ((*iter)->getSensorRawPeriod() != 0L &&
-          curTime - (*iter)->getSensorRawPeriodPrv() >
-              (*iter)->getSensorRawPeriod()) {
-        if ((*iter)->getEventRaw(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tRaw: ");
-          WS_DEBUG_PRINTLN(event.data[0]);
-
-          fillEventMessage(&msgi2cResponse, event.data[0],
-                           wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW);
-          (*iter)->setSensorRawPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to obtain Raw sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorRawPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventRaw,
+                      &WipperSnapper_I2C_Driver::getSensorRawPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorRawPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorRawPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW,
+                      "Raw", "", event, &sensors_event_t::data, sensorsReturningFalse, retries);
 
       // Gas sensor
-      curTime = millis();
-      if ((*iter)->getSensorGasResistancePeriod() != 0L &&
-          curTime - (*iter)->getSensorGasResistancePeriodPrv() >
-              (*iter)->getSensorGasResistancePeriod()) {
-        if ((*iter)->getEventGasResistance(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tGas Resistance: ");
-          WS_DEBUG_PRINT(event.gas_resistance);
-          WS_DEBUG_PRINT(" ohms");
-
-          fillEventMessage(
-              &msgi2cResponse, event.gas_resistance,
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE);
-          (*iter)->setSensorGasResistancePeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN(
-              "ERROR: Failed to obtain gas resistance sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorGasResistancePeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventGasResistance,
+                      &WipperSnapper_I2C_Driver::getSensorGasResistancePeriod,
+                      &WipperSnapper_I2C_Driver::getSensorGasResistancePeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorGasResistancePeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE,
+                      "Gas Resistance", " Ohms", event, &sensors_event_t::gas_resistance, sensorsReturningFalse, retries);
 
       // NOx-index sensor
-      curTime = millis();
-      if ((*iter)->getSensorNOxIndexPeriod() != 0L &&
-          curTime - (*iter)->getSensorNOxIndexPeriodPrv() >
-              (*iter)->getSensorNOxIndexPeriod()) {
-        if ((*iter)->getEventNOxIndex(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tNOx Index: ");
-          WS_DEBUG_PRINT(event.nox_index);
-
-          fillEventMessage(
-              &msgi2cResponse, event.data[0],
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX);
-          (*iter)->setSensorNOxIndexPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to obtain NOx index sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorNOxIndexPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventNOxIndex,
+                      &WipperSnapper_I2C_Driver::getSensorNOxIndexPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorNOxIndexPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorNOxIndexPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX,
+                      "NOx Index", "", event, &sensors_event_t::nox_index, sensorsReturningFalse, retries);
 
       // VOC-index sensor
-      curTime = millis();
-      if ((*iter)->getSensorVOCIndexPeriod() != 0L &&
-          curTime - (*iter)->getSensorVOCIndexPeriodPrv() >
-              (*iter)->getSensorVOCIndexPeriod()) {
-        if ((*iter)->getEventVOCIndex(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tVOC Index: ");
-          WS_DEBUG_PRINT(event.voc_index);
-
-          fillEventMessage(
-              &msgi2cResponse, event.data[0],
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX);
-          (*iter)->setSensorVOCIndexPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to obtain VOC index sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorVOCIndexPeriodPrv(curTime);
-          }
-        }
-      }
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventVOCIndex,
+                      &WipperSnapper_I2C_Driver::getSensorVOCIndexPeriod,
+                      &WipperSnapper_I2C_Driver::getSensorVOCIndexPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorVOCIndexPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX,
+                      "VOC Index", "", event, &sensors_event_t::voc_index, sensorsReturningFalse, retries);
 
       // Proximity sensor
-      curTime = millis();
-      if ((*iter)->sensorProximityPeriod() != 0L &&
-          curTime - (*iter)->SensorProximityPeriodPrv() >
-              (*iter)->sensorProximityPeriod()) {
-        if ((*iter)->getEventProximity(&event)) {
-          WS_DEBUG_PRINT("Sensor 0x");
-          WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
-          WS_DEBUG_PRINTLN("");
-          WS_DEBUG_PRINT("\tProximity: ");
-          WS_DEBUG_PRINT(event.data[0]);
+      sensorEventRead(iter, curTime, &msgi2cResponse,
+                      &WipperSnapper_I2C_Driver::getEventProximity,
+                      &WipperSnapper_I2C_Driver::sensorProximityPeriod,
+                      &WipperSnapper_I2C_Driver::SensorProximityPeriodPrv,
+                      &WipperSnapper_I2C_Driver::setSensorProximityPeriodPrv,
+                      wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY,
+                      "Proximity", "", event, &sensors_event_t::distance, sensorsReturningFalse, retries);
 
-          // pack event data into msg
-          fillEventMessage(
-              &msgi2cResponse, event.data[0],
-              wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY);
-
-          (*iter)->setSensorProximityPeriodPrv(curTime);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Failed to get proximity sensor reading!");
-          if (retries == 1) {
-            (*iter)->setSensorProximityPeriodPrv(curTime);
-          }
-        }
-      }
 
       // Did this driver obtain data from sensors?
       if (msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count ==
           0) {
-        sensorsReturningFalse = true;
         continue;
       }
 
@@ -1600,5 +1231,50 @@ void WipperSnapper_Component_I2C::update() {
         continue;
       }
     } // end of retry loop
+  }
+}
+
+void WipperSnapper_Component_I2C::sensorEventRead(
+    std::vector<WipperSnapper_I2C_Driver *>::iterator &iter,
+    unsigned long curTime,
+    wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+    bool (WipperSnapper_I2C_Driver::*getEventFunc)(sensors_event_t*),
+    long (WipperSnapper_I2C_Driver::*getPeriodFunc)(),
+    long (WipperSnapper_I2C_Driver::*getPeriodPrvFunc)(),
+    void (WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long),
+    wippersnapper_i2c_v1_SensorType sensorType,
+    const char* sensorName, const char* unit, sensors_event_t event,
+    auto sensors_event_t::*valueMember, bool &sensorsReturningFalse, int &retries) {
+  // sensorName is a prefix and error message, units is a suffix when logging value
+  curTime = millis();
+  if (((*iter)->*getPeriodFunc)() != 0L &&
+      curTime - ((*iter)->*getPeriodPrvFunc)() > ((*iter)->*getPeriodFunc)()) {
+    if (((*iter)->*getEventFunc)(&event)) {
+      WS_DEBUG_PRINT("Sensor 0x");
+      WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
+      WS_DEBUG_PRINTLN("");
+      WS_DEBUG_PRINT("\t");
+      WS_DEBUG_PRINT(sensorName);
+      WS_DEBUG_PRINT(": ");
+      WS_DEBUG_PRINT(event.*valueMember);
+      WS_DEBUG_PRINTLN(unit);
+
+      // pack event data into msg
+      if (sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW) {
+        fillEventMessage(msgi2cResponse, event.*valueMember[0], sensorType);
+      } else {
+        fillEventMessage(msgi2cResponse, event.*valueMember, sensorType);
+      }
+
+      ((*iter)->*setPeriodPrvFunc)(curTime);
+    } else {
+      WS_DEBUG_PRINT("ERROR: Failed to get ");
+      WS_DEBUG_PRINT(sensorName);
+      WS_DEBUG_PRINTLN(" reading!");
+      sensorsReturningFalse = true;
+      if (retries == 1) {
+        ((*iter)->*setPeriodPrvFunc)(curTime);
+      }
+    }
   }
 }
