@@ -1206,7 +1206,7 @@ void WipperSnapper_Component_I2C::update() {
                       wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX,
                       "VOC Index", "", event, &sensors_event_t::voc_index, sensorsReturningFalse, retries);
 
-      // Proximity sensor
+      // Proximity sensor -- sends using event.data[0] same as raw sensor_type
       sensorEventRead(iter, curTime, &msgi2cResponse,
                       &WipperSnapper_I2C_Driver::getEventProximity,
                       &WipperSnapper_I2C_Driver::sensorProximityPeriod,
@@ -1249,23 +1249,25 @@ void WipperSnapper_Component_I2C::sensorEventRead(
   curTime = millis();
   if (((*iter)->*getPeriodFunc)() != 0L &&
       curTime - ((*iter)->*getPeriodPrvFunc)() > ((*iter)->*getPeriodFunc)()) {
+    // within the period, read the sensor
     if (((*iter)->*getEventFunc)(&event)) {
+      if (sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW ||
+          sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY) {
+        float value = event.data[0];
+      } else {
+        float value = event.*valueMember;
+      }
       WS_DEBUG_PRINT("Sensor 0x");
       WS_DEBUG_PRINTHEX((*iter)->getI2CAddress());
       WS_DEBUG_PRINTLN("");
       WS_DEBUG_PRINT("\t");
       WS_DEBUG_PRINT(sensorName);
       WS_DEBUG_PRINT(": ");
-      WS_DEBUG_PRINT(event.*valueMember);
+      WS_DEBUG_PRINT(value);
       WS_DEBUG_PRINTLN(unit);
 
       // pack event data into msg
-      if (sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW ||
-          sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY) {
-        fillEventMessage(msgi2cResponse, event.data[0], sensorType);
-      } else {
-        fillEventMessage(msgi2cResponse, event.*valueMember, sensorType);
-      }
+      fillEventMessage(msgi2cResponse, value, sensorType);
 
       ((*iter)->*setPeriodPrvFunc)(curTime);
     } else {
