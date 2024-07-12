@@ -110,7 +110,7 @@ public:
     for (int i = 0; i < n; ++i) {
       if (strlen(WS._multiNetworks[0].ssid) > 0) {
         // multi network mode
-        for (int j = 0; j < 5; j++) {
+        for (int j = 0; j < 3; j++) {
           if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0)
             return true;
         }

@@ -281,7 +281,7 @@ protected:
         // add default network
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
           if (strlen(WS._multiNetworks[i].ssid) > 0) {
             _wifiMulti.addAP(WS._multiNetworks[i].ssid,
                              WS._multiNetworks[i].pass);
