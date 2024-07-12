@@ -1261,7 +1261,7 @@ void WipperSnapper_Component_I2C::sensorEventRead(
 
       // pack event data into msg
       if (sensorType == wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW) {
-        fillEventMessage(msgi2cResponse, event.*valueMember[0], sensorType);
+        fillEventMessage(msgi2cResponse, event.data[0], sensorType);
       } else {
         fillEventMessage(msgi2cResponse, event.*valueMember, sensorType);
       }
