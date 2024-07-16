@@ -97,6 +97,20 @@ public:
       wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
 
   void update();
+
+  void sensorEventRead(
+      std::vector<WipperSnapper_I2C_Driver *>::iterator &iter,
+      unsigned long curTime,
+      wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+      bool (WipperSnapper_I2C_Driver::*getEventFunc)(sensors_event_t *),
+      long (WipperSnapper_I2C_Driver::*getPeriodFunc)(),
+      long (WipperSnapper_I2C_Driver::*getPeriodPrvFunc)(),
+      void (WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long),
+      wippersnapper_i2c_v1_SensorType sensorType, const char *sensorName,
+      const char *unit, sensors_event_t event,
+      float sensors_event_t::*valueMember, bool &sensorsReturningFalse,
+      int &retries);
+
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
                         float value,
                         wippersnapper_i2c_v1_SensorType sensorType);
