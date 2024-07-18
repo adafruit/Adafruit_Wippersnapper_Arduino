@@ -42,8 +42,7 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_DS2484(TwoWire *i2c,
-                                  uint16_t sensorAddress = _DS2484_ADDRESS)
+  WipperSnapper_I2C_Driver_DS2484(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
