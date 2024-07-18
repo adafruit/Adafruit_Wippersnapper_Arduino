@@ -16,10 +16,10 @@
 #ifndef WipperSnapper_I2C_Driver_DS2484_H
 #define WipperSnapper_I2C_Driver_DS2484_H
 
-#define DS18B20_FAMILY_CODE 0x28
-#define DS18B20_CMD_CONVERT_T 0x44
-#define DS18B20_CMD_MATCH_ROM 0x55
-#define DS18B20_CMD_READ_SCRATCHPAD 0xBE
+#define DS18B20_FAMILY_CODE 0x28         ///< DS18B20 family code
+#define DS18B20_CMD_CONVERT_T 0x44       ///< Convert T command
+#define DS18B20_CMD_MATCH_ROM 0x55       ///< Match ROM command
+#define DS18B20_CMD_READ_SCRATCHPAD 0xBE ///< Read Scratchpad command
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_DS248x.h>
