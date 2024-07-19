@@ -88,8 +88,7 @@ public:
     while (!found_device && _ds2484->OneWireSearch(_rom)) {
       if (_rom[0] == DS18B20_FAMILY_CODE) {
         found_device = true;
-      }
-      else {
+      } else {
         WS_DEBUG_PRINT("Found unwanted device with family code: 0x");
         WS_DEBUG_PRINTHEX(_rom[0]);
         WS_DEBUG_PRINTLN(" expected 0x28"); // DS18B20_FAMILY_CODE
