@@ -136,15 +136,16 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
+        return true;
+      }
+      if (WS._isWiFiMulti) {
         // multi network mode
-        for (int j = 0; j < 3; j++) {
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0)
             return true;
         }
-      } // else single network mode
-      else if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0)
-        return true;
+      }
     }
 
     // User-set network not found, print scan results to serial console
@@ -249,7 +250,7 @@ protected:
 
       if (strlen(WS._multiNetworks[0].ssid) > 0) {
         // multi network mode
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
           if (strlen(WS._multiNetworks[i].ssid) > 0 &&
               (_wifiMulti.existsAP(WS._multiNetworks[i].ssid) == false)) {
             // doesn't exist, add it
@@ -268,7 +269,7 @@ protected:
           // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
           yield();
         }
-        if (_wifiMulti.run(5000) == WL_CONNECTED) {
+        if (WiFi.status() == WL_CONNECTED) {
           _status = WS_NET_CONNECTED;
         } else {
           _status = WS_NET_DISCONNECTED;

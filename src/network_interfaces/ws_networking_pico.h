@@ -108,15 +108,17 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strlen(WS._multiNetworks[0].ssid) > 0) {
-        // multi network mode
-        for (int j = 0; j < 3; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0)
-            return true;
-        }
-      } // else single network mode
-      else if (strcmp(_ssid, WiFi.SSID(i)) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         return true;
+      }
+      if (WS._isWiFiMulti) {
+        // multi network mode
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0) {
+            return true;
+          }
+        }
+      }
     }
 
     // User-set network not found, print scan results to serial console
@@ -278,13 +280,13 @@ protected:
       _disconnect();
       delay(5000);
       WS.feedWDT();
-      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+      if (WS._isWiFiMulti) {
         // multi network mode
         _wifiMulti.clearAPList();
         // add default network
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
           _wifiMulti.addAP(WS._multiNetworks[i].ssid,
                            WS._multiNetworks[i].pass);
         }
