@@ -89,6 +89,11 @@ public:
       if (_rom[0] == DS18B20_FAMILY_CODE) {
         found_device = true;
       }
+      else {
+        WS_DEBUG_PRINT("Found unwanted device with family code: 0x");
+        WS_DEBUG_PRINTHEX(_rom[0]);
+        WS_DEBUG_PRINTLN(" expected 0x28"); // DS18B20_FAMILY_CODE
+      }
     }
 
     if (!found_device) {
