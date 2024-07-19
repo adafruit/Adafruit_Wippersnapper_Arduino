@@ -84,6 +84,7 @@ public:
     // locate first DS18B20
     bool found_device = false;
     _ds2484->OneWireReset();
+    _ds2484->OneWireSearchReset();
     while (!found_device && _ds2484->OneWireSearch(_rom)) {
       if (_rom[0] == DS18B20_FAMILY_CODE) {
         found_device = true;
