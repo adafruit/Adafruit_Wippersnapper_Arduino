@@ -67,7 +67,6 @@ public:
     _wifi_client = new WiFiClient;
     WiFi.persistent(false);
     WiFi.mode(WIFI_STA);
-    // _wifiMulti
   }
 
   /**************************************************************************/
