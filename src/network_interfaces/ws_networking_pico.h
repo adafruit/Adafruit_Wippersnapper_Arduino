@@ -108,8 +108,17 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         return true;
+      }
+      if (WS._isWiFiMulti) {
+        // multi network mode
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0) {
+            return true;
+          }
+        }
+      }
     }
 
     // User-set network not found, print scan results to serial console
@@ -191,6 +200,7 @@ protected:
   const char *_ssid;              ///< WiFi SSID
   const char *_pass;              ///< WiFi password
   WiFiClientSecure *_mqtt_client; ///< Pointer to a secure MQTT client object
+  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -259,26 +269,46 @@ protected:
     if (WiFi.status() == WL_CONNECTED)
       return;
 
+    WiFi.mode(WIFI_STA);
+    WS.feedWDT();
+    WiFi.setTimeout(20000);
+    WS.feedWDT();
+
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
       _disconnect();
       delay(5000);
       WS.feedWDT();
-      WiFi.mode(WIFI_STA);
-      WS.feedWDT();
-      WiFi.setTimeout(20000);
-      WS.feedWDT();
-      WiFi.begin(_ssid, _pass);
-      // Wait setTimeout duration for a connection and check if connected every
-      // 5 seconds
-      for (int i = 0; i < 4; i++) {
+      if (WS._isWiFiMulti) {
+        // multi network mode
+        _wifiMulti.clearAPList();
+        // add default network
+        _wifiMulti.addAP(_ssid, _pass);
+        // add array of alternative networks
+        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
+          _wifiMulti.addAP(WS._multiNetworks[i].ssid,
+                           WS._multiNetworks[i].pass);
+        }
         WS.feedWDT();
-        delay(5000);
-        WS.feedWDT();
-        if (WiFi.status() == WL_CONNECTED) {
+        if (_wifiMulti.run(10000) == WL_CONNECTED) {
+          WS.feedWDT();
           _status = WS_NET_CONNECTED;
           return;
+        }
+        WS.feedWDT();
+      } else {
+        WiFi.begin(_ssid, _pass);
+        // Wait setTimeout duration for a connection and check if connected
+        // every 5 seconds
+        for (int i = 0; i < 4; i++) {
+          WS.feedWDT();
+          delay(5000);
+          WS.feedWDT();
+          if (WiFi.status() == WL_CONNECTED) {
+            _status = WS_NET_CONNECTED;
+            return;
+          }
         }
       }
       _status = WS_NET_DISCONNECTED;

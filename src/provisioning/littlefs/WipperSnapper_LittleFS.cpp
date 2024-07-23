@@ -67,6 +67,49 @@ void WipperSnapper_LittleFS::parseSecrets() {
     fsHalt(String("ERROR: deserializeJson() failed with code ") +
            error.c_str());
   }
+  if (doc.containsKey("network_type_wifi")) {
+    // set default network config
+    convertFromJson(doc["network_type_wifi"], WS._config.network);
+
+    if (!doc["network_type_wifi"].containsKey("alternative_networks")) {
+      // do nothing extra, we already have the only network
+      WS_DEBUG_PRINTLN("Found single wifi network in secrets.json");
+
+    } else if (doc["network_type_wifi"]["alternative_networks"]
+                   .is<JsonArray>()) {
+
+      WS_DEBUG_PRINTLN("Found multiple wifi networks in secrets.json");
+      // Parse network credentials from array in secrets
+      JsonArray altnetworks = doc["network_type_wifi"]["alternative_networks"];
+      int8_t altNetworkCount = (int8_t)altnetworks.size();
+      WS_DEBUG_PRINT("Network count: ");
+      WS_DEBUG_PRINTLN(altNetworkCount);
+      if (altNetworkCount == 0) {
+        fsHalt("ERROR: No alternative network entries found under "
+               "network_type_wifi.alternative_networks in secrets.json!");
+      }
+      // check if over 3, warn user and take first three
+      for (int i = 0; i < altNetworkCount; i++) {
+        if (i >= 3) {
+          WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
+                         "only the first 3 will be used. Not using ");
+          WS_DEBUG_PRINTLN(altnetworks[i]["network_ssid"].as<const char *>());
+          break;
+        }
+        convertFromJson(altnetworks[i], WS._multiNetworks[i]);
+        WS_DEBUG_PRINT("Added SSID: ");
+        WS_DEBUG_PRINTLN(WS._multiNetworks[i].ssid);
+        WS_DEBUG_PRINT("PASS: ");
+        WS_DEBUG_PRINTLN(WS._multiNetworks[i].pass);
+      }
+      WS._isWiFiMulti = true;
+    } else {
+      fsHalt("ERROR: Unrecognised value type for "
+             "network_type_wifi.alternative_networks in secrets.json!");
+    }
+  } else {
+    fsHalt("ERROR: Could not find network_type_wifi in secrets.json!");
+  }
 
   // Extract a config struct from the JSON document
   WS._config = doc.as<secretsConfig>();
