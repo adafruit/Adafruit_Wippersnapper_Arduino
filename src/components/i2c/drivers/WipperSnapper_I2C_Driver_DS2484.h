@@ -114,6 +114,7 @@ public:
   */
   bool processTemperatureEvent(sensors_event_t *tempEvent) {
     if (!_ds2484->OneWireReset()) {
+      WS_DEBUG_PRINTLN("Failed to do a OneWire bus reset");
       return false;
     }
     if (!_ds2484->presencePulseDetected()) {
@@ -131,7 +132,11 @@ public:
     delay(750); // Wait for conversion (750ms for maximum precision)
 
     // Read scratchpad
-    _ds2484->OneWireReset();
+    if (!_ds2484->OneWireReset()) {
+      WS_DEBUG_PRINTLN(
+          "Failed to do a OneWire bus reset after starting temp conversion");
+      return false;
+    }
     _ds2484->OneWireWriteByte(DS18B20_CMD_MATCH_ROM); // Match ROM command
     for (int i = 0; i < 8; i++) {
       _ds2484->OneWireWriteByte(_rom[i]);
@@ -140,7 +145,7 @@ public:
         DS18B20_CMD_READ_SCRATCHPAD); // Read Scratchpad command
 
     uint8_t data[9];
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
       _ds2484->OneWireReadByte(&data[i]);
     }
 
