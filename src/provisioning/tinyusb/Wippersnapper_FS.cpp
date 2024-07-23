@@ -13,7 +13,8 @@
  *
  */
 #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
-    defined(ARDUINO_FUNHOUSE_ESP32S2) || defined(ADAFRUIT_PYPORTAL_M4_TITANO) ||  \
+    defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
+    defined(ADAFRUIT_PYPORTAL_M4_TITANO) ||                                    \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S2) ||                                  \
@@ -295,7 +296,7 @@ bool Wippersnapper_FS::createBootFile() {
 void Wippersnapper_FS::createSecretsFile() {
   // Open file for writing
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
-  
+
   // Create a default secretsConfig structure
   secretsConfig secretsConfig;
   strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
@@ -317,7 +318,8 @@ void Wippersnapper_FS::createSecretsFile() {
   delay(2500);
 
   // Signal to user that action must be taken (edit secrets.json)
-  writeToBootOut("ERROR: Please edit the secrets.json file. Then, reset your board.\n");
+  writeToBootOut(
+      "ERROR: Please edit the secrets.json file. Then, reset your board.\n");
 #ifdef USE_DISPLAY
   WS._ui_helper->show_scr_error(
       "INVALID SETTINGS FILE",
@@ -344,33 +346,91 @@ void Wippersnapper_FS::parseSecrets() {
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    fsHalt(String("ERROR: Unable to parse secrets.json file - deserializeJson() failed with code") + error.c_str());
+    fsHalt(String("ERROR: Unable to parse secrets.json file - "
+                  "deserializeJson() failed with code") +
+           error.c_str());
+  }
+
+  if (doc.containsKey("network_type_wifi")) {
+    // set default network config
+    convertFromJson(doc["network_type_wifi"], WS._config.network);
+
+    if (!doc["network_type_wifi"].containsKey("alternative_networks")) {
+      // do nothing extra, we already have the only network
+      WS_DEBUG_PRINTLN("Found single wifi network in secrets.json");
+
+    } else if (doc["network_type_wifi"]["alternative_networks"]
+                   .is<JsonArray>()) {
+
+      WS_DEBUG_PRINTLN("Found multiple wifi networks in secrets.json");
+      // Parse network credentials from array in secrets
+      JsonArray altnetworks = doc["network_type_wifi"]["alternative_networks"];
+      int8_t altNetworkCount = (int8_t)altnetworks.size();
+      WS_DEBUG_PRINT("Network count: ");
+      WS_DEBUG_PRINTLN(altNetworkCount);
+      if (altNetworkCount == 0) {
+        fsHalt("ERROR: No alternative network entries found under "
+               "network_type_wifi.alternative_networks in secrets.json!");
+      }
+      // check if over 3, warn user and take first three
+      for (int i = 0; i < altNetworkCount; i++) {
+        if (i >= 3) {
+          WS_DEBUG_PRINT("WARNING: More than 3 networks in secrets.json, "
+                         "only the first 3 will be used. Not using ");
+          WS_DEBUG_PRINTLN(altnetworks[i]["network_ssid"].as<const char *>());
+          break;
+        }
+        convertFromJson(altnetworks[i], WS._multiNetworks[i]);
+        WS_DEBUG_PRINT("Added SSID: ");
+        WS_DEBUG_PRINTLN(WS._multiNetworks[i].ssid);
+        WS_DEBUG_PRINT("PASS: ");
+        WS_DEBUG_PRINTLN(WS._multiNetworks[i].pass);
+      }
+      WS._isWiFiMulti = true;
+    } else {
+      fsHalt("ERROR: Unrecognised value type for "
+             "network_type_wifi.alternative_networks in secrets.json!");
+    }
+  } else {
+    fsHalt("ERROR: Could not find network_type_wifi in secrets.json!");
   }
 
   // Extract a config struct from the JSON document
-   WS._config =  doc.as<secretsConfig>();
+  WS._config = doc.as<secretsConfig>();
 
   // Validate the config struct is not filled with default values
-  if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 || strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
-    writeToBootOut("ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change io_username and io_key to match your Adafruit IO credentials!\n");
+  if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
+      strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
+    writeToBootOut(
+        "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
+        "io_username and io_key to match your Adafruit IO credentials!\n");
 #ifdef USE_DISPLAY
     WS._ui_helper->show_scr_error(
         "INVALID IO CREDS",
-        "The \"io_username/io_key\" fields within secrets.json are invalid, please "
+        "The \"io_username/io_key\" fields within secrets.json are invalid, "
+        "please "
         "change it to match your Adafruit IO credentials. Then, press RESET.");
 #endif
-    fsHalt("ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change io_username and io_key to match your Adafruit IO credentials!");
+    fsHalt(
+        "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
+        "io_username and io_key to match your Adafruit IO credentials!");
   }
 
-  if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 || strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO FIX: Please change network_ssid and network_password to match your Adafruit IO credentials!\n");
+  if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
+      strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
+    writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO "
+                   "FIX: Please change network_ssid and network_password to "
+                   "match your Adafruit IO credentials!\n");
 #ifdef USE_DISPLAY
     WS._ui_helper->show_scr_error(
         "INVALID NETWORK",
-        "The \"network_ssid and network_password\" fields within secrets.json are invalid, please "
-        "change it to match your WiFi credentials. Then, press RESET.");
+        "The \"network_ssid and network_password\" fields within secrets.json "
+        "are invalid, please change it to match your WiFi credentials. Then, "
+        "press RESET.");
 #endif
-    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please change network_ssid and network_password to match your Adafruit IO credentials!");
+    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
+           "change network_ssid and network_password to match your Adafruit IO "
+           "credentials!");
   }
 
   // Close secrets.json file
@@ -437,7 +497,8 @@ void Wippersnapper_FS::createDisplayConfig() {
   // Create and fill JSON document from displayConfig
   JsonDocument doc;
   if (!doc.set(displayConfig)) {
-    fsHalt("ERROR: Unable to set displayConfig, no space in arduinoJSON document!");
+    fsHalt("ERROR: Unable to set displayConfig, no space in arduinoJSON "
+           "document!");
   }
   // Write the file out to the filesystem
   serializeJsonPretty(doc, displayFile);
@@ -451,7 +512,8 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   if (!wipperFatFs.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
-    createDisplayConfig(); // generate a default display_config.json for FunHouse
+    createDisplayConfig(); // generate a default display_config.json for
+                           // FunHouse
 #endif
   }
 
@@ -465,7 +527,9 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file);
   if (error) {
-    fsHalt(String("FATAL ERROR: Unable to parse display_config.json - deserializeJson() failed with code") + error.c_str());
+    fsHalt(String("FATAL ERROR: Unable to parse display_config.json - "
+                  "deserializeJson() failed with code") +
+           error.c_str());
   }
   // Close the file, we're done with it
   file.close();

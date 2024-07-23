@@ -2479,7 +2479,7 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
 #else
     // Calls to delay() and yield() feed the ESP8266's
     // hardware and software watchdog timers, delayMicroseconds does not.
-    delayMicroseconds(1000);
+    delayMicroseconds(1000000);
 #endif
   }
 }

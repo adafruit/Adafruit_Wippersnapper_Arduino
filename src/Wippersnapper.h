@@ -162,7 +162,8 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
-#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
+#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
+#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
@@ -316,6 +317,8 @@ public:
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
+  networkConfig _multiNetworks[3]; /*!< Wippersnapper networks as structs. */
+  bool _isWiFiMulti = false; /*!< True if multiple networks are defined. */
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
