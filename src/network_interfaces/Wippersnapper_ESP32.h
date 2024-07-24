@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -25,7 +25,8 @@
 #include "Arduino.h"
 #include "WiFi.h"
 #include "WiFiMulti.h"
-#include <WiFiClientSecure.h>
+#include <NetworkClient.h>
+#include <NetworkClientSecure.h>
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -44,7 +45,6 @@ public:
   Wippersnapper_ESP32() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
-    _mqtt_client = new WiFiClientSecure;
   }
 
   /**************************************************************************/
@@ -53,8 +53,10 @@ public:
   */
   /**************************************************************************/
   ~Wippersnapper_ESP32() {
-    if (_mqtt_client)
-      delete _mqtt_client;
+    if (_mqtt_client_secure)
+      delete _mqtt_client_secure;
+    if (_mqtt_client_insecure)
+      delete _mqtt_client_insecure;
   }
 
   /********************************************************/
@@ -172,18 +174,24 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0) {
-      _mqtt_client->setCACert(_aio_root_ca_prod);
-    } else if (strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
-      _mqtt_client->setCACert(_aio_root_ca_staging);
+    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
+      _mqtt_client_secure = new NetworkClientSecure();
+      _mqtt_client_secure->setCACert(
+          strcmp(WS._config.aio_url, "io.adafruit.com") == 0
+              ? _aio_root_ca_prod
+              : _aio_root_ca_staging);
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, WS._config.aio_url, WS._config.io_port, clientID,
+          WS._config.aio_user, WS._config.aio_key);
     } else {
-      _mqtt_client->setInsecure();
+      // Insecure connections require a NetworkClient object rather than a
+      // NetworkClientSecure object
+      _mqtt_client_insecure = new NetworkClient();
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, WS._config.aio_url, WS._config.io_port,
+          clientID, WS._config.aio_user, WS._config.aio_key);
     }
-
-    // Construct MQTT client
-    WS._mqtt = new Adafruit_MQTT_Client(
-        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
-        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
@@ -214,10 +222,13 @@ public:
   const char *connectionType() { return "ESP32"; }
 
 protected:
-  const char *_ssid;              ///< WiFi SSID
-  const char *_pass;              ///< WiFi password
-  WiFiClientSecure *_mqtt_client; ///< Pointer to a WiFi client object (TLS/SSL)
-  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
+  const char *_ssid; ///< WiFi SSID
+  const char *_pass; ///< WiFi password
+  NetworkClientSecure
+      *_mqtt_client_secure; ///< Pointer to a secure network client object
+  NetworkClient
+      *_mqtt_client_insecure; ///< Pointer to an insecure network client object
+  WiFiMulti _wifiMulti;       ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
