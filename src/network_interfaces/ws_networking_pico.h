@@ -27,6 +27,7 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
+#include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 extern Wippersnapper WS;
 
@@ -46,7 +47,6 @@ public:
   ws_networking_pico() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
-    _mqtt_client = new WiFiClientSecure;
   }
 
   /**************************************************************************/
@@ -55,8 +55,10 @@ public:
   */
   /**************************************************************************/
   ~ws_networking_pico() {
-    if (_mqtt_client)
-      delete _mqtt_client;
+    if (_mqtt_client_secure)
+      delete _mqtt_client_secure;
+    if (_mqtt_client_secure)
+      delete _mqtt_client_secure;
   }
 
   /********************************************************/
@@ -174,19 +176,22 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    // Set CA cert depending on the server we're connecting to
-    // compare WS._config.aio_url to "io.adafruit.com"
-    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0) {
-      _mqtt_client->setCACert(_aio_root_ca_prod);
-    } else if (strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
-      _mqtt_client->setCACert(_aio_root_ca_staging);
+    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
+      _mqtt_client_secure = new WiFiClientSecure();
+      _mqtt_client_secure->setCACert(
+          strcmp(WS._config.aio_url, "io.adafruit.com") == 0
+              ? _aio_root_ca_prod
+              : _aio_root_ca_staging);
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, WS._config.aio_url, WS._config.io_port, clientID,
+          WS._config.aio_user, WS._config.aio_key);
     } else {
-      _mqtt_client->setInsecure();
+      _mqtt_client_insecure = new WiFiClient();
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, WS._config.aio_url, WS._config.io_port,
+          clientID, WS._config.aio_user, WS._config.aio_key);
     }
-
-    WS._mqtt = new Adafruit_MQTT_Client(
-        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
-        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
@@ -217,10 +222,13 @@ public:
   const char *connectionType() { return "Pico"; }
 
 protected:
-  const char *_ssid;              ///< WiFi SSID
-  const char *_pass;              ///< WiFi password
-  WiFiClientSecure *_mqtt_client; ///< Pointer to a secure MQTT client object
-  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
+  const char *_ssid; ///< WiFi SSID
+  const char *_pass; ///< WiFi password
+  WiFiClient
+      *_mqtt_client_insecure; ///< Pointer to an insecure WiFi client object
+  WiFiClientSecure
+      *_mqtt_client_secure; ///< Pointer to a secure WiFi client object
+  WiFiMulti _wifiMulti;     ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
