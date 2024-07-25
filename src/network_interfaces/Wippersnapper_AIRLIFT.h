@@ -285,7 +285,7 @@ public:
 protected:
   const char *_ssid;           /*!< Network SSID. */
   const char *_pass;           /*!< Network password. */
-  const char *_fv;             /*!< nina-fw firmware version. */
+  const char *_fv = "0.0.1";   /*!< nina-fw firmware version. (placeholder) */
   int _ssPin = -1;             /*!< SPI S.S. pin. */
   int _ackPin = -1;            /*!< SPI ACK pin. */
   int _rstPin = -1;            /*!< SPI RST pin. */
