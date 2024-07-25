@@ -28,6 +28,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_BMP280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP3XX.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
+#include "drivers/WipperSnapper_I2C_Driver_DS2484.h"
 #include "drivers/WipperSnapper_I2C_Driver_ENS160.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTS221.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTU21D.h"
@@ -97,6 +98,20 @@ public:
       wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
 
   void update();
+
+  void sensorEventRead(
+      std::vector<WipperSnapper_I2C_Driver *>::iterator &iter,
+      unsigned long curTime,
+      wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
+      bool (WipperSnapper_I2C_Driver::*getEventFunc)(sensors_event_t *),
+      long (WipperSnapper_I2C_Driver::*getPeriodFunc)(),
+      long (WipperSnapper_I2C_Driver::*getPeriodPrvFunc)(),
+      void (WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long),
+      wippersnapper_i2c_v1_SensorType sensorType, const char *sensorName,
+      const char *unit, sensors_event_t event,
+      float sensors_event_t::*valueMember, bool &sensorsReturningFalse,
+      int &retries);
+
   void fillEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
                         float value,
                         wippersnapper_i2c_v1_SensorType sensorType);
@@ -118,6 +133,7 @@ private:
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
+  WipperSnapper_I2C_Driver_DS2484 *_ds2484 = nullptr;
   WipperSnapper_I2C_Driver_ENS160 *_ens160 = nullptr;
   WipperSnapper_I2C_Driver_SCD30 *_scd30 = nullptr;
   WipperSnapper_I2C_Driver_BH1750 *_bh1750 = nullptr;

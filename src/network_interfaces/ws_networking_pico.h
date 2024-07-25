@@ -113,6 +113,14 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
+      if (WS._isWiFiMulti) {
+        // multi network mode
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0) {
+            return true;
+          }
+        }
+      }
     }
 
     // User-set network not found, print scan results to serial console
@@ -202,6 +210,7 @@ protected:
   const char *_ssid;              ///< WiFi SSID
   const char *_pass;              ///< WiFi password
   WiFiClientSecure *_mqtt_client; ///< Pointer to a secure MQTT client object
+  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -270,35 +279,55 @@ protected:
     if (WiFi.status() == WL_CONNECTED)
       return;
 
+    WiFi.mode(WIFI_STA);
+    WS.feedWDT();
+    WiFi.setTimeout(20000);
+    WS.feedWDT();
+
     if (strlen(_ssid) == 0) {
       _status = WS_SSID_INVALID;
     } else {
       _disconnect();
       delay(5000);
       WS.feedWDT();
-      WiFi.mode(WIFI_STA);
-      WS.feedWDT();
-      WiFi.setTimeout(20000);
-      WS.feedWDT();
-      WiFi.begin(_ssid, _pass);
-
-      // Use the macro to retry the status check until connected / timed out
-      int lastResult;
-      RETRY_FUNCTION_UNTIL_TIMEOUT(
-          []() -> int { return WiFi.status(); }, // Function call each cycle
-          int,                                   // return type
-          lastResult, // return variable (unused here)
-          [](int status) { return status == WL_CONNECTED; }, // check
-          20000, // timeout interval (ms)
-          200);  // interval between retries
-
-      if (lastResult == WL_CONNECTED) {
-        _status = WS_NET_CONNECTED;
-        // wait 2seconds for connection to stabilize
-        WS_DELAY_WITH_WDT(2000);
+      if (WS._isWiFiMulti) {
+        // multi network mode
+        _wifiMulti.clearAPList();
+        // add default network
+        _wifiMulti.addAP(_ssid, _pass);
+        // add array of alternative networks
+        for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
+          _wifiMulti.addAP(WS._multiNetworks[i].ssid,
+                           WS._multiNetworks[i].pass);
+        }
+        WS.feedWDT();
+        if (_wifiMulti.run(10000) == WL_CONNECTED) {
+          WS.feedWDT();
+          _status = WS_NET_CONNECTED;
+          return;
+        }
+        WS.feedWDT();
       } else {
-        _status = WS_NET_DISCONNECTED;
+        WiFi.begin(_ssid, _pass);
+        
+        // Use the macro to retry the status check until connected / timed out
+        int lastResult;
+        RETRY_FUNCTION_UNTIL_TIMEOUT(
+            []() -> int { return WiFi.status(); }, // Function call each cycle
+            int,                                   // return type
+            lastResult, // return variable (unused here)
+            [](int status) { return status == WL_CONNECTED; }, // check
+            20000, // timeout interval (ms)
+            200);  // interval between retries
+
+        if (lastResult == WL_CONNECTED) {
+          _status = WS_NET_CONNECTED;
+          // wait 2seconds for connection to stabilize
+          WS_DELAY_WITH_WDT(2000);
+          return;
+        }
       }
+      _status = WS_NET_DISCONNECTED;
     }
   }
 

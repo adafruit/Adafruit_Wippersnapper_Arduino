@@ -141,7 +141,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.85" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.87" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -213,7 +213,8 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
-#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
+#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
+#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
@@ -368,6 +369,8 @@ public:
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
+  networkConfig _multiNetworks[3]; /*!< Wippersnapper networks as structs. */
+  bool _isWiFiMulti = false; /*!< True if multiple networks are defined. */
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
