@@ -100,7 +100,7 @@
       if (condition(result_var)) {                                             \
         break;                                                                 \
       }                                                                        \
-      if (startTime < millis()) {                                              \
+      if (startTime > millis()) {                                              \
         startTime = millis(); /* if rollover */                                \
       }                                                                        \
       WS_DELAY_WITH_WDT(interval);                                             \
