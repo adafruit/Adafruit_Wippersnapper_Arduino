@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -25,7 +25,8 @@
 #include "Arduino.h"
 #include "WiFi.h"
 #include "WiFiMulti.h"
-#include <WiFiClientSecure.h>
+#include <NetworkClient.h>
+#include <NetworkClientSecure.h>
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -44,7 +45,6 @@ public:
   Wippersnapper_ESP32() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
-    _mqtt_client = new WiFiClientSecure;
   }
 
   /**************************************************************************/
@@ -53,8 +53,10 @@ public:
   */
   /**************************************************************************/
   ~Wippersnapper_ESP32() {
-    if (_mqtt_client)
-      delete _mqtt_client;
+    if (_mqtt_client_secure)
+      delete _mqtt_client_secure;
+    if (_mqtt_client_insecure)
+      delete _mqtt_client_insecure;
   }
 
   /********************************************************/
@@ -156,18 +158,24 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0) {
-      _mqtt_client->setCACert(_aio_root_ca_prod);
-    } else if (strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
-      _mqtt_client->setCACert(_aio_root_ca_staging);
+    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
+      _mqtt_client_secure = new NetworkClientSecure();
+      _mqtt_client_secure->setCACert(
+          strcmp(WS._config.aio_url, "io.adafruit.com") == 0
+              ? _aio_root_ca_prod
+              : _aio_root_ca_staging);
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, WS._config.aio_url, WS._config.io_port, clientID,
+          WS._config.aio_user, WS._config.aio_key);
     } else {
-      _mqtt_client->setInsecure();
+      // Insecure connections require a NetworkClient object rather than a
+      // NetworkClientSecure object
+      _mqtt_client_insecure = new NetworkClient();
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, WS._config.aio_url, WS._config.io_port,
+          clientID, WS._config.aio_user, WS._config.aio_key);
     }
-
-    // Construct MQTT client
-    WS._mqtt = new Adafruit_MQTT_Client(
-        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
-        WS._config.aio_user, WS._config.aio_key);
   }
 
   /********************************************************/
@@ -198,37 +206,40 @@ public:
   const char *connectionType() { return "ESP32"; }
 
 protected:
-  const char *_ssid;              ///< WiFi SSID
-  const char *_pass;              ///< WiFi password
-  WiFiClientSecure *_mqtt_client; ///< Pointer to a WiFi client object (TLS/SSL)
-  WiFiMulti _wifiMulti;           ///< WiFiMulti object for multi-network mode
+  const char *_ssid; ///< WiFi SSID
+  const char *_pass; ///< WiFi password
+  NetworkClientSecure
+      *_mqtt_client_secure; ///< Pointer to a secure network client object
+  NetworkClient
+      *_mqtt_client_insecure; ///< Pointer to an insecure network client object
+  WiFiMulti _wifiMulti;       ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
-      "MIIEZTCCA02gAwIBAgIQQAF1BIMUpMghjISpDBbN3zANBgkqhkiG9w0BAQsFADA/\n"
-      "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n"
-      "DkRTVCBSb290IENBIFgzMB4XDTIwMTAwNzE5MjE0MFoXDTIxMDkyOTE5MjE0MFow\n"
-      "MjELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUxldCdzIEVuY3J5cHQxCzAJBgNVBAMT\n"
-      "AlIzMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuwIVKMz2oJTTDxLs\n"
-      "jVWSw/iC8ZmmekKIp10mqrUrucVMsa+Oa/l1yKPXD0eUFFU1V4yeqKI5GfWCPEKp\n"
-      "Tm71O8Mu243AsFzzWTjn7c9p8FoLG77AlCQlh/o3cbMT5xys4Zvv2+Q7RVJFlqnB\n"
-      "U840yFLuta7tj95gcOKlVKu2bQ6XpUA0ayvTvGbrZjR8+muLj1cpmfgwF126cm/7\n"
-      "gcWt0oZYPRfH5wm78Sv3htzB2nFd1EbjzK0lwYi8YGd1ZrPxGPeiXOZT/zqItkel\n"
-      "/xMY6pgJdz+dU/nPAeX1pnAXFK9jpP+Zs5Od3FOnBv5IhR2haa4ldbsTzFID9e1R\n"
-      "oYvbFQIDAQABo4IBaDCCAWQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8E\n"
-      "BAMCAYYwSwYIKwYBBQUHAQEEPzA9MDsGCCsGAQUFBzAChi9odHRwOi8vYXBwcy5p\n"
-      "ZGVudHJ1c3QuY29tL3Jvb3RzL2RzdHJvb3RjYXgzLnA3YzAfBgNVHSMEGDAWgBTE\n"
-      "p7Gkeyxx+tvhS5B1/8QVYIWJEDBUBgNVHSAETTBLMAgGBmeBDAECATA/BgsrBgEE\n"
-      "AYLfEwEBATAwMC4GCCsGAQUFBwIBFiJodHRwOi8vY3BzLnJvb3QteDEubGV0c2Vu\n"
-      "Y3J5cHQub3JnMDwGA1UdHwQ1MDMwMaAvoC2GK2h0dHA6Ly9jcmwuaWRlbnRydXN0\n"
-      "LmNvbS9EU1RST09UQ0FYM0NSTC5jcmwwHQYDVR0OBBYEFBQusxe3WFbLrlAJQOYf\n"
-      "r52LFMLGMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjANBgkqhkiG9w0B\n"
-      "AQsFAAOCAQEA2UzgyfWEiDcx27sT4rP8i2tiEmxYt0l+PAK3qB8oYevO4C5z70kH\n"
-      "ejWEHx2taPDY/laBL21/WKZuNTYQHHPD5b1tXgHXbnL7KqC401dk5VvCadTQsvd8\n"
-      "S8MXjohyc9z9/G2948kLjmE6Flh9dDYrVYA9x2O+hEPGOaEOa1eePynBgPayvUfL\n"
-      "qjBstzLhWVQLGAkXXmNs+5ZnPBxzDJOLxhF2JIbeQAcH5H0tZrUlo5ZYyOqA7s9p\n"
-      "O5b85o3AM/OJ+CktFBQtfvBhcJVd9wvlwPsk+uyOy2HI7mNxKKgsBTt375teA2Tw\n"
-      "UdHkhVNcsAKX1H7GNNLOEADksd86wuoXvg==\n"
+      "MIIEVzCCAj+gAwIBAgIRALBXPpFzlydw27SHyzpFKzgwDQYJKoZIhvcNAQELBQAw\n"
+      "TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n"
+      "cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjQwMzEzMDAwMDAw\n"
+      "WhcNMjcwMzEyMjM1OTU5WjAyMQswCQYDVQQGEwJVUzEWMBQGA1UEChMNTGV0J3Mg\n"
+      "RW5jcnlwdDELMAkGA1UEAxMCRTYwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAATZ8Z5G\n"
+      "h/ghcWCoJuuj+rnq2h25EqfUJtlRFLFhfHWWvyILOR/VvtEKRqotPEoJhC6+QJVV\n"
+      "6RlAN2Z17TJOdwRJ+HB7wxjnzvdxEP6sdNgA1O1tHHMWMxCcOrLqbGL0vbijgfgw\n"
+      "gfUwDgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcD\n"
+      "ATASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBSTJ0aYA6lRaI6Y1sRCSNsj\n"
+      "v1iU0jAfBgNVHSMEGDAWgBR5tFnme7bl5AFzgAiIyBpY9umbbjAyBggrBgEFBQcB\n"
+      "AQQmMCQwIgYIKwYBBQUHMAKGFmh0dHA6Ly94MS5pLmxlbmNyLm9yZy8wEwYDVR0g\n"
+      "BAwwCjAIBgZngQwBAgEwJwYDVR0fBCAwHjAcoBqgGIYWaHR0cDovL3gxLmMubGVu\n"
+      "Y3Iub3JnLzANBgkqhkiG9w0BAQsFAAOCAgEAfYt7SiA1sgWGCIpunk46r4AExIRc\n"
+      "MxkKgUhNlrrv1B21hOaXN/5miE+LOTbrcmU/M9yvC6MVY730GNFoL8IhJ8j8vrOL\n"
+      "pMY22OP6baS1k9YMrtDTlwJHoGby04ThTUeBDksS9RiuHvicZqBedQdIF65pZuhp\n"
+      "eDcGBcLiYasQr/EO5gxxtLyTmgsHSOVSBcFOn9lgv7LECPq9i7mfH3mpxgrRKSxH\n"
+      "pOoZ0KXMcB+hHuvlklHntvcI0mMMQ0mhYj6qtMFStkF1RpCG3IPdIwpVCQqu8GV7\n"
+      "s8ubknRzs+3C/Bm19RFOoiPpDkwvyNfvmQ14XkyqqKK5oZ8zhD32kFRQkxa8uZSu\n"
+      "h4aTImFxknu39waBxIRXE4jKxlAmQc4QjFZoq1KmQqQg0J/1JF8RlFvJas1VcjLv\n"
+      "YlvUB2t6npO6oQjB3l+PNf0DpQH7iUx3Wz5AjQCi6L25FjyE06q6BZ/QlmtYdl/8\n"
+      "ZYao4SRqPEs/6cAiF+Qf5zg2UkaWtDphl1LKMuTNLotvsX99HP69V2faNyegodQ0\n"
+      "LyTApr/vT01YPE46vNsDLgK+4cL6TrzC/a4WcmF5SRJ938zrv/duJHLXQIku5v0+\n"
+      "EwOy59Hdm0PT/Er/84dDV0CSjdR/2XuZM3kpysSKLgD1cKiDA+IRguODCxfO9cyY\n"
+      "Ig46v9mFmBvyH04=\n"
       "-----END CERTIFICATE-----\n"; ///< Root certificate for io.adafruit.us
 
   const char *_aio_root_ca_prod =
