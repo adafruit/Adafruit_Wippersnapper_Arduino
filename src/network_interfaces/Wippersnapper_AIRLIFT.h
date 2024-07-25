@@ -29,6 +29,8 @@
 
 #define NINAFWVER                                                              \
   "1.7.7" /*!< min. nina-fw version compatible with this library. */
+#define AIRLIFT_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
+#define AIRLIFT_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
@@ -339,8 +341,8 @@ protected:
           int,                                   // return type
           lastResult,                            // return variable
           [](int status) { return status == WL_CONNECTED; }, // check
-          20000, // timeout interval (ms)
-          200);  // interval between retries
+          AIRLIFT_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
+          AIRLIFT_CONNECT_RETRY_DELAY_MS); // interval between retries
 
       if (lastResult == WL_CONNECTED) {
         _status = WS_NET_CONNECTED;
