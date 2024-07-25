@@ -130,8 +130,11 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0)
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
+        WS_DEBUG_PRINT("SSID found! RSSI: ");
+        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
+      }
     }
 
     // User-set network not found, print scan results to serial console
@@ -184,6 +187,14 @@ public:
     WiFi.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));
   }
+
+  /********************************************************/
+  /*!
+  @brief  Gets the current network RSSI value
+  @return int32_t RSSI value
+  */
+  /********************************************************/
+  int32_t getRSSI() { return WiFi.RSSI(); }
 
   /********************************************************/
   /*!
