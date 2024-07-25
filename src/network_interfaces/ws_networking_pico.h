@@ -18,6 +18,10 @@
 #define WS_NETWORKING_PICO_H
 
 #ifdef ARDUINO_ARCH_RP2040
+
+#define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
+#define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
+
 #include "Wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
@@ -108,15 +112,21 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
-        WS_DEBUG_PRINT("SSID found! RSSI: ");
+      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
+        WS_DEBUG_PRINT("SSID (");
+        WS_DEBUG_PRINT(_ssid);
+        WS_DEBUG_PRINT(") found! RSSI: ");
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
       if (WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+            WS_DEBUG_PRINT("SSID (");
+            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
+            WS_DEBUG_PRINT(") found! RSSI: ");
+            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
           }
         }
@@ -309,7 +319,7 @@ protected:
         WS.feedWDT();
       } else {
         WiFi.begin(_ssid, _pass);
-        
+
         // Use the macro to retry the status check until connected / timed out
         int lastResult;
         RETRY_FUNCTION_UNTIL_TIMEOUT(
@@ -317,8 +327,8 @@ protected:
             int,                                   // return type
             lastResult, // return variable (unused here)
             [](int status) { return status == WL_CONNECTED; }, // check
-            20000, // timeout interval (ms)
-            200);  // interval between retries
+            PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
+            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries
 
         if (lastResult == WL_CONNECTED) {
           _status = WS_NET_CONNECTED;

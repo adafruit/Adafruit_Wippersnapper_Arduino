@@ -136,15 +136,22 @@ public:
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
-        WS_DEBUG_PRINT("SSID found! RSSI: ");
+        WS_DEBUG_PRINT("SSID (");
+        WS_DEBUG_PRINT(_ssid);
+        WS_DEBUG_PRINT(") found! RSSI: ");
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
       if (WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0)
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+            WS_DEBUG_PRINT("SSID (");
+            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
+            WS_DEBUG_PRINT(") found! RSSI: ");
+            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
+          }
         }
       }
     }
@@ -257,7 +264,7 @@ protected:
       _status = WS_NET_DISCONNECTED;
       delay(100);
 
-      if (strlen(WS._multiNetworks[0].ssid) > 0) {
+      if (WS._isWiFiMulti) {
         // multi network mode
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
           if (strlen(WS._multiNetworks[i].ssid) > 0 &&

@@ -111,7 +111,9 @@ public:
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
       if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
-        WS_DEBUG_PRINT("SSID found! RSSI: ");
+        WS_DEBUG_PRINT("SSID (");
+        WS_DEBUG_PRINT(_ssid);
+        WS_DEBUG_PRINT(") found! RSSI: ");
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
@@ -119,6 +121,10 @@ public:
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+            WS_DEBUG_PRINT("SSID (");
+            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
+            WS_DEBUG_PRINT(") found! RSSI: ");
+            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
           }
         }
