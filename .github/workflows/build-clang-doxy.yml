@@ -71,6 +71,10 @@ jobs:
       - name: Install Dependencies (esptool)
         run: |
           pip3 install esptool
+      - name: Build dependencies file for ESP32-SX
+        run: |
+          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
+          tree
       - name: Build for ESP32-SX
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: list files
