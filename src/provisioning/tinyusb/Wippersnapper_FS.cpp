@@ -51,6 +51,11 @@ Adafruit_FlashTransport_RP2040 flashTransport;
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
 
+#if defined(PRINT_DEPENDENCIES)
+#include "print_dependencies.h"
+#endif
+
+
 Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
 FatVolume wipperFatFs; ///< File system object from Adafruit SDFat
 
@@ -278,6 +283,11 @@ bool Wippersnapper_FS::createBootFile() {
             WS._macAddr[5]);
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
+
+#ifdef PRINT_DEPENDENCIES
+    bootFile.println("Build Dependencies:");
+    bootFile.println(project_dependencies);
+#endif
 
     bootFile.flush();
     bootFile.close();
