@@ -22,7 +22,7 @@ jobs:
         include:
           - offset: "0x1000"
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -106,7 +106,7 @@ jobs:
           ls /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
       - name: boot_app0 file from arduino-cli core
@@ -169,7 +169,7 @@ jobs:
             "qtpy_esp32s3_n4r2",
           ]
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -251,7 +251,7 @@ jobs:
           - offset: "0x0"
             arduino-platform: "wippersnapper_qtpy_esp32c3"
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -305,7 +305,7 @@ jobs:
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
       - name: Check boot_app0 file existence (esp32 built from core, not-source)
         id: check_files
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
       - name: boot_app0 file from arduino-cli core
@@ -364,7 +364,7 @@ jobs:
             "metro_m4_airliftlite_tinyusb",
           ]
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -420,7 +420,7 @@ jobs:
       matrix:
         arduino-platform: ["picow_rp2040_tinyusb"]
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -474,7 +474,7 @@ jobs:
       matrix:
         arduino-platform: ["mkrwifi1010", "nano_33_iot"]
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -519,7 +519,7 @@ jobs:
       matrix:
         arduino-platform: ["feather_esp8266"]
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -587,7 +587,7 @@ jobs:
             "feather_esp32s3_tft_debug",
           ]
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -662,7 +662,7 @@ jobs:
         build-rp2040,
       ]
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
