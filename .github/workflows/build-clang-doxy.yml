@@ -74,7 +74,7 @@ jobs:
       - name: Build dependencies file for ESP32-SX (esptool)
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: Build for ESP32-SX (esptool)
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list files
@@ -213,7 +213,7 @@ jobs:
       - name: Build Dependencies Header file for ESP32-SX
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: Build for ESP32-SX
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list
@@ -290,7 +290,7 @@ jobs:
       - name: build dependencies header file for ESP32 platforms
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: build ESP32 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: Check artifacts
@@ -397,7 +397,7 @@ jobs:
       - name: build dependencies header file for SAMD platforms
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: build SAMD platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: Rename build artifacts to reflect the platform name
@@ -452,7 +452,7 @@ jobs:
       - name: build dependencies header file for RP2040 platforms
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: build RP2040 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: Rename build artifacts to reflect the platform name
@@ -507,7 +507,7 @@ jobs:
       - name: build dependencies header file for SAMD (no-FS) platforms
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: build SAMD (no-FS) platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
 
@@ -550,7 +550,7 @@ jobs:
       - name: build dependencies header file for ESP8266 platforms
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: build ESP8266 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list build artifacts
@@ -631,7 +631,7 @@ jobs:
       - name: Build dependencies header file for ESP32-SX
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          tree
+          mv print_dependencies.h src/print_dependencies.h
       - name: Build for ESP32-SX
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list
