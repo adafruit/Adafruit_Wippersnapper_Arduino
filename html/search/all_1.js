@@ -3,6 +3,8 @@ var searchData=
   ['add_5ftext_5fto_5fterminal',['add_text_to_terminal',['../classws__display__ui__helper.html#aa80ddbeaa406191c907940afcda679e3',1,'ws_display_ui_helper']]],
   ['addds18x20',['addDS18x20',['../classws__ds18x20.html#aed6aa109a39e85523dc83e79ab5a5a2e',1,'ws_ds18x20']]],
   ['addstrand',['addStrand',['../classws__pixels.html#a061f43a976d34a6395f72f16c4e84913',1,'ws_pixels']]],
+  ['airlift_5fconnect_5fretry_5fdelay_5fms',['AIRLIFT_CONNECT_RETRY_DELAY_MS',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#a5afd64f0f629d8e3b18259c10c92c278',1,'Wippersnapper_AIRLIFT.h']]],
+  ['airlift_5fconnect_5ftimeout_5fms',['AIRLIFT_CONNECT_TIMEOUT_MS',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#aa6fdf7a9eb1d133c1326b044fe5fc8ab',1,'Wippersnapper_AIRLIFT.h']]],
   ['allocatestrand',['allocateStrand',['../classws__pixels.html#abb9c3c6604692d7523b3a5797d68f239',1,'ws_pixels']]],
   ['amber',['AMBER',['../_wippersnapper___status_l_e_d_8h.html#acaaf54f2f02d6adc3263de706f5b5f25',1,'Wippersnapper_StatusLED.h']]],
   ['analoginputpin',['analogInputPin',['../structanalog_input_pin.html',1,'']]],

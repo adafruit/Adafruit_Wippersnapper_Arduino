@@ -111,9 +111,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:accdf5d5a8cf24ff783816d901a75249f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#accdf5d5a8cf24ff783816d901a75249f">firmwareCheck</a> ()</td></tr>
 <tr class="memdesc:accdf5d5a8cf24ff783816d901a75249f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks the version of an ESP32 module running nina-fw.  <a href="#accdf5d5a8cf24ff783816d901a75249f">More...</a><br /></td></tr>
 <tr class="separator:accdf5d5a8cf24ff783816d901a75249f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc598a748031959da5643da3b9935834"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#abc598a748031959da5643da3b9935834">compareVersions</a> (const char *currentVersion, const char *requiredVersion)</td></tr>
+<tr class="memdesc:abc598a748031959da5643da3b9935834"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compares two version strings.  <a href="#abc598a748031959da5643da3b9935834">More...</a><br /></td></tr>
+<tr class="separator:abc598a748031959da5643da3b9935834"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8967a619a24f16975b98069a052317e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ab8967a619a24f16975b98069a052317e">getMacAddr</a> ()</td></tr>
 <tr class="memdesc:ab8967a619a24f16975b98069a052317e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ESP32's unique client identifier.  <a href="#ab8967a619a24f16975b98069a052317e">More...</a><br /></td></tr>
 <tr class="separator:ab8967a619a24f16975b98069a052317e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a8ac4e59e125a2c3d13d8bed12efa9f"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5a8ac4e59e125a2c3d13d8bed12efa9f">getRSSI</a> ()</td></tr>
+<tr class="memdesc:a5a8ac4e59e125a2c3d13d8bed12efa9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current network RSSI value.  <a href="#a5a8ac4e59e125a2c3d13d8bed12efa9f">More...</a><br /></td></tr>
+<tr class="separator:a5a8ac4e59e125a2c3d13d8bed12efa9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac05433b076a739d94e07222d926a0045"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">setupMQTTClient</a> (const char *clientID)</td></tr>
 <tr class="memdesc:ac05433b076a739d94e07222d926a0045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the MQTT client.  <a href="#ac05433b076a739d94e07222d926a0045">More...</a><br /></td></tr>
 <tr class="separator:ac05433b076a739d94e07222d926a0045"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -222,6 +228,10 @@ Protected Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a47f15e4f94c2fa403ff8c70be97156c3">_connect</a> ()</td></tr>
 <tr class="memdesc:a47f15e4f94c2fa403ff8c70be97156c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Establishes a connection with the wireless network. <br /></td></tr>
 <tr class="separator:a47f15e4f94c2fa403ff8c70be97156c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10b111a20bd3142a576759490574b180"><td class="memItemLeft" align="right" valign="top"><a id="a10b111a20bd3142a576759490574b180"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a10b111a20bd3142a576759490574b180">resetAirLift</a> ()</td></tr>
+<tr class="memdesc:a10b111a20bd3142a576759490574b180"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resets the ESP32 module. <br /></td></tr>
+<tr class="separator:a10b111a20bd3142a576759490574b180"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a03105722dccd0573b2c505abcc44020e"><td class="memItemLeft" align="right" valign="top"><a id="a03105722dccd0573b2c505abcc44020e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a03105722dccd0573b2c505abcc44020e">_disconnect</a> ()</td></tr>
 <tr class="memdesc:a03105722dccd0573b2c505abcc44020e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disconnects from the wireless network. <br /></td></tr>
@@ -233,8 +243,8 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a6ec6435a676ba335c86f47bc373ac2e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60b11a804f697efcb2958126eb280b53"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a60b11a804f697efcb2958126eb280b53">_pass</a></td></tr>
 <tr class="separator:a60b11a804f697efcb2958126eb280b53"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0029272a949f541ea26a19d27a9b52c8"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a0029272a949f541ea26a19d27a9b52c8">_fv</a></td></tr>
-<tr class="separator:a0029272a949f541ea26a19d27a9b52c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab6a766ff979ce92b0b59edc6f25988a"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#aab6a766ff979ce92b0b59edc6f25988a">_fv</a> = &quot;0.0.1&quot;</td></tr>
+<tr class="separator:aab6a766ff979ce92b0b59edc6f25988a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0fb6f803b4a9f81d9a4b15ffa46a9ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ae0fb6f803b4a9f81d9a4b15ffa46a9ee">_ssPin</a> = -1</td></tr>
 <tr class="separator:ae0fb6f803b4a9f81d9a4b15ffa46a9ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c93d59fddf8da9c3d1399da59a04312"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a3c93d59fddf8da9c3d1399da59a04312">_ackPin</a> = -1</td></tr>
@@ -392,6 +402,10 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 <tr class="separator:a4aae92d295fa7740aef1bd6e45a13349 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c96d5d9235b21de6dc3dd33362c5c56 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">secretsConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a7c96d5d9235b21de6dc3dd33362c5c56">_config</a></td></tr>
 <tr class="separator:a7c96d5d9235b21de6dc3dd33362c5c56 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a9ef62e27df7ff0bcdeec4f4c97632e inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">networkConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a5a9ef62e27df7ff0bcdeec4f4c97632e">_multiNetworks</a> [3]</td></tr>
+<tr class="separator:a5a9ef62e27df7ff0bcdeec4f4c97632e inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae962d10a8621ea632bee4045194734 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aaae962d10a8621ea632bee4045194734">_isWiFiMulti</a> = false</td></tr>
+<tr class="separator:aaae962d10a8621ea632bee4045194734 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e053f9eba8982c74a7df1289a9d64b6 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6">totalDigitalPins</a></td></tr>
 <tr class="separator:a9e053f9eba8982c74a7df1289a9d64b6 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43fcd6eb7b8a2b63c548677cb2b600ab inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a43fcd6eb7b8a2b63c548677cb2b600ab">_topic_description</a> = NULL</td></tr>
@@ -654,6 +668,52 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
 
 </div>
 </div>
+<a id="abc598a748031959da5643da3b9935834"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc598a748031959da5643da3b9935834">&#9670;&nbsp;</a></span>compareVersions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Wippersnapper_AIRLIFT::compareVersions </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>currentVersion</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>requiredVersion</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compares two version strings. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">currentVersion</td><td>Current version string. </td></tr>
+    <tr><td class="paramname">requiredVersion</td><td>Required version string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the current version is greater than or equal to the required version, False otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="ab8967a619a24f16975b98069a052317e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab8967a619a24f16975b98069a052317e">&#9670;&nbsp;</a></span>getMacAddr()</h2>
 
@@ -681,6 +741,36 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
 <dl class="section note"><dt>Note</dt><dd>For the ESP32, the UID is the MAC address. </dd></dl>
 
 <p>Reimplemented from <a class="el" href="class_wippersnapper.html#a1034172df196bc9db1f5e390c785c0f8">Wippersnapper</a>.</p>
+
+</div>
+</div>
+<a id="a5a8ac4e59e125a2c3d13d8bed12efa9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a8ac4e59e125a2c3d13d8bed12efa9f">&#9670;&nbsp;</a></span>getRSSI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t Wippersnapper_AIRLIFT::getRSSI </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the current network RSSI value. </p>
+<dl class="section return"><dt>Returns</dt><dd>int32_t RSSI value </dd></dl>
+
+<p>Reimplemented from <a class="el" href="class_wippersnapper.html#a260a0747d76d6cdcf6be849805c27a17">Wippersnapper</a>.</p>
 
 </div>
 </div>
@@ -825,8 +915,8 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
 
 </div>
 </div>
-<a id="a0029272a949f541ea26a19d27a9b52c8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0029272a949f541ea26a19d27a9b52c8">&#9670;&nbsp;</a></span>_fv</h2>
+<a id="aab6a766ff979ce92b0b59edc6f25988a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab6a766ff979ce92b0b59edc6f25988a">&#9670;&nbsp;</a></span>_fv</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -835,7 +925,7 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">String Wippersnapper_AIRLIFT::_fv</td>
+          <td class="memname">const char* Wippersnapper_AIRLIFT::_fv = &quot;0.0.1&quot;</td>
         </tr>
       </table>
   </td>
@@ -844,7 +934,7 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
   </tr>
 </table>
 </div><div class="memdoc">
-<p>nina-fw firmware version. </p>
+<p>nina-fw firmware version. (placeholder) </p>
 
 </div>
 </div>

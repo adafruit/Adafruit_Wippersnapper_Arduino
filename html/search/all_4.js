@@ -25,5 +25,9 @@ var searchData=
   ['disconnect',['disconnect',['../class_wippersnapper.html#ac5a3bd86f73d2cbe07b4ae587a3fa2ce',1,'Wippersnapper']]],
   ['displaydeviceeventmessage',['displayDeviceEventMessage',['../class_wipper_snapper___component___i2_c.html#a7cf30fab3855a7d2cea10376ccc4be9f',1,'WipperSnapper_Component_I2C']]],
   ['dotstarptr',['dotStarPtr',['../structstrand__s.html#a4f8f755812e3a621b7b00fe4f3399017',1,'strand_s']]],
+  ['ds18b20_5fcmd_5fconvert_5ft',['DS18B20_CMD_CONVERT_T',['../_wipper_snapper___i2_c___driver___d_s2484_8h.html#ac2a9d81efb3ef7b921377c116e41a3f8',1,'WipperSnapper_I2C_Driver_DS2484.h']]],
+  ['ds18b20_5fcmd_5fmatch_5from',['DS18B20_CMD_MATCH_ROM',['../_wipper_snapper___i2_c___driver___d_s2484_8h.html#a6cdf02a12f71612a40dde0a265ebd75b',1,'WipperSnapper_I2C_Driver_DS2484.h']]],
+  ['ds18b20_5fcmd_5fread_5fscratchpad',['DS18B20_CMD_READ_SCRATCHPAD',['../_wipper_snapper___i2_c___driver___d_s2484_8h.html#a3734ec2848db33401ad3246798e474a7',1,'WipperSnapper_I2C_Driver_DS2484.h']]],
+  ['ds18b20_5ffamily_5fcode',['DS18B20_FAMILY_CODE',['../_wipper_snapper___i2_c___driver___d_s2484_8h.html#a1ec4e9313d3a65fc8e543bbbfc007483',1,'WipperSnapper_I2C_Driver_DS2484.h']]],
   ['ds18x20obj',['ds18x20Obj',['../structds18x20_obj.html',1,'']]]
 ];

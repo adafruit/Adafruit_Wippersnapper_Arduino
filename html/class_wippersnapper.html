@@ -128,6 +128,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a1034172df196bc9db1f5e390c785c0f8">getMacAddr</a> ()</td></tr>
 <tr class="memdesc:a1034172df196bc9db1f5e390c785c0f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the network interface's unique identifer, typically the MAC address. <br /></td></tr>
 <tr class="separator:a1034172df196bc9db1f5e390c785c0f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a260a0747d76d6cdcf6be849805c27a17"><td class="memItemLeft" align="right" valign="top">virtual int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a260a0747d76d6cdcf6be849805c27a17">getRSSI</a> ()</td></tr>
+<tr class="memdesc:a260a0747d76d6cdcf6be849805c27a17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the network's RSSI.  <a href="#a260a0747d76d6cdcf6be849805c27a17">More...</a><br /></td></tr>
+<tr class="separator:a260a0747d76d6cdcf6be849805c27a17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a95627d13a469876e0aefb8a120a18732"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a95627d13a469876e0aefb8a120a18732">setupMQTTClient</a> (const char *clientID)</td></tr>
 <tr class="memdesc:a95627d13a469876e0aefb8a120a18732"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets up the MQTT client session.  <a href="#a95627d13a469876e0aefb8a120a18732">More...</a><br /></td></tr>
 <tr class="separator:a95627d13a469876e0aefb8a120a18732"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -300,6 +303,10 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 <tr class="separator:a4aae92d295fa7740aef1bd6e45a13349"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c96d5d9235b21de6dc3dd33362c5c56"><td class="memItemLeft" align="right" valign="top">secretsConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a7c96d5d9235b21de6dc3dd33362c5c56">_config</a></td></tr>
 <tr class="separator:a7c96d5d9235b21de6dc3dd33362c5c56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a9ef62e27df7ff0bcdeec4f4c97632e"><td class="memItemLeft" align="right" valign="top">networkConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a5a9ef62e27df7ff0bcdeec4f4c97632e">_multiNetworks</a> [3]</td></tr>
+<tr class="separator:a5a9ef62e27df7ff0bcdeec4f4c97632e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae962d10a8621ea632bee4045194734"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aaae962d10a8621ea632bee4045194734">_isWiFiMulti</a> = false</td></tr>
+<tr class="separator:aaae962d10a8621ea632bee4045194734"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e053f9eba8982c74a7df1289a9d64b6"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6">totalDigitalPins</a></td></tr>
 <tr class="separator:a9e053f9eba8982c74a7df1289a9d64b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43fcd6eb7b8a2b63c548677cb2b600ab"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a43fcd6eb7b8a2b63c548677cb2b600ab">_topic_description</a> = NULL</td></tr>
@@ -489,6 +496,36 @@ Protected Attributes</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>True if <code>_network_ssid</code> is found, False otherwise. </dd></dl>
 
 <p>Reimplemented in <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#aaee5680c8abe5ec08f34166f1d669adf">Wippersnapper_WIFININA</a>, <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b">Wippersnapper_ESP32</a>.</p>
+
+</div>
+</div>
+<a id="a260a0747d76d6cdcf6be849805c27a17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a260a0747d76d6cdcf6be849805c27a17">&#9670;&nbsp;</a></span>getRSSI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t Wippersnapper::getRSSI </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the network's RSSI. </p>
+<dl class="section return"><dt>Returns</dt><dd>int32_t RSSI value, 0 to 255, in dB </dd></dl>
+
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5a8ac4e59e125a2c3d13d8bed12efa9f">Wippersnapper_AIRLIFT</a>, <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#ae09df9ca5a275779929b76bc8d286de7">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#ae2c425e0feaf49bf794eac887f95a4cb">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -1251,6 +1288,36 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p><a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> secrets.json as a struct. </p>
+
+</div>
+</div>
+<a id="a5a9ef62e27df7ff0bcdeec4f4c97632e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a9ef62e27df7ff0bcdeec4f4c97632e">&#9670;&nbsp;</a></span>_multiNetworks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">networkConfig Wippersnapper::_multiNetworks[3]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="class_wippersnapper.html" title="Class that provides storage and functions for the Adafruit IO Wippersnapper interface. ">Wippersnapper</a> networks as structs. </p>
+
+</div>
+</div>
+<a id="aaae962d10a8621ea632bee4045194734"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaae962d10a8621ea632bee4045194734">&#9670;&nbsp;</a></span>_isWiFiMulti</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Wippersnapper::_isWiFiMulti = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>True if multiple networks are defined. </p>
 
 </div>
 </div>

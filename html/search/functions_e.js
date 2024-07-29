@@ -2,6 +2,7 @@ var searchData=
 [
   ['scanaddresses',['scanAddresses',['../class_wipper_snapper___component___i2_c.html#a19937e439840bb1586721fbf975bbccc',1,'WipperSnapper_Component_I2C']]],
   ['send_5fdata',['send_data',['../classws__uart__drv.html#ac28d61fda2c6a560a92e9ec36f9df8c1',1,'ws_uart_drv::send_data()'],['../classws__uart__drv__pm25aqi.html#a9eeeefa3a53716b846c50c05ecae4387',1,'ws_uart_drv_pm25aqi::send_data()']]],
+  ['sensoreventread',['sensorEventRead',['../class_wipper_snapper___component___i2_c.html#ad920d609d60a86b2a447611e423a7207',1,'WipperSnapper_Component_I2C']]],
   ['sensorproximityperiod',['sensorProximityPeriod',['../class_wipper_snapper___i2_c___driver.html#ab0e8e317652859536073324f41dc6bd5',1,'WipperSnapper_I2C_Driver']]],
   ['sensorproximityperiodprv',['SensorProximityPeriodPrv',['../class_wipper_snapper___i2_c___driver.html#a11b04572be39178e49ca822a5efcdd55',1,'WipperSnapper_I2C_Driver']]],
   ['servo_5fattach',['servo_attach',['../classws__servo.html#a60aa0cc1f95ded52d09a21da1fd98494',1,'ws_servo']]],

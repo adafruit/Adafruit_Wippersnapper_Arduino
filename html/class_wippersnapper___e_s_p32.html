@@ -105,6 +105,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:ab57f54dbcff0e24dbf9263100b887070"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#ab57f54dbcff0e24dbf9263100b887070">getMacAddr</a> ()</td></tr>
 <tr class="memdesc:ab57f54dbcff0e24dbf9263100b887070"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the ESP32's unique client identifier.  <a href="#ab57f54dbcff0e24dbf9263100b887070">More...</a><br /></td></tr>
 <tr class="separator:ab57f54dbcff0e24dbf9263100b887070"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2c425e0feaf49bf794eac887f95a4cb"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#ae2c425e0feaf49bf794eac887f95a4cb">getRSSI</a> ()</td></tr>
+<tr class="memdesc:ae2c425e0feaf49bf794eac887f95a4cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current network RSSI value.  <a href="#ae2c425e0feaf49bf794eac887f95a4cb">More...</a><br /></td></tr>
+<tr class="separator:ae2c425e0feaf49bf794eac887f95a4cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b0795b00c8de7f3f3523a6ef567700b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a7b0795b00c8de7f3f3523a6ef567700b">setupMQTTClient</a> (const char *clientID)</td></tr>
 <tr class="memdesc:a7b0795b00c8de7f3f3523a6ef567700b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the MQTT client.  <a href="#a7b0795b00c8de7f3f3523a6ef567700b">More...</a><br /></td></tr>
 <tr class="separator:a7b0795b00c8de7f3f3523a6ef567700b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -228,10 +231,18 @@ const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a55257dfc5d30811ed8c9c95ae09e797f">_pass</a></td></tr>
 <tr class="memdesc:a55257dfc5d30811ed8c9c95ae09e797f"><td class="mdescLeft">&#160;</td><td class="mdescRight">WiFi password. <br /></td></tr>
 <tr class="separator:a55257dfc5d30811ed8c9c95ae09e797f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7744fa7858079192f3ccce06eda78bf"><td class="memItemLeft" align="right" valign="top"><a id="aa7744fa7858079192f3ccce06eda78bf"></a>
-WiFiClientSecure *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#aa7744fa7858079192f3ccce06eda78bf">_mqtt_client</a></td></tr>
-<tr class="memdesc:aa7744fa7858079192f3ccce06eda78bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to a WiFi client object (TLS/SSL) <br /></td></tr>
-<tr class="separator:aa7744fa7858079192f3ccce06eda78bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c459cc04c4535a74651c4b2e8b02613"><td class="memItemLeft" align="right" valign="top"><a id="a0c459cc04c4535a74651c4b2e8b02613"></a>
+NetworkClientSecure *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a0c459cc04c4535a74651c4b2e8b02613">_mqtt_client_secure</a></td></tr>
+<tr class="memdesc:a0c459cc04c4535a74651c4b2e8b02613"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to a secure network client object. <br /></td></tr>
+<tr class="separator:a0c459cc04c4535a74651c4b2e8b02613"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb38f3f6b82a53c00e21851170c407b1"><td class="memItemLeft" align="right" valign="top"><a id="aeb38f3f6b82a53c00e21851170c407b1"></a>
+NetworkClient *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#aeb38f3f6b82a53c00e21851170c407b1">_mqtt_client_insecure</a></td></tr>
+<tr class="memdesc:aeb38f3f6b82a53c00e21851170c407b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to an insecure network client object. <br /></td></tr>
+<tr class="separator:aeb38f3f6b82a53c00e21851170c407b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bb14b42e597e2ac2a78df5fd32ea6c4"><td class="memItemLeft" align="right" valign="top"><a id="a3bb14b42e597e2ac2a78df5fd32ea6c4"></a>
+WiFiMulti&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a3bb14b42e597e2ac2a78df5fd32ea6c4">_wifiMulti</a></td></tr>
+<tr class="memdesc:a3bb14b42e597e2ac2a78df5fd32ea6c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">WiFiMulti object for multi-network mode. <br /></td></tr>
+<tr class="separator:a3bb14b42e597e2ac2a78df5fd32ea6c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a867f26fbfd6660048972a89618c77c89"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a867f26fbfd6660048972a89618c77c89">_aio_root_ca_staging</a></td></tr>
 <tr class="memdesc:a867f26fbfd6660048972a89618c77c89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root certificate for io.adafruit.us.  <a href="#a867f26fbfd6660048972a89618c77c89">More...</a><br /></td></tr>
 <tr class="separator:a867f26fbfd6660048972a89618c77c89"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -383,6 +394,10 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 <tr class="separator:a4aae92d295fa7740aef1bd6e45a13349 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c96d5d9235b21de6dc3dd33362c5c56 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">secretsConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a7c96d5d9235b21de6dc3dd33362c5c56">_config</a></td></tr>
 <tr class="separator:a7c96d5d9235b21de6dc3dd33362c5c56 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a9ef62e27df7ff0bcdeec4f4c97632e inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">networkConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a5a9ef62e27df7ff0bcdeec4f4c97632e">_multiNetworks</a> [3]</td></tr>
+<tr class="separator:a5a9ef62e27df7ff0bcdeec4f4c97632e inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae962d10a8621ea632bee4045194734 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aaae962d10a8621ea632bee4045194734">_isWiFiMulti</a> = false</td></tr>
+<tr class="separator:aaae962d10a8621ea632bee4045194734 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e053f9eba8982c74a7df1289a9d64b6 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6">totalDigitalPins</a></td></tr>
 <tr class="separator:a9e053f9eba8982c74a7df1289a9d64b6 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43fcd6eb7b8a2b63c548677cb2b600ab inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a43fcd6eb7b8a2b63c548677cb2b600ab">_topic_description</a> = NULL</td></tr>
@@ -554,6 +569,36 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
 
 </div>
 </div>
+<a id="ae2c425e0feaf49bf794eac887f95a4cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2c425e0feaf49bf794eac887f95a4cb">&#9670;&nbsp;</a></span>getRSSI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t Wippersnapper_ESP32::getRSSI </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the current network RSSI value. </p>
+<dl class="section return"><dt>Returns</dt><dd>int32_t RSSI value </dd></dl>
+
+<p>Reimplemented from <a class="el" href="class_wippersnapper.html#a260a0747d76d6cdcf6be849805c27a17">Wippersnapper</a>.</p>
+
+</div>
+</div>
 <a id="a7b0795b00c8de7f3f3523a6ef567700b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7b0795b00c8de7f3f3523a6ef567700b">&#9670;&nbsp;</a></span>setupMQTTClient()</h2>
 
@@ -668,7 +713,7 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <span class="stringliteral">&quot;-----BEGIN CERTIFICATE-----\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;MIIEZTCCA02gAwIBAgIQQAF1BIMUpMghjISpDBbN3zANBgkqhkiG9w0BAQsFADA/\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;DkRTVCBSb290IENBIFgzMB4XDTIwMTAwNzE5MjE0MFoXDTIxMDkyOTE5MjE0MFow\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;MjELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUxldCdzIEVuY3J5cHQxCzAJBgNVBAMT\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;AlIzMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuwIVKMz2oJTTDxLs\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;jVWSw/iC8ZmmekKIp10mqrUrucVMsa+Oa/l1yKPXD0eUFFU1V4yeqKI5GfWCPEKp\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;Tm71O8Mu243AsFzzWTjn7c9p8FoLG77AlCQlh/o3cbMT5xys4Zvv2+Q7RVJFlqnB\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;U840yFLuta7tj95gcOKlVKu2bQ6XpUA0ayvTvGbrZjR8+muLj1cpmfgwF126cm/7\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;gcWt0oZYPRfH5wm78Sv3htzB2nFd1EbjzK0lwYi8YGd1ZrPxGPeiXOZT/zqItkel\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;/xMY6pgJdz+dU/nPAeX1pnAXFK9jpP+Zs5Od3FOnBv5IhR2haa4ldbsTzFID9e1R\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;oYvbFQIDAQABo4IBaDCCAWQwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8E\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;BAMCAYYwSwYIKwYBBQUHAQEEPzA9MDsGCCsGAQUFBzAChi9odHRwOi8vYXBwcy5p\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;ZGVudHJ1c3QuY29tL3Jvb3RzL2RzdHJvb3RjYXgzLnA3YzAfBgNVHSMEGDAWgBTE\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;p7Gkeyxx+tvhS5B1/8QVYIWJEDBUBgNVHSAETTBLMAgGBmeBDAECATA/BgsrBgEE\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;AYLfEwEBATAwMC4GCCsGAQUFBwIBFiJodHRwOi8vY3BzLnJvb3QteDEubGV0c2Vu\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;Y3J5cHQub3JnMDwGA1UdHwQ1MDMwMaAvoC2GK2h0dHA6Ly9jcmwuaWRlbnRydXN0\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;LmNvbS9EU1RST09UQ0FYM0NSTC5jcmwwHQYDVR0OBBYEFBQusxe3WFbLrlAJQOYf\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;r52LFMLGMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjANBgkqhkiG9w0B\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;AQsFAAOCAQEA2UzgyfWEiDcx27sT4rP8i2tiEmxYt0l+PAK3qB8oYevO4C5z70kH\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;ejWEHx2taPDY/laBL21/WKZuNTYQHHPD5b1tXgHXbnL7KqC401dk5VvCadTQsvd8\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;S8MXjohyc9z9/G2948kLjmE6Flh9dDYrVYA9x2O+hEPGOaEOa1eePynBgPayvUfL\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;qjBstzLhWVQLGAkXXmNs+5ZnPBxzDJOLxhF2JIbeQAcH5H0tZrUlo5ZYyOqA7s9p\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;O5b85o3AM/OJ+CktFBQtfvBhcJVd9wvlwPsk+uyOy2HI7mNxKKgsBTt375teA2Tw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;UdHkhVNcsAKX1H7GNNLOEADksd86wuoXvg==\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;-----END CERTIFICATE-----\n&quot;</span></div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <span class="stringliteral">&quot;-----BEGIN CERTIFICATE-----\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;MIIEVzCCAj+gAwIBAgIRALBXPpFzlydw27SHyzpFKzgwDQYJKoZIhvcNAQELBQAw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjQwMzEzMDAwMDAw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;WhcNMjcwMzEyMjM1OTU5WjAyMQswCQYDVQQGEwJVUzEWMBQGA1UEChMNTGV0J3Mg\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;RW5jcnlwdDELMAkGA1UEAxMCRTYwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAATZ8Z5G\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;h/ghcWCoJuuj+rnq2h25EqfUJtlRFLFhfHWWvyILOR/VvtEKRqotPEoJhC6+QJVV\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;6RlAN2Z17TJOdwRJ+HB7wxjnzvdxEP6sdNgA1O1tHHMWMxCcOrLqbGL0vbijgfgw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;gfUwDgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcD\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;ATASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBSTJ0aYA6lRaI6Y1sRCSNsj\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;v1iU0jAfBgNVHSMEGDAWgBR5tFnme7bl5AFzgAiIyBpY9umbbjAyBggrBgEFBQcB\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;AQQmMCQwIgYIKwYBBQUHMAKGFmh0dHA6Ly94MS5pLmxlbmNyLm9yZy8wEwYDVR0g\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;BAwwCjAIBgZngQwBAgEwJwYDVR0fBCAwHjAcoBqgGIYWaHR0cDovL3gxLmMubGVu\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;Y3Iub3JnLzANBgkqhkiG9w0BAQsFAAOCAgEAfYt7SiA1sgWGCIpunk46r4AExIRc\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;MxkKgUhNlrrv1B21hOaXN/5miE+LOTbrcmU/M9yvC6MVY730GNFoL8IhJ8j8vrOL\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;pMY22OP6baS1k9YMrtDTlwJHoGby04ThTUeBDksS9RiuHvicZqBedQdIF65pZuhp\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;eDcGBcLiYasQr/EO5gxxtLyTmgsHSOVSBcFOn9lgv7LECPq9i7mfH3mpxgrRKSxH\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;pOoZ0KXMcB+hHuvlklHntvcI0mMMQ0mhYj6qtMFStkF1RpCG3IPdIwpVCQqu8GV7\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;s8ubknRzs+3C/Bm19RFOoiPpDkwvyNfvmQ14XkyqqKK5oZ8zhD32kFRQkxa8uZSu\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;h4aTImFxknu39waBxIRXE4jKxlAmQc4QjFZoq1KmQqQg0J/1JF8RlFvJas1VcjLv\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;YlvUB2t6npO6oQjB3l+PNf0DpQH7iUx3Wz5AjQCi6L25FjyE06q6BZ/QlmtYdl/8\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;ZYao4SRqPEs/6cAiF+Qf5zg2UkaWtDphl1LKMuTNLotvsX99HP69V2faNyegodQ0\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;LyTApr/vT01YPE46vNsDLgK+4cL6TrzC/a4WcmF5SRJ938zrv/duJHLXQIku5v0+\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;EwOy59Hdm0PT/Er/84dDV0CSjdR/2XuZM3kpysSKLgD1cKiDA+IRguODCxfO9cyY\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;Ig46v9mFmBvyH04=\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;-----END CERTIFICATE-----\n&quot;</span></div></div><!-- fragment -->
 <p>Root certificate for io.adafruit.us. </p>
 
 </div>

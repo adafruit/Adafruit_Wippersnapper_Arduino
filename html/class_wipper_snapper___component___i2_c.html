@@ -102,6 +102,9 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a1ea4a4a30e5486e4fee944ad54b6ca3d">update</a> ()</td></tr>
 <tr class="memdesc:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queries all I2C device drivers for new values. Fills and sends an I2CSensorEvent with the sensor event data. <br /></td></tr>
 <tr class="separator:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad920d609d60a86b2a447611e423a7207"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#ad920d609d60a86b2a447611e423a7207">sensorEventRead</a> (std::vector&lt; <a class="el" href="class_wipper_snapper___i2_c___driver.html">WipperSnapper_I2C_Driver</a> *&gt;::iterator &amp;iter, unsigned long curTime, wippersnapper_signal_v1_I2CResponse *msgi2cResponse, bool(WipperSnapper_I2C_Driver::*getEventFunc)(sensors_event_t *), long(WipperSnapper_I2C_Driver::*getPeriodFunc)(), long(WipperSnapper_I2C_Driver::*getPeriodPrvFunc)(), void(WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long), wippersnapper_i2c_v1_SensorType sensorType, const char *sensorName, const char *unit, sensors_event_t event, float sensors_event_t::*valueMember, bool &amp;sensorsReturningFalse, int &amp;retries)</td></tr>
+<tr class="memdesc:ad920d609d60a86b2a447611e423a7207"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads a sensor event from an I2C device driver.  <a href="#ad920d609d60a86b2a447611e423a7207">More...</a><br /></td></tr>
+<tr class="separator:ad920d609d60a86b2a447611e423a7207"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85c0bb433ab661de67889ef12070c51b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a85c0bb433ab661de67889ef12070c51b">fillEventMessage</a> (wippersnapper_signal_v1_I2CResponse *msgi2cResponse, float value, wippersnapper_i2c_v1_SensorType sensorType)</td></tr>
 <tr class="memdesc:a85c0bb433ab661de67889ef12070c51b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills a sensor_event message with the sensor's value and type.  <a href="#a85c0bb433ab661de67889ef12070c51b">More...</a><br /></td></tr>
 <tr class="separator:a85c0bb433ab661de67889ef12070c51b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -275,6 +278,127 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">msgDeviceDeinitReq</td><td>A decoded I2CDeviceDeinitRequest. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad920d609d60a86b2a447611e423a7207"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad920d609d60a86b2a447611e423a7207">&#9670;&nbsp;</a></span>sensorEventRead()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void WipperSnapper_Component_I2C::sensorEventRead </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="class_wipper_snapper___i2_c___driver.html">WipperSnapper_I2C_Driver</a> *&gt;::iterator &amp;&#160;</td>
+          <td class="paramname"><em>iter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long&#160;</td>
+          <td class="paramname"><em>curTime</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">wippersnapper_signal_v1_I2CResponse *&#160;</td>
+          <td class="paramname"><em>msgi2cResponse</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool(WipperSnapper_I2C_Driver::*)(sensors_event_t *)&#160;</td>
+          <td class="paramname"><em>getEventFunc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">long(WipperSnapper_I2C_Driver::*)()&#160;</td>
+          <td class="paramname"><em>getPeriodFunc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">long(WipperSnapper_I2C_Driver::*)()&#160;</td>
+          <td class="paramname"><em>getPeriodPrvFunc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void(WipperSnapper_I2C_Driver::*)(long)&#160;</td>
+          <td class="paramname"><em>setPeriodPrvFunc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">wippersnapper_i2c_v1_SensorType&#160;</td>
+          <td class="paramname"><em>sensorType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>sensorName</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>unit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">sensors_event_t&#160;</td>
+          <td class="paramname"><em>event</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float sensors_event_t::*&#160;</td>
+          <td class="paramname"><em>valueMember</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool &amp;&#160;</td>
+          <td class="paramname"><em>sensorsReturningFalse</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int &amp;&#160;</td>
+          <td class="paramname"><em>retries</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads a sensor event from an I2C device driver. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">iter</td><td>An iterator pointing to the current I2C device driver. </td></tr>
+    <tr><td class="paramname">curTime</td><td>The current time in milliseconds. </td></tr>
+    <tr><td class="paramname">msgi2cResponse</td><td>A pointer to the I2CResponse message. </td></tr>
+    <tr><td class="paramname">getEventFunc</td><td>A pointer to the I2C device driver's getEvent function. </td></tr>
+    <tr><td class="paramname">getPeriodFunc</td><td>A pointer to the I2C device driver's getPeriod function. </td></tr>
+    <tr><td class="paramname">getPeriodPrvFunc</td><td>A pointer to the I2C device driver's getPeriodPrv function. </td></tr>
+    <tr><td class="paramname">setPeriodPrvFunc</td><td>A pointer to the I2C device driver's setPeriodPrv function. </td></tr>
+    <tr><td class="paramname">sensorType</td><td>The type of sensor being read. </td></tr>
+    <tr><td class="paramname">sensorName</td><td>The name of the sensor being read. </td></tr>
+    <tr><td class="paramname">unit</td><td>The unit of measurement for the sensor. </td></tr>
+    <tr><td class="paramname">event</td><td>A sensors_event_t struct. </td></tr>
+    <tr><td class="paramname">valueMember</td><td>Pointer to sensors_event_t struct's value member unless data[0]. </td></tr>
+    <tr><td class="paramname">sensorsReturningFalse</td><td>A boolean indicating if the sensor is returning false. </td></tr>
+    <tr><td class="paramname">retries</td><td>The number of retries left for the sensor. </td></tr>
   </table>
   </dd>
 </dl>

@@ -114,6 +114,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a2d4be62781db359524c53d3d696695f2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#a2d4be62781db359524c53d3d696695f2">getMacAddr</a> ()</td></tr>
 <tr class="memdesc:a2d4be62781db359524c53d3d696695f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ESP32's unique client identifier.  <a href="#a2d4be62781db359524c53d3d696695f2">More...</a><br /></td></tr>
 <tr class="separator:a2d4be62781db359524c53d3d696695f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae09df9ca5a275779929b76bc8d286de7"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#ae09df9ca5a275779929b76bc8d286de7">getRSSI</a> ()</td></tr>
+<tr class="memdesc:ae09df9ca5a275779929b76bc8d286de7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current network RSSI value.  <a href="#ae09df9ca5a275779929b76bc8d286de7">More...</a><br /></td></tr>
+<tr class="separator:ae09df9ca5a275779929b76bc8d286de7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af93ea859ff730b169c2ff1bfec455e11"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#af93ea859ff730b169c2ff1bfec455e11">setupMQTTClient</a> (const char *clientID)</td></tr>
 <tr class="memdesc:af93ea859ff730b169c2ff1bfec455e11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the MQTT client.  <a href="#af93ea859ff730b169c2ff1bfec455e11">More...</a><br /></td></tr>
 <tr class="separator:af93ea859ff730b169c2ff1bfec455e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -382,6 +385,10 @@ WipperSnapper_LittleFS *&#160;</td><td class="memItemRight" valign="bottom"><a c
 <tr class="separator:a4aae92d295fa7740aef1bd6e45a13349 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c96d5d9235b21de6dc3dd33362c5c56 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">secretsConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a7c96d5d9235b21de6dc3dd33362c5c56">_config</a></td></tr>
 <tr class="separator:a7c96d5d9235b21de6dc3dd33362c5c56 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a9ef62e27df7ff0bcdeec4f4c97632e inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">networkConfig&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a5a9ef62e27df7ff0bcdeec4f4c97632e">_multiNetworks</a> [3]</td></tr>
+<tr class="separator:a5a9ef62e27df7ff0bcdeec4f4c97632e inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae962d10a8621ea632bee4045194734 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aaae962d10a8621ea632bee4045194734">_isWiFiMulti</a> = false</td></tr>
+<tr class="separator:aaae962d10a8621ea632bee4045194734 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e053f9eba8982c74a7df1289a9d64b6 inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a9e053f9eba8982c74a7df1289a9d64b6">totalDigitalPins</a></td></tr>
 <tr class="separator:a9e053f9eba8982c74a7df1289a9d64b6 inherit pub_attribs_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43fcd6eb7b8a2b63c548677cb2b600ab inherit pub_attribs_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#a43fcd6eb7b8a2b63c548677cb2b600ab">_topic_description</a> = NULL</td></tr>
@@ -672,6 +679,36 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
 <dl class="section note"><dt>Note</dt><dd>For the ESP32, the UID is the MAC address. </dd></dl>
 
 <p>Reimplemented from <a class="el" href="class_wippersnapper.html#a1034172df196bc9db1f5e390c785c0f8">Wippersnapper</a>.</p>
+
+</div>
+</div>
+<a id="ae09df9ca5a275779929b76bc8d286de7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae09df9ca5a275779929b76bc8d286de7">&#9670;&nbsp;</a></span>getRSSI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t Wippersnapper_WIFININA::getRSSI </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the current network RSSI value. </p>
+<dl class="section return"><dt>Returns</dt><dd>int32_t RSSI value </dd></dl>
+
+<p>Reimplemented from <a class="el" href="class_wippersnapper.html#a260a0747d76d6cdcf6be849805c27a17">Wippersnapper</a>.</p>
 
 </div>
 </div>

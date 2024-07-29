@@ -7,6 +7,7 @@ var searchData=
   ['printdeviceinfo',['printDeviceInfo',['../_wippersnapper_8cpp.html#ad879f229a33d9dcede7f40aec4ea49ba',1,'Wippersnapper.cpp']]],
   ['processdigitalinputs',['processDigitalInputs',['../class_wippersnapper___digital_g_p_i_o.html#a40f98572df4485d5d2d92e613c5fd3aa',1,'Wippersnapper_DigitalGPIO']]],
   ['processpackets',['processPackets',['../class_wippersnapper.html#a260af9fde18168098e30986c442a8d2f',1,'Wippersnapper']]],
+  ['processtemperatureevent',['processTemperatureEvent',['../class_wipper_snapper___i2_c___driver___d_s2484.html#aca19d30c56709bfa087b7d23a6ce1049',1,'WipperSnapper_I2C_Driver_DS2484']]],
   ['provision',['provision',['../class_wippersnapper.html#ac85607d165af964fbf68f484cbcaa8b4',1,'Wippersnapper']]],
   ['publish',['publish',['../class_wippersnapper.html#af9e242b83be299ce25ca28844d69f16b',1,'Wippersnapper']]],
   ['publishaddstrandresponse',['publishAddStrandResponse',['../classws__pixels.html#a0b4e384032b30f6d788bf1fb7f0f73e0',1,'ws_pixels']]],

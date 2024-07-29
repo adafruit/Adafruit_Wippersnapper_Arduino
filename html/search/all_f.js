@@ -7,6 +7,8 @@ var searchData=
   ['registerboard',['registerBoard',['../class_wippersnapper.html#a6947062bd97c64de61e9689d18af3780',1,'Wippersnapper']]],
   ['releasestatusled',['releaseStatusLED',['../_wippersnapper___status_l_e_d_8cpp.html#a88c6feb955e21c640645eb8f69b86701',1,'releaseStatusLED():&#160;Wippersnapper_StatusLED.cpp'],['../_wippersnapper___status_l_e_d_8h.html#a88c6feb955e21c640645eb8f69b86701',1,'releaseStatusLED():&#160;Wippersnapper_StatusLED.cpp']]],
   ['remove_5ftip_5ftimer',['remove_tip_timer',['../classws__display__ui__helper.html#a6f0b049102ecff5266246452815d8509',1,'ws_display_ui_helper']]],
+  ['resetairlift',['resetAirLift',['../class_wippersnapper___a_i_r_l_i_f_t.html#a10b111a20bd3142a576759490574b180',1,'Wippersnapper_AIRLIFT']]],
+  ['retry_5ffunction_5funtil_5ftimeout',['RETRY_FUNCTION_UNTIL_TIMEOUT',['../_wippersnapper_8h.html#a9a217c765d21043a2ca0fb1260ff6de1',1,'Wippersnapper.h']]],
   ['run',['run',['../class_wippersnapper.html#a91bcc45fe3f2ceb57cf2bff0d5aece24',1,'Wippersnapper']]],
   ['runnetfsm',['runNetFSM',['../class_wippersnapper.html#aeeef5691a0327dca99b5823043af71d8',1,'Wippersnapper']]]
 ];

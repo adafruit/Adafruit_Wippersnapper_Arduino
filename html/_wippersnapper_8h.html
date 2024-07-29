@@ -85,6 +85,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="_wippersnapper___boards_8h_source.html">Wippersnapper_Boards.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_wippersnapper___status_l_e_d_8h_source.html">components/statusLED/Wippersnapper_StatusLED.h</a>&quot;</code><br />
 <code>#include &quot;provisioning/ConfigJson.h&quot;</code><br />
+<code>#include &lt;nanopb/ws_pb_helpers.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="_wippersnapper___analog_i_o_8h_source.html">components/analogIO/Wippersnapper_AnalogIO.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_wippersnapper___digital_g_p_i_o_8h_source.html">components/digitalIO/Wippersnapper_DigitalGPIO.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_wipper_snapper___i2_c_8h_source.html">components/i2c/WipperSnapper_I2C.h</a>&quot;</code><br />
@@ -128,8 +129,14 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a217ae461d78158c231756891179debb6">WS_DEBUG_PRINTHEX</a>(...)&#160;&#160;&#160;{ WS_PRINTER.print(__VA_ARGS__, HEX); }</td></tr>
 <tr class="memdesc:a217ae461d78158c231756891179debb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints debug output. <br /></td></tr>
 <tr class="separator:a217ae461d78158c231756891179debb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a826381413ef2b72cada0c51fdba364ac"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a826381413ef2b72cada0c51fdba364ac">WS_DELAY_WITH_WDT</a>(timeout)</td></tr>
+<tr class="memdesc:a826381413ef2b72cada0c51fdba364ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delay function.  <a href="#a826381413ef2b72cada0c51fdba364ac">More...</a><br /></td></tr>
+<tr class="separator:a826381413ef2b72cada0c51fdba364ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a217c765d21043a2ca0fb1260ff6de1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a9a217c765d21043a2ca0fb1260ff6de1">RETRY_FUNCTION_UNTIL_TIMEOUT</a>(func,  result_type,  result_var,  condition,  timeout,  interval, ...)</td></tr>
+<tr class="memdesc:a9a217c765d21043a2ca0fb1260ff6de1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retry a function until a condition is met or a timeout is reached.  <a href="#a9a217c765d21043a2ca0fb1260ff6de1">More...</a><br /></td></tr>
+<tr class="separator:a9a217c765d21043a2ca0fb1260ff6de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea527b2900703a26fe8c38d065b4f9e7"><td class="memItemLeft" align="right" valign="top"><a id="aea527b2900703a26fe8c38d065b4f9e7"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#aea527b2900703a26fe8c38d065b4f9e7">WS_VERSION</a>&#160;&#160;&#160;&quot;1.0.0-beta.85&quot;</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#aea527b2900703a26fe8c38d065b4f9e7">WS_VERSION</a>&#160;&#160;&#160;&quot;1.0.0-beta.88&quot;</td></tr>
 <tr class="memdesc:aea527b2900703a26fe8c38d065b4f9e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">WipperSnapper app. version (semver-formatted) <br /></td></tr>
 <tr class="separator:aea527b2900703a26fe8c38d065b4f9e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51f191d073d2da08b445e665133b5452"><td class="memItemLeft" align="right" valign="top"><a id="a51f191d073d2da08b445e665133b5452"></a>
@@ -168,6 +175,10 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a54f9fdefbcf023cac9afac805602da36">WS_WDT_TIMEOUT</a>&#160;&#160;&#160;60000</td></tr>
 <tr class="memdesc:a54f9fdefbcf023cac9afac805602da36"><td class="mdescLeft">&#160;</td><td class="mdescRight">WDT timeout. <br /></td></tr>
 <tr class="separator:a54f9fdefbcf023cac9afac805602da36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea2c26f43877d3af007f74eb502c97ea"><td class="memItemLeft" align="right" valign="top"><a id="aea2c26f43877d3af007f74eb502c97ea"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#aea2c26f43877d3af007f74eb502c97ea">WS_MAX_ALT_WIFI_NETWORKS</a>&#160;&#160;&#160;3</td></tr>
+<tr class="memdesc:aea2c26f43877d3af007f74eb502c97ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of alternative networks. <br /></td></tr>
+<tr class="separator:aea2c26f43877d3af007f74eb502c97ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0915836cfab6a06783749f8d3c72324b"><td class="memItemLeft" align="right" valign="top"><a id="a0915836cfab6a06783749f8d3c72324b"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_wippersnapper_8h.html#a0915836cfab6a06783749f8d3c72324b">WS_KEEPALIVE_INTERVAL_MS</a>&#160;&#160;&#160;5000</td></tr>
 <tr class="memdesc:a0915836cfab6a06783749f8d3c72324b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Session keepalive interval time, in milliseconds. <br /></td></tr>
@@ -250,7 +261,100 @@ Variables</h2></td></tr>
 <p>Adafruit invests time and resources providing this open source code, please support Adafruit and open-source hardware by purchasing products from Adafruit!</p>
 <p>Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.</p>
 <p>BSD license, all text here must be included in any redistribution. </p>
-</div><h2 class="groupheader">Enumeration Type Documentation</h2>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a826381413ef2b72cada0c51fdba364ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a826381413ef2b72cada0c51fdba364ac">&#9670;&nbsp;</a></span>WS_DELAY_WITH_WDT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define WS_DELAY_WITH_WDT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">timeout</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">{                                                                            \</div><div class="line">    unsigned <span class="keywordtype">long</span> start = millis();                                            \</div><div class="line">    while (millis() - start &lt; timeout) {                                       \</div><div class="line">      delay(10);                                                               \</div><div class="line">      yield();                                                                 \</div><div class="line">      feedWDT();                                                               \</div><div class="line">      if (millis() &lt; start) {                                                  \</div><div class="line">        start = millis(); <span class="comment">/* if rollover */</span>                                    \</div><div class="line">      }                                                                        \</div><div class="line">    }                                                                          \</div><div class="line">  }</div></div><!-- fragment -->
+<p>Delay function. </p>
+
+</div>
+</div>
+<a id="a9a217c765d21043a2ca0fb1260ff6de1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a217c765d21043a2ca0fb1260ff6de1">&#9670;&nbsp;</a></span>RETRY_FUNCTION_UNTIL_TIMEOUT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RETRY_FUNCTION_UNTIL_TIMEOUT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">func, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">result_type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">result_var, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">condition, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">timeout, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">interval, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">{                                                                            \</div><div class="line">    unsigned <span class="keywordtype">long</span> startTime = millis();                                        \</div><div class="line">    while (millis() - startTime &lt; timeout) {                                   \</div><div class="line">      result_type result_var = func(__VA_ARGS__);                              \</div><div class="line">      if (condition(result_var)) {                                             \</div><div class="line">        break;                                                                 \</div><div class="line">      }                                                                        \</div><div class="line">      if (startTime &gt; millis()) {                                              \</div><div class="line">        startTime = millis(); <span class="comment">/* if rollover */</span>                                \</div><div class="line">      }                                                                        \</div><div class="line">      WS_DELAY_WITH_WDT(interval);                                             \</div><div class="line">    }                                                                          \</div><div class="line">  }</div></div><!-- fragment -->
+<p>Retry a function until a condition is met or a timeout is reached. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">func</td><td>The function to retry. </td></tr>
+    <tr><td class="paramname">result_type</td><td>The type of the result of the function. </td></tr>
+    <tr><td class="paramname">result_var</td><td>The variable to store the last result of the function. </td></tr>
+    <tr><td class="paramname">condition</td><td>The condition to check the result against. </td></tr>
+    <tr><td class="paramname">timeout</td><td>The maximum time to retry the function. </td></tr>
+    <tr><td class="paramname">interval</td><td>The time to wait between retries. </td></tr>
+    <tr><td class="paramname">...</td><td>The arguments to pass to the function.Retry a function until a condition is met or a timeout is reached. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="ad985319e938a8de903c1196d34249569"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad985319e938a8de903c1196d34249569">&#9670;&nbsp;</a></span>ws_status_t</h2>
 
