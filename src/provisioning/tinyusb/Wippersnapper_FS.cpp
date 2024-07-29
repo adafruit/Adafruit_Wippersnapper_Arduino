@@ -51,9 +51,6 @@ Adafruit_FlashTransport_RP2040 flashTransport;
 #error No QSPI/SPI flash are defined on your board variant.h!
 #endif
 
-
-
-
 Adafruit_SPIFlash flash(&flashTransport); ///< SPIFlash object
 FatVolume wipperFatFs; ///< File system object from Adafruit SDFat
 
