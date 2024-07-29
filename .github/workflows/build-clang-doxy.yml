@@ -212,10 +212,17 @@ jobs:
           cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
       - name: Build Dependencies Header file for ESP32-SX
         run: |
+          echo $(pwd)
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
           mv print_dependencies.h src/print_dependencies.h
+          echo "--Contents of print_dependencies.h:"
+          cat src/print_dependencies.h
+          echo "--End of print_dependencies.h"
+          echo $(pwd)
       - name: Build for ESP32-SX
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
+        run: |
+          echo $(pwd)
+          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list
         run: |
           ls
