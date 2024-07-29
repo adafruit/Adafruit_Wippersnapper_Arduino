@@ -280,7 +280,7 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.println(sMAC);
 
 #ifdef PRINT_DEPENDENCIES
-    bootFile.println("Build Dependencies:");
+    bootFile.println("Build dependencies:");
     bootFile.println(project_dependencies);
 #endif
 
