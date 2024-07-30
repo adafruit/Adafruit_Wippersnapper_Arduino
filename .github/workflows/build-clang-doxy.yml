@@ -220,6 +220,7 @@ jobs:
           echo "--End of print_dependencies.h"
       - name: Build for ESP32-SX
         run: |
+          cd .
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list
         run: |
