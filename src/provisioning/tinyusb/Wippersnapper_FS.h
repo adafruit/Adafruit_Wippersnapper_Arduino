@@ -23,7 +23,7 @@
 #include "fatfs/diskio.h"
 
 #if defined(PRINT_DEPENDENCIES)
-#include "print_dependencies.h"
+#include "../../../print_dependencies.h"
 #endif
 
 #include "Wippersnapper.h"
