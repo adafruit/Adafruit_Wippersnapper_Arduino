@@ -22,10 +22,6 @@
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
 
-#if defined(PRINT_DEPENDENCIES)
-#include "../../../print_dependencies.h"
-#endif
-
 #include "Wippersnapper.h"
 
 // forward decl.
