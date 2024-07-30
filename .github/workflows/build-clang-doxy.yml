@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-esp32sx-esptool:
-    name: Build WipperSnapper ESP32-Sx
+    name: 🏗️ESP32-Sx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -143,7 +143,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
 
   build-esp32sx:
-    name: Build WipperSnapper ESP32-Sx
+    name: 🏗️ESP32-Sx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -231,7 +231,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
   build-esp32:
-    name: Build WipperSnapper ESP32, ESP32-C3
+    name: 🏗️ESP32, ESP32-C3
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -345,7 +345,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
   build-samd:
-    name: Build WipperSnapper SAMD
+    name: 🏗️SAMD
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -401,7 +401,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
 
   build-rp2040:
-    name: Build WipperSnapper RP2040
+    name: 🏗️RP2040
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -450,7 +450,7 @@ jobs:
 
   # NOTE: This does NOT release artifacts, it only builds
   build-samd-non-fs:
-    name: Build WipperSnapper SAMD (NO-TINYUSB)
+    name: 🏗️SAMD (NO-TINYUSB)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -490,7 +490,7 @@ jobs:
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
 
   build-esp8266:
-    name: Build WipperSnapper ESP8266
+    name: 🏗️ESP8266
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -546,7 +546,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
   build-esp32sx-dev:
-    name: Build WipperSnapper ESP32-Sx DEV BUILDS
+    name: 🏗️ESP32-Sx DEV BUILDS
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
