@@ -175,7 +175,8 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: adafruit/ci-arduino
+          repository: tyeth/ci-arduino
+          ref: WS_ARDUINO_598-preprocessor-script-for-printing-the-library-versions-to-boot_outtxt
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
