@@ -126,6 +126,11 @@
 #include "display/ws_display_ui_helper.h"
 #endif
 
+// Build dependencies
+#if defined(PRINT_DEPENDENCIES)
+#include "../print_dependencies.h"
+#endif
+
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"

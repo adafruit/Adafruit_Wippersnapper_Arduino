@@ -2735,6 +2735,11 @@ void printDeviceInfo() {
   WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
   print_reset_reason(1);
 #endif
+
+#if defined(PRINT_DEPENDENCIES)
+  WS_DEBUG_PRINTLN("-------Dependencies-------");
+  WS_DEBUG_PRINTLN(project_dependencies);
+#endif
 }
 
 /**************************************************************************/

@@ -279,6 +279,11 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
 
+#ifdef PRINT_DEPENDENCIES
+    bootFile.println("Build dependencies:");
+    bootFile.println(project_dependencies);
+#endif
+
     bootFile.flush();
     bootFile.close();
     is_success = true;
