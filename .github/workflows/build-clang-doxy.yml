@@ -71,10 +71,6 @@ jobs:
       - name: Install Dependencies (esptool)
         run: |
           pip3 install esptool
-      - name: Build dependencies file for ESP32-SX (esptool)
-        run: |
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          mv print_dependencies.h src/print_dependencies.h
       - name: Build for ESP32-SX (esptool)
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list files
@@ -283,10 +279,6 @@ jobs:
       - name: Install Dependencies
         run: |
           pip3 install esptool
-      - name: build dependencies header file for ESP32 platforms
-        run: |
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          mv print_dependencies.h src/print_dependencies.h
       - name: build ESP32 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: Check artifacts
@@ -390,10 +382,6 @@ jobs:
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: build dependencies header file for SAMD platforms
-        run: |
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          mv print_dependencies.h src/print_dependencies.h
       - name: build SAMD platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: Rename build artifacts to reflect the platform name
@@ -445,10 +433,6 @@ jobs:
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: build dependencies header file for RP2040 platforms
-        run: |
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          mv print_dependencies.h src/print_dependencies.h
       - name: build RP2040 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: Rename build artifacts to reflect the platform name
@@ -500,10 +484,6 @@ jobs:
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: build dependencies header file for SAMD (no-FS) platforms
-        run: |
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          mv print_dependencies.h src/print_dependencies.h
       - name: build SAMD (no-FS) platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
 
@@ -543,10 +523,6 @@ jobs:
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: build dependencies header file for ESP8266 platforms
-        run: |
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          mv print_dependencies.h src/print_dependencies.h
       - name: build ESP8266 platforms
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list build artifacts
@@ -624,10 +600,6 @@ jobs:
       - name: Copy lv_conf.h file in Adafruit_LittlevGL_Glue_Library to the arduino library folder
         run: |
           cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
-      - name: Build dependencies header file for ESP32-SX
-        run: |
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-          mv print_dependencies.h src/print_dependencies.h
       - name: Build for ESP32-SX
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list
