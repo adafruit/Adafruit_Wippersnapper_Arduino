@@ -211,6 +211,8 @@ jobs:
       - name: 2nd Build for ESP32-SX  #2
         run: |
           cd $WS_PATH
+          # set current folder to WS_PATH
+          python3 -c 'import os; os.chdir(os.environ["WS_PATH"]); print("current folder: ", os.getcwd())'
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: list
         run: |
