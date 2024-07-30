@@ -89,6 +89,12 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
 #elif defined(ARDUINO_ARCH_ESP32)
   scaleAnalogRead = true;
   _nativeResolution = 13;
+#elif defined(ARDUINO_ARCH_RP2040)
+  scaleAnalogRead = true;
+  _nativeResolution = 10;
+#else
+  scaleAnalogRead = true;
+  _nativeResolution = 10;
 #endif
 
   _adcResolution = resolution;
@@ -101,7 +107,11 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
                 The scaled analog resolution, in bits.
 */
 /***********************************************************************************/
-int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
+int Wippersnapper_AnalogIO::getADCresolution() {
+  WS_DEBUG_PRINT("Returning ADC resolution: ");
+  WS_DEBUG_PRINTLN(_adcResolution);
+   return _adcResolution;
+   }
 
 /***********************************************************************************/
 /*!
@@ -110,7 +120,11 @@ int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
                 The native analog resolution, in bits.
 */
 /***********************************************************************************/
-int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
+int Wippersnapper_AnalogIO::getNativeResolution() {
+  WS_DEBUG_PRINT("Returning native ADC resolution: ");
+  WS_DEBUG_PRINTLN(_nativeResolution);
+   return _nativeResolution;
+ }
 
 /***********************************************************************************/
 /*!
@@ -205,9 +219,13 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
   // get pin value
   uint16_t value = analogRead(pin);
-
+  WS_DEBUG_PRINT("Analog Pin (#");
+  WS_DEBUG_PRINT(pin);
+  WS_DEBUG_PRINT(") read: ");
+  WS_DEBUG_PRINTLN(value);
   // scale by the ADC resolution manually if not implemented by BSP
   if (scaleAnalogRead) {
+    WS_DEBUG_PRINTLN("Scaling analog read value...");
     if (getADCresolution() > getNativeResolution()) {
       value = value << (getADCresolution() - getNativeResolution());
     } else {
