@@ -205,15 +205,8 @@ jobs:
       - name: Copy lv_conf.h file in Adafruit_LittlevGL_Glue_Library to the arduino library folder
         run: |
           cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
-      - name: Build for ESP32-SX #1
+      - name: Build for ESP32-SX  #2
         run: |
-          # echo >>$GITHUB_ENV WS_PATH=$(pwd) 
-          python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --print_dependencies_as_header
-      - name: 2nd Build for ESP32-SX  #2
-        run: |
-          # cd $WS_PATH
-          # set current folder to WS_PATH
-          # python3 -c 'import os; os.chdir(os.environ["WS_PATH"]); print("current folder: ", os.getcwd())'
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header
       - name: list
         run: |
