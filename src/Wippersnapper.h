@@ -115,9 +115,10 @@
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 
-// LEDC-Manager, ESP32-only
+// Inlcudes for ESP32-only
 #ifdef ARDUINO_ARCH_ESP32
 #include "components/ledc/ws_ledc.h"
+#include <Esp.h>
 #endif
 
 // Display
