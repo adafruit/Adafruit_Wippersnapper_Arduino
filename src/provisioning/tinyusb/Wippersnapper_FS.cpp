@@ -279,6 +279,16 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
 
+    // Print ESP-specific info to boot file
+    #ifdef ARDUINO_ARCH_ESP32
+    // Get version of ESP-IDF
+    bootFile.print("ESP-IDF Version: ");
+    bootFile.println(ESP.getSdkVersion());
+    // Get version of this core
+    bootFile.print("ESP32 Core Version: ");
+    bootFile.println(ESP.getCoreVersion());
+    #endif
+
     bootFile.flush();
     bootFile.close();
     is_success = true;
