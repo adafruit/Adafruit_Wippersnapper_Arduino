@@ -44,6 +44,8 @@ src/.vscode/settings.json
 
 examples/Wippersnapper_demo/build/
 
+.venv/
+
 # Platformio artifacts
 .pio/
 
