@@ -115,7 +115,7 @@
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 
-// Inlcudes for ESP32-only
+// Includes for ESP32-only
 #ifdef ARDUINO_ARCH_ESP32
 #include "components/ledc/ws_ledc.h"
 #include <Esp.h>
