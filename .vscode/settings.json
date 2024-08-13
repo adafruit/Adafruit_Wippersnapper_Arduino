@@ -3,7 +3,7 @@
         "limits": "c",
         "type_traits": "c"
     },
-    "C_Cpp.dimInactiveRegions": true,
+    "C_Cpp.dimInactiveRegions": false,
     "dotnet.defaultSolution": "disable",
     "cmake.configureOnOpen": false
 }

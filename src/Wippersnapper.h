@@ -280,7 +280,6 @@ public:
 
   bool generateDeviceUID();
   bool generateWSTopics();
-  bool generateWSErrorTopics();
 
   // Registration API
   bool registerBoard();
@@ -376,8 +375,7 @@ public:
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
-  char *_topic_description = NULL; /*!< MQTT topic for the device description */
-  char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
+
   char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
                                    to a broker. */
   char *_topic_signal_i2c_device = NULL;   /*!< Topic carries messages from a
@@ -452,43 +450,18 @@ protected:
   char *_device_uid;     /*!< Unique device identifier  */
 
   // MQTT topics
-  char *_topic_description_status =
-      NULL; /*!< MQTT subtopic carrying the description
-        status resp. from the broker */
-  char *_topic_description_status_complete = NULL; /*!< MQTT topic carrying the
-                                               ACK signal from the device to the
-                                               broker after registration */
-  char *_topic_device_pin_config_complete =
-      NULL;                        /*!< MQTT topic carrying the ACK signal
-                               from the device to the broker after
-                               hardware configuration */
-  char *_topic_signal_brkr = NULL; /*!< Wprsnpr->Device messages */
-  char *_err_topic = NULL;         /*!< Adafruit IO MQTT error message topic. */
-  char *_throttle_topic = NULL; /*!< Adafruit IO MQTT throttle message topic. */
+  char *_topicB2d = NULL;
+  char *_topicD2b = NULL;
+  char *_topicError = NULL;
+  char *_topicThrottle = NULL;
 
-  Adafruit_MQTT_Subscribe *_topic_description_sub; /*!< Subscription callback
-                                                      for registration topic. */
-  Adafruit_MQTT_Publish *_topic_signal_device_pub; /*!< Subscription callback
-                                                      for D2C signal topic. */
-  Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub; /*!< Subscription callback
-                                                      for C2D signal topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_i2c_sub; /*!< Subscription callback for I2C topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_servo_sub; /*!< Subscription callback for servo topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_pwm_sub; /*!< Subscription callback for pwm topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
+  // Adafruit_MQTT Subscription objects
+  Adafruit_MQTT_Subscribe *_subscribeB2d;
+  Adafruit_MQTT_Subscribe *_subscribeError;
+  Adafruit_MQTT_Subscribe *_subscribeThrottle;
 
-  Adafruit_MQTT_Subscribe
-      *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
-  Adafruit_MQTT_Subscribe
-      *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
+  // Adafruit_MQTT Publish objects
+  Adafruit_MQTT_Publish *_publishD2b;
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
