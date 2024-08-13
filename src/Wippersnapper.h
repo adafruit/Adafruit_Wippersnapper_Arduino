@@ -338,9 +338,8 @@ public:
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
 #ifdef USE_DISPLAY
-  ws_display_driver *_display = nullptr; ///< Instance of display driver class
-  ws_display_ui_helper *_ui_helper =
-      nullptr; ///< Instance of display UI helper class
+  ws_display_driver *_display; ///< Instance of display driver class
+  ws_display_ui_helper *_ui_helper; ///< Instance of display UI helper class
 #endif
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
@@ -394,7 +393,7 @@ public:
 
 // enable LEDC if esp32
 #ifdef ARDUINO_ARCH_ESP32
-  ws_ledc *_ledc = nullptr; ///< Pointer to LEDC object
+  ws_ledc *_ledc; ///< Pointer to LEDC object
 #endif
 
 private:

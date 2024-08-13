@@ -1783,25 +1783,32 @@ bool Wippersnapper::generateDeviceUID() {
   snprintf(WS.sUID, sizeof(WS.sUID), "%02d%02d%02d", WS._macAddr[0],
            WS._macAddr[1], WS._macAddr[2]);
   // Conversion to match integer UID sent by encodePubRegistrationReq()
-  char mac_uid[13];
-  itoa(atoi(WS.sUID), mac_uid, 10);
+  itoa(atoi(WS.sUID), WS.sUID, 10);
 
-// Attempt to malloc a the device identifier string
+  // Calculate the length of device and UID strings
+  size_t lenBoardId = strlen(_device_uid);
+  size_t lenUID = strlen(WS.sUID);
+  size_t lenIOWipper = strlen("io-wipper-");
+
+// Attempt to allocate memory for the _device_uid
 #ifdef USE_PSRAM
-  _device_uid = (char *)ps_malloc(sizeof(char) + strlen("io-wipper-") +
-                                  strlen(WS._boardId) + strlen(mac_uid) + 1);
+  _device_uid =
+      (char *)ps_malloc(sizeof(char) * (lenBoardId + lenUID + lenIOWipper + 1));
 #else
-  _device_uid = (char *)malloc(sizeof(char) + strlen("io-wipper-") +
-                               strlen(WS._boardId) + strlen(mac_uid) + 1);
+  _device_uid =
+      (char *)malloc(sizeof(char) * (lenBoardId + lenUID + lenIOWipper + 1));
 #endif
+
+  // Check if memory allocation was successful
   if (_device_uid == NULL) {
     WS_DEBUG_PRINTLN("ERROR: Unable to create device uid, Malloc failure");
     return false;
   }
+
   // Create the device identifier
-  strcpy(_device_uid, "io-wipper-");
-  strcat(_device_uid, WS._boardId);
-  strcat(_device_uid, mac_uid);
+  snprintf(_device_uid, sizeof(_device_uid), "io-wipper-%s%s", WS._boardId,
+           sUID);
+
   return true;
 }
 
@@ -1814,80 +1821,87 @@ bool Wippersnapper::generateDeviceUID() {
 */
 /**************************************************************************/
 bool Wippersnapper::generateWSTopics() {
-// Pre-calculate lengths of topic strings to allocate memory
-// These strings are dynamic within the secrets file
-size_t lenUser = strlen(WS._config.aio_user);
-size_t lenBoardId = strlen(_device_uid);
-// These strings are constants
-size_t lenTopicX2x = strlen("/ws-x2x/");
-size_t lenTopicError = strlen("/errors/");
-size_t lenTopicThrottle = strlen("/throttle/");
+  // Pre-calculate lengths of topic strings to allocate memory
+  // These strings are dynamic within the secrets file
+  size_t lenUser = strlen(WS._config.aio_user);
+  size_t lenBoardId = strlen(_device_uid);
+  // These strings are constants
+  size_t lenTopicX2x = strlen("/ws-x2x/");
+  size_t lenTopicError = strlen("/errors/");
+  size_t lenTopicThrottle = strlen("/throttle/");
 
 // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
-WS._topicB2d = (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
+  WS._topicB2d = (char *)ps_malloc(sizeof(char) *
+                                   (lenUser + lenTopicX2x + lenBoardId + 1));
 #else
-WS._topicB2d = (char *)malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
+  WS._topicB2d =
+      (char *)malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
 #endif
-// Check if memory allocation was successful
-if (WS._topicB2d != NULL)
-  return false;
-// Build the broker-to-device topic
-snprintf(WS._topicB2d, lenUser + lenTopicX2x + lenBoardId + 1,
-"%s/ws-b2d/%s", WS._config.aio_user, _device_uid);
-// Subscribe to broker-to-device topic
-_subscribeB2d =
-    new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topicB2d, 1);
-WS._mqtt->subscribe(_subscribeB2d);
+  // Check if memory allocation was successful
+  if (WS._topicB2d != NULL)
+    return false;
+  // Build the broker-to-device topic
+  snprintf(WS._topicB2d, lenUser + lenTopicX2x + lenBoardId + 1, "%s/ws-b2d/%s",
+           WS._config.aio_user, _device_uid);
+  // Subscribe to broker-to-device topic
+  _subscribeB2d = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topicB2d, 1);
+  WS._mqtt->subscribe(_subscribeB2d);
 // TODO: Implement callback for broker-to-device signal
 // _subscribeB2d->setCallback(cbBrokerToDevice);
 
 // Create global device to broker topic
 // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
-WS._topicD2b = (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
+  WS._topicD2b = (char *)ps_malloc(sizeof(char) *
+                                   (lenUser + lenTopicX2x + lenBoardId + 1));
 #else
-WS._topicD2b = (char *)malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
+  WS._topicD2b =
+      (char *)malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
 #endif
-// Check if memory allocation was successful
-if (WS._topicD2b != NULL)
-  return false;
-// Build the broker-to-device topic
-snprintf(WS._topicD2b, lenUser + lenTopicX2x + lenBoardId + 1,
-"%s/ws-d2b/%s", WS._config.aio_user, _device_uid);
+  // Check if memory allocation was successful
+  if (WS._topicD2b != NULL)
+    return false;
+  // Build the broker-to-device topic
+  snprintf(WS._topicD2b, lenUser + lenTopicX2x + lenBoardId + 1, "%s/ws-d2b/%s",
+           WS._config.aio_user, _device_uid);
 
 // Attempt to allocate memory for the error topic
 #ifdef USE_PSRAM
-WS._topicError = (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicError + lenBoardId + 1));
+  WS._topicError = (char *)ps_malloc(
+      sizeof(char) * (lenUser + lenTopicError + lenBoardId + 1));
 #else
-WS._topicError = (char *)malloc(sizeof(char) * (lenUser + lenTopicError + lenBoardId + 1));
+  WS._topicError =
+      (char *)malloc(sizeof(char) * (lenUser + lenTopicError + lenBoardId + 1));
 #endif
-// Check if memory allocation was successful
-if (WS._topicError != NULL)
-  return false;
-// Subscribe to the error topic
-_subscribeError = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topicError);
-WS._mqtt->subscribe(_subscribeError);
+  // Check if memory allocation was successful
+  if (WS._topicError != NULL)
+    return false;
+  // Subscribe to the error topic
+  _subscribeError = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topicError);
+  WS._mqtt->subscribe(_subscribeError);
 // TODO: Implement the error topic callback
 // _subscribeError->setCallback(cbErrorTopic);
 
 // Attempt to allocate memory for the error topic
 #ifdef USE_PSRAM
-WS._topicThrottle = (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicThrottle + lenBoardId + 1));
+  WS._topicThrottle = (char *)ps_malloc(
+      sizeof(char) * (lenUser + lenTopicThrottle + lenBoardId + 1));
 #else
-WS._topicThrottle = (char *)malloc(sizeof(char) * (lenUser + lenTopicThrottle + lenBoardId + 1));
+  WS._topicThrottle = (char *)malloc(
+      sizeof(char) * (lenUser + lenTopicThrottle + lenBoardId + 1));
 #endif
-// Check if memory allocation was successful
-if (WS._topicThrottle != NULL)
-  return false;
+  // Check if memory allocation was successful
+  if (WS._topicThrottle != NULL)
+    return false;
 
-// Subscribe to throttle topic
-_subscribeThrottle = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topicThrottle);
-WS._mqtt->subscribe(_subscribeThrottle);
-// TODO: Implement the throttle topic callback
-// _subscribeThrottle->setCallback(cbThrottleTopic);
+  // Subscribe to throttle topic
+  _subscribeThrottle = new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topicThrottle);
+  WS._mqtt->subscribe(_subscribeThrottle);
+  // TODO: Implement the throttle topic callback
+  // _subscribeThrottle->setCallback(cbThrottleTopic);
 
-return true;
+  return true;
 }
 
 /**************************************************************************/
@@ -2319,21 +2333,15 @@ void Wippersnapper::connect() {
   WS.enableWDT(WS_WDT_TIMEOUT);
 
   // Generate device identifier
-  if (!generateDeviceUID()) {
+  if (!generateDeviceUID())
     haltError("Unable to generate Device UID");
-  }
 
-  // Initialize MQTT client with device identifer
+  // Configures an Adafruit Arduino MQTT object
   setupMQTTClient(_device_uid);
 
-  WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
-  if (!generateWSTopics()) {
+  // Generate MQTT topics
+  if (!generateWSTopics())
     haltError("Unable to allocate space for MQTT topics");
-  }
-
-  if (!generateWSErrorTopics()) {
-    haltError("Unable to allocate space for MQTT error topics");
-  }
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
