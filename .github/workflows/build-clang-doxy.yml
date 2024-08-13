@@ -240,10 +240,9 @@ jobs:
         include:
           - offset: "0x1000"
           - offset: "0x0"
-            arduino-platform: [
-              "wippersnapper_qtpy_esp32c3",
-              "wippersnapper_feather_esp32c6",
-            ]
+            arduino-platform: "wippersnapper_qtpy_esp32c3"
+          - offset: "0x0"
+            arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
       - uses: actions/setup-python@v4
         with:
