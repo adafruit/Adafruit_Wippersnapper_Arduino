@@ -142,21 +142,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.88" ///< WipperSnapper app. version (semver-formatted)
-
-// Reserved Adafruit IO MQTT topics
-#define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
-#define TOPIC_IO_ERRORS "/errors"     ///< Adafruit IO Error MQTT Topic
-
-// Reserved Wippersnapper topics
-#define TOPIC_WS "/wprsnpr/"      ///< WipperSnapper topic
-#define TOPIC_INFO "/info/"       ///< Registration sub-topic
-#define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
-#define TOPIC_I2C "/i2c"          ///< I2C sub-topic
-#define MQTT_TOPIC_PIXELS_DEVICE                                               \
-  "/signals/device/pixel" ///< Pixels device->broker topic
-#define MQTT_TOPIC_PIXELS_BROKER                                               \
-  "/signals/broker/pixel" ///< Pixels broker->device topic
+  "1.0.0" ///< WipperSnapper app. version (semver-formatted)
 
 /** Defines the Adafruit IO connection status */
 typedef enum {
@@ -375,28 +361,6 @@ public:
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
 
-
-  char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
-                                   to a broker. */
-  char *_topic_signal_i2c_device = NULL;   /*!< Topic carries messages from a
-                                       broker to a device. */
-  char *_topic_signal_servo_brkr = NULL;   /*!< Topic carries messages from a
-                                     device   to a broker. */
-  char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
-                                     broker to a device. */
-  char *_topic_signal_pwm_brkr =
-      NULL; /*!< Topic carries PWM messages from a device to a broker. */
-  char *_topic_signal_pwm_device =
-      NULL; /*!< Topic carries PWM messages from a broker to a device. */
-  char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
-                                   a device to a broker. */
-  char *_topic_signal_ds18_device = NULL;   /*!< Topic carries ds18x20 messages
-                                       from a broker to a device. */
-  char *_topic_signal_pixels_brkr = NULL;   /*!< Topic carries pixel messages */
-  char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
-  char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
-  char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
-
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
   wippersnapper_signal_v1_I2CRequest msgSignalI2C =
@@ -450,16 +414,14 @@ protected:
   char *_device_uid;     /*!< Unique device identifier  */
 
   // MQTT topics
-  char *_topicB2d = NULL;
-  char *_topicD2b = NULL;
-  char *_topicError = NULL;
-  char *_topicThrottle = NULL;
-
+  char *_topicB2d;
+  char *_topicD2b;
+  char *_topicError;
+  char *_topicThrottle;
   // Adafruit_MQTT Subscription objects
   Adafruit_MQTT_Subscribe *_subscribeB2d;
   Adafruit_MQTT_Subscribe *_subscribeError;
   Adafruit_MQTT_Subscribe *_subscribeThrottle;
-
   // Adafruit_MQTT Publish objects
   Adafruit_MQTT_Publish *_publishD2b;
 
