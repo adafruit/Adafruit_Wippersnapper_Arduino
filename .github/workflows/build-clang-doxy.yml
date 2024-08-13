@@ -223,7 +223,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
   build-esp32:
-    name: Build WipperSnapper ESP32, ESP32-C3
+    name: Build WipperSnapper ESP32, ESP32-Cx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -235,11 +235,15 @@ jobs:
             "feather_esp32_v2",
             "itsybitsy_esp32",
             "wippersnapper_qtpy_esp32c3",
+            "wippersnapper_feather_esp32c6",
           ]
         include:
           - offset: "0x1000"
           - offset: "0x0"
-            arduino-platform: "wippersnapper_qtpy_esp32c3"
+            arduino-platform: [
+              "wippersnapper_qtpy_esp32c3",
+              "wippersnapper_feather_esp32c6",
+            ]
     steps:
       - uses: actions/setup-python@v4
         with:
