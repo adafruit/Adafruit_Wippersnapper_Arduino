@@ -107,11 +107,7 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
                 The scaled analog resolution, in bits.
 */
 /***********************************************************************************/
-int Wippersnapper_AnalogIO::getADCresolution() {
-  WS_DEBUG_PRINT("Returning ADC resolution: ");
-  WS_DEBUG_PRINTLN(_adcResolution);
-   return _adcResolution;
-   }
+int Wippersnapper_AnalogIO::getADCresolution() { return _adcResolution; }
 
 /***********************************************************************************/
 /*!
@@ -120,11 +116,7 @@ int Wippersnapper_AnalogIO::getADCresolution() {
                 The native analog resolution, in bits.
 */
 /***********************************************************************************/
-int Wippersnapper_AnalogIO::getNativeResolution() {
-  WS_DEBUG_PRINT("Returning native ADC resolution: ");
-  WS_DEBUG_PRINTLN(_nativeResolution);
-   return _nativeResolution;
- }
+int Wippersnapper_AnalogIO::getNativeResolution() { return _nativeResolution; }
 
 /***********************************************************************************/
 /*!
