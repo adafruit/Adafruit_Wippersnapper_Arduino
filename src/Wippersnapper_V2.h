@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef WIPPERSNAPPER_H
-#define WIPPERSNAPPER_H
+#ifndef WIPPERSNAPPER_V2_H
+#define WIPPERSNAPPER_V2_H
 
 // Cpp STD
 #include <vector>
@@ -39,10 +39,8 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
-#include "provisioning/ConfigJson.h"
 #include "helpers/ws_helper_status.h"
-#include "helpers/ws_helper_topics.h"
-#include "helpers/ws_helper_macros.h"
+#include "provisioning/ConfigJson.h"
 
 // Wippersnapper pb helpers
 #include <nanopb/ws_pb_helpers.h>
@@ -81,7 +79,6 @@
 #define WS_VERSION                                                             \
   "1.0.0-beta.88" ///< WipperSnapper app. version (semver-formatted)
 
-
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
@@ -115,10 +112,10 @@ class ws_uart;
             Wippersnapper interface.
 */
 /**************************************************************************/
-class Wippersnapper {
+class Wippersnapper_V2 {
 public:
-  Wippersnapper();
-  virtual ~Wippersnapper();
+  Wippersnapper_V2();
+  virtual ~Wippersnapper_V2();
 
   void provision();
 
@@ -361,6 +358,6 @@ protected:
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
 };
-// extern Wippersnapper WS; ///< Global member variable for callbacks
+// extern Wippersnapper_V2 WS; ///< Global member variable for callbacks
 
-#endif // ADAFRUIT_WIPPERSNAPPER_H
+#endif // WIPPERSNAPPER_V2_H
