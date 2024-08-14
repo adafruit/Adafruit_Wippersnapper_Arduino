@@ -211,13 +211,8 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
   // get pin value
   uint16_t value = analogRead(pin);
-  WS_DEBUG_PRINT("Analog Pin (#");
-  WS_DEBUG_PRINT(pin);
-  WS_DEBUG_PRINT(") read: ");
-  WS_DEBUG_PRINTLN(value);
   // scale by the ADC resolution manually if not implemented by BSP
   if (scaleAnalogRead) {
-    WS_DEBUG_PRINTLN("Scaling analog read value...");
     if (getADCresolution() > getNativeResolution()) {
       value = value << (getADCresolution() - getNativeResolution());
     } else {
