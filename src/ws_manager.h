@@ -10,16 +10,19 @@ public:
   Wippersnapper_Manager();
   ~Wippersnapper_Manager();
 
+  // API version check
+  void checkAPIVersion();
+
   // TODO: Do we need this within the manager?
   // void provision();
   // TODO: Implement
 
 protected:
-  Wippersnapper
-      *ws_instance; // Pointer to either Wippersnapper or Wippersnapper_V2
+  Wippersnapper *ws_instance;
+  Wippersnapper_V2 *ws_instance_v2;
 
 private:
-  int getProvisionResult();
+  bool _api_version; // True if API version 2, False otherwise
 };
 extern Wippersnapper WS; ///< Global member variable for callbacks
 #endif                   // WIPPERSNAPPER_MANAGER_H
