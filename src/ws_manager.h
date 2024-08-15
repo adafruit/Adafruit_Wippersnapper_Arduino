@@ -12,6 +12,7 @@ public:
 
   // API version check
   void checkAPIVersion();
+  int getAPIVersion() { return _api_version; }
 
   // TODO: Do we need this within the manager?
   // void provision();
