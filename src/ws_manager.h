@@ -24,5 +24,4 @@ protected:
 private:
   bool _api_version; // True if API version 2, False otherwise
 };
-extern Wippersnapper WS; ///< Global member variable for callbacks
 #endif                   // WIPPERSNAPPER_MANAGER_H
