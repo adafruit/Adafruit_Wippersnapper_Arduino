@@ -1677,7 +1677,7 @@ bool Wippersnapper_V2::encodePinEventV2(
 /**************************************************************************/
 void cbRegistrationStatusV2(char *data, uint16_t len) {
   // call decoder for registration response msg
-  WsV2.decodeRegistrationRespV2(data, len);
+  WsV2.decodeRegistrationResp(data, len);
 }
 
 /**************************************************************************/
@@ -2528,13 +2528,13 @@ bool Wippersnapper_V2::registerBoardV2() {
   runNetFSMV2();
   WsV2.feedWDTV2();
   WS_DEBUG_PRINT("Encoding registration request...");
-  if (!encodePubRegistrationReqV2())
+  if (!encodePubRegistrationReq())
     return false;
 
   // Blocking, attempt to obtain broker's response message
   runNetFSMV2();
   WsV2.feedWDTV2();
-  pollRegistrationRespV2();
+  pollRegistrationResp();
 
   return true;
 }

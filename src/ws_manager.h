@@ -4,9 +4,8 @@
 // #include "Wippersnapper.h"
 #include "network_interfaces/Wippersnapper_ESP32.h"
 typedef Wippersnapper_ESP32 Wippersnapper_WiFi;
-// Wippersnapper_WiFi wipper
-#include "Wippersnapper_V2.h"
-
+#include "network_interfaces/Wippersnapper_ESP32_V2.h"
+typedef Wippersnapper_ESP32V2 Wippersnapper_WiFiV2;
 
 class Wippersnapper_Manager {
 public:
@@ -14,7 +13,7 @@ public:
   ~Wippersnapper_Manager();
 
   // API version check
-  void checkAPIVersion();
+  void checkAPIVersion(int pinNum);
   int getAPIVersion() { return _api_version; }
   void provision();
   void connect();
@@ -22,7 +21,7 @@ public:
 protected:
   // Wippersnapper *ws_instance;
   Wippersnapper_WiFi *ws_instance;
-  Wippersnapper_V2 *ws_instance_v2;
+  Wippersnapper_WiFiV2 *ws_instance_v2;
 
 private:
   int _api_version;

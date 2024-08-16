@@ -21,9 +21,12 @@ Wippersnapper_Manager manager;
 // Enable debug output for beta builds
 #define WS_DEBUG
 
+// Pin to check for API version
+#define API_PIN 0
+
 void setup() {
   // NOTE: Provisioning must occur prior to serial init.
-  manager.checkAPIVersion(); 
+  manager.checkAPIVersion(API_PIN); 
   manager.provision();
 
   Serial.begin(115200);
@@ -31,7 +34,6 @@ void setup() {
   Serial.println("Adafruit Wippersnapper API Manager Demo");
   Serial.print("Running Wippersnapper API Version: ");
   Serial.println(manager.getAPIVersion());
-
   manager.connect();
 
 }
