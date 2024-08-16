@@ -36,6 +36,8 @@
 Wippersnapper_V2 WsV2;
 
 Wippersnapper_V2::Wippersnapper_V2() {
+  // TODO: Scope out how much of this we can remove
+  // and what should be here (if we are wrong!)
   _mqttV2 = 0; // MQTT Client object
 
   // Reserved MQTT Topics

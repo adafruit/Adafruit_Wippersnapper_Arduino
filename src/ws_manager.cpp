@@ -40,7 +40,7 @@ void Wippersnapper_Manager::checkAPIVersion(int pinNum) {
   pinMode(pinNum, INPUT_PULLUP);
   bool readButton = digitalRead(pinNum);
   // NOTE: For debugging right now, we are forcing the API version
-  readButton = false;
+  readButton = true;
   if (readButton) { // API version 2 if D12 is high
     ws_instance_v2 = new Wippersnapper_WiFiV2();
     _api_version = 2;

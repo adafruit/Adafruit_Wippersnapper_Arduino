@@ -152,7 +152,7 @@ public:
   @note   On ESP32, the UID is the MAC address.
   */
   /********************************************************/
-  void getMacAddr() {
+  void getMacAddrV2() {
     uint8_t mac[6] = {0};
     Network.macAddress(mac);
     memcpy(WsV2._macAddrV2, mac, sizeof(mac));
