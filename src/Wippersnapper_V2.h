@@ -88,10 +88,6 @@
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   512 ///< MAXIMUM expected payload size, in bytes
 
-  extern bool encodePubRegistrationReq();
-  extern void decodeRegistrationResp(char *data, uint16_t len);
-  extern void pollRegistrationResp();
-
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
@@ -153,7 +149,9 @@ public:
 
   // Registration API
   bool registerBoardV2();
-
+  bool encodePubRegistrationReqV2();
+  void decodeRegistrationRespV2(char *data, uint16_t len);
+  void pollRegistrationRespV2();
   // Configuration API
   void publishPinConfigCompleteV2();
 
