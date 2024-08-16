@@ -13,10 +13,10 @@ Wippersnapper_Manager::~Wippersnapper_Manager() {
 
 void Wippersnapper_Manager::connect() {
   if (_api_version == 2) {
-    WS_DEBUG_PRINTLN("api v1 instance::connect()");
+    WS_DEBUG_PRINTLN("api v2 instance::connect()");
     ws_instance_v2->connectV2();
   } else if (_api_version == 1) {
-    WS_DEBUG_PRINTLN("api v2 instance::connect()");
+    WS_DEBUG_PRINTLN("api v1 instance::connect()");
     ws_instance->connect();
   } else {
     WS_DEBUG_PRINTLN("Error: Could not call connect(), unknown API version!");
@@ -28,7 +28,7 @@ void Wippersnapper_Manager::provision() {
     WS_DEBUG_PRINTLN("api v2 instance::provision()");
     ws_instance_v2->provisionV2();
   } else if (_api_version == 1) {
-    WS_DEBUG_PRINTLN("api v2 instance::provision()");
+    WS_DEBUG_PRINTLN("api v1 instance::provision()");
     ws_instance->provision();
   } else {
     WS_DEBUG_PRINTLN("Error: Could not call provision(), unknown API version!");

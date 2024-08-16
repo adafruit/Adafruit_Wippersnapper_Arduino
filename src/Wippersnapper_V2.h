@@ -77,7 +77,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.88" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-rc.1" ///< WipperSnapper app. version (semver-formatted)
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
