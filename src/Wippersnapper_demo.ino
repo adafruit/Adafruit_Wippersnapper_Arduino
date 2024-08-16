@@ -22,22 +22,17 @@ Wippersnapper_Manager manager;
 #define WS_DEBUG
 
 void setup() {
-
-
-  // TODO: Call manager instance instead
-  // Provisioning must occur prior to serial init.
-  // wipper.provision();
+  // NOTE: Provisioning must occur prior to serial init.
+  manager.checkAPIVersion(); 
+  manager.provision();
 
   Serial.begin(115200);
   while(!Serial) {;}
   Serial.println("Adafruit Wippersnapper API Manager Demo");
-  // Check API version
-  Serial.println("Checking API Version...");
-  manager.checkAPIVersion();
-  Serial.print("Wippersnapper API Version:");
+  Serial.print("Running Wippersnapper API Version: ");
   Serial.println(manager.getAPIVersion());
 
-  // wipper.connect();
+  manager.connect();
 
 }
 
