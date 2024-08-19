@@ -90,7 +90,7 @@
 
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
-class Wippersnapper_FS;
+class Wippersnapper_FS_V2;
 class WipperSnapper_LittleFS;
 #ifdef USE_DISPLAY
 class ws_display_driver;
@@ -214,7 +214,7 @@ public:
   // to free up space on the heap
   Wippersnapper_DigitalGPIO *_digitalGPIOV2; ///< Instance of digital gpio class
   Wippersnapper_AnalogIO *_analogIOV2;       ///< Instance of analog io class
-  Wippersnapper_FS *_fileSystemV2; ///< Instance of Filesystem (native USB)
+  Wippersnapper_FS_V2 *_fileSystemV2; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFSV2; ///< Instance of LittleFS Filesystem (non-native USB)
 #ifdef USE_DISPLAY

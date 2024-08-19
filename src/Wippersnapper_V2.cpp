@@ -102,7 +102,7 @@ void Wippersnapper_V2::provisionV2() {
 
 // Initialize the filesystem
 #ifdef USE_TINYUSB
-  _fileSystemV2 = new Wippersnapper_FS();
+  _fileSystemV2 = new Wippersnapper_FS_V2();
 #elif defined(USE_LITTLEFS)
   _littleFS = new WipperSnapper_LittleFS();
 #endif

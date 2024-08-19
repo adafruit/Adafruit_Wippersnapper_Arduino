@@ -443,6 +443,15 @@ void Wippersnapper_FS_V2::parseSecrets() {
            "credentials!");
   }
 
+    writeToBootOut("Secrets Contents\n");
+    writeToBootOut("Network Info\n: ");
+    writeToBootOut(WsV2._configV2.network.ssid);
+    writeToBootOut(WsV2._configV2.network.pass);
+    writeToBootOut("IO Creds.\n: ");
+    writeToBootOut(WsV2._configV2.aio_user);
+    writeToBootOut(WsV2._configV2.aio_key);
+
+
   // Close secrets.json file
   secretsFile.close();
 }

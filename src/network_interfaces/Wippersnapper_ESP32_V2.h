@@ -96,7 +96,7 @@ public:
   @returns True if `_network_ssid` is found, False otherwise.
   */
   /***********************************************************/
-  bool check_valid_ssid() {
+  bool check_valid_ssidV2() {
     // Set WiFi to station mode and disconnect from an AP if it was previously
     // connected
     WiFi.mode(WIFI_STA);
@@ -164,7 +164,7 @@ public:
   @return int32_t RSSI value
   */
   /********************************************************/
-  int32_t getRSSI() { return WiFi.RSSI(); }
+  int32_t getRSSIV2() { return WiFi.RSSI(); }
 
   /********************************************************/
   /*!
@@ -200,7 +200,7 @@ public:
   @return ws_status_t
   */
   /********************************************************/
-  ws_status_t networkStatus() {
+  ws_status_t networkStatusV2() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
       return WS_NET_CONNECTED;
