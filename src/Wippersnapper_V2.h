@@ -119,9 +119,10 @@ public:
 
   void provisionV2();
 
-  bool lockStatusNeoPixelV2; ///< True if status LED is using the status neopixel
-  bool lockStatusDotStarV2;  ///< True if status LED is using the status dotstar
-  bool lockStatusLEDV2;      ///< True if status LED is using the built-in LED
+  bool
+      lockStatusNeoPixelV2; ///< True if status LED is using the status neopixel
+  bool lockStatusDotStarV2; ///< True if status LED is using the status dotstar
+  bool lockStatusLEDV2;     ///< True if status LED is using the built-in LED
   float status_pixel_brightnessV2 =
       STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
                                        ///< (from 0.0 to 1.0)
@@ -145,7 +146,7 @@ public:
 
   bool generateDeviceUIDV2();
   bool generateWSTopicsV2();
-  bool generateWSErrorTopicsV2();
+  // bool generateWSErrorTopicsV2();
 
   // Registration API
   bool registerBoardV2();
@@ -159,7 +160,7 @@ public:
   ws_status_t runV2();
   void processPacketsV2();
   void publishV2(const char *topic, uint8_t *payload, uint16_t bLen,
-               uint8_t qos = 0);
+                 uint8_t qos = 0);
 
   // Networking helpers
   void pingBrokerV2();
@@ -170,8 +171,9 @@ public:
   void feedWDTV2();
 
   // Error handling helpers
-  void haltErrorV2(String error,
-                 ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
+  void
+  haltErrorV2(String error,
+              ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
   void errorWriteHangV2(String error);
 
   // MQTT topic callbacks //
@@ -180,12 +182,13 @@ public:
       wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
 
   // Encodes a pin event message
-  bool
-  encodePinEventV2(wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-                 uint8_t pinName, int pinVal);
+  bool encodePinEventV2(
+      wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
+      uint8_t pinName, int pinVal);
 
   // Pin configure message
-  bool configureDigitalPinReqV2(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
+  bool
+  configureDigitalPinReqV2(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
   bool configAnalogInPinReqV2(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
 
   // I2C
@@ -200,8 +203,8 @@ public:
   bool _isI2CPort1InitV2 =
       false; ///< True if I2C port 1 has been initialized, False otherwise.
 
-  uint8_t _bufferV2[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save callback
-                                                payload */
+  uint8_t _bufferV2[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save
+                                                callback payload */
   uint8_t
       _buffer_outgoingV2[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains
                                                      outgoing payload data */
@@ -240,29 +243,6 @@ public:
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPinsV2; /*!< Total number of digital-input capable pins */
-
-  char *_topic_descriptionV2 = NULL; /*!< MQTT topic for the device description */
-  char *_topic_signal_deviceV2 = NULL;   /*!< Device->Wprsnpr messages */
-  char *_topic_signal_i2c_brkrV2 = NULL; /*!< Topic carries messages from a device
-                                   to a broker. */
-  char *_topic_signal_i2c_deviceV2 = NULL;   /*!< Topic carries messages from a
-                                       broker to a device. */
-  char *_topic_signal_servo_brkrV2 = NULL;   /*!< Topic carries messages from a
-                                     device   to a broker. */
-  char *_topic_signal_servo_deviceV2 = NULL; /*!< Topic carries messages from a
-                                     broker to a device. */
-  char *_topic_signal_pwm_brkrV2 =
-      NULL; /*!< Topic carries PWM messages from a device to a broker. */
-  char *_topic_signal_pwm_deviceV2 =
-      NULL; /*!< Topic carries PWM messages from a broker to a device. */
-  char *_topic_signal_ds18_brkrV2 = NULL; /*!< Topic carries ds18x20 messages from
-                                   a device to a broker. */
-  char *_topic_signal_ds18_deviceV2 = NULL;   /*!< Topic carries ds18x20 messages
-                                       from a broker to a device. */
-  char *_topic_signal_pixels_brkrV2 = NULL;   /*!< Topic carries pixel messages */
-  char *_topic_signal_pixels_deviceV2 = NULL; /*!< Topic carries pixel messages */
-  char *_topic_signal_uart_brkrV2 = NULL;     /*!< Topic carries UART messages */
-  char *_topic_signal_uart_deviceV2 = NULL;   /*!< Topic carries UART messages */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsgV2; /*!< Incoming signal message from broker */
@@ -307,53 +287,28 @@ protected:
   ws_status_t _statusV2 = WS_IDLE;   /*!< Adafruit IO connection status */
   uint32_t _last_mqtt_connectV2 = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
-  uint32_t _prv_pingV2 = 0;    /*!< Previous time when client pinged Adafruit IO's
-                                MQTT broker, in milliseconds. */
-  uint32_t _prvKATBlinkV2 = 0; /*!< Previous time when client pinged Adafruit IO's
+  uint32_t _prv_pingV2 = 0; /*!< Previous time when client pinged Adafruit IO's
                              MQTT broker, in milliseconds. */
+  uint32_t _prvKATBlinkV2 = 0; /*!< Previous time when client pinged Adafruit
+                             IO's MQTT broker, in milliseconds. */
 
   // Device information
   const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
   char *_device_uidV2;     /*!< Unique device identifier  */
 
   // MQTT topics
-  char *_topic_description_statusV2 =
-      NULL; /*!< MQTT subtopic carrying the description
-        status resp. from the broker */
-  char *_topic_description_status_completeV2 = NULL; /*!< MQTT topic carrying the
-                                               ACK signal from the device to the
-                                               broker after registration */
-  char *_topic_device_pin_config_completeV2 =
-      NULL;                        /*!< MQTT topic carrying the ACK signal
-                               from the device to the broker after
-                               hardware configuration */
-  char *_topic_signal_brkrV2 = NULL; /*!< Wprsnpr->Device messages */
-  char *_err_topicV2 = NULL;         /*!< Adafruit IO MQTT error message topic. */
-  char *_throttle_topicV2 = NULL; /*!< Adafruit IO MQTT throttle message topic. */
+  char *_topicB2d;
+  char *_topicD2b;
+  char *_topicError;
+  char *_topicThrottle;
 
-  Adafruit_MQTT_Subscribe *_topic_description_subV2; /*!< Subscription callback
-                                                      for registration topic. */
-  Adafruit_MQTT_Publish *_topic_signal_device_pubV2; /*!< Subscription callback
-                                                      for D2C signal topic. */
-  Adafruit_MQTT_Subscribe *_topic_signal_brkr_subV2; /*!< Subscription callback
-                                                      for C2D signal topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_i2c_subV2; /*!< Subscription callback for I2C topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_servo_subV2; /*!< Subscription callback for servo topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_pwm_subV2; /*!< Subscription callback for pwm topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_ds18_subV2; /*!< Subscribes to signal's ds18x20 topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_pixels_subV2; /*!< Subscribes to pixel device topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_uart_subV2; /*!< Subscribes to signal's UART topic. */
+  // Adafruit_MQTT Subscription objects
+  Adafruit_MQTT_Subscribe *_subscribeB2d;
+  Adafruit_MQTT_Subscribe *_subscribeError;
+  Adafruit_MQTT_Subscribe *_subscribeThrottle;
 
-  Adafruit_MQTT_Subscribe
-      *_err_subV2; /*!< Subscription to Adafruit IO Error topic. */
-  Adafruit_MQTT_Subscribe
-      *_throttle_subV2; /*!< Subscription to Adafruit IO Throttle topic. */
+  // Adafruit_MQTT Publish objects
+  Adafruit_MQTT_Publish *_publishD2b;
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsgV2; /*!< Outgoing signal message from device */

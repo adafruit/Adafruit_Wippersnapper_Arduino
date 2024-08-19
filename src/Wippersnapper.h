@@ -39,10 +39,10 @@
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
-#include "provisioning/ConfigJson.h"
+#include "helpers/ws_helper_macros.h"
 #include "helpers/ws_helper_status.h"
 #include "helpers/ws_helper_topics.h"
-#include "helpers/ws_helper_macros.h"
+#include "provisioning/ConfigJson.h"
 
 // Wippersnapper pb helpers
 #include <nanopb/ws_pb_helpers.h>
@@ -80,7 +80,6 @@
 
 #define WS_VERSION                                                             \
   "1.0.0-beta.88" ///< WipperSnapper app. version (semver-formatted)
-
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
@@ -148,6 +147,7 @@ public:
 
   bool generateDeviceUID();
   bool generateWSTopics();
+  bool generateWSErrorTopics();
 
   // Registration API
   bool registerBoard();
@@ -220,8 +220,9 @@ public:
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
 #ifdef USE_DISPLAY
-  ws_display_driver *_display; ///< Instance of display driver class
-  ws_display_ui_helper *_ui_helper; ///< Instance of display UI helper class
+  ws_display_driver *_display = nullptr; ///< Instance of display driver class
+  ws_display_ui_helper *_ui_helper =
+      nullptr; ///< Instance of display UI helper class
 #endif
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
@@ -241,6 +242,29 @@ public:
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */
+
+  char *_topic_description = NULL; /*!< MQTT topic for the device description */
+  char *_topic_signal_device = NULL;   /*!< Device->Wprsnpr messages */
+  char *_topic_signal_i2c_brkr = NULL; /*!< Topic carries messages from a device
+                                   to a broker. */
+  char *_topic_signal_i2c_device = NULL;   /*!< Topic carries messages from a
+                                       broker to a device. */
+  char *_topic_signal_servo_brkr = NULL;   /*!< Topic carries messages from a
+                                     device   to a broker. */
+  char *_topic_signal_servo_device = NULL; /*!< Topic carries messages from a
+                                     broker to a device. */
+  char *_topic_signal_pwm_brkr =
+      NULL; /*!< Topic carries PWM messages from a device to a broker. */
+  char *_topic_signal_pwm_device =
+      NULL; /*!< Topic carries PWM messages from a broker to a device. */
+  char *_topic_signal_ds18_brkr = NULL; /*!< Topic carries ds18x20 messages from
+                                   a device to a broker. */
+  char *_topic_signal_ds18_device = NULL;   /*!< Topic carries ds18x20 messages
+                                       from a broker to a device. */
+  char *_topic_signal_pixels_brkr = NULL;   /*!< Topic carries pixel messages */
+  char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
+  char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
+  char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -275,7 +299,7 @@ public:
 
 // enable LEDC if esp32
 #ifdef ARDUINO_ARCH_ESP32
-  ws_ledc *_ledc; ///< Pointer to LEDC object
+  ws_ledc *_ledc = nullptr; ///< Pointer to LEDC object
 #endif
 
 private:
@@ -295,20 +319,47 @@ protected:
   char *_device_uid;     /*!< Unique device identifier  */
 
   // MQTT topics
-  char *_topicB2d;
-  char *_topicD2b;
-  char *_topicError;
-  char *_topicThrottle;
-  // Adafruit_MQTT Subscription objects
-  Adafruit_MQTT_Subscribe *_subscribeB2d;
-  Adafruit_MQTT_Subscribe *_subscribeError;
-  Adafruit_MQTT_Subscribe *_subscribeThrottle;
-  // Adafruit_MQTT Publish objects
-  Adafruit_MQTT_Publish *_publishD2b;
+  char *_topic_description_status =
+      NULL; /*!< MQTT subtopic carrying the description
+        status resp. from the broker */
+  char *_topic_description_status_complete = NULL; /*!< MQTT topic carrying the
+                                               ACK signal from the device to the
+                                               broker after registration */
+  char *_topic_device_pin_config_complete =
+      NULL;                        /*!< MQTT topic carrying the ACK signal
+                               from the device to the broker after
+                               hardware configuration */
+  char *_topic_signal_brkr = NULL; /*!< Wprsnpr->Device messages */
+  char *_err_topic = NULL;         /*!< Adafruit IO MQTT error message topic. */
+  char *_throttle_topic = NULL; /*!< Adafruit IO MQTT throttle message topic. */
+
+  Adafruit_MQTT_Subscribe *_topic_description_sub; /*!< Subscription callback
+                                                      for registration topic. */
+  Adafruit_MQTT_Publish *_topic_signal_device_pub; /*!< Subscription callback
+                                                      for D2C signal topic. */
+  Adafruit_MQTT_Subscribe *_topic_signal_brkr_sub; /*!< Subscription callback
+                                                      for C2D signal topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_i2c_sub; /*!< Subscription callback for I2C topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_servo_sub; /*!< Subscription callback for servo topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_pwm_sub; /*!< Subscription callback for pwm topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_ds18_sub; /*!< Subscribes to signal's ds18x20 topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
+
+  Adafruit_MQTT_Subscribe
+      *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
+  Adafruit_MQTT_Subscribe
+      *_throttle_sub; /*!< Subscription to Adafruit IO Throttle topic. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsg; /*!< Outgoing signal message from device */
 };
-// extern Wippersnapper WS; ///< Global member variable for callbacks
+extern Wippersnapper WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H
