@@ -68,7 +68,7 @@ public:
             WiFi network's password.
   */
   /********************************************************/
-  void set_ssid_pass(const char *ssid, const char *ssidPassword) {
+  void set_ssid_passV2(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
 
     // set the AP password
@@ -85,7 +85,7 @@ public:
   @brief  Sets the WiFi client's ssid and password.
   */
   /**********************************************************/
-  void set_ssid_pass() {
+  void set_ssid_passV2() {
     _ssid = WsV2._configV2.network.ssid;
     _pass = WsV2._configV2.network.pass;
   }
