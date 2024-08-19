@@ -13,23 +13,31 @@
 //
 // All text above must be included in any redistribution.
 
-#include "Wippersnapper_Networking.h"
-Wippersnapper_WiFi wipper;
+#include "ws_manager.h"
+//#include "Wippersnapper_Networking.h"
+//Wippersnapper_WiFi wipper;
+Wippersnapper_Manager manager;
 
 // Enable debug output for beta builds
 #define WS_DEBUG
 
+// Pin to check for API version
+#define API_PIN 0
+
 void setup() {
-  // Provisioning must occur prior to serial init.
-  wipper.provision();
+  // NOTE: Provisioning must occur prior to serial init.
+  manager.checkAPIVersion(API_PIN); 
+  manager.provision();
 
   Serial.begin(115200);
-  // while (!Serial) delay(10);
-
-  wipper.connect();
+  while(!Serial) {;}
+  Serial.println("Adafruit Wippersnapper API Manager Demo");
+  Serial.print("Running Wippersnapper API Version: ");
+  Serial.println(manager.getAPIVersion());
+  manager.connect();
 
 }
 
 void loop() {
-  wipper.run();
+  //wipper.run();
 }

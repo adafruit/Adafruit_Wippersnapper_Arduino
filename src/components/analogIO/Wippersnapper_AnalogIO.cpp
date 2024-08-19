@@ -89,6 +89,12 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
 #elif defined(ARDUINO_ARCH_ESP32)
   scaleAnalogRead = true;
   _nativeResolution = 13;
+#elif defined(ARDUINO_ARCH_RP2040)
+  scaleAnalogRead = true;
+  _nativeResolution = 10;
+#else
+  scaleAnalogRead = true;
+  _nativeResolution = 10;
 #endif
 
   _adcResolution = resolution;
@@ -205,7 +211,6 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
   // get pin value
   uint16_t value = analogRead(pin);
-
   // scale by the ADC resolution manually if not implemented by BSP
   if (scaleAnalogRead) {
     if (getADCresolution() > getNativeResolution()) {
