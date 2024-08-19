@@ -69,7 +69,7 @@
 #include "components/uart/ws_uart.h"
 
 #if defined(USE_TINYUSB)
-#include "provisioning/tinyusb/Wippersnapper_FS.h"
+#include "provisioning/tinyusb/Wippersnapper_FS_V2.h"
 #endif
 
 #if defined(USE_LITTLEFS)

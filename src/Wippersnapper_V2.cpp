@@ -162,6 +162,7 @@ void Wippersnapper_V2::disconnectV2() { _disconnectV2(); }
 */
 /****************************************************************************/
 void Wippersnapper_V2::_connectV2() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::_connectV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -171,6 +172,7 @@ void Wippersnapper_V2::_connectV2() {
 */
 /****************************************************************************/
 void Wippersnapper_V2::_disconnectV2() {
+  WS_DEBUG_PRINTLN("WIppersnapper_V2::_disconnectV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -181,6 +183,7 @@ void Wippersnapper_V2::_disconnectV2() {
 */
 /****************************************************************************/
 void Wippersnapper_V2::getMacAddrV2() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::getMacAddrV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -191,6 +194,7 @@ void Wippersnapper_V2::getMacAddrV2() {
 */
 /****************************************************************************/
 int32_t Wippersnapper_V2::getRSSIV2() {
+  WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSIV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return 0;
 }
@@ -203,6 +207,7 @@ int32_t Wippersnapper_V2::getRSSIV2() {
 */
 /****************************************************************************/
 void Wippersnapper_V2::setupMQTTClientV2(const char * /*clientID*/) {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::setupMQTTClientV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -213,6 +218,7 @@ void Wippersnapper_V2::setupMQTTClientV2(const char * /*clientID*/) {
 */
 /****************************************************************************/
 ws_status_t Wippersnapper_V2::networkStatusV2() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::networkStatusV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
 }
@@ -228,6 +234,7 @@ ws_status_t Wippersnapper_V2::networkStatusV2() {
 /****************************************************************************/
 void Wippersnapper_V2::set_ssid_passV2(const char * /*ssid*/,
                                   const char * /*ssidPassword*/) {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_passV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -238,6 +245,7 @@ void Wippersnapper_V2::set_ssid_passV2(const char * /*ssid*/,
 */
 /****************************************************************************/
 void Wippersnapper_V2::set_ssid_passV2() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_passV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -248,6 +256,7 @@ void Wippersnapper_V2::set_ssid_passV2() {
 */
 /***********************************************************/
 bool Wippersnapper_V2::check_valid_ssidV2() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::check_valid_ssidV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return false;
 }
@@ -260,6 +269,7 @@ bool Wippersnapper_V2::check_valid_ssidV2() {
 */
 /****************************************************************************/
 void Wippersnapper_V2::set_user_keyV2() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_user_keyV2");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -2863,6 +2873,7 @@ void printDeviceInfoV2() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
   WS_DEBUG_PRINTLN(WS_VERSION);
+  WS_DEBUG_PRINTLN("API: Version 2");
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
   WS_DEBUG_PRINT("Adafruit.io User: ");

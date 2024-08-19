@@ -173,7 +173,7 @@ public:
           MQTT client identifier
   */
   /********************************************************/
-  void setupMQTTClient(const char *clientID) {
+  void setupMQTTClientV2(const char *clientID) {
     if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
         strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client_secure = new NetworkClientSecure();
@@ -292,7 +292,7 @@ protected:
   @brief  Establishes a connection with the wireless network.
   */
   /**************************************************************************/
-  void _connect() {
+  void _connectV2() {
 
     if (WiFi.status() == WL_CONNECTED)
       return;
