@@ -87,8 +87,13 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   analogReadResolution(16);
   _nativeResolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
-  scaleAnalogRead = true;
-  _nativeResolution = 13;
+  scaleAnalogRead = false;          // handled in bsp (analogReadResolution)
+  analogReadResolution(resolution); // 16 bit values (shifted from 12 or 13bit)
+#if defined(ESP32S3)
+  _nativeResolution = 13;           // S3 ADC is 13-bit, others are 12-bit
+#else
+  _nativeResolution = 12;
+#endif
 #elif defined(ARDUINO_ARCH_RP2040)
   scaleAnalogRead = true;
   _nativeResolution = 10;
@@ -96,7 +101,6 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   scaleAnalogRead = true;
   _nativeResolution = 10;
 #endif
-
   _adcResolution = resolution;
 }
 
@@ -232,8 +236,12 @@ uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
 */
 /**********************************************************/
 float Wippersnapper_AnalogIO::getPinValueVolts(int pin) {
+#ifdef ARDUINO_ARCH_ESP32
+  return analogReadMilliVolts(pin) / 1000.0;
+#else
   uint16_t rawValue = getPinValue(pin);
   return rawValue * getAref() / 65536;
+#endif
 }
 
 /******************************************************************/
@@ -310,13 +318,17 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
            The current software timer value.
     @param pin
            The desired analog pin to check
+    @param periodOffset
+           Offset to add to the pin's period (used for on_change).
     @returns True if pin's period expired, False otherwise.
 */
 /**********************************************************/
-bool Wippersnapper_AnalogIO::timerExpired(long currentTime,
-                                          analogInputPin pin) {
-  if (currentTime - pin.prvPeriod > pin.period && pin.period != 0L)
+bool Wippersnapper_AnalogIO::timerExpired(long currentTime, analogInputPin pin,
+                                          long periodOffset) {
+  if (pin.period + periodOffset != 0L &&
+      currentTime - pin.prvPeriod > (pin.period + periodOffset)) {
     return true;
+  }
   return false;
 }
 
@@ -335,9 +347,8 @@ void Wippersnapper_AnalogIO::update() {
     if (_analog_input_pins[i].enabled == true) {
 
       // Does the pin execute on-period?
-      if ((long)millis() - _analog_input_pins[i].prvPeriod >
-              _analog_input_pins[i].period &&
-          _analog_input_pins[i].period != 0L) {
+      if (_analog_input_pins[i].period != 0L &&
+          timerExpired(millis(), _analog_input_pins[i])) {
         WS_DEBUG_PRINT("Executing periodic event on A");
         WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
@@ -359,34 +370,60 @@ void Wippersnapper_AnalogIO::update() {
         encodePinEvent(_analog_input_pins[i].pinName,
                        _analog_input_pins[i].readMode, pinValRaw, pinValVolts);
 
-        // IMPT - reset the digital pin
+        // mark last execution time
         _analog_input_pins[i].prvPeriod = millis();
       }
       // Does the pin execute on_change?
       else if (_analog_input_pins[i].period == 0L) {
 
+        // not first run and timer not expired, skip
+        if (_analog_input_pins[i].prvPeriod != 0L &&
+            !timerExpired(millis(), _analog_input_pins[i], 500)) {
+          continue;
+        }
+
         // note: on-change requires ADC DEFAULT_HYSTERISIS to check against prv
         // pin value
         uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
 
-        uint16_t _pinValThreshHi =
-            _analog_input_pins[i].prvPinVal +
-            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
-        uint16_t _pinValThreshLow =
-            _analog_input_pins[i].prvPinVal -
-            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
+        // All boards ADC values scaled to 16bit, in future we may need to
+        // adjust dynamically
+        uint16_t maxDecimalValue = 65535;
 
-        if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
+        // Calculate threshold values - using DEFAULT_HYSTERISIS for first third
+        // (1/3) of the range, then 2x DEFAULT_HYSTERISIS for the middle 1/3,
+        // and 4x DEFAULT_HYSTERISIS for the last 1/3. This should allow a more
+        // wifi blip tolerant threshold for the both ends of the range.
+        float CURRENT_HYSTERISIS;
+        if (pinValRaw < maxDecimalValue / 3) {
+          CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS;
+        } else if (pinValRaw < (maxDecimalValue / 3) * 2) {
+          CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS * 2;
+        } else {
+          CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS * 4;
+        }
+
+        // get the threshold values for previous pin value
+        uint16_t _pinValThreshHi =
+            _analog_input_pins[i].prvPinVal + CURRENT_HYSTERISIS;
+        uint16_t _pinValThreshLow =
+            _analog_input_pins[i].prvPinVal - CURRENT_HYSTERISIS;
+
+        if (_analog_input_pins[i].prvPeriod == 0 ||
+            pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
           // Perform voltage conversion if we need to
           if (_analog_input_pins[i].readMode ==
               wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-            pinValVolts = pinValRaw * getAref() / 65536;
+            pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
           }
 
           // Publish pin event to IO
           encodePinEvent(_analog_input_pins[i].pinName,
                          _analog_input_pins[i].readMode, pinValRaw,
                          pinValVolts);
+
+          // mark last execution time
+          _analog_input_pins[i].prvPeriod = millis();
 
         } else {
           // WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");

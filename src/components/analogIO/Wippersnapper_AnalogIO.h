@@ -63,7 +63,8 @@ public:
   void setADCResolution(int resolution);
   int getADCresolution();
   int getNativeResolution();
-  bool timerExpired(long currentTime, analogInputPin pin);
+  bool timerExpired(long currentTime, analogInputPin pin,
+                    long periodOffset = 0);
 
   void update();
   bool encodePinEvent(
