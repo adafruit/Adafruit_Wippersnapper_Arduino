@@ -282,20 +282,6 @@ public:
 
 private:
   void _initV2();
-
-protected:
-  ws_status_t _statusV2 = WS_IDLE;   /*!< Adafruit IO connection status */
-  uint32_t _last_mqtt_connectV2 = 0; /*!< Previous time when client connected to
-                                          Adafruit IO, in milliseconds. */
-  uint32_t _prv_pingV2 = 0; /*!< Previous time when client pinged Adafruit IO's
-                             MQTT broker, in milliseconds. */
-  uint32_t _prvKATBlinkV2 = 0; /*!< Previous time when client pinged Adafruit
-                             IO's MQTT broker, in milliseconds. */
-
-  // Device information
-  const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
-  char *_device_uidV2;     /*!< Unique device identifier  */
-
   // MQTT topics
   char *_topicB2d;
   char *_topicD2b;
@@ -309,6 +295,19 @@ protected:
 
   // Adafruit_MQTT Publish objects
   Adafruit_MQTT_Publish *_publishD2b;
+
+protected:
+  ws_status_t _statusV2 = WS_IDLE;   /*!< Adafruit IO connection status */
+  uint32_t _last_mqtt_connectV2 = 0; /*!< Previous time when client connected to
+                                          Adafruit IO, in milliseconds. */
+  uint32_t _prv_pingV2 = 0; /*!< Previous time when client pinged Adafruit IO's
+                             MQTT broker, in milliseconds. */
+  uint32_t _prvKATBlinkV2 = 0; /*!< Previous time when client pinged Adafruit
+                             IO's MQTT broker, in milliseconds. */
+
+  // Device information
+  const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
+  char *_device_uidV2;     /*!< Unique device identifier  */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _outgoingSignalMsgV2; /*!< Outgoing signal message from device */

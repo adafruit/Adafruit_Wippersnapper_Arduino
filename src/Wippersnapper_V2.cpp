@@ -1861,20 +1861,25 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   size_t lenTopicThrottle = strlen("/throttle/");
 
   WS_DEBUG_PRINTLN("Allocating memory for topic b2d");
-// Attempt to allocate memory for the broker-to-device topic
+  // Attempt to allocate memory for the broker-to-device topic
+  size_t lenTopicB2d = lenUser + lenTopicX2x + lenBoardId + 1;
+  WS_DEBUG_PRINT("lenTopicB2d: ");
+  WS_DEBUG_PRINTLN(lenTopicB2d);
 #ifdef USE_PSRAM
-  WsV2._topicB2d = (char *)ps_malloc(sizeof(char) *
-                                     (lenUser + lenTopicX2x + lenBoardId + 1));
+  WS_DEBUG_PRINTLN("ps_malloc called");
+  WsV2._topicB2d = (char *)ps_malloc(sizeof(char) * lenTopicB2d);
 #else
-  WsV2._topicB2d =
-      (char *)malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
+  WS_DEBUG_PRINTLN("malloc() call");
+  WsV2._topicB2d = (char *)malloc(sizeof(char) * lenTopicB2d);
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicB2d != NULL)
+  if (WsV2._topicB2d == NULL) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for topic b2d");
     return false;
+  }
   // Build the broker-to-device topic
-  snprintf(WsV2._topicB2d, lenUser + lenTopicX2x + lenBoardId + 1,
-           "%s/ws-b2d/%s", WsV2._configV2.aio_user, _device_uidV2);
+  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s", WsV2._configV2.aio_user,
+           _device_uidV2);
   WS_DEBUG_PRINT("Broker-to-device topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicB2d);
   // Subscribe to broker-to-device topic
@@ -1894,7 +1899,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
       (char *)malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicD2b != NULL)
+  if (WsV2._topicD2b == NULL)
     return false;
   // Build the broker-to-device topic
   snprintf(WsV2._topicD2b, lenUser + lenTopicX2x + lenBoardId + 1,
@@ -1912,7 +1917,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
       (char *)malloc(sizeof(char) * (lenUser + lenTopicError + 1));
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicError != NULL)
+  if (WsV2._topicError == NULL)
     return false;
   // Build the error topic
   snprintf(WsV2._topicError, lenUser + lenTopicError + 1, "%s/%s",
@@ -1934,7 +1939,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
       (char *)malloc(sizeof(char) * (lenUser + lenTopicThrottle + 1));
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicThrottle != NULL)
+  if (WsV2._topicThrottle == NULL)
     return false;
   // Build the throttle topic
   snprintf(WsV2._topicThrottle, lenUser + lenTopicThrottle + 1, "%s/%s",
