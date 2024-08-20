@@ -1791,6 +1791,7 @@ void cbThrottleTopicV2(char *throttleData, uint16_t len) {
 /**************************************************************************/
 bool Wippersnapper_V2::generateDeviceUIDV2() {
   // Generate device unique identifier
+  WS_DEBUG_PRINTLN("generateDeviceUIDV2()");
   // Set machine_name
   WsV2._boardIdV2 = BOARD_ID;
   // Move the top 3 bytes from the UID
@@ -1801,19 +1802,28 @@ bool Wippersnapper_V2::generateDeviceUIDV2() {
            WsV2._macAddrV2[1], WsV2._macAddrV2[2]);
   // Conversion to match integer UID sent by encodePubRegistrationReqV2()
   itoa(atoi(WsV2.sUIDV2), WsV2.sUIDV2, 10);
+  WS_DEBUG_PRINT("sUIDV2UID: ");
+  WS_DEBUG_PRINTLN(WsV2.sUIDV2);
 
   // Calculate the length of device and UID strings
-  size_t lenBoardId = strlen(_device_uidV2);
+  WS_DEBUG_PRINTLN("Calculating device UID length...");
+  size_t lenBoardId = strlen(WsV2._boardIdV2);
   size_t lenUID = strlen(WsV2.sUIDV2);
+  WS_DEBUG_PRINT("WsV2.sUIDV2 length: ");
+  WS_DEBUG_PRINTLN(lenUID);
   size_t lenIOWipper = strlen("io-wipper-");
+  size_t lenDeviceUID = lenBoardId + lenUID + lenIOWipper + 1;
 
-// Attempt to allocate memory for the _device_uid
+  // dbg print out the len to see if the buffer is large enough
+  WS_DEBUG_PRINT("lenDeviceUID: ");
+  WS_DEBUG_PRINTLN(lenDeviceUID);
+
+  // Attempt to allocate memory for the _device_uid
+  WS_DEBUG_PRINTLN("Allocating memory for device UID");
 #ifdef USE_PSRAM
-  _device_uidV2 =
-      (char *)ps_malloc(sizeof(char) * (lenBoardId + lenUID + lenIOWipper + 1));
+  _device_uidV2 = (char *)ps_malloc(sizeof(char) * lenDeviceUID);
 #else
-  _device_uidV2 =
-      (char *)malloc(sizeof(char) * (lenBoardId + lenUID + lenIOWipper + 1));
+  _device_uidV2 = (char *)malloc(sizeof(char) * lenDeviceUID);
 #endif
 
   // Check if memory allocation was successful
@@ -1823,8 +1833,10 @@ bool Wippersnapper_V2::generateDeviceUIDV2() {
   }
 
   // Create the device identifier
-  snprintf(_device_uidV2, sizeof(_device_uidV2), "io-wipper-%s%s",
-           WsV2._boardIdV2, sUIDV2);
+  snprintf(_device_uidV2, lenDeviceUID, "io-wipper-%s%s", WsV2._boardIdV2,
+           WsV2.sUIDV2);
+  WS_DEBUG_PRINT("Device UID: ");
+  WS_DEBUG_PRINTLN(_device_uidV2);
 
   return true;
 }
@@ -1838,6 +1850,7 @@ bool Wippersnapper_V2::generateDeviceUIDV2() {
 */
 /**************************************************************************/
 bool Wippersnapper_V2::generateWSTopicsV2() {
+  WS_DEBUG_PRINTLN("Pre-calculating topic lengths...");
   // Pre-calculate lengths of topic strings to allocate memory
   // These strings are dynamic within the secrets file
   size_t lenUser = strlen(WsV2._configV2.aio_user);
@@ -1847,6 +1860,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   size_t lenTopicError = strlen("/errors/");
   size_t lenTopicThrottle = strlen("/throttle/");
 
+  WS_DEBUG_PRINTLN("Allocating memory for topic b2d");
 // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
   WsV2._topicB2d = (char *)ps_malloc(sizeof(char) *
@@ -1861,14 +1875,17 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   // Build the broker-to-device topic
   snprintf(WsV2._topicB2d, lenUser + lenTopicX2x + lenBoardId + 1,
            "%s/ws-b2d/%s", WsV2._configV2.aio_user, _device_uidV2);
+  WS_DEBUG_PRINT("Broker-to-device topic: ");
+  WS_DEBUG_PRINTLN(WsV2._topicB2d);
   // Subscribe to broker-to-device topic
   _subscribeB2d = new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicB2d, 1);
   WsV2._mqttV2->subscribe(_subscribeB2d);
-// TODO: Implement callback for broker-to-device signal
-// _subscribeB2d->setCallback(cbBrokerToDevice);
+  // TODO: Implement callback for broker-to-device signal
+  // _subscribeB2d->setCallback(cbBrokerToDevice);
 
-// Create global device to broker topic
-// Attempt to allocate memory for the broker-to-device topic
+  // Create global device to broker topic
+  // Attempt to allocate memory for the broker-to-device topic
+  WS_DEBUG_PRINTLN("Allocating memory for topic d2b");
 #ifdef USE_PSRAM
   WsV2._topicD2b = (char *)ps_malloc(sizeof(char) *
                                      (lenUser + lenTopicX2x + lenBoardId + 1));
@@ -1882,18 +1899,26 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   // Build the broker-to-device topic
   snprintf(WsV2._topicD2b, lenUser + lenTopicX2x + lenBoardId + 1,
            "%s/ws-d2b/%s", WsV2._configV2.aio_user, _device_uidV2);
+  WS_DEBUG_PRINT("Device-to-broker topic: ");
+  WS_DEBUG_PRINTLN(WsV2._topicD2b);
 
-// Attempt to allocate memory for the error topic
+  // Attempt to allocate memory for the error topic
+  WS_DEBUG_PRINTLN("Allocating memory for topic error");
 #ifdef USE_PSRAM
-  WsV2._topicError = (char *)ps_malloc(
-      sizeof(char) * (lenUser + lenTopicError + lenBoardId + 1));
+  WsV2._topicError =
+      (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicError + 1));
 #else
   WsV2._topicError =
-      (char *)malloc(sizeof(char) * (lenUser + lenTopicError + lenBoardId + 1));
+      (char *)malloc(sizeof(char) * (lenUser + lenTopicError + 1));
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicError != NULL)
     return false;
+  // Build the error topic
+  snprintf(WsV2._topicError, lenUser + lenTopicError + 1, "%s/%s",
+           WsV2._configV2.aio_user, "errors");
+  WS_DEBUG_PRINT("Error topic: ");
+  WS_DEBUG_PRINTLN(WsV2._topicError);
   // Subscribe to the error topic
   _subscribeError = new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicError);
   WsV2._mqttV2->subscribe(_subscribeError);
@@ -1902,16 +1927,20 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
 
 // Attempt to allocate memory for the error topic
 #ifdef USE_PSRAM
-  WsV2._topicThrottle = (char *)ps_malloc(
-      sizeof(char) * (lenUser + lenTopicThrottle + lenBoardId + 1));
+  WsV2._topicThrottle =
+      (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicThrottle + 1));
 #else
-  WsV2._topicThrottle = (char *)malloc(
-      sizeof(char) * (lenUser + lenTopicThrottle + lenBoardId + 1));
+  WsV2._topicThrottle =
+      (char *)malloc(sizeof(char) * (lenUser + lenTopicThrottle + 1));
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicThrottle != NULL)
     return false;
-
+  // Build the throttle topic
+  snprintf(WsV2._topicThrottle, lenUser + lenTopicThrottle + 1, "%s/%s",
+           WsV2._configV2.aio_user, "throttle");
+  WS_DEBUG_PRINT("Throttle topic: ");
+  WS_DEBUG_PRINTLN(WsV2._topicThrottle);
   // Subscribe to throttle topic
   _subscribeThrottle =
       new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicThrottle);
@@ -2502,17 +2531,22 @@ void Wippersnapper_V2::connectV2() {
   WsV2.enableWDTV2(WS_WDT_TIMEOUT);
 
   // Generate device identifier
+  WS_DEBUG_PRINTLN("Generating device UID...");
   if (!generateDeviceUIDV2()) {
     haltErrorV2("Unable to generate Device UID");
   }
+  WS_DEBUG_PRINTLN("Device UID generated successfully!");
 
   // Configures an Adafruit Arduino MQTT object
+  WS_DEBUG_PRINTLN("Setting up MQTT client...");
   setupMQTTClientV2(_device_uidV2);
+  WS_DEBUG_PRINTLN("Set up MQTT client successfully!");
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
   if (!generateWSTopicsV2()) {
     haltErrorV2("Unable to allocate space for MQTT topics");
   }
+  WS_DEBUG_PRINTLN("Generated device's MQTT topics successfully!");
 
   // Connect to Network
   WS_DEBUG_PRINTLN("Running Network FSM...");
