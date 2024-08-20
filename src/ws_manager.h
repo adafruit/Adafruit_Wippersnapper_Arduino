@@ -1,7 +1,6 @@
 #ifndef WIPPERSNAPPER_MANAGER_H
 #define WIPPERSNAPPER_MANAGER_H
 
-// #include "Wippersnapper.h"
 #include "network_interfaces/Wippersnapper_ESP32.h"
 typedef Wippersnapper_ESP32 Wippersnapper_WiFi;
 #include "network_interfaces/Wippersnapper_ESP32_V2.h"

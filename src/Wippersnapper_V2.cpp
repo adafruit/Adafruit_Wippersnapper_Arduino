@@ -1880,47 +1880,42 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
 #ifdef USE_PSRAM
   WsV2._topicD2b = (char *)ps_malloc(sizeof(char) * lenTopicD2b);
 #else
-  WsV2._topicD2b =
-      (char *)malloc(sizeof(char) * lenTopicD2b);
+  WsV2._topicD2b = (char *)malloc(sizeof(char) * lenTopicD2b);
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicD2b == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenTopicD2b,
-           "%s/ws-d2b/%s", WsV2._configV2.aio_user, _device_uidV2);
+  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s", WsV2._configV2.aio_user,
+           _device_uidV2);
   WS_DEBUG_PRINT("Device-to-broker topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicD2b);
 
   // Attempt to allocate memory for the error topic
 #ifdef USE_PSRAM
-  WsV2._topicError =
-      (char *)ps_malloc(sizeof(char) * lenTopicError);
+  WsV2._topicError = (char *)ps_malloc(sizeof(char) * lenTopicError);
 #else
-  WsV2._topicError =
-      (char *)malloc(sizeof(char) * lenTopicError);
+  WsV2._topicError = (char *)malloc(sizeof(char) * lenTopicError);
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicError == NULL)
     return false;
   // Build the error topic
-  snprintf(WsV2._topicError, lenTopicError, "%s/%s",
-           WsV2._configV2.aio_user, "errors");
+  snprintf(WsV2._topicError, lenTopicError, "%s/%s", WsV2._configV2.aio_user,
+           "errors");
   WS_DEBUG_PRINT("Error topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicError);
   // Subscribe to the error topic
   _subscribeError = new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicError);
   WsV2._mqttV2->subscribe(_subscribeError);
-// TODO: Implement the error topic callback
-// _subscribeError->setCallback(cbErrorTopic);
+  // TODO: Implement the error topic callback
+  _subscribeError->setCallback(cbErrorTopicV2);
 
 // Attempt to allocate memory for the error topic
 #ifdef USE_PSRAM
-  WsV2._topicThrottle =
-      (char *)ps_malloc(sizeof(char) * lenTopicThrottle);
+  WsV2._topicThrottle = (char *)ps_malloc(sizeof(char) * lenTopicThrottle);
 #else
-  WsV2._topicThrottle =
-      (char *)malloc(sizeof(char) * lenTopicThrottle);
+  WsV2._topicThrottle = (char *)malloc(sizeof(char) * lenTopicThrottle);
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicThrottle == NULL)
@@ -1934,8 +1929,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   _subscribeThrottle =
       new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicThrottle);
   WsV2._mqttV2->subscribe(_subscribeThrottle);
-  // TODO: Implement the throttle topic callback
-  // _subscribeThrottle->setCallback(cbThrottleTopic);
+  _subscribeThrottle->setCallback(cbThrottleTopicV2);
 
   return true;
 }
