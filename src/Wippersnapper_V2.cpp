@@ -1791,7 +1791,6 @@ void cbThrottleTopicV2(char *throttleData, uint16_t len) {
 /**************************************************************************/
 bool Wippersnapper_V2::generateDeviceUIDV2() {
   // Generate device unique identifier
-  WS_DEBUG_PRINTLN("generateDeviceUIDV2()");
   // Set machine_name
   WsV2._boardIdV2 = BOARD_ID;
   // Move the top 3 bytes from the UID
@@ -1802,21 +1801,13 @@ bool Wippersnapper_V2::generateDeviceUIDV2() {
            WsV2._macAddrV2[1], WsV2._macAddrV2[2]);
   // Conversion to match integer UID sent by encodePubRegistrationReqV2()
   itoa(atoi(WsV2.sUIDV2), WsV2.sUIDV2, 10);
-  WS_DEBUG_PRINT("sUIDV2UID: ");
-  WS_DEBUG_PRINTLN(WsV2.sUIDV2);
 
   // Calculate the length of device and UID strings
   WS_DEBUG_PRINTLN("Calculating device UID length...");
   size_t lenBoardId = strlen(WsV2._boardIdV2);
   size_t lenUID = strlen(WsV2.sUIDV2);
-  WS_DEBUG_PRINT("WsV2.sUIDV2 length: ");
-  WS_DEBUG_PRINTLN(lenUID);
   size_t lenIOWipper = strlen("io-wipper-");
   size_t lenDeviceUID = lenBoardId + lenUID + lenIOWipper + 1;
-
-  // dbg print out the len to see if the buffer is large enough
-  WS_DEBUG_PRINT("lenDeviceUID: ");
-  WS_DEBUG_PRINTLN(lenDeviceUID);
 
   // Attempt to allocate memory for the _device_uid
   WS_DEBUG_PRINTLN("Allocating memory for device UID");
@@ -1851,32 +1842,28 @@ bool Wippersnapper_V2::generateDeviceUIDV2() {
 /**************************************************************************/
 bool Wippersnapper_V2::generateWSTopicsV2() {
   WS_DEBUG_PRINTLN("Pre-calculating topic lengths...");
-  // Pre-calculate lengths of topic strings to allocate memory
-  // These strings are dynamic within the secrets file
+  // Calculate length of strings that are are dynamic within the secrets file
   size_t lenUser = strlen(WsV2._configV2.aio_user);
   size_t lenBoardId = strlen(_device_uidV2);
-  // These strings are constants
+  // Calculate length of static strings
   size_t lenTopicX2x = strlen("/ws-x2x/");
-  size_t lenTopicError = strlen("/errors/");
-  size_t lenTopicThrottle = strlen("/throttle/");
-
-  WS_DEBUG_PRINTLN("Allocating memory for topic b2d");
-  // Attempt to allocate memory for the broker-to-device topic
+  size_t lenTopicErrorStr = strlen("/errors/");
+  size_t lenTopicThrottleStr = strlen("/throttle/");
+  // Calculate length of complete topic strings
   size_t lenTopicB2d = lenUser + lenTopicX2x + lenBoardId + 1;
-  WS_DEBUG_PRINT("lenTopicB2d: ");
-  WS_DEBUG_PRINTLN(lenTopicB2d);
+  size_t lenTopicD2b = lenUser + lenTopicX2x + lenBoardId + 1;
+  size_t lenTopicError = lenUser + lenTopicErrorStr + 1;
+  size_t lenTopicThrottle = lenUser + lenTopicThrottleStr + 1;
+
+  // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
-  WS_DEBUG_PRINTLN("ps_malloc called");
   WsV2._topicB2d = (char *)ps_malloc(sizeof(char) * lenTopicB2d);
 #else
-  WS_DEBUG_PRINTLN("malloc() call");
   WsV2._topicB2d = (char *)malloc(sizeof(char) * lenTopicB2d);
 #endif
   // Check if memory allocation was successful
-  if (WsV2._topicB2d == NULL) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to allocate memory for topic b2d");
+  if (WsV2._topicB2d == NULL)
     return false;
-  }
   // Build the broker-to-device topic
   snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s", WsV2._configV2.aio_user,
            _device_uidV2);
@@ -1890,37 +1877,34 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
 
   // Create global device to broker topic
   // Attempt to allocate memory for the broker-to-device topic
-  WS_DEBUG_PRINTLN("Allocating memory for topic d2b");
 #ifdef USE_PSRAM
-  WsV2._topicD2b = (char *)ps_malloc(sizeof(char) *
-                                     (lenUser + lenTopicX2x + lenBoardId + 1));
+  WsV2._topicD2b = (char *)ps_malloc(sizeof(char) * lenTopicD2b);
 #else
   WsV2._topicD2b =
-      (char *)malloc(sizeof(char) * (lenUser + lenTopicX2x + lenBoardId + 1));
+      (char *)malloc(sizeof(char) * lenTopicD2b);
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicD2b == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenUser + lenTopicX2x + lenBoardId + 1,
+  snprintf(WsV2._topicD2b, lenTopicD2b,
            "%s/ws-d2b/%s", WsV2._configV2.aio_user, _device_uidV2);
   WS_DEBUG_PRINT("Device-to-broker topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicD2b);
 
   // Attempt to allocate memory for the error topic
-  WS_DEBUG_PRINTLN("Allocating memory for topic error");
 #ifdef USE_PSRAM
   WsV2._topicError =
-      (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicError + 1));
+      (char *)ps_malloc(sizeof(char) * lenTopicError);
 #else
   WsV2._topicError =
-      (char *)malloc(sizeof(char) * (lenUser + lenTopicError + 1));
+      (char *)malloc(sizeof(char) * lenTopicError);
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicError == NULL)
     return false;
   // Build the error topic
-  snprintf(WsV2._topicError, lenUser + lenTopicError + 1, "%s/%s",
+  snprintf(WsV2._topicError, lenTopicError, "%s/%s",
            WsV2._configV2.aio_user, "errors");
   WS_DEBUG_PRINT("Error topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicError);
@@ -1933,16 +1917,16 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
 // Attempt to allocate memory for the error topic
 #ifdef USE_PSRAM
   WsV2._topicThrottle =
-      (char *)ps_malloc(sizeof(char) * (lenUser + lenTopicThrottle + 1));
+      (char *)ps_malloc(sizeof(char) * lenTopicThrottle);
 #else
   WsV2._topicThrottle =
-      (char *)malloc(sizeof(char) * (lenUser + lenTopicThrottle + 1));
+      (char *)malloc(sizeof(char) * lenTopicThrottle);
 #endif
   // Check if memory allocation was successful
   if (WsV2._topicThrottle == NULL)
     return false;
   // Build the throttle topic
-  snprintf(WsV2._topicThrottle, lenUser + lenTopicThrottle + 1, "%s/%s",
+  snprintf(WsV2._topicThrottle, lenTopicThrottle, "%s/%s",
            WsV2._configV2.aio_user, "throttle");
   WS_DEBUG_PRINT("Throttle topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicThrottle);
