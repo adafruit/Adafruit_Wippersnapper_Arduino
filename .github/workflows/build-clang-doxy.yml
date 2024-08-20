@@ -692,6 +692,8 @@ jobs:
           board_name=${{ matrix.arduino-platform }}
           # Remove '_noota' suffix if present
           board_name=${board_name%_noota}
+          # Remove '_debug' suffix if present
+          board_name=${board_name%_debug}
           # Remove 'wippersnapper_' prefix if present
           board_name=${board_name#wippersnapper_}
           content=$(cat ws-boards/boards/${board_name//_/-}/definition.json)
