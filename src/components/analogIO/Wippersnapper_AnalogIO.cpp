@@ -232,8 +232,12 @@ uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
 */
 /**********************************************************/
 float Wippersnapper_AnalogIO::getPinValueVolts(int pin) {
+#ifdef ARDUINO_ARCH_ESP32
+  return analogReadMilliVolts(pin) / 1000.0;
+#else
   uint16_t rawValue = getPinValue(pin);
   return rawValue * getAref() / 65536;
+#endif
 }
 
 /******************************************************************/
