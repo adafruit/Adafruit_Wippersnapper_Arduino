@@ -87,8 +87,8 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   analogReadResolution(16);
   _nativeResolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
-  scaleAnalogRead = true;
-  _nativeResolution = 13;
+  scaleAnalogRead = false; // handled in bsp
+  _nativeResolution = 13;  // S3 ADC is 13-bit, others are 12-bit
 #elif defined(ARDUINO_ARCH_RP2040)
   scaleAnalogRead = true;
   _nativeResolution = 10;
@@ -96,7 +96,6 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   scaleAnalogRead = true;
   _nativeResolution = 10;
 #endif
-
   _adcResolution = resolution;
 }
 
@@ -233,8 +232,10 @@ uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
 /**********************************************************/
 float Wippersnapper_AnalogIO::getPinValueVolts(int pin) {
 #ifdef ARDUINO_ARCH_ESP32
+  WS_DEBUG_PRINTLN("ESP32: Using analogReadMilliVolts()");
   return analogReadMilliVolts(pin) / 1000.0;
 #else
+  WS_DEBUG_PRINTLN("Using old getPinValueVolts()");
   uint16_t rawValue = getPinValue(pin);
   return rawValue * getAref() / 65536;
 #endif
