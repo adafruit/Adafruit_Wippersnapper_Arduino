@@ -27,8 +27,8 @@
 #include <nanopb/pb_encode.h>
 #include <pb.h>
 
-#include <wippersnapper/description/v1/description.pb.h> // description.proto
-#include <wippersnapper/signal/v1/signal.pb.h>           // signal.proto
+#include "protos/signal.pb.h"
+#include "protos/checkin.pb.h"
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
@@ -150,7 +150,7 @@ public:
 
   // Registration API
   bool registerBoardV2();
-  bool encodePubRegistrationReqV2();
+  bool createMsgCheckinRequest();
   void decodeRegistrationRespV2(char *data, uint16_t len);
   void pollRegistrationRespV2();
   // Configuration API

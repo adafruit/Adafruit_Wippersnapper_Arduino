@@ -1799,7 +1799,7 @@ bool Wippersnapper_V2::generateDeviceUIDV2() {
   }
   snprintf(WsV2.sUIDV2, sizeof(WsV2.sUIDV2), "%02d%02d%02d", WsV2._macAddrV2[0],
            WsV2._macAddrV2[1], WsV2._macAddrV2[2]);
-  // Conversion to match integer UID sent by encodePubRegistrationReqV2()
+  // Conversion to match integer UID sent by createMsgCheckinRequest()
   itoa(atoi(WsV2.sUIDV2), WsV2.sUIDV2, 10);
 
   // Calculate the length of device and UID strings
@@ -1941,13 +1941,12 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
     @returns  True if encoded and/or published successfully, False otherwise.
 */
 /****************************************************************************/
-bool Wippersnapper_V2::encodePubRegistrationReqV2() {
-  bool _status;
-
-  WS_DEBUG_PRINT("Encoding registration msg...");
+bool Wippersnapper_V2::createMsgCheckinRequest() {
   // Create message object
-  wippersnapper_description_v1_CreateDescriptionRequest _message =
-      wippersnapper_description_v1_CreateDescriptionRequest_init_zero;
+  wippersnapper_checkin_CheckinRequest _msg_checkin_req = wippersnapper_checkin_CheckinRequest_init_zero;
+
+  // Fill the `hardware_uid` 
+  strcpy(_msg_checkin_req.hardware_uid, _device_uidV2)
 
   // Set machine_name
   strcpy(_message.machine_name, WS._boardId);
@@ -2286,7 +2285,7 @@ bool Wippersnapper_V2::registerBoardV2() {
   runNetFSMV2();
   WsV2.feedWDTV2();
   WS_DEBUG_PRINT("Encoding registration request...");
-  if (!encodePubRegistrationReqV2())
+  if (!createMsgCheckinRequest())
     return false;
 
   // Blocking, attempt to obtain broker's response message
@@ -2404,6 +2403,7 @@ void Wippersnapper_V2::publishV2(const char *topic, uint8_t *payload,
   }
 }
 
+// TODO: Move this to a new helper class for ESP32
 /**************************************************************/
 /*!
     @brief    Prints last reset reason of ESP32
@@ -2412,7 +2412,6 @@ void Wippersnapper_V2::publishV2(const char *topic, uint8_t *payload,
 */
 /**************************************************************/
 void print_reset_reason_v2(int reason) {
-  // //
   // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/ResetReason/ResetReason.ino
   switch (reason) {
   case 1:
