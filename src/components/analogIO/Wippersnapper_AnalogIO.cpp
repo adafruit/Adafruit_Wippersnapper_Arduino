@@ -15,6 +15,7 @@
  */
 
 #include "Wippersnapper_AnalogIO.h"
+#include "Wippersnapper.h"
 
 /***********************************************************************************/
 /*!
@@ -87,7 +88,7 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   analogReadResolution(16);
   _nativeResolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
-  scaleAnalogRead = false; // handled in bsp
+  scaleAnalogRead = true; // probably should be false, handled in bsp
   _nativeResolution = 13;  // S3 ADC is 13-bit, others are 12-bit
 #elif defined(ARDUINO_ARCH_RP2040)
   scaleAnalogRead = true;
