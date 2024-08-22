@@ -297,7 +297,6 @@ bool Wippersnapper_V2::configAnalogInPinReqV2(
              pinMsg->pin_name, pinMsg->period);
     WsV2._ui_helper->add_text_to_terminal(buffer);
 #endif
-
   } else if (
       pinMsg->request_type ==
       wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
@@ -308,7 +307,6 @@ bool Wippersnapper_V2::configAnalogInPinReqV2(
     snprintf(buffer, 100, "[Pin] De-initialized pin %s\n.", pinMsg->pin_name);
     WsV2._ui_helper->add_text_to_terminal(buffer);
 #endif
-
   } else {
     WS_DEBUG_PRINTLN("ERROR: Could not decode analog pin request!");
     is_success = false;
@@ -1186,7 +1184,6 @@ bool cbPWMDecodeMsgV2(pb_istream_t *stream, const pb_field_t *field,
              msgPWMResponse.payload.attach_response.pin);
     WsV2._ui_helper->add_text_to_terminal(buffer);
 #endif
-
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Detach");
@@ -1213,7 +1210,6 @@ bool cbPWMDecodeMsgV2(pb_istream_t *stream, const pb_field_t *field,
              msgPWMDetachRequest.pin);
     WsV2._ui_helper->add_text_to_terminal(buffer);
 #endif
-
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_freq_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Tone");
@@ -1247,7 +1243,6 @@ bool cbPWMDecodeMsgV2(pb_istream_t *stream, const pb_field_t *field,
              msgPWMWriteFreqRequest.frequency, msgPWMWriteFreqRequest.pin);
     WsV2._ui_helper->add_text_to_terminal(buffer);
 #endif
-
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Duty Cycle");
@@ -1277,7 +1272,6 @@ bool cbPWMDecodeMsgV2(pb_istream_t *stream, const pb_field_t *field,
              (int)msgPWMWriteDutyCycleRequest.duty_cycle, atoi(pwmPin));
     WsV2._ui_helper->add_text_to_terminal(buffer);
 #endif
-
   } else {
     WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
     return false;
@@ -1594,7 +1588,6 @@ bool cbDecodeUARTMessageV2(pb_istream_t *stream, const pb_field_t *field,
     }
     WS_DEBUG_PRINTLN("Published!");
     */
-
   } else if (field->tag ==
              wippersnapper_signal_v1_UARTRequest_req_uart_device_detach_tag) {
     WS_DEBUG_PRINTLN("[New Message] UART Detach");
@@ -2040,7 +2033,6 @@ void Wippersnapper_V2::decodeRegistrationRespV2(char *data, uint16_t len) {
     // WS.publish(_topic_description_status_completeV2, _message_buffer,
     // _message_len, 1);
     WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
-
   } else {
     WS._boardStatus = WS_BOARD_DEF_INVALID;
   }
@@ -2239,14 +2231,61 @@ void Wippersnapper_V2::haltErrorV2(String error,
   }
 }
 
+bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload,
+                                     size_t payload_size, void *payload) {
+  wippersnapper_signal_DeviceToBroker MsgSignal =
+      wippersnapper_signal_DeviceToBroker_init_default;
+
+  // Fill generic signal payload with the payload from the args.
+  switch (which_payload) {
+  case wippersnapper_signal_DeviceToBroker_checkin_request_tag:
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_checkin_request_tag;
+    MsgSignal.payload.checkin_request =
+        *(wippersnapper_checkin_CheckinRequest *)payload;
+    break;
+  default:
+    WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
+    return false;
+  }
+
+  // TODO: Implement encoder calls
+  // Encode the d2b signal message
+  /*
+  pb_ostream_t stream = pb_ostream_from_buffer(WsV2._buffer_outgoingV2,
+                                               sizeof(WsV2._buffer_outgoingV2));
+  if (!ws_pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
+  outgoingSignalMsg))
+  {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
+      is_success = false;
+  }
+  */
+
+  // TODO: Publish to the broker
+  //. Pre-publish - Check if we are still connected
+  runNetFSMV2();
+  WsV2.feedWDTV2();
+  // Publish to the broker
+  // TODO
+
+  return true;
+}
+
 bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINTLN("PublishCheckinRequest()");
-  _checkinModel = new CheckinModel();
+  CheckInModel = new CheckinModel();
+
   WS_DEBUG_PRINTLN("Creating new message...");
-  _checkinModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
+  CheckInModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
   WS_DEBUG_PRINTLN("Encoding message...");
-  if (!_checkinModel->EncodeCheckinRequest())
+  if (!CheckInModel->EncodeCheckinRequest())
     return false;
+  // TODO: We need to publishhere, too
+  size_t msgSz = CheckInModel->GetCheckinRequestSize();
+
+  WS_DEBUG_PRINT("Publishing Checkin Request...");
+  // TODO: Publish call here
   return true;
 }
 

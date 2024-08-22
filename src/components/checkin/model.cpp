@@ -27,3 +27,5 @@ bool CheckinModel::EncodeCheckinRequest() {
   _len_checkin_request = msg_stream.bytes_written;
   return status_encode;
 }
+
+size_t CheckinModel::GetCheckinRequestSize() { return _len_checkin_request; }

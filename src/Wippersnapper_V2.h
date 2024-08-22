@@ -27,6 +27,8 @@
 #include <nanopb/pb_encode.h>
 #include <pb.h>
 
+// Include Signal Proto
+#include "protos/checkin.pb.h"
 #include "protos/signal.pb.h"
 
 // Include Models
@@ -153,6 +155,9 @@ public:
   bool generateDeviceUIDV2();
   bool generateWSTopicsV2();
 
+  // High-level MQTT Publish
+  bool PublishSignal(pb_size_t which_payload, size_t payload_size,
+                     void *payload);
   // Checkin API
   bool PublishCheckinRequest();
 
@@ -239,7 +244,7 @@ public:
   ws_ds18x20 *_ds18x20ComponentV2;  ///< Instance of DS18x20 class
   ws_uart *_uartComponentV2;        ///< Instance of UART class
 
-  CheckinModel *_checkinModel; ///< Instance of CheckinModel class
+  CheckinModel *CheckInModel; ///< Instance of CheckinModel class
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
