@@ -370,34 +370,126 @@ void Wippersnapper_AnalogIO::update() {
       }
       // Does the pin execute on_change?
       else if (_analog_input_pins[i].period == 0L) {
-
+        if (_analog_input_pins[i].prvPeriod == 0L)
+        {
+          // last time was a clean event, passed hyteresis or 300ms had elapsed
+          WS_DEBUG_PRINTLN("prvPeriod is 0, last time was a clean event, "
+                           "passed hyteresis or 500ms had elapsed");
+        }
+        else
+        {
+          // We're waiting 300ms before posting, to avoid a flood of events
+          WS_DEBUG_PRINTLN("prvPeriod is not 0, probably waiting 300ms before posting, "
+                           "to avoid a flood of events");
+          WS_DEBUG_PRINT("CurrentTime: ");
+          WS_DEBUG_PRINTLN(millis());
+          WS_DEBUG_PRINT("PrvPeriod: ");
+          WS_DEBUG_PRINTLN(_analog_input_pins[i].prvPeriod);
+          WS_DEBUG_PRINT("Diff: ");
+          WS_DEBUG_PRINTLN((long)millis() - _analog_input_pins[i].prvPeriod);
+        }
         // note: on-change requires ADC DEFAULT_HYSTERISIS to check against prv
         // pin value
         uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
+        WS_DEBUG_PRINT("PinValRaw: ");
+        WS_DEBUG_PRINTLN(pinValRaw);
 
+        double currentLogValue = log10(pinValRaw + 1); // +1 to avoid log(0)
+        double lastLogValue = log10(_analog_input_pins[i].prvPinVal + 1); // +1 to avoid log(0)
+        WS_DEBUG_PRINT("CurrentLogValue: ");
+        WS_DEBUG_PRINTLN(currentLogValue);
+        WS_DEBUG_PRINT("LastLogValue: ");
+        WS_DEBUG_PRINTLN(lastLogValue);
+        bool passed_hysterisys = false;
+        // Check if the logarithmic change exceeds the threshold
+        if (abs(currentLogValue - lastLogValue) > DEFAULT_HYSTERISIS)
+        {
+          passed_hysterisys = true;
+          WS_DEBUG_PRINTLN("ADC passed hysteresis");
+        } else {
+          WS_DEBUG_PRINTLN("ADC did not pass hysteresis");
+        }
+
+
+        // old technique
         uint16_t _pinValThreshHi =
             _analog_input_pins[i].prvPinVal +
             (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
         uint16_t _pinValThreshLow =
             _analog_input_pins[i].prvPinVal -
             (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
+        WS_DEBUG_PRINT("PinValThreshHi: ");
+        WS_DEBUG_PRINTLN(_pinValThreshHi);
+        WS_DEBUG_PRINT("PinValThreshLow: ");
+        WS_DEBUG_PRINTLN(_pinValThreshLow);
 
-        if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
-          // Perform voltage conversion if we need to
-          if (_analog_input_pins[i].readMode ==
-              wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-            pinValVolts = pinValRaw * getAref() / 65536;
-          }
 
+
+        // if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
+        if (_analog_input_pins[i].readMode ==
+            wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE)
+        {
+          pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
+          WS_DEBUG_PRINT("PinValVolts: ");
+          WS_DEBUG_PRINTLN(pinValVolts);
+        }
+        else if (
+            _analog_input_pins[i].readMode ==
+            wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE)
+        {
+          WS_DEBUG_PRINT("PinValRaw: ");
+          WS_DEBUG_PRINTLN(pinValRaw);
+        }
+        else
+        {
+          WS_DEBUG_PRINTLN("ERROR: Unable to read pin value, cannot determine "
+                           "analog read mode!");
+          pinValRaw = 0.0;
+        }
+        if (passed_hysterisys && ((long)millis() - _analog_input_pins[i].prvPeriod) > 300)
+        {
+          // WS_DEBUG_PRINTLN("ADC has changed enough, publishing event...");
+          _analog_input_pins[i].prvPinVal = pinValRaw;
+          _analog_input_pins[i].prvPeriod = millis();
           // Publish pin event to IO
           encodePinEvent(_analog_input_pins[i].pinName,
                          _analog_input_pins[i].readMode, pinValRaw,
                          pinValVolts);
+        }
+        else if (_analog_input_pins[i].prvPeriod != 0L && pinValRaw != _analog_input_pins[i].prvPinVal &&
+                  ((long)millis() - _analog_input_pins[i].prvPeriod) > 300)
+          {
+            // failed hysterisys, but we were waiting 500ms before posting, to avoid a flood of events
+            WS_DEBUG_PRINTLN("ADC has only mildly changed, but we were waiting 300ms before posting, to avoid a flood of events and this is the final value");
+            _analog_input_pins[i].prvPeriod = 0L;
+            _analog_input_pins[i].prvPinVal = pinValRaw;
+            // Publish pin event to IO
+            encodePinEvent(_analog_input_pins[i].pinName,
+                          _analog_input_pins[i].readMode, pinValRaw,
+                          pinValVolts);
 
-        } else {
+        }
+        else
+        {
           // WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
+          _analog_input_pins[i].prvPeriod = millis();
+          _analog_input_pins[i].prvPinVal = pinValRaw;
           continue;
         }
+
+        // if (_analog_input_pins[i].readMode ==
+        //     wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
+        //   pinValVolts = pinValRaw * getAref() / 65536;
+        // }
+
+        // // Publish pin event to IO
+        // encodePinEvent(_analog_input_pins[i].pinName,
+        //                _analog_input_pins[i].readMode, pinValRaw,
+        //                pinValVolts);
+        // } else {
+        //   // WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
+        //   continue;
+        // }
         // set the pin value in the digital pin object for comparison on next
         // run
         _analog_input_pins[i].prvPinVal = pinValRaw;
