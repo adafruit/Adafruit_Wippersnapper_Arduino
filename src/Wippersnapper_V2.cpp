@@ -1942,41 +1942,8 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
 */
 /****************************************************************************/
 bool Wippersnapper_V2::createMsgCheckinRequest() {
-  // Create message object
-  wippersnapper_checkin_CheckinRequest _msg_checkin_req = wippersnapper_checkin_CheckinRequest_init_zero;
-
-  // Fill the `hardware_uid` 
-  strcpy(_msg_checkin_req.hardware_uid, _device_uidV2)
-
-  // Set machine_name
-  strcpy(_message.machine_name, WS._boardId);
-
-  // Set MAC address
-  _message.mac_addr = atoi(WS.sUID);
-
-  // Set version
-  strcpy(_message.str_version, WS_VERSION);
-
-  // encode registration request message
-  uint8_t _message_buffer[256];
-  pb_ostream_t _msg_stream =
-      pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
-
-  _status = ws_pb_encode(
-      &_msg_stream,
-      wippersnapper_description_v1_CreateDescriptionRequest_fields, &_message);
-  size_t _message_len = _msg_stream.bytes_written;
-
-  // verify message
-  if (!_status)
-    return _status;
-
-  // pubish message
-  WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
-  WS_DEBUG_PRINTLN("Published!");
-  WS._boardStatus = WS_BOARD_DEF_SENT;
-
-  return _status;
+  // TODO: this should be removed as it's not being used
+  return false;
 }
 
 /****************************************************************************/
@@ -2272,6 +2239,17 @@ void Wippersnapper_V2::haltErrorV2(String error,
   }
 }
 
+bool Wippersnapper_V2::PublishCheckinRequest() {
+  WS_DEBUG_PRINTLN("PublishCheckinRequest()");
+  _checkinModel = new CheckinModel();
+  WS_DEBUG_PRINTLN("Creating new message...");
+  _checkinModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
+  WS_DEBUG_PRINTLN("Encoding message...");
+  if (!_checkinModel->EncodeCheckinRequest())
+    return false;
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief    Attempts to register hardware with Adafruit.io WipperSnapper.
@@ -2541,13 +2519,21 @@ void Wippersnapper_V2::connectV2() {
   WsV2._ui_helper->set_label_status("Sending device info...");
 #endif
 
+  // Perform checkin handshake
+  WS_DEBUG_PRINTLN("Performing checkin handshake...");
+  // Publish the checkin request
+  if (!PublishCheckinRequest()) {
+    haltErrorV2("Unable to publish checkin request");
+  }
+  WS_DEBUG_PRINTLN("Checkin request published successfully!");
+
   // Register hardware with Wippersnapper_V2
-  WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
+/*   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
   if (!registerBoardV2()) {
     haltErrorV2("Unable to register with WipperSnapper.");
   }
   runNetFSMV2();
-  WsV2.feedWDTV2();
+  WsV2.feedWDTV2(); */
 
 // switch to monitor screen
 #ifdef USE_DISPLAY

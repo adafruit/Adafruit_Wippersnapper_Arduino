@@ -28,7 +28,9 @@
 #include <pb.h>
 
 #include "protos/signal.pb.h"
-#include "protos/checkin.pb.h"
+
+// Include Models
+#include "components/checkin/model.h"
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
@@ -77,7 +79,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-rc.1" ///< WipperSnapper app. version (semver-formatted)
+  "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
@@ -105,6 +107,9 @@ class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
+
+// PB Models
+class CheckinModel;
 
 /**************************************************************************/
 /*!
@@ -144,11 +149,14 @@ public:
   virtual ws_status_t networkStatusV2();
   ws_board_status_t getBoardStatusV2();
 
+  // Generators for device UID and MQTT topics
   bool generateDeviceUIDV2();
   bool generateWSTopicsV2();
-  // bool generateWSErrorTopicsV2();
 
-  // Registration API
+  // Checkin API
+  bool PublishCheckinRequest();
+
+  // Registration API (TODO: This is V1, remove!)
   bool registerBoardV2();
   bool createMsgCheckinRequest();
   void decodeRegistrationRespV2(char *data, uint16_t len);
@@ -230,6 +238,8 @@ public:
   ws_servo *_servoComponentV2;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20ComponentV2;  ///< Instance of DS18x20 class
   ws_uart *_uartComponentV2;        ///< Instance of UART class
+
+  CheckinModel *_checkinModel; ///< Instance of CheckinModel class
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
