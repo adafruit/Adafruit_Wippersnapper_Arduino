@@ -9,13 +9,14 @@ public:
   void CreateCheckinRequest(const char *hardware_uid,
                             const char *firmware_version);
   bool EncodeCheckinRequest();
-  size_t GetCheckinRequestSize();
+  wippersnapper_checkin_CheckinRequest GetCheckinRequest() {
+    return _CheckinRequest;
+  }
+  wippersnapper_checkin_CheckinRequest _CheckinRequest;
   // TODO: Handle the Checkin Response
-  wippersnapper_checkin_CheckinRequest CheckinRequest;
-  wippersnapper_checkin_CheckinResponse CheckinResponse;
-
 private:
-  size_t _len_checkin_request;
+  wippersnapper_checkin_CheckinRequest _CheckinRequest;
+  wippersnapper_checkin_CheckinResponse _CheckinResponse;
 };
 
 #endif // WS_CHECKIN_H

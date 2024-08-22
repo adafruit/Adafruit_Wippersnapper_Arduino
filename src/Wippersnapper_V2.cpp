@@ -2231,8 +2231,7 @@ void Wippersnapper_V2::haltErrorV2(String error,
   }
 }
 
-bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload,
-                                     size_t payload_size, void *payload) {
+bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   wippersnapper_signal_DeviceToBroker MsgSignal =
       wippersnapper_signal_DeviceToBroker_init_default;
 
@@ -2249,43 +2248,44 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload,
     return false;
   }
 
-  // TODO: Implement encoder calls
-  // Encode the d2b signal message
-  /*
-  pb_ostream_t stream = pb_ostream_from_buffer(WsV2._buffer_outgoingV2,
-                                               sizeof(WsV2._buffer_outgoingV2));
-  if (!ws_pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
-  outgoingSignalMsg))
-  {
-      WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
-      is_success = false;
+  // Encode the signal message
+  pb_ostream_t stream = pb_ostream_from_buffer(messageBuf, sizeof(messageBuf));
+  if (!pb_encode(&stream, wippersnapper_signal_DeviceToBroker_fields,
+                 &MsgSignal)) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to encode d2b signal message, bailing out!");
+    return false;
   }
-  */
 
-  // TODO: Publish to the broker
   //. Pre-publish - Check if we are still connected
   runNetFSMV2();
   WsV2.feedWDTV2();
-  // Publish to the broker
-  // TODO
+  // Attempt to publish to the broker
+  if (!WsV2._mqttV2->publish(_topicD2b, messageBuf, sizeof(messageBuf), 1)) {
+    WS_DEBUG_PRINTLN("ERROR: Failed to publish signal message to broker!");
+    return false;
+  }
 
   return true;
 }
 
 bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINTLN("PublishCheckinRequest()");
-  CheckInModel = new CheckinModel();
 
   WS_DEBUG_PRINTLN("Creating new message...");
+  CheckInModel = new CheckinModel();
   CheckInModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
+
   WS_DEBUG_PRINTLN("Encoding message...");
   if (!CheckInModel->EncodeCheckinRequest())
     return false;
-  // TODO: We need to publishhere, too
-  size_t msgSz = CheckInModel->GetCheckinRequestSize();
 
   WS_DEBUG_PRINT("Publishing Checkin Request...");
-  // TODO: Publish call here
+  // TODO: This segment of code is suspect because we're passing
+  // the value as void* which is not that type safe.
+  if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
+                     CheckInModel->_CheckinRequest))
+    return false;
   return true;
 }
 

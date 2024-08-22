@@ -156,8 +156,7 @@ public:
   bool generateWSTopicsV2();
 
   // High-level MQTT Publish
-  bool PublishSignal(pb_size_t which_payload, size_t payload_size,
-                     void *payload);
+  bool PublishSignal(pb_size_t which_payload, void *payload);
   // Checkin API
   bool PublishCheckinRequest();
 
@@ -308,8 +307,8 @@ private:
   Adafruit_MQTT_Subscribe *_subscribeError;
   Adafruit_MQTT_Subscribe *_subscribeThrottle;
 
-  // Adafruit_MQTT Publish objects
-  Adafruit_MQTT_Publish *_publishD2b;
+  uint8_t messageBuf[WS_MQTT_MAX_PAYLOAD_SIZE]; // This buffer is used for all
+                                                // PublishSignal() calls
 
 protected:
   ws_status_t _statusV2 = WS_IDLE;   /*!< Adafruit IO connection status */
