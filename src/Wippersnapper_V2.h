@@ -31,9 +31,6 @@
 #include "protos/checkin.pb.h"
 #include "protos/signal.pb.h"
 
-// Include Models
-#include "components/checkin/model.h"
-
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
 #include "Adafruit_SleepyDog.h" // Watchdog
@@ -44,38 +41,39 @@
 #include "Wippersnapper_Boards.h"
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 #include "helpers/ws_helper_status.h"
-#include "provisioning/ConfigJson.h"
-
-// Wippersnapper pb helpers
-#include <nanopb/ws_pb_helpers.h>
-
-// Wippersnapper components
-#include "components/analogIO/Wippersnapper_AnalogIO.h"
-#include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
-#include "components/i2c/WipperSnapper_I2C.h"
-
-// Includes for ESP32-only
 #ifdef ARDUINO_ARCH_ESP32
-#include "components/ledc/ws_ledc.h"
 #include <Esp.h>
 #endif
 
+// Wippersnapper pb helpers
+// TODO: Implement this into the high-level publish/subscribe calls
+#include <nanopb/ws_pb_helpers.h>
+
+// Components
+#include "components/analogIO/Wippersnapper_AnalogIO.h"
+#include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
+#include "components/ds18x20/ws_ds18x20.h"
+#include "components/i2c/WipperSnapper_I2C.h"
+#include "components/pixels/ws_pixels.h"
+#include "components/pwm/ws_pwm.h"
+#include "components/servo/ws_servo.h"
+#include "components/uart/ws_uart.h"
+#ifdef ARDUINO_ARCH_ESP32
+#include "components/ledc/ws_ledc.h"
+#endif
 // Display
 #ifdef USE_DISPLAY
 #include "display/ws_display_driver.h"
 #include "display/ws_display_ui_helper.h"
 #endif
 
-#include "components/ds18x20/ws_ds18x20.h"
-#include "components/pixels/ws_pixels.h"
-#include "components/pwm/ws_pwm.h"
-#include "components/servo/ws_servo.h"
-#include "components/uart/ws_uart.h"
+// Models
+#include "components/checkin/model.h"
 
+#include "provisioning/ConfigJson.h"
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS_V2.h"
 #endif
-
 #if defined(USE_LITTLEFS)
 #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
@@ -92,6 +90,7 @@
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   512 ///< MAXIMUM expected payload size, in bytes
 
+// Forward declarations
 class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS_V2;
@@ -109,8 +108,6 @@ class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
-
-// PB Models
 class CheckinModel;
 
 /**************************************************************************/
@@ -149,7 +146,6 @@ public:
   virtual void setupMQTTClientV2(const char *clientID);
 
   virtual ws_status_t networkStatusV2();
-  ws_board_status_t getBoardStatusV2();
 
   // Generators for device UID and MQTT topics
   bool generateDeviceUIDV2();
@@ -157,22 +153,13 @@ public:
 
   // High-level MQTT Publish
   bool PublishSignal(pb_size_t which_payload, void *payload);
+
   // Checkin API
   bool PublishCheckinRequest();
-
-  // Registration API (TODO: This is V1, remove!)
-  bool registerBoardV2();
-  bool createMsgCheckinRequest();
-  void decodeRegistrationRespV2(char *data, uint16_t len);
-  void pollRegistrationRespV2();
-  // Configuration API
-  void publishPinConfigCompleteV2();
 
   // run() loop
   ws_status_t runV2();
   void processPacketsV2();
-  void publishV2(const char *topic, uint8_t *payload, uint16_t bLen,
-                 uint8_t qos = 0);
 
   // Networking helpers
   void pingBrokerV2();

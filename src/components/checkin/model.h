@@ -12,7 +12,6 @@ public:
   wippersnapper_checkin_CheckinRequest GetCheckinRequest() {
     return _CheckinRequest;
   }
-  wippersnapper_checkin_CheckinRequest _CheckinRequest;
   // TODO: Handle the Checkin Response
 private:
   wippersnapper_checkin_CheckinRequest _CheckinRequest;

@@ -1686,8 +1686,9 @@ bool Wippersnapper_V2::encodePinEventV2(
 */
 /**************************************************************************/
 void cbRegistrationStatusV2(char *data, uint16_t len) {
+  // TODO: Re-implement for v2
   // call decoder for registration response msg
-  WsV2.decodeRegistrationRespV2(data, len);
+  // WsV2.decodeRegistrationRespV2(data, len);
 }
 
 /**************************************************************************/
@@ -1925,117 +1926,6 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   _subscribeThrottle->setCallback(cbThrottleTopicV2);
 
   return true;
-}
-
-/****************************************************************************/
-/*!
-    @brief    Encodes hardware registration request message and publishes
-              the message to the Adafruit IO broker.
-    @returns  True if encoded and/or published successfully, False otherwise.
-*/
-/****************************************************************************/
-bool Wippersnapper_V2::createMsgCheckinRequest() {
-  // TODO: this should be removed as it's not being used
-  return false;
-}
-
-/****************************************************************************/
-/*!
-    @brief    Polls the broker for the hardware registration response message.
-
-              NOTE: This function is BLOCKING and will trigger a WDT reset
-              if the message has not arrived.
-
-             NOTE: The registration response msg will arrive
-             async. at the `cbRegistrationStatus` function
-             and set the `boardStatus`
-*/
-/****************************************************************************/
-void Wippersnapper_V2::pollRegistrationRespV2() {
-  // Blocking loop, WDT reset upon failure.
-  while (WS._boardStatus != WS_BOARD_DEF_OK) {
-    WS_DEBUG_PRINT("Polling for registration message response...");
-    WS_DEBUG_PRINTLN(WS._boardStatus);
-    statusLEDBlink(WS_LED_STATUS_WAITING_FOR_REG_MSG);
-    WS._mqtt->processPackets(20); // long-poll
-  }
-}
-
-/****************************************************************************/
-/*!
-    @brief    Decodes hardware registration response message from the
-              Adafruit IO MQTT broker and initializes hardware components.
-    @param    data
-              MQTT message from the Adafruit IO MQTT broker.
-    @param    len
-              Length of data from the Adafruit IO MQTT broker.
-*/
-/****************************************************************************/
-void Wippersnapper_V2::decodeRegistrationRespV2(char *data, uint16_t len) {
-  WS_DEBUG_PRINTLN("GOT Registration Response Message:");
-  uint8_t buffer[len];
-  memcpy(buffer, data, len);
-
-  // init. CreateDescriptionResponse message
-  wippersnapper_description_v1_CreateDescriptionResponse message =
-      wippersnapper_description_v1_CreateDescriptionResponse_init_zero;
-
-  // create input stream for buffer
-  pb_istream_t stream = pb_istream_from_buffer(buffer, len);
-  // decode the stream
-  if (!ws_pb_decode(
-          &stream,
-          wippersnapper_description_v1_CreateDescriptionResponse_fields,
-          &message)) {
-    WS.haltError("Could not decode registration response");
-  }
-  // Decode registration response message
-  if (message.response ==
-      wippersnapper_description_v1_CreateDescriptionResponse_Response_RESPONSE_OK) {
-    WS_DEBUG_PRINTLN("Hardware Response Msg:")
-    WS_DEBUG_PRINT("\tGPIO Pins: ");
-    WS_DEBUG_PRINTLN(message.total_gpio_pins);
-    WS_DEBUG_PRINT("\tAnalog Pins: ");
-    WS_DEBUG_PRINTLN(message.total_analog_pins);
-    WS_DEBUG_PRINT("\tReference voltage: ");
-    WS_DEBUG_PRINT(message.reference_voltage);
-    WS_DEBUG_PRINTLN("v");
-    // Initialize Digital IO class
-    WS._digitalGPIO = new Wippersnapper_DigitalGPIO(message.total_gpio_pins);
-    // Initialize Analog IO class
-    WS._analogIO = new Wippersnapper_AnalogIO(message.total_analog_pins,
-                                              message.reference_voltage);
-    WS._boardStatus = WS_BOARD_DEF_OK;
-
-    // Publish RegistrationComplete message to broker
-    wippersnapper_description_v1_RegistrationComplete msg =
-        wippersnapper_description_v1_RegistrationComplete_init_zero;
-    msg.is_complete = true;
-
-    // encode registration request message
-    uint8_t _message_buffer[128];
-    pb_ostream_t _msg_stream =
-        pb_ostream_from_buffer(_message_buffer, sizeof(_message_buffer));
-
-    bool _status = ws_pb_encode(
-        &_msg_stream, wippersnapper_description_v1_RegistrationComplete_fields,
-        &msg);
-    size_t _message_len = _msg_stream.bytes_written;
-
-    // verify message encoded correctly
-    if (!_status) {
-      WS._boardStatus = WS_BOARD_DEF_INVALID;
-      return;
-    }
-
-    // Publish message
-    // TODO: Implement MQTT publish for v2
-    // WS.publish(_topic_description_status_completeV2, _message_buffer,
-    // _message_len, 1);
-    WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
-  } else {
-    WS._boardStatus = WS_BOARD_DEF_INVALID;
-  }
 }
 
 /**************************************************************************/
@@ -2283,44 +2173,11 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINT("Publishing Checkin Request...");
   // TODO: This segment of code is suspect because we're passing
   // the value as void* which is not that type safe.
-  if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
-                     CheckInModel->_CheckinRequest))
-    return false;
+  /*   if
+     (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
+                       CheckInModel->_CheckinRequest))
+      return false; */
   return true;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Attempts to register hardware with Adafruit.io WipperSnapper.
-    @returns  True if successful, False otherwise.
-*/
-/**************************************************************************/
-bool Wippersnapper_V2::registerBoardV2() {
-  WS_DEBUG_PRINTLN("Registering hardware with IO...");
-
-  // Encode and publish registration request message to broker
-  runNetFSMV2();
-  WsV2.feedWDTV2();
-  WS_DEBUG_PRINT("Encoding registration request...");
-  if (!createMsgCheckinRequest())
-    return false;
-
-  // Blocking, attempt to obtain broker's response message
-  runNetFSMV2();
-  WsV2.feedWDTV2();
-  pollRegistrationRespV2();
-
-  return true;
-}
-
-/**************************************************************************/
-/*!
-    @brief    Returns the board definition status
-    @return   Wippersnapper_V2 board definition status
-*/
-/**************************************************************************/
-ws_board_status_t Wippersnapper_V2::getBoardStatusV2() {
-  return WsV2._boardStatusV2;
 }
 
 /**************************************************************************/
@@ -2394,30 +2251,6 @@ void Wippersnapper_V2::processPacketsV2() {
   WsV2.feedWDTV2();
   // Process all incoming packets from Wippersnapper_V2 MQTT Broker
   WsV2._mqttV2->processPackets(10);
-}
-
-/********************************************************/
-/*!
-    @brief  Publishes a message to the Adafruit IO
-            MQTT broker. Handles network connectivity.
-    @param  topic
-            The MQTT topic to publish to.
-    @param  payload
-            The payload to publish.
-    @param  bLen
-            The length of the payload.
-    @param  qos
-            The Quality of Service to publish with.
-*/
-/*******************************************************/
-void Wippersnapper_V2::publishV2(const char *topic, uint8_t *payload,
-                                 uint16_t bLen, uint8_t qos) {
-  // runNetFSMV2(); // NOTE: Removed for now, causes error with virtual
-  // _connectV2 method when caused with WsV2 object in another file.
-  WsV2.feedWDTV2();
-  if (!WsV2._mqttV2->publish(topic, payload, bLen, qos)) {
-    WS_DEBUG_PRINTLN("Failed to publish MQTT message!");
-  }
 }
 
 // TODO: Move this to a new helper class for ESP32
@@ -2566,14 +2399,6 @@ void Wippersnapper_V2::connectV2() {
   }
   WS_DEBUG_PRINTLN("Checkin request published successfully!");
 
-  // Register hardware with Wippersnapper_V2
-/*   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
-  if (!registerBoardV2()) {
-    haltErrorV2("Unable to register with WipperSnapper.");
-  }
-  runNetFSMV2();
-  WsV2.feedWDTV2(); */
-
 // switch to monitor screen
 #ifdef USE_DISPLAY
   WS_DEBUG_PRINTLN("Clearing loading screen...");
@@ -2582,6 +2407,7 @@ void Wippersnapper_V2::connectV2() {
   WsV2._ui_helper->build_scr_monitor();
 #endif
 
+  // TODO: RE-IMPLEMENT FOR V2
   // Configure hardware
   WsV2.pinCfgCompletedV2 = false;
   while (!WsV2.pinCfgCompletedV2) {
@@ -2589,50 +2415,17 @@ void Wippersnapper_V2::connectV2() {
         "Polling for message containing hardware configuration...");
     WsV2._mqttV2->processPackets(10); // poll
   }
+
+  // TODO: RE-IMPLEMENT FOR V2
   // Publish that we have completed the configuration workflow
   WsV2.feedWDTV2();
   runNetFSMV2();
-  publishPinConfigCompleteV2();
+  // publishPinConfigCompleteV2();
   WS_DEBUG_PRINTLN("Hardware configured successfully!");
 
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
-}
-
-/**************************************************************************/
-/*!
-    @brief    Publishes an ACK to the broker that the device has completed
-              its hardware configuration.
-*/
-/**************************************************************************/
-void Wippersnapper_V2::publishPinConfigCompleteV2() {
-  // Publish that we've set up the pins and are ready to run
-  wippersnapper_signal_v1_SignalResponse msg =
-      wippersnapper_signal_v1_SignalResponse_init_zero;
-  msg.which_payload =
-      wippersnapper_signal_v1_SignalResponse_configuration_complete_tag;
-  msg.payload.configuration_complete = true;
-
-  // encode registration request message
-  uint8_t _message_bufferV2[128];
-  pb_ostream_t _msg_stream =
-      pb_ostream_from_buffer(_message_bufferV2, sizeof(_message_bufferV2));
-
-  bool _status = ws_pb_encode(
-      &_msg_stream, wippersnapper_description_v1_RegistrationComplete_fields,
-      &msg);
-  size_t _message_len = _msg_stream.bytes_written;
-
-  // verify message encoded correctly
-  if (!_status)
-    haltErrorV2("Could not encode, resetting...");
-
-  // Publish message
-  WS_DEBUG_PRINTLN("Publishing to pin config complete...");
-  // TODO: Implement MQTT publish for v2
-  // WsV2._mqttV2->publish(WsV2._topic_device_pin_config_completeV2,
-  // _message_bufferV2, _message_len, 1);
 }
 
 /**************************************************************************/
