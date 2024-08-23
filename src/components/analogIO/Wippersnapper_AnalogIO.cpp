@@ -392,14 +392,15 @@ void Wippersnapper_AnalogIO::update() {
       // pin value
       uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
       WS_DEBUG_PRINT(F("PinValRaw: "));
-      WS_DEBUG_PRINTLN(pinValRaw);
+      WS_DEBUG_PRINT(pinValRaw);
 
-      double currentLogValue = log10(pinValRaw + 1); // +1 to avoid log(0)
+      // +1 to avoid log(0), 0-8 is fluctuation about 0, log(8) = 0.9, hysterisys=0.04
+      double currentLogValue = log10(pinValRaw + 10);
       double lastLogValue =
-          log10(_analog_input_pins[i].prvPinVal + 1); // +1 to avoid log(0)
-      WS_DEBUG_PRINT(F("CurrentLogValue: "));
-      WS_DEBUG_PRINTLN(currentLogValue);
-      WS_DEBUG_PRINT(F("LastLogValue: "));
+          log10(_analog_input_pins[i].prvPinVal + 10); // +1 to avoid log(0)
+      WS_DEBUG_PRINT(F("\tCurrentLogValue: "));
+      WS_DEBUG_PRINT(currentLogValue);
+      WS_DEBUG_PRINT(F("\tLastLogValue: "));
       WS_DEBUG_PRINTLN(lastLogValue);
       bool passed_hysterisys = false;
       // Check if the logarithmic change exceeds the threshold
