@@ -371,13 +371,6 @@ void Wippersnapper_AnalogIO::update() {
     // Does the pin execute on_change?
     else if (_analog_input_pins[i].period == 0L) {
 
-      WS_DEBUG_PRINT(F("CurrentTime: "));
-      WS_DEBUG_PRINTLN(millis());
-      WS_DEBUG_PRINT(F("PrvPeriod: "));
-      WS_DEBUG_PRINTLN(_analog_input_pins[i].prvPeriod);
-      WS_DEBUG_PRINT(F("Diff: "));
-      WS_DEBUG_PRINTLN((long)millis() - _analog_input_pins[i].prvPeriod);
-
       // if (_analog_input_pins[i].prvPeriod == 0L) {
       //   // last time was a clean event, passed hyteresis or 300ms had elapsed
       //   WS_DEBUG_PRINTLN("prvPeriod is 0, last time was a clean event, "
@@ -454,9 +447,7 @@ void Wippersnapper_AnalogIO::update() {
       // waiting 200ms before posting the next final movement event (or
       // continued movement events), to avoid a flood of events when twisting
       // pots
-      if (passed_hysterisys &&
-          (((long)millis() - _analog_input_pins[i].prvPeriod) > 200 ||
-           _analog_input_pins[i].prvPeriod == 0L)) {
+      if (passed_hysterisys && ((long)millis() - _analog_input_pins[i].prvPeriod) > 200) {
         WS_DEBUG_PRINTLN(F("ADC has changed enough, publishing event..."));
         _analog_input_pins[i].prvPinVal = pinValRaw;
         _analog_input_pins[i].prvPeriod = millis();
