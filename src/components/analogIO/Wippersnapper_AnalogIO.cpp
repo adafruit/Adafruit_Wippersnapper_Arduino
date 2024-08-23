@@ -378,16 +378,18 @@ void Wippersnapper_AnalogIO::update() {
       WS_DEBUG_PRINT(F("Diff: "));
       WS_DEBUG_PRINTLN((long)millis() - _analog_input_pins[i].prvPeriod);
 
-      if (_analog_input_pins[i].prvPeriod == 0L) {
-        // last time was a clean event, passed hyteresis or 300ms had elapsed
-        WS_DEBUG_PRINTLN("prvPeriod is 0, last time was a clean event, "
-                         "passed hyteresis or 500ms had elapsed");
-      } else {
-        // We're waiting 300ms before posting, to avoid a flood of events
-        WS_DEBUG_PRINTLN(
-            "prvPeriod is not 0, probably waiting 300ms before posting, "
-            "to avoid a flood of events");
-      }
+      // if (_analog_input_pins[i].prvPeriod == 0L) {
+      //   // last time was a clean event, passed hyteresis or 300ms had elapsed
+      //   WS_DEBUG_PRINTLN("prvPeriod is 0, last time was a clean event, "
+      //                    "passed hyteresis or 500ms had elapsed");
+      // } else {
+      //   // We're waiting 300ms before posting, to avoid a flood of events
+      //   WS_DEBUG_PRINTLN(
+      //       "prvPeriod is not 0, probably waiting 300ms before posting, "
+      //       "to avoid a flood of events");
+      // }
+
+
       // note: on-change requires ADC DEFAULT_HYSTERISIS to check against prv
       // pin value
       uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
@@ -401,14 +403,14 @@ void Wippersnapper_AnalogIO::update() {
       WS_DEBUG_PRINT(F("\tCurrentLogValue: "));
       WS_DEBUG_PRINT(currentLogValue);
       WS_DEBUG_PRINT(F("\tLastLogValue: "));
-      WS_DEBUG_PRINTLN(lastLogValue);
+      WS_DEBUG_PRINT(lastLogValue);
       bool passed_hysterisys = false;
       // Check if the logarithmic change exceeds the threshold
       if (abs(currentLogValue - lastLogValue) > DEFAULT_HYSTERISIS) {
         passed_hysterisys = true;
-        WS_DEBUG_PRINTLN(F("ADC passed hysteresis"));
+        WS_DEBUG_PRINTLN(F("\tADC passed hysteresis"));
       } else {
-        WS_DEBUG_PRINTLN(F("ADC did not pass hysteresis"));
+        WS_DEBUG_PRINTLN(F("\tADC did not pass hysteresis"));
       }
 
       // old technique
@@ -419,15 +421,15 @@ void Wippersnapper_AnalogIO::update() {
           _analog_input_pins[i].prvPinVal -
           (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
       WS_DEBUG_PRINT(F("PinValThreshHi: "));
-      WS_DEBUG_PRINTLN(_pinValThreshHi);
+      WS_DEBUG_PRINT(_pinValThreshHi);
       WS_DEBUG_PRINT(F("PinValThreshLow: "));
-      WS_DEBUG_PRINTLN(_pinValThreshLow);
+      WS_DEBUG_PRINT(_pinValThreshLow);
 
       if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
         // passed_hysterisys = true;
-        WS_DEBUG_PRINTLN(F("ADC passed OLD hysteresis"));
+        WS_DEBUG_PRINTLN(F("\tADC passed OLD hysteresis"));
       } else {
-        WS_DEBUG_PRINTLN(F("ADC did not pass OLD hysteresis"));
+        WS_DEBUG_PRINTLN(F("\tADC did not pass OLD hysteresis"));
       }
 
       if (_analog_input_pins[i].readMode ==
