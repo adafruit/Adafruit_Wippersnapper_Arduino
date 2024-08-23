@@ -386,7 +386,7 @@ void Wippersnapper_AnalogIO::update() {
           // Perform voltage conversion if we need to
           if (_analog_input_pins[i].readMode ==
               wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-            pinValVolts = pinValRaw * getAref() / 65536;
+            pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
           }
 
           // Publish pin event to IO
