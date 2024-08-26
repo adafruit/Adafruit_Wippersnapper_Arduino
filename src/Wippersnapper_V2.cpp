@@ -2126,8 +2126,10 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
       wippersnapper_signal_DeviceToBroker_init_default;
 
   // Fill generic signal payload with the payload from the args.
+  WS_DEBUG_PRINT("Signal Payload Type: ");
   switch (which_payload) {
   case wippersnapper_signal_DeviceToBroker_checkin_request_tag:
+    WS_DEBUG_PRINTLN("Checkin Request");
     MsgSignal.which_payload =
         wippersnapper_signal_DeviceToBroker_checkin_request_tag;
     MsgSignal.payload.checkin_request =
@@ -2138,29 +2140,56 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     return false;
   }
 
+  WS_DEBUG_PRINTLN("MsgSignal.payload.checkin_request: ");
+  WS_DEBUG_PRINTLN(MsgSignal.payload.checkin_request.firmware_version);
+  WS_DEBUG_PRINTLN(MsgSignal.payload.checkin_request.hardware_uid);
+
+
+
   // Encode the signal message
+  WS_DEBUG_PRINT("Encoding signal message...");
   pb_ostream_t stream = pb_ostream_from_buffer(messageBuf, sizeof(messageBuf));
-  if (!pb_encode(&stream, wippersnapper_signal_DeviceToBroker_fields,
-                 &MsgSignal)) {
+  if (!ws_pb_encode(&stream, wippersnapper_signal_DeviceToBroker_fields,
+                    &MsgSignal)) {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to encode d2b signal message, bailing out!");
     return false;
+  }
+  WS_DEBUG_PRINTLN("Encoded!")
+
+  size_t szMessageBuf;
+  if (!pb_get_encoded_size(&szMessageBuf, wippersnapper_signal_DeviceToBroker_fields, &MsgSignal)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to get encoded size of signal message, bailing out!");
+    return false;
+  }
+  WS_DEBUG_PRINT("Message size: ");
+  WS_DEBUG_PRINTLN(szMessageBuf);
+  
+  // Print out the contents of the message buffer for debugging
+  WS_DEBUG_PRINTLN("--Message buffer contents--");
+  for (int i = 0; i++; i < szMessageBuf) {
+    WS_DEBUG_PRINT(messageBuf[i]);
+    WS_DEBUG_PRINT(" ");
   }
 
   //. Pre-publish - Check if we are still connected
   runNetFSMV2();
   WsV2.feedWDTV2();
   // Attempt to publish to the broker
-  if (!WsV2._mqttV2->publish(_topicD2b, messageBuf, sizeof(messageBuf), 1)) {
+  WS_DEBUG_PRINT("Publishing signal message to broker...");
+
+  if (!WsV2._mqttV2->publish(WsV2._topicD2b, messageBuf, szMessageBuf, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish signal message to broker!");
     return false;
   }
+  WS_DEBUG_PRINTLN("Published!");
 
   return true;
 }
 
 bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINTLN("PublishCheckinRequest()");
+  pingBrokerV2();
 
   WS_DEBUG_PRINTLN("Creating new message...");
   CheckInModel = new CheckinModel();
@@ -2169,14 +2198,19 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINTLN("Encoding message...");
   if (!CheckInModel->EncodeCheckinRequest())
     return false;
+  
+  WS_DEBUG_PRINT("Message Size: ");
+  WS_DEBUG_PRINTLN(CheckInModel->CheckinRequestSz);
 
+  pingBrokerV2();
   WS_DEBUG_PRINT("Publishing Checkin Request...");
   // TODO: This segment of code is suspect because we're passing
   // the value as void* which is not that type safe.
-  /*   if
-     (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
-                       CheckInModel->_CheckinRequest))
-      return false; */
+  if (! PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
+                      &(CheckInModel->_CheckinRequest)))
+    return false;
+
+
   return true;
 }
 

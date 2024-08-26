@@ -25,6 +25,7 @@
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_decode.h>
 #include <nanopb/pb_encode.h>
+#include <nanopb/ws_pb_helpers.h>
 #include <pb.h>
 
 // Include Signal Proto
@@ -44,10 +45,6 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include <Esp.h>
 #endif
-
-// Wippersnapper pb helpers
-// TODO: Implement this into the high-level publish/subscribe calls
-#include <nanopb/ws_pb_helpers.h>
 
 // Components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"

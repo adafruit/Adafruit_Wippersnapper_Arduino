@@ -24,5 +24,10 @@ bool CheckinModel::EncodeCheckinRequest() {
   status_encode =
       pb_encode(&msg_stream, wippersnapper_checkin_CheckinRequest_fields,
                 &_CheckinRequest);
+
+
+  pb_get_encoded_size(&CheckinRequestSz, wippersnapper_checkin_CheckinRequest_fields,
+                      &_CheckinRequest);
+
   return status_encode;
 }

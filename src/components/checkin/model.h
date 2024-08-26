@@ -13,9 +13,11 @@ public:
     return _CheckinRequest;
   }
   // TODO: Handle the Checkin Response
-private:
   wippersnapper_checkin_CheckinRequest _CheckinRequest;
   wippersnapper_checkin_CheckinResponse _CheckinResponse;
+  size_t CheckinRequestSz;
+private:
+
 };
 
 #endif // WS_CHECKIN_H
