@@ -9,15 +9,33 @@ public:
   void CreateCheckinRequest(const char *hardware_uid,
                             const char *firmware_version);
   bool EncodeCheckinRequest();
+  bool DecodeCheckinResponse(uint8_t *buf, size_t len);
+  void ParseCheckinResponse();
+  // TODO: Do we need this?
   wippersnapper_checkin_CheckinRequest GetCheckinRequest() {
     return _CheckinRequest;
   }
-  // TODO: Handle the Checkin Response
+
+  wippersnapper_checkin_CheckinResponse_Response
+  setCheckinResponse(wippersnapper_checkin_CheckinResponse_Response response);
+  wippersnapper_checkin_CheckinResponse_Response getCheckinResponse();
+  void setTotalGPIOPins(int32_t total_gpio_pins);
+  int32_t getTotalGPIOPins();
+  void setTotalAnalogPins(int32_t total_analog_pins);
+  int32_t getTotalAnalogPins();
+  void setReferenceVoltage(float reference_voltage);
+  float getReferenceVoltage();
+
+  // TODO: Shouldn't these be private?
   wippersnapper_checkin_CheckinRequest _CheckinRequest;
   wippersnapper_checkin_CheckinResponse _CheckinResponse;
-  size_t CheckinRequestSz;
+  size_t CheckinRequestSz; // TODO: Do we need this?
 
 private:
+  wippersnapper_checkin_CheckinResponse_Response _checkin_response;
+  int32_t _total_gpio_pins;
+  int32_t _total_analog_pins;
+  float _reference_voltage;
 };
 
 #endif // WS_CHECKIN_H

@@ -72,3 +72,46 @@ bool CheckinModel::EncodeCheckinRequest() {
   return pb_encode(&msg_stream, wippersnapper_checkin_CheckinRequest_fields,
                    &_CheckinRequest);
 }
+
+bool CheckinModel::DecodeCheckinResponse(uint8_t *buf, size_t len) {
+  // Create a stream that reads from a buffer.
+  pb_istream_t stream = pb_istream_from_buffer(buf, len);
+  // Decode the message.
+  return pb_decode(&stream, wippersnapper_checkin_CheckinResponse_fields,
+                   &_CheckinResponse);
+}
+
+void CheckinModel::ParseCheckinResponse() {
+  setCheckinResponse(_CheckinResponse.response);
+  setTotalGPIOPins(_CheckinResponse.total_gpio_pins);
+  setTotalAnalogPins(_CheckinResponse.total_analog_pins);
+  setReferenceVoltage(_CheckinResponse.reference_voltage);
+}
+
+wippersnapper_checkin_CheckinResponse_Response CheckinModel::setCheckinResponse(
+    wippersnapper_checkin_CheckinResponse_Response response) {
+  _checkin_response = _CheckinResponse.response;
+}
+
+wippersnapper_checkin_CheckinResponse_Response
+CheckinModel::getCheckinResponse() {
+  return _checkin_response;
+};
+
+void CheckinModel::setTotalGPIOPins(int32_t total_gpio_pins) {
+  _total_gpio_pins = total_gpio_pins;
+}
+
+int32_t CheckinModel::getTotalGPIOPins() { return _total_gpio_pins; }
+
+void CheckinModel::setTotalAnalogPins(int32_t total_analog_pins) {
+  _total_analog_pins = total_analog_pins;
+}
+
+int32_t CheckinModel::getTotalAnalogPins() { return _total_analog_pins; }
+
+void CheckinModel::setReferenceVoltage(float reference_voltage) {
+  _reference_voltage = reference_voltage;
+}
+
+float CheckinModel::getReferenceVoltage() { return _reference_voltage; }
