@@ -1844,7 +1844,8 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   size_t lenTopicErrorStr = strlen("/errors/");
   size_t lenTopicThrottleStr = strlen("/throttle/");
   // Calculate length of complete topic strings
-  // NOTE: We are using "+2" to account for the null terminator and the "/" at the end of the topic
+  // NOTE: We are using "+2" to account for the null terminator and the "/" at
+  // the end of the topic
   size_t lenTopicB2d = lenUser + lenTopicX2x + lenBoardId + 2;
   size_t lenTopicD2b = lenUser + lenTopicX2x + lenBoardId + 2;
   size_t lenTopicError = lenUser + lenTopicErrorStr + 2;
@@ -1860,8 +1861,8 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   if (WsV2._topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s/", WsV2._configV2.aio_user,
-           _device_uidV2);
+  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s/",
+           WsV2._configV2.aio_user, _device_uidV2);
   WS_DEBUG_PRINT("Broker-to-device topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicB2d);
   // Subscribe to broker-to-device topic
@@ -1881,8 +1882,8 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   if (WsV2._topicD2b == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s/", WsV2._configV2.aio_user,
-           _device_uidV2);
+  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s/",
+           WsV2._configV2.aio_user, _device_uidV2);
   WS_DEBUG_PRINT("Device-to-broker topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicD2b);
 
@@ -2141,7 +2142,6 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     return false;
   }
 
-
   // Encode the signal message
   WS_DEBUG_PRINT("Encoding signal message...");
   pb_ostream_t stream = pb_ostream_from_buffer(messageBuf, sizeof(messageBuf));
@@ -2154,8 +2154,11 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   WS_DEBUG_PRINTLN("Encoded!")
 
   size_t szMessageBuf;
-  if (!pb_get_encoded_size(&szMessageBuf, wippersnapper_signal_DeviceToBroker_fields, &MsgSignal)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to get encoded size of signal message, bailing out!");
+  if (!pb_get_encoded_size(&szMessageBuf,
+                           wippersnapper_signal_DeviceToBroker_fields,
+                           &MsgSignal)) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to get encoded size of signal message, bailing out!");
     return false;
   }
 
@@ -2184,7 +2187,7 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINTLN("Encoding message...");
   if (!CheckInModel->EncodeCheckinRequest())
     return false;
-  
+
   WS_DEBUG_PRINT("Message Size: ");
   WS_DEBUG_PRINTLN(CheckInModel->CheckinRequestSz);
 
@@ -2192,10 +2195,9 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINT("Publishing Checkin Request...");
   // TODO: This segment of code is suspect because we're passing
   // the value as void* which is not that type safe.
-  if (! PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
-                      &(CheckInModel->_CheckinRequest)))
+  if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
+                     &(CheckInModel->_CheckinRequest)))
     return false;
-
 
   return true;
 }
