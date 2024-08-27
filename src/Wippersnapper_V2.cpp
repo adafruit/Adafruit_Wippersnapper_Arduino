@@ -2124,9 +2124,9 @@ void Wippersnapper_V2::haltErrorV2(String error,
 }
 
 bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
+  size_t szMessageBuf;
   wippersnapper_signal_DeviceToBroker MsgSignal =
       wippersnapper_signal_DeviceToBroker_init_default;
-
   // Fill generic signal payload with the payload from the args.
   WS_DEBUG_PRINT("Signal Payload Type: ");
   switch (which_payload) {
@@ -2142,18 +2142,7 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     return false;
   }
 
-  // Encode the signal message
-  WS_DEBUG_PRINT("Encoding signal message...");
-  pb_ostream_t stream = pb_ostream_from_buffer(messageBuf, sizeof(messageBuf));
-  if (!ws_pb_encode(&stream, wippersnapper_signal_DeviceToBroker_fields,
-                    &MsgSignal)) {
-    WS_DEBUG_PRINTLN(
-        "ERROR: Unable to encode d2b signal message, bailing out!");
-    return false;
-  }
-  WS_DEBUG_PRINTLN("Encoded!")
-
-  size_t szMessageBuf;
+  // Get the encoded size of the signal message
   if (!pb_get_encoded_size(&szMessageBuf,
                            wippersnapper_signal_DeviceToBroker_fields,
                            &MsgSignal)) {
@@ -2162,12 +2151,27 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     return false;
   }
 
-  //. Pre-publish - Check if we are still connected
+  // Size the message buffer to fit the encoded signal message
+  uint8_t msgBuf[szMessageBuf];
+
+  // Encode the signal message
+  WS_DEBUG_PRINT("Encoding signal message...");
+  pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, szMessageBuf);
+  if (!ws_pb_encode(&stream, wippersnapper_signal_DeviceToBroker_fields,
+                    &MsgSignal)) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to encode d2b signal message, bailing out!");
+    return false;
+  }
+  WS_DEBUG_PRINTLN("Encoded!")
+
+  //. Check that we are still connected
   runNetFSMV2();
   WsV2.feedWDTV2();
-  // Attempt to publish to the broker
+
+  // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
-  if (!WsV2._mqttV2->publish(WsV2._topicD2b, messageBuf, szMessageBuf, 1)) {
+  if (!WsV2._mqttV2->publish(WsV2._topicD2b, msgBuf, szMessageBuf, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish signal message to broker!");
     return false;
   }
@@ -2193,8 +2197,6 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
 
   pingBrokerV2();
   WS_DEBUG_PRINT("Publishing Checkin Request...");
-  // TODO: This segment of code is suspect because we're passing
-  // the value as void* which is not that type safe.
   if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
                      &(CheckInModel->_CheckinRequest)))
     return false;
