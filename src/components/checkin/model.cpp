@@ -88,7 +88,7 @@ void CheckinModel::ParseCheckinResponse() {
   setReferenceVoltage(_CheckinResponse.reference_voltage);
 }
 
-wippersnapper_checkin_CheckinResponse_Response CheckinModel::setCheckinResponse(
+void CheckinModel::setCheckinResponse(
     wippersnapper_checkin_CheckinResponse_Response response) {
   _checkin_response = _CheckinResponse.response;
 }

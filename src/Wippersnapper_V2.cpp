@@ -1641,6 +1641,45 @@ void cbSignalUARTReqV2(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode UART Signal message");
 }
 
+bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
+                            void **arg) {
+  WS_DEBUG_PRINTLN("cbDecodeBrokerToDevice()");
+  (void)arg; // marking unused parameters to avoid compiler warning
+
+  switch (field->tag) {
+  case wippersnapper_signal_BrokerToDevice_checkin_response_tag:
+    WS_DEBUG_PRINTLN("GOT: Checkin Response");
+    break;
+  default:
+    WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
+    return false;
+  }
+
+  // once this is returned, pb_dec_submessage()
+  // decodes the submessage contents.
+  return true;
+}
+
+void cbBrokerToDevice(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("=> New B2D message!");
+  wippersnapper_signal_BrokerToDevice msg_signal =
+      wippersnapper_signal_BrokerToDevice_init_default;
+
+  // Configure the payload callback
+  msg_signal.cb_payload.funcs.decode = cbDecodeBrokerToDevice;
+
+  // Decode msg_signal
+  WS_DEBUG_PRINTLN("Creating input stream...");
+  pb_istream_t istream = pb_istream_from_buffer((uint8_t *)data, len);
+  WS_DEBUG_PRINTLN("Decoding BrokerToDevice message...");
+  if (!pb_decode(&istream, wippersnapper_signal_BrokerToDevice_fields,
+                 &msg_signal)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message");
+    return;
+  }
+  WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -1868,8 +1907,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   // Subscribe to broker-to-device topic
   _subscribeB2d = new Adafruit_MQTT_Subscribe(WsV2._mqttV2, WsV2._topicB2d, 1);
   WsV2._mqttV2->subscribe(_subscribeB2d);
-  // TODO: Implement callback for broker-to-device signal
-  // _subscribeB2d->setCallback(cbBrokerToDevice);
+  _subscribeB2d->setCallback(cbBrokerToDevice);
 
   // Create global device to broker topic
   // Attempt to allocate memory for the broker-to-device topic
@@ -2200,6 +2238,14 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
   if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
                      &(CheckInModel->_CheckinRequest)))
     return false;
+
+  WS_DEBUG_PRINTLN("Listening for new packets!");
+  bool gotPacket = false;
+  while (!gotPacket) {
+    WsV2.feedWDTV2();
+    WsV2._mqttV2->processPackets(10); // 1min poll for incoming packets
+  }
+  WS_DEBUG_PRINTLN("Timed out listening for new packets!");
 
   return true;
 }

@@ -16,7 +16,7 @@ public:
     return _CheckinRequest;
   }
 
-  wippersnapper_checkin_CheckinResponse_Response
+  void
   setCheckinResponse(wippersnapper_checkin_CheckinResponse_Response response);
   wippersnapper_checkin_CheckinResponse_Response getCheckinResponse();
   void setTotalGPIOPins(int32_t total_gpio_pins);
