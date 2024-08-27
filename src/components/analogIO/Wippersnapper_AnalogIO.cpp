@@ -406,13 +406,36 @@ void Wippersnapper_AnalogIO::update() {
         WS_DEBUG_PRINTLN(F("\tADC did not pass hysteresis"));
       }
 
+
+
+      // new plan - add 100 then use 0.1 as the hysteresis, ten percent of current raw value
+      
+
+
+
+
+
+
+
+
+      // take diff in raw value and convert to bits in native resolution, then check for more than 4 bit change (0 to 8 is the noise floor, scaled)
+      float diff = abs(pinValRaw - _analog_input_pins[i].prvPinVal);
+      //convert diff to original resolution
+      diff = diff * (1 << (getADCresolution() - getNativeResolution()));
+      if (diff > 4) {
+        passed_hysterisys = true;
+        WS_DEBUG_PRINTLN(F("\tADC passed hysteresis"));
+      } else {
+        WS_DEBUG_PRINTLN(F("\tADC did not pass hysteresis"));
+      }
+
       // old technique
       uint16_t _pinValThreshHi =
           _analog_input_pins[i].prvPinVal +
-          (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
+          (_analog_input_pins[i].prvPinVal * 0.02);// DEFAULT_HYSTERISIS);
       uint16_t _pinValThreshLow =
           _analog_input_pins[i].prvPinVal -
-          (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
+          (_analog_input_pins[i].prvPinVal * 0.02);//DEFAULT_HYSTERISIS);
       WS_DEBUG_PRINT(F("PinValThreshHi: "));
       WS_DEBUG_PRINT(_pinValThreshHi);
       WS_DEBUG_PRINT(F("PinValThreshLow: "));
@@ -435,7 +458,10 @@ void Wippersnapper_AnalogIO::update() {
           wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE) {
         // already fetched raw value, just print it
         WS_DEBUG_PRINT(F("PinValRaw: "));
-        WS_DEBUG_PRINTLN(pinValRaw);
+        WS_DEBUG_PRINT(pinValRaw);
+        WS_DEBUG_PRINT(F("PinValPrev: "));
+        WS_DEBUG_PRINTLN(_analog_input_pins[i].prvPinVal);
+
       } else {
         WS_DEBUG_PRINTLN("ERROR: Unable to read pin value, cannot determine "
                          "analog read mode!");

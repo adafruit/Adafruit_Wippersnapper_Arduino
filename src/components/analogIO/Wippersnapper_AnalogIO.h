@@ -18,7 +18,7 @@
 
 #include "Wippersnapper.h"
 
-#define DEFAULT_HYSTERISIS 0.04 ///< Default DEFAULT_HYSTERISIS of 0.04 (log10)
+#define DEFAULT_HYSTERISIS 0.3 ///< Default DEFAULT_HYSTERISIS of 0.3 (log10)
 
 /** Data about an analog input pin */
 struct analogInputPin {
