@@ -1844,10 +1844,11 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   size_t lenTopicErrorStr = strlen("/errors/");
   size_t lenTopicThrottleStr = strlen("/throttle/");
   // Calculate length of complete topic strings
-  size_t lenTopicB2d = lenUser + lenTopicX2x + lenBoardId + 1;
-  size_t lenTopicD2b = lenUser + lenTopicX2x + lenBoardId + 1;
-  size_t lenTopicError = lenUser + lenTopicErrorStr + 1;
-  size_t lenTopicThrottle = lenUser + lenTopicThrottleStr + 1;
+  // NOTE: We are using "+2" to account for the null terminator and the "/" at the end of the topic
+  size_t lenTopicB2d = lenUser + lenTopicX2x + lenBoardId + 2;
+  size_t lenTopicD2b = lenUser + lenTopicX2x + lenBoardId + 2;
+  size_t lenTopicError = lenUser + lenTopicErrorStr + 2;
+  size_t lenTopicThrottle = lenUser + lenTopicThrottleStr + 2;
 
   // Attempt to allocate memory for the broker-to-device topic
 #ifdef USE_PSRAM
@@ -1859,7 +1860,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   if (WsV2._topicB2d == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s", WsV2._configV2.aio_user,
+  snprintf(WsV2._topicB2d, lenTopicB2d, "%s/ws-b2d/%s/", WsV2._configV2.aio_user,
            _device_uidV2);
   WS_DEBUG_PRINT("Broker-to-device topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicB2d);
@@ -1880,7 +1881,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   if (WsV2._topicD2b == NULL)
     return false;
   // Build the broker-to-device topic
-  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s", WsV2._configV2.aio_user,
+  snprintf(WsV2._topicD2b, lenTopicD2b, "%s/ws-d2b/%s/", WsV2._configV2.aio_user,
            _device_uidV2);
   WS_DEBUG_PRINT("Device-to-broker topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicD2b);
@@ -1895,7 +1896,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   if (WsV2._topicError == NULL)
     return false;
   // Build the error topic
-  snprintf(WsV2._topicError, lenTopicError, "%s/%s", WsV2._configV2.aio_user,
+  snprintf(WsV2._topicError, lenTopicError, "%s/%s/", WsV2._configV2.aio_user,
            "errors");
   WS_DEBUG_PRINT("Error topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicError);
@@ -1915,7 +1916,7 @@ bool Wippersnapper_V2::generateWSTopicsV2() {
   if (WsV2._topicThrottle == NULL)
     return false;
   // Build the throttle topic
-  snprintf(WsV2._topicThrottle, lenTopicThrottle, "%s/%s",
+  snprintf(WsV2._topicThrottle, lenTopicThrottle, "%s/%s/",
            WsV2._configV2.aio_user, "throttle");
   WS_DEBUG_PRINT("Throttle topic: ");
   WS_DEBUG_PRINTLN(WsV2._topicThrottle);
@@ -2140,11 +2141,6 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     return false;
   }
 
-  WS_DEBUG_PRINTLN("MsgSignal.payload.checkin_request: ");
-  WS_DEBUG_PRINTLN(MsgSignal.payload.checkin_request.firmware_version);
-  WS_DEBUG_PRINTLN(MsgSignal.payload.checkin_request.hardware_uid);
-
-
 
   // Encode the signal message
   WS_DEBUG_PRINT("Encoding signal message...");
@@ -2162,22 +2158,12 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     WS_DEBUG_PRINTLN("ERROR: Unable to get encoded size of signal message, bailing out!");
     return false;
   }
-  WS_DEBUG_PRINT("Message size: ");
-  WS_DEBUG_PRINTLN(szMessageBuf);
-  
-  // Print out the contents of the message buffer for debugging
-  WS_DEBUG_PRINTLN("--Message buffer contents--");
-  for (int i = 0; i++; i < szMessageBuf) {
-    WS_DEBUG_PRINT(messageBuf[i]);
-    WS_DEBUG_PRINT(" ");
-  }
 
   //. Pre-publish - Check if we are still connected
   runNetFSMV2();
   WsV2.feedWDTV2();
   // Attempt to publish to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
-
   if (!WsV2._mqttV2->publish(WsV2._topicD2b, messageBuf, szMessageBuf, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish signal message to broker!");
     return false;
