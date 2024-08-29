@@ -172,21 +172,6 @@ public:
               ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
   void errorWriteHangV2(String error);
 
-  // MQTT topic callbacks //
-  // Decodes a signal message
-  bool decodeSignalMsgV2(
-      wippersnapper_signal_v1_CreateSignalRequest *encodedSignalMsg);
-
-  // Encodes a pin event message
-  bool encodePinEventV2(
-      wippersnapper_signal_v1_CreateSignalRequest *outgoingSignalMsg,
-      uint8_t pinName, int pinVal);
-
-  // Pin configure message
-  bool
-  configureDigitalPinReqV2(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
-  bool configAnalogInPinReqV2(wippersnapper_pin_v1_ConfigurePinRequest *pinMsg);
-
   // I2C
   std::vector<WipperSnapper_Component_I2C *>
       i2cComponentsV2; ///< Vector containing all I2C components
