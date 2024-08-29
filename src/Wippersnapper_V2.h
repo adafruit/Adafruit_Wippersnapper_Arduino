@@ -43,7 +43,7 @@
 #include "components/statusLED/Wippersnapper_StatusLED.h"
 #include "helpers/ws_helper_status.h"
 #ifdef ARDUINO_ARCH_ESP32
-#include <Esp.h>
+#include "helpers/ws_helper_esp.h"
 #endif
 
 // Components

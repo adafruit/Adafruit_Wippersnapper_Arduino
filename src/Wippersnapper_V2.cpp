@@ -267,7 +267,8 @@ void Wippersnapper_V2::set_user_keyV2() {
 
 /******************************************************************************************/
 /*!
-    @brief    Decodes a BrokerToDevice message and executes the asscoiated callback.
+    @brief    Decodes a BrokerToDevice message and executes the asscoiated
+   callback.
     @param    stream
               Incoming data stream from buffer.
     @param    field
@@ -909,67 +910,6 @@ void Wippersnapper_V2::processPacketsV2() {
   WsV2._mqttV2->processPackets(10);
 }
 
-// TODO: Move this to a new helper class for ESP32
-/**************************************************************/
-/*!
-    @brief    Prints last reset reason of ESP32
-    @param    reason
-              The return code of rtc_get_reset_reason(coreNum)
-*/
-/**************************************************************/
-void print_reset_reason_v2(int reason) {
-  // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/ResetReason/ResetReason.ino
-  switch (reason) {
-  case 1:
-    WS_DEBUG_PRINTLN("POWERON_RESET");
-    break; /**<1,  Vbat power on reset*/
-  case 3:
-    WS_DEBUG_PRINTLN("SW_RESET");
-    break; /**<3,  Software reset digital core*/
-  case 4:
-    WS_DEBUG_PRINTLN("OWDT_RESET");
-    break; /**<4,  Legacy watch dog reset digital core*/
-  case 5:
-    WS_DEBUG_PRINTLN("DEEPSLEEP_RESET");
-    break; /**<5,  Deep Sleep reset digital core*/
-  case 6:
-    WS_DEBUG_PRINTLN("SDIO_RESET");
-    break; /**<6,  Reset by SLC module, reset digital core*/
-  case 7:
-    WS_DEBUG_PRINTLN("TG0WDT_SYS_RESET");
-    break; /**<7,  Timer Group0 Watch dog reset digital core*/
-  case 8:
-    WS_DEBUG_PRINTLN("TG1WDT_SYS_RESET");
-    break; /**<8,  Timer Group1 Watch dog reset digital core*/
-  case 9:
-    WS_DEBUG_PRINTLN("RTCWDT_SYS_RESET");
-    break; /**<9,  RTC Watch dog Reset digital core*/
-  case 10:
-    WS_DEBUG_PRINTLN("INTRUSION_RESET");
-    break; /**<10, Instrusion tested to reset CPU*/
-  case 11:
-    WS_DEBUG_PRINTLN("TGWDT_CPU_RESET");
-    break; /**<11, Time Group reset CPU*/
-  case 12:
-    WS_DEBUG_PRINTLN("SW_CPU_RESET");
-    break; /**<12, Software reset CPU*/
-  case 13:
-    WS_DEBUG_PRINTLN("RTCWDT_CPU_RESET");
-    break; /**<13, RTC Watch dog Reset CPU*/
-  case 14:
-    WS_DEBUG_PRINTLN("EXT_CPU_RESET");
-    break; /**<14, for APP CPU, reseted by PRO CPU*/
-  case 15:
-    WS_DEBUG_PRINTLN("RTCWDT_BROWN_OUT_RESET");
-    break; /**<15, Reset when the vdd voltage is not stable*/
-  case 16:
-    WS_DEBUG_PRINTLN("RTCWDT_RTC_RESET");
-    break; /**<16, RTC Watch dog reset digital core and rtc module*/
-  default:
-    WS_DEBUG_PRINTLN("NO_MEAN");
-  }
-}
-
 /**************************************************************************/
 /*!
     @brief    Prints information about the WsV2 device to the serial monitor.
@@ -997,10 +937,9 @@ void printDeviceInfoV2() {
 
 // (ESP32-Only) Print reason why device was reset
 #ifdef ARDUINO_ARCH_ESP32
-  WS_DEBUG_PRINT("ESP32 CPU0 RESET REASON: ");
-  print_reset_reason_v2(0);
-  WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
-  print_reset_reason_v2(1);
+  esp_reset_reason_t r = esp_reset_reason();
+  WS_DEBUG_PRINT("ESP Reset Reason: ");
+  WS_DEBUG_PRINTLN(resetReasonName(r));
 #endif
 }
 
