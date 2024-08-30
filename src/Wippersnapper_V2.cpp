@@ -274,41 +274,27 @@ void Wippersnapper_V2::set_user_keyV2() {
 */
 /****************************************************************************/
 bool handleCheckinResponse(pb_istream_t *stream) {
-  // todo: prints are for debug, remove after behavior is confirmed
-  WS_DEBUG_PRINTLN("Decoding Checkin Response...");
+  // Decode the Checkin Response message
   if (!WsV2.CheckInModel->DecodeCheckinResponse(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
     return false;
   }
 
-  // Parse the checkin response
-  WS_DEBUG_PRINTLN("Parsing checkin response...");
+  // Parse the response message
   WsV2.CheckInModel->ParseCheckinResponse();
 
-  // Validate the checkin response
+  // Validate the checkin response message
   if (WsV2.CheckInModel->getCheckinResponse() !=
       wippersnapper_checkin_CheckinResponse_Response_RESPONSE_OK) {
-    WS_DEBUG_PRINT("Found Checkin Response: ");
-    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getCheckinResponse());
-    WS_DEBUG_PRINTLN("ERROR: Checkin Response not OK, backing out!");
+    WS_DEBUG_PRINTLN("ERROR: CheckinResponse not RESPONSE_OK, backing out!");
     return false;
   }
 
-  // Debug print the checkin response TODO remove prints 
-  WS_DEBUG_PRINTLN("Checkin Response Decoded!");
-  WS_DEBUG_PRINT("total gpio pins: ");
-  WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalGPIOPins());
-  WS_DEBUG_PRINT("total analog pins: ");
-  WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalAnalogPins());
-  WS_DEBUG_PRINT("reference voltage: ");
-  WS_DEBUG_PRINTLN(WsV2.CheckInModel->getReferenceVoltage());
-  
-  // Configure the GPIO classes
+  // Configure GPIO classes based on checkin response message
   WsV2._digitalGPIOV2 = new Wippersnapper_DigitalGPIO(WsV2.CheckInModel->getTotalGPIOPins());
-  // Initialize Analog IO class
   WsV2._analogIOV2 = new Wippersnapper_AnalogIO(WsV2.CheckInModel->getTotalAnalogPins(), WsV2.CheckInModel->getReferenceVoltage());
 
-  // set flag so we don't keep the polling loop open
+  // set glob flag so we don't keep the polling loop open
   WsV2.got_checkin_response = true;
   return true;
 }
@@ -351,6 +337,16 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Called when client receives a message published across the
+                Adafruit IO MQTT /ws-b2d/ "signal topic".
+    @param    data
+                Data (payload) from MQTT broker.
+    @param    len
+                Length of data received from MQTT broker.
+*/
+/**************************************************************************/
 void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
   wippersnapper_signal_BrokerToDevice msg_signal =
@@ -365,7 +361,7 @@ void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("Decoding BrokerToDevice message...");
   if (!pb_decode(&istream, wippersnapper_signal_BrokerToDevice_fields,
                  &msg_signal)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message");
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
     return;
   }
   WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
