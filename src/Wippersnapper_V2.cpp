@@ -263,6 +263,37 @@ void Wippersnapper_V2::set_user_keyV2() {
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
+/****************************************************************************/
+/*!
+    @brief    Handles a Checkin Response message and initializes the
+              device's GPIO classes.
+    @param    stream
+              Incoming data stream from buffer.
+    @returns  True if Checkin Response decoded and parsed successfully,
+              False otherwise.
+*/
+/****************************************************************************/
+bool handleCheckinResponse(pb_istream_t *stream) {
+  // todo: prints are for debug, remove after behavior is confirmed
+  WS_DEBUG_PRINTLN("Decoding Checkin Response...");
+  if (!WsV2.CheckInModel->DecodeCheckinResponse(stream)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response");
+    return false;
+  }
+  WS_DEBUG_PRINTLN("Parsing checkin response...");
+  WsV2.CheckInModel->ParseCheckinResponse();
+  WS_DEBUG_PRINTLN("Checkin Response Decoded!");
+  WS_DEBUG_PRINT("total gpio pins: ");
+  WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalGPIOPins());
+  WS_DEBUG_PRINT("total analog pins: ");
+  WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalAnalogPins());
+  WS_DEBUG_PRINT("reference voltage: ");
+  WS_DEBUG_PRINTLN(WsV2.CheckInModel->getReferenceVoltage());
+  // set flag so we don't keep the polling loop open
+  WsV2.got_checkin_response = true;
+  return true;
+}
+
 // Decoders //
 
 /******************************************************************************************/
@@ -286,20 +317,10 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   switch (field->tag) {
   case wippersnapper_signal_BrokerToDevice_checkin_response_tag:
     WS_DEBUG_PRINTLN("GOT: Checkin Response");
-    // todo: prints are for debug, remove after behavior is confirmed
-    WS_DEBUG_PRINTLN("Decoding Checkin Response...");
-    WsV2.CheckInModel->DecodeCheckinResponse(stream);
-    WS_DEBUG_PRINTLN("Parsing checkin response...");
-    WsV2.CheckInModel->ParseCheckinResponse();
-    WS_DEBUG_PRINTLN("Checkin Response Decoded!");
-    WS_DEBUG_PRINT("total gpio pins: ");
-    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalGPIOPins());
-    WS_DEBUG_PRINT("total analog pins: ");
-    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalAnalogPins());
-    WS_DEBUG_PRINT("reference voltage: ");
-    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getReferenceVoltage());
-    // set flag so we don't keep the polling loop open
-    WsV2.got_checkin_response = true;
+    if (!handleCheckinResponse(stream)) {
+      WS_DEBUG_PRINTLN("Failure handling Checkin Response!");
+      return false;
+    }
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
