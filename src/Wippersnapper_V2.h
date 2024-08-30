@@ -262,9 +262,11 @@ public:
 #ifdef ARDUINO_ARCH_ESP32
   ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
 #endif
+  bool got_checkin_response;
 
 private:
   void _initV2();
+
   // MQTT topics
   char *_topicB2d;
   char *_topicD2b;

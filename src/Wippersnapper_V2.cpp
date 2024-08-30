@@ -286,6 +286,20 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   switch (field->tag) {
   case wippersnapper_signal_BrokerToDevice_checkin_response_tag:
     WS_DEBUG_PRINTLN("GOT: Checkin Response");
+    // todo: prints are for debug, remove after behavior is confirmed
+    WS_DEBUG_PRINTLN("Decoding Checkin Response...");
+    WsV2.CheckInModel->DecodeCheckinResponse(stream);
+    WS_DEBUG_PRINTLN("Parsing checkin response...");
+    WsV2.CheckInModel->ParseCheckinResponse();
+    WS_DEBUG_PRINTLN("Checkin Response Decoded!");
+    WS_DEBUG_PRINT("total gpio pins: ");
+    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalGPIOPins());
+    WS_DEBUG_PRINT("total analog pins: ");
+    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalAnalogPins());
+    WS_DEBUG_PRINT("reference voltage: ");
+    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getReferenceVoltage());
+    // set flag so we don't keep the polling loop open
+    WsV2.got_checkin_response = true;
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
@@ -827,12 +841,12 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
     return false;
 
   WS_DEBUG_PRINTLN("Listening for new packets!");
-  bool gotPacket = false;
-  while (!gotPacket) {
-    WsV2.feedWDTV2();
-    WsV2._mqttV2->processPackets(10); // 1min poll for incoming packets
+  WsV2.got_checkin_response = false;
+  while (!WsV2.got_checkin_response) {
+    runNetFSMV2();
+    WsV2._mqttV2->processPackets(10); // fast poll for incoming packets
   }
-  WS_DEBUG_PRINTLN("Timed out listening for new packets!");
+  WS_DEBUG_PRINTLN("Got and processed the checkin response!");
 
   return true;
 }

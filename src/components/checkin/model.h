@@ -9,7 +9,7 @@ public:
   void CreateCheckinRequest(const char *hardware_uid,
                             const char *firmware_version);
   bool EncodeCheckinRequest();
-  bool DecodeCheckinResponse(uint8_t *buf, size_t len);
+  bool DecodeCheckinResponse(pb_istream_t *stream);
   void ParseCheckinResponse();
   // TODO: Do we need this?
   wippersnapper_checkin_CheckinRequest GetCheckinRequest() {

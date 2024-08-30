@@ -73,11 +73,8 @@ bool CheckinModel::EncodeCheckinRequest() {
                    &_CheckinRequest);
 }
 
-bool CheckinModel::DecodeCheckinResponse(uint8_t *buf, size_t len) {
-  // Create a stream that reads from a buffer.
-  pb_istream_t stream = pb_istream_from_buffer(buf, len);
-  // Decode the message.
-  return pb_decode(&stream, wippersnapper_checkin_CheckinResponse_fields,
+bool CheckinModel::DecodeCheckinResponse(pb_istream_t *stream) {
+  return pb_decode(stream, wippersnapper_checkin_CheckinResponse_fields,
                    &_CheckinResponse);
 }
 
