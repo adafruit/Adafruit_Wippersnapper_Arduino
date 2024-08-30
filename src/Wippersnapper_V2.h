@@ -152,7 +152,8 @@ public:
   bool PublishSignal(pb_size_t which_payload, void *payload);
 
   // Checkin API
-  bool PublishCheckinRequest();
+  bool CreateCheckinRequest();
+  void HandleCheckinResponse();
 
   // run() loop
   ws_status_t runV2();
@@ -173,6 +174,7 @@ public:
   void errorWriteHangV2(String error);
 
   // I2C
+  // TODO: Audit all of this!
   std::vector<WipperSnapper_Component_I2C *>
       i2cComponentsV2; ///< Vector containing all I2C components
   WipperSnapper_Component_I2C *_i2cPort0V2 =
@@ -184,13 +186,7 @@ public:
   bool _isI2CPort1InitV2 =
       false; ///< True if I2C port 1 has been initialized, False otherwise.
 
-  uint8_t _bufferV2[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< Shared buffer to save
-                                                callback payload */
-  uint8_t
-      _buffer_outgoingV2[WS_MQTT_MAX_PAYLOAD_SIZE]; /*!< buffer which contains
-                                                     outgoing payload data */
-  uint16_t bufSizeV2; /*!< Length of data inside buffer */
-
+  // TODO: Do we need this?
   ws_board_status_t _boardStatusV2 =
       WS_BOARD_DEF_IDLE; ///< Hardware's registration status
 
@@ -220,6 +216,7 @@ public:
   const char *_boardIdV2; /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqttV2; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
+  // TODO: Audit this, does it need to be here?
   secretsConfig _configV2; /*!< Wippersnapper secrets.json as a struct. */
   networkConfig _multiNetworksV2[3]; /*!< Wippersnapper networks as structs. */
   bool _isWiFiMultiV2 = false; /*!< True if multiple networks are defined. */
@@ -227,36 +224,10 @@ public:
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPinsV2; /*!< Total number of digital-input capable pins */
 
-  wippersnapper_signal_v1_CreateSignalRequest
-      _incomingSignalMsgV2; /*!< Incoming signal message from broker */
-  wippersnapper_signal_v1_I2CRequest msgSignalI2CV2 =
-      wippersnapper_signal_v1_I2CRequest_init_zero; ///< I2C request wrapper
-                                                    ///< message
-
-  // ds signal msg
-  wippersnapper_signal_v1_Ds18x20Request msgSignalDSV2 =
-      wippersnapper_signal_v1_Ds18x20Request_init_zero; ///< DS request message
-                                                        ///< wrapper
-
-  // servo message
-  wippersnapper_signal_v1_ServoRequest
-      msgServoV2; ///< ServoRequest wrapper message
-  wippersnapper_signal_v1_PWMRequest msgPWMV2 =
-      wippersnapper_signal_v1_PWMRequest_init_zero; ///< PWM request wrapper
-                                                    ///< message.
-
-  // pixels signal message
-  wippersnapper_signal_v1_PixelsRequest
-      msgPixelsV2; ///< PixelsRequest wrapper message
-
-  wippersnapper_signal_v1_UARTRequest
-      msgSignalUARTV2; ///< UARTReq wrapper message
-
+  // TODO: Do these need to be here or can they sit within their function?
   char *throttleMessageV2; /*!< Pointer to throttle message data. */
   int throttleTimeV2;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
-
-  bool pinCfgCompletedV2 = false; /*!< Did initial pin sync complete? */
 
 // enable LEDC if esp32
 #ifdef ARDUINO_ARCH_ESP32
@@ -278,11 +249,10 @@ private:
   Adafruit_MQTT_Subscribe *_subscribeError;
   Adafruit_MQTT_Subscribe *_subscribeThrottle;
 
-  uint8_t messageBuf[WS_MQTT_MAX_PAYLOAD_SIZE]; // This buffer is used for all
-                                                // PublishSignal() calls
-
 protected:
-  ws_status_t _statusV2 = WS_IDLE;   /*!< Adafruit IO connection status */
+  // TODO: Do we need this?
+  ws_status_t _statusV2 = WS_IDLE;
+
   uint32_t _last_mqtt_connectV2 = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
   uint32_t _prv_pingV2 = 0; /*!< Previous time when client pinged Adafruit IO's

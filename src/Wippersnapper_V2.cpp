@@ -291,8 +291,11 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
 
   // Configure GPIO classes based on checkin response message
-  WsV2._digitalGPIOV2 = new Wippersnapper_DigitalGPIO(WsV2.CheckInModel->getTotalGPIOPins());
-  WsV2._analogIOV2 = new Wippersnapper_AnalogIO(WsV2.CheckInModel->getTotalAnalogPins(), WsV2.CheckInModel->getReferenceVoltage());
+  WsV2._digitalGPIOV2 =
+      new Wippersnapper_DigitalGPIO(WsV2.CheckInModel->getTotalGPIOPins());
+  WsV2._analogIOV2 =
+      new Wippersnapper_AnalogIO(WsV2.CheckInModel->getTotalAnalogPins(),
+                                 WsV2.CheckInModel->getReferenceVoltage());
 
   // set glob flag so we don't keep the polling loop open
   WsV2.got_checkin_response = true;
@@ -855,8 +858,16 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   return true;
 }
 
-bool Wippersnapper_V2::PublishCheckinRequest() {
-  WS_DEBUG_PRINTLN("PublishCheckinRequest()");
+/**************************************************************************/
+/*!
+    @brief    Creates, fills, encodes and publishes a checkin request
+              message to the broker.
+    @returns  True if the Checkin request message published successfully,
+              False otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper_V2::CreateCheckinRequest() {
+  WS_DEBUG_PRINTLN("CreateCheckinRequest()");
   pingBrokerV2();
 
   WS_DEBUG_PRINTLN("Creating new message...");
@@ -870,21 +881,29 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
   WS_DEBUG_PRINT("Message Size: ");
   WS_DEBUG_PRINTLN(WsV2.CheckInModel->CheckinRequestSz);
 
-  pingBrokerV2();
   WS_DEBUG_PRINT("Publishing Checkin Request...");
   if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
                      &(WsV2.CheckInModel->_CheckinRequest)))
     return false;
-
-  WS_DEBUG_PRINTLN("Listening for new packets!");
-  WsV2.got_checkin_response = false;
-  while (!WsV2.got_checkin_response) {
-    runNetFSMV2();
-    WsV2._mqttV2->processPackets(10); // fast poll for incoming packets
-  }
-  WS_DEBUG_PRINTLN("Got and processed the checkin response!");
+  WS_DEBUG_PRINTLN("Published!");
 
   return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Polls for and handles the checkin response
+              message from the broker.
+*/
+/**************************************************************************/
+void Wippersnapper_V2::HandleCheckinResponse() {
+  WsV2.got_checkin_response = false;
+  WS_DEBUG_PRINTLN("Waiting for checkin response...");
+  while (!WsV2.got_checkin_response) {
+    WsV2.runNetFSMV2();
+    WsV2._mqttV2->processPackets(10); // fast poll for incoming packets
+  }
+  WS_DEBUG_PRINTLN("Completed checkin process!");
 }
 
 /**************************************************************************/
@@ -1036,13 +1055,20 @@ void Wippersnapper_V2::connectV2() {
   WsV2._ui_helper->set_label_status("Sending device info...");
 #endif
 
-  // Perform checkin handshake
   WS_DEBUG_PRINTLN("Performing checkin handshake...");
   // Publish the checkin request
-  if (!PublishCheckinRequest()) {
+  if (!CreateCheckinRequest()) {
     haltErrorV2("Unable to publish checkin request");
   }
-  WS_DEBUG_PRINTLN("Checkin request published successfully!");
+  // Handle the checkin response
+  HandleCheckinResponse();
+
+  // Set the status LED to green to indicate successful configuration
+  // TODO: Use the brightness value from the .json file
+  setStatusLEDColor(0x00A300, 155);
+  delay(20);
+  // Set the status LED to off during app runtime
+  setStatusLEDColor(0x000000, 255);
 
 // switch to monitor screen
 #ifdef USE_DISPLAY
@@ -1051,26 +1077,6 @@ void Wippersnapper_V2::connectV2() {
   WS_DEBUG_PRINTLN("building monitor screen...");
   WsV2._ui_helper->build_scr_monitor();
 #endif
-
-  // TODO: RE-IMPLEMENT FOR V2
-  // Configure hardware
-  WsV2.pinCfgCompletedV2 = false;
-  while (!WsV2.pinCfgCompletedV2) {
-    WS_DEBUG_PRINTLN(
-        "Polling for message containing hardware configuration...");
-    WsV2._mqttV2->processPackets(10); // poll
-  }
-
-  // TODO: RE-IMPLEMENT FOR V2
-  // Publish that we have completed the configuration workflow
-  WsV2.feedWDTV2();
-  runNetFSMV2();
-  // publishPinConfigCompleteV2();
-  WS_DEBUG_PRINTLN("Hardware configured successfully!");
-
-  statusLEDFade(GREEN, 3);
-  WS_DEBUG_PRINTLN(
-      "Registration and configuration complete!\nRunning application...");
 }
 
 /**************************************************************************/
