@@ -277,11 +277,24 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   // todo: prints are for debug, remove after behavior is confirmed
   WS_DEBUG_PRINTLN("Decoding Checkin Response...");
   if (!WsV2.CheckInModel->DecodeCheckinResponse(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response");
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode Checkin Response message");
     return false;
   }
+
+  // Parse the checkin response
   WS_DEBUG_PRINTLN("Parsing checkin response...");
   WsV2.CheckInModel->ParseCheckinResponse();
+
+  // Validate the checkin response
+  if (WsV2.CheckInModel->getCheckinResponse() !=
+      wippersnapper_checkin_CheckinResponse_Response_RESPONSE_OK) {
+    WS_DEBUG_PRINT("Found Checkin Response: ");
+    WS_DEBUG_PRINTLN(WsV2.CheckInModel->getCheckinResponse());
+    WS_DEBUG_PRINTLN("ERROR: Checkin Response not OK, backing out!");
+    return false;
+  }
+
+  // Debug print the checkin response TODO remove prints 
   WS_DEBUG_PRINTLN("Checkin Response Decoded!");
   WS_DEBUG_PRINT("total gpio pins: ");
   WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalGPIOPins());
@@ -289,6 +302,12 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN(WsV2.CheckInModel->getTotalAnalogPins());
   WS_DEBUG_PRINT("reference voltage: ");
   WS_DEBUG_PRINTLN(WsV2.CheckInModel->getReferenceVoltage());
+  
+  // Configure the GPIO classes
+  WsV2._digitalGPIOV2 = new Wippersnapper_DigitalGPIO(WsV2.CheckInModel->getTotalGPIOPins());
+  // Initialize Analog IO class
+  WsV2._analogIOV2 = new Wippersnapper_AnalogIO(WsV2.CheckInModel->getTotalAnalogPins(), WsV2.CheckInModel->getReferenceVoltage());
+
   // set flag so we don't keep the polling loop open
   WsV2.got_checkin_response = true;
   return true;
