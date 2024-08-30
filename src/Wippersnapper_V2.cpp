@@ -810,20 +810,20 @@ bool Wippersnapper_V2::PublishCheckinRequest() {
   pingBrokerV2();
 
   WS_DEBUG_PRINTLN("Creating new message...");
-  CheckInModel = new CheckinModel();
-  CheckInModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
+  WsV2.CheckInModel = new CheckinModel();
+  WsV2.CheckInModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
 
   WS_DEBUG_PRINTLN("Encoding message...");
-  if (!CheckInModel->EncodeCheckinRequest())
+  if (!WsV2.CheckInModel->EncodeCheckinRequest())
     return false;
 
   WS_DEBUG_PRINT("Message Size: ");
-  WS_DEBUG_PRINTLN(CheckInModel->CheckinRequestSz);
+  WS_DEBUG_PRINTLN(WsV2.CheckInModel->CheckinRequestSz);
 
   pingBrokerV2();
   WS_DEBUG_PRINT("Publishing Checkin Request...");
   if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
-                     &(CheckInModel->_CheckinRequest)))
+                     &(WsV2.CheckInModel->_CheckinRequest)))
     return false;
 
   WS_DEBUG_PRINTLN("Listening for new packets!");
