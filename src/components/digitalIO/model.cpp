@@ -33,7 +33,11 @@ DigitalIOModel::DigitalIOModel() {
 /***********************************************************************/
 DigitalIOModel::~DigitalIOModel() {}
 
-bool DigitalIOModel::ParseDigitalIOAdd() { return true; }
-bool DigitalIOModel::ParseDigitalIORemove() { return true; }
-bool DigitalIOModel::ParseDigitalIOEvent() { return true; }
-bool DigitalIOModel::ParseDigitalIOWrite() { return true; }
+bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
+  return pb_decode(stream, wippersnapper_digitalio_DigitalIOAdd_fields,
+                   &_msg_dio_add);
+}
+
+void DigitalIOModel::ParseDigitalIOAdd() {
+  // TODO
+}

@@ -20,19 +20,20 @@ class DigitalIOModel {
 public:
   DigitalIOModel();
   ~DigitalIOModel();
-  bool ParseDigitalIOAdd();
+  bool DecodeDigitalIOAdd(pb_istream_t *stream);
+  void ParseDigitalIOAdd();
   wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAdd() {
     return &_msg_dio_add;
   }
-  bool ParseDigitalIORemove();
+  void ParseDigitalIORemove();
   wippersnapper_digitalio_DigitalIORemove *GetDigitalIORemove() {
     return &_msg_dio_remove;
   }
-  bool ParseDigitalIOEvent();
+  void ParseDigitalIOEvent();
   wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEvent() {
     return &_msg_dio_event;
   }
-  bool ParseDigitalIOWrite();
+  void ParseDigitalIOWrite();
   wippersnapper_digitalio_DigitalIOWrite *GetDigitalIOWrite() {
     return &_msg_dio_write;
   }

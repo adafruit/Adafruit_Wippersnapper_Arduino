@@ -16,9 +16,11 @@
 #define WS_DIGITALIO_CONTROLLER_H
 #include "Wippersnapper_V2.h"
 
+class Wippersnapper_V2;
+
 class DigitalOutputPin {
 public:
-  DigitalOutputPin(uint8_t pin_name);
+  DigitalOutputPin(uint8_t pin_name, bool pin_value);
   uint8_t pin_name;
   bool pin_value;
 };
@@ -37,16 +39,15 @@ public:
   long prv_pin_period;
 };
 
-class DigitalIOModel {
+class DigitalIOController {
 public:
-  DigitalIOModel();
-  ~DigitalIOModel();
-  bool AddDigitalPin();
+  DigitalIOController();
+  ~DigitalIOController();
+  bool AddDigitalPin(pb_istream_t *stream);
 
 private:
   std::vector<DigitalOutputPin> _digital_output_pins;
   std::vector<DigitalInputPin> _digital_input_pins;
 };
-// TODO: V2 required for WS object
-// extern Wippersnapper WS;
+extern Wippersnapper_V2 WsV2;
 #endif // WS_DIGITALIO_CONTROLLER_H
