@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper.h
+ * @file Wippersnapper_V2.h
  *
  * This is the documentation for Adafruit's Wippersnapper firmware for the
  * Arduino platform. It is designed specifically to work with
@@ -30,6 +30,7 @@
 
 // Include Signal Proto
 #include "protos/checkin.pb.h"
+#include "protos/digitalio.pb.h"
 #include "protos/signal.pb.h"
 
 // External libraries
@@ -46,9 +47,12 @@
 #include "helpers/ws_helper_esp.h"
 #endif
 
-// Components
+// Components (API v2)
+#include "components/digitalIO/controller.h"
+#include "components/digitalIO/model.h"
+
+// Components (API v1)
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
-#include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 #include "components/pixels/ws_pixels.h"
@@ -87,8 +91,7 @@
 #define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
   512 ///< MAXIMUM expected payload size, in bytes
 
-// Forward declarations
-class Wippersnapper_DigitalGPIO;
+// Forward declarations (API v1)
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS_V2;
 class WipperSnapper_LittleFS;
@@ -105,7 +108,11 @@ class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
+
+// Forward declarations (API v2)
 class CheckinModel;
+class DigitalIOModel;
+class DigitalIOController;
 
 /**************************************************************************/
 /*!
@@ -192,9 +199,8 @@ public:
 
   // TODO: We really should look at making these static definitions, not dynamic
   // to free up space on the heap
-  Wippersnapper_DigitalGPIO *_digitalGPIOV2; ///< Instance of digital gpio class
-  Wippersnapper_AnalogIO *_analogIOV2;       ///< Instance of analog io class
-  Wippersnapper_FS_V2 *_fileSystemV2; ///< Instance of Filesystem (native USB)
+  Wippersnapper_AnalogIO *_analogIOV2; ///< Instance of analog io class
+  Wippersnapper_FS_V2 *_fileSystemV2;  ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFSV2; ///< Instance of LittleFS Filesystem (non-native USB)
 #ifdef USE_DISPLAY
@@ -208,7 +214,11 @@ public:
   ws_ds18x20 *_ds18x20ComponentV2;  ///< Instance of DS18x20 class
   ws_uart *_uartComponentV2;        ///< Instance of UART class
 
-  CheckinModel *CheckInModel; ///< Instance of CheckinModel class
+  // API v2 Components
+  CheckinModel *CheckInModel;       ///< Instance of CheckinModel class
+  DigitalIOModel *digital_io_model; ///< Instance of DigitalIO model class
+  DigitalIOController
+      *digital_io_controller; ///< Instance of DigitalIO controller class
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */

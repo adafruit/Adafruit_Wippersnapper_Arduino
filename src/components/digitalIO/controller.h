@@ -49,4 +49,4 @@ private:
 };
 // TODO: V2 required for WS object
 // extern Wippersnapper WS;
-#endif // WS_CHECKIN_H
+#endif // WS_DIGITALIO_CONTROLLER_H

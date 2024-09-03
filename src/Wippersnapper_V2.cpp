@@ -291,8 +291,9 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
 
   // Configure GPIO classes based on checkin response message
-  WsV2._digitalGPIOV2 =
-      new Wippersnapper_DigitalGPIO(WsV2.CheckInModel->getTotalGPIOPins());
+  // TODO: Do we even need to set this with the new GPIO classes?
+  // WsV2._digitalGPIOV2 = new
+  // Wippersnapper_DigitalGPIO(WsV2.CheckInModel->getTotalGPIOPins());
   WsV2._analogIOV2 =
       new Wippersnapper_AnalogIO(WsV2.CheckInModel->getTotalAnalogPins(),
                                  WsV2.CheckInModel->getReferenceVoltage());
@@ -1107,7 +1108,7 @@ ws_status_t Wippersnapper_V2::runV2() {
   WsV2.feedWDTV2();
 
   // Process digital inputs, digitalGPIO module
-  WsV2._digitalGPIOV2->processDigitalInputs();
+  // WsV2._digitalGPIOV2->processDigitalInputs();
   WsV2.feedWDTV2();
 
   // Process analog inputs
