@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file controller.cpp
  *
  * Controller for the digitalio.proto API
  *
@@ -27,12 +27,13 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   // Get the DigitalIOAdd message
   wippersnapper_digitalio_DigitalIOAdd *dio_add =
       WsV2.digital_io_model->GetDigitalIOAdd();
+  // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
+  int pin_name = atoi(dio_add->pin_name + 1);
 
   // Configure the pin based on the direction
   if (dio_add->gpio_direction ==
       wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT) {
-    DigitalOutputPin new_pin = DigitalOutputPin(
-        dio_add->pin_name, dio_add->value); // TODO: This is pb_callback type
+    DigitalOutputPin new_pin = DigitalOutputPin(pin_name, dio_add->value);
     _digital_output_pins.push_back(new_pin);
   } else if (
       dio_add->gpio_direction ==

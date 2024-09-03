@@ -33,11 +33,31 @@ DigitalIOModel::DigitalIOModel() {
 /***********************************************************************/
 DigitalIOModel::~DigitalIOModel() {}
 
+/***********************************************************************/
+/*!
+    @brief  Decodes a DigitalIOAdd message into the _msg_dio_add object
+            from a nanopb stream.
+    @param  stream
+            The nanopb input stream.
+    @return True if the DigitalIOAdd message was successfully decoded.
+*/
+/***********************************************************************/
 bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
   return pb_decode(stream, wippersnapper_digitalio_DigitalIOAdd_fields,
                    &_msg_dio_add);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Clears the DigitalIOAdd message and resets it to default
+            values.
+*/
+/***********************************************************************/
+void DigitalIOModel::ClearDigitalIOAdd() {
+  _msg_dio_add = wippersnapper_digitalio_DigitalIOAdd_init_default;
+}
+
+// TODO: It feels like this method should be in the controller!
 void DigitalIOModel::ParseDigitalIOAdd() {
   // TODO
 }

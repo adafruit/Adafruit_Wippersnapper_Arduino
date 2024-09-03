@@ -25,6 +25,7 @@ public:
   wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAdd() {
     return &_msg_dio_add;
   }
+  void ClearDigitalIOAdd();
   void ParseDigitalIORemove();
   wippersnapper_digitalio_DigitalIORemove *GetDigitalIORemove() {
     return &_msg_dio_remove;
