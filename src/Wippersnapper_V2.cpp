@@ -331,6 +331,18 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     }
     WS_DEBUG_PRINTLN("Handled!");
     break;
+  case wippersnapper_signal_BrokerToDevice_digitalio_add_tag:
+    WS_DEBUG_PRINTLN("-> DigitalIO Add Message Type");
+    break;
+  case wippersnapper_signal_BrokerToDevice_digitalio_remove_tag:
+    WS_DEBUG_PRINTLN("-> DigitalIO Remove Message Type");
+    break;
+  case wippersnapper_signal_BrokerToDevice_digitalio_event_tag:
+    WS_DEBUG_PRINTLN("-> DigitalIO Event Message Type");
+    break;
+  case wippersnapper_signal_BrokerToDevice_digitalio_write_tag:
+    WS_DEBUG_PRINTLN("-> DigitalIO Write Message Type");
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
