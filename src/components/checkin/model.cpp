@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -73,11 +73,25 @@ bool CheckinModel::EncodeCheckinRequest() {
                    &_CheckinRequest);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Decodes a CheckinResponse message
+    @param  stream
+            Incoming data stream from buffer.
+    @returns True if the message was successfully decoded,
+             False otherwise.
+*/
+/***********************************************************************/
 bool CheckinModel::DecodeCheckinResponse(pb_istream_t *stream) {
   return pb_decode(stream, wippersnapper_checkin_CheckinResponse_fields,
                    &_CheckinResponse);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Parses the fields of a CheckinResponse message.
+*/
+/***********************************************************************/
 void CheckinModel::ParseCheckinResponse() {
   setCheckinResponse(_CheckinResponse.response);
   setTotalGPIOPins(_CheckinResponse.total_gpio_pins);
@@ -85,30 +99,82 @@ void CheckinModel::ParseCheckinResponse() {
   setReferenceVoltage(_CheckinResponse.reference_voltage);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Sets the CheckinResponse message's Response field
+    @param  response
+            CheckinResponse message.
+*/
+/***********************************************************************/
 void CheckinModel::setCheckinResponse(
     wippersnapper_checkin_CheckinResponse_Response response) {
-  _checkin_response = _CheckinResponse.response;
+  _response = _CheckinResponse.response;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Gets the CheckinResponse message's Response field
+    @returns CheckinResponse message.
+*/
+/***********************************************************************/
 wippersnapper_checkin_CheckinResponse_Response
 CheckinModel::getCheckinResponse() {
-  return _checkin_response;
+  return _response;
 };
 
+/***********************************************************************/
+/*!
+    @brief  Sets the CheckinResponse message's total GPIO pins field
+    @param  total_gpio_pins
+            Total number of GPIO pins.
+*/
+/***********************************************************************/
 void CheckinModel::setTotalGPIOPins(int32_t total_gpio_pins) {
   _total_gpio_pins = total_gpio_pins;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Gets the CheckinResponse message's total GPIO pins field
+    @returns Total number of GPIO pins.
+*/
+/***********************************************************************/
 int32_t CheckinModel::getTotalGPIOPins() { return _total_gpio_pins; }
 
+/***********************************************************************/
+/*!
+    @brief  Sets the CheckinResponse message's total analog pins field
+    @param  total_analog_pins
+            Total number of analog pins.
+*/
+/***********************************************************************/
 void CheckinModel::setTotalAnalogPins(int32_t total_analog_pins) {
   _total_analog_pins = total_analog_pins;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Gets the CheckinResponse message's total analog pins field
+    @returns Total number of analog pins.
+*/
+/***********************************************************************/
 int32_t CheckinModel::getTotalAnalogPins() { return _total_analog_pins; }
 
+/***********************************************************************/
+/*!
+    @brief  Sets the CheckinResponse message's reference voltage field
+    @param  reference_voltage
+            Reference voltage.
+*/
+/***********************************************************************/
 void CheckinModel::setReferenceVoltage(float reference_voltage) {
   _reference_voltage = reference_voltage;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Gets the CheckinResponse message's reference voltage field
+    @returns Reference voltage.
+*/
+/***********************************************************************/
 float CheckinModel::getReferenceVoltage() { return _reference_voltage; }

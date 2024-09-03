@@ -153,7 +153,7 @@ public:
 
   // Checkin API
   bool CreateCheckinRequest();
-  void HandleCheckinResponse();
+  void PollCheckinResponse();
 
   // run() loop
   ws_status_t runV2();

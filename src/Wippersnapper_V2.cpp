@@ -319,16 +319,17 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 /******************************************************************************************/
 bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
                             void **arg) {
-  WS_DEBUG_PRINTLN("cbDecodeBrokerToDevice()");
   (void)arg; // marking unused parameters to avoid compiler warning
 
   switch (field->tag) {
   case wippersnapper_signal_BrokerToDevice_checkin_response_tag:
-    WS_DEBUG_PRINTLN("GOT: Checkin Response");
+    WS_DEBUG_PRINTLN("-> Checkin Response Message Type");
+    WS_DEBUG_PRINT("Handling Checkin Response...");
     if (!handleCheckinResponse(stream)) {
       WS_DEBUG_PRINTLN("Failure handling Checkin Response!");
       return false;
     }
+    WS_DEBUG_PRINTLN("Handled!");
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
@@ -867,23 +868,19 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
 */
 /**************************************************************************/
 bool Wippersnapper_V2::CreateCheckinRequest() {
-  WS_DEBUG_PRINTLN("CreateCheckinRequest()");
-  pingBrokerV2();
-
-  WS_DEBUG_PRINTLN("Creating new message...");
+  WS_DEBUG_PRINT("Creating the CheckinRequest message...");
   WsV2.CheckInModel = new CheckinModel();
   WsV2.CheckInModel->CreateCheckinRequest(WsV2.sUIDV2, WS_VERSION);
+  WS_DEBUG_PRINTLN("Created!");
 
-  WS_DEBUG_PRINTLN("Encoding message...");
+  WS_DEBUG_PRINT("Encoding the CheckinRequest message...");
   if (!WsV2.CheckInModel->EncodeCheckinRequest())
     return false;
-
-  WS_DEBUG_PRINT("Message Size: ");
-  WS_DEBUG_PRINTLN(WsV2.CheckInModel->CheckinRequestSz);
+  WS_DEBUG_PRINTLN("Encoded!");
 
   WS_DEBUG_PRINT("Publishing Checkin Request...");
   if (!PublishSignal(wippersnapper_signal_DeviceToBroker_checkin_request_tag,
-                     &(WsV2.CheckInModel->_CheckinRequest)))
+                     WsV2.CheckInModel->getCheckinRequest()))
     return false;
   WS_DEBUG_PRINTLN("Published!");
 
@@ -896,12 +893,14 @@ bool Wippersnapper_V2::CreateCheckinRequest() {
               message from the broker.
 */
 /**************************************************************************/
-void Wippersnapper_V2::HandleCheckinResponse() {
+void Wippersnapper_V2::PollCheckinResponse() {
   WsV2.got_checkin_response = false;
   WS_DEBUG_PRINTLN("Waiting for checkin response...");
+  // If we don't get a response within WS_WDT_TIMEOUT seconds, the WDT
+  // will expire and reset the device
   while (!WsV2.got_checkin_response) {
-    WsV2.runNetFSMV2();
-    WsV2._mqttV2->processPackets(10); // fast poll for incoming packets
+    pingBrokerV2(); // Pinging the broker to keep the connection alive
+    WsV2._mqttV2->processPackets(10); // Process incoming packets
   }
   WS_DEBUG_PRINTLN("Completed checkin process!");
 }
@@ -1061,14 +1060,13 @@ void Wippersnapper_V2::connectV2() {
     haltErrorV2("Unable to publish checkin request");
   }
   // Handle the checkin response
-  HandleCheckinResponse();
+  PollCheckinResponse();
 
   // Set the status LED to green to indicate successful configuration
-  // TODO: Use the brightness value from the .json file
-  setStatusLEDColor(0x00A300, 155);
-  delay(20);
+  setStatusLEDColor(0x00A300, WS.status_pixel_brightness);
+  delay(100);
   // Set the status LED to off during app runtime
-  setStatusLEDColor(0x000000, 255);
+  setStatusLEDColor(0x000000, WS.status_pixel_brightness);
 
 // switch to monitor screen
 #ifdef USE_DISPLAY
@@ -1077,6 +1075,7 @@ void Wippersnapper_V2::connectV2() {
   WS_DEBUG_PRINTLN("building monitor screen...");
   WsV2._ui_helper->build_scr_monitor();
 #endif
+  WS_DEBUG_PRINTLN("Running app loop...");
 }
 
 /**************************************************************************/
