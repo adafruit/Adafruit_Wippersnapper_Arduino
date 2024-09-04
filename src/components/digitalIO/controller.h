@@ -37,12 +37,14 @@ class DigitalIOController {
 public:
   DigitalIOController();
   ~DigitalIOController();
+  void SetMaxDigitalPins(uint8_t max_digital_pins);
   bool AddDigitalPin(pb_istream_t *stream);
   DigitalOutputPin *GetDigitalOutputPin(uint8_t pin_name);
 
 private:
   std::vector<DigitalOutputPin> _digital_output_pins;
   std::vector<DigitalInputPin> _digital_input_pins;
+  uint8_t _max_digital_pins;
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_DIGITALIO_CONTROLLER_H

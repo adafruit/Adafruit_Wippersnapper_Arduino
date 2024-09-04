@@ -294,9 +294,8 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   }
 
   // Configure GPIO classes based on checkin response message
-  // TODO: Do we even need to set this with the new GPIO classes?
-  // WsV2._digitalGPIOV2 = new
-  // Wippersnapper_DigitalGPIO(WsV2.CheckInModel->getTotalGPIOPins());
+  WsV2.digital_io_controller->SetMaxDigitalPins(
+      WsV2.CheckInModel->getTotalGPIOPins());
   WsV2._analogIOV2 =
       new Wippersnapper_AnalogIO(WsV2.CheckInModel->getTotalAnalogPins(),
                                  WsV2.CheckInModel->getReferenceVoltage());
@@ -337,12 +336,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_add_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Add Message Type");
-    // Debugging nullptr?
-    if (WsV2.digital_io_controller == nullptr) {
-      WS_DEBUG_PRINTLN("ERROR: DigitalIO controller is nullptr!");
-      return false;
-    }
-
     if (!WsV2.digital_io_controller->AddDigitalPin(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to add digital io pin!");
       return false;

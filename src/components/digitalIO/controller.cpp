@@ -18,13 +18,15 @@ DigitalIOController::DigitalIOController() {}
 
 DigitalIOController::~DigitalIOController() {}
 
+void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
+  _max_digital_pins = max_digital_pins;
+}
+
 bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
-  WS_DEBUG_PRINTLN("Decoding DigitalIOAdd message...");
   // Attempt to decode the DigitalIOAdd message and parse it into the model
   if (!WsV2.digital_io_model->DecodeDigitalIOAdd(stream))
     return false; // Failed to decode the DigitalIOAdd message
 
-  WS_DEBUG_PRINTLN("Parsing DigitalIOAdd message, pin_name...");
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   int pin_name =
       atoi(WsV2.digital_io_model->GetDigitalIOAddMsg()->pin_name + 1);
@@ -32,16 +34,17 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   // Configure the pin based on the direction
   if (WsV2.digital_io_model->GetDigitalIOAddMsg()->gpio_direction ==
       wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT) {
-    WS_DEBUG_PRINTLN("Got digital output pin, creating new struct...");
     // Create a new DigitalOutputPin struct and add it to the vector
     DigitalOutputPin new_pin;
     new_pin.pin_name = pin_name;
     new_pin.pin_value = WsV2.digital_io_model->GetDigitalIOAddMsg()->value;
-    WS_DEBUG_PRINTLN("Adding to the vector...")
+    // Check if we have reached the maximum number of digital pins
+    if (_digital_output_pins.size() >= _max_digital_pins) {
+      WS_DEBUG_PRINTLN("ERROR: Can not add new digital pin, all pins have "
+                       "already been allocated!");
+      return false;
+    }
     _digital_output_pins.push_back(new_pin);
-    WS_DEBUG_PRINT("Added new digital output pin: ");
-    WS_DEBUG_PRINTLN(_digital_output_pins[0].pin_name);
-    WS_DEBUG_PRINTLN(_digital_output_pins[0].pin_value);
   } else if (
       WsV2.digital_io_model->GetDigitalIOAddMsg()->gpio_direction ==
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT ||
