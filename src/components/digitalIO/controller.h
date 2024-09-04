@@ -18,18 +18,12 @@
 
 class Wippersnapper_V2;
 
-class DigitalOutputPin {
-public:
-  DigitalOutputPin(uint8_t pin_name, bool pin_value);
+struct DigitalOutputPin {
   uint8_t pin_name;
   bool pin_value;
 };
 
-class DigitalInputPin {
-public:
-  DigitalInputPin(uint8_t pin_name,
-                  wippersnapper_digitalio_DigitalIODirection pin_direction,
-                  wippersnapper_digitalio_DigitalIOSampleMode sample_mode);
+struct DigitalInputPin {
   uint8_t pin_name;
   wippersnapper_digitalio_DigitalIODirection pin_direction;
   wippersnapper_digitalio_DigitalIOSampleMode sample_mode;
@@ -44,6 +38,7 @@ public:
   DigitalIOController();
   ~DigitalIOController();
   bool AddDigitalPin(pb_istream_t *stream);
+  DigitalOutputPin *GetDigitalOutputPin(uint8_t pin_name);
 
 private:
   std::vector<DigitalOutputPin> _digital_output_pins;

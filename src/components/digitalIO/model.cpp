@@ -56,8 +56,3 @@ bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
 void DigitalIOModel::ClearDigitalIOAdd() {
   _msg_dio_add = wippersnapper_digitalio_DigitalIOAdd_init_default;
 }
-
-// TODO: It feels like this method should be in the controller!
-void DigitalIOModel::ParseDigitalIOAdd() {
-  // TODO
-}

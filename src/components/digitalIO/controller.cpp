@@ -22,31 +22,42 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   // Attempt to decode the DigitalIOAdd message and parse it into the model
   if (!WsV2.digital_io_model->DecodeDigitalIOAdd(stream))
     return false; // Failed to decode the DigitalIOAdd message
-  WsV2.digital_io_model->ParseDigitalIOAdd();
 
-  // Get the DigitalIOAdd message
-  wippersnapper_digitalio_DigitalIOAdd *dio_add =
-      WsV2.digital_io_model->GetDigitalIOAdd();
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
-  int pin_name = atoi(dio_add->pin_name + 1);
+  int pin_name =
+      atoi(WsV2.digital_io_model->GetDigitalIOAddMsg()->pin_name + 1);
 
   // Configure the pin based on the direction
-  if (dio_add->gpio_direction ==
+  if (WsV2.digital_io_model->GetDigitalIOAddMsg()->gpio_direction ==
       wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT) {
-    DigitalOutputPin new_pin = DigitalOutputPin(pin_name, dio_add->value);
+    // Create a new DigitalOutputPin struct and add it to the vector
+    DigitalOutputPin new_pin;
+    new_pin.pin_name = pin_name;
+    new_pin.pin_value = WsV2.digital_io_model->GetDigitalIOAddMsg()->value;
     _digital_output_pins.push_back(new_pin);
+    WS_DEBUG_PRINT("Added new digital output pin: ");
+    WS_DEBUG_PRINTLN(_digital_output_pins[0].pin_name);
+    WS_DEBUG_PRINTLN(_digital_output_pins[0].pin_value);
   } else if (
-      dio_add->gpio_direction ==
+      WsV2.digital_io_model->GetDigitalIOAddMsg()->gpio_direction ==
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT ||
-      dio_add->gpio_direction ==
+      WsV2.digital_io_model->GetDigitalIOAddMsg()->gpio_direction ==
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP) {
-    // TODO
+    // TODO, this is not implemented yet!
   } else {
     return false; // Invalid pin direction specified
   }
-
-  // TODO: After we parse and add it into the controller, we should add a
-  // clear() method to reset the message object
+  // Zero-out the DigitalIOAdd message struct.
+  WsV2.digital_io_model->ClearDigitalIOAdd();
 
   return true;
+}
+
+DigitalOutputPin *DigitalIOController::GetDigitalOutputPin(uint8_t pin_name) {
+  for (int i = 0; i < _digital_output_pins.size(); i++) {
+    if (_digital_output_pins[i].pin_name == pin_name) {
+      return &_digital_output_pins[i];
+    }
+  }
+  return NULL;
 }

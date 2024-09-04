@@ -22,7 +22,7 @@ public:
   ~DigitalIOModel();
   bool DecodeDigitalIOAdd(pb_istream_t *stream);
   void ParseDigitalIOAdd();
-  wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAdd() {
+  wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAddMsg() {
     return &_msg_dio_add;
   }
   void ClearDigitalIOAdd();

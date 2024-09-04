@@ -1111,28 +1111,22 @@ ws_status_t Wippersnapper_V2::runV2() {
 
   // Process all incoming packets from Wippersnapper_V2 MQTT Broker
   WsV2._mqttV2->processPackets(10);
-  WsV2.feedWDTV2();
 
   // Process digital inputs, digitalGPIO module
   // WsV2._digitalGPIOV2->processDigitalInputs();
-  WsV2.feedWDTV2();
 
   // Process analog inputs
-  WsV2._analogIOV2->update();
-  WsV2.feedWDTV2();
+  // WsV2._analogIOV2->update();
 
   // Process I2C sensor events
-  if (WsV2._isI2CPort0InitV2)
-    WsV2._i2cPort0V2->update();
-  WsV2.feedWDTV2();
+  // if (WsV2._isI2CPort0InitV2)
+  //     WsV2._i2cPort0V2->update();
 
   // Process DS18x20 sensor events
-  WsV2._ds18x20ComponentV2->update();
-  WsV2.feedWDTV2();
+  // WsV2._ds18x20ComponentV2->update();
 
   // Process UART sensor events
-  WsV2._uartComponentV2->update();
-  WsV2.feedWDTV2();
+  // WsV2._uartComponentV2->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
