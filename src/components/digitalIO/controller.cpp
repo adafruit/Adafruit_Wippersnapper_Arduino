@@ -14,7 +14,11 @@
  */
 #include "controller.h"
 
-DigitalIOController::DigitalIOController() {}
+DigitalIOController::DigitalIOController() {
+  _dio_hardware = new DigitalIOHardware();
+  // TODO: Should we create the model here, too?
+  SetMaxDigitalPins(0);
+}
 
 DigitalIOController::~DigitalIOController() {}
 
@@ -45,12 +49,15 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
       return false;
     }
     _digital_output_pins.push_back(new_pin);
+    // Call the hardware
+    _dio_hardware->SetPinMode(pin_name, true, false);
   } else if (
       WsV2.digital_io_model->GetDigitalIOAddMsg()->gpio_direction ==
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT ||
       WsV2.digital_io_model->GetDigitalIOAddMsg()->gpio_direction ==
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP) {
     // TODO, this is not implemented yet!
+    // TODO: Split this up for direction w/pull
   } else {
     return false; // Invalid pin direction specified
   }
@@ -67,4 +74,25 @@ DigitalOutputPin *DigitalIOController::GetDigitalOutputPin(uint8_t pin_name) {
     }
   }
   return NULL;
+}
+
+bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
+  // Attempt to decode the DigitalIOWrite message
+  if (!WsV2.digital_io_model->DecodeDigitalIOWrite(stream)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIOWrite message!");
+    return false;
+  }
+
+  // Get the digital pin
+  DigitalOutputPin *pin = GetDigitalOutputPin(
+      atoi(WsV2.digital_io_model->GetDigitalIOWriteMsg()->pin_name + 1));
+  // Check if the pin was found and is a valid digital output pin
+  if (pin == NULL) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to find the requested digital output pin!");
+    return false;
+  }
+
+  // TODO: Call down to the hardware
+
+  return true;
 }

@@ -34,8 +34,9 @@ public:
   wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEvent() {
     return &_msg_dio_event;
   }
-  void ParseDigitalIOWrite();
-  wippersnapper_digitalio_DigitalIOWrite *GetDigitalIOWrite() {
+
+  bool DecodeDigitalIOWrite(pb_istream_t *stream);
+  wippersnapper_digitalio_DigitalIOWrite *GetDigitalIOWriteMsg() {
     return &_msg_dio_write;
   }
 

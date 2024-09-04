@@ -337,7 +337,7 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case wippersnapper_signal_BrokerToDevice_digitalio_add_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Add Message Type");
     if (!WsV2.digital_io_controller->AddDigitalPin(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add digital io pin!");
+      WS_DEBUG_PRINTLN("ERROR: Unable to add digitalio pin!");
       return false;
     }
     break;
@@ -349,6 +349,10 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_write_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Write Message Type");
+    if (!WsV2.digital_io_controller->WriteDigitalPin(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to write to digitalio pin!");
+      return false;
+    }
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");

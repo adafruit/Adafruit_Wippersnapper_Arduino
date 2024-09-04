@@ -56,3 +56,8 @@ bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
 void DigitalIOModel::ClearDigitalIOAdd() {
   _msg_dio_add = wippersnapper_digitalio_DigitalIOAdd_init_default;
 }
+
+bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
+  return pb_decode(stream, wippersnapper_digitalio_DigitalIOWrite_fields,
+                   &_msg_dio_write);
+}

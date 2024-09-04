@@ -48,6 +48,7 @@
 #endif
 
 // Components (API v2)
+#include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/digitalIO/model.h"
 
@@ -68,8 +69,7 @@
 #include "display/ws_display_ui_helper.h"
 #endif
 
-// Models
-#include "components/checkin/model.h"
+
 
 #include "provisioning/ConfigJson.h"
 #if defined(USE_TINYUSB)

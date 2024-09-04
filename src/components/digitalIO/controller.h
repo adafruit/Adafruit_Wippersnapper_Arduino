@@ -15,6 +15,7 @@
 #ifndef WS_DIGITALIO_CONTROLLER_H
 #define WS_DIGITALIO_CONTROLLER_H
 #include "Wippersnapper_V2.h"
+#include "hardware.h"
 
 class Wippersnapper_V2;
 
@@ -33,18 +34,22 @@ struct DigitalInputPin {
   long prv_pin_period;
 };
 
+class DigitalIOHardware; // Forward declaration
 class DigitalIOController {
 public:
   DigitalIOController();
   ~DigitalIOController();
-  void SetMaxDigitalPins(uint8_t max_digital_pins);
   bool AddDigitalPin(pb_istream_t *stream);
+  bool WriteDigitalPin(pb_istream_t *stream);
+
+  void SetMaxDigitalPins(uint8_t max_digital_pins);
   DigitalOutputPin *GetDigitalOutputPin(uint8_t pin_name);
 
 private:
   std::vector<DigitalOutputPin> _digital_output_pins;
   std::vector<DigitalInputPin> _digital_input_pins;
   uint8_t _max_digital_pins;
+  DigitalIOHardware *_dio_hardware;
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_DIGITALIO_CONTROLLER_H
