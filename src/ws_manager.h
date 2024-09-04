@@ -16,6 +16,7 @@ public:
   int getAPIVersion() { return _api_version; }
   void provision();
   void connect();
+  void run();
 
 protected:
   // Wippersnapper *ws_instance;

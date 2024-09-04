@@ -49,3 +49,13 @@ void Wippersnapper_Manager::checkAPIVersion(int pinNum) {
     _api_version = 1;
   }
 }
+
+void Wippersnapper_Manager::run() {
+  if (_api_version == 2) {
+    ws_instance_v2->runV2();
+  } else if (_api_version == 1) {
+    ws_instance->run();
+  } else {
+    WS_DEBUG_PRINTLN("Error: Could not call run(), unknown API version!");
+  }
+}

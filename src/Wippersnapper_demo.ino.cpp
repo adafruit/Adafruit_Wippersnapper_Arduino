@@ -1,4 +1,4 @@
-# 1 "/var/folders/ff/dmzflvf52tq9kzvt6g8jglxw0000gn/T/tmpwvxu_3ms"
+# 1 "/var/folders/ff/dmzflvf52tq9kzvt6g8jglxw0000gn/T/tmpwesu67x3"
 #include <Arduino.h>
 # 1 "/Users/brentrubell/Documents/Arduino/libraries/Adafruit_Wippersnapper_Arduino/src/Wippersnapper_demo.ino"
 # 16 "/Users/brentrubell/Documents/Arduino/libraries/Adafruit_Wippersnapper_Arduino/src/Wippersnapper_demo.ino"
@@ -30,5 +30,5 @@ void setup() {
 }
 
 void loop() {
-
+  manager.run();
 }

@@ -39,5 +39,5 @@ void setup() {
 }
 
 void loop() {
-  //wipper.run();
+  manager.run();
 }
