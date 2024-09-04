@@ -68,6 +68,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   // DallasSemi (OneWire)
   WsV2._ds18x20ComponentV2 = new ws_ds18x20();
 
+  WsV2.digital_io_model = new DigitalIOModel();
   WsV2.digital_io_controller = new DigitalIOController();
 };
 
@@ -336,6 +337,12 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_add_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Add Message Type");
+    // Debugging nullptr?
+    if (WsV2.digital_io_controller == nullptr) {
+      WS_DEBUG_PRINTLN("ERROR: DigitalIO controller is nullptr!");
+      return false;
+    }
+
     if (!WsV2.digital_io_controller->AddDigitalPin(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to add digital io pin!");
       return false;
