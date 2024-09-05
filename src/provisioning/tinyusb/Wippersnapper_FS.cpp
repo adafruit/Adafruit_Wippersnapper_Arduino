@@ -208,10 +208,8 @@ void Wippersnapper_FS::initUSBMSC() {
 
   // init MSC
   usb_msc.begin();
-
-  // re-attach the usb device
+  // Attach MSC and wait for enumeration
   TinyUSBDevice.attach();
-  // wait for enumeration
   delay(500);
 }
 
