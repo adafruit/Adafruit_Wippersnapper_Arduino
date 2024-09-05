@@ -68,7 +68,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   // DallasSemi (OneWire)
   WsV2._ds18x20ComponentV2 = new ws_ds18x20();
 
-  WsV2.digital_io_model = new DigitalIOModel();
+  // Initialize controller classes
   WsV2.digital_io_controller = new DigitalIOController();
 };
 
