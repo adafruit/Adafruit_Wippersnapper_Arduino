@@ -156,12 +156,12 @@ jobs:
             "feather_esp32s2",
             "feather_esp32s2_tft",
             "feather_esp32s2_reverse_tft",
-            "wippersnapper_feather_esp32s3",
-            "wippersnapper_feather_esp32s3_4mbflash_2mbpsram",
-            "wippersnapper_feather_esp32s3_tft",
+            "feather_esp32s3",
+            "feather_esp32s3_4mbflash_2mbpsram",
+            "feather_esp32s3_tft",
             "qtpy_esp32s3",
             "qtpy_esp32s2",
-            "wippersnapper_feather_esp32s3_reverse_tft",
+            "feather_esp32s3_reverse_tft",
             "qtpy_esp32s3_n4r2",
           ]
     steps:
