@@ -178,7 +178,7 @@ jobs:
         with:
           repository: brentru/ci-arduino
           path: ci
-          ref: fix-fs-enumeration-bug
+          ref: add-ws-partition-scheme-targets
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
