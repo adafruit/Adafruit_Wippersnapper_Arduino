@@ -209,10 +209,12 @@ void Wippersnapper_FS_V2::initUSBMSC() {
   // init MSC
   usb_msc_v2.begin();
 
-  // re-attach the usb device
-  TinyUSBDevice.attach();
-  // wait for enumeration
-  delay(500);
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
 }
 
 /**************************************************************************/
