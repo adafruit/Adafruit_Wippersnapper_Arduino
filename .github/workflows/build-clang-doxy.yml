@@ -51,6 +51,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download and install stable Nanopb
@@ -188,6 +189,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download and install stable Nanopb
@@ -373,6 +375,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
+          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Download and install stable Nanopb
         run: |
           # Download and extract nanopb
@@ -423,6 +426,7 @@ jobs:
         run: |
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Download and install stable Nanopb
         run: |
           # Download and extract nanopb
@@ -579,6 +583,7 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_STMPE610.git /home/runner/Arduino/libraries/Adafruit_STMPE610
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
+          git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download and install stable Nanopb
