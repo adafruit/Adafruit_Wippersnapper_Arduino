@@ -30,6 +30,14 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digital_pins = max_digital_pins;
 }
 
+bool DigitalIOController::IsStatusLEDPin(uint8_t pin_name) {
+#ifdef STATUS_LED_PIN
+  if (pin_name == STATUS_LED_PIN)
+    return true;
+#endif
+  return false;
+}
+
 bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   // Attempt to decode the DigitalIOAdd message and parse it into the model
   if (!_dio_model->DecodeDigitalIOAdd(stream))
@@ -37,6 +45,9 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
 
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   int pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
+
+  if (IsStatusLEDPin(pin_name))
+    releaseStatusLED();
 
   // Configure the pin based on the direction
   if (_dio_model->GetDigitalIOAddMsg()->gpio_direction ==

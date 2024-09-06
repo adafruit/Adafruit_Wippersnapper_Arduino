@@ -45,6 +45,7 @@ public:
   bool WriteDigitalPin(pb_istream_t *stream);
 
   void SetMaxDigitalPins(uint8_t max_digital_pins);
+  bool IsStatusLEDPin(uint8_t pin_name);
   DigitalOutputPin *GetDigitalOutputPin(uint8_t pin_name);
 
 private:
