@@ -98,6 +98,7 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
   }
 
   // Get the digital pin
+  // TODO: Pull this all into a separate method
   DigitalOutputPin *pin = GetDigitalOutputPin(
       atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
@@ -106,7 +107,12 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
     return false;
   }
 
-  // TODO: Call down to the hardware
+  // Decode the SensorEvent sub-message
+
+  // Call hardware
+  // TODO: Value needs to be decoded
+  //_dio_hardware->WriteDigitalPin(pin->pin_name,
+  //_dio_model->GetDigitalIOWriteMsg()->value.value);
 
   return true;
 }

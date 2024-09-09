@@ -49,7 +49,9 @@
 
 // Components (API v2)
 #include "components/checkin/model.h"
+#include "components/sensor/model.h"
 #include "components/digitalIO/controller.h"
+
 
 // Components (API v1)
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -110,6 +112,7 @@ class ws_uart;
 
 // Forward declarations (API v2)
 class CheckinModel;
+class SensorModel;
 class DigitalIOController;
 
 /**************************************************************************/
@@ -214,6 +217,7 @@ public:
 
   // API v2 Components
   CheckinModel *CheckInModel;       ///< Instance of CheckinModel class
+  SensorModel  *sensorModel;        ///< Instance of SensorModel class
   DigitalIOController
       *digital_io_controller; ///< Instance of DigitalIO controller class
 

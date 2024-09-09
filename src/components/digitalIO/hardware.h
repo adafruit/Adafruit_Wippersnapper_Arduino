@@ -21,6 +21,7 @@ public:
   DigitalIOHardware();
   ~DigitalIOHardware();
   void SetPinMode(uint8_t pin_name, bool is_output, bool has_pullups);
+  void WriteDigitalPin(uint8_t pin_name, bool pin_value);
 
 private:
 };
