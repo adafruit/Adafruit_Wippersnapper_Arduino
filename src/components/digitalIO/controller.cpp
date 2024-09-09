@@ -75,9 +75,6 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   } else {
     return false; // Invalid pin direction specified
   }
-  // Zero-out the DigitalIOAdd message struct.
-  _dio_model->ClearDigitalIOAdd();
-
   return true;
 }
 
@@ -107,12 +104,22 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
     return false;
   }
 
-  // Decode the SensorEvent sub-message
+  // Ensure we got the correct value type
+  if (!_dio_model->GetDigitalIOWriteMsg()->value.which_value ==
+      wippersnapper_sensor_SensorEvent_bool_value_tag) {
+    WS_DEBUG_PRINTLN("ERROR: DigitalIO controller got invalid value type!");
+    return false;
+  }
 
-  // Call hardware
-  // TODO: Value needs to be decoded
-  //_dio_hardware->WriteDigitalPin(pin->pin_name,
-  //_dio_model->GetDigitalIOWriteMsg()->value.value);
+  // TODO: Add a check to see if the pin is already set to the value so
+  // we don't unecessarily write to the pin
+
+  // Call hardware to write the value type
+  _dio_hardware->WriteDigitalPin(
+      pin->pin_name,
+      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
+
+  // TODO: Change the pin value in _digital_output_pins to reflect new value
 
   return true;
 }

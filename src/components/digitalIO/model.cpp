@@ -43,21 +43,20 @@ DigitalIOModel::~DigitalIOModel() {}
 */
 /***********************************************************************/
 bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
+  // Zero-out the DigitalIOAdd message struct. to ensure we don't have any old
+  // data
+  _msg_dio_add = wippersnapper_digitalio_DigitalIOAdd_init_default;
+
+  // Decode the stream into a DigitalIOAdd message
   return pb_decode(stream, wippersnapper_digitalio_DigitalIOAdd_fields,
                    &_msg_dio_add);
 }
 
-/***********************************************************************/
-/*!
-    @brief  Clears the DigitalIOAdd message and resets it to default
-            values.
-*/
-/***********************************************************************/
-void DigitalIOModel::ClearDigitalIOAdd() {
-  _msg_dio_add = wippersnapper_digitalio_DigitalIOAdd_init_default;
-}
-
 bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
+  // Zero-out the DigitalIOWrite message struct. to ensure we don't have any old
+  // data
+  _msg_dio_write = wippersnapper_digitalio_DigitalIOWrite_init_default;
+  // Decode the stream into a DigitalIOWrite message
   return pb_decode(stream, wippersnapper_digitalio_DigitalIOWrite_fields,
                    &_msg_dio_write);
 }
