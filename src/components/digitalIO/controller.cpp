@@ -17,7 +17,8 @@
 DigitalIOController::DigitalIOController() {
   _dio_model = new DigitalIOModel();
   _dio_hardware = new DigitalIOHardware();
-  // TODO: Should we create the model here, too?
+  // Set the default maximum number of digital pins to 0
+  // NOTE: This will be set during runtime by the CheckinResponse message
   SetMaxDigitalPins(0);
 }
 
@@ -30,10 +31,10 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digital_pins = max_digital_pins;
 }
 
+// TODO: This should be within the hardware class
 bool DigitalIOController::IsStatusLEDPin(uint8_t pin_name) {
 #ifdef STATUS_LED_PIN
-  if (pin_name == STATUS_LED_PIN)
-    return true;
+  return pin_name == STATUS_LED_PIN)
 #endif
   return false;
 }
@@ -54,7 +55,7 @@ void DigitalIOController::CreateDigitalIOPin(
   _digital_io_pins.push_back(new_pin);
 }
 
-bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
+bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
   // Early-out if we have reached the maximum number of digital pins
   if (_digital_io_pins.size() >= _max_digital_pins) {
     WS_DEBUG_PRINTLN("ERROR: Can not add new digital pin, all pins have "
@@ -105,7 +106,7 @@ int DigitalIOController::GetDigitalOutputPinsIdx(uint8_t pin_name) {
   return -1; // Pin not found
 }
 
-bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
+bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   // Attempt to decode the DigitalIOWrite message
   if (!_dio_model->DecodeDigitalIOWrite(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIOWrite message!");
@@ -113,7 +114,6 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
   }
 
   // Get the digital pin
-  // TODO: Pull this all into a separate method
   int pin_idx = GetDigitalOutputPinsIdx(
       atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
@@ -137,12 +137,11 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
   // Is the pin already set to this value? If so, we don't need to write it
   // again
   if (_digital_io_pins[pin_idx].pin_value ==
-      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value) {
+      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value)
     return true;
-  }
 
   // Call hardware to write the value type
-  _dio_hardware->WriteDigitalPin(
+  _dio_hardware->SetValue(
       _digital_io_pins[pin_idx].pin_name,
       _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
 
@@ -151,4 +150,58 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
       _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value;
 
   return true;
+}
+
+// Polls the digital input loop
+void DigitalIOController::Update() {
+  // Bail out if we have no digital pins to poll
+  if (_digital_io_pins.size() == 0)
+    return;
+
+  for (int i = 0; i < _digital_io_pins.size(); i++) {
+    // Skip if the pin is an output
+    if (_digital_io_pins[i].pin_direction ==
+        wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT)
+      continue;
+
+    // TODO: Reorganize based on which SampleMode is most frequently selected by
+    // a user Interrogate the pin based on the sample mode
+    if (_digital_io_pins[i].sample_mode ==
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
+      // Handle the timer-based sample mode
+      if (millis() - _digital_io_pins[i].prv_pin_period >
+          _digital_io_pins[i].pin_period) {
+        // The period has elapsed
+        bool pin_value = _dio_hardware->GetValue(_digital_io_pins[i].pin_name);
+        WS_DEBUG_PRINT("DIO Pin D");
+        WS_DEBUG_PRINT(_digital_io_pins[i].pin_name);
+        WS_DEBUG_PRINT(" | value: ");
+        WS_DEBUG_PRINTLN(pin_value);
+        // TODO: Publish this value to the broker
+
+        // Update the pin
+        _digital_io_pins[i].prv_pin_period = millis();
+        _digital_io_pins[i].prv_pin_value = pin_value;
+      }
+    } else if (
+        _digital_io_pins[i].sample_mode ==
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
+      // Handle the event-based sample mode
+      // TODO: Refactor this out into another function
+      bool pin_value = _dio_hardware->GetValue(_digital_io_pins[i].pin_name);
+      // Bail out if the pin value hasn't changed
+      if (pin_value == _digital_io_pins[i].prv_pin_value)
+        continue;
+      WS_DEBUG_PRINT("DIO Pin D");
+      WS_DEBUG_PRINT(_digital_io_pins[i].pin_name);
+      WS_DEBUG_PRINT(" value changed to: ");
+      WS_DEBUG_PRINTLN(pin_value);
+      // TODO: Publish this value to the broker!
+      // Update the pin's value
+      _digital_io_pins[i].prv_pin_value = pin_value;
+    } else {
+      // Invalid sample mode
+      WS_DEBUG_PRINTLN("ERROR: Invalid digital io pin sample mode!");
+    }
+  }
 }

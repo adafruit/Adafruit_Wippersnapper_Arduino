@@ -36,8 +36,10 @@ class DigitalIOController {
 public:
   DigitalIOController();
   ~DigitalIOController();
-  bool AddDigitalPin(pb_istream_t *stream);
-  bool WriteDigitalPin(pb_istream_t *stream);
+  bool AddDigitalIOPin(pb_istream_t *stream);
+  bool WriteDigitalIOPin(pb_istream_t *stream);
+
+  void Update();
 
   void SetMaxDigitalPins(uint8_t max_digital_pins);
   bool IsStatusLEDPin(uint8_t pin_name);

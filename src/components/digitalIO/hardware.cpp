@@ -40,6 +40,10 @@ bool DigitalIOHardware::ConfigurePin(
   return true;
 }
 
-void DigitalIOHardware::WriteDigitalPin(uint8_t pin_name, bool pin_value) {
+void DigitalIOHardware::SetValue(uint8_t pin_name, bool pin_value) {
   digitalWrite(pin_name, pin_value ? HIGH : LOW);
+}
+
+bool DigitalIOHardware::GetValue(uint8_t pin_name) {
+  return digitalRead(pin_name);
 }
