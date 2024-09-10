@@ -62,6 +62,7 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
     _dio_hardware->deinit(pin_name);
 
   // Parse the model into a DigitalIOPin struct
+  // TODO: Refactor this into a separate function
   DigitalIOPin new_pin;
   new_pin.pin_name = pin_name;
   new_pin.pin_direction = _dio_model->GetDigitalIOAddMsg()->gpio_direction;
@@ -72,25 +73,14 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   new_pin.prv_pin_period = millis() - 1;
   new_pin.pin_value = _dio_model->GetDigitalIOAddMsg()->value;
 
-  // Configure the pin based on the direction
-  if (_dio_model->GetDigitalIOAddMsg()->gpio_direction ==
-      wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT) {
-    if (!_dio_hardware->ConfigurePin(new_pin.pin_name, true, false)) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Digital pin provided an invalid protobuf direction!");
-      return false;
-    }
-    _digital_io_pins.push_back(new_pin);
-  } else if (
-      _dio_model->GetDigitalIOAddMsg()->gpio_direction ==
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT ||
-      _dio_model->GetDigitalIOAddMsg()->gpio_direction ==
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP) {
-    // TODO, this is not implemented yet!
-    // TODO: Split this up for direction w/pull
-  } else {
-    return false; // Invalid pin direction specified
+  // Configure the pin
+  if (!_dio_hardware->ConfigurePin(new_pin.pin_name, new_pin.pin_direction)) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Digital pin provided an invalid protobuf direction!");
+    return false;
   }
+  _digital_io_pins.push_back(new_pin);
+
   return true;
 }
 
