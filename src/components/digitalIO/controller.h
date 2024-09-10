@@ -20,12 +20,7 @@
 
 class Wippersnapper_V2;
 
-struct DigitalOutputPin {
-  uint8_t pin_name;
-  bool pin_value;
-};
-
-struct DigitalInputPin {
+struct DigitalIOPin {
   uint8_t pin_name;
   wippersnapper_digitalio_DigitalIODirection pin_direction;
   wippersnapper_digitalio_DigitalIOSampleMode sample_mode;
@@ -46,11 +41,10 @@ public:
 
   void SetMaxDigitalPins(uint8_t max_digital_pins);
   bool IsStatusLEDPin(uint8_t pin_name);
-  DigitalOutputPin *GetDigitalOutputPin(uint8_t pin_name);
+  int GetDigitalOutputPinsIdx(uint8_t pin_name);
 
 private:
-  std::vector<DigitalOutputPin> _digital_output_pins;
-  std::vector<DigitalInputPin> _digital_input_pins;
+  std::vector<DigitalIOPin> _digital_io_pins;
   uint8_t _max_digital_pins;
   DigitalIOModel *_dio_model;
   DigitalIOHardware *_dio_hardware;

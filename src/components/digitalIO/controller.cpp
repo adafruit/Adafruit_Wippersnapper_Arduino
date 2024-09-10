@@ -49,20 +49,22 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   if (IsStatusLEDPin(pin_name))
     releaseStatusLED();
 
+  // TODO: Only use one vector for all pins
+
   // Configure the pin based on the direction
   if (_dio_model->GetDigitalIOAddMsg()->gpio_direction ==
       wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT) {
     // Create a new DigitalOutputPin struct and add it to the vector
-    DigitalOutputPin new_pin;
+    DigitalIOPin new_pin;
     new_pin.pin_name = pin_name;
     new_pin.pin_value = _dio_model->GetDigitalIOAddMsg()->value;
     // Check if we have reached the maximum number of digital pins
-    if (_digital_output_pins.size() >= _max_digital_pins) {
+    if (_digital_io_pins.size() >= _max_digital_pins) {
       WS_DEBUG_PRINTLN("ERROR: Can not add new digital pin, all pins have "
                        "already been allocated!");
       return false;
     }
-    _digital_output_pins.push_back(new_pin);
+    _digital_io_pins.push_back(new_pin);
     // Call the hardware
     _dio_hardware->SetPinMode(pin_name, true, false);
   } else if (
@@ -78,13 +80,13 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   return true;
 }
 
-DigitalOutputPin *DigitalIOController::GetDigitalOutputPin(uint8_t pin_name) {
-  for (int i = 0; i < _digital_output_pins.size(); i++) {
-    if (_digital_output_pins[i].pin_name == pin_name) {
-      return &_digital_output_pins[i];
+int DigitalIOController::GetDigitalOutputPinsIdx(uint8_t pin_name) {
+  for (int i = 0; i < _digital_io_pins.size(); i++) {
+    if (_digital_io_pins[i].pin_name == pin_name) {
+      return i;
     }
   }
-  return NULL;
+  return -1; // Pin not found
 }
 
 bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
@@ -96,10 +98,10 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
 
   // Get the digital pin
   // TODO: Pull this all into a separate method
-  DigitalOutputPin *pin = GetDigitalOutputPin(
+  int pin_idx = GetDigitalOutputPinsIdx(
       atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
-  if (pin == NULL) {
+  if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("ERROR: Unable to find the requested digital output pin!");
     return false;
   }
@@ -111,15 +113,21 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
     return false;
   }
 
-  // TODO: Add a check to see if the pin is already set to the value so
-  // we don't unecessarily write to the pin
+  // Is the pin already set to this value? If so, we don't need to write it
+  // again
+  if (_digital_io_pins[pin_idx].pin_value ==
+      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value) {
+    return true;
+  }
 
   // Call hardware to write the value type
   _dio_hardware->WriteDigitalPin(
-      pin->pin_name,
+      _digital_io_pins[pin_idx].pin_name,
       _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
 
-  // TODO: Change the pin value in _digital_output_pins to reflect new value
+  // Update the pin's value
+  _digital_io_pins[pin_idx].pin_value =
+      _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value;
 
   return true;
 }

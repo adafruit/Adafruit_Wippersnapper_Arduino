@@ -24,7 +24,7 @@ void DigitalIOHardware::SetPinMode(uint8_t pin_name, bool is_output,
   // TODO: Handle input with pullups
 }
 
-void WriteDigitalPin(uint8_t pin_name, bool pin_value) {
+void DigitalIOHardware::WriteDigitalPin(uint8_t pin_name, bool pin_value) {
   if (pin_value == true)
     digitalWrite(pin_name, HIGH);
   else
