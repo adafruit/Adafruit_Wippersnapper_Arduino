@@ -113,6 +113,11 @@ bool DigitalIOController::WriteDigitalPin(pb_istream_t *stream) {
     return false;
   }
 
+  WS_DEBUG_PRINT("Writing value: ");
+  WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
+  WS_DEBUG_PRINT("on Pin: ");
+  WS_DEBUG_PRINTLN(_digital_io_pins[pin_idx].pin_name);
+
   // Is the pin already set to this value? If so, we don't need to write it
   // again
   if (_digital_io_pins[pin_idx].pin_value ==
