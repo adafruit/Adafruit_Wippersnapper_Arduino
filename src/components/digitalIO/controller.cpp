@@ -38,6 +38,22 @@ bool DigitalIOController::IsStatusLEDPin(uint8_t pin_name) {
   return false;
 }
 
+void DigitalIOController::CreateDigitalIOPin(
+    uint8_t name, wippersnapper_digitalio_DigitalIODirection direction,
+    wippersnapper_digitalio_DigitalIOSampleMode sample_mode, bool value,
+    long period) {
+  DigitalIOPin new_pin;
+  new_pin.pin_name = name;
+  new_pin.pin_direction = direction;
+  new_pin.sample_mode = sample_mode;
+  new_pin.pin_period =
+      period *
+      1000; // Period is in seconds but the timer operates in milliseconds
+  new_pin.prv_pin_period = millis() - 1;
+  new_pin.pin_value = value;
+  _digital_io_pins.push_back(new_pin);
+}
+
 bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   // Early-out if we have reached the maximum number of digital pins
   if (_digital_io_pins.size() >= _max_digital_pins) {
@@ -47,8 +63,10 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   }
 
   // Attempt to decode the DigitalIOAdd message and parse it into the model
-  if (!_dio_model->DecodeDigitalIOAdd(stream))
-    return false; // Failed to decode the DigitalIOAdd message
+  if (!_dio_model->DecodeDigitalIOAdd(stream)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIOAdd message!");
+    return false;
+  }
 
   // Strip the D/A prefix off the pin name and convert to a uint8_t pin number
   int pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
@@ -61,25 +79,19 @@ bool DigitalIOController::AddDigitalPin(pb_istream_t *stream) {
   if (GetDigitalOutputPinsIdx(pin_name) != -1)
     _dio_hardware->deinit(pin_name);
 
-  // Parse the model into a DigitalIOPin struct
-  // TODO: Refactor this into a separate function
-  DigitalIOPin new_pin;
-  new_pin.pin_name = pin_name;
-  new_pin.pin_direction = _dio_model->GetDigitalIOAddMsg()->gpio_direction;
-  new_pin.sample_mode = _dio_model->GetDigitalIOAddMsg()->sample_mode;
-  new_pin.pin_period =
-      (long)_dio_model->GetDigitalIOAddMsg()->period *
-      1000; // Period is in seconds but the timer operates in milliseconds
-  new_pin.prv_pin_period = millis() - 1;
-  new_pin.pin_value = _dio_model->GetDigitalIOAddMsg()->value;
-
-  // Configure the pin
-  if (!_dio_hardware->ConfigurePin(new_pin.pin_name, new_pin.pin_direction)) {
+  // Attempt to configure the pin
+  if (!_dio_hardware->ConfigurePin(
+          pin_name, _dio_model->GetDigitalIOAddMsg()->gpio_direction)) {
     WS_DEBUG_PRINTLN(
         "ERROR: Digital pin provided an invalid protobuf direction!");
     return false;
   }
-  _digital_io_pins.push_back(new_pin);
+
+  // Create the digital pin and add it to the controller;s vector
+  CreateDigitalIOPin(pin_name, _dio_model->GetDigitalIOAddMsg()->gpio_direction,
+                     _dio_model->GetDigitalIOAddMsg()->sample_mode,
+                     _dio_model->GetDigitalIOAddMsg()->value,
+                     _dio_model->GetDigitalIOAddMsg()->period);
 
   return true;
 }

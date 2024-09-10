@@ -42,6 +42,11 @@ public:
   void SetMaxDigitalPins(uint8_t max_digital_pins);
   bool IsStatusLEDPin(uint8_t pin_name);
   int GetDigitalOutputPinsIdx(uint8_t pin_name);
+  void
+  CreateDigitalIOPin(uint8_t name,
+                     wippersnapper_digitalio_DigitalIODirection direction,
+                     wippersnapper_digitalio_DigitalIOSampleMode sample_mode,
+                     bool value, long period);
 
 private:
   std::vector<DigitalIOPin> _digital_io_pins;
