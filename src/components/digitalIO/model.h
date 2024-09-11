@@ -29,14 +29,15 @@ public:
   wippersnapper_digitalio_DigitalIORemove *GetDigitalIORemove() {
     return &_msg_dio_remove;
   }
-  void ParseDigitalIOEvent();
-  wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEvent() {
-    return &_msg_dio_event;
-  }
 
   bool DecodeDigitalIOWrite(pb_istream_t *stream);
   wippersnapper_digitalio_DigitalIOWrite *GetDigitalIOWriteMsg() {
     return &_msg_dio_write;
+  }
+
+  bool EncodeDigitalIOEvent(char *pin_name, bool value);
+  wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEventMsg() {
+    return &_msg_dio_event;
   }
 
 private:

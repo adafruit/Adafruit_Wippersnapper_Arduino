@@ -60,3 +60,31 @@ bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
   return pb_decode(stream, wippersnapper_digitalio_DigitalIOWrite_fields,
                    &_msg_dio_write);
 }
+
+bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
+  // Initialize the DigitalIOEvent
+  _msg_dio_event = wippersnapper_digitalio_DigitalIOEvent_init_default;
+  // Fill the DigitalIOEvent
+  strncpy(_msg_dio_event.pin_name, pin_name, sizeof(_msg_dio_event.pin_name));
+  _msg_dio_event.has_value = true;
+  // Fill the DigitalIOEvent's SensorEvent sub-message
+  _msg_dio_event.value.type =
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN;
+  _msg_dio_event.value.which_value =
+      wippersnapper_sensor_SensorEvent_bytes_value_tag;
+  _msg_dio_event.value.value.bool_value = value;
+
+  // Encode the DigitalIOEvent message
+  size_t sz_dio_event_msg;
+  if (!pb_get_encoded_size(&sz_dio_event_msg,
+                           wippersnapper_digitalio_DigitalIOEvent_fields,
+                           &_msg_dio_event))
+    return false;
+
+  // Create an output stream
+  uint8_t buf[sz_dio_event_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  // Encode the message
+  return pb_encode(&msg_stream, wippersnapper_digitalio_DigitalIOEvent_fields,
+                   &_msg_dio_event);
+}
