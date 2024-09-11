@@ -212,6 +212,26 @@ void DigitalIOController::Update() {
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
       if (!CheckTimerPin(&pin))
         continue;
+      // TODO: Move all the encode and publish code into a new func.
+      char pin_name[12];
+      sprintf(pin_name, "D%d", pin.pin_name);
+      // Encode the event and publish it to the broker
+      WS_DEBUG_PRINT("Encoding digitalio event for pin: ");
+      WS_DEBUG_PRINTLN(pin_name);
+      if (!_dio_model->EncodeDigitalIOEvent(pin_name, pin.pin_value)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to encode digitalio event message, "
+                         "moving onto the next pin!");
+        continue;
+      }
+      WS_DEBUG_PRINTLN("Encoded digitalio event message!");
+      WS_DEBUG_PRINTLN("Publishing digitalio event message to broker...");
+      if (!WsV2.PublishSignal(
+              wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
+              _dio_model->GetDigitalIOEventMsg())) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to publish digitalio event message, "
+                         "moving onto the next pin!");
+        continue;
+      }
     } else if (
         pin.sample_mode ==
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
