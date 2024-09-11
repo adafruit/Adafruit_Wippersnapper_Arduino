@@ -26,8 +26,8 @@ struct DigitalIOPin {
   wippersnapper_digitalio_DigitalIOSampleMode sample_mode;
   bool pin_value;
   bool prv_pin_value;
-  long pin_period;
-  long prv_pin_period;
+  ulong pin_period;
+  ulong prv_pin_time;
 };
 
 class DigitalIOModel;    // Forward declaration
@@ -41,7 +41,7 @@ public:
 
   void Update();
   bool CheckTimerPin(DigitalIOPin *pin);
-  bool IsPinTimerExpired(DigitalIOPin *pin, long cur_time);
+  bool IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time);
   bool CheckEventPin(DigitalIOPin *pin);
 
   void SetMaxDigitalPins(uint8_t max_digital_pins);

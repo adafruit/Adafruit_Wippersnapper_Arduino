@@ -842,6 +842,13 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.payload.checkin_request =
         *(wippersnapper_checkin_CheckinRequest *)payload;
     break;
+  case wippersnapper_signal_DeviceToBroker_digitalio_event_tag:
+    WS_DEBUG_PRINTLN("DigitalIO Event");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_digitalio_event_tag;
+    MsgSignal.payload.digitalio_event =
+        *(wippersnapper_digitalio_DigitalIOEvent *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
@@ -1119,21 +1126,16 @@ ws_status_t Wippersnapper_V2::runV2() {
   // Process all incoming packets from Wippersnapper_V2 MQTT Broker
   WsV2._mqttV2->processPackets(10);
 
-  // Process digital inputs, digitalGPIO module
-  // WsV2._digitalGPIOV2->processDigitalInputs();
+  // Process all digital events
+  WsV2.digital_io_controller->Update();
 
-  // Process analog inputs
-  // WsV2._analogIOV2->update();
+  // TODO: Process analog inputs
 
-  // Process I2C sensor events
-  // if (WsV2._isI2CPort0InitV2)
-  //     WsV2._i2cPort0V2->update();
+  // TODO: Process I2C sensor events
 
-  // Process DS18x20 sensor events
-  // WsV2._ds18x20ComponentV2->update();
+  // TODO: Process DS18x20 sensor events
 
-  // Process UART sensor events
-  // WsV2._uartComponentV2->update();
+  // TODO: Process UART sensor events
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

@@ -47,10 +47,9 @@ void DigitalIOController::CreateDigitalIOPin(
   new_pin.pin_name = name;
   new_pin.pin_direction = direction;
   new_pin.sample_mode = sample_mode;
-  new_pin.pin_period =
-      period *
-      1000; // Period is in seconds but the timer operates in milliseconds
-  new_pin.prv_pin_period = millis() - 1;
+  // Period is in seconds but the timer operates in milliseconds
+  new_pin.pin_period = (ulong)period * 1000;
+  new_pin.prv_pin_time = (millis() - 1) - period;
   new_pin.pin_value = value;
   _digital_io_pins.push_back(new_pin);
 }
@@ -152,23 +151,25 @@ bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   return true;
 }
 
-bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, long cur_time) {
-  return cur_time - pin->prv_pin_period > pin->pin_period;
+bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
+  return cur_time - pin->prv_pin_time > pin->pin_period;
 }
 
 bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
-  long cur_time = millis();
+  ulong cur_time = millis();
+
   if (!IsPinTimerExpired(pin, cur_time))
     return false;
 
   // Fill in the pin's current time and value
-  pin->prv_pin_period = cur_time;
+  pin->prv_pin_time = cur_time;
   pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
 
   WS_DEBUG_PRINT("DIO Pin D");
   WS_DEBUG_PRINT(pin->pin_name);
   WS_DEBUG_PRINT(" | value: ");
   WS_DEBUG_PRINTLN(pin->prv_pin_value);
+  return true;
 }
 
 bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
@@ -200,7 +201,7 @@ void DigitalIOController::Update() {
 
   for (int i = 0; i < _digital_io_pins.size(); i++) {
     // Create a pin object for this iteration
-    DigitalIOPin pin = _digital_io_pins[i];
+    DigitalIOPin &pin = _digital_io_pins[i];
     // Skip if the pin is an output
     if (pin.pin_direction ==
         wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT)
@@ -209,11 +210,8 @@ void DigitalIOController::Update() {
     // TODO: Use Event sample mode first, its more common
     if (pin.sample_mode ==
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
-      if (!CheckTimerPin(&pin)) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to check timer pin, moving onto the "
-                         "next pin!");
+      if (!CheckTimerPin(&pin))
         continue;
-      }
     } else if (
         pin.sample_mode ==
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
@@ -226,11 +224,15 @@ void DigitalIOController::Update() {
       char pin_name[12];
       sprintf(pin_name, "D%d", pin.pin_name);
       // Encode the event and publish it to the broker
+      WS_DEBUG_PRINT("Encoding digitalio event for pin: ");
+      WS_DEBUG_PRINTLN(pin_name);
       if (!_dio_model->EncodeDigitalIOEvent(pin_name, pin.pin_value)) {
         WS_DEBUG_PRINTLN("ERROR: Unable to encode digitalio event message, "
                          "moving onto the next pin!");
         continue;
       }
+      WS_DEBUG_PRINTLN("Encoded digitalio event message!");
+      WS_DEBUG_PRINTLN("Publishing digitalio event message to broker...");
       if (!WsV2.PublishSignal(
               wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
               _dio_model->GetDigitalIOEventMsg())) {
@@ -238,6 +240,7 @@ void DigitalIOController::Update() {
                          "moving onto the next pin!");
         continue;
       }
+      WS_DEBUG_PRINTLN("Published digitalio event message!");
     } else {
       // Invalid sample mode
       WS_DEBUG_PRINTLN("ERROR: Invalid digital io pin sample mode!");
