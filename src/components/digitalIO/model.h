@@ -46,4 +46,4 @@ private:
   wippersnapper_digitalio_DigitalIOEvent _msg_dio_event;
   wippersnapper_digitalio_DigitalIOWrite _msg_dio_write;
 };
-#endif // WS_CHECKIN_H
+#endif // WS_DIGITALIO_MODEL_H

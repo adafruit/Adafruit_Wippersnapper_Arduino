@@ -40,6 +40,9 @@ public:
   bool WriteDigitalIOPin(pb_istream_t *stream);
 
   void Update();
+  bool CheckTimerPin(DigitalIOPin *pin);
+  bool IsPinTimerExpired(DigitalIOPin *pin, long cur_time);
+  bool CheckEventPin(DigitalIOPin *pin);
 
   void SetMaxDigitalPins(uint8_t max_digital_pins);
   bool IsStatusLEDPin(uint8_t pin_name);

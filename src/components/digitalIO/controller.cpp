@@ -34,7 +34,7 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
 // TODO: This should be within the hardware class
 bool DigitalIOController::IsStatusLEDPin(uint8_t pin_name) {
 #ifdef STATUS_LED_PIN
-  return pin_name == STATUS_LED_PIN)
+  return pin_name == STATUS_LED_PIN;
 #endif
   return false;
 }
@@ -152,6 +152,47 @@ bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   return true;
 }
 
+bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, long cur_time) {
+  return cur_time - pin->prv_pin_period > pin->pin_period;
+}
+
+bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
+  long cur_time = millis();
+  if (!IsPinTimerExpired(pin, cur_time))
+    return false;
+
+  // Fill in the pin's current time and value
+  pin->prv_pin_period = cur_time;
+  pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
+
+  WS_DEBUG_PRINT("DIO Pin D");
+  WS_DEBUG_PRINT(pin->pin_name);
+  WS_DEBUG_PRINT(" | value: ");
+  WS_DEBUG_PRINTLN(pin->prv_pin_value);
+}
+
+bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
+  // Get the pin's current value
+  pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
+  // Bail out if the pin value hasn't changed
+  if (pin->pin_value == pin->prv_pin_value)
+    return false;
+
+  // Update the pin's previous value to the current value
+  pin->prv_pin_value = pin->pin_value;
+
+  WS_DEBUG_PRINT("DIO Pin D");
+  WS_DEBUG_PRINT(pin->pin_name);
+  WS_DEBUG_PRINT(" value changed to: ");
+  WS_DEBUG_PRINTLN(pin->pin_value);
+
+  return true;
+}
+
+// TODO: Maybe the partition increase is causing issues with the ESP32-S2
+// we are also using the larger partition sz with the S3 so it could cause
+// issues there too..
+
 void DigitalIOController::Update() {
   // Bail out if we have no digital pins to poll
   if (_digital_io_pins.empty())
@@ -166,67 +207,37 @@ void DigitalIOController::Update() {
       continue;
 
     // TODO: Use Event sample mode first, its more common
-    // TODO: Refactor these conditionals out into separate functions
     if (pin.sample_mode ==
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
-      // Handle the timer-based sample mode
-      // NOTE: This is the v1 timer-based implementation, we may want to
-      // try a task-based approach for v2
-      long cur_time = millis();
-      if (cur_time - pin.prv_pin_period > pin.pin_period) {
-        // The period has elapsed
-        bool pin_value = _dio_hardware->GetValue(pin.pin_name);
-        WS_DEBUG_PRINT("DIO Pin D");
-        WS_DEBUG_PRINT(pin.pin_name);
-        WS_DEBUG_PRINT(" | value: ");
-        WS_DEBUG_PRINTLN(pin_value);
-        // Publish this value to the broker
-        char pin_name[12];
-        sprintf(pin_name, "D%d", pin.pin_name);
-        // Encode the event and publish it to the broker
-        if (!_dio_model->EncodeDigitalIOEvent(pin_name, pin_value))
-          WS_DEBUG_PRINTLN("ERROR: Unable to encode digitalio event message, "
-                           "moving onto the next pin!");
+      if (!CheckTimerPin(&pin)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to check timer pin, moving onto the "
+                         "next pin!");
         continue;
-        if (!WsV2.PublishSignal(
-                wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
-                _dio_model->GetDigitalIOEventMsg()))
-          WS_DEBUG_PRINTLN("ERROR: Unable to publish digitalio event message, "
-                           "moving onto the next pin!");
-        continue;
-        // Update the pin
-        pin.prv_pin_period = cur_time;
-        pin.prv_pin_value = pin_value;
       }
     } else if (
         pin.sample_mode ==
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
-      // Handle the event-based sample mode
-      // TODO: Refactor this out into another function
-      bool pin_value = _dio_hardware->GetValue(pin.pin_name);
-      // Bail out if the pin value hasn't changed
-      if (pin_value == pin.prv_pin_value)
+      if (!CheckEventPin(&pin)) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to check event pin, moving on..");
         continue;
-      WS_DEBUG_PRINT("DIO Pin D");
-      WS_DEBUG_PRINT(pin.pin_name);
-      WS_DEBUG_PRINT(" value changed to: ");
-      WS_DEBUG_PRINTLN(pin_value);
-      // Publish this value to the broker
+      }
+
+      // TODO: Move all the encode and publish code into a new func.
       char pin_name[12];
       sprintf(pin_name, "D%d", pin.pin_name);
       // Encode the event and publish it to the broker
-      if (!_dio_model->EncodeDigitalIOEvent(pin_name, pin_value))
+      if (!_dio_model->EncodeDigitalIOEvent(pin_name, pin.pin_value)) {
         WS_DEBUG_PRINTLN("ERROR: Unable to encode digitalio event message, "
                          "moving onto the next pin!");
-      continue;
+        continue;
+      }
       if (!WsV2.PublishSignal(
               wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
-              _dio_model->GetDigitalIOEventMsg()))
+              _dio_model->GetDigitalIOEventMsg())) {
         WS_DEBUG_PRINTLN("ERROR: Unable to publish digitalio event message, "
                          "moving onto the next pin!");
-      continue;
-      // Update the pin's value
-      pin.prv_pin_value = pin_value;
+        continue;
+      }
     } else {
       // Invalid sample mode
       WS_DEBUG_PRINTLN("ERROR: Invalid digital io pin sample mode!");
