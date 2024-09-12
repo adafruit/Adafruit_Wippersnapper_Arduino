@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-esp32sx-esptool:
-    name: Build WipperSnapper ESP32-Sx
+    name: Build ESP32-Sx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -144,7 +144,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
 
   build-esp32sx:
-    name: Build WipperSnapper ESP32-Sx
+    name: Build ESP32-Sx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -226,7 +226,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
   build-esp32:
-    name: Build WipperSnapper ESP32, ESP32-Cx
+    name: Build ESP32 and Cx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
