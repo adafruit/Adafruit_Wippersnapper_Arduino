@@ -35,6 +35,7 @@ jobs:
         with:
           repository: brentru/ci-arduino
           path: ci
+          ref: add-ws-partition-scheme-targets
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
@@ -260,6 +261,7 @@ jobs:
         with:
           repository: brentru/ci-arduino
           path: ci
+          ref: add-ws-partition-scheme-targets
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
@@ -648,6 +650,7 @@ jobs:
         with:
           repository: brentru/ci-arduino
           path: ci
+          ref: add-ws-partition-scheme-targets
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
