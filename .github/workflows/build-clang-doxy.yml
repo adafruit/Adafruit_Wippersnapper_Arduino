@@ -128,19 +128,19 @@ jobs:
       - name: Zip build artifacts
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.*
-      - name: upload build artifacts zip
-        uses: actions/upload-artifact@v3
+      - name: Upload build artifacts zip
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
+          name: build-files-${{ matrix.arduino-platform }}-zip
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-      - name: upload build artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload build artifact UF2 file
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
+          name: build-files-${{ matrix.arduino-platform }}-uf2
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
 
@@ -219,9 +219,9 @@ jobs:
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/Wippersnapper_demo.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
       - name: upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
+          name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
@@ -338,9 +338,9 @@ jobs:
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
       - name: upload build artifacts zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
+          name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
@@ -394,9 +394,9 @@ jobs:
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/Wippersnapper_demo.ino.hex wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
       - name: upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
+          name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.hex
@@ -444,9 +444,9 @@ jobs:
         run: |
           mv examples/*/build/*/Wippersnapper_demo.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
       - name: upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
+          name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
 
@@ -541,9 +541,9 @@ jobs:
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
       - name: upload build artifacts zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
+          name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
@@ -615,9 +615,9 @@ jobs:
           mv examples/*/build/*/wippersnapper_debug.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/wippersnapper_debug.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
       - name: upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files-dev
+          name: build-files-dev-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
@@ -729,7 +729,7 @@ jobs:
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.*
       - name: upload build artifacts zip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-files-dev
           path: |

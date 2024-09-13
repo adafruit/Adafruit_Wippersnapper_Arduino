@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download build artifacts from build-platform steps
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: build-files
+          path: .
       - name: List Files
         run: ls
       - name: Upload Assets to the GitHub Release
