@@ -24,7 +24,8 @@
     @brief  Class that provides a driver interface for the SCD30 sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_SCD30 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_SCD30 : public WipperSnapper_I2C_Driver
+{
 
 public:
   /*******************************************************************************/
@@ -37,7 +38,8 @@ public:
   */
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_SCD30(TwoWire *i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress)
+  {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
   }
@@ -48,9 +50,45 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
+  bool begin()
+  {
     _scd = new Adafruit_SCD30();
     return _scd->begin((uint8_t)_sensorAddress, _i2c);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the SCD30 sensor.
+      @returns  True if the sensor was read successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool readSensor()
+  {
+    // dont read sensor more than once per second
+    if (_lastRead != 0 && millis() - _lastRead < 1000)
+    {
+      return true;
+    }
+
+    if (!_scd->dataReady())
+    {
+      delay(100);
+      if (!_scd->dataReady())
+      {
+        return false;
+      }
+    }
+    sensors_event_t tempEvent;
+    sensors_event_t humidEvent;
+    if (!_scd->getEvent(&humidEvent, &tempEvent))
+    {
+      return false;
+    }
+    _temperature = tempEvent.temperature;
+    _humidity = humidEvent.relative_humidity;
+    _CO2 = _scd->CO2;
+    _lastRead = millis();
+    return true;
   }
 
   /*******************************************************************************/
@@ -62,16 +100,15 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent)
+  {
     // check if sensor is enabled and data is available
-    if (_tempSensorPeriod != 0 && (!_scd->dataReady()))
+    if (!readSensor())
+    {
       return false;
+    }
 
-    // attempt to get temperature data
-    sensors_event_t humidEvent;
-    if (!_scd->getEvent(&humidEvent, tempEvent))
-      return false;
-
+    tempEvent->temperature = _temperature;
     return true;
   }
 
@@ -84,16 +121,15 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent)
+  {
     // check if sensor is enabled and data is available
-    if (_humidSensorPeriod != 0 && (!_scd->dataReady()))
+    if (!readSensor())
+    {
       return false;
+    }
 
-    // attempt to get temperature data
-    sensors_event_t tempEvent;
-    if (!_scd->getEvent(humidEvent, &tempEvent))
-      return false;
-
+    humidEvent->relative_humidity = _humidity;
     return true;
   }
 
@@ -106,17 +142,24 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventCO2(sensors_event_t *co2Event) {
+  bool getEventCO2(sensors_event_t *co2Event)
+  {
     // check if sensor is enabled and data is available
-    if (_CO2SensorPeriod != 0 && (!_scd->dataReady()))
+    if (!readSensor())
+    {
       return false;
+    }
 
-    co2Event->CO2 = _scd->CO2;
+    co2Event->CO2 = _CO2;
     return true;
   }
 
 protected:
-  Adafruit_SCD30 *_scd; ///< SCD30 driver object
+  Adafruit_SCD30 *_scd = nullptr; ///< SCD30 driver object
+  ulong _lastRead = 0;            ///< Last time the sensor was read
+  float _temperature = 0;         ///< Temperature
+  float _humidity = 0;            ///< Relative Humidity
+  float _CO2 = 0;                 ///< CO2
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD30
