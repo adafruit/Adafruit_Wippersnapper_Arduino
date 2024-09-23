@@ -33,9 +33,9 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: brentru/ci-arduino
+          repository: adafruit/ci-arduino
           path: ci
-          ref: add-ws-partition-scheme-targets
+          ref: ci-wippersnapper
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
@@ -177,9 +177,9 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: brentru/ci-arduino
+          repository: adafruit/ci-arduino
           path: ci
-          ref: add-ws-partition-scheme-targets
+          ref: ci-wippersnapper
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
@@ -259,9 +259,9 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: brentru/ci-arduino
+          repository: adafruit/ci-arduino
           path: ci
-          ref: add-ws-partition-scheme-targets
+          ref: ci-wippersnapper
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
@@ -573,9 +573,9 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: brentru/ci-arduino
+          repository: adafruit/ci-arduino
           path: ci
-          ref: add-ws-partition-scheme-targets
+          ref: ci-wippersnapper
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
@@ -648,9 +648,9 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: brentru/ci-arduino
+          repository: adafruit/ci-arduino
           path: ci
-          ref: add-ws-partition-scheme-targets
+          ref: ci-wippersnapper
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
         with:
