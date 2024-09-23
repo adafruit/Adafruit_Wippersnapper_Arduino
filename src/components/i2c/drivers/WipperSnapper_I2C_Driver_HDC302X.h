@@ -56,7 +56,9 @@ public:
 
     // set the HDC302X's data rate to 1 Hz lowest noise
     _hdc302x->setAutoMode(EXIT_AUTO_MODE);
-
+    // discard first reading (It returned -45c for me once)
+    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
+                                              TRIGGERMODE_LP0);
     return true;
   }
 
