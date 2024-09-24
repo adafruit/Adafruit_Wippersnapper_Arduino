@@ -30,6 +30,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_DS2484.h"
 #include "drivers/WipperSnapper_I2C_Driver_ENS160.h"
+#include "drivers/WipperSnapper_I2C_Driver_HDC302X.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTS221.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTU21D.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTU31D.h"
@@ -141,6 +142,7 @@ private:
   WipperSnapper_I2C_Driver_BMP280 *_bmp280 = nullptr;
   WipperSnapper_I2C_Driver_BMP3XX *_bmp3xx = nullptr;
   WipperSnapper_I2C_Driver_BME680 *_bme680 = nullptr;
+  WipperSnapper_I2C_Driver_HDC302X *_hdc302x = nullptr;
   WipperSnapper_I2C_Driver_HTS221 *_hts221 = nullptr;
   WipperSnapper_I2C_Driver_HTU21D *_htu21d = nullptr;
   WipperSnapper_I2C_Driver_HTU31D *_htu31d = nullptr;
