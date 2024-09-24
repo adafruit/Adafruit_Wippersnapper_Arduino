@@ -44,7 +44,7 @@ public:
   Wippersnapper_FS_V2();
   ~Wippersnapper_FS_V2();
 
-  bool initFilesystem(bool force_format = false);
+  bool writeFSContents();
   void initUSBMSC();
 
   void eraseCPFS();
@@ -65,6 +65,7 @@ public:
 private:
   bool _freshFS = false; /*!< True if filesystem was initialized by
                             WipperSnapper, False otherwise. */
+  bool _isFormatted = false;
 };
 
 extern Wippersnapper_V2 WsV2;

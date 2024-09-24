@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2023 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -59,27 +59,36 @@ Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 FATFS elmchamFatfs_v2;    ///< Elm Cham's fatfs object
 uint8_t workbuf_v2[4096]; ///< Working buffer for f_fdisk function.
 
-bool makeFilesystem_V2() {
+bool mk_fs(void) {
+  // Make filesystem
   FRESULT r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf_v2, sizeof(workbuf_v2));
+  if (r != FR_OK)
+    return false;
+  return true;
+}
+
+bool mk_mount_disk_label(void) {
+  // mount to set disk label
+  FRESULT r = f_mount(&elmchamFatfs_v2, "0:", 1);
   if (r != FR_OK) {
     return false;
   }
   return true;
 }
 
-bool setVolumeLabel_V2() {
-  // mount to set disk label
-  FRESULT r = f_mount(&elmchamFatfs_v2, "0:", 1);
-  if (r != FR_OK) {
-    return false;
-  }
+bool mk_set_disk_label(void) {
   // set label
-  r = f_setlabel("WIPPER");
+  FRESULT r = f_setlabel("WIPPER");
   if (r != FR_OK) {
     return false;
   }
-  // unmount the fs
+
+  // unmount
   f_unmount("0:");
+
+  // sync to make sure all data is written to flash
+  flash_v2.syncBlocks();
+
   return true;
 }
 
@@ -89,19 +98,46 @@ bool setVolumeLabel_V2() {
 */
 /**************************************************************************/
 Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
-  // Detach USB device during init.
-  TinyUSBDevice.detach();
-  // Wait for detach
-  delay(500);
-
-  // If a filesystem does not already exist - attempt to initialize a new
-  // filesystem
-  if (!initFilesystem() && !initFilesystem(true)) {
+  // Attempt to initialize the flash chip
+  if (!flash_v2.begin()) {
     setStatusLEDColor(RED);
-    fsHalt("ERROR Initializing Filesystem");
+    fsHalt("Failed to initialize the flash chip!");
   }
 
-  // Initialize USB-MSD
+  // Check if the filesystem is formatted
+  _isFormatted = wipperFatFs_v2.begin(&flash_v2);
+
+  // If we are not formatted, attempt to format the filesystem as fat12
+  if (!_isFormatted) {
+    if (! mk_fs()) {
+      setStatusLEDColor(RED);
+      fsHalt("Failed to format the filesystem!");
+    }
+    if (! mk_mount_disk_label() ) {
+      setStatusLEDColor(RED);
+      fsHalt("Failed to mount the filesystem!");
+    }
+    if (! mk_set_disk_label() ) {
+      setStatusLEDColor(RED);
+      fsHalt("Failed to set the disk label!");
+    }
+
+    // now that we formatted, we need to re-init the filesystem
+    if (!wipperFatFs_v2.begin(&flash_v2)){ 
+      setStatusLEDColor(RED);
+      fsHalt("Failed to mount new filesystem!");
+    }
+     // Signal to the user that we've formatted the FS and they need to modify its contents
+    _freshFS = true;
+  }
+
+  // Write contents to the filesystem
+  if (! writeFSContents()) {
+    setStatusLEDColor(RED);
+    fsHalt("ERROR: Could not write filesystem contents!");
+  }
+
+  // Initialize USB-MSC
   initUSBMSC();
 
   // If we created a new filesystem, halt until user RESETs device.
@@ -116,48 +152,7 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
 /************************************************************/
 Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {}
 
-/**************************************************************************/
-/*!
-    @brief    Initializes the flash filesystem.
-    @param    force_format
-                If true, forces a new filesystem to be created. [DESTRUCTIVE]
-    @return   True if filesystem initialized correctly, false otherwise.
-*/
-/**************************************************************************/
-bool Wippersnapper_FS_V2::initFilesystem(bool force_format) {
-  // Init. flash library
-  if (!flash_v2.begin())
-    return false;
-
-  // Check if FS exists
-  if (force_format || !wipperFatFs_v2.begin(&flash_v2)) {
-    // No filesystem exists - create a new FS
-    // NOTE: THIS WILL ERASE ALL DATA ON THE FLASH
-    if (!makeFilesystem_V2())
-      return false;
-
-    // set volume label
-    if (!setVolumeLabel_V2())
-      return false;
-
-    // sync all data to flash
-    flash_v2.syncBlocks();
-
-    _freshFS = true;
-  }
-
-  // Check new FS
-  if (!wipperFatFs_v2.begin(&flash_v2))
-    return false;
-
-  // If CircuitPython was previously installed - erase CPY FS
-  eraseCPFS();
-
-  // If WipperSnapper was previously installed - remove the
-  // wippersnapper_boot_out.txt file
-  eraseBootFile();
-
-  // No file indexing on macOS
+bool disableMacOSIndexing() {
   wipperFatFs_v2.mkdir("/.fseventsd/");
   File32 writeFile = wipperFatFs_v2.open("/.fseventsd/no_log", FILE_WRITE);
   if (!writeFile)
@@ -173,6 +168,28 @@ bool Wippersnapper_FS_V2::initFilesystem(bool force_format) {
   if (!writeFile)
     return false;
   writeFile.close();
+
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes the flash filesystem.
+    @param    force_format
+                If true, forces a new filesystem to be created. [DESTRUCTIVE]
+    @return   True if filesystem initialized correctly, false otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper_FS_V2::writeFSContents() {
+  // If CircuitPython was previously installed - erase CircuitPython's default filesystem
+  eraseCPFS();
+
+  // If WipperSnapper was previously installed - remove the old
+  // wippersnapper_boot_out.txt file
+  eraseBootFile();
+
+  // Disble indexing on macOS
+  disableMacOSIndexing();
 
   // Create wippersnapper_boot_out.txt file
   if (!createBootFile())

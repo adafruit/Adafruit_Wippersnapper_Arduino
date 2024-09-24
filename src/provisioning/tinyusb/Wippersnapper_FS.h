@@ -65,6 +65,7 @@ public:
 private:
   bool _freshFS = false; /*!< True if filesystem was initialized by
                             WipperSnapper, False otherwise. */
+  bool _isFormatted = false;
 };
 
 extern Wippersnapper WS;
