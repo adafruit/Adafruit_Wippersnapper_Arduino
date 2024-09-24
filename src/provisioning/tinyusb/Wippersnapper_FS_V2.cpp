@@ -59,12 +59,10 @@ Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 FATFS elmchamFatfs_v2;    ///< Elm Cham's fatfs object
 uint8_t workbuf_v2[4096]; ///< Working buffer for f_fdisk function.
 
-bool mk_fs(void) {
+FRESULT mk_fs(void) {
   // Make filesystem
   FRESULT r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf_v2, sizeof(workbuf_v2));
-  if (r != FR_OK)
-    return false;
-  return true;
+  return r;
 }
 
 bool mk_mount_disk_label(void) {
@@ -92,12 +90,43 @@ bool mk_set_disk_label(void) {
   return true;
 }
 
+String getFRESULTMessage(FRESULT result) {
+    switch(result) {
+        case FR_OK: return "Succeeded";
+        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer";
+        case FR_INT_ERR: return "Assertion failed";
+        case FR_NOT_READY: return "The physical drive cannot work";
+        case FR_NO_FILE: return "Could not find the file";
+        case FR_NO_PATH: return "Could not find the path";
+        case FR_INVALID_NAME: return "The path name format is invalid";
+        case FR_DENIED: return "Access denied due to prohibited access or directory full";
+        case FR_EXIST: return "Access denied due to prohibited access";
+        case FR_INVALID_OBJECT: return "The file/directory object is invalid";
+        case FR_WRITE_PROTECTED: return "The physical drive is write protected";
+        case FR_INVALID_DRIVE: return "The logical drive number is invalid";
+        case FR_NOT_ENABLED: return "The volume has no work area";
+        case FR_NO_FILESYSTEM: return "There is no valid FAT volume";
+        case FR_MKFS_ABORTED: return "The f_mkfs() aborted due to any problem";
+        case FR_TIMEOUT: return "Could not get a grant to access the volume within defined period";
+        case FR_LOCKED: return "The operation is rejected according to the file sharing policy";
+        case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated";
+        case FR_TOO_MANY_OPEN_FILES: return "Number of open files > FF_FS_LOCK";
+        case FR_INVALID_PARAMETER: return "Given parameter is invalid";
+        default: return "Unknown error";
+    }
+}
+
 /**************************************************************************/
 /*!
     @brief    Initializes USB-MSC and the QSPI flash filesystem.
 */
 /**************************************************************************/
 Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
+  // Detach USB device during init.
+  TinyUSBDevice.detach();
+  // Wait for detach
+  delay(500);
+
   // Attempt to initialize the flash chip
   if (!flash_v2.begin()) {
     setStatusLEDColor(RED);
@@ -106,16 +135,16 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
 
   // Check if the filesystem is formatted
   _isFormatted = wipperFatFs_v2.begin(&flash_v2);
+  _isFormatted = false;
 
   // If we are not formatted, attempt to format the filesystem as fat12
   if (!_isFormatted) {
-    if (! mk_fs()) {
-      setStatusLEDColor(RED);
-      fsHalt("Failed to format the filesystem!");
-    }
+    FRESULT rc = mk_fs();
+    fsHalt(getFRESULTMessage(rc));
+
     if (! mk_mount_disk_label() ) {
       setStatusLEDColor(RED);
-      fsHalt("Failed to mount the filesystem!");
+      fsHalt("L125: Failed to mount the filesystem!");
     }
     if (! mk_set_disk_label() ) {
       setStatusLEDColor(RED);
@@ -129,6 +158,12 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
     }
      // Signal to the user that we've formatted the FS and they need to modify its contents
     _freshFS = true;
+  }
+
+  if (!wipperFatFs_v2.begin(&flash_v2)) {
+    setStatusLEDColor(RED);
+    // pass res to the fsHalt
+    fsHalt("L143: Failed to mount the filesystem");
   }
 
   // Write contents to the filesystem
