@@ -98,14 +98,19 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: list arduino esp32 core files
-        run: |
-          ls /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
         uses: andstor/file-existence-action@v2
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
+      - name: list arduino esp32 core files
+        if: steps.check_files.outputs.files_exists == 'true'
+        run: |
+          ls /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions
+      - name: list arduino esp32 bsp core files
+        if: steps.check_files.outputs.files_exists == 'false'
+        run: |
+          ls /home/runner/Arduino/hardware/espressif/esp32/tools/partitions
       - name: boot_app0 file from arduino-cli core
         if: steps.check_files.outputs.files_exists == 'true'
         run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
