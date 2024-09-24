@@ -55,30 +55,50 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Reads the SCD30 sensor.
-      @returns  True if the sensor was read successfully, False otherwise.
+      @brief    Checks if sensor was read within last 1s, or is the first read.
+      @returns  True if the sensor was recently read, False otherwise.
+  */
+  bool alreadyRecentlyRead() {
+    return (_lastRead != 0 && millis() - _lastRead) < 1000;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks if the sensor is ready to be read
+      @returns  True if the sensor is ready, False otherwise.
   */
   /*******************************************************************************/
-  bool readSensor() {
-    // dont read sensor more than once per second
-    if (_lastRead != 0 && millis() - _lastRead < 1000) {
-      return true;
-    }
-
+  bool sensorReady() {
     if (!_scd->dataReady()) {
+      // failed, one more quick attempt
       delay(100);
       if (!_scd->dataReady()) {
         return false;
       }
     }
-    sensors_event_t tempEvent;
-    sensors_event_t humidEvent;
-    if (!_scd->getEvent(&humidEvent, &tempEvent)) {
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the SCD30 sensor.
+      @returns  True if the sensor was read successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool readSensorData() {
+    // dont read sensor more than once per second
+    if (alreadyRecentlyRead()) {
+      return true;
+    }
+
+    if (!sensorReady()) {
       return false;
     }
-    _temperature = tempEvent.temperature;
-    _humidity = humidEvent.relative_humidity;
-    _CO2 = _scd->CO2;
+
+    if (_scd->getEvent(&_humidity, &_temperature)) {
+      return false;
+    }
+    _CO2.CO2 = _scd->CO2;
     _lastRead = millis();
     return true;
   }
@@ -94,11 +114,11 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
-    if (!readSensor()) {
+    if (!readSensorData()) {
       return false;
     }
 
-    tempEvent->temperature = _temperature;
+    tempEvent = &_temperature;
     return true;
   }
 
@@ -113,11 +133,11 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
-    if (!readSensor()) {
+    if (!readSensorData()) {
       return false;
     }
 
-    humidEvent->relative_humidity = _humidity;
+    humidEvent = &_humidity;
     return true;
   }
 
@@ -132,20 +152,20 @@ public:
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
     // check if sensor is enabled and data is available
-    if (!readSensor()) {
+    if (!readSensorData()) {
       return false;
     }
 
-    co2Event->CO2 = _CO2;
+    co2Event = &_CO2;
     return true;
   }
 
 protected:
   Adafruit_SCD30 *_scd = nullptr; ///< SCD30 driver object
   ulong _lastRead = 0;            ///< Last time the sensor was read
-  float _temperature = 0;         ///< Temperature
-  float _humidity = 0;            ///< Relative Humidity
-  float _CO2 = 0;                 ///< CO2
+  sensors_event_t _temperature;   ///< Temperature
+  sensors_event_t _humidity;      ///< Relative Humidity
+  sensors_event_t _CO2;           ///< CO2
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD30
