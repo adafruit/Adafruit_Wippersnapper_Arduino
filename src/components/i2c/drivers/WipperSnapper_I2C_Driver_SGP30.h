@@ -44,11 +44,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _sgp30 = new Adafruit_SGP30();
-    bool isInit = _sgp30->begin(_i2c);
-    if (isInit) {
-      _sgp30->IAQinit();
-    }
-    return isInit;
+    return _sgp30->begin(_i2c);
   }
 
   bool getEventECO2(sensors_event_t *senseEvent) {
