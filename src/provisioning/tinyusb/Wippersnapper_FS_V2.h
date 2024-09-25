@@ -50,8 +50,8 @@ public:
   void eraseCPFS();
   void eraseBootFile();
 
-  bool configFileExists();
   void createSecretsFile();
+  bool getSecretsFile();
   bool createBootFile();
   void writeToBootOut(PGM_P str);
   void fsHalt(String msg);
@@ -63,9 +63,8 @@ public:
   void createDisplayConfig();
 #endif
 private:
-  bool _freshFS = false; /*!< True if filesystem was initialized by
-                            WipperSnapper, False otherwise. */
   bool _isFormatted = false;
+  bool _is_secrets_file_empty = false;
 };
 
 extern Wippersnapper_V2 WsV2;

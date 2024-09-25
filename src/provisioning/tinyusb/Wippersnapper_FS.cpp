@@ -606,17 +606,17 @@ void qspi_msc_flush_cb(void) {
 //--------------------------------------------------------------------+
 extern "C" {
 
-DSTATUS disk_status(BYTE pdrv) {
+DSTATUS fdisk_status(BYTE pdrv) {
   (void)pdrv;
   return 0;
 }
 
-DSTATUS disk_initialize(BYTE pdrv) {
+DSTATUS fdisk_initialize(BYTE pdrv) {
   (void)pdrv;
   return 0;
 }
 
-DRESULT disk_read(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
+DRESULT fdisk_read(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
                   BYTE *buff, /* Data buffer to store read data */
                   DWORD sector, /* Start sector in LBA */
                   UINT count    /* Number of sectors to read */
@@ -625,7 +625,7 @@ DRESULT disk_read(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
   return flash.readBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
-DRESULT disk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
+DRESULT fdisk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
                    const BYTE *buff, /* Data to be written */
                    DWORD sector,     /* Start sector in LBA */
                    UINT count        /* Number of sectors to write */
@@ -634,7 +634,7 @@ DRESULT disk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
   return flash.writeBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
-DRESULT disk_ioctl(BYTE pdrv, /* Physical drive nmuber (0..) */
+DRESULT fdisk_ioctl(BYTE pdrv, /* Physical drive nmuber (0..) */
                    BYTE cmd,  /* Control code */
                    void *buff /* Buffer to send/receive control data */
 ) {

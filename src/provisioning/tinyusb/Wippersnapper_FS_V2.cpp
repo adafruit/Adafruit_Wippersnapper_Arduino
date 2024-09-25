@@ -36,7 +36,7 @@
 Adafruit_FlashTransport_QSPI flashTransport_v2;
 #elif defined(EXTERNAL_FLASH_USE_SPI)
 Adafruit_FlashTransport_SPI flashTransport_v2(EXTERNAL_FLASH_USE_CS,
-                                           EXTERNAL_FLASH_USE_SPI);
+                                              EXTERNAL_FLASH_USE_SPI);
 #elif defined(ARDUINO_ARCH_ESP32)
 // ESP32-S2 uses same flash device that stores code.
 // Therefore there is no need to specify the SPI and SS
@@ -59,27 +59,19 @@ Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 FATFS elmchamFatfs_v2;    ///< Elm Cham's fatfs object
 uint8_t workbuf_v2[4096]; ///< Working buffer for f_fdisk function.
 
-FRESULT mk_fs(void) {
+FRESULT format_fs_fat12(void) {
   // Make filesystem
   FRESULT r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf_v2, sizeof(workbuf_v2));
-  return r;
-}
 
-bool mk_mount_disk_label(void) {
   // mount to set disk label
-  FRESULT r = f_mount(&elmchamFatfs_v2, "0:", 1);
-  if (r != FR_OK) {
-    return false;
-  }
-  return true;
-}
+  r = f_mount(&elmchamFatfs_v2, "0:", 1);
+  if (r != FR_OK)
+    return r;
 
-bool mk_set_disk_label(void) {
   // set label
-  FRESULT r = f_setlabel("WIPPER");
-  if (r != FR_OK) {
-    return false;
-  }
+  r = f_setlabel("WIPPER");
+  if (r != FR_OK)
+    return r;
 
   // unmount
   f_unmount("0:");
@@ -87,33 +79,7 @@ bool mk_set_disk_label(void) {
   // sync to make sure all data is written to flash
   flash_v2.syncBlocks();
 
-  return true;
-}
-
-String getFRESULTMessage(FRESULT result) {
-    switch(result) {
-        case FR_OK: return "Succeeded";
-        case FR_DISK_ERR: return "A hard error occurred in the low level disk I/O layer";
-        case FR_INT_ERR: return "Assertion failed";
-        case FR_NOT_READY: return "The physical drive cannot work";
-        case FR_NO_FILE: return "Could not find the file";
-        case FR_NO_PATH: return "Could not find the path";
-        case FR_INVALID_NAME: return "The path name format is invalid";
-        case FR_DENIED: return "Access denied due to prohibited access or directory full";
-        case FR_EXIST: return "Access denied due to prohibited access";
-        case FR_INVALID_OBJECT: return "The file/directory object is invalid";
-        case FR_WRITE_PROTECTED: return "The physical drive is write protected";
-        case FR_INVALID_DRIVE: return "The logical drive number is invalid";
-        case FR_NOT_ENABLED: return "The volume has no work area";
-        case FR_NO_FILESYSTEM: return "There is no valid FAT volume";
-        case FR_MKFS_ABORTED: return "The f_mkfs() aborted due to any problem";
-        case FR_TIMEOUT: return "Could not get a grant to access the volume within defined period";
-        case FR_LOCKED: return "The operation is rejected according to the file sharing policy";
-        case FR_NOT_ENOUGH_CORE: return "LFN working buffer could not be allocated";
-        case FR_TOO_MANY_OPEN_FILES: return "Number of open files > FF_FS_LOCK";
-        case FR_INVALID_PARAMETER: return "Given parameter is invalid";
-        default: return "Unknown error";
-    }
+  return r;
 }
 
 /**************************************************************************/
@@ -135,49 +101,51 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
 
   // Check if the filesystem is formatted
   _isFormatted = wipperFatFs_v2.begin(&flash_v2);
-  _isFormatted = false;
 
   // If we are not formatted, attempt to format the filesystem as fat12
   if (!_isFormatted) {
-    FRESULT rc = mk_fs();
-    fsHalt(getFRESULTMessage(rc));
+    FRESULT rc = format_fs_fat12();
 
-    if (! mk_mount_disk_label() ) {
+    if (format_fs_fat12() != FR_OK) {
       setStatusLEDColor(RED);
-      fsHalt("L125: Failed to mount the filesystem!");
-    }
-    if (! mk_set_disk_label() ) {
-      setStatusLEDColor(RED);
-      fsHalt("Failed to set the disk label!");
+      fsHalt("FATAL ERROR: Failed to format the filesystem!");
     }
 
     // now that we formatted, we need to re-init the filesystem
-    if (!wipperFatFs_v2.begin(&flash_v2)){ 
+    if (!wipperFatFs_v2.begin(&flash_v2)) {
       setStatusLEDColor(RED);
-      fsHalt("Failed to mount new filesystem!");
+      fsHalt("FATAL ERROR: Failed to mount newly created filesystem!");
     }
-     // Signal to the user that we've formatted the FS and they need to modify its contents
-    _freshFS = true;
   }
 
-  if (!wipperFatFs_v2.begin(&flash_v2)) {
+  // Write contents to the formatted filesystem
+  if (!writeFSContents()) {
     setStatusLEDColor(RED);
-    // pass res to the fsHalt
-    fsHalt("L143: Failed to mount the filesystem");
-  }
-
-  // Write contents to the filesystem
-  if (! writeFSContents()) {
-    setStatusLEDColor(RED);
-    fsHalt("ERROR: Could not write filesystem contents!");
+    fsHalt("FATAL ERROR: Could not write filesystem contents!");
   }
 
   // Initialize USB-MSC
   initUSBMSC();
 
-  // If we created a new filesystem, halt until user RESETs device.
-  if (_freshFS)
-    fsHalt("New filesystem created! Press the reset button on your board.");
+  // If we wrote a fresh secrets.json file, halt until user edits the file and
+  // RESETs the device Signal to user that action must be taken (edit
+  // secrets.json)
+  if (_is_secrets_file_empty) {
+    writeToBootOut(
+        "Please edit the secrets.json file. Then, reset your board.\n");
+#ifdef USE_DISPLAY
+    WsV2._ui_helper->show_scr_error(
+        "INVALID SETTINGS FILE",
+        "The settings.json file on the WIPPER drive contains default values. "
+        "Please edit it to reflect your Adafruit IO and network credentials. "
+        "When you're done, press RESET on the board.");
+#endif
+    fsHalt(
+        "INVALID SETTINGS FILE",
+        "The settings.json file on the WIPPER drive contains default values. "
+        "Please edit it to reflect your Adafruit IO and network credentials. "
+        "When you're done, press RESET on the board.");
+  }
 }
 
 /************************************************************/
@@ -216,7 +184,8 @@ bool disableMacOSIndexing() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS_V2::writeFSContents() {
-  // If CircuitPython was previously installed - erase CircuitPython's default filesystem
+  // If CircuitPython was previously installed - erase CircuitPython's default
+  // filesystem
   eraseCPFS();
 
   // If WipperSnapper was previously installed - remove the old
@@ -231,11 +200,11 @@ bool Wippersnapper_FS_V2::writeFSContents() {
     return false;
 
   // Check if secrets.json file already exists
-  if (!configFileExists()) {
+  if (!getSecretsFile()) {
     // Create new secrets.json file and halt
     createSecretsFile();
+    _is_secrets_file_empty = true;
   }
-
   return true;
 }
 
@@ -250,7 +219,7 @@ void Wippersnapper_FS_V2::initUSBMSC() {
   usb_msc_v2.setID("Adafruit", "External Flash", "1.0");
   // Set callback
   usb_msc_v2.setReadWriteCallback(qspi_msc_read_cb_v2, qspi_msc_write_cb_v2,
-                               qspi_msc_flush_cb_v2);
+                                  qspi_msc_flush_cb_v2);
 
   // Set disk size, block size should be 512 regardless of spi flash page size
   usb_msc_v2.setCapacity(flash_v2.pageSize() * flash_v2.numPages() / 512, 512);
@@ -261,7 +230,8 @@ void Wippersnapper_FS_V2::initUSBMSC() {
   // init MSC
   usb_msc_v2.begin();
 
-  // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi
+  // won't take effect until re-enumeration
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
     delay(10);
@@ -275,7 +245,7 @@ void Wippersnapper_FS_V2::initUSBMSC() {
     @returns  True if secrets.json file exists, False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_FS_V2::configFileExists() {
+bool Wippersnapper_FS_V2::getSecretsFile() {
   // Does secrets.json file exist?
   if (!wipperFatFs_v2.exists("/secrets.json"))
     return false;
@@ -328,20 +298,20 @@ bool Wippersnapper_FS_V2::createBootFile() {
     bootFile.println(BOARD_ID);
 
     sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WsV2._macAddrV2[0],
-            WsV2._macAddrV2[1], WsV2._macAddrV2[2], WsV2._macAddrV2[3], WsV2._macAddrV2[4],
-            WsV2._macAddrV2[5]);
+            WsV2._macAddrV2[1], WsV2._macAddrV2[2], WsV2._macAddrV2[3],
+            WsV2._macAddrV2[4], WsV2._macAddrV2[5]);
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
 
-    // Print ESP-specific info to boot file
-    #ifdef ARDUINO_ARCH_ESP32
+// Print ESP-specific info to boot file
+#ifdef ARDUINO_ARCH_ESP32
     // Get version of ESP-IDF
     bootFile.print("ESP-IDF Version: ");
     bootFile.println(ESP.getSdkVersion());
     // Get version of this core
     bootFile.print("ESP32 Core Version: ");
     bootFile.println(ESP.getCoreVersion());
-    #endif
+#endif
 
     bootFile.flush();
     bootFile.close();
@@ -380,18 +350,6 @@ void Wippersnapper_FS_V2::createSecretsFile() {
   secretsFile.flush();
   secretsFile.close();
   delay(2500);
-
-  // Signal to user that action must be taken (edit secrets.json)
-  writeToBootOut(
-      "ERROR: Please edit the secrets.json file. Then, reset your board.\n");
-#ifdef USE_DISPLAY
-  WsV2._ui_helper->show_scr_error(
-      "INVALID SETTINGS FILE",
-      "The settings.json file on the WIPPER drive contains default values. "
-      "Please edit it to reflect your Adafruit IO and network credentials. "
-      "When you're done, press RESET on the board.");
-#endif
-  fsHalt("ERROR: Please edit the secrets.json file. Then, reset your board.");
 }
 
 /**************************************************************************/
@@ -497,14 +455,13 @@ void Wippersnapper_FS_V2::parseSecrets() {
            "credentials!");
   }
 
-    writeToBootOut("Secrets Contents\n");
-    writeToBootOut("Network Info\n: ");
-    writeToBootOut(WsV2._configV2.network.ssid);
-    writeToBootOut(WsV2._configV2.network.pass);
-    writeToBootOut("IO Creds.\n: ");
-    writeToBootOut(WsV2._configV2.aio_user);
-    writeToBootOut(WsV2._configV2.aio_key);
-
+  writeToBootOut("Secrets Contents\n");
+  writeToBootOut("Network Info\n: ");
+  writeToBootOut(WsV2._configV2.network.ssid);
+  writeToBootOut(WsV2._configV2.network.pass);
+  writeToBootOut("IO Creds.\n: ");
+  writeToBootOut(WsV2._configV2.aio_user);
+  writeToBootOut(WsV2._configV2.aio_key);
 
   // Close secrets.json file
   secretsFile.close();
@@ -543,7 +500,7 @@ void Wippersnapper_FS_V2::fsHalt(String msg) {
   delay(500);
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
-    WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
+    WS_DEBUG_PRINT("Execution Halted: ");
     WS_DEBUG_PRINTLN(msg.c_str());
     delay(1000);
     yield();
@@ -628,7 +585,8 @@ int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize) {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it,
   // yahhhh!!
-  return flash_v2.readBlocks(lba, (uint8_t *)buffer, bufsize / 512) ? bufsize : -1;
+  return flash_v2.readBlocks(lba, (uint8_t *)buffer, bufsize / 512) ? bufsize
+                                                                    : -1;
 }
 
 /**************************************************************************/
@@ -669,17 +627,17 @@ void qspi_msc_flush_cb_v2(void) {
 //--------------------------------------------------------------------+
 extern "C" {
 
-DSTATUS disk_status_v2(BYTE pdrv) {
+DSTATUS disk_status(BYTE pdrv) {
   (void)pdrv;
   return 0;
 }
 
-DSTATUS disk_initialize_v2(BYTE pdrv) {
+DSTATUS disk_initialize(BYTE pdrv) {
   (void)pdrv;
   return 0;
 }
 
-DRESULT disk_read_v2(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
+DRESULT disk_read(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
                   BYTE *buff, /* Data buffer to store read data */
                   DWORD sector, /* Start sector in LBA */
                   UINT count    /* Number of sectors to read */
@@ -688,7 +646,7 @@ DRESULT disk_read_v2(BYTE pdrv,  /* Physical drive nmuber to identify the drive 
   return flash_v2.readBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
-DRESULT disk_write_v2(BYTE pdrv, /* Physical drive nmuber to identify the drive */
+DRESULT disk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
                    const BYTE *buff, /* Data to be written */
                    DWORD sector,     /* Start sector in LBA */
                    UINT count        /* Number of sectors to write */
@@ -697,7 +655,7 @@ DRESULT disk_write_v2(BYTE pdrv, /* Physical drive nmuber to identify the drive 
   return flash_v2.writeBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
-DRESULT disk_ioctl_v2(BYTE pdrv, /* Physical drive nmuber (0..) */
+DRESULT disk_ioctl(BYTE pdrv, /* Physical drive nmuber (0..) */
                    BYTE cmd,  /* Control code */
                    void *buff /* Buffer to send/receive control data */
 ) {
