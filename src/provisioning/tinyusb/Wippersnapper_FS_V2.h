@@ -63,7 +63,6 @@ public:
   void createDisplayConfig();
 #endif
 private:
-  bool _isFormatted = false;
   bool _is_secrets_file_empty = false;
 };
 

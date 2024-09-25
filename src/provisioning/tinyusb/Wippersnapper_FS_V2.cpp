@@ -1,7 +1,7 @@
 /*!
  * @file Wippersnapper_FS_V2.cpp
  *
- * Wippersnapper TinyUSB Filesystem
+ * Wippersnapper TinyUSB Filesystem Driver
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -52,15 +52,21 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 #endif
 
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
-FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat
-
+FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 
-FATFS elmchamFatfs_v2;    ///< Elm Cham's fatfs object
-uint8_t workbuf_v2[4096]; ///< Working buffer for f_fdisk function.
-
+/**************************************************************************/
+/*!
+    @brief    Formats the flash filesystem as FAT12.
+    @returns  FR_OK if filesystem formatted correctly,
+                otherwise any FRESULT enum.
+*/
+/**************************************************************************/
 FRESULT format_fs_fat12(void) {
-  // Make filesystem
+  FATFS elmchamFatfs_v2;
+  uint8_t workbuf_v2[4096];
+
+  // make filesystem
   FRESULT r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf_v2, sizeof(workbuf_v2));
 
   // mount to set disk label
@@ -68,17 +74,16 @@ FRESULT format_fs_fat12(void) {
   if (r != FR_OK)
     return r;
 
-  // set label
+  // set fs label
   r = f_setlabel("WIPPER");
   if (r != FR_OK)
     return r;
 
-  // unmount
+  // unmount fs
   f_unmount("0:");
 
   // sync to make sure all data is written to flash
   flash_v2.syncBlocks();
-
   return r;
 }
 
@@ -99,19 +104,19 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
     fsHalt("Failed to initialize the flash chip!");
   }
 
-  // Check if the filesystem is formatted
-  _isFormatted = wipperFatFs_v2.begin(&flash_v2);
+  // Attempt to initialize the filesystem
+  bool is_fs_formatted = wipperFatFs_v2.begin(&flash_v2);
 
   // If we are not formatted, attempt to format the filesystem as fat12
-  if (!_isFormatted) {
+  if (!is_fs_formatted) {
     FRESULT rc = format_fs_fat12();
 
-    if (format_fs_fat12() != FR_OK) {
+    if (rc != FR_OK) {
       setStatusLEDColor(RED);
       fsHalt("FATAL ERROR: Failed to format the filesystem!");
     }
 
-    // now that we formatted, we need to re-init the filesystem
+    // Now that we have a formatted filesystem, we need to inititalize it
     if (!wipperFatFs_v2.begin(&flash_v2)) {
       setStatusLEDColor(RED);
       fsHalt("FATAL ERROR: Failed to mount newly created filesystem!");
@@ -140,11 +145,9 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
         "Please edit it to reflect your Adafruit IO and network credentials. "
         "When you're done, press RESET on the board.");
 #endif
-    fsHalt(
-        "INVALID SETTINGS FILE",
-        "The settings.json file on the WIPPER drive contains default values. "
-        "Please edit it to reflect your Adafruit IO and network credentials. "
-        "When you're done, press RESET on the board.");
+    fsHalt("The settings.json file on the WIPPER drive contains default "
+           "values\n. Using a text editor, edit it to reflect your Adafruit IO "
+           "and WiFi credentials. Then, reset the board.");
   }
 }
 
@@ -153,8 +156,17 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
     @brief    Filesystem destructor
 */
 /************************************************************/
-Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {}
+Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {
+  // Unmount filesystem
+  wipperFatFs_v2.end();
+}
 
+/**************************************************************************/
+/*!
+    @brief    Writes files to the filesystem to disable macOS from indexing.
+    @returns  True if files written successfully, false otherwise.
+*/
+/**************************************************************************/
 bool disableMacOSIndexing() {
   wipperFatFs_v2.mkdir("/.fseventsd/");
   File32 writeFile = wipperFatFs_v2.open("/.fseventsd/no_log", FILE_WRITE);
@@ -247,9 +259,7 @@ void Wippersnapper_FS_V2::initUSBMSC() {
 /**************************************************************************/
 bool Wippersnapper_FS_V2::getSecretsFile() {
   // Does secrets.json file exist?
-  if (!wipperFatFs_v2.exists("/secrets.json"))
-    return false;
-  return true;
+  return wipperFatFs_v2.exists("/secrets.json");
 }
 
 /**************************************************************************/
@@ -273,9 +283,8 @@ void Wippersnapper_FS_V2::eraseCPFS() {
 /**************************************************************************/
 void Wippersnapper_FS_V2::eraseBootFile() {
   // overwrite previous boot_out file on each boot
-  if (wipperFatFs_v2.exists("/wipper_boot_out.txt")) {
+  if (wipperFatFs_v2.exists("/wipper_boot_out.txt"))
     wipperFatFs_v2.remove("/wipper_boot_out.txt");
-  }
 }
 
 /**************************************************************************/
@@ -477,15 +486,11 @@ void Wippersnapper_FS_V2::parseSecrets() {
 void Wippersnapper_FS_V2::writeToBootOut(PGM_P str) {
   // Append error output to FS
   File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
-  if (bootFile) {
-    bootFile.print(str);
-    bootFile.flush();
-    bootFile.close();
-  } else {
-    WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for logging!");
-    // feels like we should check why, if good use-case ok, otherwise fsHalt
-    // as indicates fs corruption or disc access issue (maybe latter is okay)
-  }
+  if (!bootFile)
+    fsHalt("ERROR: Unable to open wipper_boot_out.txt for logging!");
+  bootFile.print(str);
+  bootFile.flush();
+  bootFile.close();
 }
 
 /**************************************************************************/
@@ -502,12 +507,17 @@ void Wippersnapper_FS_V2::fsHalt(String msg) {
   while (1) {
     WS_DEBUG_PRINT("Execution Halted: ");
     WS_DEBUG_PRINTLN(msg.c_str());
-    delay(1000);
+    delay(5000);
     yield();
   }
 }
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
+/**************************************************************************/
+/*!
+    @brief    Creates a default display_config.json file on the filesystem.
+*/
+/**************************************************************************/
 void Wippersnapper_FS_V2::createDisplayConfig() {
   // Open file for writing
   File32 displayFile = wipperFatFs_v2.open("/display_config.json", FILE_WRITE);
@@ -537,6 +547,13 @@ void Wippersnapper_FS_V2::createDisplayConfig() {
   delay(2500); // give FS some time to write the file
 }
 
+/**************************************************************************/
+/*!
+    @brief    Parses a display_config.json file on the flash filesystem.
+    @param    dispCfg
+                displayConfig struct to populate.
+*/
+/**************************************************************************/
 void Wippersnapper_FS_V2::parseDisplayConfig(displayConfig &dispCfg) {
   // Check if display_config.json file exists, if not, generate it
   if (!wipperFatFs_v2.exists("/display_config.json")) {
