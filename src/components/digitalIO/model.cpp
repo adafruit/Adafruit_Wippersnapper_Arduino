@@ -71,7 +71,7 @@ bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
   _msg_dio_event.value.type =
       wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN;
   _msg_dio_event.value.which_value =
-      wippersnapper_sensor_SensorEvent_bytes_value_tag;
+      wippersnapper_sensor_SensorEvent_bool_value_tag;
   _msg_dio_event.value.value.bool_value = value;
 
   // Encode the DigitalIOEvent message
