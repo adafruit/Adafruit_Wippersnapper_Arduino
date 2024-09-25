@@ -15,6 +15,7 @@
  */
 
 #include "Wippersnapper_AnalogIO.h"
+#include "Wippersnapper.h"
 
 /***********************************************************************************/
 /*!
@@ -87,8 +88,8 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   analogReadResolution(16);
   _nativeResolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
-  scaleAnalogRead = true;
-  _nativeResolution = 13;
+  scaleAnalogRead = true; // probably should be false, handled in bsp
+  _nativeResolution = 13; // S3 ADC is 13-bit, others are 12-bit
 #elif defined(ARDUINO_ARCH_RP2040)
   scaleAnalogRead = true;
   _nativeResolution = 10;
@@ -96,7 +97,6 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   scaleAnalogRead = true;
   _nativeResolution = 10;
 #endif
-
   _adcResolution = resolution;
 }
 
@@ -157,7 +157,7 @@ void Wippersnapper_AnalogIO::initAnalogInputPin(
       break;
     }
   }
-  WS_DEBUG_PRINT("Configured Analog Input pin with polling time (ms):");
+  WS_DEBUG_PRINT(F("Configured Analog Input pin with polling time (ms):"));
   WS_DEBUG_PRINTLN(periodMs);
 }
 
@@ -189,11 +189,11 @@ void Wippersnapper_AnalogIO::disableAnalogInPin(int pin) {
 /***********************************************************************************/
 void Wippersnapper_AnalogIO::deinitAnalogPin(
     wippersnapper_pin_v1_ConfigurePinRequest_Direction direction, int pin) {
-  WS_DEBUG_PRINT("Deinitializing analog pin A");
+  WS_DEBUG_PRINT(F("Deinitializing analog pin A"));
   WS_DEBUG_PRINTLN(pin);
   if (direction ==
       wippersnapper_pin_v1_ConfigurePinRequest_Direction_DIRECTION_INPUT) {
-    WS_DEBUG_PRINTLN("Deinitialized analog input pin obj.");
+    WS_DEBUG_PRINTLN(F("Deinitialized analog input pin obj."));
     disableAnalogInPin(pin);
   }
   pinMode(pin, INPUT); // hi-z
@@ -232,8 +232,14 @@ uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
 */
 /**********************************************************/
 float Wippersnapper_AnalogIO::getPinValueVolts(int pin) {
+#ifdef ARDUINO_ARCH_ESP32
+  WS_DEBUG_PRINTLN(F("ESP32: Using analogReadMilliVolts()"));
+  return analogReadMilliVolts(pin) / 1000.0;
+#else
+  WS_DEBUG_PRINTLN(F("Using old getPinValueVolts()"));
   uint16_t rawValue = getPinValue(pin);
   return rawValue * getAref() / 65536;
+#endif
 }
 
 /******************************************************************/
@@ -287,7 +293,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
   if (!ws_pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
                     &outgoingSignalMsg)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
+    WS_DEBUG_PRINTLN(F("ERROR: Unable to encode signal message"));
     return false;
   }
 
@@ -296,9 +302,9 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   pb_get_encoded_size(&msgSz,
                       wippersnapper_signal_v1_CreateSignalRequest_fields,
                       &outgoingSignalMsg);
-  WS_DEBUG_PRINT("Publishing pinEvent...");
+  WS_DEBUG_PRINT(F("Publishing pinEvent..."));
   WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-  WS_DEBUG_PRINTLN("Published!");
+  WS_DEBUG_PRINTLN(F("Published!"));
 
   return true;
 }
@@ -332,70 +338,189 @@ void Wippersnapper_AnalogIO::update() {
   // Process analog input pins
   for (int i = 0; i < _totalAnalogInputPins; i++) {
     // TODO: Can we collapse the conditionals below?
-    if (_analog_input_pins[i].enabled == true) {
+    if (!_analog_input_pins[i].enabled) {
+      continue;
+    }
 
-      // Does the pin execute on-period?
-      if ((long)millis() - _analog_input_pins[i].prvPeriod >
-              _analog_input_pins[i].period &&
-          _analog_input_pins[i].period != 0L) {
-        WS_DEBUG_PRINT("Executing periodic event on A");
-        WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
+    // Does the pin execute on-period?
+    if (timerExpired((long)millis(), _analog_input_pins[i])) {
+      WS_DEBUG_PRINT(F("Executing periodic event on A"));
+      WS_DEBUG_PRINTLN(_analog_input_pins[i].pinName);
 
-        // Read from analog pin
-        if (_analog_input_pins[i].readMode ==
-            wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-          pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
-        } else if (
-            _analog_input_pins[i].readMode ==
-            wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE) {
-          pinValRaw = getPinValue(_analog_input_pins[i].pinName);
-        } else {
-          WS_DEBUG_PRINTLN("ERROR: Unable to read pin value, cannot determine "
-                           "analog read mode!");
-          pinValRaw = 0.0;
-        }
+      // Read from analog pin
+      if (_analog_input_pins[i].readMode ==
+          wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
+        pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
+      } else if (
+          _analog_input_pins[i].readMode ==
+          wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE) {
+        pinValRaw = getPinValue(_analog_input_pins[i].pinName);
+      } else {
+        WS_DEBUG_PRINTLN(F("ERROR: Unable to read pin value, cannot determine "
+                         "analog read mode!"));
+        pinValRaw = 0.0;
+      }
 
-        // Publish a new pin event
+      // Publish a new pin event
+      encodePinEvent(_analog_input_pins[i].pinName,
+                     _analog_input_pins[i].readMode, pinValRaw, pinValVolts);
+
+      // IMPT - reset the digital pin
+      _analog_input_pins[i].prvPeriod = millis();
+    }
+    // Does the pin execute on_change?
+    else if (_analog_input_pins[i].period == 0L) {
+
+      // if (_analog_input_pins[i].prvPeriod == 0L) {
+      //   // last time was a clean event, passed hyteresis or 300ms had elapsed
+      //   WS_DEBUG_PRINTLN("prvPeriod is 0, last time was a clean event, "
+      //                    "passed hyteresis or 500ms had elapsed");
+      // } else {
+      //   // We're waiting 300ms before posting, to avoid a flood of events
+      //   WS_DEBUG_PRINTLN(
+      //       "prvPeriod is not 0, probably waiting 300ms before posting, "
+      //       "to avoid a flood of events");
+      // }
+
+
+      // note: on-change requires ADC DEFAULT_HYSTERISIS to check against prv
+      // pin value
+      uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
+      WS_DEBUG_PRINT(F("PinValRaw: "));
+      WS_DEBUG_PRINT(pinValRaw);
+
+      // +1 to avoid log(0), 0-8 is fluctuation about 0, log(8) = 0.9, hysterisys=0.04
+      double currentLogValue = log10(pinValRaw + 10);
+      double lastLogValue =
+          log10(_analog_input_pins[i].prvPinVal + 10); // +1 to avoid log(0)
+      WS_DEBUG_PRINT(F("\tCurrentLogValue: "));
+      WS_DEBUG_PRINT(currentLogValue);
+      WS_DEBUG_PRINT(F("\tLastLogValue: "));
+      WS_DEBUG_PRINT(lastLogValue);
+      bool passed_hysterisys = false;
+      // Check if the logarithmic change exceeds the threshold
+      if (abs(currentLogValue - lastLogValue) > DEFAULT_HYSTERISIS) {
+        passed_hysterisys = true;
+        WS_DEBUG_PRINTLN(F("\tADC passed hysteresis"));
+      } else {
+        WS_DEBUG_PRINTLN(F("\tADC did not pass hysteresis"));
+      }
+
+
+
+      // new plan - add 100 then use 0.1 as the hysteresis, ten percent of current raw value
+      
+
+
+
+
+
+
+
+
+      // take diff in raw value and convert to bits in native resolution, then check for more than 4 bit change (0 to 8 is the noise floor, scaled)
+      float diff = abs(pinValRaw - _analog_input_pins[i].prvPinVal);
+      //convert diff to original resolution
+      diff = diff * (1 << (getADCresolution() - getNativeResolution()));
+      if (diff > 4) {
+        passed_hysterisys = true;
+        WS_DEBUG_PRINTLN(F("\tADC passed hysteresis"));
+      } else {
+        WS_DEBUG_PRINTLN(F("\tADC did not pass hysteresis"));
+      }
+
+      // old technique
+      uint16_t _pinValThreshHi =
+          _analog_input_pins[i].prvPinVal +
+          (_analog_input_pins[i].prvPinVal * 0.02);// DEFAULT_HYSTERISIS);
+      uint16_t _pinValThreshLow =
+          _analog_input_pins[i].prvPinVal -
+          (_analog_input_pins[i].prvPinVal * 0.02);//DEFAULT_HYSTERISIS);
+      WS_DEBUG_PRINT(F("PinValThreshHi: "));
+      WS_DEBUG_PRINT(_pinValThreshHi);
+      WS_DEBUG_PRINT(F("PinValThreshLow: "));
+      WS_DEBUG_PRINT(_pinValThreshLow);
+
+      if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
+        // passed_hysterisys = true;
+        WS_DEBUG_PRINTLN(F("\tADC passed OLD hysteresis"));
+      } else {
+        WS_DEBUG_PRINTLN(F("\tADC did not pass OLD hysteresis"));
+      }
+
+      if (_analog_input_pins[i].readMode ==
+          wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
+        pinValVolts = getPinValueVolts(_analog_input_pins[i].pinName);
+        WS_DEBUG_PRINT(F("PinValVolts: "));
+        WS_DEBUG_PRINTLN(pinValVolts);
+      } else if (
+          _analog_input_pins[i].readMode ==
+          wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VALUE) {
+        // already fetched raw value, just print it
+        WS_DEBUG_PRINT(F("PinValRaw: "));
+        WS_DEBUG_PRINT(pinValRaw);
+        WS_DEBUG_PRINT(F("PinValPrev: "));
+        WS_DEBUG_PRINTLN(_analog_input_pins[i].prvPinVal);
+
+      } else {
+        WS_DEBUG_PRINTLN("ERROR: Unable to read pin value, cannot determine "
+                         "analog read mode!");
+        pinValRaw = 0.0;
+      }
+
+      // prvPeriod is 0 means we just sent a final movement event, so we can
+      // send another one immediately if the ADC has changed enough while also
+      // waiting 200ms before posting the next final movement event (or
+      // continued movement events), to avoid a flood of events when twisting
+      // pots
+      if (passed_hysterisys && ((long)millis() - _analog_input_pins[i].prvPeriod) > 200) {
+        WS_DEBUG_PRINTLN(F("ADC has changed enough, publishing event..."));
+        _analog_input_pins[i].prvPinVal = pinValRaw;
+        _analog_input_pins[i].prvPeriod = millis();
+        // Publish pin event to IO
         encodePinEvent(_analog_input_pins[i].pinName,
                        _analog_input_pins[i].readMode, pinValRaw, pinValVolts);
+        // } else if (_analog_input_pins[i].prvPeriod != 0L &&
+        //            pinValRaw != _analog_input_pins[i].prvPinVal &&
+        //            ((long)millis() - _analog_input_pins[i].prvPeriod) > 200)
+        //            {
+        //   // failed hysterisys, but we were waiting 500ms before posting, to
+        //   avoid
+        //   // a flood of events
+        //   WS_DEBUG_PRINTLN(
+        //       "ADC has only mildly changed, but we were waiting 200ms before
+        //       " "posting, to avoid a flood of events and this is the final
+        //       value");
+        //   _analog_input_pins[i].prvPeriod = 0L;
+        //   _analog_input_pins[i].prvPinVal = pinValRaw;
+        //   // Publish pin event to IO
+        //   encodePinEvent(_analog_input_pins[i].pinName,
+        //                  _analog_input_pins[i].readMode, pinValRaw,
+        //                  pinValVolts);
 
-        // IMPT - reset the digital pin
-        _analog_input_pins[i].prvPeriod = millis();
+        // } else {
+        // WS_DEBUG_PRINTLN(F("ADC has not changed enough, continue..."));
+        // _analog_input_pins[i].prvPeriod = millis();
+        // _analog_input_pins[i].prvPinVal = pinValRaw;
+        // continue;
       }
-      // Does the pin execute on_change?
-      else if (_analog_input_pins[i].period == 0L) {
 
-        // note: on-change requires ADC DEFAULT_HYSTERISIS to check against prv
-        // pin value
-        uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
+      // if (_analog_input_pins[i].readMode ==
+      //     wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE)
+      //     {
+      //   pinValVolts = pinValRaw * getAref() / 65536;
+      // }
 
-        uint16_t _pinValThreshHi =
-            _analog_input_pins[i].prvPinVal +
-            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
-        uint16_t _pinValThreshLow =
-            _analog_input_pins[i].prvPinVal -
-            (_analog_input_pins[i].prvPinVal * DEFAULT_HYSTERISIS);
-
-        if (pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
-          // Perform voltage conversion if we need to
-          if (_analog_input_pins[i].readMode ==
-              wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
-            pinValVolts = pinValRaw * getAref() / 65536;
-          }
-
-          // Publish pin event to IO
-          encodePinEvent(_analog_input_pins[i].pinName,
-                         _analog_input_pins[i].readMode, pinValRaw,
-                         pinValVolts);
-
-        } else {
-          // WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
-          continue;
-        }
-        // set the pin value in the digital pin object for comparison on next
-        // run
-        _analog_input_pins[i].prvPinVal = pinValRaw;
-      }
+      // // Publish pin event to IO
+      // encodePinEvent(_analog_input_pins[i].pinName,
+      //                _analog_input_pins[i].readMode, pinValRaw,
+      //                pinValVolts);
+      // } else {
+      //   // WS_DEBUG_PRINTLN(F("ADC has not changed enough, continue..."));
+      //   continue;
+      // }
+      // set the pin value in the digital pin object for comparison on next
+      // run
     }
   }
 }
