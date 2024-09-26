@@ -59,14 +59,66 @@
   {} ///< Prints line from debug output.
 #endif
 
+#define WS_DELAY_WITH_WDT(timeout)                                             \
+  {                                                                            \
+    unsigned long start = millis();                                            \
+    while (millis() - start < timeout) {                                       \
+      delay(10);                                                               \
+      yield();                                                                 \
+      feedWDT();                                                               \
+      if (millis() < start) {                                                  \
+        start = millis(); /* if rollover */                                    \
+      }                                                                        \
+    }                                                                          \
+  } ///< Delay function
+
+/**************************************************************************/
+/*!
+    @brief  Retry a function until a condition is met or a timeout is reached.
+    @param  func
+            The function to retry.
+    @param  result_type
+            The type of the result of the function.
+    @param  result_var
+            The variable to store the last result of the function.
+    @param  condition
+            The condition to check the result against.
+    @param  timeout
+            The maximum time to retry the function.
+    @param  interval
+            The time to wait between retries.
+    @param  ...
+            The arguments to pass to the function.
+*/
+/**************************************************************************/
+#define RETRY_FUNCTION_UNTIL_TIMEOUT(func, result_type, result_var, condition, \
+                                     timeout, interval, ...)                   \
+  {                                                                            \
+    unsigned long startTime = millis();                                        \
+    while (millis() - startTime < timeout) {                                   \
+      result_type result_var = func(__VA_ARGS__);                              \
+      if (condition(result_var)) {                                             \
+        break;                                                                 \
+      }                                                                        \
+      if (startTime > millis()) {                                              \
+        startTime = millis(); /* if rollover */                                \
+      }                                                                        \
+      WS_DELAY_WITH_WDT(interval);                                             \
+    }                                                                          \
+  } ///< Retry a function until a condition is met or a timeout is reached.
+
+// Wippersnapper pb helpers
+#include <nanopb/ws_pb_helpers.h>
+
 // Wippersnapper components
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
 #include "components/digitalIO/Wippersnapper_DigitalGPIO.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 
-// LEDC-Manager, ESP32-only
+// Includes for ESP32-only
 #ifdef ARDUINO_ARCH_ESP32
 #include "components/ledc/ws_ledc.h"
+#include <Esp.h>
 #endif
 
 // Display
@@ -90,7 +142,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-alpha.79" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.90" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic
@@ -162,7 +214,8 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
-#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
+#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
+#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
@@ -219,6 +272,7 @@ public:
   void disconnect();
 
   virtual void getMacAddr();
+  virtual int32_t getRSSI();
   virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
@@ -316,6 +370,8 @@ public:
   Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
+  networkConfig _multiNetworks[3]; /*!< Wippersnapper networks as structs. */
+  bool _isWiFiMulti = false; /*!< True if multiple networks are defined. */
 
   // TODO: Does this need to be within this class?
   int32_t totalDigitalPins; /*!< Total number of digital-input capable pins */

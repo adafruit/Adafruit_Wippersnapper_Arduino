@@ -89,6 +89,12 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
 #elif defined(ARDUINO_ARCH_ESP32)
   scaleAnalogRead = true;
   _nativeResolution = 13;
+#elif defined(ARDUINO_ARCH_RP2040)
+  scaleAnalogRead = true;
+  _nativeResolution = 10;
+#else
+  scaleAnalogRead = true;
+  _nativeResolution = 10;
 #endif
 
   _adcResolution = resolution;
@@ -205,7 +211,6 @@ void Wippersnapper_AnalogIO::deinitAnalogPin(
 uint16_t Wippersnapper_AnalogIO::getPinValue(int pin) {
   // get pin value
   uint16_t value = analogRead(pin);
-
   // scale by the ADC resolution manually if not implemented by BSP
   if (scaleAnalogRead) {
     if (getADCresolution() > getNativeResolution()) {
@@ -280,8 +285,8 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
   // Encode signal message
   pb_ostream_t stream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
-                 &outgoingSignalMsg)) {
+  if (!ws_pb_encode(&stream, wippersnapper_signal_v1_CreateSignalRequest_fields,
+                    &outgoingSignalMsg)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode signal message");
     return false;
   }

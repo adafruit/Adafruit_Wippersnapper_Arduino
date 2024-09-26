@@ -170,8 +170,8 @@ void ws_pixels::publishAddStrandResponse(bool is_success,
   memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
   pb_ostream_t ostream =
       pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
-  if (!pb_encode(&ostream, wippersnapper_signal_v1_PixelsResponse_fields,
-                 &msgInitResp)) {
+  if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_PixelsResponse_fields,
+                    &msgInitResp)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode "
                      "wippersnapper_signal_v1_PixelsResponse message!");
     return;
