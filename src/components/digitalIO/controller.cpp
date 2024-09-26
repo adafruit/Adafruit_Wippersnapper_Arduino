@@ -116,7 +116,7 @@ bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
     releaseStatusLED();
 
   // Deinit the pin if it's already in use
-  if (GetDigitalOutputPinsIdx(pin_name) != -1)
+  if (GetPinIdx(pin_name) != -1)
     _dio_hardware->deinit(pin_name);
 
   // Attempt to configure the pin
@@ -144,7 +144,7 @@ bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
     @return The index of the digital output pin.
 */
 /***********************************************************************/
-int DigitalIOController::GetDigitalOutputPinsIdx(uint8_t pin_name) {
+int DigitalIOController::GetPinIdx(uint8_t pin_name) {
   for (int i = 0; i < _digital_io_pins.size(); i++) {
     if (_digital_io_pins[i].pin_name == pin_name) {
       return i;
@@ -169,7 +169,7 @@ bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   }
 
   // Get the digital pin
-  int pin_idx = GetDigitalOutputPinsIdx(
+  int pin_idx = GetPinIdx(
       atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
   if (pin_idx == -1) {
@@ -223,6 +223,20 @@ bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
 
 /***********************************************************************/
 /*!
+    @brief  Print a pin's ID and value
+    @param  pin
+            The specified pin.
+*/
+/***********************************************************************/
+void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
+  WS_DEBUG_PRINT("DIO Pin D");
+  WS_DEBUG_PRINT(pin->pin_name);
+  WS_DEBUG_PRINT(" | value: ");
+  WS_DEBUG_PRINTLN(pin->prv_pin_value);
+}
+
+/***********************************************************************/
+/*!
     @brief  Check if a pin's timer has expired
     @param  pin
             The pin to check.
@@ -231,7 +245,7 @@ bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
 /***********************************************************************/
 bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   ulong cur_time = millis();
-
+  // Bail out if the pin's timer has not expired
   if (!IsPinTimerExpired(pin, cur_time))
     return false;
 
@@ -239,10 +253,7 @@ bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   pin->prv_pin_time = cur_time;
   pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
 
-  WS_DEBUG_PRINT("DIO Pin D");
-  WS_DEBUG_PRINT(pin->pin_name);
-  WS_DEBUG_PRINT(" | value: ");
-  WS_DEBUG_PRINTLN(pin->prv_pin_value);
+  PrintPinValue(pin);
   return true;
 }
 
@@ -260,14 +271,10 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   // Bail out if the pin value hasn't changed
   if (pin->pin_value == pin->prv_pin_value)
     return false;
-
   // Update the pin's previous value to the current value
   pin->prv_pin_value = pin->pin_value;
 
-  WS_DEBUG_PRINT("DIO Pin D");
-  WS_DEBUG_PRINT(pin->pin_name);
-  WS_DEBUG_PRINT(" value changed to: ");
-  WS_DEBUG_PRINTLN(pin->pin_value);
+  PrintPinValue(pin);
 
   return true;
 }
@@ -309,7 +316,8 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
 
 /***********************************************************************/
 /*!
-    @brief  Updates the digital_io_pins array.
+    @brief  Iterates through the digital pins and updates their values
+      (if necessary) and publishes the event to the broker.
 */
 /***********************************************************************/
 void DigitalIOController::Update() {
@@ -325,7 +333,6 @@ void DigitalIOController::Update() {
         wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT)
       continue;
 
-    // TODO: Use Event sample mode first, its more common!!!
     if (pin.sample_mode ==
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
       // Check if the pin value has changed
