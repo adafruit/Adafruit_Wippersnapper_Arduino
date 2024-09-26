@@ -40,6 +40,8 @@ public:
   bool WriteDigitalIOPin(pb_istream_t *stream);
 
   void Update();
+  bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
+
   bool CheckTimerPin(DigitalIOPin *pin);
   bool IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time);
   bool CheckEventPin(DigitalIOPin *pin);

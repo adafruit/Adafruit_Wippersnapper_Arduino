@@ -190,9 +190,30 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   return true;
 }
 
-// TODO: Maybe the partition increase is causing issues with the ESP32-S2
-// we are also using the larger partition sz with the S3 so it could cause
-// issues there too..
+bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
+                                                bool pin_value) {
+  // Prefix pin_name with "D" to match the expected pin name format
+  char c_pin_name[12];
+  sprintf(c_pin_name, "D%d", pin_name);
+
+  // Encode the DigitalIOEvent message
+  if (!_dio_model->EncodeDigitalIOEvent(c_pin_name, pin_value)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
+    return false;
+  }
+
+  // Publish the DigitalIOEvent message to the broker
+  if (!WsV2.PublishSignal(
+          wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
+          _dio_model->GetDigitalIOEventMsg())) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish digitalio event message, "
+                     "moving onto the next pin!");
+    return false;
+  }
+  WS_DEBUG_PRINTLN("Published DigitalIOEvent to broker!")
+
+  return true;
+}
 
 void DigitalIOController::Update() {
   // Bail out if we have no digital pins to poll
@@ -207,63 +228,31 @@ void DigitalIOController::Update() {
         wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT)
       continue;
 
-    // TODO: Use Event sample mode first, its more common
+    // TODO: Use Event sample mode first, its more common!!!
     if (pin.sample_mode ==
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
-      if (!CheckTimerPin(&pin))
-        continue;
-      // TODO: Move all the encode and publish code into a new func.
-      char pin_name[12];
-      sprintf(pin_name, "D%d", pin.pin_name);
-      // Encode the event and publish it to the broker
-      WS_DEBUG_PRINT("Encoding digitalio event for pin: ");
-      WS_DEBUG_PRINTLN(pin_name);
-      if (!_dio_model->EncodeDigitalIOEvent(pin_name, pin.pin_value)) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to encode digitalio event message, "
-                         "moving onto the next pin!");
-        continue;
-      }
-      WS_DEBUG_PRINTLN("Encoded digitalio event message!");
-      WS_DEBUG_PRINTLN("Publishing digitalio event message to broker...");
-      if (!WsV2.PublishSignal(
-              wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
-              _dio_model->GetDigitalIOEventMsg())) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to publish digitalio event message, "
-                         "moving onto the next pin!");
-        continue;
-      }
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
+      // Check if the pin value has changed
+      if (!CheckEventPin(&pin))
+        continue; // No change in pin value detected, move onto the next pin
+
+      // Encode and publish the event
+      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value))
+        continue; // Unable to encode and publish event, move onto the next pin
     } else if (
         pin.sample_mode ==
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT) {
-      if (!CheckEventPin(&pin)) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to check event pin, moving on..");
-        continue;
-      }
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
+      // Check if the timer has expired
+      if (!CheckTimerPin(&pin))
+        continue; // Timer has not expired yet, move onto the next pin
 
-      // TODO: Move all the encode and publish code into a new func.
-      char pin_name[12];
-      sprintf(pin_name, "D%d", pin.pin_name);
-      // Encode the event and publish it to the broker
-      WS_DEBUG_PRINT("Encoding digitalio event for pin: ");
-      WS_DEBUG_PRINTLN(pin_name);
-      if (!_dio_model->EncodeDigitalIOEvent(pin_name, pin.pin_value)) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to encode digitalio event message, "
-                         "moving onto the next pin!");
-        continue;
-      }
-      WS_DEBUG_PRINTLN("Encoded digitalio event message!");
-      WS_DEBUG_PRINTLN("Publishing digitalio event message to broker...");
-      if (!WsV2.PublishSignal(
-              wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
-              _dio_model->GetDigitalIOEventMsg())) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to publish digitalio event message, "
-                         "moving onto the next pin!");
-        continue;
-      }
-      WS_DEBUG_PRINTLN("Published digitalio event message!");
+      // Encode and publish the event
+      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value))
+        continue; // Failed to encode and publish event, move onto the next pin
     } else {
       // Invalid sample mode
-      WS_DEBUG_PRINTLN("ERROR: Invalid digital io pin sample mode!");
+      WS_DEBUG_PRINT("ERROR: DigitalIO Pin ");
+      WS_DEBUG_PRINT(pin.pin_name);
+      WS_DEBUG_PRINTLN(" contains an invalid sample mode!");
     }
   }
 }
