@@ -1,15 +1,43 @@
+/*!
+ * @file hardware.cpp
+ *
+ * Hardware driver for the digitalio.proto API
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ *
+ * BSD license, all text here must be included in any redistribution.
+ *
+ */
 #include "hardware.h"
 
+/***********************************************************************/
+/*!
+    @brief  DigitalIOHardware constructor
+*/
+/***********************************************************************/
 DigitalIOHardware::DigitalIOHardware() {}
+
+/***********************************************************************/
+/*!
+    @brief  DigitalIOHardware destructor
+*/
+/***********************************************************************/
 DigitalIOHardware::~DigitalIOHardware() {}
 
-void DigitalIOHardware::deinit(uint8_t pin_name) {
-  // Turn off pin output and reset mode to hi-z floating state
-  digitalWrite(pin_name, LOW);
-  pinMode(pin_name, INPUT);
-  // TODO: Release status led, if it's a LED, back to the application
-}
-
+/***********************************************************************/
+/*!
+    @brief  Configures a digital pin.
+    @param  name
+            The pin's name.
+    @param  direction
+            The pin's direction.
+    @return True if the pin was successfully configured. False otherwise.
+*/
+/***********************************************************************/
 bool DigitalIOHardware::ConfigurePin(
     uint8_t name, wippersnapper_digitalio_DigitalIODirection direction) {
   // Configure an output pin
@@ -40,10 +68,41 @@ bool DigitalIOHardware::ConfigurePin(
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Deinitializes a digital pin.
+    @param  pin_name
+            The digital pin to deinitialize.
+*/
+/***********************************************************************/
+void DigitalIOHardware::deinit(uint8_t pin_name) {
+  // Turn off pin output and reset mode to hi-z floating state
+  digitalWrite(pin_name, LOW);
+  pinMode(pin_name, INPUT);
+  // TODO: Release status led, if it's a LED, back to the application
+}
+
+/***********************************************************************/
+/*!
+    @brief  Sets a digital pin's value.
+    @param  pin_name
+            The pin's name.
+    @param  pin_value
+            The pin's value.
+*/
+/***********************************************************************/
 void DigitalIOHardware::SetValue(uint8_t pin_name, bool pin_value) {
   digitalWrite(pin_name, pin_value ? HIGH : LOW);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Gets a digital pin's value.
+    @param  pin_name
+            The pin's name.
+    @return The pin's value.
+*/
+/***********************************************************************/
 bool DigitalIOHardware::GetValue(uint8_t pin_name) {
   return digitalRead(pin_name);
 }

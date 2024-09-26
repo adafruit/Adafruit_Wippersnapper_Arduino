@@ -52,6 +52,15 @@ bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
                    &_msg_dio_add);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Decodes a DigitalIOWrite message into the _msg_dio_write
+            object from a nanopb stream.
+    @param  stream
+            The nanopb input stream.
+    @return True if the DigitalIOWrite message was successfully decoded.
+*/
+/***********************************************************************/
 bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
   // Zero-out the DigitalIOWrite message struct. to ensure we don't have any old
   // data
@@ -61,6 +70,18 @@ bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
                    &_msg_dio_write);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Encodes a DigitalIOEvent message into the
+            _msg_dio_event object.
+    @param  pin_name
+            The pin's name.
+    @param  value
+            The pin's value.
+    @return True if the DigitalIOEvent message was successfully encoded.
+            False if encoding resulted in a failure.
+*/
+/***********************************************************************/
 bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
   // Initialize the DigitalIOEvent
   _msg_dio_event = wippersnapper_digitalio_DigitalIOEvent_init_default;

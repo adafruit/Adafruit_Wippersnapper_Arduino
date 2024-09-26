@@ -14,6 +14,11 @@
  */
 #include "controller.h"
 
+/***********************************************************************/
+/*!
+    @brief  DigitalIOController constructor
+*/
+/***********************************************************************/
 DigitalIOController::DigitalIOController() {
   _dio_model = new DigitalIOModel();
   _dio_hardware = new DigitalIOHardware();
@@ -22,11 +27,23 @@ DigitalIOController::DigitalIOController() {
   SetMaxDigitalPins(0);
 }
 
+/***********************************************************************/
+/*!
+    @brief  DigitalIOController destructor
+*/
+/***********************************************************************/
 DigitalIOController::~DigitalIOController() {
   delete _dio_model;
   delete _dio_hardware;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Set the maximum number of digital pins
+    @param  max_digital_pins
+            The maximum number of digital pins
+*/
+/***********************************************************************/
 void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digital_pins = max_digital_pins;
 }
@@ -39,6 +56,21 @@ bool DigitalIOController::IsStatusLEDPin(uint8_t pin_name) {
   return false;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Create a new digital pin and add it to the controller's vector
+    @param  name
+            The pin's name.
+    @param  direction
+            The pin's direction.
+    @param  sample_mode
+            The pin's sample mode.
+    @param  value
+            The pin's value.
+    @param  period
+            The pin's period.
+*/
+/***********************************************************************/
 void DigitalIOController::CreateDigitalIOPin(
     uint8_t name, wippersnapper_digitalio_DigitalIODirection direction,
     wippersnapper_digitalio_DigitalIOSampleMode sample_mode, bool value,
@@ -54,6 +86,14 @@ void DigitalIOController::CreateDigitalIOPin(
   _digital_io_pins.push_back(new_pin);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Add a new digital pin to the controller
+    @param  stream
+            The nanopb input stream.
+    @return True if the digital pin was successfully added.
+*/
+/***********************************************************************/
 bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
   // Early-out if we have reached the maximum number of digital pins
   if (_digital_io_pins.size() >= _max_digital_pins) {
@@ -96,6 +136,14 @@ bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Get the index of a digital output pin
+    @param  pin_name
+            The pin's name.
+    @return The index of the digital output pin.
+*/
+/***********************************************************************/
 int DigitalIOController::GetDigitalOutputPinsIdx(uint8_t pin_name) {
   for (int i = 0; i < _digital_io_pins.size(); i++) {
     if (_digital_io_pins[i].pin_name == pin_name) {
@@ -105,6 +153,14 @@ int DigitalIOController::GetDigitalOutputPinsIdx(uint8_t pin_name) {
   return -1; // Pin not found
 }
 
+/***********************************************************************/
+/*!
+    @brief  Write a digital pin
+    @param  stream
+            The nanopb input stream.
+    @return True if the digital pin was successfully written.
+*/
+/***********************************************************************/
 bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   // Attempt to decode the DigitalIOWrite message
   if (!_dio_model->DecodeDigitalIOWrite(stream)) {
@@ -151,10 +207,28 @@ bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Check if a pin's timer has expired
+    @param  pin
+            The pin to check.
+    @param  cur_time
+            The current time.
+    @return True if the pin's timer has expired.
+*/
+/***********************************************************************/
 bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
   return cur_time - pin->prv_pin_time > pin->pin_period;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Check if a pin's timer has expired
+    @param  pin
+            The pin to check.
+    @return True if the pin's timer has expired.
+*/
+/***********************************************************************/
 bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   ulong cur_time = millis();
 
@@ -172,6 +246,14 @@ bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Check if a pin's value has changed
+    @param  pin
+            The pin to check.
+    @return True if the pin's value has changed.
+*/
+/***********************************************************************/
 bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   // Get the pin's current value
   pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
@@ -190,6 +272,16 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Encode and publish a pin event
+    @param  pin_name
+            The pin's name.
+    @param  pin_value
+            The pin's value.
+    @return True if the pin event was successfully encoded and published.
+*/
+/***********************************************************************/
 bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
                                                 bool pin_value) {
   // Prefix pin_name with "D" to match the expected pin name format
@@ -215,6 +307,11 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Updates the digital_io_pins array.
+*/
+/***********************************************************************/
 void DigitalIOController::Update() {
   // Bail out if we have no digital pins to poll
   if (_digital_io_pins.empty())
