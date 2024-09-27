@@ -103,7 +103,7 @@ jobs:
           ls /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
       - name: boot_app0 file from arduino-cli core
@@ -298,7 +298,7 @@ jobs:
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
       - name: Check boot_app0 file existence (esp32 built from core, not-source)
         id: check_files
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
       - name: boot_app0 file from arduino-cli core
@@ -687,7 +687,7 @@ jobs:
           mv examples/wippersnapper_debug/build/*/wippersnapper_debug.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin
       - name: Check boot_app0 file existence (esp32 built from core, not-source)
         id: check_files
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
       - name: boot_app0 file from arduino-cli core
