@@ -1,7 +1,17 @@
 #include "ws_manager.h"
 
+/**************************************************************************/
+/*!
+    @brief    Constructor for Wippersnapper_Manager
+*/
+/**************************************************************************/
 Wippersnapper_Manager::Wippersnapper_Manager() : ws_instance(nullptr) {}
 
+/**************************************************************************/
+/*!
+    @brief    Destructor for Wippersnapper_Manager
+*/
+/**************************************************************************/
 Wippersnapper_Manager::~Wippersnapper_Manager() {
   if (ws_instance) {
     delete ws_instance;
@@ -11,6 +21,11 @@ Wippersnapper_Manager::~Wippersnapper_Manager() {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Performs the connect() function in Wippersnapper*.cpp
+*/
+/**************************************************************************/
 void Wippersnapper_Manager::connect() {
   if (_api_version == 2) {
     WS_DEBUG_PRINTLN("api v2 instance::connect()");
@@ -23,6 +38,11 @@ void Wippersnapper_Manager::connect() {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Performs the provision() function in Wippersnapper*.cpp
+*/
+/**************************************************************************/
 void Wippersnapper_Manager::provision() {
   if (_api_version == 2) {
     WS_DEBUG_PRINTLN("api v2 instance::provision()");
@@ -35,6 +55,13 @@ void Wippersnapper_Manager::provision() {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Checks the API version by reading the state of a pin
+    @param    pinNum
+              The pin number to read
+*/
+/**************************************************************************/
 void Wippersnapper_Manager::checkAPIVersion(int pinNum) {
   // Check if pin D12 is high
   pinMode(pinNum, INPUT_PULLUP);
@@ -50,6 +77,11 @@ void Wippersnapper_Manager::checkAPIVersion(int pinNum) {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Performs the run() function in Wippersnapper*.cpp
+*/
+/**************************************************************************/
 void Wippersnapper_Manager::run() {
   if (_api_version == 2) {
     ws_instance_v2->runV2();

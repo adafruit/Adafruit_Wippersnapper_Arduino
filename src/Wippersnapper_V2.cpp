@@ -828,6 +828,17 @@ void Wippersnapper_V2::haltErrorV2(String error,
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Publishes a signal message to the broker.
+    @param    which_payload
+              The type of signal payload to publish.
+    @param    payload
+              The payload to publish.
+    @returns  True if the signal message published successfully,
+              False otherwise.
+*/
+/**************************************************************************/
 bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   size_t szMessageBuf;
   wippersnapper_signal_DeviceToBroker MsgSignal =

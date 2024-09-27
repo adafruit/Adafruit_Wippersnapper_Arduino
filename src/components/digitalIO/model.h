@@ -16,6 +16,12 @@
 #define WS_DIGITALIO_MODEL_H
 #include "Wippersnapper_V2.h"
 
+/**************************************************************************/
+/*!
+    @brief  Provides an interface for creating, encoding, and parsing
+            messages from digitalio.proto.
+*/
+/**************************************************************************/
 class DigitalIOModel {
 public:
   DigitalIOModel();
@@ -39,7 +45,6 @@ public:
   wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEventMsg() {
     return &_msg_dio_event;
   }
-
 private:
   wippersnapper_digitalio_DigitalIOAdd _msg_dio_add;
   wippersnapper_digitalio_DigitalIORemove _msg_dio_remove;

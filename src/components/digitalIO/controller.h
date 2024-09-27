@@ -32,6 +32,14 @@ struct DigitalIOPin {
 
 class DigitalIOModel;    // Forward declaration
 class DigitalIOHardware; // Forward declaration
+
+/**************************************************************************/
+/*!
+    @brief  Routes messages using the digitalio.proto API to the
+            appropriate hardware and model classes, controls and tracks
+            the state of the hardware's digital I/O pins.
+*/
+/**************************************************************************/
 class DigitalIOController {
 public:
   DigitalIOController();

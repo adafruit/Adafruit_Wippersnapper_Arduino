@@ -244,7 +244,7 @@ public:
 #ifdef ARDUINO_ARCH_ESP32
   ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
 #endif
-  bool got_checkin_response;
+  bool got_checkin_response; ///< True if a checkin response was received, False otherwise.
 
 private:
   void _initV2();
@@ -261,8 +261,7 @@ private:
   Adafruit_MQTT_Subscribe *_subscribeThrottle;
 
 protected:
-  // TODO: Do we need this?
-  ws_status_t _statusV2 = WS_IDLE;
+  ws_status_t _statusV2 = WS_IDLE; ///< Wippersnapper status
 
   uint32_t _last_mqtt_connectV2 = 0; /*!< Previous time when client connected to
                                           Adafruit IO, in milliseconds. */
