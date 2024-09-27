@@ -87,7 +87,7 @@ void Wippersnapper_AnalogIO::setADCResolution(int resolution) {
   analogReadResolution(16);
   _nativeResolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
-  scaleAnalogRead = true; // probably should be false, handled in bsp
+  scaleAnalogRead = false; // probably should be false, handled in bsp
 #if defined(ESP32S3)
   _nativeResolution = 13; // S3 ADC is 13-bit, others are 12-bit
 #else
