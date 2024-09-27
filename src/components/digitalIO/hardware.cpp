@@ -79,7 +79,11 @@ void DigitalIOHardware::deinit(uint8_t pin_name) {
   // Turn off pin output and reset mode to hi-z floating state
   digitalWrite(pin_name, LOW);
   pinMode(pin_name, INPUT);
-  // TODO: Release status led, if it's a LED, back to the application
+  // Prior to using this pin as a DIO,
+  // was this a status LED pin?
+  if (IsStatusLEDPin(pin_name)) {
+    initStatusLED(); // it was! re-init status led
+  }
 }
 
 /***********************************************************************/
@@ -105,4 +109,19 @@ void DigitalIOHardware::SetValue(uint8_t pin_name, bool pin_value) {
 /***********************************************************************/
 bool DigitalIOHardware::GetValue(uint8_t pin_name) {
   return digitalRead(pin_name);
+}
+
+/***********************************************************************/
+/*!
+    @brief  Checks if a pin is the status LED pin.
+    @param  pin_name
+            The pin's name.
+    @return True if the pin is the status LED pin.
+*/
+/***********************************************************************/
+bool DigitalIOHardware::IsStatusLEDPin(uint8_t pin_name) {
+#ifdef STATUS_LED_PIN
+  return pin_name == STATUS_LED_PIN;
+#endif
+  return false;
 }

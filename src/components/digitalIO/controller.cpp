@@ -48,14 +48,6 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digital_pins = max_digital_pins;
 }
 
-// TODO: This should be within the hardware class
-bool DigitalIOController::IsStatusLEDPin(uint8_t pin_name) {
-#ifdef STATUS_LED_PIN
-  return pin_name == STATUS_LED_PIN;
-#endif
-  return false;
-}
-
 /***********************************************************************/
 /*!
     @brief  Create a new digital pin and add it to the controller's vector
@@ -112,7 +104,7 @@ bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
   int pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
 
   // Check if the provided pin is also the status LED pin
-  if (IsStatusLEDPin(pin_name))
+  if (_dio_hardware->IsStatusLEDPin(pin_name))
     releaseStatusLED();
 
   // Deinit the pin if it's already in use
@@ -169,8 +161,8 @@ bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   }
 
   // Get the digital pin
-  int pin_idx = GetPinIdx(
-      atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
+  int pin_idx =
+      GetPinIdx(atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("ERROR: Unable to find the requested digital output pin!");

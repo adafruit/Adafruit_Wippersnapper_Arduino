@@ -25,6 +25,7 @@ public:
   void SetValue(uint8_t pin_name, bool pin_value);
   bool GetValue(uint8_t pin_name);
   void deinit(uint8_t pin_name);
+  bool IsStatusLEDPin(uint8_t pin_name);
 
 private:
 };
