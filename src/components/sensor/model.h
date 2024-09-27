@@ -29,29 +29,18 @@ public:
   ~SensorModel();
   bool decodeSensorEvent(pb_istream_t *stream);
   void clearSensorEvent();
-  wippersnapper_sensor_SensorEvent *getSensorEvent() {
-    return &_msg_sensor_event;
-  }
-  wippersnapper_sensor_SensorType getSensorType() {
-    return _msg_sensor_event.type;
-  } ///< Returns sensor's type and corresponding SI unit
-  pb_size_t getWhichValue() {
-    return _msg_sensor_event.which_value;
-  } ///< Returns the value union's tag
-  float getValueFloat() { return _msg_sensor_event.value.float_value; }
-  bool getValueBool() { return _msg_sensor_event.value.bool_value; }
-  wippersnapper_sensor_SensorEvent_SensorEvent3DVector getValueVector() {
-    return _msg_sensor_event.value.vector_value;
-  }
-  wippersnapper_sensor_SensorEvent_SensorEventOrientation
-  getValueOrientation() {
-    return _msg_sensor_event.value.orientation_value;
-  }
-  wippersnapper_sensor_SensorEvent_SensorEventColor getValueColor() {
-    return _msg_sensor_event.value.color_value;
-  }
+
+  wippersnapper_sensor_SensorEvent *getSensorEvent();
+  wippersnapper_sensor_SensorType getSensorType();
+  pb_size_t getSensorEventWhichValue();
+
+  float getValueFloat();
+  bool getValueBool();
+  wippersnapper_sensor_SensorEvent_SensorEvent3DVector getValueVector();
+  wippersnapper_sensor_SensorEvent_SensorEventOrientation getValueOrientation();
+  wippersnapper_sensor_SensorEvent_SensorEventColor getValueColor();
 
 private:
-  wippersnapper_sensor_SensorEvent _msg_sensor_event;
+  wippersnapper_sensor_SensorEvent _msg_sensor_event; ///< SensorEvent message
 };
 #endif // WS_SENSOR_MODEL_H

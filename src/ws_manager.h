@@ -19,7 +19,7 @@ public:
 
   // API version checks
   void checkAPIVersion(int pinNum);
-  int getAPIVersion() { return _api_version; }
+  int getAPIVersion();
 
   // High-level functions (called from demo sketch ino)
   void provision();
@@ -27,7 +27,7 @@ public:
   void run();
 
 protected:
-  Wippersnapper_WiFi *ws_instance; ///< Instance of Wippersnapper API v1
+  Wippersnapper_WiFi *ws_instance;      ///< Instance of Wippersnapper API v1
   Wippersnapper_WiFiV2 *ws_instance_v2; ///< Instance of Wippersnapper API v2
 private:
   int _api_version;

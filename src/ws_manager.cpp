@@ -91,3 +91,11 @@ void Wippersnapper_Manager::run() {
     WS_DEBUG_PRINTLN("Error: Could not call run(), unknown API version!");
   }
 }
+
+/**************************************************************************/
+/*!
+    @brief    Returns the API version
+    @returns  The API version
+*/
+/**************************************************************************/
+int Wippersnapper_Manager::getAPIVersion() { return _api_version; }
