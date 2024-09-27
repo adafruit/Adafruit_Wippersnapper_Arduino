@@ -26,29 +26,26 @@ class DigitalIOModel {
 public:
   DigitalIOModel();
   ~DigitalIOModel();
+  // DigitalIOAdd
   bool DecodeDigitalIOAdd(pb_istream_t *stream);
-  void ParseDigitalIOAdd();
-  wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAddMsg() {
-    return &_msg_dio_add;
-  }
-  void ParseDigitalIORemove();
-  wippersnapper_digitalio_DigitalIORemove *GetDigitalIORemove() {
-    return &_msg_dio_remove;
-  }
-
+  wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAddMsg();
+  // DigitalIORemove
+  wippersnapper_digitalio_DigitalIORemove *GetDigitalIORemove();
+  // DigitalIOWrite
   bool DecodeDigitalIOWrite(pb_istream_t *stream);
-  wippersnapper_digitalio_DigitalIOWrite *GetDigitalIOWriteMsg() {
-    return &_msg_dio_write;
-  }
-
+  wippersnapper_digitalio_DigitalIOWrite *GetDigitalIOWriteMsg();
+  // DigitalIOEvent
   bool EncodeDigitalIOEvent(char *pin_name, bool value);
-  wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEventMsg() {
-    return &_msg_dio_event;
-  }
+  wippersnapper_digitalio_DigitalIOEvent *GetDigitalIOEventMsg();
+
 private:
-  wippersnapper_digitalio_DigitalIOAdd _msg_dio_add;
-  wippersnapper_digitalio_DigitalIORemove _msg_dio_remove;
-  wippersnapper_digitalio_DigitalIOEvent _msg_dio_event;
-  wippersnapper_digitalio_DigitalIOWrite _msg_dio_write;
+  wippersnapper_digitalio_DigitalIOAdd
+      _msg_dio_add; ///< DigitalIOAdd message object
+  wippersnapper_digitalio_DigitalIORemove
+      _msg_dio_remove; ///< DigitalIORemove message object
+  wippersnapper_digitalio_DigitalIOEvent
+      _msg_dio_event; ///< DigitalIOEvent message object
+  wippersnapper_digitalio_DigitalIOWrite
+      _msg_dio_write; ///< DigitalIOWrite message object
 };
 #endif // WS_DIGITALIO_MODEL_H

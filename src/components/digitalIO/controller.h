@@ -20,14 +20,20 @@
 
 class Wippersnapper_V2;
 
+/**
+ * @struct DigitalIOPin
+ * @brief This struct represents a digital I/O pin.
+ */
 struct DigitalIOPin {
-  uint8_t pin_name;
-  wippersnapper_digitalio_DigitalIODirection pin_direction;
-  wippersnapper_digitalio_DigitalIOSampleMode sample_mode;
-  bool pin_value;
-  bool prv_pin_value;
-  ulong pin_period;
-  ulong prv_pin_time;
+  uint8_t pin_name; ///< The pin's name.
+  wippersnapper_digitalio_DigitalIODirection
+      pin_direction; ///< The pin's direction.
+  wippersnapper_digitalio_DigitalIOSampleMode
+      sample_mode;    ///< The pin's sample mode.
+  bool pin_value;     ///< The pin's value.
+  bool prv_pin_value; ///< The pin's previous value.
+  ulong pin_period;   ///< The pin's period.
+  ulong prv_pin_time; ///< The pin's previous time.
 };
 
 class DigitalIOModel;    // Forward declaration
@@ -70,5 +76,5 @@ private:
   DigitalIOModel *_dio_model;
   DigitalIOHardware *_dio_hardware;
 };
-extern Wippersnapper_V2 WsV2;
-#endif // WS_DIGITALIO_CONTROLLER_H
+extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
+#endif                        // WS_DIGITALIO_CONTROLLER_H

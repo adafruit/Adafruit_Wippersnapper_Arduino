@@ -124,6 +124,16 @@ CheckinModel::getCheckinResponse() {
 
 /***********************************************************************/
 /*!
+    @brief  Gets the CheckinRequest message
+    @returns CheckinRequest message.
+*/
+/***********************************************************************/
+wippersnapper_checkin_CheckinRequest *CheckinModel::getCheckinRequest() {
+    return &_CheckinRequest;
+}
+
+/***********************************************************************/
+/*!
     @brief  Sets the CheckinResponse message's total GPIO pins field
     @param  total_gpio_pins
             Total number of GPIO pins.

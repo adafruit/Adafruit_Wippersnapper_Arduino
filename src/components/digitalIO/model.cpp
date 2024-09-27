@@ -35,6 +35,46 @@ DigitalIOModel::~DigitalIOModel() {}
 
 /***********************************************************************/
 /*!
+    @brief  Parses a DigitalIOAdd message.
+    @return DigitalIOAdd message object.
+*/
+/***********************************************************************/
+wippersnapper_digitalio_DigitalIOAdd *DigitalIOModel::GetDigitalIOAddMsg() {
+  return &_msg_dio_add;
+}
+
+/***********************************************************************/
+/*!
+    @brief  Gets a DigitalIORemove message.
+    @return DigitalIORemove message object.
+*/
+/***********************************************************************/
+wippersnapper_digitalio_DigitalIORemove *DigitalIOModel::GetDigitalIORemove() {
+  return &_msg_dio_remove;
+}
+
+/***********************************************************************/
+/*!
+    @brief  Gets a DigitalIOWrite message.
+    @return DigitalIOWrite message object.
+*/
+/***********************************************************************/
+wippersnapper_digitalio_DigitalIOWrite *DigitalIOModel::GetDigitalIOWriteMsg() {
+  return &_msg_dio_write;
+}
+
+/***********************************************************************/
+/*!
+    @brief  Gets a DigitalIOEvent message.
+    @return DigitalIOEvent message object.
+*/
+/***********************************************************************/
+wippersnapper_digitalio_DigitalIOEvent *DigitalIOModel::GetDigitalIOEventMsg() {
+  return &_msg_dio_event;
+}
+
+/***********************************************************************/
+/*!
     @brief  Decodes a DigitalIOAdd message into the _msg_dio_add object
             from a nanopb stream.
     @param  stream
