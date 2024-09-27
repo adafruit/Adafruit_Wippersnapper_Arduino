@@ -452,7 +452,7 @@ jobs:
 
   # NOTE: This does NOT release artifacts, it only builds
   build-samd-non-fs:
-    name: 🏗️SAMD (NO-TINYUSB)
+    name: 🏗️SAMD🚫💽
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -548,7 +548,7 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.zip
 
   build-esp32sx-dev:
-    name: 🏗️ESP32-Sx(DEV))
+    name: 🏗️ESP32-Sx(DEV)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
