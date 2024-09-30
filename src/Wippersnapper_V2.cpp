@@ -346,6 +346,10 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_remove_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Remove Message Type");
+    if (!WsV2.digital_io_controller->RemoveDigitalIOPin(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to remove digitalio pin!");
+      return false;
+    }
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_write_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Write Message Type");
