@@ -130,6 +130,36 @@ bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
 
 /***********************************************************************/
 /*!
+    @brief  Removes a digital pin from the controller, if it exists
+    @param  stream
+            The nanopb input stream.
+    @return True if the digital pin was successfully removed.
+*/
+/***********************************************************************/
+bool DigitalIOController::RemoveDigitalIOPin(pb_istream_t *stream) {
+  // Attempt to decode the DigitalIORemove message
+  if (!_dio_model->DecodeDigitalIORemove(stream)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIORemove message!");
+    return false;
+  }
+
+  // Get the pin's name
+  int pin_name = atoi(_dio_model->GetDigitalIOAddMsg()->pin_name + 1);
+
+  // Bail out if the pin does not exist within controller
+  if (GetPinIdx(pin_name) == -1) {
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to find digital output pin on the controller!");
+    return false;
+  }
+
+  // Deinitialize the pin
+  _dio_hardware->deinit(pin_name);
+  return true;
+}
+
+/***********************************************************************/
+/*!
     @brief  Get the index of a digital output pin
     @param  pin_name
             The pin's name.

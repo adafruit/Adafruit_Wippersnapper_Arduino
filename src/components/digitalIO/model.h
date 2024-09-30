@@ -30,6 +30,7 @@ public:
   bool DecodeDigitalIOAdd(pb_istream_t *stream);
   wippersnapper_digitalio_DigitalIOAdd *GetDigitalIOAddMsg();
   // DigitalIORemove
+  bool DecodeDigitalIORemove(pb_istream_t *stream);
   wippersnapper_digitalio_DigitalIORemove *GetDigitalIORemove();
   // DigitalIOWrite
   bool DecodeDigitalIOWrite(pb_istream_t *stream);

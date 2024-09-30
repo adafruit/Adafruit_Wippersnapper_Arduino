@@ -45,6 +45,22 @@ wippersnapper_digitalio_DigitalIOAdd *DigitalIOModel::GetDigitalIOAddMsg() {
 
 /***********************************************************************/
 /*!
+    @brief  Parses a DigitalIORemove message.
+    @return DigitalIORemove message object.
+*/
+/***********************************************************************/
+bool DigitalIOModel::DecodeDigitalIORemove(pb_istream_t *stream) {
+  // Zero-out the DigitalIORemove message struct. to ensure we don't have any
+  // old data
+  _msg_dio_remove = wippersnapper_digitalio_DigitalIORemove_init_default;
+
+  // Decode the stream into a DigitalIORemove message
+  return pb_decode(stream, wippersnapper_digitalio_DigitalIORemove_fields,
+                   &_msg_dio_remove);
+}
+
+/***********************************************************************/
+/*!
     @brief  Gets a DigitalIORemove message.
     @return DigitalIORemove message object.
 */

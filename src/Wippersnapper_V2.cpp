@@ -347,9 +347,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case wippersnapper_signal_BrokerToDevice_digitalio_remove_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Remove Message Type");
     break;
-  case wippersnapper_signal_BrokerToDevice_digitalio_event_tag:
-    WS_DEBUG_PRINTLN("-> DigitalIO Event Message Type");
-    break;
   case wippersnapper_signal_BrokerToDevice_digitalio_write_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Write Message Type");
     if (!WsV2.digital_io_controller->WriteDigitalIOPin(stream)) {

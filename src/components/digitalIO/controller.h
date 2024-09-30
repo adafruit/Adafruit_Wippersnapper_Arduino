@@ -53,6 +53,7 @@ public:
   // Decoder-related Functions
   bool AddDigitalIOPin(pb_istream_t *stream);
   bool WriteDigitalIOPin(pb_istream_t *stream);
+  bool RemoveDigitalIOPin(pb_istream_t *stream);
   // Encoder-related Functions
   void Update();
   bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
