@@ -55,10 +55,9 @@ public:
   bool Handle_DigitalIO_Write(pb_istream_t *stream);
   bool Handle_DigitalIO_Remove(pb_istream_t *stream);
 
-  // Encoder-related Functions
   void Update();
-  bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
 
+  bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
   void
   CreateDigitalIOPin(uint8_t name,
                      wippersnapper_digitalio_DigitalIODirection direction,
@@ -71,7 +70,6 @@ public:
   void PrintPinValue(DigitalIOPin *pin);
   void SetMaxDigitalPins(uint8_t max_digital_pins);
   int GetPinIdx(uint8_t pin_name);
-
 private:
   std::vector<DigitalIOPin> _digitalio_pins;
   uint8_t _max_digitalio_pins;

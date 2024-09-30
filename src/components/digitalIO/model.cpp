@@ -61,16 +61,6 @@ bool DigitalIOModel::DecodeDigitalIORemove(pb_istream_t *stream) {
 
 /***********************************************************************/
 /*!
-    @brief  Gets a DigitalIORemove message.
-    @return DigitalIORemove message object.
-*/
-/***********************************************************************/
-wippersnapper_digitalio_DigitalIORemove *DigitalIOModel::GetDigitalIORemove() {
-  return &_msg_dio_remove;
-}
-
-/***********************************************************************/
-/*!
     @brief  Gets a DigitalIOWrite message.
     @return DigitalIOWrite message object.
 */
