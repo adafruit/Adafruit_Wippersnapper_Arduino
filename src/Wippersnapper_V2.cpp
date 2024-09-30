@@ -339,21 +339,21 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_add_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Add Message Type");
-    if (!WsV2.digital_io_controller->AddDigitalIOPin(stream)) {
+    if (!WsV2.digital_io_controller->Handle_DigitalIO_Add(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to add digitalio pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_remove_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Remove Message Type");
-    if (!WsV2.digital_io_controller->RemoveDigitalIOPin(stream)) {
+    if (!WsV2.digital_io_controller->Handle_DigitalIO_Remove(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to remove digitalio pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_write_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Write Message Type");
-    if (!WsV2.digital_io_controller->WriteDigitalIOPin(stream)) {
+    if (!WsV2.digital_io_controller->Handle_DigitalIO_Write(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to write to digitalio pin!");
       return false;
     }

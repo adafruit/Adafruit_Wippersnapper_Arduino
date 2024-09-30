@@ -50,10 +50,11 @@ class DigitalIOController {
 public:
   DigitalIOController();
   ~DigitalIOController();
-  // Decoder-related Functions
-  bool AddDigitalIOPin(pb_istream_t *stream);
-  bool WriteDigitalIOPin(pb_istream_t *stream);
-  bool RemoveDigitalIOPin(pb_istream_t *stream);
+  // Called by the cbDecodeBrokerToDevice router function
+  bool Handle_DigitalIO_Add(pb_istream_t *stream);
+  bool Handle_DigitalIO_Write(pb_istream_t *stream);
+  bool Handle_DigitalIO_Remove(pb_istream_t *stream);
+
   // Encoder-related Functions
   void Update();
   bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
@@ -72,8 +73,8 @@ public:
   int GetPinIdx(uint8_t pin_name);
 
 private:
-  std::vector<DigitalIOPin> _digital_io_pins;
-  uint8_t _max_digital_pins;
+  std::vector<DigitalIOPin> _digitalio_pins;
+  uint8_t _max_digitalio_pins;
   DigitalIOModel *_dio_model;
   DigitalIOHardware *_dio_hardware;
 };

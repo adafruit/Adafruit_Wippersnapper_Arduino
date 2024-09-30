@@ -45,7 +45,7 @@ DigitalIOController::~DigitalIOController() {
 */
 /***********************************************************************/
 void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
-  _max_digital_pins = max_digital_pins;
+  _max_digitalio_pins = max_digital_pins;
 }
 
 /***********************************************************************/
@@ -75,7 +75,7 @@ void DigitalIOController::CreateDigitalIOPin(
   new_pin.pin_period = (ulong)period * 1000;
   new_pin.prv_pin_time = (millis() - 1) - period;
   new_pin.pin_value = value;
-  _digital_io_pins.push_back(new_pin);
+  _digitalio_pins.push_back(new_pin);
 }
 
 /***********************************************************************/
@@ -86,9 +86,9 @@ void DigitalIOController::CreateDigitalIOPin(
     @return True if the digital pin was successfully added.
 */
 /***********************************************************************/
-bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
+bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   // Early-out if we have reached the maximum number of digital pins
-  if (_digital_io_pins.size() >= _max_digital_pins) {
+  if (_digitalio_pins.size() >= _max_digitalio_pins) {
     WS_DEBUG_PRINTLN("ERROR: Can not add new digital pin, all pins have "
                      "already been allocated!");
     return false;
@@ -136,7 +136,7 @@ bool DigitalIOController::AddDigitalIOPin(pb_istream_t *stream) {
     @return True if the digital pin was successfully removed.
 */
 /***********************************************************************/
-bool DigitalIOController::RemoveDigitalIOPin(pb_istream_t *stream) {
+bool DigitalIOController::Handle_DigitalIO_Remove(pb_istream_t *stream) {
   // Attempt to decode the DigitalIORemove message
   if (!_dio_model->DecodeDigitalIORemove(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIORemove message!");
@@ -167,8 +167,8 @@ bool DigitalIOController::RemoveDigitalIOPin(pb_istream_t *stream) {
 */
 /***********************************************************************/
 int DigitalIOController::GetPinIdx(uint8_t pin_name) {
-  for (int i = 0; i < _digital_io_pins.size(); i++) {
-    if (_digital_io_pins[i].pin_name == pin_name) {
+  for (int i = 0; i < _digitalio_pins.size(); i++) {
+    if (_digitalio_pins[i].pin_name == pin_name) {
       return i;
     }
   }
@@ -183,7 +183,7 @@ int DigitalIOController::GetPinIdx(uint8_t pin_name) {
     @return True if the digital pin was successfully written.
 */
 /***********************************************************************/
-bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
+bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
   // Attempt to decode the DigitalIOWrite message
   if (!_dio_model->DecodeDigitalIOWrite(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIOWrite message!");
@@ -209,21 +209,21 @@ bool DigitalIOController::WriteDigitalIOPin(pb_istream_t *stream) {
   WS_DEBUG_PRINT("Writing value: ");
   WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
   WS_DEBUG_PRINT("on Pin: ");
-  WS_DEBUG_PRINTLN(_digital_io_pins[pin_idx].pin_name);
+  WS_DEBUG_PRINTLN(_digitalio_pins[pin_idx].pin_name);
 
   // Is the pin already set to this value? If so, we don't need to write it
   // again
-  if (_digital_io_pins[pin_idx].pin_value ==
+  if (_digitalio_pins[pin_idx].pin_value ==
       _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value)
     return true;
 
   // Call hardware to write the value type
   _dio_hardware->SetValue(
-      _digital_io_pins[pin_idx].pin_name,
+      _digitalio_pins[pin_idx].pin_name,
       _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
 
   // Update the pin's value
-  _digital_io_pins[pin_idx].pin_value =
+  _digitalio_pins[pin_idx].pin_value =
       _dio_model->GetDigitalIOWriteMsg()->value.value.bool_value;
 
   return true;
@@ -344,12 +344,12 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
 /***********************************************************************/
 void DigitalIOController::Update() {
   // Bail out if we have no digital pins to poll
-  if (_digital_io_pins.empty())
+  if (_digitalio_pins.empty())
     return;
 
-  for (int i = 0; i < _digital_io_pins.size(); i++) {
+  for (int i = 0; i < _digitalio_pins.size(); i++) {
     // Create a pin object for this iteration
-    DigitalIOPin &pin = _digital_io_pins[i];
+    DigitalIOPin &pin = _digitalio_pins[i];
     // Skip if the pin is an output
     if (pin.pin_direction ==
         wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT)
