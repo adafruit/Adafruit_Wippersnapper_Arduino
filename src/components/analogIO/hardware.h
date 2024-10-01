@@ -28,13 +28,16 @@ public:
   void SetNativeADCResolution();
   void SetResolution(uint8_t resolution);
   uint8_t GetResolution(void);
+  void CalculateScaleFactor();
 
   void InitPin(uint8_t pin);
   void DeinitPin(uint8_t pin);
+  uint16_t GetPinValue(uint8_t pin);
 
 private:
   uint8_t _native_adc_resolution;
   uint8_t _adc_resolution;
+  int _scale_factor;
   bool _is_adc_resolution_scaled;
 };
 #endif // WS_ANALOGIO_HARDWARE_H

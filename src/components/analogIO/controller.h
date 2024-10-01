@@ -47,10 +47,13 @@ public:
   // Routing functions
   bool Handle_AnalogIOAdd(pb_istream_t *stream);
   bool Handle_AnalogIORemove(pb_istream_t *stream);
+  // Polling loop function
+  void update();
 
   void SetTotalAnalogPins(uint8_t total_pins);
   void SetRefVoltage(float voltage);
   float GetRefVoltage(void);
+  bool IsPinTimerExpired(analogioPin *pin, ulong cur_time);
 
 private:
   AnalogIOModel *_analogio_model;          ///< AnalogIO model

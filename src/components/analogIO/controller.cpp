@@ -75,6 +75,7 @@ bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
   _analogio_hardware->DeinitPin(pin_name);
 
   // Remove the pin from the vector
+  // TODO: Refactor this out?
   for (int i = 0; i < _analogio_pins.size(); i++) {
     if (_analogio_pins[i].name == pin_name) {
       _analogio_pins.erase(_analogio_pins.begin() + i);
@@ -82,4 +83,36 @@ bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
     }
   }
   return true;
+}
+
+bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
+  return cur_time - pin->prv_pin_time > pin->pin_period;
+}
+
+void AnalogIOController::update() {
+  // Bail-out if the vector is empty
+  if (_analogio_pins.empty())
+    return;
+
+  // Process analog input pins
+  for (int i = 0; i < _analogio_pins.size(); i++) {
+    // Create a pin object for this iteration
+    analogioPin &pin = _analogio_pins[i];
+    // Go to the next pin if the period hasn't expired yet
+    ulong cur_time = millis();
+    if (!IsPinTimerExpired(&pin, cur_time))
+      continue;
+
+    // Pins timer has expired, lets read the pin
+    if (pin.read_mode == wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
+      // TODO: Read and store the pin's voltage
+    } else if (pin.read_mode ==
+               wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
+      // TODO: Read and store the pin's raw value
+    } else {
+      WS_DEBUG_PRINT("ERROR: Invalid read mode for analog pin: ");
+      WS_DEBUG_PRINTLN(pin.name);
+      continue;
+    }
+  }
 }

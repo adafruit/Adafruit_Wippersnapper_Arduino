@@ -16,6 +16,7 @@
 
 AnalogIOHardware::AnalogIOHardware() {
   SetNativeADCResolution(); // Configure the device's native ADC resolution
+  _scale_factor = 0;
 }
 
 AnalogIOHardware::~AnalogIOHardware() {}
@@ -45,6 +46,33 @@ void AnalogIOHardware::SetNativeADCResolution() {
 
 void AnalogIOHardware::SetResolution(uint8_t resolution) {
   _adc_resolution = resolution;
+  // Calculate (or re-calculate) the scale factor when we set the resolution
+  CalculateScaleFactor();
 }
 
 uint8_t AnalogIOHardware::GetResolution(void) { return _adc_resolution; }
+
+void AnalogIOHardware::CalculateScaleFactor() {
+  if (!_is_adc_resolution_scaled)
+    return;
+
+  if (getADCresolution() > getNativeResolution()) {
+    _scale_factor = getADCresolution() - getNativeResolution();
+  } else {
+    _scale_factor = getNativeResolution() - getADCresolution();
+  }
+}
+
+uint16_t AnalogIOHardware::GetPinValue(uint8_t pin) {
+  // Get the pin's value using Arduino API
+  uint16_t value = analogRead(pin);
+  // Scale the pins value
+  if (_is_adc_resolution_scaled) {
+    if (getADCresolution() > getNativeResolution()) {
+      value = value << _scale_factor;
+    } else {
+      value = value >> _scale_factor;
+    }
+  }
+  return value;
+}
