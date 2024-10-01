@@ -114,6 +114,7 @@ class ws_uart;
 class CheckinModel;
 class SensorModel;
 class DigitalIOController;
+class AnalogIOController;
 
 /**************************************************************************/
 /*!
@@ -220,6 +221,7 @@ public:
   SensorModel  *sensorModel;        ///< Instance of SensorModel class
   DigitalIOController
       *digital_io_controller; ///< Instance of DigitalIO controller class
+  AnalogIOController *analogio_controller; ///< Instance of AnalogIO controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */

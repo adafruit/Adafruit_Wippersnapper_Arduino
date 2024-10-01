@@ -73,6 +73,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
 
   // Initialize controller classes
   WsV2.digital_io_controller = new DigitalIOController();
+  WsV2.analogio_controller = new AnalogIOController();
 };
 
 /**************************************************************************/
@@ -355,6 +356,13 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("-> DigitalIO Write Message Type");
     if (!WsV2.digital_io_controller->Handle_DigitalIO_Write(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to write to digitalio pin!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_analogio_add_tag:
+    WS_DEBUG_PRINTLN("-> AnalogIO Add Message Type");
+    if (!WsV2.analogio_controller->Handle_AnalogIOAdd(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to add analogio pin!");
       return false;
     }
     break;
