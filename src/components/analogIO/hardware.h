@@ -30,6 +30,8 @@ public:
   uint8_t GetResolution(void);
 
   void InitPin(uint8_t pin);
+  void DeinitPin(uint8_t pin);
+
 private:
   uint8_t _native_adc_resolution;
   uint8_t _adc_resolution;

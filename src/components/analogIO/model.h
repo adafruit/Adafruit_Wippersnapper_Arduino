@@ -29,7 +29,12 @@ public:
   // AnalogIOAdd
   bool DecodeAnalogIOAdd(pb_istream_t *stream);
   wippersnapper_analogio_AnalogIOAdd *GetAnalogIOAddMsg();
+  // AnalogIORemove
+  bool DecodeAnalogIORemove(pb_istream_t *stream);
+  wippersnapper_analogio_AnalogIORemove *GetAnalogIORemoveMsg();
+
 private:
   wippersnapper_analogio_AnalogIOAdd _msg_AnalogioAdd;
+  wippersnapper_analogio_AnalogIORemove _msg_AnalogioRemove;
 };
 #endif // WS_DIGITALIO_MODEL_H

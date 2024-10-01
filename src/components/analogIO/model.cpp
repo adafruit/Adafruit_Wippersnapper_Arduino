@@ -17,19 +17,35 @@
 // TODO! Implement the AnalogIOModel class
 
 AnalogIOModel::AnalogIOModel() {
-    _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
+  _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
 }
 
 AnalogIOModel::~AnalogIOModel() {}
 
 bool AnalogIOModel::DecodeAnalogIOAdd(pb_istream_t *stream) {
-    // Zero-out the AnalogIOAdd message struct. to ensure we don't have any old data
-    _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
+  // Zero-out the AnalogIOAdd message struct. to ensure we don't have any old
+  // data
+  _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
 
-    // Decode the stream into a AnalogIOAdd message
-    return pb_decode(stream, wippersnapper_analogio_AnalogIOAdd_fields, &_msg_AnalogioAdd);
+  // Decode the stream into a AnalogIOAdd message
+  return pb_decode(stream, wippersnapper_analogio_AnalogIOAdd_fields,
+                   &_msg_AnalogioAdd);
 }
 
 wippersnapper_analogio_AnalogIOAdd *AnalogIOModel::GetAnalogIOAddMsg() {
-    return &_msg_AnalogioAdd;
+  return &_msg_AnalogioAdd;
+}
+
+bool AnalogIOModel::DecodeAnalogIORemove(pb_istream_t *stream) {
+  // Zero-out the AnalogIORemove message struct. to ensure we don't have any old
+  // data
+  _msg_AnalogioRemove = wippersnapper_analogio_AnalogIORemove_init_default;
+
+  // Decode the stream into a AnalogIORemove message
+  return pb_decode(stream, wippersnapper_analogio_AnalogIORemove_fields,
+                   &_msg_AnalogioRemove);
+}
+
+wippersnapper_analogio_AnalogIORemove *AnalogIOModel::GetAnalogIORemoveMsg() {
+  return &_msg_AnalogioRemove;
 }

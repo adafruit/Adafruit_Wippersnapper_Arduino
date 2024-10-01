@@ -51,6 +51,7 @@
 #include "components/checkin/model.h"
 #include "components/sensor/model.h"
 #include "components/digitalIO/controller.h"
+#include "components/analogio/controller.h"
 
 
 // Components (API v1)

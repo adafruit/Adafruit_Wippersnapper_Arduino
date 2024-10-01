@@ -20,12 +20,14 @@ AnalogIOHardware::AnalogIOHardware() {
 
 AnalogIOHardware::~AnalogIOHardware() {}
 
-void AnalogIOHardware::InitPin(uint8_t pin) {
-    pinMode(pin, INPUT);
+void AnalogIOHardware::InitPin(uint8_t pin) { pinMode(pin, INPUT); }
+
+void AnalogIOHardware::DeinitPin(uint8_t pin) {
+  pinMode(pin, INPUT); // set to a hi-z floating pin
 }
 
 void AnalogIOHardware::SetNativeADCResolution() {
-_is_adc_resolution_scaled = false;
+  _is_adc_resolution_scaled = false;
 #if defined(ARDUINO_ARCH_SAMD)
   analogReadResolution(16);
   _native_adc_resolution = 12;
@@ -42,10 +44,7 @@ _is_adc_resolution_scaled = false;
 }
 
 void AnalogIOHardware::SetResolution(uint8_t resolution) {
-  _adcResolution = resolution;
+  _adc_resolution = resolution;
 }
 
-
-uint8_t AnalogIOHardware::GetResolution(void) {
-    return _adc_resolution;
-}
+uint8_t AnalogIOHardware::GetResolution(void) { return _adc_resolution; }

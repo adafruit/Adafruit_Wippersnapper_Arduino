@@ -300,9 +300,10 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   // Configure GPIO classes based on checkin response message
   WsV2.digital_io_controller->SetMaxDigitalPins(
       WsV2.CheckInModel->getTotalGPIOPins());
-  WsV2._analogIOV2 =
-      new Wippersnapper_AnalogIO(WsV2.CheckInModel->getTotalAnalogPins(),
-                                 WsV2.CheckInModel->getReferenceVoltage());
+
+  WsV2.analogio_controller->SetRefVoltage(WsV2.CheckInModel->getReferenceVoltage());
+  WsV2.analogio_controller->SetTotalAnalogPins(
+      WsV2.CheckInModel->getTotalAnalogPins());
 
   // set glob flag so we don't keep the polling loop open
   WsV2.got_checkin_response = true;
