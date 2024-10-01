@@ -22,13 +22,13 @@ typedef struct _wippersnapper_analogio_AnalogIOAdd {
 /* *
  AnalogIORemove removes an analog pin from the device. */
 typedef struct _wippersnapper_analogio_AnalogIORemove {
-    pb_callback_t pin_name; /* * Name of the pin. */
+    char pin_name[64]; /* * Name of the pin. */
 } wippersnapper_analogio_AnalogIORemove;
 
 /* *
  AnalogIOEvent is contains a value, sent when an analog pin is read. */
 typedef struct _wippersnapper_analogio_AnalogIOEvent {
-    pb_callback_t pin_name; /* * Name of the pin. */
+    char pin_name[64]; /* * Name of the pin. */
     bool has_sensor_event;
     wippersnapper_sensor_SensorEvent sensor_event; /* * Reading(s) from an analog pin. */
 } wippersnapper_analogio_AnalogIOEvent;
@@ -40,11 +40,11 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define wippersnapper_analogio_AnalogIOAdd_init_default {"", 0, _wippersnapper_sensor_SensorType_MIN}
-#define wippersnapper_analogio_AnalogIORemove_init_default {{{NULL}, NULL}}
-#define wippersnapper_analogio_AnalogIOEvent_init_default {{{NULL}, NULL}, false, wippersnapper_sensor_SensorEvent_init_default}
+#define wippersnapper_analogio_AnalogIORemove_init_default {""}
+#define wippersnapper_analogio_AnalogIOEvent_init_default {"", false, wippersnapper_sensor_SensorEvent_init_default}
 #define wippersnapper_analogio_AnalogIOAdd_init_zero {"", 0, _wippersnapper_sensor_SensorType_MIN}
-#define wippersnapper_analogio_AnalogIORemove_init_zero {{{NULL}, NULL}}
-#define wippersnapper_analogio_AnalogIOEvent_init_zero {{{NULL}, NULL}, false, wippersnapper_sensor_SensorEvent_init_zero}
+#define wippersnapper_analogio_AnalogIORemove_init_zero {""}
+#define wippersnapper_analogio_AnalogIOEvent_init_zero {"", false, wippersnapper_sensor_SensorEvent_init_zero}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_analogio_AnalogIOAdd_pin_name_tag 1
@@ -63,14 +63,14 @@ X(a, STATIC,   SINGULAR, UENUM,    read_mode,         3)
 #define wippersnapper_analogio_AnalogIOAdd_DEFAULT NULL
 
 #define wippersnapper_analogio_AnalogIORemove_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   pin_name,          1)
-#define wippersnapper_analogio_AnalogIORemove_CALLBACK pb_default_field_callback
+X(a, STATIC,   SINGULAR, STRING,   pin_name,          1)
+#define wippersnapper_analogio_AnalogIORemove_CALLBACK NULL
 #define wippersnapper_analogio_AnalogIORemove_DEFAULT NULL
 
 #define wippersnapper_analogio_AnalogIOEvent_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   pin_name,          1) \
+X(a, STATIC,   SINGULAR, STRING,   pin_name,          1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  sensor_event,      2)
-#define wippersnapper_analogio_AnalogIOEvent_CALLBACK pb_default_field_callback
+#define wippersnapper_analogio_AnalogIOEvent_CALLBACK NULL
 #define wippersnapper_analogio_AnalogIOEvent_DEFAULT NULL
 #define wippersnapper_analogio_AnalogIOEvent_sensor_event_MSGTYPE wippersnapper_sensor_SensorEvent
 
@@ -84,10 +84,12 @@ extern const pb_msgdesc_t wippersnapper_analogio_AnalogIOEvent_msg;
 #define wippersnapper_analogio_AnalogIOEvent_fields &wippersnapper_analogio_AnalogIOEvent_msg
 
 /* Maximum encoded size of messages (where known) */
-/* wippersnapper_analogio_AnalogIORemove_size depends on runtime parameters */
-/* wippersnapper_analogio_AnalogIOEvent_size depends on runtime parameters */
 #define WIPPERSNAPPER_ANALOGIO_ANALOGIO_PB_H_MAX_SIZE wippersnapper_analogio_AnalogIOAdd_size
 #define wippersnapper_analogio_AnalogIOAdd_size  72
+#define wippersnapper_analogio_AnalogIORemove_size 65
+#if defined(wippersnapper_sensor_SensorEvent_size)
+#define wippersnapper_analogio_AnalogIOEvent_size (71 + wippersnapper_sensor_SensorEvent_size)
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
