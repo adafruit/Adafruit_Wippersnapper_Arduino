@@ -52,7 +52,6 @@ public:
 
   void SetTotalAnalogPins(uint8_t total_pins);
   void SetRefVoltage(float voltage);
-  float GetRefVoltage(void);
   bool IsPinTimerExpired(analogioPin *pin, ulong cur_time);
 
 private:
@@ -60,7 +59,6 @@ private:
   AnalogIOHardware *_analogio_hardware;    ///< AnalogIO hardware
   std::vector<analogioPin> _analogio_pins; ///< Vector of analogio pins
   uint8_t _total_analogio_pins;            ///< Total number of analogio pins
-  float _ref_voltage;                      ///< The device's reference voltage
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_ANALOGIO_CONTROLLER_H

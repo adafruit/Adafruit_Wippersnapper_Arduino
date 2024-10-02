@@ -27,6 +27,11 @@ void AnalogIOHardware::DeinitPin(uint8_t pin) {
   pinMode(pin, INPUT); // set to a hi-z floating pin
 }
 
+void AnalogIOHardware::SetReferenceVoltage(float voltage) {
+  _ref_voltage = voltage;
+  _voltage_scale_factor = _ref_voltage / 65536;
+}
+
 void AnalogIOHardware::SetNativeADCResolution() {
   _is_adc_resolution_scaled = false;
 #if defined(ARDUINO_ARCH_SAMD)
@@ -75,4 +80,10 @@ uint16_t AnalogIOHardware::GetPinValue(uint8_t pin) {
     }
   }
   return value;
+}
+
+float Wippersnapper_AnalogIO::GetPinVoltage(uint8_t pin) {
+  uint16_t raw_value = GetPinValue(pin);
+  float voltage = raw_value * _voltage_scale_factor;
+  return voltage
 }

@@ -18,16 +18,15 @@ AnalogIOController::AnalogIOController() {
   _analogio_hardware = new AnalogIOHardware();
   _analogio_model = new AnalogIOModel();
   _analogio_hardware->SetResolution(16); // Default to 16-bit resolution
-  SetRefVoltage(0.0);                    // Default to 0.0V
+  SetRefVoltage(3.3);                    // Default to 3.3V
 }
 
 AnalogIOController::~AnalogIOController() {}
 
 void AnalogIOController::SetRefVoltage(float voltage) {
-  _ref_voltage = voltage;
+  // To set the reference voltage, we call into the hardware
+  _analogio_hardware->SetReferenceVoltage(voltage);
 }
-
-float AnalogIOController::GetRefVoltage(void) { return _ref_voltage; }
 
 void AnalogIOController::SetTotalAnalogPins(uint8_t total_pins) {
   _total_analogio_pins = total_pins;
@@ -109,6 +108,7 @@ void AnalogIOController::update() {
     } else if (pin.read_mode ==
                wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
       // TODO: Read and store the pin's raw value
+      uint16_t value = _analogio_hardware->GetPinValue(pin.name);
     } else {
       WS_DEBUG_PRINT("ERROR: Invalid read mode for analog pin: ");
       WS_DEBUG_PRINTLN(pin.name);
