@@ -151,12 +151,15 @@ void AnalogIOController::update() {
     if (pin.read_mode == wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
       // Since we already read the raw value, encode and publish it to the
       // broker
-      // TODO
+      EncodePublishPinValue(pin.name, value);
     } else if (pin.read_mode ==
                wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
       // Convert the raw value into voltage
       float pin_value = _analogio_hardware->CalculatePinVoltage(value);
       // Encode and publish the voltage value to the broker
+      EncodePublishPinVoltage(pin.name, pin_value);
+    } else {
+        WS_DEBUG_PRINTLN("ERROR: Invalid read mode for analog pin!");
     }
   }
 }
