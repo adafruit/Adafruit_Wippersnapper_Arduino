@@ -88,13 +88,23 @@ bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
   return cur_time - pin->prv_period > pin->period;
 }
 
-bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
+bool AnalogIOController::EncodePublishPinEvent(
+    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
   char c_pin_name[12];
   sprintf(c_pin_name, "D%d", pin);
 
-  // Encode the DigitalIOEvent message
-  if (!_analogio_model->EncodeAnalogIOEventRaw(c_pin_name, value)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
+  if (read_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
+    if (!_analogio_model->EncodeAnalogIOEventRaw(c_pin_name, value)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIO raw adc message!");
+      return false;
+    }
+  } else if (read_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
+    if (!_analogio_model->EncodeAnalogIOEventVoltage(c_pin_name, value)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode AnalogIO voltage message!");
+      return false;
+    }
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Invalid read type for AnalogIOEvent message!");
     return false;
   }
 
@@ -111,27 +121,14 @@ bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
   return true;
 }
 
+bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
+  return EncodePublishPinEvent(pin, (float)value,
+                               wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
+}
+
 bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
-  char c_pin_name[12];
-  sprintf(c_pin_name, "D%d", pin);
-
-  // Encode the DigitalIOEvent message
-  if (!_analogio_model->EncodeAnalogIOEventVoltage(c_pin_name, value)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
-    return false;
-  }
-
-  // Publish the DigitalIOEvent message to the broker
-  if (!WsV2.PublishSignal(
-          wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
-          _analogio_model->GetAnalogIOEvent())) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
-                     "moving onto the next pin!");
-    return false;
-  }
-  WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
-
-  return true;
+  return EncodePublishPinEvent(
+      pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE);
 }
 
 void AnalogIOController::update() {

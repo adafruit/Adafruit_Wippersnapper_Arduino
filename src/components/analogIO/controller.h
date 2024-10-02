@@ -50,6 +50,8 @@ public:
   // Polling loop
   void update();
   // Encoder
+  bool EncodePublishPinEvent(uint8_t pin, float value,
+                             wippersnapper_sensor_SensorType read_type);
   bool EncodePublishPinValue(uint8_t pin, uint16_t value);
   bool EncodePublishPinVoltage(uint8_t pin, float value);
   // Helpers

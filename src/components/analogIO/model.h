@@ -33,6 +33,8 @@ public:
   bool DecodeAnalogIORemove(pb_istream_t *stream);
   wippersnapper_analogio_AnalogIORemove *GetAnalogIORemoveMsg();
   // AnalogIOEvent
+  bool EncodeAnalogIOEvent(char *pin_name, float pin_value,
+                           wippersnapper_sensor_SensorType read_type);
   bool EncodeAnalogIOEventVoltage(char *pin_name, float pin_value);
   bool EncodeAnalogIOEventRaw(char *pin_name, int16_t pin_value);
   wippersnapper_analogio_AnalogIOEvent *GetAnalogIOEvent();
