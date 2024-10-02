@@ -13,6 +13,10 @@
 //
 // All text above must be included in any redistribution.
 
+#ifdef ARCH_ESP32
+#include "esp_core_dump.h"
+#endif
+
 #include "Wippersnapper_Networking.h"
 Wippersnapper_WiFi wipper;
 
@@ -20,12 +24,24 @@ Wippersnapper_WiFi wipper;
 #define WS_DEBUG
 
 void setup() {
+  
+#ifdef ARCH_ESP32
+  // Configure the core dump to be saved to flash
+  esp_err_t err = esp_core_dump_init(ESP_CORE_DUMP_FLASH); // Specify flash as storage
+#endif
+  
   // Provisioning must occur prior to serial init.
   wipper.provision();
 
-  Serial.begin(115200);
+  Serial.begin(115200); // wippersnapper serial
   //while (!Serial) delay(10);
 
+#ifdef ARCH_ESP32
+  if (err != ESP_OK) {
+    Serial.println("Core dump init failed!");
+  }
+#endif
+  
   wipper.connect();
 
 }
