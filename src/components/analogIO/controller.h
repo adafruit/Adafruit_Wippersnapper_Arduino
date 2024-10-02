@@ -44,12 +44,15 @@ class AnalogIOController {
 public:
   AnalogIOController();
   ~AnalogIOController();
-  // Routing functions
+  // Routing
   bool Handle_AnalogIOAdd(pb_istream_t *stream);
   bool Handle_AnalogIORemove(pb_istream_t *stream);
-  // Polling loop function
+  // Polling loop
   void update();
-
+  // Encoder
+  bool EncodePublishPinValue(uint8_t pin, uint16_t value);
+  bool EncodePublishPinVoltage(uint8_t pin, float value);
+  // Helpers
   void SetTotalAnalogPins(uint8_t total_pins);
   void SetRefVoltage(float voltage);
   bool IsPinTimerExpired(analogioPin *pin, ulong cur_time);

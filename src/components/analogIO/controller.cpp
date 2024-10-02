@@ -40,7 +40,7 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   }
 
   // Get the pin name
-  int pin_name = atoi(_analogio_model->GetAnalogIOAddMsg()->pin_name + 1);
+  uint8_t pin_name = atoi(_analogio_model->GetAnalogIOAddMsg()->pin_name + 1);
 
   // Create a new analogioPin object
   // TODO: Replicate this within the digitalio controller, much cleaner way to
@@ -85,7 +85,35 @@ bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
 }
 
 bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
-  return cur_time - pin->prv_pin_time > pin->pin_period;
+  return cur_time - pin->prv_period > pin->period;
+}
+
+bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
+  // TODO!
+  return true;
+}
+
+bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
+  char c_pin_name[12];
+  sprintf(c_pin_name, "D%d", pin);
+
+  // Encode the DigitalIOEvent message
+  if (!_analogio_model->EncodeAnalogIOVoltageEvent(c_pin_name, value)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
+    return false;
+  }
+
+  // Publish the DigitalIOEvent message to the broker
+  if (!WsV2.PublishSignal(
+          wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
+          _analogio_model->GetAnalogIOEvent())) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
+                     "moving onto the next pin!");
+    return false;
+  }
+  WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
+
+  return true;
 }
 
 void AnalogIOController::update() {
@@ -103,16 +131,17 @@ void AnalogIOController::update() {
       continue;
 
     // Pins timer has expired, lets read the pin
-    if (pin.read_mode == wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
-      // TODO: Read and store the pin's voltage
+    // Read the pin's raw value
+    uint16_t value = _analogio_hardware->GetPinValue(pin.name);
+    if (pin.read_mode == wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
+      // Since we already read the raw value, encode and publish it to the
+      // broker
+      // TODO
     } else if (pin.read_mode ==
-               wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
-      // TODO: Read and store the pin's raw value
-      uint16_t value = _analogio_hardware->GetPinValue(pin.name);
-    } else {
-      WS_DEBUG_PRINT("ERROR: Invalid read mode for analog pin: ");
-      WS_DEBUG_PRINTLN(pin.name);
-      continue;
+               wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
+      // Convert the raw value into voltage
+      float pin_value = _analogio_hardware->CalculatePinVoltage(value);
+      // Encode and publish the voltage value to the broker
     }
   }
 }

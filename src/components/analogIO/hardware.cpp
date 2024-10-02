@@ -55,16 +55,14 @@ void AnalogIOHardware::SetResolution(uint8_t resolution) {
   CalculateScaleFactor();
 }
 
-uint8_t AnalogIOHardware::GetResolution(void) { return _adc_resolution; }
-
 void AnalogIOHardware::CalculateScaleFactor() {
   if (!_is_adc_resolution_scaled)
     return;
 
-  if (getADCresolution() > getNativeResolution()) {
-    _scale_factor = getADCresolution() - getNativeResolution();
+  if (_adc_resolution > _native_adc_resolution) {
+    _scale_factor = _adc_resolution - _native_adc_resolution;
   } else {
-    _scale_factor = getNativeResolution() - getADCresolution();
+    _scale_factor = _native_adc_resolution - _adc_resolution;
   }
 }
 
@@ -73,7 +71,7 @@ uint16_t AnalogIOHardware::GetPinValue(uint8_t pin) {
   uint16_t value = analogRead(pin);
   // Scale the pins value
   if (_is_adc_resolution_scaled) {
-    if (getADCresolution() > getNativeResolution()) {
+    if (_adc_resolution > _native_adc_resolution) {
       value = value << _scale_factor;
     } else {
       value = value >> _scale_factor;
@@ -82,8 +80,7 @@ uint16_t AnalogIOHardware::GetPinValue(uint8_t pin) {
   return value;
 }
 
-float Wippersnapper_AnalogIO::GetPinVoltage(uint8_t pin) {
-  uint16_t raw_value = GetPinValue(pin);
+float AnalogIOHardware::CalculatePinVoltage(uint16_t raw_value) {
   float voltage = raw_value * _voltage_scale_factor;
-  return voltage
+  return voltage;
 }

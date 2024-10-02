@@ -32,9 +32,14 @@ public:
   // AnalogIORemove
   bool DecodeAnalogIORemove(pb_istream_t *stream);
   wippersnapper_analogio_AnalogIORemove *GetAnalogIORemoveMsg();
+  // AnalogIOEvent
+  bool EncodeAnalogIOVoltageEvent(char *pin_name, float pin_value);
+  // bool EncodeAnalogIORawEvent(char *pin_name, int16_t pin_value);
+  wippersnapper_analogio_AnalogIOEvent *GetAnalogIOEvent();
 
 private:
   wippersnapper_analogio_AnalogIOAdd _msg_AnalogioAdd;
   wippersnapper_analogio_AnalogIORemove _msg_AnalogioRemove;
+  wippersnapper_analogio_AnalogIOEvent _msg_AnalogioEvent;
 };
 #endif // WS_DIGITALIO_MODEL_H
