@@ -8,6 +8,12 @@ Wippersnapper_WiFi wipper;
 #define WS_DEBUG
 
 void setup() {
+  #include "esp_core_dump.h"
+
+  // Configure the core dump to be saved to flash
+  esp_err_t err = esp_core_dump_init(ESP_CORE_DUMP_FLASH); // Specify flash as storage
+
+  
   // Provisioning must occur prior to serial init.
   wipper.provision();
 
@@ -15,7 +21,11 @@ void setup() {
   Serial1.begin(115200);  // ESP-IDF messages serial
   Serial1.setDebugOutput(true); // Enable ESP-IDF messages over Serial1
   //while (!Serial) delay(10);
-
+  
+  if (err != ESP_OK) {
+    Serial.println("Core dump init failed!");
+  }
+  
   wipper.connect();
 }
 
