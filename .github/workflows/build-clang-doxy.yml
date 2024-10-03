@@ -293,10 +293,10 @@ jobs:
         run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: check arduino libs installed
         run: |
-          arduino-cli lib list
+          arduino-cli lib list --verbose --all
       - name: diff installed wippersnapper lib with runner copy, ignore ci subfolder
         run: |
-          diff -r /home/runner/Arduino/libraries/Adafruit_Wippersnapper /home/runner/work/Adafruit_Wippersnapper_Arduino/Adafruit_Wippersnapper_Arduino/ -x ci
+          diff -r /home/runner/Arduino/libraries/Adafruit_Wippersnapper_Arduino /home/runner/work/Adafruit_Wippersnapper_Arduino/Adafruit_Wippersnapper_Arduino/ -x ci
       - name: Check artifacts
         run: |
           ls examples/Wippersnapper_demo/build/*
