@@ -119,7 +119,7 @@ bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
   _analogio_hardware->DeinitPin(pin_name);
 
   // Remove the pin from the vector
-  // TODO: Refactor this out?
+  // TODO: Refactor this out? TODO: Make this better??
   for (int i = 0; i < _analogio_pins.size(); i++) {
     if (_analogio_pins[i].name == pin_name) {
       _analogio_pins.erase(_analogio_pins.begin() + i);
@@ -158,7 +158,7 @@ bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
 bool AnalogIOController::EncodePublishPinEvent(
     uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
   char c_pin_name[12];
-  sprintf(c_pin_name, "D%d", pin);
+  sprintf(c_pin_name, "A%d", pin);
 
   if (read_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW) {
     if (!_analogio_model->EncodeAnalogIOEventRaw(c_pin_name, value)) {
@@ -175,9 +175,9 @@ bool AnalogIOController::EncodePublishPinEvent(
     return false;
   }
 
-  // Publish the DigitalIOEvent message to the broker
+  // Publish the AnalogIO message to the broker
   if (!WsV2.PublishSignal(
-          wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
+          wippersnapper_signal_DeviceToBroker_analogio_event_tag,
           _analogio_model->GetAnalogIOEvent())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
                      "moving onto the next pin!");
@@ -245,12 +245,14 @@ void AnalogIOController::update() {
       uint16_t value = _analogio_hardware->GetPinValue(pin.name);
       // Encode and publish it to the broker
       EncodePublishPinValue(pin.name, value);
+      pin.prv_period = cur_time; // Reset the pin's period
     } else if (pin.read_mode ==
                wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
       // Convert the raw value into voltage
       float pin_value = _analogio_hardware->GetPinVoltage(pin.name);
       // Encode and publish the voltage value to the broker
       EncodePublishPinVoltage(pin.name, pin_value);
+      pin.prv_period = cur_time; // Reset the pin's period
     } else {
       WS_DEBUG_PRINTLN("ERROR: Invalid read mode for analog pin!");
     }

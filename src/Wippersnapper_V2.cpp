@@ -367,6 +367,13 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_analogio_remove_tag:
+    WS_DEBUG_PRINTLN("-> AnalogIO Remove Message Type");
+    if (!WsV2.analogio_controller->Handle_AnalogIORemove(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to remove analogio pin!");
+      return false;
+    }
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
@@ -870,6 +877,13 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.payload.digitalio_event =
         *(wippersnapper_digitalio_DigitalIOEvent *)payload;
     break;
+  case wippersnapper_signal_DeviceToBroker_analogio_event_tag:
+    WS_DEBUG_PRINTLN("AnalogIO Event");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_analogio_event_tag;
+    MsgSignal.payload.analogio_event =
+        *(wippersnapper_analogio_AnalogIOEvent *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
@@ -1150,7 +1164,8 @@ ws_status_t Wippersnapper_V2::runV2() {
   // Process all digital events
   WsV2.digital_io_controller->Update();
 
-  // TODO: Process analog inputs
+  // Process all analog inputs
+  WsV2.analogio_controller->update();
 
   // TODO: Process I2C sensor events
 
