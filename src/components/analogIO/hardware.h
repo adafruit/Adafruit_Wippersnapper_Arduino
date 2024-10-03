@@ -33,7 +33,7 @@ public:
   void InitPin(uint8_t pin);
   void DeinitPin(uint8_t pin);
   uint16_t GetPinValue(uint8_t pin);
-  float CalculatePinVoltage(uint16_t raw_voltage);
+  float GetPinVoltage(uint8_t pin);
 
 private:
   uint8_t _native_adc_resolution; ///< Hardware's native ADC resolution.

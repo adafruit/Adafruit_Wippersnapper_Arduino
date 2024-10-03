@@ -75,8 +75,13 @@ void AnalogIOHardware::SetNativeADCResolution() {
   analogReadResolution(16);
   _native_adc_resolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
-  _is_adc_resolution_scaled = true;
-  _native_adc_resolution = 13;
+  _is_adc_resolution_scaled = false; // Defined in esp32-arduino BSP
+#if defined(ESP32S3)
+  _native_adc_resolution = 13; // The ESP32-S3 ADC uses 13-bit resolution
+#else
+  _native_adc_resolution =
+      12; // The ESP32, ESP32-S2, ESP32-C3 ADCs uses 12-bit resolution
+#endif
 #elif defined(ARDUINO_ARCH_RP2040)
   _is_adc_resolution_scaled = true;
   _native_adc_resolution = 10;
@@ -125,7 +130,6 @@ void AnalogIOHardware::CalculateScaleFactor() {
 */
 /*************************************************************************/
 uint16_t AnalogIOHardware::GetPinValue(uint8_t pin) {
-  // Get the pin's value using Arduino API
   uint16_t value = analogRead(pin);
   // Scale the pins value
   if (_is_adc_resolution_scaled) {
@@ -140,13 +144,16 @@ uint16_t AnalogIOHardware::GetPinValue(uint8_t pin) {
 
 /*************************************************************************/
 /*!
-    @brief  Calculates the voltage of an analog pin.
-    @param  raw_value
-            The pin's raw value.
-    @return The pin's voltage, in Volts.
+    @brief  Gets the voltage of an analog pin.
+    @param  pin
+            The requested pin.
+    @return The pin's voltage.
 */
 /*************************************************************************/
-float AnalogIOHardware::CalculatePinVoltage(uint16_t raw_value) {
-  float voltage = raw_value * _voltage_scale_factor;
-  return voltage;
+float AnalogIOHardware::GetPinVoltage(uint8_t pin) {
+#ifdef ARDUINO_ARCH_ESP32
+  return analogReadMilliVolts(pin) / 1000.0;
+#else
+  return getPinValue(pin) * _ref_voltage / 65536;
+#endif // ARDUINO_ARCH_ESP32
 }
