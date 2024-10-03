@@ -14,6 +14,11 @@
  */
 #include "controller.h"
 
+/***********************************************************************/
+/*!
+    @brief  AnalogIO controller constructor
+*/
+/***********************************************************************/
 AnalogIOController::AnalogIOController() {
   _analogio_hardware = new AnalogIOHardware();
   _analogio_model = new AnalogIOModel();
@@ -21,17 +26,48 @@ AnalogIOController::AnalogIOController() {
   SetRefVoltage(3.3);                    // Default to 3.3V
 }
 
-AnalogIOController::~AnalogIOController() {}
+/***********************************************************************/
+/*!
+    @brief  AnalogIO controller destructor
+*/
+/***********************************************************************/
+AnalogIOController::~AnalogIOController() {
+  delete _analogio_hardware;
+  delete _analogio_model;
+}
 
+/***********************************************************************/
+/*!
+    @brief  Set the reference voltage for the analog pins
+    @param  voltage
+            The reference voltage.
+*/
+/***********************************************************************/
 void AnalogIOController::SetRefVoltage(float voltage) {
   // To set the reference voltage, we call into the hardware
   _analogio_hardware->SetReferenceVoltage(voltage);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Set the total number of analog pins present on the hardware.
+    @param  total_pins
+            The hardware's total number of analog pins.
+*/
+/***********************************************************************/
 void AnalogIOController::SetTotalAnalogPins(uint8_t total_pins) {
   _total_analogio_pins = total_pins;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Handles an AnalogIOAdd message from the broker and adds a
+            new analog pin to the controller.
+    @param  stream
+            The nanopb input stream.
+    @return True if the pin was successfully added, False otherwise.
+*/
+/***********************************************************************/
 bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   // Attempt to decode the incoming message into an AnalogIOAdd object
   if (!_analogio_model->DecodeAnalogIOAdd(stream)) {
@@ -60,6 +96,15 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   return true;
 }
 
+/***************************************************************************/
+/*!
+    @brief  Handles an AnalogIORemove message from the broker and removes
+            the requested analog pin from the controller.
+    @param  stream
+            The nanopb input stream.
+    @return True if the pin was successfully removed, False otherwise.
+*/
+/***************************************************************************/
 bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
   // Attempt to decode the incoming message into an AnalogIORemove object
   if (!_analogio_model->DecodeAnalogIORemove(stream)) {
@@ -84,10 +129,32 @@ bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
   return true;
 }
 
+/***************************************************************************/
+/*!
+    @brief  Checks if a pin's periodic timer has expired.
+    @param  pin
+            The requested pin to check.
+    @param  cur_time
+            The current time (called from millis()).
+    @return True if the pin's period has expired, False otherwise.
+*/
+/***************************************************************************/
 bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
   return cur_time - pin->prv_period > pin->period;
 }
 
+/***************************************************************************/
+/*!
+    @brief  Encodes and publishes an AnalogIOEvent message to the broker.
+    @param  pin
+            The pin to encode and publish.
+    @param  value
+            The pin's value.
+    @param  read_type
+            The type of read to perform on the pin.
+    @return True if the message was successfully encoded and published.
+*/
+/***************************************************************************/
 bool AnalogIOController::EncodePublishPinEvent(
     uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
   char c_pin_name[12];
@@ -121,16 +188,43 @@ bool AnalogIOController::EncodePublishPinEvent(
   return true;
 }
 
+/***************************************************************************/
+/*!
+    @brief  Encodes and publishes an AnalogIOEvent message to the broker.
+    @param  pin
+            The requested pin.
+    @param  value
+            The pin's value.
+    @return True if the message was successfully encoded and published,
+            False othewise.
+*/
+/***************************************************************************/
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
   return EncodePublishPinEvent(pin, (float)value,
                                wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
 }
 
+/***************************************************************************/
+/*!
+    @brief  Encodes and publishes an AnalogIOEvent message to the broker.
+    @param  pin
+            The requested pin.
+    @param  value
+            The pin's value, as a voltage.
+    @return True if the message was successfully encoded and published,
+            False othewise.
+*/
+/***************************************************************************/
 bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
   return EncodePublishPinEvent(
       pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE);
 }
 
+/***************************************************************************/
+/*!
+    @brief  Update/polling loop for the AnalogIO controller.
+*/
+/***************************************************************************/
 void AnalogIOController::update() {
   // Bail-out if the vector is empty
   if (_analogio_pins.empty())
@@ -159,7 +253,7 @@ void AnalogIOController::update() {
       // Encode and publish the voltage value to the broker
       EncodePublishPinVoltage(pin.name, pin_value);
     } else {
-        WS_DEBUG_PRINTLN("ERROR: Invalid read mode for analog pin!");
+      WS_DEBUG_PRINTLN("ERROR: Invalid read mode for analog pin!");
     }
   }
 }

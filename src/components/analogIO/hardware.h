@@ -29,7 +29,6 @@ public:
   void SetResolution(uint8_t resolution);
   void SetReferenceVoltage(float voltage);
   void CalculateScaleFactor();
-
   // Arduino/Wiring API
   void InitPin(uint8_t pin);
   void DeinitPin(uint8_t pin);
@@ -37,11 +36,13 @@ public:
   float CalculatePinVoltage(uint16_t raw_voltage);
 
 private:
-  uint8_t _native_adc_resolution;
-  uint8_t _adc_resolution;
-  int _scale_factor;
-  bool _is_adc_resolution_scaled;
-  float _ref_voltage;
-  float _voltage_scale_factor;
+  uint8_t _native_adc_resolution; ///< Hardware's native ADC resolution.
+  uint8_t _adc_resolution;        ///< Requested ADC resolution.
+  int _scale_factor; ///< Factor used for scaling the ADC's resolution.
+  bool _is_adc_resolution_scaled; ///< True if the ADC's resolution is scaled,
+                                  ///< False otherwise.
+  float _ref_voltage;          ///< Reference voltage for reading analog pins.
+  float _voltage_scale_factor; ///< Scaling factor used for calculating the
+                               ///< pin's voltage.
 };
 #endif // WS_ANALOGIO_HARDWARE_H

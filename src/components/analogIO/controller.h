@@ -24,7 +24,7 @@ class AnalogIOHardware; ///< Forward declaration
 
 /**
  * @struct analogioPin
- * @brief Structure repesenting an analogio pin on the device.
+ * @brief Represents a device's analogio pin.
  */
 struct analogioPin {
   uint8_t name;     ///< The pin's name.

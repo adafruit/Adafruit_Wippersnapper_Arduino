@@ -40,8 +40,10 @@ public:
   wippersnapper_analogio_AnalogIOEvent *GetAnalogIOEvent();
 
 private:
-  wippersnapper_analogio_AnalogIOAdd _msg_AnalogioAdd;
-  wippersnapper_analogio_AnalogIORemove _msg_AnalogioRemove;
-  wippersnapper_analogio_AnalogIOEvent _msg_AnalogioEvent;
+  wippersnapper_analogio_AnalogIOAdd _msg_AnalogioAdd; ///< AnalogIOAdd message
+  wippersnapper_analogio_AnalogIORemove
+      _msg_AnalogioRemove; ///< AnalogIORemove message
+  wippersnapper_analogio_AnalogIOEvent
+      _msg_AnalogioEvent; ///< AnalogIOEvent message
 };
 #endif // WS_DIGITALIO_MODEL_H

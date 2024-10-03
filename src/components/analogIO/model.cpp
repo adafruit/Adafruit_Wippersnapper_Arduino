@@ -14,46 +14,100 @@
  */
 #include "model.h"
 
-// TODO! Implement the AnalogIOModel class
-
+/***********************************************************************/
+/*!
+    @brief  AnalogIOModel constructor
+*/
+/***********************************************************************/
 AnalogIOModel::AnalogIOModel() {
   _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
 }
 
+/***********************************************************************/
+/*!
+    @brief  AnalogIOModel destructor
+*/
+/***********************************************************************/
 AnalogIOModel::~AnalogIOModel() {}
 
+/***********************************************************************/
+/*!
+    @brief  Decodes an AnalogIOAdd message from a stream into an
+            AnalogIOAdd message struct.
+    @param stream
+           The pb_istream_t stream to decode.
+    @return True if successful, False otherwise.
+*/
+/***********************************************************************/
 bool AnalogIOModel::DecodeAnalogIOAdd(pb_istream_t *stream) {
   // Zero-out the AnalogIOAdd message struct. to ensure we don't have any old
   // data
   _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
-
   // Decode the stream into a AnalogIOAdd message
   return pb_decode(stream, wippersnapper_analogio_AnalogIOAdd_fields,
                    &_msg_AnalogioAdd);
 }
 
+/***********************************************************************/
+/*!
+    @brief  Gets an AnalogIOAdd message struct.
+    @return Pointer to an AnalogIOAdd message struct.
+*/
+/***********************************************************************/
 wippersnapper_analogio_AnalogIOAdd *AnalogIOModel::GetAnalogIOAddMsg() {
   return &_msg_AnalogioAdd;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Decodes an AnalogIORemove message from a stream into an
+            AnalogIORemove message struct.
+    @param stream
+           The pb_istream_t stream to decode.
+    @return True if successful, False otherwise.
+*/
+/***********************************************************************/
 bool AnalogIOModel::DecodeAnalogIORemove(pb_istream_t *stream) {
   // Zero-out the AnalogIORemove message struct. to ensure we don't have any old
   // data
   _msg_AnalogioRemove = wippersnapper_analogio_AnalogIORemove_init_default;
-
   // Decode the stream into a AnalogIORemove message
   return pb_decode(stream, wippersnapper_analogio_AnalogIORemove_fields,
                    &_msg_AnalogioRemove);
 }
 
+/*****************************************************************************/
+/*!
+    @brief  Gets an AnalogIORemove message struct.
+    @return Pointer to an AnalogIORemove message struct.
+*/
+/*****************************************************************************/
 wippersnapper_analogio_AnalogIORemove *AnalogIOModel::GetAnalogIORemoveMsg() {
   return &_msg_AnalogioRemove;
 }
 
+/*****************************************************************************/
+/*!
+    @brief  Gets an AnalogIOEvent message struct.
+    @return Pointer to an AnalogIOEvent message struct.
+*/
+/*****************************************************************************/
 wippersnapper_analogio_AnalogIOEvent *AnalogIOModel::GetAnalogIOEvent() {
   return &_msg_AnalogioEvent;
 }
 
+/*****************************************************************************/
+/*!
+    @brief  Encodes an AnalogIOEvent message.
+    @param pin_name
+           The requested pin's name.
+    @param pin_value
+           The value of the pin.
+    @param read_type
+           The type of sensor event to encode.
+    @return True if successful, False otherwise.
+*/
+/*****************************************************************************/
 bool AnalogIOModel::EncodeAnalogIOEvent(
     char *pin_name, float pin_value,
     wippersnapper_sensor_SensorType read_type) {
@@ -82,11 +136,31 @@ bool AnalogIOModel::EncodeAnalogIOEvent(
                    &_msg_AnalogioEvent);
 }
 
+/********************************************************************************/
+/*!
+    @brief  Encodes an AnalogIOEvent message with a raw pin value.
+    @param pin_name
+           The requested pin's name.
+    @param pin_value
+           The value of the pin.
+    @return True if successful, False otherwise.
+*/
+/********************************************************************************/
 bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, int16_t pin_value) {
   return EncodeAnalogIOEvent(pin_name, (float)pin_value,
                              wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
 }
 
+/********************************************************************************/
+/*!
+    @brief  Encodes an AnalogIOEvent message with a voltage pin value.
+    @param pin_name
+           The requested pin's name.
+    @param pin_value
+           The value of the pin.
+    @return True if successful, False otherwise.
+*/
+/********************************************************************************/
 bool AnalogIOModel::EncodeAnalogIOEventVoltage(char *pin_name,
                                                float pin_value) {
   return EncodeAnalogIOEvent(
