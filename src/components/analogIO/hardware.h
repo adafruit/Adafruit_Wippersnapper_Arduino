@@ -36,13 +36,13 @@ public:
   float GetPinVoltage(uint8_t pin);
 
 private:
-  uint8_t _native_adc_resolution; ///< Hardware's native ADC resolution.
-  uint8_t _adc_resolution;        ///< Requested ADC resolution.
-  int _scale_factor; ///< Factor used for scaling the ADC's resolution.
+  uint8_t _native_adc_resolution;    ///< Hardware's native ADC resolution.
+  uint8_t _desired_adc_resolution;   ///< Desired (final) ADC resolution.
+  int _max_scale_resolution_desired; ///< Maximum scale resolution desired.
+  int _max_scale_resolution_native;  ///< Maximum scale resolution native.
+
   bool _is_adc_resolution_scaled; ///< True if the ADC's resolution is scaled,
                                   ///< False otherwise.
-  float _ref_voltage;          ///< Reference voltage for reading analog pins.
-  float _voltage_scale_factor; ///< Scaling factor used for calculating the
-                               ///< pin's voltage.
+  float _ref_voltage; ///< Reference voltage for reading analog pins.
 };
 #endif // WS_ANALOGIO_HARDWARE_H

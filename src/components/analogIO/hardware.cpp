@@ -21,7 +21,7 @@
 /***********************************************************************/
 AnalogIOHardware::AnalogIOHardware() {
   SetNativeADCResolution(); // Configure the device's native ADC resolution
-  _scale_factor = 0;
+  SetResolution(16);        // Wippersnapper's default resolution is 16-bit
 }
 
 /***********************************************************************/
@@ -61,7 +61,6 @@ void AnalogIOHardware::DeinitPin(uint8_t pin) {
 /*************************************************************************/
 void AnalogIOHardware::SetReferenceVoltage(float voltage) {
   _ref_voltage = voltage;
-  _voltage_scale_factor = _ref_voltage / 65536;
 }
 
 /*************************************************************************/
@@ -70,25 +69,23 @@ void AnalogIOHardware::SetReferenceVoltage(float voltage) {
 */
 /*************************************************************************/
 void AnalogIOHardware::SetNativeADCResolution() {
-  _is_adc_resolution_scaled = false;
 #if defined(ARDUINO_ARCH_SAMD)
-  analogReadResolution(16);
   _native_adc_resolution = 12;
 #elif defined(ARDUINO_ARCH_ESP32)
-  _is_adc_resolution_scaled = false; // Defined in esp32-arduino BSP
-#if defined(ESP32S3)
-  _native_adc_resolution = 13; // The ESP32-S3 ADC uses 13-bit resolution
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  // In arduino-esp32, the ESP32-S3 ADC uses a 13-bit resolution
+  _native_adc_resolution = 13;
 #else
-  _native_adc_resolution =
-      12; // The ESP32, ESP32-S2, ESP32-C3 ADCs uses 12-bit resolution
+  // The ESP32, ESP32-S2, ESP32-C3 ADCs uses 12-bit resolution
+  _native_adc_resolution = 12;
 #endif
 #elif defined(ARDUINO_ARCH_RP2040)
-  _is_adc_resolution_scaled = true;
   _native_adc_resolution = 10;
 #else
-  _is_adc_resolution_scaled = true;
   _native_adc_resolution = 10;
 #endif
+  // Set the resolution (in bits) of the hardware's ADC
+  analogReadResolution(_native_adc_resolution);
 }
 
 /*************************************************************************/
@@ -99,8 +96,9 @@ void AnalogIOHardware::SetNativeADCResolution() {
 */
 /*************************************************************************/
 void AnalogIOHardware::SetResolution(uint8_t resolution) {
-  _adc_resolution = resolution;
-  // Calculate (or re-calculate) the scale factor when we set the resolution
+  _desired_adc_resolution = resolution;
+  // Calculate (or re-calculate) the scale factor whenever we set the desired
+  // read resolution
   CalculateScaleFactor();
 }
 
@@ -111,14 +109,10 @@ void AnalogIOHardware::SetResolution(uint8_t resolution) {
 */
 /*************************************************************************/
 void AnalogIOHardware::CalculateScaleFactor() {
-  if (!_is_adc_resolution_scaled)
-    return;
-
-  if (_adc_resolution > _native_adc_resolution) {
-    _scale_factor = _adc_resolution - _native_adc_resolution;
-  } else {
-    _scale_factor = _native_adc_resolution - _adc_resolution;
-  }
+  _max_scale_resolution_desired =
+      pow(2, 16); // TODO: Change to _desired_adc_resolution
+  _max_scale_resolution_native =
+      pow(2, 13); // TODO: Change to _native_adc_resolution
 }
 
 /*************************************************************************/
@@ -130,16 +124,8 @@ void AnalogIOHardware::CalculateScaleFactor() {
 */
 /*************************************************************************/
 uint16_t AnalogIOHardware::GetPinValue(uint8_t pin) {
-  uint16_t value = analogRead(pin);
-  // Scale the pins value
-  if (_is_adc_resolution_scaled) {
-    if (_adc_resolution > _native_adc_resolution) {
-      value = value << _scale_factor;
-    } else {
-      value = value >> _scale_factor;
-    }
-  }
-  return value;
+  return (analogRead(pin) * _max_scale_resolution_desired) /
+         _max_scale_resolution_native;
 }
 
 /*************************************************************************/
@@ -154,6 +140,6 @@ float AnalogIOHardware::GetPinVoltage(uint8_t pin) {
 #ifdef ARDUINO_ARCH_ESP32
   return analogReadMilliVolts(pin) / 1000.0;
 #else
-  return getPinValue(pin) * _ref_voltage / 65536;
+  return (getPinValue(pin) * _ref_voltage) / 65536;
 #endif // ARDUINO_ARCH_ESP32
 }

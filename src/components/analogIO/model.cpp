@@ -146,8 +146,8 @@ bool AnalogIOModel::EncodeAnalogIOEvent(
     @return True if successful, False otherwise.
 */
 /********************************************************************************/
-bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, int16_t pin_value) {
-  return EncodeAnalogIOEvent(pin_name, (float)pin_value,
+bool AnalogIOModel::EncodeAnalogIOEventRaw(char *pin_name, float pin_value) {
+  return EncodeAnalogIOEvent(pin_name, pin_value,
                              wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
 }
 
