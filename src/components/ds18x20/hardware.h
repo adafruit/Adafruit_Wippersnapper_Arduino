@@ -15,15 +15,10 @@
 #ifndef WS_DS18X20_HARDWARE_H
 #define WS_DS18X20_HARDWARE_H
 #include "Wippersnapper_V2.h"
-#include <DallasTemperature.h>
 
 struct DS18X20_Pin {
   // Specific to the DS18X20 sensor object
-  OneWire
-      *oneWire; ///< Ptr reference to the OneWire bus object used by this pin
-  DallasTemperature
-      *dallasTempObj; ///< Pointer to a DallasTemperature sensor object
-  DeviceAddress dallasTempAddr; ///< Temperature sensor's address
+  // TODO: Implement this! 
   // From the PB model
   char onewire_pin[5]; ///< Pin utilized by the OneWire bus, used for addressing
   float period;        ///< The desired period to read the sensor, in seconds
@@ -44,7 +39,6 @@ class DS18X20Hardware {
 public:
   DS18X20Hardware();
   ~DS18X20Hardware();
-
 private:
   std::vector<DS18X20_Pin> _DS18X20_Pins; ///< Vector of analogio pins
 };
