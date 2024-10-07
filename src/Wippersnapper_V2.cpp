@@ -65,9 +65,6 @@ Wippersnapper_V2::Wippersnapper_V2() {
   // UART
   WsV2._uartComponentV2 = new ws_uart();
 
-  // DallasSemi (OneWire)
-  WsV2._ds18x20ComponentV2 = new ws_ds18x20();
-
   // Initialize model classes
   WsV2.sensorModel = new SensorModel();
 

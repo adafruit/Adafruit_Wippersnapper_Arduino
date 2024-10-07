@@ -56,7 +56,6 @@
 
 // Components (API v1)
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
-#include "components/ds18x20/ws_ds18x20.h"
 #include "components/i2c/WipperSnapper_I2C.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
@@ -107,7 +106,6 @@ class ws_ledc;
 class WipperSnapper_Component_I2C;
 class ws_servo;
 class ws_pwm;
-class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
 
@@ -214,7 +212,6 @@ public:
   ws_pixels *_ws_pixelsComponentV2; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponentV2;          ///< Instance of pwm class
   ws_servo *_servoComponentV2;      ///< Instance of servo class
-  ws_ds18x20 *_ds18x20ComponentV2;  ///< Instance of DS18x20 class
   ws_uart *_uartComponentV2;        ///< Instance of UART class
 
   // API v2 Components
