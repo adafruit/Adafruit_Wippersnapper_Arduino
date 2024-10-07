@@ -32,6 +32,7 @@
 #include "protos/checkin.pb.h"
 #include "protos/digitalio.pb.h"
 #include "protos/signal.pb.h"
+#include "protos/ds18x20.pb.h"
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
@@ -52,6 +53,7 @@
 #include "components/sensor/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/analogio/controller.h"
+#include "components/ds18x20/controller.h"
 
 
 // Components (API v1)
@@ -114,6 +116,7 @@ class CheckinModel;
 class SensorModel;
 class DigitalIOController;
 class AnalogIOController;
+class DS18X20Controller;
 
 /**************************************************************************/
 /*!
@@ -220,6 +223,7 @@ public:
   DigitalIOController
       *digital_io_controller; ///< Instance of DigitalIO controller class
   AnalogIOController *analogio_controller; ///< Instance of AnalogIO controller
+  DS18X20Controller *_ds18x20_controller; ///< Instance of DS18X20 controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
