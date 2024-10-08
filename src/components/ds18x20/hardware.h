@@ -16,18 +16,9 @@
 #define WS_DS18X20_HARDWARE_H
 #include "Wippersnapper_V2.h"
 
-struct DS18X20_Pin {
-  // Specific to the DS18X20 sensor object
-  // TODO: Implement this! 
-  // From the PB model
-  char onewire_pin[5]; ///< Pin utilized by the OneWire bus, used for addressing
-  float period;        ///< The desired period to read the sensor, in seconds
-  float prv_period;    ///< Last time the sensor was polled, in seconds
-  pb_size_t
-      sensor_types_count; ///< Number of sensor types to read from the sensor
-  wippersnapper_sensor_SensorType
-      sensor_types[2]; ///< DS sensor type(s) to read from the sensor
-};                     ///< DS18X20 Pin Object
+#include "OneWireNg_CurrentPlatform.h"
+#include "drivers/DSTherm.h"
+#include "utils/Placeholder.h"
 
 /**************************************************************************/
 /*!
@@ -37,9 +28,24 @@ struct DS18X20_Pin {
 /**************************************************************************/
 class DS18X20Hardware {
 public:
-  DS18X20Hardware();
+  DS18X20Hardware(uint8_t onewire_pin);
   ~DS18X20Hardware();
+  void setResolution(int resolution);
+
 private:
-  std::vector<DS18X20_Pin> _DS18X20_Pins; ///< Vector of analogio pins
+  // NOTE: We are going to try definining a vector of DS18X20Hardware objects
+  // iwthin the controller so instead of a struct, these are all assigned to
+  // this class
+  Placeholder<OneWireNg_CurrentPlatform> _ow; ///< OneWire bus object
+  DSTherm _drv_therm;                         ///< DS18X20 driver object
+  DSTherm::Resolution _resolution; ///< Resolution of the DS18X20 sensor
+  // From the PB model
+  uint8_t onewire_pin; ///< Pin utilized by the OneWire bus, used for addressing
+  float _period;       ///< The desired period to read the sensor, in seconds
+  float _prv_period;   ///< Last time the sensor was polled, in seconds
+  pb_size_t
+      _sensor_types_count; ///< Number of sensor types to read from the sensor
+  wippersnapper_sensor_SensorType
+      _sensor_types[2]; ///< DS sensor type(s) to read from the sensor
 };
 #endif // WS_DS18X20_HARDWARE_H

@@ -64,7 +64,6 @@
 #include "display/ws_display_ui_helper.h"
 #endif
 
-#include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
@@ -104,7 +103,6 @@ class ws_ledc;
 class WipperSnapper_Component_I2C;
 class ws_servo;
 class ws_pwm;
-class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
 
@@ -227,7 +225,6 @@ public:
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class
-  ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
   ws_uart *_uartComponent;        ///< Instance of UART class
 
   // TODO: does this really need to be global?

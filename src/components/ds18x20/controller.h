@@ -35,8 +35,9 @@ public:
   bool Handle_Ds18x20Add(pb_istream_t *stream);
 
 private:
-  DS18X20Model *_DS18X20_model;       ///< ds18x20 model
-  DS18X20Hardware *_DS18X20_hardware; ///< ds18x20 hardware
+  DS18X20Model *_DS18X20_model; ///< ds18x20 model
+  std::vector<DS18X20Hardware>
+      _DS18X20_pins; ///< Vector containing multiple DS18X20Hardware objects
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_DS18X20_CONTROLLER_H

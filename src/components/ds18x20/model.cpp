@@ -20,3 +20,10 @@ DS18X20Model::DS18X20Model() {
 }
 
 DS18X20Model::~DS18X20Model() {}
+
+bool DS18X20Model::DecodeDS18x20Add(pb_istream_t *stream) {
+  _msg_DS18x20Add = wippersnapper_ds18x20_Ds18x20Add_init_zero;
+  // Attempt to decode the stream into a Ds18x20Add message
+  return pb_decode(stream, wippersnapper_ds18x20_Ds18x20Add_fields,
+                   &_msg_DS18x20Add);
+}
