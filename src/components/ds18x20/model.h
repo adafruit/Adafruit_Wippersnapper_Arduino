@@ -29,9 +29,13 @@ public:
   // Ds18x20Add Message
   bool DecodeDS18x20Add(pb_istream_t *stream);
   wippersnapper_ds18x20_Ds18x20Add *GetDS18x20AddMsg();
+  // Ds18x20Remove Message
+  bool EncodeDS18x20Added(char *onewire_pin, bool is_init);
 
 private:
   wippersnapper_ds18x20_Ds18x20Add
       _msg_DS18x20Add; ///< wippersnapper_ds18x20_Ds18x20Add message
+  wippersnapper_ds18x20_Ds18x20Added
+      _msg_DS18x20Added; ///< wippersnapper_ds18x20_Ds18x20Added message
 };
 #endif // WS_DIGITALIO_MODEL_H
