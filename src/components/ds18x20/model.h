@@ -31,6 +31,7 @@ public:
   wippersnapper_ds18x20_Ds18x20Add *GetDS18x20AddMsg();
   // Ds18x20Remove Message
   bool EncodeDS18x20Added(char *onewire_pin, bool is_init);
+  wippersnapper_ds18x20_Ds18x20Added *GetDS18x20AddedMsg();
 
 private:
   wippersnapper_ds18x20_Ds18x20Add

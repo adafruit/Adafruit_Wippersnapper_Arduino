@@ -32,6 +32,10 @@ wippersnapper_ds18x20_Ds18x20Add *DS18X20Model::GetDS18x20AddMsg() {
   return &_msg_DS18x20Add;
 }
 
+wippersnapper_ds18x20_Ds18x20Added *DS18X20Model::GetDS18x20AddedMsg() {
+  return &_msg_DS18x20Added;
+}
+
 bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
   // Fill the Ds18x20Added message
   _msg_DS18x20Added = wippersnapper_ds18x20_Ds18x20Added_init_zero;

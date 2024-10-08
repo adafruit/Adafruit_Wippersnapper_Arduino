@@ -35,7 +35,19 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   // Add the DS18X20Hardware object to the vector of hardware objects
   _DS18X20_pins.push_back(new_dsx_driver);
 
-  // TODO: We should publish back an Added message to the broker
+  // Encode and publish a Ds18x20Added message back to the broker
+  if (!_DS18X20_model->EncodeDS18x20Added(
+          _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, true)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode Ds18x20Added message");
+    return false;
+  }
+
+  // Publish the AnalogIO message to the broker
+  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
+                          _DS18X20_model->GetDS18x20AddedMsg())) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish Ds18x20Added message");
+    return false;
+  }
 
   return true;
 }
