@@ -66,9 +66,6 @@ Wippersnapper::Wippersnapper() {
 
   // UART
   WS._uartComponent = new ws_uart();
-
-  // DallasSemi (OneWire)
-  WS._ds18x20Component = new ws_ds18x20();
 };
 
 /**************************************************************************/
@@ -1319,43 +1316,6 @@ void cbPWMMsg(char *data, uint16_t len) {
 bool cbDecodeDs18x20Msg(pb_istream_t *stream, const pb_field_t *field,
                         void **arg) {
   (void)arg; // marking unused parameter to avoid compiler warning
-  if (field->tag ==
-      wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_init_tag) {
-    WS_DEBUG_PRINTLN("[Message Type] Init. DS Sensor");
-    // Attempt to decode contents of DS18x20 message
-    wippersnapper_ds18x20_v1_Ds18x20InitRequest msgDS18xInitReq =
-        wippersnapper_ds18x20_v1_Ds18x20InitRequest_init_zero;
-
-    if (!ws_pb_decode(stream,
-                      wippersnapper_ds18x20_v1_Ds18x20InitRequest_fields,
-                      &msgDS18xInitReq)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode "
-                       "wippersnapper_ds18x20_v1_Ds18x20InitRequest");
-      return false; // fail out if we can't decode the request
-    }
-    WS_DEBUG_PRINT("Adding DS18x20 Component...");
-    if (!WS._ds18x20Component->addDS18x20(&msgDS18xInitReq))
-      return false;
-    WS_DEBUG_PRINTLN("Added!");
-  } else if (field->tag ==
-             wippersnapper_signal_v1_Ds18x20Request_req_ds18x20_deinit_tag) {
-    WS_DEBUG_PRINTLN("[Message Type] De-init. DS Sensor");
-    // Attempt to decode contents of message
-    wippersnapper_ds18x20_v1_Ds18x20DeInitRequest msgDS18xDeInitReq =
-        wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_init_zero;
-    if (!ws_pb_decode(stream,
-                      wippersnapper_ds18x20_v1_Ds18x20DeInitRequest_fields,
-                      &msgDS18xDeInitReq)) {
-      WS_DEBUG_PRINTLN("ERROR: Could not decode "
-                       "wippersnapper_ds18x20_v1_Ds18x20DeInitRequest");
-      return false; // fail out if we can't decode the request
-    }
-    // exec. deinit request
-    WS._ds18x20Component->deleteDS18x20(&msgDS18xDeInitReq);
-  } else {
-    WS_DEBUG_PRINTLN("ERROR: DS Message type not found!");
-    return false;
-  }
   return true;
 }
 
@@ -2874,10 +2834,6 @@ ws_status_t Wippersnapper::run() {
   // Process I2C sensor events
   if (WS._isI2CPort0Init)
     WS._i2cPort0->update();
-  WS.feedWDT();
-
-  // Process DS18x20 sensor events
-  WS._ds18x20Component->update();
   WS.feedWDT();
 
   // Process UART sensor events

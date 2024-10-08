@@ -14,17 +14,19 @@
  */
 #include "controller.h"
 
-DS18X20Controller::DS18X20Controller() {
-  _DS18X20_model = new DS18X20Model();
-  _DS18X20_hardware = new DS18X20Hardware();
-}
+DS18X20Controller::DS18X20Controller() { _DS18X20_model = new DS18X20Model(); }
 
-DS18X20Controller::~DS18X20Controller() {
-  delete _DS18X20_model;
-  delete _DS18X20_hardware;
-}
+DS18X20Controller::~DS18X20Controller() { delete _DS18X20_model; }
 
 bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
-  // TODO: This requires an implementation
+  // Attempt to decode the incoming message into a Ds18x20Add message
+  if (!_DS18X20_model->DecodeDS18x20Add(stream)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Add message");
+    return false;
+  }
+  // Pass the decoded message to the hardware
+  // TODO: Brent you were here and looking at this:
+  // https://github.com/pstolarz/OneWireNg/blob/master/examples/arduino/DallasTemperature/DallasTemperature.ino#L125
+
   return true;
 }
