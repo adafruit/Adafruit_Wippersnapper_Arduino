@@ -33,6 +33,8 @@ public:
   ~DS18X20Controller();
   // Routing
   bool Handle_Ds18x20Add(pb_istream_t *stream);
+  // Polling
+  void update();
 
 private:
   DS18X20Model *_DS18X20_model; ///< ds18x20 model
