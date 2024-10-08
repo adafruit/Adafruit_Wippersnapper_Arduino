@@ -64,25 +64,39 @@ bool DS18X20Hardware::IsTimerExpired() {
   return millis() - _prv_period > _period;
 }
 
-OneWireNg::ErrorCode DS18X20Hardware::ReadTemperatureC() {
+float DS18X20Hardware::GetTemperatureC() { return _temp_c; }
+
+float DS18X20Hardware::GetTemperatureF() { return _temp_f; }
+
+bool DS18X20Hardware::ReadTemperatureF() {
+  bool is_success = ReadTemperatureC();
+  // Did we read the temperature successfully?
+  if (!is_success)
+    return false;
+  // We have the temperature in Celsius, convert to Fahrenheit
+  _temp_f = _temp_c * 9.0 / 5.0 + 32.0;
+  return true;
+}
+
+bool DS18X20Hardware::ReadTemperatureC() {
   // Start temperature conversion for the first identified sensor on the OneWire
   // bus
   OneWireNg::ErrorCode ec =
       _drv_therm.convertTemp(_sensorId, DSTherm::MAX_CONV_TIME, false);
   if (ec != OneWireNg::EC_SUCCESS)
-    return ec;
+    return false
 
-  // Scratchpad placeholder is static to allow reuse of the associated
-  // sensor id while reissuing readScratchpadSingle() calls.
-  // Note, due to its storage class the placeholder is zero initialized.
-  static Placeholder<DSTherm::Scratchpad> scrpd;
+        // Scratchpad placeholder is static to allow reuse of the associated
+        // sensor id while reissuing readScratchpadSingle() calls.
+        // Note, due to its storage class the placeholder is zero initialized.
+        static Placeholder<DSTherm::Scratchpad>
+            scrpd;
   ec = _drv_therm.readScratchpadSingle(scrpd);
   if (ec != OneWireNg::EC_SUCCESS)
-    return ec;
+    return false;
 
   // Read the temperature from the sensor
   long temp = scrpd->getTemp2();
   _temp_c = temp / 16.0; // Convert from 16-bit int to float
-
-  return ec;
+  return true;
 }
