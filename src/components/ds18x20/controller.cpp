@@ -29,15 +29,23 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
 
   // Initialize the DS18X20Hardware object
   DS18X20Hardware new_dsx_driver(pin_name);
-  new_dsx_driver.setResolution(
-      _DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
+  // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
+  bool is_initialized = new_dsx_driver.GetSensor();
+  if (!is_initialized) {
+    WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
+    // Set the sensor's resolution
+    new_dsx_driver.setResolution(
+        _DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
 
-  // Add the DS18X20Hardware object to the vector of hardware objects
-  _DS18X20_pins.push_back(new_dsx_driver);
+    // Add the DS18X20Hardware object to the vector of hardware objects
+    _DS18X20_pins.push_back(new_dsx_driver);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unable to get sensor ID, sensor not initialized");
+  }
 
   // Encode and publish a Ds18x20Added message back to the broker
   if (!_DS18X20_model->EncodeDS18x20Added(
-          _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, true)) {
+          _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode Ds18x20Added message");
     return false;
   }
@@ -50,4 +58,20 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   }
 
   return true;
+}
+
+void DS18X20Controller::update() {
+  // Bail out if there are no OneWire pins to poll
+  if (_DS18X20_pins.size() == 0)
+    return;
+
+  // Iterate through the vector
+  for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
+    // Create a temporary DS18X20Hardware driver
+    DS18X20Hardware *temp_dsx_driver = &_DS18X20_pins[i];
+    // Check if the driver's timer has expired
+    if (temp_dsx_driver->IsTimerExpired())
+      return;
+    // TODO: Poll the sensor
+  }
 }

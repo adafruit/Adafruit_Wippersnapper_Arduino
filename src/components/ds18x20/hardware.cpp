@@ -15,10 +15,16 @@
 #include "hardware.h"
 
 DS18X20Hardware::DS18X20Hardware(uint8_t onewire_pin) : _drv_therm(_ow) {
+  // Initialize the OneWire bus object
   new (&_ow) OneWireNg_CurrentPlatform(onewire_pin, false);
 }
 
 DS18X20Hardware::~DS18X20Hardware() { delete &_ow; }
+
+bool DS18X20Hardware::GetSensor() {
+  OneWireNg::ErrorCode ec = _ow->readSingleId(_sensorId);
+  return ec == OneWireNg::EC_SUCCESS;
+}
 
 void DS18X20Hardware::setResolution(int resolution) {
   // Set the resolution of the DS18X20 sensor driver
@@ -49,4 +55,34 @@ void DS18X20Hardware::setResolution(int resolution) {
   // memory and will be lost after power unplug. Therefore store the
   // configuration permanently in sensors EEPROM.
   _drv_therm.copyScratchpadAll(false);
+}
+
+bool DS18X20Hardware::IsTimerExpired() {
+  // Get the current time in milliseconds and compare it to the last time
+  // the sensor was polled
+  ulong cur_time = millis();
+  return millis() - _prv_period > _period;
+}
+
+OneWireNg::ErrorCode DS18X20Hardware::ReadTemperatureC() {
+  // Start temperature conversion for the first identified sensor on the OneWire
+  // bus
+  OneWireNg::ErrorCode ec =
+      _drv_therm.convertTemp(_sensorId, DSTherm::MAX_CONV_TIME, false);
+  if (ec != OneWireNg::EC_SUCCESS)
+    return ec;
+
+  // Scratchpad placeholder is static to allow reuse of the associated
+  // sensor id while reissuing readScratchpadSingle() calls.
+  // Note, due to its storage class the placeholder is zero initialized.
+  static Placeholder<DSTherm::Scratchpad> scrpd;
+  ec = _drv_therm.readScratchpadSingle(scrpd);
+  if (ec != OneWireNg::EC_SUCCESS)
+    return ec;
+
+  // Read the temperature from the sensor
+  long temp = scrpd->getTemp2();
+  _temp_c = temp / 16.0; // Convert from 16-bit int to float
+
+  return ec;
 }
