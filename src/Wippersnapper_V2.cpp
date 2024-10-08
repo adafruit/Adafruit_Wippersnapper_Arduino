@@ -862,25 +862,31 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   WS_DEBUG_PRINT("Signal Payload Type: ");
   switch (which_payload) {
   case wippersnapper_signal_DeviceToBroker_checkin_request_tag:
-    WS_DEBUG_PRINTLN("Checkin Request");
+    WS_DEBUG_PRINTLN("CheckinRequest");
     MsgSignal.which_payload =
         wippersnapper_signal_DeviceToBroker_checkin_request_tag;
     MsgSignal.payload.checkin_request =
         *(wippersnapper_checkin_CheckinRequest *)payload;
     break;
   case wippersnapper_signal_DeviceToBroker_digitalio_event_tag:
-    WS_DEBUG_PRINTLN("DigitalIO Event");
+    WS_DEBUG_PRINTLN("DigitalIOEvent");
     MsgSignal.which_payload =
         wippersnapper_signal_DeviceToBroker_digitalio_event_tag;
     MsgSignal.payload.digitalio_event =
         *(wippersnapper_digitalio_DigitalIOEvent *)payload;
     break;
   case wippersnapper_signal_DeviceToBroker_analogio_event_tag:
-    WS_DEBUG_PRINTLN("AnalogIO Event");
+    WS_DEBUG_PRINTLN("AnalogIOEvent");
     MsgSignal.which_payload =
         wippersnapper_signal_DeviceToBroker_analogio_event_tag;
     MsgSignal.payload.analogio_event =
         *(wippersnapper_analogio_AnalogIOEvent *)payload;
+    break;
+  case wippersnapper_signal_DeviceToBroker_ds18x20_added_tag:
+    WS_DEBUG_PRINTLN("DS18X20Added");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_ds18x20_added_tag;
+    MsgSignal.payload.ds18x20_added = *(wippersnapper_ds18x20_Ds18x20Added *)payload;
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
