@@ -72,6 +72,7 @@ void DS18X20Controller::update() {
     // Check if the driver's timer has expired
     if (temp_dsx_driver->IsTimerExpired())
       return;
-    // TODO: Poll the sensor
+    // TODO: the update() method should check sensor type(s)
+    // before polling ReadTemperatureX methods!
   }
 }

@@ -31,20 +31,20 @@ public:
   DS18X20Hardware(uint8_t onewire_pin);
   ~DS18X20Hardware();
   bool GetSensor();
-  OneWireNg::ErrorCode DS18X20Hardware::ReadTemperatureC();
   void setResolution(int resolution);
   bool IsTimerExpired();
+  bool ReadTemperatureC();
+  bool ReadTemperatureF();
+  float GetTemperatureC();
+  float GetTemperatureF();
 
 private:
-  // NOTE: We are going to try definining a vector of DS18X20Hardware objects
-  // iwthin the controller so instead of a struct, these are all assigned to
-  // this class
   Placeholder<OneWireNg_CurrentPlatform> _ow; ///< OneWire bus object
   OneWireNg::Id _sensorId;
   DSTherm _drv_therm;              ///< DS18X20 driver object
   DSTherm::Resolution _resolution; ///< Resolution of the DS18X20 sensor
-  float _temp_c;
-  float _temp_f;
+  float _temp_c;                   ///< Temperature in Celsius
+  float _temp_f;                   ///< Temperature in Fahrenheit
   // From the PB model
   uint8_t onewire_pin; ///< Pin utilized by the OneWire bus, used for addressing
   float _period;       ///< The desired period to read the sensor, in seconds
