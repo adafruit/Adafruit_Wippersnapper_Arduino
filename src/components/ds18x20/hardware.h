@@ -30,13 +30,16 @@ class DS18X20Hardware {
 public:
   DS18X20Hardware(uint8_t onewire_pin);
   ~DS18X20Hardware();
-  bool GetSensor();
-  void setResolution(int resolution);
+  void SetResolution(int resolution);
+  void SetPeriod(float period);
   bool IsTimerExpired();
+  bool GetSensor();
   bool ReadTemperatureC();
   bool ReadTemperatureF();
   float GetTemperatureC();
   float GetTemperatureF();
+  bool is_read_temp_c;
+  bool is_read_temp_f;
 
 private:
   Placeholder<OneWireNg_CurrentPlatform> _ow; ///< OneWire bus object
@@ -46,12 +49,9 @@ private:
   float _temp_c;                   ///< Temperature in Celsius
   float _temp_f;                   ///< Temperature in Fahrenheit
   // From the PB model
-  uint8_t onewire_pin; ///< Pin utilized by the OneWire bus, used for addressing
-  float _period;       ///< The desired period to read the sensor, in seconds
-  float _prv_period;   ///< Last time the sensor was polled, in seconds
-  pb_size_t
-      _sensor_types_count; ///< Number of sensor types to read from the sensor
-  wippersnapper_sensor_SensorType
-      _sensor_types[2]; ///< DS sensor type(s) to read from the sensor
+  uint8_t
+      _onewire_pin;  ///< Pin utilized by the OneWire bus, used for addressing
+  float _period;     ///< The desired period to read the sensor, in seconds
+  float _prv_period; ///< Last time the sensor was polled, in seconds
 };
 #endif // WS_DS18X20_HARDWARE_H

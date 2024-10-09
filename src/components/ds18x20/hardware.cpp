@@ -15,18 +15,25 @@
 #include "hardware.h"
 
 DS18X20Hardware::DS18X20Hardware(uint8_t onewire_pin) : _drv_therm(_ow) {
+  is_read_temp_c = false;
+  is_read_temp_f = false;
   // Initialize the OneWire bus object
+  _onewire_pin = onewire_pin;
   new (&_ow) OneWireNg_CurrentPlatform(onewire_pin, false);
 }
 
-DS18X20Hardware::~DS18X20Hardware() { delete &_ow; }
+DS18X20Hardware::~DS18X20Hardware() {
+  pinMode(_onewire_pin,
+          INPUT); // Set the pin to hi-z and release it for other uses
+  delete &_ow;
+}
 
 bool DS18X20Hardware::GetSensor() {
   OneWireNg::ErrorCode ec = _ow->readSingleId(_sensorId);
   return ec == OneWireNg::EC_SUCCESS;
 }
 
-void DS18X20Hardware::setResolution(int resolution) {
+void DS18X20Hardware::SetResolution(int resolution) {
   // Set the resolution of the DS18X20 sensor driver
   switch (resolution) {
   case 9:
@@ -57,10 +64,13 @@ void DS18X20Hardware::setResolution(int resolution) {
   _drv_therm.copyScratchpadAll(false);
 }
 
+void DS18X20Hardware::SetPeriod(float period) {
+  _period = period * 1000; // Convert to milliseconds
+}
+
+// Get the current time in milliseconds and compare it to the last time
+// the sensor was polled
 bool DS18X20Hardware::IsTimerExpired() {
-  // Get the current time in milliseconds and compare it to the last time
-  // the sensor was polled
-  ulong cur_time = millis();
   return millis() - _prv_period > _period;
 }
 
@@ -73,8 +83,11 @@ bool DS18X20Hardware::ReadTemperatureF() {
   // Did we read the temperature successfully?
   if (!is_success)
     return false;
-  // We have the temperature in Celsius, convert to Fahrenheit
+  // We now have the temperature but it's in in Celsius. Let's convert it to
+  // Fahrenheit
   _temp_f = _temp_c * 9.0 / 5.0 + 32.0;
+
+  _prv_period = millis(); // Update the last time the sensor was polled
   return true;
 }
 
@@ -84,13 +97,12 @@ bool DS18X20Hardware::ReadTemperatureC() {
   OneWireNg::ErrorCode ec =
       _drv_therm.convertTemp(_sensorId, DSTherm::MAX_CONV_TIME, false);
   if (ec != OneWireNg::EC_SUCCESS)
-    return false
+    return false;
 
-        // Scratchpad placeholder is static to allow reuse of the associated
-        // sensor id while reissuing readScratchpadSingle() calls.
-        // Note, due to its storage class the placeholder is zero initialized.
-        static Placeholder<DSTherm::Scratchpad>
-            scrpd;
+  // Scratchpad placeholder is static to allow reuse of the associated
+  // sensor id while reissuing readScratchpadSingle() calls.
+  // Note, due to its storage class the placeholder is zero initialized.
+  static Placeholder<DSTherm::Scratchpad> scrpd;
   ec = _drv_therm.readScratchpadSingle(scrpd);
   if (ec != OneWireNg::EC_SUCCESS)
     return false;
@@ -98,5 +110,7 @@ bool DS18X20Hardware::ReadTemperatureC() {
   // Read the temperature from the sensor
   long temp = scrpd->getTemp2();
   _temp_c = temp / 16.0; // Convert from 16-bit int to float
+
+  _prv_period = millis(); // Update the last time the sensor was polled
   return true;
 }
