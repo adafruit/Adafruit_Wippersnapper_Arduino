@@ -24,6 +24,13 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Add message");
     return false;
   }
+
+  // If we receive no sensor types to configure, bail out
+  if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types_count == 0) {
+    WS_DEBUG_PRINTLN("ERROR: No ds18x sensor types provided!");
+    return false;
+  }
+
   // Extract the OneWire pin from the message
   uint8_t pin_name = atoi(_DS18X20_model->GetDS18x20AddMsg()->onewire_pin + 1);
 
@@ -34,13 +41,27 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   if (!is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
     // Set the sensor's resolution
-    new_dsx_driver.setResolution(
+    new_dsx_driver.SetResolution(
         _DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
-
+    // Set the sensor's period
+    new_dsx_driver.SetPeriod(_DS18X20_model->GetDS18x20AddMsg()->period);
+    // Configure the types of sensor reads to perform
+    for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
+         i++) {
+      if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
+        new_dsx_driver.is_read_temp_c = true;
+      } else if (
+          _DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
+        new_dsx_driver.is_read_temp_f = true;
+      }
+    }
     // Add the DS18X20Hardware object to the vector of hardware objects
     _DS18X20_pins.push_back(new_dsx_driver);
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Unable to get sensor ID, sensor not initialized");
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to get ds18x sensor ID, ds18x sensor not initialized");
   }
 
   // Encode and publish a Ds18x20Added message back to the broker
@@ -62,17 +83,21 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
 
 void DS18X20Controller::update() {
   // Bail out if there are no OneWire pins to poll
-  if (_DS18X20_pins.size() == 0)
+  if (_DS18X20_pins.empty())
     return;
 
   // Iterate through the vector
   for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
     // Create a temporary DS18X20Hardware driver
-    DS18X20Hardware *temp_dsx_driver = &_DS18X20_pins[i];
-    // Check if the driver's timer has expired
-    if (temp_dsx_driver->IsTimerExpired())
-      return;
-    // TODO: the update() method should check sensor type(s)
-    // before polling ReadTemperatureX methods!
+    DS18X20Hardware &temp_dsx_driver = _DS18X20_pins[i];
+    // Check if the driver's timer has not expired yet
+    if (!temp_dsx_driver.IsTimerExpired())
+      continue;
+    // Are we reading the temperature in Celsius, Fahrenheit, or both?
+    if (temp_dsx_driver.is_read_temp_c)
+      temp_dsx_driver.GetTemperatureC();
+    if (temp_dsx_driver.is_read_temp_f)
+      temp_dsx_driver.GetTemperatureF();
+    // wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE
   }
 }
