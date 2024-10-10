@@ -33,6 +33,8 @@ bool DS18X20Hardware::GetSensor() {
   return ec == OneWireNg::EC_SUCCESS;
 }
 
+uint8_t DS18X20Hardware::GetOneWirePin() { return _onewire_pin; }
+
 void DS18X20Hardware::SetResolution(int resolution) {
   // Set the resolution of the DS18X20 sensor driver
   switch (resolution) {
