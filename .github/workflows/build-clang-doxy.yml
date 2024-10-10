@@ -452,7 +452,7 @@ jobs:
 
   # NOTE: This does NOT release artifacts, it only builds
   build-samd-non-fs:
-    name: 🏗️SAMD🚫💽
+    name: 🏗️SAMD🚫⧾🔱
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
