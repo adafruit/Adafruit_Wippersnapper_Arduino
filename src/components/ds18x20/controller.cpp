@@ -81,6 +81,29 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   return true;
 }
 
+bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
+  // Attempt to decode the stream
+  if (!_DS18X20_model->DecodeDS18x20Remove(stream)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Remove message");
+    return false;
+  }
+  // Create a temp. instance of the Ds18x20Remove message
+  wippersnapper_ds18x20_Ds18x20Remove *msg_remove =
+      _DS18X20_model->GetDS18x20RemoveMsg();
+  uint8_t pin_name = atoi(msg_remove->onewire_pin + 1);
+  // Destroy the DS18X20Hardware object, remove it from the vector, and release
+  // it for other uses
+  for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
+    if (_DS18X20_pins[i].GetOneWirePin() == pin_name) {
+      _DS18X20_pins.erase(_DS18X20_pins.begin() + i);
+      break;
+    }
+  }
+  WS_DEBUG_PRINT("Removed OneWire Pin: ");
+  WS_DEBUG_PRINTLN(pin_name);
+  return true;
+}
+
 void DS18X20Controller::update() {
   // Bail out if there are no OneWire pins to poll
   if (_DS18X20_pins.empty())

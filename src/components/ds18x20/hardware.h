@@ -34,6 +34,7 @@ public:
   void SetPeriod(float period);
   bool IsTimerExpired();
   bool GetSensor();
+  uint8_t GetOneWirePin();
   bool ReadTemperatureC();
   bool ReadTemperatureF();
   float GetTemperatureC();

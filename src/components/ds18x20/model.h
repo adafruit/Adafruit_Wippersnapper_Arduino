@@ -29,9 +29,12 @@ public:
   // Ds18x20Add Message
   bool DecodeDS18x20Add(pb_istream_t *stream);
   wippersnapper_ds18x20_Ds18x20Add *GetDS18x20AddMsg();
-  // Ds18x20Remove Message
+  // DS18x20Added Message
   bool EncodeDS18x20Added(char *onewire_pin, bool is_init);
   wippersnapper_ds18x20_Ds18x20Added *GetDS18x20AddedMsg();
+  // Ds18x20Remove Message
+  bool DecodeDS18x20Remove(pb_istream_t *stream);
+  wippersnapper_ds18x20_Ds18x20Remove *GetDS18x20RemoveMsg();
   // Ds18x20Event Message
   bool
   EncodeDs18x20Event(char *onewire_pin, pb_size_t sensor_events_count,
@@ -49,8 +52,6 @@ private:
       _msg_DS18x20Add; ///< wippersnapper_ds18x20_Ds18x20Add message
   wippersnapper_ds18x20_Ds18x20Added
       _msg_DS18x20Added; ///< wippersnapper_ds18x20_Ds18x20Added message
-  wippersnapper_ds18x20_Ds18x20Event
-      _msg_DS18x20Event; ///< wippersnapper_ds18x20_Ds18x20Event message
   wippersnapper_ds18x20_Ds18x20Remove
       _msg_DS18x20Remove; ///< wippersnapper_ds18x20_Ds18x20Remove message
 };

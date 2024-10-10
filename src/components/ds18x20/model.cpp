@@ -54,6 +54,16 @@ bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
                    &_msg_DS18x20Added);
 }
 
+bool DS18X20Model::DecodeDS18x20Remove(pb_istream_t *stream) {
+  _msg_DS18x20Remove = wippersnapper_ds18x20_Ds18x20Remove_init_zero;
+  return pb_decode(stream, wippersnapper_ds18x20_Ds18x20Remove_fields,
+                   &_msg_DS18x20Remove);
+}
+
+wippersnapper_ds18x20_Ds18x20Remove *DS18X20Model::GetDS18x20RemoveMsg() {
+  return &_msg_DS18x20Remove;
+}
+
 wippersnapper_ds18x20_Ds18x20Event *DS18X20Model::GetDS18x20EventMsg() {
   return &_msg_DS18x20Event;
 }
