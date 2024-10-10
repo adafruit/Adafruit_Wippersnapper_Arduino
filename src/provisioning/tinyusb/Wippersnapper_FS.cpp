@@ -12,6 +12,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
+
 #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
     defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) ||                                    \
@@ -27,6 +28,7 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2)
+#include "print_dependencies.h"
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -89,6 +91,13 @@ bool setVolumeLabel() {
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
+#if PRINT_DEPENDENCIES
+    WS_DEBUG_PRINTLN("Build Dependencies:");
+    WS_DEBUG_PRINTLN("*********************");
+    WS_DEBUG_PRINTLN(project_dependencies);
+    WS_DEBUG_PRINTLN("*********************");
+    WS_PRINTER.flush();
+#endif
   // Detach USB device during init.
   TinyUSBDevice.detach();
   // Wait for detach
@@ -276,6 +285,11 @@ bool Wippersnapper_FS::createBootFile() {
             WS._macAddr[5]);
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
+
+#if PRINT_DEPENDENCIES
+    bootFile.println("Build dependencies:");
+    bootFile.println(project_dependencies);
+#endif
 
     // Print ESP-specific info to boot file
     #ifdef ARDUINO_ARCH_ESP32
