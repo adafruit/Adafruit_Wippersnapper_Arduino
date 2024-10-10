@@ -91,13 +91,46 @@ void DS18X20Controller::update() {
     // Create a temporary DS18X20Hardware driver
     DS18X20Hardware &temp_dsx_driver = _DS18X20_pins[i];
     // Check if the driver's timer has not expired yet
-    if (!temp_dsx_driver.IsTimerExpired())
+    if (!temp_dsx_driver.IsTimerExpired()) {
       continue;
+    }
+    // Create a new sensor_event
+    _DS18X20_model->InitDS18x20EventMsg();
     // Are we reading the temperature in Celsius, Fahrenheit, or both?
-    if (temp_dsx_driver.is_read_temp_c)
-      temp_dsx_driver.GetTemperatureC();
-    if (temp_dsx_driver.is_read_temp_f)
-      temp_dsx_driver.GetTemperatureF();
-    // wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE
+    if (temp_dsx_driver.is_read_temp_c) {
+      WS_DEBUG_PRINTLN("Reading temperature in Celsius"); // TODO: Debug remove
+      float temp_c = temp_dsx_driver.GetTemperatureC();
+      _DS18X20_model->addSensorEvent(
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+          temp_c);
+    }
+    if (temp_dsx_driver.is_read_temp_f) {
+      WS_DEBUG_PRINTLN(
+          "Reading temperature in Fahrenheit"); // TODO: Debug remove
+      float temp_f = temp_dsx_driver.GetTemperatureF();
+      _DS18X20_model->addSensorEvent(
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+          temp_f);
+    }
+    // Print out the SensorEvent message's contents for debugging
+    // TODO: After debugging, maybe remove this
+    wippersnapper_ds18x20_Ds18x20Event event_msg =
+        *_DS18X20_model->GetDS18x20EventMsg();
+    WS_DEBUG_PRINTLN("SensorEvent message:");
+    WS_DEBUG_PRINT("Sensor OneWire bus pin: ");
+    WS_DEBUG_PRINTLN(event_msg.onewire_pin);
+    WS_DEBUG_PRINT("Sensor events count: ");
+    WS_DEBUG_PRINTLN(event_msg.sensor_events_count);
+
+    for (int i = 0;
+         i < _DS18X20_model->GetDS18x20EventMsg()->sensor_events_count; i++) {
+      WS_DEBUG_PRINT("Sensor type: ");
+      WS_DEBUG_PRINTLN(event_msg.sensor_events[i].type);
+      WS_DEBUG_PRINT("Sensor value: ");
+      WS_DEBUG_PRINTLN(event_msg.sensor_events[i].value.float_value);
+      WS_DEBUG_PRINT("Sensor value type: ");
+      WS_DEBUG_PRINTLN(event_msg.sensor_events[i].which_value);
+    }
   }
+  // TODO: Encode and publish the Ds18x20Event message to the broker
 }
