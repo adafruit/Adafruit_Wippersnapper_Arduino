@@ -20,7 +20,7 @@
 */
 /***********************************************************************/
 SensorModel::SensorModel() {
-  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_default;
+  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_zero;
 }
 
 /***********************************************************************/
@@ -28,111 +28,34 @@ SensorModel::SensorModel() {
     @brief  SensorModel destructor
 */
 /***********************************************************************/
-SensorModel::~SensorModel() {}
-
-/***********************************************************************/
-/*!
-    @brief  Decodes a SensorEvent message into a SensorModel object.
-    @param  stream
-            The input stream
-    @returns True if the SensorEvent message was successfully decoded,
-            False otherwise.
-*/
-/***********************************************************************/
-bool SensorModel::decodeSensorEvent(pb_istream_t *stream) {
-  // Decode the stream into theSensorEvent message
-  if (!pb_decode(stream, wippersnapper_sensor_SensorEvent_fields,
-                 &_msg_sensor_event)) {
-    return false;
-  }
-  return true;
+SensorModel::~SensorModel() {
+  // Zero-out the SensorEvent message
+  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_zero;
 }
 
-/***********************************************************************/
-/*!
-    @brief  Clears the SensorEvent message.
-*/
-/***********************************************************************/
-void SensorModel::clearSensorEvent() {
-  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_default;
+wippersnapper_sensor_SensorEvent *SensorModel::GetSensorEventMessage() {
+    return &_msg_sensor_event;
 }
 
-/***********************************************************************/
-/*!
-    @brief  Returns a SensorEvent message.
-    @returns The SensorEvent message.
-*/
-/***********************************************************************/
-wippersnapper_sensor_SensorEvent *SensorModel::getSensorEvent() {
-  return &_msg_sensor_event;
+bool SensorModel::EncodeSensorEventMessage() {
+    // Obtain size of the class' SensorEvent message
+    size_t sz_msg;
+    if (!pb_get_encoded_size(&sz_msg, wippersnapper_sensor_SensorEvent_fields, &_msg_sensor_event))
+      return false;
+
+    // Encode the class' SensorEvent message
+    uint8_t buf[sz_msg];
+    pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+    return pb_encode(&msg_stream, wippersnapper_sensor_SensorEvent_fields,
+                    &_msg_sensor_event);
 }
 
-/***********************************************************************/
-/*!
-    @brief  Returns the the SensorEvent message's type.
-    @returns The type of the SensorEvent message, as a SensorType.
-*/
-/***********************************************************************/
-wippersnapper_sensor_SensorType SensorModel::getSensorType() {
-  return _msg_sensor_event.type;
-}
 
-/***********************************************************************/
-/*!
-    @brief  Returns the the SensorEvent message's which_value field.
-    @returns The which_value field of the SensorEvent message.
-*/
-/***********************************************************************/
-pb_size_t SensorModel::getSensorEventWhichValue() {
-  return _msg_sensor_event.which_value;
-}
-
-/***********************************************************************/
-/*!
-    @brief  Returns the the SensorEvent message's float value field.
-    @returns The float value of the SensorEvent message.
-*/
-/***********************************************************************/
-float SensorModel::getValueFloat() {
-  return _msg_sensor_event.value.float_value;
-}
-
-/***********************************************************************/
-/*!
-    @brief  Returns the the SensorEvent message's bool value field.
-    @returns The bool value of the SensorEvent message.
-*/
-/***********************************************************************/
-bool SensorModel::getValueBool() { return _msg_sensor_event.value.bool_value; }
-
-/***********************************************************************/
-/*!
-    @brief  Returns the the SensorEvent message's vector value field.
-    @returns The vector value of the SensorEvent message.
-*/
-/***********************************************************************/
-wippersnapper_sensor_SensorEvent_SensorEvent3DVector
-SensorModel::getValueVector() {
-  return _msg_sensor_event.value.vector_value;
-}
-
-/***********************************************************************/
-/*!
-    @brief  Returns the the SensorEvent message's orientation value field.
-    @returns The orientation value of the SensorEvent message.
-*/
-/***********************************************************************/
-wippersnapper_sensor_SensorEvent_SensorEventOrientation
-SensorModel::getValueOrientation() {
-  return _msg_sensor_event.value.orientation_value;
-}
-
-/***********************************************************************/
-/*!
-    @brief  Returns the the SensorEvent message's color value field.
-    @returns The color value of the SensorEvent message.
-*/
-/***********************************************************************/
-wippersnapper_sensor_SensorEvent_SensorEventColor SensorModel::getValueColor() {
-  return _msg_sensor_event.value.color_value;
+void SensorModel::CreateSensorEventFloat(wippersnapper_sensor_SensorType sensor_type, float sensor_value) {
+    // Zero-out the previous SensorEvent message
+    _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_zero;
+    // Fill in the SensorEvent message
+    _msg_sensor_event.type = sensor_type;
+    _msg_sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    _msg_sensor_event.value.float_value = sensor_value;
 }

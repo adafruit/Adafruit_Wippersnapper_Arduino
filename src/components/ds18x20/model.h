@@ -32,11 +32,26 @@ public:
   // Ds18x20Remove Message
   bool EncodeDS18x20Added(char *onewire_pin, bool is_init);
   wippersnapper_ds18x20_Ds18x20Added *GetDS18x20AddedMsg();
+  // Ds18x20Event Message
+  bool
+  EncodeDs18x20Event(char *onewire_pin, pb_size_t sensor_events_count,
+                     const wippersnapper_sensor_SensorEvent sensor_events[2]);
+  wippersnapper_ds18x20_Ds18x20Event *GetDS18x20EventMsg();
+  // TODO: move the below to private if we arent using it in controller?
+  wippersnapper_ds18x20_Ds18x20Event
+      _msg_DS18x20Event; ///< wippersnapper_ds18x20_Ds18x20Event message
+  void InitDS18x20EventMsg();
+  void addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
+                      float sensor_value);
 
 private:
   wippersnapper_ds18x20_Ds18x20Add
       _msg_DS18x20Add; ///< wippersnapper_ds18x20_Ds18x20Add message
   wippersnapper_ds18x20_Ds18x20Added
       _msg_DS18x20Added; ///< wippersnapper_ds18x20_Ds18x20Added message
+  wippersnapper_ds18x20_Ds18x20Event
+      _msg_DS18x20Event; ///< wippersnapper_ds18x20_Ds18x20Event message
+  wippersnapper_ds18x20_Ds18x20Remove
+      _msg_DS18x20Remove; ///< wippersnapper_ds18x20_Ds18x20Remove message
 };
 #endif // WS_DIGITALIO_MODEL_H

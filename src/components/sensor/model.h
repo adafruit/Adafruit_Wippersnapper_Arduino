@@ -27,19 +27,10 @@ class SensorModel {
 public:
   SensorModel();
   ~SensorModel();
-  bool decodeSensorEvent(pb_istream_t *stream);
-  void clearSensorEvent();
-
-  wippersnapper_sensor_SensorEvent *getSensorEvent();
-  wippersnapper_sensor_SensorType getSensorType();
-  pb_size_t getSensorEventWhichValue();
-
-  float getValueFloat();
-  bool getValueBool();
-  wippersnapper_sensor_SensorEvent_SensorEvent3DVector getValueVector();
-  wippersnapper_sensor_SensorEvent_SensorEventOrientation getValueOrientation();
-  wippersnapper_sensor_SensorEvent_SensorEventColor getValueColor();
-
+  bool EncodeSensorEventMessage();
+  wippersnapper_sensor_SensorEvent *GetSensorEventMessage();
+  // These functions create a SensorEvent message
+  void CreateSensorEventFloat(wippersnapper_sensor_SensorType sensor_type, float sensor_value);
 private:
   wippersnapper_sensor_SensorEvent _msg_sensor_event; ///< SensorEvent message
 };

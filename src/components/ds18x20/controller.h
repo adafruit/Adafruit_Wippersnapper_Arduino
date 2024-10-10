@@ -33,6 +33,7 @@ public:
   ~DS18X20Controller();
   // Routing
   bool Handle_Ds18x20Add(pb_istream_t *stream);
+  // TODO: Implement Handle DS18x20 Remove message!
   // Polling
   void update();
 
