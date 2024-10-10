@@ -27,10 +27,6 @@ class SensorModel {
 public:
   SensorModel();
   ~SensorModel();
-  bool EncodeSensorEventMessage();
-  wippersnapper_sensor_SensorEvent *GetSensorEventMessage();
-  // These functions create a SensorEvent message
-  void CreateSensorEventFloat(wippersnapper_sensor_SensorType sensor_type, float sensor_value);
 private:
   wippersnapper_sensor_SensorEvent _msg_sensor_event; ///< SensorEvent message
 };

@@ -39,13 +39,14 @@ public:
   bool ReadTemperatureF();
   float GetTemperatureC();
   float GetTemperatureF();
-  bool is_read_temp_c;
-  bool is_read_temp_f;
-
+  bool is_read_temp_c; ///< Flag telling the controller to read the temperature
+                       ///< in degrees Celsius
+  bool is_read_temp_f; ///< Flag telling the controller to read the temperature
+                       ///< in degrees Fahrenheit
 private:
   Placeholder<OneWireNg_CurrentPlatform> _ow; ///< OneWire bus object
-  OneWireNg::Id _sensorId;
-  DSTherm _drv_therm;              ///< DS18X20 driver object
+  OneWireNg::Id _sensorId;                    ///< Sensor ID
+  DSTherm _drv_therm;                         ///< DS18X20 driver object
   DSTherm::Resolution _resolution; ///< Resolution of the DS18X20 sensor
   float _temp_c;                   ///< Temperature in Celsius
   float _temp_f;                   ///< Temperature in Fahrenheit
