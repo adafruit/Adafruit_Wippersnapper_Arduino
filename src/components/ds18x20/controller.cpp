@@ -14,10 +14,34 @@
  */
 #include "controller.h"
 
+/***********************************************************************/
+/*!
+    @brief  DS18X20Controller constructor
+*/
+/***********************************************************************/
 DS18X20Controller::DS18X20Controller() { _DS18X20_model = new DS18X20Model(); }
 
+/***********************************************************************/
+/*!
+    @brief  DS18X20Controller destructor
+*/
+/***********************************************************************/
 DS18X20Controller::~DS18X20Controller() { delete _DS18X20_model; }
 
+/***********************************************************************/
+/*!
+    @brief  Handles a Ds18x20Add message from the broker. Attempts to
+            initialize a  OneWire bus on the requested pin, attempts to
+            initialize a DSTherm driver on the OneWire bus, adds the
+            OneWire bus to the controller, and publishes a Ds18x20Added
+            message to the broker indicating the result of this function.
+    @param  stream
+            The nanopb input stream.
+    @return True if the sensor was successfully initialized,
+            added to the controller, and a response was succesfully
+            published to the broker. False otherwise.
+*/
+/***********************************************************************/
 bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   // Attempt to decode the incoming message into a Ds18x20Add message
   if (!_DS18X20_model->DecodeDS18x20Add(stream)) {
@@ -81,6 +105,17 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Handles a Ds18x20Remove message from the broker. Attempts to
+            remove a DS18X20Hardware object from the controller and
+            release the OneWire pin for other uses.
+    @param  stream
+            The nanopb input stream.
+    @return True if the sensor was successfully removed from the
+            controller, False otherwise.
+*/
+/***********************************************************************/
 bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
   // Attempt to decode the stream
   if (!_DS18X20_model->DecodeDS18x20Remove(stream)) {
@@ -104,6 +139,11 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Update/polling loop for the DS18X20 controller.
+*/
+/***********************************************************************/
 void DS18X20Controller::update() {
   // Bail out if there are no OneWire pins to poll
   if (_DS18X20_pins.empty())

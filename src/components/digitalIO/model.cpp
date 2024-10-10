@@ -46,6 +46,8 @@ wippersnapper_digitalio_DigitalIOAdd *DigitalIOModel::GetDigitalIOAddMsg() {
 /***********************************************************************/
 /*!
     @brief  Parses a DigitalIORemove message.
+    @param  stream
+            The nanopb input stream.
     @return DigitalIORemove message object.
 */
 /***********************************************************************/
