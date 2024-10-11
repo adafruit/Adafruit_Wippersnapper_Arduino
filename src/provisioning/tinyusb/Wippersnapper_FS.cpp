@@ -269,44 +269,52 @@ void Wippersnapper_FS::eraseBootFile() {
 bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   char sMAC[18] = {0};
+  String newContent;
 
-  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
-  if (bootFile) {
-    bootFile.println("Adafruit.io WipperSnapper");
-
-    bootFile.print("Firmware Version: ");
-    bootFile.println(WS_VERSION);
-
-    bootFile.print("Board ID: ");
-    bootFile.println(BOARD_ID);
-
-    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
-            WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
-            WS._macAddr[5]);
-    bootFile.print("MAC Address: ");
-    bootFile.println(sMAC);
+  // Generate new content
+  newContent += "Adafruit.io WipperSnapper\n";
+  newContent += "Firmware Version: " + String(WS_VERSION) + "\n";
+  newContent += "Board ID: " + String(BOARD_ID) + "\n";
+  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
+          WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
+          WS._macAddr[5]);
+  newContent += "MAC Address: " + String(sMAC) + "\n";
 
 #if PRINT_DEPENDENCIES
-    bootFile.println("Build dependencies:");
-    bootFile.println(project_dependencies);
+    newContent += ("Build dependencies:\n");
+    newContent += (project_dependencies);
+    newContent += ("\n");
 #endif
 
-    // Print ESP-specific info to boot file
-    #ifdef ARDUINO_ARCH_ESP32
-    // Get version of ESP-IDF
-    bootFile.print("ESP-IDF Version: ");
-    bootFile.println(ESP.getSdkVersion());
-    // Get version of this core
-    bootFile.print("ESP32 Core Version: ");
-    bootFile.println(ESP.getCoreVersion());
-    #endif
+  #ifdef ARDUINO_ARCH_ESP32
+  newContent += "ESP-IDF Version: " + String(ESP.getSdkVersion()) + "\n";
+  newContent += "ESP32 Core Version: " + String(ESP.getCoreVersion()) + "\n";
+  #endif
 
+  // Check if the file exists and read its content
+  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_READ);
+  if (bootFile) {
+    String existingContent;
+    while (bootFile.available()) {
+      existingContent += char(bootFile.read());
+    }
+    bootFile.close();
+
+    // Compare existing content with new content
+    if (existingContent == newContent) {
+      return true; // No need to overwrite
+    }
+  }
+
+  // Overwrite the file with new content
+  bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  if (bootFile) {
+    bootFile.print(newContent);
     bootFile.flush();
     bootFile.close();
     is_success = true;
-  } else {
-    bootFile.close();
   }
+
   return is_success;
 }
 
