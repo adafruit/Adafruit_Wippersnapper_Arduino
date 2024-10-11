@@ -618,7 +618,6 @@ jobs:
           ls -R examples/*/build/
       - name: Rename build artifacts to reflect the platform name
         run: |
-
           mv examples/*/build/*/wippersnapper_debug.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/wippersnapper_debug.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
       - name: upload build artifacts
