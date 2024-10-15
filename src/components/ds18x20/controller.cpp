@@ -59,30 +59,31 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   uint8_t pin_name = atoi(_DS18X20_model->GetDS18x20AddMsg()->onewire_pin + 1);
 
   // Initialize the DS18X20Hardware object
-  DS18X20Hardware new_dsx_driver(pin_name);
+  auto new_dsx_driver = std::make_unique<DS18X20Hardware>(pin_name);
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
-  bool is_initialized = new_dsx_driver.GetSensor();
-  if (!is_initialized) {
+  bool is_initialized = new_dsx_driver->GetSensor();
+  if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
     // Set the sensor's resolution
-    new_dsx_driver.SetResolution(
+    new_dsx_driver->SetResolution(
         _DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
     // Set the sensor's period
-    new_dsx_driver.SetPeriod(_DS18X20_model->GetDS18x20AddMsg()->period);
+    new_dsx_driver->SetPeriod(_DS18X20_model->GetDS18x20AddMsg()->period);
     // Configure the types of sensor reads to perform
     for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
          i++) {
       if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE) {
-        new_dsx_driver.is_read_temp_c = true;
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE) {
+        new_dsx_driver->is_read_temp_c = true;
       } else if (
           _DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT) {
-        new_dsx_driver.is_read_temp_f = true;
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT) {
+        new_dsx_driver->is_read_temp_f = true;
       }
     }
     // Add the DS18X20Hardware object to the vector of hardware objects
-    _DS18X20_pins.push_back(new_dsx_driver);
+    //_DS18X20_pins.push_back(new_dsx_driver);
+    _DS18X20_pins.push_back(std::move(new_dsx_driver));
   } else {
     WS_DEBUG_PRINTLN(
         "ERROR: Unable to get ds18x sensor ID, ds18x sensor not initialized");
@@ -126,12 +127,12 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
   wippersnapper_ds18x20_Ds18x20Remove *msg_remove =
       _DS18X20_model->GetDS18x20RemoveMsg();
   uint8_t pin_name = atoi(msg_remove->onewire_pin + 1);
-  // Destroy the DS18X20Hardware object, remove it from the vector, and release
-  // it for other uses
-  for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
-    if (_DS18X20_pins[i].GetOneWirePin() == pin_name) {
+
+  // Find the driver/bus in the vector and remove it
+  for (size_t i = 0; i < _DS18X20_pins.size(); ++i) {
+    if (_DS18X20_pins[i]->GetOneWirePin() == pin_name) {
       _DS18X20_pins.erase(_DS18X20_pins.begin() + i);
-      break;
+      return true;
     }
   }
   WS_DEBUG_PRINT("Removed OneWire Pin: ");
@@ -152,7 +153,7 @@ void DS18X20Controller::update() {
   // Iterate through the vector
   for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
     // Create a temporary DS18X20Hardware driver
-    DS18X20Hardware &temp_dsx_driver = _DS18X20_pins[i];
+    DS18X20Hardware &temp_dsx_driver = *(_DS18X20_pins[i]);
     // Check if the driver's timer has not expired yet
     if (!temp_dsx_driver.IsTimerExpired()) {
       continue;
@@ -162,17 +163,27 @@ void DS18X20Controller::update() {
     // Are we reading the temperature in Celsius, Fahrenheit, or both?
     if (temp_dsx_driver.is_read_temp_c) {
       WS_DEBUG_PRINTLN("Reading temperature in Celsius"); // TODO: Debug remove
+      // Attempt to read the temperature in Celsius
+      if (!temp_dsx_driver.ReadTemperatureC()) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Celsius");
+        continue;
+      }
       float temp_c = temp_dsx_driver.GetTemperatureC();
       _DS18X20_model->addSensorEvent(
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE,
           temp_c);
     }
     if (temp_dsx_driver.is_read_temp_f) {
       WS_DEBUG_PRINTLN(
           "Reading temperature in Fahrenheit"); // TODO: Debug remove
+      // Attempt to read the temperature in Fahrenheit
+      if (!temp_dsx_driver.ReadTemperatureF()) {
+        WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Fahrenheit");
+        continue;
+      }
       float temp_f = temp_dsx_driver.GetTemperatureF();
       _DS18X20_model->addSensorEvent(
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
           temp_f);
     }
     // Print out the SensorEvent message's contents for debugging

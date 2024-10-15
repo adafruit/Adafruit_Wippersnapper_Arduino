@@ -193,4 +193,5 @@ void DS18X20Model::addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
       .which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
   _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
       .value.float_value = sensor_value;
+  _msg_DS18x20Event.sensor_events_count++;
 }

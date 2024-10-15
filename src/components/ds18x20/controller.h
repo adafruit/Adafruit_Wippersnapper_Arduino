@@ -17,6 +17,7 @@
 #include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+#include <memory>
 
 class Wippersnapper_V2; ///< Forward declaration
 class DS18X20Model;     ///< Forward declaration
@@ -39,8 +40,7 @@ public:
 
 private:
   DS18X20Model *_DS18X20_model; ///< ds18x20 model
-  std::vector<DS18X20Hardware>
-      _DS18X20_pins; ///< Vector containing multiple DS18X20Hardware objects
+  std::vector<std::unique_ptr<DS18X20Hardware>> _DS18X20_pins;
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_DS18X20_CONTROLLER_H
