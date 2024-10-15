@@ -372,6 +372,13 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_ds18x20_add_tag:
+    WS_DEBUG_PRINTLN("-> DS18X20 Add Message Type");
+    if (!WsV2._ds18x20_controller->Handle_Ds18x20Add(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to add DS18X20 sensor!");
+      return false;
+    }
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
@@ -1170,6 +1177,9 @@ ws_status_t Wippersnapper_V2::runV2() {
 
   // Process all analog inputs
   WsV2.analogio_controller->update();
+
+  // Process all DS18x20 sensor events
+  WsV2._ds18x20_controller->update();
 
   // TODO: Process I2C sensor events
 
