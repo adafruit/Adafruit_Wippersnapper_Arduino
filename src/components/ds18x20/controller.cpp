@@ -118,6 +118,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
 */
 /***********************************************************************/
 bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
+  WS_DEBUG_PRINT("Removing DS18X20 sensor...");
   // Attempt to decode the stream
   if (!_DS18X20_model->DecodeDS18x20Remove(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Remove message");
@@ -135,8 +136,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
       return true;
     }
   }
-  WS_DEBUG_PRINT("Removed OneWire Pin: ");
-  WS_DEBUG_PRINTLN(pin_name);
+  WS_DEBUG_PRINT("Removed!");
   return true;
 }
 
@@ -186,25 +186,34 @@ void DS18X20Controller::update() {
           wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
           temp_f);
     }
-    // Print out the SensorEvent message's contents for debugging
-    // TODO: After debugging, maybe remove this
+    // Get and print out the SensorEvent message's contents
     wippersnapper_ds18x20_Ds18x20Event event_msg =
         *_DS18X20_model->GetDS18x20EventMsg();
-    WS_DEBUG_PRINTLN("SensorEvent message:");
-    WS_DEBUG_PRINT("Sensor OneWire bus pin: ");
-    WS_DEBUG_PRINTLN(event_msg.onewire_pin);
-    WS_DEBUG_PRINT("Sensor events count: ");
-    WS_DEBUG_PRINTLN(event_msg.sensor_events_count);
+    pb_size_t event_count = event_msg.sensor_events_count;
 
-    for (int i = 0;
-         i < _DS18X20_model->GetDS18x20EventMsg()->sensor_events_count; i++) {
-      WS_DEBUG_PRINT("Sensor type: ");
-      WS_DEBUG_PRINTLN(event_msg.sensor_events[i].type);
+    WS_DEBUG_PRINT("Sensor OneWire bus pin: ");
+    WS_DEBUG_PRINT(temp_dsx_driver.GetOneWirePin());
+    WS_DEBUG_PRINT(" got ");
+    WS_DEBUG_PRINT(event_count);
+    WS_DEBUG_PRINTLN(" sensor events");
+    for (int i = 0; i < event_count; i++) {
       WS_DEBUG_PRINT("Sensor value: ");
       WS_DEBUG_PRINTLN(event_msg.sensor_events[i].value.float_value);
-      WS_DEBUG_PRINT("Sensor value type: ");
-      WS_DEBUG_PRINTLN(event_msg.sensor_events[i].which_value);
     }
+
+    // Encode the Ds18x20Event message
+    if (!_DS18X20_model->EncodeDs18x20Event()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to encode Ds18x20Event message");
+      continue;
+    }
+    // Publish the Ds18x20Event message to the broker
+    WS_DEBUG_PRINT("Publishing Ds18x20Event message to broker...");
+    if (!WsV2.PublishSignal(
+            wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
+            _DS18X20_model->GetDS18x20EventMsg())) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to publish Ds18x20Event message");
+      continue;
+    }
+    WS_DEBUG_PRINTLN("Published!");
   }
-  // TODO: Encode and publish the Ds18x20Event message to the broker
 }
