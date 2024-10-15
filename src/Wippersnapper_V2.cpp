@@ -379,6 +379,13 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_ds18x20_remove_tag:
+    WS_DEBUG_PRINTLN("-> DS18X20 Remove Message Type");
+    if (!WsV2._ds18x20_controller->Handle_Ds18x20Remove(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to remove DS18X20 sensor!");
+      return false;
+    }
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
@@ -894,6 +901,12 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.which_payload =
         wippersnapper_signal_DeviceToBroker_ds18x20_added_tag;
     MsgSignal.payload.ds18x20_added = *(wippersnapper_ds18x20_Ds18x20Added *)payload;
+    break;
+  case wippersnapper_signal_DeviceToBroker_ds18x20_event_tag:
+    WS_DEBUG_PRINTLN("DS18X20Event");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_ds18x20_event_tag;
+    MsgSignal.payload.ds18x20_event = *(wippersnapper_ds18x20_Ds18x20Event *)payload;
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");

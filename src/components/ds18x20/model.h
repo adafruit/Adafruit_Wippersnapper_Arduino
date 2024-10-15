@@ -36,9 +36,7 @@ public:
   bool DecodeDS18x20Remove(pb_istream_t *stream);
   wippersnapper_ds18x20_Ds18x20Remove *GetDS18x20RemoveMsg();
   // Ds18x20Event Message
-  bool
-  EncodeDs18x20Event(char *onewire_pin, pb_size_t sensor_events_count,
-                     const wippersnapper_sensor_SensorEvent sensor_events[2]);
+  bool EncodeDs18x20Event();
   wippersnapper_ds18x20_Ds18x20Event *GetDS18x20EventMsg();
   // TODO: move the below to private if we arent using it in controller?
   wippersnapper_ds18x20_Ds18x20Event
