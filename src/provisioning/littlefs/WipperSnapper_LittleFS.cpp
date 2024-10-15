@@ -28,6 +28,14 @@
 */
 /**************************************************************************/
 WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
+#if PRINT_DEPENDENCIES
+  // Print project build dependencies
+  WS_DEBUG_PRINTLN("Build Dependencies:");
+  WS_DEBUG_PRINTLN("*********************");
+  WS_DEBUG_PRINTLN(project_dependencies);
+  WS_DEBUG_PRINTLN("*********************");
+#endif
+
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
     setStatusLEDColor(RED);
