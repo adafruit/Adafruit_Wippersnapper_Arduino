@@ -43,11 +43,17 @@ DS18X20Controller::~DS18X20Controller() { delete _DS18X20_model; }
 */
 /***********************************************************************/
 bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
+  unsigned long total_start_time = millis();
+
   // Attempt to decode the incoming message into a Ds18x20Add message
+  unsigned long decode_start_time = millis();
   if (!_DS18X20_model->DecodeDS18x20Add(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Add message");
     return false;
   }
+  unsigned long decode_end_time = millis();
+  WS_DEBUG_PRINT("Decode time: ");
+  WS_DEBUG_PRINTLN(decode_end_time - decode_start_time);
 
   // If we receive no sensor types to configure, bail out
   if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types_count == 0) {
@@ -59,17 +65,26 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   uint8_t pin_name = atoi(_DS18X20_model->GetDS18x20AddMsg()->onewire_pin + 1);
 
   // Initialize the DS18X20Hardware object
+  unsigned long init_start_time = millis();
   auto new_dsx_driver = std::make_unique<DS18X20Hardware>(pin_name);
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
   bool is_initialized = new_dsx_driver->GetSensor();
+  unsigned long init_end_time = millis();
+  WS_DEBUG_PRINT("Initialization time: ");
+  WS_DEBUG_PRINTLN(init_end_time - init_start_time);
+
   if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
+
     // Set the sensor's resolution
     new_dsx_driver->SetResolution(
         _DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
+
     // Set the sensor's period
     new_dsx_driver->SetPeriod(_DS18X20_model->GetDS18x20AddMsg()->period);
+
     // Configure the types of sensor reads to perform
+    unsigned long config_types_start_time = millis();
     for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
          i++) {
       if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
@@ -81,8 +96,8 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
         new_dsx_driver->is_read_temp_f = true;
       }
     }
+
     // Add the DS18X20Hardware object to the vector of hardware objects
-    //_DS18X20_pins.push_back(new_dsx_driver);
     _DS18X20_pins.push_back(std::move(new_dsx_driver));
   } else {
     WS_DEBUG_PRINTLN(
@@ -90,21 +105,34 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   }
 
   // Encode and publish a Ds18x20Added message back to the broker
+  unsigned long encode_start_time = millis();
   if (!_DS18X20_model->EncodeDS18x20Added(
           _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode Ds18x20Added message");
     return false;
   }
+  unsigned long encode_end_time = millis();
+  WS_DEBUG_PRINT("Encode message time: ");
+  WS_DEBUG_PRINTLN(encode_end_time - encode_start_time);
 
   // Publish the AnalogIO message to the broker
+  unsigned long publish_start_time = millis();
   if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
                           _DS18X20_model->GetDS18x20AddedMsg())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish Ds18x20Added message");
     return false;
   }
+  unsigned long publish_end_time = millis();
+  WS_DEBUG_PRINT("Publish message time: ");
+  WS_DEBUG_PRINTLN(publish_end_time - publish_start_time);
+
+  unsigned long total_end_time = millis();
+  WS_DEBUG_PRINT("Total function execution time: ");
+  WS_DEBUG_PRINTLN(total_end_time - total_start_time);
 
   return true;
 }
+
 
 /***********************************************************************/
 /*!
@@ -146,22 +174,31 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
 */
 /***********************************************************************/
 void DS18X20Controller::update() {
+  unsigned long total_start_time = millis();
+
   // Bail out if there are no OneWire pins to poll
   if (_DS18X20_pins.empty())
     return;
 
   // Iterate through the vector
   for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
-    // Create a temporary DS18X20Hardware driver
+    unsigned long sensor_start_time = millis();
+
+    // Create a reference to the DS18X20Hardware object
     DS18X20Hardware &temp_dsx_driver = *(_DS18X20_pins[i]);
+
     // Check if the driver's timer has not expired yet
     if (!temp_dsx_driver.IsTimerExpired()) {
       continue;
     }
+
     // Create a new sensor_event
     _DS18X20_model->InitDS18x20EventMsg();
+
     // Are we reading the temperature in Celsius, Fahrenheit, or both?
     if (temp_dsx_driver.is_read_temp_c) {
+      unsigned long temp_c_start_time = millis();
+
       WS_DEBUG_PRINTLN("Reading temperature in Celsius"); // TODO: Debug remove
       // Attempt to read the temperature in Celsius
       if (!temp_dsx_driver.ReadTemperatureC()) {
@@ -172,10 +209,15 @@ void DS18X20Controller::update() {
       _DS18X20_model->addSensorEvent(
           wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE,
           temp_c);
+
+      unsigned long temp_c_end_time = millis();
+      WS_DEBUG_PRINT("Read temperature Celsius time: ");
+      WS_DEBUG_PRINTLN(temp_c_end_time - temp_c_start_time);
     }
     if (temp_dsx_driver.is_read_temp_f) {
-      WS_DEBUG_PRINTLN(
-          "Reading temperature in Fahrenheit"); // TODO: Debug remove
+      unsigned long temp_f_start_time = millis();
+
+      WS_DEBUG_PRINTLN("Reading temperature in Fahrenheit"); // TODO: Debug remove
       // Attempt to read the temperature in Fahrenheit
       if (!temp_dsx_driver.ReadTemperatureF()) {
         WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Fahrenheit");
@@ -185,7 +227,12 @@ void DS18X20Controller::update() {
       _DS18X20_model->addSensorEvent(
           wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
           temp_f);
+
+      unsigned long temp_f_end_time = millis();
+      WS_DEBUG_PRINT("Read temperature Fahrenheit time: ");
+      WS_DEBUG_PRINTLN(temp_f_end_time - temp_f_start_time);
     }
+
     // Get and print out the SensorEvent message's contents
     wippersnapper_ds18x20_Ds18x20Event event_msg =
         *_DS18X20_model->GetDS18x20EventMsg();
@@ -202,11 +249,17 @@ void DS18X20Controller::update() {
     }
 
     // Encode the Ds18x20Event message
+    unsigned long encode_start_time = millis();
     if (!_DS18X20_model->EncodeDs18x20Event()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to encode Ds18x20Event message");
       continue;
     }
+    unsigned long encode_end_time = millis();
+    WS_DEBUG_PRINT("Encode event message time: ");
+    WS_DEBUG_PRINTLN(encode_end_time - encode_start_time);
+
     // Publish the Ds18x20Event message to the broker
+    unsigned long publish_start_time = millis();
     WS_DEBUG_PRINT("Publishing Ds18x20Event message to broker...");
     if (!WsV2.PublishSignal(
             wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
@@ -215,5 +268,16 @@ void DS18X20Controller::update() {
       continue;
     }
     WS_DEBUG_PRINTLN("Published!");
+    unsigned long publish_end_time = millis();
+    WS_DEBUG_PRINT("Publish event message time: ");
+    WS_DEBUG_PRINTLN(publish_end_time - publish_start_time);
+
+    unsigned long sensor_end_time = millis();
+    WS_DEBUG_PRINT("Total sensor processing time: ");
+    WS_DEBUG_PRINTLN(sensor_end_time - sensor_start_time);
   }
+
+  unsigned long total_end_time = millis();
+  WS_DEBUG_PRINT("Total update() execution time: ");
+  WS_DEBUG_PRINTLN(total_end_time - total_start_time);
 }
