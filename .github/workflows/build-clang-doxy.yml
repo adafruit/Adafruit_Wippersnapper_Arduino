@@ -569,6 +569,7 @@ jobs:
             "feather_esp32s3_debug",
             "feather_esp32s3_4mbflash_2mbpsram_debug",
             "feather_esp32s3_tft_debug",
+            "feather_esp32s3_reverse_tft_debug",
           ]
     steps:
       - uses: actions/setup-python@v5
@@ -618,7 +619,7 @@ jobs:
       - name: list
         run: |
           ls
-          ls examples/*/build/
+          ls -R examples/*/build/
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/wippersnapper_debug.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
