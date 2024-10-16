@@ -313,6 +313,41 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
 
 /**********************************************************/
 /*!
+    @brief    Calculates the hysteresis for the pin value.
+    @param    pin
+              The desired analog pin to calculate hysteresis for.
+    @param    _pinValThreshHi
+              The pin's high threshold value.
+    @param    _pinValThreshLow
+              The pin's low threshold value.
+*/
+/**********************************************************/
+void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
+                         uint16_t _pinValThreshHi, uint16_t _pinValThreshLow) {
+  // All boards ADC values scaled to 16bit, in future we may need to
+  // adjust dynamically
+  uint16_t maxDecimalValue = 65535;
+
+  // Calculate threshold values - using DEFAULT_HYSTERISIS for first third
+  // (1/3) of the range, then 2x DEFAULT_HYSTERISIS for the middle 1/3,
+  // and 4x DEFAULT_HYSTERISIS for the last 1/3. This should allow a more
+  // wifi blip tolerant threshold for the both ends of the range.
+  float CURRENT_HYSTERISIS;
+  if (pinValRaw < maxDecimalValue / 3) {
+    CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS;
+  } else if (pinValRaw < (maxDecimalValue / 3) * 2) {
+    CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS * 2;
+  } else {
+    CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS * 4;
+  }
+
+  // get the threshold values for previous pin value
+  _pinValThreshHi = pin.prvPinVal + CURRENT_HYSTERISIS;
+  _pinValThreshLow = pin.prvPinVal - CURRENT_HYSTERISIS;
+}
+
+/**********************************************************/
+/*!
     @brief Checks if pin's period is expired.
     @param currentTime
            The current software timer value.
@@ -386,28 +421,10 @@ void Wippersnapper_AnalogIO::update() {
         // pin value
         uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
 
-        // All boards ADC values scaled to 16bit, in future we may need to
-        // adjust dynamically
-        uint16_t maxDecimalValue = 65535;
-
-        // Calculate threshold values - using DEFAULT_HYSTERISIS for first third
-        // (1/3) of the range, then 2x DEFAULT_HYSTERISIS for the middle 1/3,
-        // and 4x DEFAULT_HYSTERISIS for the last 1/3. This should allow a more
-        // wifi blip tolerant threshold for the both ends of the range.
-        float CURRENT_HYSTERISIS;
-        if (pinValRaw < maxDecimalValue / 3) {
-          CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS;
-        } else if (pinValRaw < (maxDecimalValue / 3) * 2) {
-          CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS * 2;
-        } else {
-          CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS * 4;
-        }
-
-        // get the threshold values for previous pin value
-        uint16_t _pinValThreshHi =
-            _analog_input_pins[i].prvPinVal + CURRENT_HYSTERISIS;
-        uint16_t _pinValThreshLow =
-            _analog_input_pins[i].prvPinVal - CURRENT_HYSTERISIS;
+        // check if pin value has changed enough
+        uint16_t _pinValThreshHi, _pinValThreshLow;
+        calculateHysteresis(_analog_input_pins[i], pinValRaw, _pinValThreshHi,
+                            _pinValThreshLow);
 
         if (_analog_input_pins[i].prvPeriod == 0 ||
             pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
