@@ -51,6 +51,13 @@
 #define STATUS_NEOPIXEL_PIN 45
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#elif defined(ARDUINO_METRO_ESP32S3)
+#define BOARD_ID "metroesp32s3"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN 46
+#define STATUS_NEOPIXEL_NUM 1
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #elif defined(ARDUINO_MAGTAG29_ESP32S2)
 #define BOARD_ID "magtag"
 #define USE_TINYUSB
