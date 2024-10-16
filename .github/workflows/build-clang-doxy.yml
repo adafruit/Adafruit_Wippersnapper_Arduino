@@ -159,6 +159,7 @@ jobs:
           [
             "magtag",
             "metroesp32s2",
+            "metroesp32s3",
             "feather_esp32s2",
             "feather_esp32s2_tft",
             "feather_esp32s2_reverse_tft",
@@ -570,6 +571,8 @@ jobs:
             "feather_esp32s3_4mbflash_2mbpsram_debug",
             "feather_esp32s3_tft_debug",
             "wippersnapper_feather_esp32s3_reverse_tft_debug",
+            "metroesp32s2_debug",
+            "metroesp32s3_debug",
           ]
     steps:
       - uses: actions/setup-python@v5
