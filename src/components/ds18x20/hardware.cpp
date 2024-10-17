@@ -161,9 +161,9 @@ float DS18X20Hardware::GetTemperatureC() { return _temp_c; }
     @returns The temperature in Fahrenheit.
 */
 /*************************************************************************/
-float DS18X20Hardware::GetTemperatureF() { 
-    _temp_f = _temp_c * 9.0 / 5.0 + 32.0;
-    return _temp_f;
+float DS18X20Hardware::GetTemperatureF() {
+  _temp_f = _temp_c * 9.0 / 5.0 + 32.0;
+  return _temp_f;
 }
 
 /*************************************************************************/
@@ -178,6 +178,11 @@ bool DS18X20Hardware::ReadTemperatureC() {
   // bus
   OneWireNg::ErrorCode ec =
       _drv_therm.convertTemp(_sensorId, DSTherm::MAX_CONV_TIME, false);
+
+  // TODO: this is extra debug prints, delete all prints and just return for
+  // final ver.
+  WS_DEBUG_PRINT("Error Code: ");
+  WS_DEBUG_PRINTLN(ec);
   if (ec != OneWireNg::EC_SUCCESS)
     return false;
 
@@ -185,7 +190,7 @@ bool DS18X20Hardware::ReadTemperatureC() {
   // sensor id while reissuing readScratchpadSingle() calls.
   // Note, due to its storage class the placeholder is zero initialized.
   static Placeholder<DSTherm::Scratchpad> scrpd;
-  ec = _drv_therm.readScratchpadSingle(scrpd);
+  ec = _drv_therm.readScratchpad(_sensorId, scrpd);
   if (ec != OneWireNg::EC_SUCCESS)
     return false;
 
