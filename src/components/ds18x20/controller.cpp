@@ -192,52 +192,43 @@ void DS18X20Controller::update() {
       continue;
     }
 
-    // Create a new sensor_event
-    _DS18X20_model->InitDS18x20EventMsg();
-
-    // Are we reading the temperature in Celsius, Fahrenheit, or both?
-    if (temp_dsx_driver.is_read_temp_c) {
-      unsigned long temp_c_start_time = millis();
-
-      WS_DEBUG_PRINTLN("Reading temperature in Celsius"); // TODO: Debug remove
       // Attempt to read the temperature in Celsius
+      #ifdef DEBUG_PROFILE
+      unsigned long temp_c_start_time = millis();
+      #endif
       if (!temp_dsx_driver.ReadTemperatureC()) {
         WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Celsius");
         continue;
       }
+      #ifdef DEBUG_PROFILE
+      unsigned long temp_c_end_time = millis();
+      WS_DEBUG_PRINT("Read temperature Celsius time: ");
+      WS_DEBUG_PRINTLN(temp_c_end_time - temp_c_start_time);
+      #endif
+
+    // We got a temperature value from the hardware, let's create a new sensor_event
+    _DS18X20_model->InitDS18x20EventMsg();
+
+    // Are we reading the temperature in Celsius, Fahrenheit, or both?
+    if (temp_dsx_driver.is_read_temp_c) {
       float temp_c = temp_dsx_driver.GetTemperatureC();
       _DS18X20_model->addSensorEvent(
           wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE,
           temp_c);
-
-      unsigned long temp_c_end_time = millis();
-      WS_DEBUG_PRINT("Read temperature Celsius time: ");
-      WS_DEBUG_PRINTLN(temp_c_end_time - temp_c_start_time);
     }
     if (temp_dsx_driver.is_read_temp_f) {
-      unsigned long temp_f_start_time = millis();
-
-      WS_DEBUG_PRINTLN("Reading temperature in Fahrenheit"); // TODO: Debug remove
-      // Attempt to read the temperature in Fahrenheit
-      if (!temp_dsx_driver.ReadTemperatureF()) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Fahrenheit");
-        continue;
-      }
       float temp_f = temp_dsx_driver.GetTemperatureF();
       _DS18X20_model->addSensorEvent(
           wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
           temp_f);
-
-      unsigned long temp_f_end_time = millis();
-      WS_DEBUG_PRINT("Read temperature Fahrenheit time: ");
-      WS_DEBUG_PRINTLN(temp_f_end_time - temp_f_start_time);
     }
 
-    // Get and print out the SensorEvent message's contents
-    wippersnapper_ds18x20_Ds18x20Event event_msg =
-        *_DS18X20_model->GetDS18x20EventMsg();
-    pb_size_t event_count = event_msg.sensor_events_count;
+    // Get the Ds18x20Event message
+    wippersnapper_ds18x20_Ds18x20Event* event_msg = _DS18X20_model->GetDS18x20EventMsg();
+    pb_size_t event_count = event_msg->sensor_events_count;
 
+
+    // Print the message's content out for debugging
     WS_DEBUG_PRINT("Sensor OneWire bus pin: ");
     WS_DEBUG_PRINT(temp_dsx_driver.GetOneWirePin());
     WS_DEBUG_PRINT(" got ");
@@ -245,21 +236,16 @@ void DS18X20Controller::update() {
     WS_DEBUG_PRINTLN(" sensor events");
     for (int i = 0; i < event_count; i++) {
       WS_DEBUG_PRINT("Sensor value: ");
-      WS_DEBUG_PRINTLN(event_msg.sensor_events[i].value.float_value);
+      WS_DEBUG_PRINT(event_msg->sensor_events[i].value.float_value);
     }
 
     // Encode the Ds18x20Event message
-    unsigned long encode_start_time = millis();
     if (!_DS18X20_model->EncodeDs18x20Event()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to encode Ds18x20Event message");
       continue;
     }
-    unsigned long encode_end_time = millis();
-    WS_DEBUG_PRINT("Encode event message time: ");
-    WS_DEBUG_PRINTLN(encode_end_time - encode_start_time);
 
     // Publish the Ds18x20Event message to the broker
-    unsigned long publish_start_time = millis();
     WS_DEBUG_PRINT("Publishing Ds18x20Event message to broker...");
     if (!WsV2.PublishSignal(
             wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
@@ -268,16 +254,20 @@ void DS18X20Controller::update() {
       continue;
     }
     WS_DEBUG_PRINTLN("Published!");
-    unsigned long publish_end_time = millis();
-    WS_DEBUG_PRINT("Publish event message time: ");
-    WS_DEBUG_PRINTLN(publish_end_time - publish_start_time);
 
+    #ifdef DEBUG_PROFILE
     unsigned long sensor_end_time = millis();
     WS_DEBUG_PRINT("Total sensor processing time: ");
     WS_DEBUG_PRINTLN(sensor_end_time - sensor_start_time);
+    #endif
   }
 
+  #ifdef DEBUG_PROFILE
   unsigned long total_end_time = millis();
-  WS_DEBUG_PRINT("Total update() execution time: ");
-  WS_DEBUG_PRINTLN(total_end_time - total_start_time);
+  if (total_end_time - total_start_time != 0) {
+    WS_DEBUG_PRINT("Total update() execution time: ");
+    WS_DEBUG_PRINTLN(total_end_time - total_start_time);
+  }
+  #endif
+
 }

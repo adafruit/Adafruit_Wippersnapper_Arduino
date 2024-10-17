@@ -37,7 +37,6 @@ public:
   bool GetSensor();
   uint8_t GetOneWirePin();
   bool ReadTemperatureC();
-  bool ReadTemperatureF();
   float GetTemperatureC();
   float GetTemperatureF();
   bool is_read_temp_c; ///< Flag telling the controller to read the temperature

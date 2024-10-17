@@ -72,8 +72,6 @@
 #include "display/ws_display_ui_helper.h"
 #endif
 
-
-
 #include "provisioning/ConfigJson.h"
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS_V2.h"
@@ -81,6 +79,10 @@
 #if defined(USE_LITTLEFS)
 #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
+
+// Debug print macros
+// Uncomment the following to enable debug output for function profiling
+// #DEBUG_PROFILE 1
 
 #define WS_VERSION                                                             \
   "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
@@ -90,9 +92,6 @@
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
-
-#define WS_MQTT_MAX_PAYLOAD_SIZE                                               \
-  512 ///< MAXIMUM expected payload size, in bytes
 
 // Forward declarations (API v1)
 class Wippersnapper_AnalogIO;
