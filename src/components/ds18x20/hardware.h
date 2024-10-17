@@ -31,11 +31,13 @@ public:
   DS18X20Hardware(uint8_t onewire_pin);
   ~DS18X20Hardware();
   void printErrorCode(OneWireNg::ErrorCode ec);
+  void setOneWirePinName(const char *prettyOWPinName);
   void SetResolution(int resolution);
   void SetPeriod(float period);
   bool IsTimerExpired();
   bool GetSensor();
   uint8_t GetOneWirePin();
+  const char *getOneWirePinName();
   bool ReadTemperatureC();
   float GetTemperatureC();
   float GetTemperatureF();
@@ -52,7 +54,8 @@ private:
   float _temp_f;                   ///< Temperature in Fahrenheit
   // From the PB model
   uint8_t
-      _onewire_pin;  ///< Pin utilized by the OneWire bus, used for addressing
+      _onewire_pin; ///< Pin utilized by the OneWire bus, used for addressing
+  char _onewire_pin_name[5]; ///< Name of the OneWire bus pin
   float _period;     ///< The desired period to read the sensor, in seconds
   float _prv_period; ///< Last time the sensor was polled, in seconds
 };

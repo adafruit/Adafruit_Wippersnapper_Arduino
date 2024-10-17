@@ -66,6 +66,10 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
 
+    // Set the sensor's pin name (non-logical)
+    new_dsx_driver->setOneWirePinName(
+        _DS18X20_model->GetDS18x20AddMsg()->onewire_pin);
+
     // Set the sensor's resolution
     new_dsx_driver->SetResolution(
         _DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
@@ -190,7 +194,7 @@ void DS18X20Controller::update() {
 
     // We got a temperature value from the hardware, let's create a new
     // sensor_event
-    _DS18X20_model->InitDS18x20EventMsg();
+    _DS18X20_model->InitDS18x20EventMsg(temp_dsx_driver.getOneWirePinName());
 
     // Are we reading the temperature in Celsius, Fahrenheit, or both?
     if (temp_dsx_driver.is_read_temp_c) {

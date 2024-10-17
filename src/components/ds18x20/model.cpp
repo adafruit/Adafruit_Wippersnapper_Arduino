@@ -162,9 +162,10 @@ bool DS18X20Model::EncodeDs18x20Event() {
     @brief  Initializes the Ds18x20Event message.
 */
 /*************************************************************************/
-void DS18X20Model::InitDS18x20EventMsg() {
+void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
   _msg_DS18x20Event = wippersnapper_ds18x20_Ds18x20Event_init_zero;
   _msg_DS18x20Event.sensor_events_count = 0;
+  strcpy(_msg_DS18x20Event.onewire_pin, ow_pin_name);
 }
 
 /*************************************************************************/
