@@ -45,13 +45,13 @@ DS18X20Controller::~DS18X20Controller() { delete _DS18X20_model; }
 bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   // Attempt to decode the incoming message into a Ds18x20Add message
   if (!_DS18X20_model->DecodeDS18x20Add(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Add message");
+    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to decode Ds18x20Add message");
     return false;
   }
 
   // If we receive no sensor types to configure, bail out
   if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types_count == 0) {
-    WS_DEBUG_PRINTLN("ERROR: No ds18x sensor types provided!");
+    WS_DEBUG_PRINTLN("ERROR | DS18x20: No ds18x sensor types provided!");
     return false;
   }
 
@@ -87,6 +87,9 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
           _DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
           wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT) {
         new_dsx_driver->is_read_temp_f = true;
+      } else {
+        WS_DEBUG_PRINTLN("ERROR | DS18x20: Unknown SensorType, failed to add sensor!");
+        return false;
       }
     }
 
@@ -94,20 +97,20 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     _DS18X20_pins.push_back(std::move(new_dsx_driver));
   } else {
     WS_DEBUG_PRINTLN(
-        "ERROR: Unable to get ds18x sensor ID, ds18x sensor not initialized");
+        "ERROR | DS18x20: Unable to get sensor ID!");
   }
 
   // Encode and publish a Ds18x20Added message back to the broker
   unsigned long encode_start_time = millis();
   if (!_DS18X20_model->EncodeDS18x20Added(
           _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode Ds18x20Added message");
+    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to encode Ds18x20Added message!");
     return false;
   }
 
   if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
                           _DS18X20_model->GetDS18x20AddedMsg())) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to publish Ds18x20Added message");
+    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to publish Ds18x20Added message!");
     return false;
   }
 
@@ -129,7 +132,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
   WS_DEBUG_PRINT("Removing DS18X20 sensor...");
   // Attempt to decode the stream
   if (!_DS18X20_model->DecodeDS18x20Remove(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Remove message");
+    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to decode Ds18x20Remove message");
     return false;
   }
   // Create a temp. instance of the Ds18x20Remove message
@@ -144,7 +147,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
       return true;
     }
   }
-  WS_DEBUG_PRINT("Removed!");
+  WS_DEBUG_PRINTLN("Removed!");
   return true;
 }
 
@@ -182,7 +185,7 @@ void DS18X20Controller::update() {
 #endif
 
     if (!temp_dsx_driver.ReadTemperatureC()) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Celsius");
+      WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to read temperature in Celsius");
       continue;
     }
 
@@ -228,7 +231,7 @@ void DS18X20Controller::update() {
 
     // Encode the Ds18x20Event message
     if (!_DS18X20_model->EncodeDs18x20Event()) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to encode Ds18x20Event message");
+      WS_DEBUG_PRINTLN("ERROR | DS18x20: Failed to encode Ds18x20Event message");
       continue;
     }
 
@@ -237,7 +240,7 @@ void DS18X20Controller::update() {
     if (!WsV2.PublishSignal(
             wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
             _DS18X20_model->GetDS18x20EventMsg())) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to publish Ds18x20Event message");
+      WS_DEBUG_PRINTLN("ERROR | DS18x20: Failed to publish Ds18x20Event message");
       continue;
     }
     WS_DEBUG_PRINTLN("Published!");
