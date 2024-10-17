@@ -182,6 +182,9 @@ void DS18X20Model::addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
       sensor_type;
   _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
       .which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+
+  // Convert the float to 2 decimal places
+  sensor_value = roundf(sensor_value * 100) / 100;
   _msg_DS18x20Event.sensor_events[_msg_DS18x20Event.sensor_events_count]
       .value.float_value = sensor_value;
   _msg_DS18x20Event.sensor_events_count++;

@@ -161,26 +161,9 @@ float DS18X20Hardware::GetTemperatureC() { return _temp_c; }
     @returns The temperature in Fahrenheit.
 */
 /*************************************************************************/
-float DS18X20Hardware::GetTemperatureF() { return _temp_f; }
-
-/*************************************************************************/
-/*!
-    @brief  Attempts to obtain the temperature from the sensor, in
-            degrees Fahrenheit.
-    @returns True if the temperature was successfully read, False otherwise.
-*/
-/*************************************************************************/
-bool DS18X20Hardware::ReadTemperatureF() {
-  bool is_success = ReadTemperatureC();
-  // Did we read the temperature successfully?
-  if (!is_success)
-    return false;
-  // We now have the temperature but it's in in Celsius. Let's convert it to
-  // Fahrenheit
-  _temp_f = _temp_c * 9.0 / 5.0 + 32.0;
-
-  _prv_period = millis(); // Update the last time the sensor was polled
-  return true;
+float DS18X20Hardware::GetTemperatureF() { 
+    _temp_f = _temp_c * 9.0 / 5.0 + 32.0;
+    return _temp_f;
 }
 
 /*************************************************************************/

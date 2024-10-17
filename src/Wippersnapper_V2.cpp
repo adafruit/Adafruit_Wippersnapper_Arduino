@@ -869,9 +869,15 @@ void Wippersnapper_V2::haltErrorV2(String error,
 */
 /**************************************************************************/
 bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
+
+  #ifdef DEBUG_PROFILE
+  unsigned long total_start_time = micros();
+  #endif
+
   size_t szMessageBuf;
   wippersnapper_signal_DeviceToBroker MsgSignal =
       wippersnapper_signal_DeviceToBroker_init_default;
+
   // Fill generic signal payload with the payload from the args.
   WS_DEBUG_PRINT("Signal Payload Type: ");
   switch (which_payload) {
@@ -900,13 +906,15 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     WS_DEBUG_PRINTLN("DS18X20Added");
     MsgSignal.which_payload =
         wippersnapper_signal_DeviceToBroker_ds18x20_added_tag;
-    MsgSignal.payload.ds18x20_added = *(wippersnapper_ds18x20_Ds18x20Added *)payload;
+    MsgSignal.payload.ds18x20_added =
+        *(wippersnapper_ds18x20_Ds18x20Added *)payload;
     break;
   case wippersnapper_signal_DeviceToBroker_ds18x20_event_tag:
     WS_DEBUG_PRINTLN("DS18X20Event");
     MsgSignal.which_payload =
         wippersnapper_signal_DeviceToBroker_ds18x20_event_tag;
-    MsgSignal.payload.ds18x20_event = *(wippersnapper_ds18x20_Ds18x20Event *)payload;
+    MsgSignal.payload.ds18x20_event =
+        *(wippersnapper_ds18x20_Ds18x20Event *)payload;
     break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
@@ -934,19 +942,36 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
         "ERROR: Unable to encode d2b signal message, bailing out!");
     return false;
   }
-  WS_DEBUG_PRINTLN("Encoded!")
+  WS_DEBUG_PRINTLN("Encoded!");
 
-  //. Check that we are still connected
+  // Check that we are still connected
   runNetFSMV2();
   WsV2.feedWDTV2();
 
+  #ifdef DEBUG_PROFILE
+  unsigned long publish_start_time = micros();
+  #endif
+
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
+  #ifdef DEBUG_PROFILE
+  WS_DEBUG_PRINT("Message buffer size: ");
+  WS_DEBUG_PRINTLN(szMessageBuf);
+  #endif
   if (!WsV2._mqttV2->publish(WsV2._topicD2b, msgBuf, szMessageBuf, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish signal message to broker!");
     return false;
   }
   WS_DEBUG_PRINTLN("Published!");
+
+  #ifdef DEBUG_PROFILE
+  unsigned long publish_end_time = micros();
+  WS_DEBUG_PRINT("Publishing time: ");
+  WS_DEBUG_PRINTLN(publish_end_time - publish_start_time);
+  unsigned long total_end_time = micros();
+  WS_DEBUG_PRINT("Total PublishSignal() execution time: ");
+  WS_DEBUG_PRINTLN(total_end_time - total_start_time);
+  #endif
 
   return true;
 }
