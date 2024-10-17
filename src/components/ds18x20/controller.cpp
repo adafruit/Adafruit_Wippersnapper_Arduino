@@ -66,7 +66,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
 
-    // Set the sensor's pin name (non-logical)
+    // Set the sensor's pin name (non-logical name)
     new_dsx_driver->setOneWirePinName(
         _DS18X20_model->GetDS18x20AddMsg()->onewire_pin);
 
@@ -88,16 +88,18 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
           wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT) {
         new_dsx_driver->is_read_temp_f = true;
       } else {
-        WS_DEBUG_PRINTLN("ERROR | DS18x20: Unknown SensorType, failed to add sensor!");
-        return false;
+        WS_DEBUG_PRINTLN(
+            "ERROR | DS18x20: Unknown SensorType, failed to add sensor!");
+        is_initialized = false;
       }
     }
 
-    // Add the DS18X20Hardware object to the vector of hardware objects
-    _DS18X20_pins.push_back(std::move(new_dsx_driver));
+    // If the sensor was successfully initialized, add it to the controller
+    if (is_initialized == true)
+      _DS18X20_pins.push_back(std::move(new_dsx_driver));
   } else {
-    WS_DEBUG_PRINTLN(
-        "ERROR | DS18x20: Unable to get sensor ID!");
+    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to get sensor ID!");
+    is_initialized = false;
   }
 
   // Encode and publish a Ds18x20Added message back to the broker
@@ -110,7 +112,8 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
 
   if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
                           _DS18X20_model->GetDS18x20AddedMsg())) {
-    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to publish Ds18x20Added message!");
+    WS_DEBUG_PRINTLN(
+        "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
     return false;
   }
 
@@ -185,7 +188,8 @@ void DS18X20Controller::update() {
 #endif
 
     if (!temp_dsx_driver.ReadTemperatureC()) {
-      WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to read temperature in Celsius");
+      WS_DEBUG_PRINTLN(
+          "ERROR | DS18x20: Unable to read temperature in Celsius");
       continue;
     }
 
@@ -219,28 +223,27 @@ void DS18X20Controller::update() {
     pb_size_t event_count = event_msg->sensor_events_count;
 
     // Print the message's content out for debugging
-    WS_DEBUG_PRINT("Sensor OneWire bus pin: ");
+    WS_DEBUG_PRINT("DS18x20: OneWire pin: ");
     WS_DEBUG_PRINT(temp_dsx_driver.GetOneWirePin());
-    WS_DEBUG_PRINT(" got ");
-    WS_DEBUG_PRINT(event_count);
-    WS_DEBUG_PRINTLN(" sensor events");
+    WS_DEBUG_PRINT(" got value(s): ");
     for (int i = 0; i < event_count; i++) {
-      WS_DEBUG_PRINT("Sensor value: ");
       WS_DEBUG_PRINT(event_msg->sensor_events[i].value.float_value);
     }
 
     // Encode the Ds18x20Event message
     if (!_DS18X20_model->EncodeDs18x20Event()) {
-      WS_DEBUG_PRINTLN("ERROR | DS18x20: Failed to encode Ds18x20Event message");
+      WS_DEBUG_PRINTLN(
+          "ERROR | DS18x20: Failed to encode Ds18x20Event message");
       continue;
     }
 
     // Publish the Ds18x20Event message to the broker
-    WS_DEBUG_PRINT("Publishing Ds18x20Event message to broker...");
+    WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
     if (!WsV2.PublishSignal(
             wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
             _DS18X20_model->GetDS18x20EventMsg())) {
-      WS_DEBUG_PRINTLN("ERROR | DS18x20: Failed to publish Ds18x20Event message");
+      WS_DEBUG_PRINTLN(
+          "ERROR | DS18x20: Failed to publish Ds18x20Event message");
       continue;
     }
     WS_DEBUG_PRINTLN("Published!");

@@ -30,14 +30,13 @@ class DS18X20Hardware {
 public:
   DS18X20Hardware(uint8_t onewire_pin);
   ~DS18X20Hardware();
-  void printErrorCode(OneWireNg::ErrorCode ec);
-  void setOneWirePinName(const char *prettyOWPinName);
+  uint8_t GetOneWirePin();
   void SetResolution(int resolution);
   void SetPeriod(float period);
+  void setOneWirePinName(const char *prettyOWPinName);
+  const char *getOneWirePinName();
   bool IsTimerExpired();
   bool GetSensor();
-  uint8_t GetOneWirePin();
-  const char *getOneWirePinName();
   bool ReadTemperatureC();
   float GetTemperatureC();
   float GetTemperatureF();
