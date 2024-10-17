@@ -43,17 +43,11 @@ DS18X20Controller::~DS18X20Controller() { delete _DS18X20_model; }
 */
 /***********************************************************************/
 bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
-  unsigned long total_start_time = millis();
-
   // Attempt to decode the incoming message into a Ds18x20Add message
-  unsigned long decode_start_time = millis();
   if (!_DS18X20_model->DecodeDS18x20Add(stream)) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode Ds18x20Add message");
     return false;
   }
-  unsigned long decode_end_time = millis();
-  WS_DEBUG_PRINT("Decode time: ");
-  WS_DEBUG_PRINTLN(decode_end_time - decode_start_time);
 
   // If we receive no sensor types to configure, bail out
   if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types_count == 0) {
@@ -65,13 +59,9 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   uint8_t pin_name = atoi(_DS18X20_model->GetDS18x20AddMsg()->onewire_pin + 1);
 
   // Initialize the DS18X20Hardware object
-  unsigned long init_start_time = millis();
   auto new_dsx_driver = std::make_unique<DS18X20Hardware>(pin_name);
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
   bool is_initialized = new_dsx_driver->GetSensor();
-  unsigned long init_end_time = millis();
-  WS_DEBUG_PRINT("Initialization time: ");
-  WS_DEBUG_PRINTLN(init_end_time - init_start_time);
 
   if (is_initialized) {
     WS_DEBUG_PRINTLN("Sensor found on OneWire bus and initialized");
@@ -84,7 +74,6 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     new_dsx_driver->SetPeriod(_DS18X20_model->GetDS18x20AddMsg()->period);
 
     // Configure the types of sensor reads to perform
-    unsigned long config_types_start_time = millis();
     for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
          i++) {
       if (_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i] ==
@@ -111,28 +100,15 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("ERROR: Unable to encode Ds18x20Added message");
     return false;
   }
-  unsigned long encode_end_time = millis();
-  WS_DEBUG_PRINT("Encode message time: ");
-  WS_DEBUG_PRINTLN(encode_end_time - encode_start_time);
 
-  // Publish the AnalogIO message to the broker
-  unsigned long publish_start_time = millis();
   if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
                           _DS18X20_model->GetDS18x20AddedMsg())) {
     WS_DEBUG_PRINTLN("ERROR: Unable to publish Ds18x20Added message");
     return false;
   }
-  unsigned long publish_end_time = millis();
-  WS_DEBUG_PRINT("Publish message time: ");
-  WS_DEBUG_PRINTLN(publish_end_time - publish_start_time);
-
-  unsigned long total_end_time = millis();
-  WS_DEBUG_PRINT("Total function execution time: ");
-  WS_DEBUG_PRINTLN(total_end_time - total_start_time);
 
   return true;
 }
-
 
 /***********************************************************************/
 /*!
@@ -174,7 +150,9 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
 */
 /***********************************************************************/
 void DS18X20Controller::update() {
+#ifdef DEBUG_PROFILE
   unsigned long total_start_time = millis();
+#endif
 
   // Bail out if there are no OneWire pins to poll
   if (_DS18X20_pins.empty())
@@ -182,7 +160,9 @@ void DS18X20Controller::update() {
 
   // Iterate through the vector
   for (uint8_t i = 0; i < _DS18X20_pins.size(); i++) {
+#ifdef DEBUG_PROFILE
     unsigned long sensor_start_time = millis();
+#endif
 
     // Create a reference to the DS18X20Hardware object
     DS18X20Hardware &temp_dsx_driver = *(_DS18X20_pins[i]);
@@ -192,21 +172,24 @@ void DS18X20Controller::update() {
       continue;
     }
 
-      // Attempt to read the temperature in Celsius
-      #ifdef DEBUG_PROFILE
-      unsigned long temp_c_start_time = millis();
-      #endif
-      if (!temp_dsx_driver.ReadTemperatureC()) {
-        WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Celsius");
-        continue;
-      }
-      #ifdef DEBUG_PROFILE
-      unsigned long temp_c_end_time = millis();
-      WS_DEBUG_PRINT("Read temperature Celsius time: ");
-      WS_DEBUG_PRINTLN(temp_c_end_time - temp_c_start_time);
-      #endif
+// Attempt to read the temperature in Celsius
+#ifdef DEBUG_PROFILE
+    unsigned long temp_c_start_time = millis();
+#endif
 
-    // We got a temperature value from the hardware, let's create a new sensor_event
+    if (!temp_dsx_driver.ReadTemperatureC()) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to read temperature in Celsius");
+      continue;
+    }
+
+#ifdef DEBUG_PROFILE
+    unsigned long temp_c_end_time = millis();
+    WS_DEBUG_PRINT("Read temperature Celsius time: ");
+    WS_DEBUG_PRINTLN(temp_c_end_time - temp_c_start_time);
+#endif
+
+    // We got a temperature value from the hardware, let's create a new
+    // sensor_event
     _DS18X20_model->InitDS18x20EventMsg();
 
     // Are we reading the temperature in Celsius, Fahrenheit, or both?
@@ -224,9 +207,9 @@ void DS18X20Controller::update() {
     }
 
     // Get the Ds18x20Event message
-    wippersnapper_ds18x20_Ds18x20Event* event_msg = _DS18X20_model->GetDS18x20EventMsg();
+    wippersnapper_ds18x20_Ds18x20Event *event_msg =
+        _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->sensor_events_count;
-
 
     // Print the message's content out for debugging
     WS_DEBUG_PRINT("Sensor OneWire bus pin: ");
@@ -255,19 +238,18 @@ void DS18X20Controller::update() {
     }
     WS_DEBUG_PRINTLN("Published!");
 
-    #ifdef DEBUG_PROFILE
+#ifdef DEBUG_PROFILE
     unsigned long sensor_end_time = millis();
     WS_DEBUG_PRINT("Total sensor processing time: ");
     WS_DEBUG_PRINTLN(sensor_end_time - sensor_start_time);
-    #endif
+#endif
   }
 
-  #ifdef DEBUG_PROFILE
+#ifdef DEBUG_PROFILE
   unsigned long total_end_time = millis();
   if (total_end_time - total_start_time != 0) {
     WS_DEBUG_PRINT("Total update() execution time: ");
     WS_DEBUG_PRINTLN(total_end_time - total_start_time);
   }
-  #endif
-
+#endif
 }
