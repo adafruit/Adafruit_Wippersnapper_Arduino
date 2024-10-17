@@ -41,7 +41,7 @@ public:
   // TODO: move the below to private if we arent using it in controller?
   wippersnapper_ds18x20_Ds18x20Event
       _msg_DS18x20Event; ///< wippersnapper_ds18x20_Ds18x20Event message
-  void InitDS18x20EventMsg();
+  void InitDS18x20EventMsg(const char *ow_pin_name);
   void addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
                       float sensor_value);
 

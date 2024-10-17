@@ -85,6 +85,14 @@ bool DS18X20Hardware::GetSensor() {
 /***********************************************************************/
 uint8_t DS18X20Hardware::GetOneWirePin() { return _onewire_pin; }
 
+void DS18X20Hardware::setOneWirePinName(const char *prettyOWPinName) {
+  strncpy(_onewire_pin_name, prettyOWPinName, sizeof(_onewire_pin_name));
+  _onewire_pin_name[sizeof(_onewire_pin_name) - 1] = '\0';
+}
+
+// Return _onewire_pin_name
+const char *DS18X20Hardware::getOneWirePinName() { return _onewire_pin_name; }
+
 /*************************************************************************/
 /*!
     @brief  Sets the DS18X20 sensor's resolution.
@@ -179,10 +187,6 @@ bool DS18X20Hardware::ReadTemperatureC() {
   OneWireNg::ErrorCode ec =
       _drv_therm.convertTemp(_sensorId, DSTherm::MAX_CONV_TIME, false);
 
-  // TODO: this is extra debug prints, delete all prints and just return for
-  // final ver.
-  WS_DEBUG_PRINT("Error Code: ");
-  WS_DEBUG_PRINTLN(ec);
   if (ec != OneWireNg::EC_SUCCESS)
     return false;
 
