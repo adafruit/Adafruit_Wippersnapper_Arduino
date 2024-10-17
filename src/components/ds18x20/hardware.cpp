@@ -39,32 +39,6 @@ DS18X20Hardware::~DS18X20Hardware() {
           INPUT); // Set the pin to hi-z and release it for other uses
 }
 
-void DS18X20Hardware::printErrorCode(OneWireNg::ErrorCode ec) {
-  switch (ec) {
-  case OneWireNg::EC_SUCCESS:
-    WS_DEBUG_PRINTLN("EC_SUCCESS");
-    break;
-  case OneWireNg::EC_NO_DEVS:
-    WS_DEBUG_PRINTLN("EC_NO_DEVSNo slave devices; search process finished");
-    break;
-  case OneWireNg::EC_BUS_ERROR:
-    WS_DEBUG_PRINTLN("EC_BUS_ERROR-wire bus error");
-    break;
-  case OneWireNg::EC_CRC_ERROR:
-    WS_DEBUG_PRINTLN("EC_CRC_ERRORCRC error");
-    break;
-  case OneWireNg::EC_UNSUPPORED:
-    WS_DEBUG_PRINTLN("EC_UNSUPPOREDService is not supported by the platform");
-    break;
-  case OneWireNg::EC_FULL:
-    WS_DEBUG_PRINTLN("EC_FULLNo space (e.g. filters table is full)");
-    break;
-  default:
-    WS_DEBUG_PRINTLN("EC ?!?1 Unknown error");
-    break;
-  }
-}
-
 /***********************************************************************/
 /*!
     @brief  Get the sensor's ID
@@ -73,7 +47,6 @@ void DS18X20Hardware::printErrorCode(OneWireNg::ErrorCode ec) {
 /***********************************************************************/
 bool DS18X20Hardware::GetSensor() {
   OneWireNg::ErrorCode ec = _ow->readSingleId(_sensorId);
-  printErrorCode(ec);
   return ec == OneWireNg::EC_SUCCESS;
 }
 
@@ -85,12 +58,26 @@ bool DS18X20Hardware::GetSensor() {
 /***********************************************************************/
 uint8_t DS18X20Hardware::GetOneWirePin() { return _onewire_pin; }
 
+/***********************************************************************/
+/*!
+    @brief  Sets the name of the OneWire bus pin.
+    @param  prettyOWPinName
+            The name of the OneWire bus pin (non-logical pin name,
+            includes the "D" or "A" prefix).
+*/
+/***********************************************************************/
 void DS18X20Hardware::setOneWirePinName(const char *prettyOWPinName) {
   strncpy(_onewire_pin_name, prettyOWPinName, sizeof(_onewire_pin_name));
   _onewire_pin_name[sizeof(_onewire_pin_name) - 1] = '\0';
 }
 
-// Return _onewire_pin_name
+/***********************************************************************/
+/*!
+    @brief  Gets the name of the OneWire bus pin.
+    @returns The name of the OneWire bus pin (non-logical pin name,
+             includes the "D" or "A" prefix).
+*/
+/***********************************************************************/
 const char *DS18X20Hardware::getOneWirePinName() { return _onewire_pin_name; }
 
 /*************************************************************************/
@@ -141,7 +128,8 @@ void DS18X20Hardware::SetResolution(int resolution) {
 /*************************************************************************/
 void DS18X20Hardware::SetPeriod(float period) {
   _period = period * 1000; // Convert to milliseconds
-  _prv_period = 0;         // Also reset the previous period here
+  _prv_period = 0;         // Also reset the previous period whenever we set a
+                           // new period
 }
 
 /*************************************************************************/
