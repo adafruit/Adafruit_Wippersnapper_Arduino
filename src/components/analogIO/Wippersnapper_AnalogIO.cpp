@@ -424,12 +424,18 @@ void Wippersnapper_AnalogIO::update() {
         uint16_t pinValRaw = getPinValue(_analog_input_pins[i].pinName);
 
         // check if pin value has changed enough
-        uint16_t _pinValThreshHi, _pinValThreshLow;
-        calculateHysteresis(_analog_input_pins[i], pinValRaw, _pinValThreshHi,
-                            _pinValThreshLow);
+        uint16_t pinValThreshHi, pinValThreshLow;
+        calculateHysteresis(_analog_input_pins[i], pinValRaw, pinValThreshHi,
+                            pinValThreshLow);
+        WS_DEBUG_PRINT("Returned pinValThreshHi: ");
+        WS_DEBUG_PRINTLN(pinValThreshHi);
+        WS_DEBUG_PRINT("Returned pinValThreshLow: ");
+        WS_DEBUG_PRINTLN(pinValThreshLow);
+        WS_DEBUG_PRINT("Current pinValRaw: ");
+        WS_DEBUG_PRINTLN(pinValRaw);
 
         if (_analog_input_pins[i].prvPeriod == 0 ||
-            pinValRaw > _pinValThreshHi || pinValRaw < _pinValThreshLow) {
+            pinValRaw > pinValThreshHi || pinValRaw < pinValThreshLow) {
           // Perform voltage conversion if we need to
           if (_analog_input_pins[i].readMode ==
               wippersnapper_pin_v1_ConfigurePinRequest_AnalogReadMode_ANALOG_READ_MODE_PIN_VOLTAGE) {
