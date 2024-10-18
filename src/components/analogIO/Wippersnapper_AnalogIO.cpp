@@ -325,7 +325,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
 */
 /**********************************************************/
 void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
-                         uint16_t pinValThreshHi, uint16_t pinValThreshLow) {
+                         uint16_t *pinValThreshHi, uint16_t *pinValThreshLow) {
   // All boards ADC values scaled to 16bit, in future we may need to
   // adjust dynamically
   uint16_t maxDecimalValue = 65535;
@@ -344,8 +344,8 @@ void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
   }
 
   // get the threshold values for previous pin value
-  pinValThreshHi = pin.prvPinVal + CURRENT_HYSTERISIS;
-  pinValThreshLow = pin.prvPinVal - CURRENT_HYSTERISIS;
+  *pinValThreshHi = pin.prvPinVal + CURRENT_HYSTERISIS;
+  *pinValThreshLow = pin.prvPinVal - CURRENT_HYSTERISIS;
 }
 
 /**********************************************************/
@@ -425,8 +425,8 @@ void Wippersnapper_AnalogIO::update() {
 
         // check if pin value has changed enough
         uint16_t pinValThreshHi, pinValThreshLow;
-        calculateHysteresis(_analog_input_pins[i], pinValRaw, pinValThreshHi,
-                            pinValThreshLow);
+        calculateHysteresis(_analog_input_pins[i], pinValRaw, &pinValThreshHi,
+                            &pinValThreshLow);
         WS_DEBUG_PRINT("Returned pinValThreshHi: ");
         WS_DEBUG_PRINTLN(pinValThreshHi);
         WS_DEBUG_PRINT("Returned pinValThreshLow: ");
