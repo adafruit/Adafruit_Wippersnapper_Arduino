@@ -569,7 +569,7 @@ jobs:
             "feather_esp32s3_debug",
             "feather_esp32s3_4mbflash_2mbpsram_debug",
             "feather_esp32s3_tft_debug",
-            "wippersnapper_feather_esp32s3_reverse_tft",
+            "wippersnapper_feather_esp32s3_reverse_tft_debug",
           ]
     steps:
       - uses: actions/setup-python@v5
