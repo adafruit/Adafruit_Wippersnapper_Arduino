@@ -316,14 +316,16 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
     @brief    Calculates the hysteresis for the pin value.
     @param    pin
               The desired analog pin to calculate hysteresis for.
-    @param    _pinValThreshHi
+    @param    pinValRaw
+              The pin's raw value.
+    @param    pinValThreshHi
               The pin's high threshold value.
-    @param    _pinValThreshLow
+    @param    pinValThreshLow
               The pin's low threshold value.
 */
 /**********************************************************/
 void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
-                         uint16_t _pinValThreshHi, uint16_t _pinValThreshLow) {
+                         uint16_t pinValThreshHi, uint16_t pinValThreshLow) {
   // All boards ADC values scaled to 16bit, in future we may need to
   // adjust dynamically
   uint16_t maxDecimalValue = 65535;
@@ -342,8 +344,8 @@ void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
   }
 
   // get the threshold values for previous pin value
-  _pinValThreshHi = pin.prvPinVal + CURRENT_HYSTERISIS;
-  _pinValThreshLow = pin.prvPinVal - CURRENT_HYSTERISIS;
+  pinValThreshHi = pin.prvPinVal + CURRENT_HYSTERISIS;
+  pinValThreshLow = pin.prvPinVal - CURRENT_HYSTERISIS;
 }
 
 /**********************************************************/
