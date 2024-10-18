@@ -58,7 +58,7 @@ public:
   void disableAnalogInPin(int pin);
 
   void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
-                           uint16_t &_pinValThreshHi, uint16_t &_pinValThreshLow);
+                           uint16_t pinValThreshHi, uint16_t pinValThreshLow);
   uint16_t getPinValue(int pin);
   float getPinValueVolts(int pin);
 
