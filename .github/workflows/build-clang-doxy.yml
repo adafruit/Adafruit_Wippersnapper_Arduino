@@ -329,6 +329,9 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
+      - name: Print matrix offset
+        run: |
+          echo "Matrix offset: ${{ matrix.offset }}"
       - name: Create combined binary using Esptool merge_bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
