@@ -264,8 +264,8 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: brentru/ci-arduino
-          ref: debug-c6
+          repository: adafruit/ci-arduino
+          ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
