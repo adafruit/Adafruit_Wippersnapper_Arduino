@@ -135,12 +135,6 @@ wippersnapper_ds18x20_Ds18x20Event *DS18X20Model::GetDS18x20EventMsg() {
 /*************************************************************************/
 /*!
     @brief  Encodes a Ds18x20Event message.
-    @param  onewire_pin
-            The OneWire bus' pin where the sensor is located.
-    @param  sensor_events_count
-            The number of sensorevent messages to encode.
-    @param  sensor_events
-            The sensorevent messages to encode.
     @return True if the message was successfully encoded, False otherwise.
 */
 /*************************************************************************/
@@ -160,6 +154,8 @@ bool DS18X20Model::EncodeDs18x20Event() {
 /*************************************************************************/
 /*!
     @brief  Initializes the Ds18x20Event message.
+    @param  ow_pin_name
+            The OneWire bus pin name.
 */
 /*************************************************************************/
 void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {

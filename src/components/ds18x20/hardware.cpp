@@ -187,8 +187,10 @@ bool DS18X20Hardware::ReadTemperatureC() {
     return false;
 
   // Read the temperature from the sensor
+  // NOTE: The temperature returned by getTemp2() is the temperature * 16
   long temp = scrpd->getTemp2();
-  _temp_c = temp / 16.0; // Convert from 16-bit int to float
+  // Divide the temperature from the getTemp2() call by 16 and assign as a float.
+  _temp_c = temp / 16.0;
 
   _prv_period = millis(); // Update the last time the sensor was polled
   return true;
