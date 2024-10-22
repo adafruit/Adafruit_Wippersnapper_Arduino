@@ -342,7 +342,7 @@ jobs:
             --flash_size keep \
             --fill-flash-size 4MB \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
-            ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
+            0x0 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
             0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
