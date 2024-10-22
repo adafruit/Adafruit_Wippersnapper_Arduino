@@ -55,10 +55,20 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -199,10 +209,20 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -278,10 +298,20 @@ jobs:
         run: |
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -385,10 +415,20 @@ jobs:
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -437,10 +477,20 @@ jobs:
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -488,10 +538,20 @@ jobs:
           git clone --quiet https://github.com/arduino-libraries/Servo.git /home/runner/Arduino/libraries/Servo
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -527,10 +587,20 @@ jobs:
         run: |
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -600,10 +670,20 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
@@ -672,10 +752,20 @@ jobs:
         run: |
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
-      - name: Download and install stable Nanopb
+      - name: Cache nanopb
+        id: cache-nanopb
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ./nanopb-0.4.8.tar.gz
+          key: nanopb-0.4.8.tar.gz
+      - if: ${{ steps.cache-nanopb.outputs.cache-hit != 'true' }}
+        name: Download stable Nanopb
         run: |
-          # Download and extract nanopb
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
+      - name: Install stable Nanopb
+        run: |
           tar -xf nanopb-0.4.8.tar.gz
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
