@@ -244,8 +244,7 @@ jobs:
             "feather_esp32_v2",
             "itsybitsy_esp32",
             "wippersnapper_qtpy_esp32c3",
-            "wippersnapper_feather_esp32c6",
-            "wippersnapper_feather_esp32c6_debug"
+            "wippersnapper_feather_esp32c6"
           ]
         include:
           - offset: "0x1000"
@@ -253,8 +252,6 @@ jobs:
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
-          - offset: "0x0"
-            arduino-platform: "wippersnapper_feather_esp32c6_debug"
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -329,9 +326,6 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Print matrix offset
-        run: |
-          echo "Matrix offset: ${{ matrix.offset }}"
       - name: Create combined binary using Esptool merge_bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
@@ -341,7 +335,7 @@ jobs:
             --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
-            0x0 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
+            ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
             0xe000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bin
