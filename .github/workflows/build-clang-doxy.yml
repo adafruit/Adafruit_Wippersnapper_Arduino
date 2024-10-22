@@ -244,7 +244,7 @@ jobs:
             "feather_esp32_v2",
             "itsybitsy_esp32",
             "wippersnapper_qtpy_esp32c3",
-            "wippersnapper_feather_esp32c6",
+            "wippersnapper_feather_esp32c6"
           ]
         include:
           - offset: "0x1000"
@@ -264,8 +264,8 @@ jobs:
           echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
       - uses: actions/checkout@v4
         with:
-          repository: tyeth/ci-arduino
-          ref: WS_ARDUINO_598-preprocessor-script-for-printing-the-library-versions-to-boot_outtxt
+          repository: adafruit/ci-arduino
+          ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
@@ -288,9 +288,9 @@ jobs:
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
       - name: Install Dependencies
         run: |
-          pip3 install esptool
+          pip install esptool==4.6
       - name: build ESP32 platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000 --include_print_dependencies_header ./src/print_dependencies.h
+        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: Check artifacts
         run: |
           ls examples/Wippersnapper_demo/build/*
