@@ -103,6 +103,8 @@ public:
     WiFi.disconnect();
     delay(100);
 
+    WiFi.setTxPower(WIFI_POWER_15dBm);
+
     // Perform a network scan
     int n = WiFi.scanNetworks();
     if (n == 0) {
