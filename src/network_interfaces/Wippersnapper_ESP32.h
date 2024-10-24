@@ -103,7 +103,15 @@ public:
     WiFi.disconnect();
     delay(100);
 
+// For boards with a "3D Antenna", we need to reduce the TX power
+// to prevent flaky operation.
+// NOTE: This is a known issue with the QT Py series of boards.
+#ifdef ARDUINO_ADAFRUIT_QTPY_ESP32S2 ||                                        \
+    ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM ||                                   \
+    ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2 || ARDUINO_ADAFRUIT_QTPY_ESP32C3 ||     \
+    ARDUINO_ADAFRUIT_QTPY_ESP32_PICO
     WiFi.setTxPower(WIFI_POWER_15dBm);
+#endif
 
     // Perform a network scan
     int n = WiFi.scanNetworks();
