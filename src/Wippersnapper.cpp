@@ -2721,6 +2721,7 @@ void print_reset_reason(int reason) {
     break; /**<14, for APP CPU, reseted by PRO CPU*/
   case 15:
     WS_DEBUG_PRINTLN("RTCWDT_BROWN_OUT_RESET");
+    WS.brownOutCausedReset = true;
     break; /**<15, Reset when the vdd voltage is not stable*/
   case 16:
     WS_DEBUG_PRINTLN("RTCWDT_RTC_RESET");
