@@ -2644,9 +2644,34 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   }
 }
 
+#ifdef ARDUINO_ARCH_ESP32
+
+#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
+#include "esp32/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#include "esp32c2/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#include "esp32c6/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32H2
+#include "esp32h2/rom/rtc.h"
+#else
+#error Target CONFIG_IDF_TARGET is not supported
+#endif
+
+void get_and_print_reset_reason_for_cpu(int cpuCore) {
+  print_reset_reason(rtc_get_reset_reason(cpuCore));
+}
+
+
 /**************************************************************/
 /*!
-    @brief    Prints last reset reason of ESP32
+    @brief    Prints string reset reason of ESP32
     @param    reason
               The return code of rtc_get_reset_reason(coreNum)
 */
@@ -2704,6 +2729,7 @@ void print_reset_reason(int reason) {
     WS_DEBUG_PRINTLN("NO_MEAN");
   }
 }
+#endif
 
 /**************************************************************************/
 /*!
@@ -2731,9 +2757,9 @@ void printDeviceInfo() {
 // (ESP32-Only) Print reason why device was reset
 #ifdef ARDUINO_ARCH_ESP32
   WS_DEBUG_PRINT("ESP32 CPU0 RESET REASON: ");
-  print_reset_reason(0);
+  get_and_print_reset_reason_for_cpu(0);
   WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
-  print_reset_reason(1);
+  get_and_print_reset_reason_for_cpu(1);
 #endif
 }
 
