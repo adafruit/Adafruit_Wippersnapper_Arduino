@@ -59,7 +59,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -68,7 +68,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -223,7 +223,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -232,7 +232,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -322,7 +322,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -331,7 +331,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -449,7 +449,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -458,7 +458,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -521,7 +521,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -530,7 +530,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -592,7 +592,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -601,7 +601,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -651,7 +651,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -660,7 +660,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -744,7 +744,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -753,7 +753,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -836,7 +836,7 @@ jobs:
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: failure() == 'true'
+      - if: ${{ failure() }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -845,7 +845,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: failure() =='false'
+      - if: ${{ success() }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
