@@ -371,6 +371,7 @@ void Wippersnapper_FS::createSecretsFile() {
   secretsFile.flush();
   secretsFile.close();
   delay(2500);
+  initUSBMSC(); // re-init USB MSC to show new file to user for editing
 
   // Signal to user that action must be taken (edit secrets.json)
   writeToBootOut(
