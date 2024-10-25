@@ -97,6 +97,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
     WS_DEBUG_PRINTLN(project_dependencies);
     WS_DEBUG_PRINTLN("*********************");
     WS_PRINTER.flush();
+    delay(50); // give host a chance to finish reading serial buffer
 #endif
   // Detach USB device during init.
   TinyUSBDevice.detach();
@@ -159,17 +160,12 @@ bool Wippersnapper_FS::initFilesystem(bool force_format) {
   if (!wipperFatFs.begin(&flash))
     return false;
 
-if (false) { //TODO: reinstate after discussion over utility. Restest a full fs.
-
   //TODO: Don't do this unless we need the space and createSecrets fails
   // If CircuitPython was previously installed - erase CPY FS
   eraseCPFS();
   // Also, should probably relabel drive to WIPPER if CIRCUITPY was there
   // using setVolumeLabel(), but note the FS must be unmounted first
-}
 
-
-  //TODO: don't do this every time, only if missing (less power usage? less block wear)
   // No file indexing on macOS
   if (!wipperFatFs.exists("/.fseventsd/no_log"))
   {
@@ -196,7 +192,7 @@ if (false) { //TODO: reinstate after discussion over utility. Restest a full fs.
   }
 
   // Create wippersnapper_boot_out.txt file
-  if (!createBootFile())
+  if (!createBootFile() && !WS.brownOutCausedReset)
     return false;
 
   // Check if secrets.json file already exists
@@ -253,6 +249,9 @@ bool Wippersnapper_FS::configFileExists() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::eraseCPFS() {
+  if (WS.brownOutCausedReset){
+    return; // Can't serial print here, in next PR check we're not out of space
+  }
   if (wipperFatFs.exists("/boot_out.txt")) {
     wipperFatFs.remove("/boot_out.txt");
     wipperFatFs.remove("/code.py");
@@ -326,8 +325,9 @@ bool Wippersnapper_FS::createBootFile() {
                      "Creating new file...");
   }
 
-  // We probably don't need to erase first!
-  eraseBootFile();
+  if (WS.brownOutCausedReset){
+    return false;
+  }
 
   // Overwrite the file with new content
   bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
