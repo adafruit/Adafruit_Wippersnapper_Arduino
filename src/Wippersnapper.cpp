@@ -2645,30 +2645,6 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
 }
 
 #ifdef ARDUINO_ARCH_ESP32
-
-#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
-#include "esp32/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32C2
-#include "esp32c2/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32C3
-#include "esp32c3/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32C6
-#include "esp32c6/rom/rtc.h"
-#elif CONFIG_IDF_TARGET_ESP32H2
-#include "esp32h2/rom/rtc.h"
-#else
-#error Target CONFIG_IDF_TARGET is not supported
-#endif
-
-void get_and_print_reset_reason_for_cpu(int cpuCore) {
-  print_reset_reason(rtc_get_reset_reason(cpuCore));
-}
-
-
 /**************************************************************/
 /*!
     @brief    Prints string reset reason of ESP32
@@ -2730,7 +2706,37 @@ void print_reset_reason(int reason) {
     WS_DEBUG_PRINTLN("NO_MEAN");
   }
 }
+
+#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
+#include "esp32/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#include "esp32c2/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#include "esp32c6/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32H2
+#include "esp32h2/rom/rtc.h"
+#else
+#error Target CONFIG_IDF_TARGET is not supported
 #endif
+
+/**************************************************************************/
+/*!
+    @brief    Prints the reason why the ESP32 CPU was reset.
+    @param    cpuCore
+              The core number to print the reset reason for.
+*/
+/**************************************************************************/
+void get_and_print_reset_reason_for_cpu(int cpuCore) {
+  print_reset_reason(rtc_get_reset_reason(cpuCore));
+}
+
+#endif // ARDUINO_ARCH_ESP32
 
 /**************************************************************************/
 /*!
