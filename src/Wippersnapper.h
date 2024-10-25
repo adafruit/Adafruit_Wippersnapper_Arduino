@@ -254,10 +254,11 @@ public:
 
   void provision();
 
-  bool brownOutCausedReset = false; ///< True if low power reset - flash write issues
-  bool lockStatusNeoPixel;          ///< True if status LED is using the status neopixel
-  bool lockStatusDotStar;           ///< True if status LED is using the status dotstar
-  bool lockStatusLED;               ///< True if status LED is using the built-in LED
+  bool brownOutCausedReset =
+      false;               ///< True if low power reset - flash write issues
+  bool lockStatusNeoPixel; ///< True if status LED is using the status neopixel
+  bool lockStatusDotStar;  ///< True if status LED is using the status dotstar
+  bool lockStatusLED;      ///< True if status LED is using the built-in LED
   float status_pixel_brightness =
       STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
                                        ///< (from 0.0 to 1.0)
