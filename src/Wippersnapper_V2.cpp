@@ -125,25 +125,29 @@ void Wippersnapper_V2::provisionV2() {
 
   // Attempt to detect if a SD card is inserted
   if (_fileSystemV2->IsSDCardInserted()) {
-    // If SD card is inserted, let's parse out the config.json file
-    // TODO: this is the entry point for offline mode and we should
-    // start pulling away from provision and into a more general
-    // offline setup function
+    // a SD card is inserted, we're running in offline mode
+    WsV2._is_offline_mode = true;
+  } else {
+    // no SD card inserted, we're running in online mode
+    WsV2._is_offline_mode = false;
   }
 
-// Parse secrets.json file
-#ifdef USE_TINYUSB
-  _fileSystemV2->parseSecrets();
-#elif defined(USE_LITTLEFS)
-  _littleFS->parseSecrets();
-#else
-  check_valid_ssidV2(); // non-fs-backed, sets global credentials within network
-                        // iface
-#endif
-  // Set the status pixel's brightness
-  setStatusLEDBrightness(WsV2._configV2.status_pixel_brightness);
-  // Set device's wireless credentials
-  set_ssid_passV2();
+// If we are running in Online mode, parse the secrets.json file
+if (!WsV2._is_offline_mode){
+    #ifdef USE_TINYUSB
+    _fileSystemV2->parseSecrets();
+    #elif defined(USE_LITTLEFS)
+    _littleFS->parseSecrets();
+    #else
+    check_valid_ssidV2(); // non-fs-backed, sets global credentials within network
+                            // iface
+    #endif
+    // Set the status pixel's brightness
+    setStatusLEDBrightness(WsV2._configV2.status_pixel_brightness);
+    // Set device's wireless credentials
+    set_ssid_passV2();
+}
+
 
 #ifdef USE_DISPLAY
   WsV2._ui_helper->set_label_status("");
@@ -1157,6 +1161,16 @@ void Wippersnapper_V2::connectV2() {
     haltErrorV2("Unable to generate Device UID");
   }
   WS_DEBUG_PRINTLN("Device UID generated successfully!");
+
+  // If we are running in offline mode, we skip the network setup
+  // and MQTT connection process and jump to the offline device config process
+  // NOTE: After this, bail out of this function and run the app loop!!!
+  if (WsV2._is_offline_mode) {
+    WS_DEBUG_PRINTLN("[Offline Mode] Running device configuration...");
+    // TODO: Implement configuration function for offline mode
+    WS_DEBUG_PRINTLN("[Offline Mode] Hardware configured, skipping network setup...");
+    return;
+  }
 
   // Configures an Adafruit Arduino MQTT object
   WS_DEBUG_PRINTLN("Setting up MQTT client...");

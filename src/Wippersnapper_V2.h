@@ -130,6 +130,7 @@ public:
 
   void provisionV2();
 
+  // Global flags for the status led
   bool
       lockStatusNeoPixelV2; ///< True if status LED is using the status neopixel
   bool lockStatusDotStarV2; ///< True if status LED is using the status dotstar
@@ -182,6 +183,8 @@ public:
   haltErrorV2(String error,
               ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME);
   void errorWriteHangV2(String error);
+
+  bool _is_offline_mode; ///< Global flag for if the device is in offline mode
 
   // I2C
   // TODO: Audit all of this!
