@@ -53,6 +53,7 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
+SdFat SDCard;                 ///< SD object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 
 /**************************************************************************/
@@ -584,6 +585,25 @@ void Wippersnapper_FS_V2::parseDisplayConfig(displayConfig &dispCfg) {
   dispCfg = doc.as<displayConfig>();
 }
 #endif // ARDUINO_FUNHOUSE_ESP32S2
+
+
+/**************************************************************************/
+/*!
+    @brief    Checks if an SD card is inserted and mounted.
+    @returns  True if an SD card is inserted and mounted, False otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper_FS_V2::IsSDCardInserted() {
+// Early-out of the board does not have a defined SD_CS_PIN entry
+// within boards.h
+#ifndef SD_CS_PIN
+return false;
+#endif
+  if (!SDCard.begin(SD_CS_PIN)) {
+    return false;
+  }
+  return true;
+}
 
 /**************************************************************************/
 /*!

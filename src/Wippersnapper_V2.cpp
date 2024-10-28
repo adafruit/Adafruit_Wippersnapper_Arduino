@@ -122,7 +122,16 @@ void Wippersnapper_V2::provisionV2() {
   WsV2._ui_helper->set_label_status("Validating Credentials...");
 #endif
 
-  // Parse secrets.json file
+
+  // Attempt to detect if a SD card is inserted
+  if (_fileSystemV2->IsSDCardInserted()) {
+    // If SD card is inserted, let's parse out the config.json file
+    // TODO: this is the entry point for offline mode and we should
+    // start pulling away from provision and into a more general
+    // offline setup function
+  }
+
+// Parse secrets.json file
 #ifdef USE_TINYUSB
   _fileSystemV2->parseSecrets();
 #elif defined(USE_LITTLEFS)
