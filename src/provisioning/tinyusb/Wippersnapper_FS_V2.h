@@ -44,19 +44,22 @@ public:
   Wippersnapper_FS_V2();
   ~Wippersnapper_FS_V2();
 
-  bool writeFSContents();
   void initUSBMSC();
 
+  bool writeFSContents();
+  void fsHalt(String msg);
   void eraseCPFS();
-  void eraseBootFile();
 
-  void createSecretsFile();
-  bool getSecretsFile();
   bool createBootFile();
   void writeToBootOut(PGM_P str);
-  void fsHalt(String msg);
+  void eraseBootFile();
 
+  // Secrets.json API
+  void createSecretsFile();
+  bool getSecretsFile();
   void parseSecrets();
+  // Config.json API
+  bool IsSDCardInserted();
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
   void parseDisplayConfig(displayConfig &displayFile);
