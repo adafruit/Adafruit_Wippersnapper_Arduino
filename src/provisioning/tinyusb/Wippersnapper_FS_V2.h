@@ -23,6 +23,7 @@
 #include "fatfs/diskio.h"
 
 #include "Wippersnapper_V2.h"
+#define SD_FAT_TYPE 3
 
 // forward decl.
 class Wippersnapper_V2;
@@ -60,6 +61,7 @@ public:
   void parseSecrets();
   // Config.json API
   bool IsSDCardInserted();
+  void parseConfigFile();
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
   void parseDisplayConfig(displayConfig &displayFile);

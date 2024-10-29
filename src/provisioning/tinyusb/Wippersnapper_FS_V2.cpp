@@ -605,6 +605,26 @@ return false;
   return true;
 }
 
+void Wippersnapper_FS_V2::parseConfigFile() {
+    File32 file_config;
+    file_config = SDCard.open("config.json", FILE_READ);
+
+    JsonDocument doc;
+    // TODO: Re-enable this
+    // TODO: Change max input length to fit an expected/max json size
+    int max_input_len = 512;
+
+    // Attempt to de-serialize the JSON document
+    DeserializationError error = deserializeJson(doc, file_config, max_input_len);
+    // If the JSON document failed to deserialize - halt the running device and print the error
+    // because it is not possible to continue running in offline mode without a valid config file
+    if (error)
+        fsHalt("deserializeJson() failed: " + String(error.c_str()));
+
+    // Otherwise, parse away!
+
+}
+
 /**************************************************************************/
 /*!
     @brief    Callback invoked when received READ10 command. Copies disk's
