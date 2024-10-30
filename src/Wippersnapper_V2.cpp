@@ -98,7 +98,7 @@ void Wippersnapper_V2::provisionV2() {
 #ifdef USE_TINYUSB
   _fileSystemV2 = new Wippersnapper_FS_V2();
 #elif defined(USE_LITTLEFS)
-  _littleFS = new WipperSnapper_LittleFS();
+  _littleFSV2 = new WipperSnapper_LittleFS();
 #endif
 
 #ifdef USE_DISPLAY
@@ -123,6 +123,8 @@ void Wippersnapper_V2::provisionV2() {
 #endif
 
 
+// TODO: This should be refactored, we don't want all esp32 platforms to default to False
+#ifdef USE_TINYUSB
   // Attempt to detect if a SD card is inserted
   if (_fileSystemV2->IsSDCardInserted()) {
     // a SD card is inserted, we're running in offline mode
@@ -131,13 +133,17 @@ void Wippersnapper_V2::provisionV2() {
     // no SD card inserted, we're running in online mode
     WsV2._is_offline_mode = false;
   }
+#elif defined(USE_LITTLEFS)
+  WsV2._is_offline_mode = false;
+#endif
+
 
 // If we are running in Online mode, parse the secrets.json file
 if (!WsV2._is_offline_mode){
     #ifdef USE_TINYUSB
     _fileSystemV2->parseSecrets();
     #elif defined(USE_LITTLEFS)
-    _littleFS->parseSecrets();
+    _littleFSV2->parseSecrets();
     #else
     check_valid_ssidV2(); // non-fs-backed, sets global credentials within network
                             // iface

@@ -49,6 +49,27 @@ public:
 
   /**************************************************************************/
   /*!
+  @brief  Overload for ESP32 devices without filesystem-backed provisioning.
+  */
+  /**************************************************************************/
+  Wippersnapper_ESP32(const char *aioUsername, const char *aioKey,
+                      const char *netSSID, const char *netPass,
+                      const char *brokerURL, uint16_t brokerPort)
+      : Wippersnapper() {
+    _ssid = netSSID;
+    _pass = netPass;
+
+    // Move credentials to the config struct
+    strncpy(WS._config.network.ssid, _ssid, sizeof(WS._config.network.ssid));
+    strncpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
+    strncpy(WS._config.aio_key, aioKey, sizeof(WS._config.aio_key));
+    strncpy(WS._config.aio_user, aioUsername, sizeof(WS._config.aio_user));
+    strncpy(WS._config.aio_url, brokerURL, sizeof(WS._config.aio_url));
+    WS._config.io_port = brokerPort;
+  }
+
+  /**************************************************************************/
+  /*!
   @brief  Destructor for the Adafruit IO AirLift class.
   */
   /**************************************************************************/
