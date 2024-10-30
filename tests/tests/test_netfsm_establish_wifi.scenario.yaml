@@ -1,0 +1,10 @@
+name: NetFSM - Establish WiFi Connection
+version: 1
+author: Brent Rubell for Adafruit Industries
+
+steps:
+  - wait-serial: 'Adafruit.io WipperSnapper'
+  - wait-serial: 'Establishing network connection...'
+  - wait-serial: 'Connecting to WiFi (attempt #0)'
+  - wait-serial: 'Connected to WiFi!'
+  - wait-serial: 'Connecting to AIO MQTT (attempt #0)'

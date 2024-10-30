@@ -49,5 +49,6 @@ examples/Wippersnapper_demo/build/
 # Platformio artifacts
 .pio/
 
-# Secrets
+# These sometimes contain credentials, don't commit them!
+src/Wippersnapper_demo_wokwi.ino
 data/

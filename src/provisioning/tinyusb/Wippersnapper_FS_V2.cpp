@@ -615,13 +615,20 @@ void Wippersnapper_FS_V2::parseConfigFile() {
     int max_input_len = 512;
 
     // Attempt to de-serialize the JSON document
-    DeserializationError error = deserializeJson(doc, file_config, max_input_len);
+    //DeserializationError error = deserializeJson(doc, file_config, max_input_len);
     // If the JSON document failed to deserialize - halt the running device and print the error
     // because it is not possible to continue running in offline mode without a valid config file
-    if (error)
-        fsHalt("deserializeJson() failed: " + String(error.c_str()));
+    //if (error)
+        //fsHalt("deserializeJson() failed: " + String(error.c_str()));
 
     // Otherwise, parse away!
+
+    // TODO: Start by detecting which API the config file wants to parse the JSON into via the "componentAPI" field
+    // TODO: We only need to handle componentTypeAdd messages here
+
+    // TODO: Can we access protobufs here?
+    // create a digitalio protobuf message
+    // wippersnapper_analogio_AnalogIOAdd addMsg = wippersnapper_analogio_AnalogIOAdd_init_zero;
 
 }
 
