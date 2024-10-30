@@ -122,7 +122,6 @@ void Wippersnapper_V2::provisionV2() {
   WsV2._ui_helper->set_label_status("Validating Credentials...");
 #endif
 
-
 // TODO: This should be refactored, we don't want all esp32 platforms to default to False
 #ifdef USE_TINYUSB
   // Attempt to detect if a SD card is inserted
@@ -139,7 +138,8 @@ void Wippersnapper_V2::provisionV2() {
 
 
 // If we are running in Online mode, parse the secrets.json file
-if (!WsV2._is_offline_mode){
+WsV2._is_offline_mode = false;
+if (WsV2._is_offline_mode == false){
     #ifdef USE_TINYUSB
     _fileSystemV2->parseSecrets();
     #elif defined(USE_LITTLEFS)

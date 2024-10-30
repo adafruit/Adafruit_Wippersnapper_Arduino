@@ -1,51 +1,43 @@
 {
-    "version": 1,
-    "author": "Uri Shaked",
-    "editor": "wokwi",
-    "parts": [
-      { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": -52.9, "left": -168.2, "attrs": {} },
-      {
-        "type": "wokwi-led",
-        "id": "led1",
-        "top": 28,
-        "left": -277,
-        "rotate": 270,
-        "attrs": { "color": "red" }
-      },
-      {
-        "type": "wokwi-resistor",
-        "id": "r1",
-        "top": 51.95,
-        "left": -230.4,
-        "attrs": { "value": "10000" }
-      },
-      {
-        "type": "wokwi-pushbutton",
-        "id": "btn1",
-        "top": 18.6,
-        "left": 3,
-        "rotate": 90,
-        "attrs": { "color": "green" }
-      },
-      {
-        "type": "wokwi-resistor",
-        "id": "r2",
-        "top": 110.4,
-        "left": 18.65,
-        "rotate": 90,
-        "attrs": { "value": "10000" }
-      }
-    ],
-    "connections": [
-      [ "esp:TX0", "$serialMonitor:RX", "", [] ],
-      [ "esp:RX0", "$serialMonitor:TX", "", [] ],
-      [ "led1:A", "esp:D14", "orange", [ "h0" ] ],
-      [ "led1:C", "r1:1", "green", [ "h0" ] ],
-      [ "r1:2", "esp:GND.2", "black", [ "v0" ] ],
-      [ "btn1:2.r", "esp:3V3", "red", [ "v0" ] ],
-      [ "r2:1", "btn1:1.r", "black", [ "v0", "v-9.8" ] ],
-      [ "r2:2", "esp:GND.1", "black", [ "h-96", "v-49.1" ] ],
-      [ "btn1:1.l", "esp:D12", "green", [ "v-9.6", "h-96", "v77.5" ] ]
-    ],
-    "dependencies": {}
-  }
+  "version": 1,
+  "author": "Uri Shaked",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": -52.9, "left": -408.2, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 34.8,
+      "left": -514.6,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 90.35,
+      "left": -480,
+      "attrs": { "value": "10000" }
+    },
+    {
+      "type": "wokwi-microsd-card",
+      "id": "sd1",
+      "top": -74.23,
+      "left": -271.73,
+      "rotate": 90,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
+    [ "led1:C", "r1:1", "black", [ "h0.4", "v19.2" ] ],
+    [ "r1:2", "esp:GND.2", "black", [ "v0" ] ],
+    [ "led1:A", "esp:D13", "orange", [ "v9.6", "h86.4" ] ],
+    [ "sd1:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "esp:GND.1", "sd1:GND", "black", [ "h0" ] ],
+    [ "sd1:CS", "esp:D5", "green", [ "v0" ] ],
+    [ "sd1:DO", "esp:D12", "blue", [ "v0" ] ],
+    [ "sd1:DI", "esp:D23", "orange", [ "v48", "h-38.31", "v-76.9" ] ]
+  ],
+  "dependencies": {}
+}
