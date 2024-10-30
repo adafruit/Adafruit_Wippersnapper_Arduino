@@ -25,7 +25,7 @@
 //#include "Wippersnapper_Networking.h"
 //Wippersnapper_WiFi wipper;
 Wippersnapper_Manager manager;
-Wippersnapper_WiFi wipper(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS, "io.adafruit.com", 8883);
+Wippersnapper_WiFiV2 wipper(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS, "io.adafruit.com", 8883);
 
 
 void setup() {
