@@ -1,5 +1,5 @@
 [wokwi]
 version = 1
-elf = "../.pio/build/esp32_dev_module/firmware.elf"
-firmware = "../.pio/build/esp32_dev_module/firmware.bin"
+elf = "../.pio/build/esp32dev/firmware.elf"
+firmware = "../.pio/build/esp32dev/firmware.bin"
 gdbServerPort=3333
