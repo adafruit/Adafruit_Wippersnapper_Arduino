@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021-2022 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2024 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -20,7 +20,7 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || \
     defined(ARDUINO_ESP32_DEV) || \
     defined(ESP32_DEV)
-#include "WipperSnapper_LittleFS.h"
+#include "WipperSnapper_LittleFS_V2.h"
 
 /**************************************************************************/
 /*!
@@ -28,7 +28,7 @@
               filesystem.
 */
 /**************************************************************************/
-WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
+WipperSnapper_LittleFS_V2::WipperSnapper_LittleFS_V2() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
     setStatusLEDColor(RED);
@@ -41,7 +41,7 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
     @brief    Destructor for LittleFS
 */
 /**************************************************************************/
-WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
+WipperSnapper_LittleFS_V2::~WipperSnapper_LittleFS_V2() { LittleFS.end(); }
 
 /**************************************************************************/
 /*!
@@ -49,7 +49,7 @@ WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
               on the LittleFS filesystem.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::parseSecrets() {
+void WipperSnapper_LittleFS_V2::parseSecrets() {
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
     fsHalt("ERROR: No secrets.json found on filesystem - did you upload "
@@ -145,7 +145,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::fsHalt(String msg) {
+void WipperSnapper_LittleFS_V2::fsHalt(String msg) {
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
