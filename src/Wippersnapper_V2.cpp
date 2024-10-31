@@ -68,6 +68,9 @@ Wippersnapper_V2::Wippersnapper_V2() {
   // Initialize model classes
   WsV2.sensorModel = new SensorModel();
 
+  // SD Card
+  WsV2._sdCardV2 = new ws_sdcard();
+
   // Initialize controller classes
   WsV2.digital_io_controller = new DigitalIOController();
   WsV2.analogio_controller = new AnalogIOController();
@@ -93,6 +96,11 @@ void Wippersnapper_V2::provisionV2() {
 
   // Initialize the status LED for signaling FS errors
   initStatusLED();
+
+  // If an SD card is inserted and mounted, we do not need to provision
+  // wifi/io credentials
+  if (WsV2._sdCardV2->IsSDCardInserted())
+    return;
 
 // Initialize the filesystem
 #ifdef USE_TINYUSB
@@ -122,38 +130,18 @@ void Wippersnapper_V2::provisionV2() {
   WsV2._ui_helper->set_label_status("Validating Credentials...");
 #endif
 
-// TODO: This should be refactored, we don't want all esp32 platforms to default to False
 #ifdef USE_TINYUSB
-  // Attempt to detect if a SD card is inserted
-  if (_fileSystemV2->IsSDCardInserted()) {
-    // a SD card is inserted, we're running in offline mode
-    WsV2._is_offline_mode = true;
-  } else {
-    // no SD card inserted, we're running in online mode
-    WsV2._is_offline_mode = false;
-  }
+  _fileSystemV2->parseSecrets();
 #elif defined(USE_LITTLEFS)
-  WsV2._is_offline_mode = false;
+  _littleFSV2->parseSecrets();
+#else
+  check_valid_ssidV2(); // non-fs-backed, sets global credentials within network
+                        // iface
 #endif
-
-
-// If we are running in Online mode, parse the secrets.json file
-WsV2._is_offline_mode = false;
-if (WsV2._is_offline_mode == false){
-    #ifdef USE_TINYUSB
-    _fileSystemV2->parseSecrets();
-    #elif defined(USE_LITTLEFS)
-    _littleFSV2->parseSecrets();
-    #else
-    check_valid_ssidV2(); // non-fs-backed, sets global credentials within network
-                            // iface
-    #endif
-    // Set the status pixel's brightness
-    setStatusLEDBrightness(WsV2._configV2.status_pixel_brightness);
-    // Set device's wireless credentials
-    set_ssid_passV2();
-}
-
+  // Set the status pixel's brightness
+  setStatusLEDBrightness(WsV2._configV2.status_pixel_brightness);
+  // Set device's wireless credentials
+  set_ssid_passV2();
 
 #ifdef USE_DISPLAY
   WsV2._ui_helper->set_label_status("");
@@ -318,7 +306,8 @@ bool handleCheckinResponse(pb_istream_t *stream) {
   WsV2.digital_io_controller->SetMaxDigitalPins(
       WsV2.CheckInModel->getTotalGPIOPins());
 
-  WsV2.analogio_controller->SetRefVoltage(WsV2.CheckInModel->getReferenceVoltage());
+  WsV2.analogio_controller->SetRefVoltage(
+      WsV2.CheckInModel->getReferenceVoltage());
   WsV2.analogio_controller->SetTotalAnalogPins(
       WsV2.CheckInModel->getTotalAnalogPins());
 
@@ -889,9 +878,9 @@ void Wippersnapper_V2::haltErrorV2(String error,
 /**************************************************************************/
 bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
 
-  #ifdef DEBUG_PROFILE
+#ifdef DEBUG_PROFILE
   unsigned long total_start_time = micros();
-  #endif
+#endif
 
   size_t szMessageBuf;
   wippersnapper_signal_DeviceToBroker MsgSignal =
@@ -967,30 +956,30 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   runNetFSMV2();
   WsV2.feedWDTV2();
 
-  #ifdef DEBUG_PROFILE
+#ifdef DEBUG_PROFILE
   unsigned long publish_start_time = micros();
-  #endif
+#endif
 
   // Attempt to publish the signal message to the broker
   WS_DEBUG_PRINT("Publishing signal message to broker...");
-  #ifdef DEBUG_PROFILE
+#ifdef DEBUG_PROFILE
   WS_DEBUG_PRINT("Message buffer size: ");
   WS_DEBUG_PRINTLN(szMessageBuf);
-  #endif
+#endif
   if (!WsV2._mqttV2->publish(WsV2._topicD2b, msgBuf, szMessageBuf, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish signal message to broker!");
     return false;
   }
   WS_DEBUG_PRINTLN("Published!");
 
-  #ifdef DEBUG_PROFILE
+#ifdef DEBUG_PROFILE
   unsigned long publish_end_time = micros();
   WS_DEBUG_PRINT("Publishing time: ");
   WS_DEBUG_PRINTLN(publish_end_time - publish_start_time);
   unsigned long total_end_time = micros();
   WS_DEBUG_PRINT("Total PublishSignal() execution time: ");
   WS_DEBUG_PRINTLN(total_end_time - total_start_time);
-  #endif
+#endif
 
   return true;
 }
@@ -1174,7 +1163,8 @@ void Wippersnapper_V2::connectV2() {
   if (WsV2._is_offline_mode) {
     WS_DEBUG_PRINTLN("[Offline Mode] Running device configuration...");
     // TODO: Implement configuration function for offline mode
-    WS_DEBUG_PRINTLN("[Offline Mode] Hardware configured, skipping network setup...");
+    WS_DEBUG_PRINTLN(
+        "[Offline Mode] Hardware configured, skipping network setup...");
     return;
   }
 

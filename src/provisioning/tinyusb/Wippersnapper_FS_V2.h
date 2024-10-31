@@ -11,7 +11,7 @@
  *
  * BSD license, all text here must be included in any redistribution.
  *
-*/
+ */
 #ifndef WIPPERSNAPPER_FS_V2_H
 #define WIPPERSNAPPER_FS_V2_H
 
@@ -19,8 +19,8 @@
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
+#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 
 #include "Wippersnapper_V2.h"
 #define SD_FAT_TYPE 3
@@ -59,9 +59,6 @@ public:
   void createSecretsFile();
   bool getSecretsFile();
   void parseSecrets();
-  // Config.json API
-  bool IsSDCardInserted();
-  void parseConfigFile();
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
   void parseDisplayConfig(displayConfig &displayFile);
