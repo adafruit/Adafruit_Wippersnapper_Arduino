@@ -99,7 +99,7 @@ void Wippersnapper_V2::provisionV2() {
 
   // If an SD card is inserted and mounted, we do not need to provision
   // wifi/io credentials
-  if (WsV2._sdCardV2->IsSDCardInserted())
+  if (WsV2._sdCardV2->IsSDCardInserted() == true)
     return;
 
 // Initialize the filesystem
@@ -1160,12 +1160,14 @@ void Wippersnapper_V2::connectV2() {
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
-  if (WsV2._is_offline_mode) {
+  if (WsV2._sdCardV2->IsSDCardInserted() == true) {
     WS_DEBUG_PRINTLN("[Offline Mode] Running device configuration...");
     // TODO: Implement configuration function for offline mode
     WS_DEBUG_PRINTLN(
         "[Offline Mode] Hardware configured, skipping network setup...");
     return;
+  } else {
+    WS_DEBUG_PRINTLN("Running in online mode...");
   }
 
   // Configures an Adafruit Arduino MQTT object
