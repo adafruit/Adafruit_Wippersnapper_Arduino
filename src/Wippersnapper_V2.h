@@ -31,8 +31,8 @@
 // Include Signal Proto
 #include "protos/checkin.pb.h"
 #include "protos/digitalio.pb.h"
-#include "protos/signal.pb.h"
 #include "protos/ds18x20.pb.h"
+#include "protos/signal.pb.h"
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
@@ -49,12 +49,11 @@
 #endif
 
 // Components (API v2)
-#include "components/sensor/model.h"
+#include "components/analogio/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
-#include "components/analogio/controller.h"
 #include "components/ds18x20/controller.h"
-
+#include "components/sensor/model.h"
 
 // Components (API v1)
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -73,6 +72,7 @@
 #endif
 
 #include "provisioning/ConfigJson.h"
+#include "provisioning/sdcard/ws_sdcard.h"
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS_V2.h"
 #endif
@@ -97,6 +97,7 @@
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS_V2;
 class WipperSnapper_LittleFS;
+class ws_sdcard;
 #ifdef USE_DISPLAY
 class ws_display_driver;
 class ws_display_ui_helper;
@@ -208,7 +209,8 @@ public:
   Wippersnapper_AnalogIO *_analogIOV2; ///< Instance of analog io class
   Wippersnapper_FS_V2 *_fileSystemV2;  ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
-      *_littleFSV2; ///< Instance of LittleFS Filesystem (non-native USB)
+      *_littleFSV2;     ///< Instance of LittleFS Filesystem (non-native USB)
+  ws_sdcard *_sdCardV2; ///< Instance of SD card class
 #ifdef USE_DISPLAY
   ws_display_driver *_displayV2 = nullptr; ///< Instance of display driver class
   ws_display_ui_helper *_ui_helperV2 =
@@ -220,12 +222,12 @@ public:
   ws_uart *_uartComponentV2;        ///< Instance of UART class
 
   // API v2 Components
-  CheckinModel *CheckInModel;       ///< Instance of CheckinModel class
-  SensorModel  *sensorModel;        ///< Instance of SensorModel class
+  CheckinModel *CheckInModel; ///< Instance of CheckinModel class
+  SensorModel *sensorModel;   ///< Instance of SensorModel class
   DigitalIOController
       *digital_io_controller; ///< Instance of DigitalIO controller class
   AnalogIOController *analogio_controller; ///< Instance of AnalogIO controller
-  DS18X20Controller *_ds18x20_controller; ///< Instance of DS18X20 controller
+  DS18X20Controller *_ds18x20_controller;  ///< Instance of DS18X20 controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
@@ -250,7 +252,8 @@ public:
 #ifdef ARDUINO_ARCH_ESP32
   ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
 #endif
-  bool got_checkin_response; ///< True if a checkin response was received, False otherwise.
+  bool got_checkin_response; ///< True if a checkin response was received, False
+                             ///< otherwise.
 
 private:
   void _initV2();
