@@ -167,7 +167,7 @@
 #define BOARD_ID "feather-esp32"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 13
-#define SD_CS_PIN 33
+#define SD_CS_PIN 5
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
 #define BOARD_ID "feather-esp32-v2"
 #define USE_LITTLEFS

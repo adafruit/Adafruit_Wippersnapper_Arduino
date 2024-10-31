@@ -20,16 +20,15 @@
 */
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
-#ifndef SD_CS_PIN
-  _is_sd_card_inserted = false;
+_is_sd_card_inserted = false;
+/* #ifndef SD_CS_PIN
   return;
-#endif
+#endif */
 
   // Attempt to initialize the SD card
-  if (!_sd.begin(SD_CS_PIN)) {
-    _is_sd_card_inserted = false;
+  if (_sd.begin(15)) {
+    _is_sd_card_inserted = true;
   }
-  _is_sd_card_inserted = true;
 }
 
 /**************************************************************************/
