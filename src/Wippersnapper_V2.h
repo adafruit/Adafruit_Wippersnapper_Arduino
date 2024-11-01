@@ -18,6 +18,10 @@
 #ifndef WIPPERSNAPPER_V2_H
 #define WIPPERSNAPPER_V2_H
 
+// Debug Flags
+#define OFFLINE_MODE_DEBUG 1 ///< Debug flag for offline mode (read via serial)
+// #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
+
 // Cpp STD
 #include <vector>
 
@@ -79,10 +83,6 @@
 #if defined(USE_LITTLEFS)
 #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
-
-// Debug print macros
-// Uncomment the following to enable debug output for function profiling
-// #DEBUG_PROFILE 1
 
 #define WS_VERSION                                                             \
   "2.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)

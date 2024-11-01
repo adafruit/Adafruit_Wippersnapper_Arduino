@@ -1162,8 +1162,17 @@ void Wippersnapper_V2::connectV2() {
   // NOTE: After this, bail out of this function and run the app loop!!!
   if (WsV2._sdCardV2->IsSDCardInserted() == true) {
     WS_DEBUG_PRINTLN("[Offline Mode] Running device configuration...");
-    WsV2._sdCardV2->waitForIncomingConfigFile();
-    WS_DEBUG_PRINTLN("[Offline Mode] Hardware configured, skipping network setup...");
+// Wait for incoming JSON string from Serial
+#ifdef OFFLINE_MODE_DEBUG
+    if (!WsV2._sdCardV2->waitForSerialConfig())
+      haltErrorV2("Unable to validate incoming JSON file");
+#endif
+    // Parse the JSON file
+    if (!WsV2._sdCardV2->parseConfigFile())
+      haltErrorV2("Failed to parse incoming JSON file");
+    // TODO: Configure the device using the incoming JSON file
+    WS_DEBUG_PRINTLN(
+        "[Offline Mode] Hardware configured, skipping network setup...");
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");
