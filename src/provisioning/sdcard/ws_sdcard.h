@@ -33,14 +33,15 @@ public:
   ws_sdcard();
   ~ws_sdcard();
   bool IsSDCardInserted();
-  void parseConfigFile();
-  void waitForIncomingConfigFile();
-  bool validateJson(const char* input);
+  bool parseConfigFile();
+  bool waitForSerialConfig();
+  bool validateJson(const char *input);
 
 private:
   bool _is_sd_card_inserted; ///< True if an SD card is inserted, False
                              ///< otherwise.
   SdFat _sd;                 ///< SD object from Adafruit SDFat library
+  String _serialInput;       ///< Serial input buffer
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H
