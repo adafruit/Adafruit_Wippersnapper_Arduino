@@ -23,5 +23,6 @@
     [ "sd1:SCK", "esp:D18", "green", [ "v0" ] ],
     [ "sd1:DO", "esp:D19", "orange", [ "v0" ] ]
   ],
+  "serialMonitor": { "display": "terminal", "newline": "lf" },
   "dependencies": {}
 }

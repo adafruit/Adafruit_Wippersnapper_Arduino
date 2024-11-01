@@ -1162,9 +1162,8 @@ void Wippersnapper_V2::connectV2() {
   // NOTE: After this, bail out of this function and run the app loop!!!
   if (WsV2._sdCardV2->IsSDCardInserted() == true) {
     WS_DEBUG_PRINTLN("[Offline Mode] Running device configuration...");
-    // TODO: Implement configuration function for offline mode
-    WS_DEBUG_PRINTLN(
-        "[Offline Mode] Hardware configured, skipping network setup...");
+    WsV2._sdCardV2->waitForIncomingConfigFile();
+    WS_DEBUG_PRINTLN("[Offline Mode] Hardware configured, skipping network setup...");
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");

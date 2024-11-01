@@ -21,12 +21,12 @@
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
 _is_sd_card_inserted = false;
-/* #ifndef SD_CS_PIN
+#ifndef SD_CS_PIN
   return;
-#endif */
+#endif
 
   // Attempt to initialize the SD card
-  if (_sd.begin(15)) {
+  if (_sd.begin(SD_CS_PIN)) {
     _is_sd_card_inserted = true;
   }
 }
@@ -78,4 +78,38 @@ void ws_sdcard::parseConfigFile() {
   // create a digitalio protobuf message
   // wippersnapper_analogio_AnalogIOAdd addMsg =
   // wippersnapper_analogio_AnalogIOAdd_init_zero;
+}
+
+// Returns true if input points to a valid JSON string
+bool ws_sdcard::validateJson(const char* input) {
+  JsonDocument doc, filter;
+  return deserializeJson(doc, input, DeserializationOption::Filter(filter)) == DeserializationError::Ok;
+}
+
+// Waits for incoming config file and parses it 
+// TODO: Split out parsing into parseConfigFile() and just read here
+void ws_sdcard::waitForIncomingConfigFile() {
+  String serialInput = "";
+
+  // Wait for incoming serial data
+  while (true) {
+    // Check if there is data available to read
+    if (Serial.available() > 0) {
+      // Read and append to serialInput
+      char c = Serial.read();
+      serialInput += c;
+      // Check for EoL or end of JSON string
+      if (c == '\n' || c == '}') {
+        break;
+      }
+    }
+  }
+
+  // validate the json string
+  if (validateJson(serialInput.c_str())) {
+    // parse the json string
+    WS_DEBUG_PRINTLN("Valid JSON string received!");
+  } else {
+    WS_DEBUG_PRINTLN("Invalid JSON string received!");
+  }
 }

@@ -34,6 +34,8 @@ public:
   ~ws_sdcard();
   bool IsSDCardInserted();
   void parseConfigFile();
+  void waitForIncomingConfigFile();
+  bool validateJson(const char* input);
 
 private:
   bool _is_sd_card_inserted; ///< True if an SD card is inserted, False
