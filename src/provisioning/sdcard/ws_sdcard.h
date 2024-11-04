@@ -38,10 +38,13 @@ public:
   bool validateJson(const char *input);
 
 private:
-  bool _is_sd_card_inserted; ///< True if an SD card is inserted, False
-                             ///< otherwise.
-  SdFat _sd;                 ///< SD object from Adafruit SDFat library
-  String _serialInput;       ///< Serial input buffer
+  bool _is_sd_card_inserted;  ///< True if an SD card is inserted, False
+                              ///< otherwise.
+  SdFat _sd;                  ///< SD object from Adafruit SDFat library
+  String _serialInput;        ///< Serial input buffer
+  const char *json_test_data; ///< Json test data
+  bool _use_test_data; ///< True if sample data is being used to test, instead
+                       ///< of serial input, False otherwise.
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H

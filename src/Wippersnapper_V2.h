@@ -255,6 +255,9 @@ public:
   bool got_checkin_response; ///< True if a checkin response was received, False
                              ///< otherwise.
 
+  // PoC - offline mode TODO
+  wippersnapper_digitalio_DigitalIOAdd _offline_msg_DigitalIOAdd;
+
 private:
   void _initV2();
 
