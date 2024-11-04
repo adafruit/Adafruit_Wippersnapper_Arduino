@@ -66,16 +66,16 @@ bool ws_sdcard::parseConfigFile() {
   _use_test_data = true; // TODO: This should be global
   if (!_use_test_data) {
     // Read the config file from the serial input buffer
-    WS_DEBUG_PRINTLN("Reading JSON config file...");
+    WS_DEBUG_PRINTLN("[SD] Reading JSON config file...");
     error = deserializeJson(doc, _serialInput.c_str(), max_input_len);
   } else {
     // Read the config file from the test JSON string
-    WS_DEBUG_PRINTLN("Reading test JSON data...");
+    WS_DEBUG_PRINTLN("[SD] Reading test JSON data...");
     error = deserializeJson(doc, json_test_data, max_input_len);
   }
 #else
   // Read the config file from the SD card
-  WS_DEBUG_PRINTLN("Reading config file...");
+  WS_DEBUG_PRINTLN("[SD] Reading config file...");
 // TODO - implement this
 // error = deserializeJson(doc, file_config, max_input_len);
 #endif
@@ -84,7 +84,7 @@ bool ws_sdcard::parseConfigFile() {
   // print the error because it is not possible to continue running in offline
   // mode without a valid config file
   if (error) {
-    WS_DEBUG_PRINTLN("deserializeJson() failed, error code: " +
+    WS_DEBUG_PRINTLN("[SD] deserializeJson() failed, error code: " +
                      String(error.c_str()));
     return false;
   }
@@ -100,10 +100,10 @@ bool ws_sdcard::parseConfigFile() {
       components["componentAPI"]; // ie: "analogio", "digitalio", etc.
 
   if (component_api_type == nullptr) {
-    WS_DEBUG_PRINTLN("No component API type found in JSON string!");
+    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No component API type found in JSON string!");
     return false;
   } else {
-    WS_DEBUG_PRINTLN("Component API type found: " + String(component_api_type));
+    WS_DEBUG_PRINTLN("[SD] Component API type found: " + String(component_api_type));
   }
 
   // TODO- maybe a Switch case to handle the different component API types but
@@ -153,7 +153,7 @@ bool ws_sdcard::parseConfigFile() {
     }
 
     // Print out the contents of the DigitalIOADD message
-    WS_DEBUG_PRINTLN("DigitalIOAdd message:");
+    WS_DEBUG_PRINTLN("[SD] DigitalIOAdd message:");
     WS_DEBUG_PRINTLN("Pin Name: " + String(msg_DigitalIOAdd.pin_name));
     WS_DEBUG_PRINTLN("Direction: " + String(direction));
     WS_DEBUG_PRINTLN("Sample Mode: " + String(sample_mode));
@@ -176,19 +176,19 @@ bool ws_sdcard::parseConfigFile() {
           wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
     } else {
       // Unknown analog read mode, bail out
-      WS_DEBUG_PRINTLN("Unknown analog read mode found: " +
+      WS_DEBUG_PRINTLN("[SD] Unknown analog read mode found: " +
                        String(components["analogReadMode"]));
       return false;
     }
 
     // Print out the contents of the AnalogIOAdd message
-    WS_DEBUG_PRINTLN("AnalogIOAdd message:");
+    WS_DEBUG_PRINTLN("[SD] AnalogIOAdd message:");
     WS_DEBUG_PRINTLN("Pin Name: " + String(msg_AnalogIOAdd.pin_name));
     WS_DEBUG_PRINTLN("Period: " + String(msg_AnalogIOAdd.period));
     WS_DEBUG_PRINTLN("Read Mode: " + String(msg_AnalogIOAdd.read_mode));
   } else {
     // Unknown component API type
-    WS_DEBUG_PRINTLN("Unknown component API type found: " +
+    WS_DEBUG_PRINTLN("[SD] Unknown component API type found: " +
                      String(component_api_type));
     return false;
   }
@@ -231,7 +231,7 @@ bool ws_sdcard::waitForSerialConfig() {
 
   _serialInput = ""; // Clear the serial input buffer
   if (!_use_test_data) {
-    WS_DEBUG_PRINTLN("Waiting for incoming JSON string...");
+    WS_DEBUG_PRINTLN("[SD] Waiting for incoming JSON string...");
     while (true) {
       // Check if there is data available to read
       if (Serial.available() > 0) {
@@ -251,7 +251,7 @@ bool ws_sdcard::waitForSerialConfig() {
   }
 
   // Print out the received JSON string
-  WS_DEBUG_PRINT("[Debug] JSON string received: ");
+  WS_DEBUG_PRINT("[SD][Debug] JSON string received: ");
   if (_use_test_data) {
     WS_DEBUG_PRINTLN("[from json test data]");
     WS_DEBUG_PRINTLN(json_test_data);
@@ -262,16 +262,16 @@ bool ws_sdcard::waitForSerialConfig() {
   // Attempt to validate the string as JSON
   if (!_use_test_data) {
     if (!validateJson(_serialInput.c_str())) {
-      WS_DEBUG_PRINTLN("Invalid JSON string received!");
+      WS_DEBUG_PRINTLN("[SD] Invalid JSON string received!");
       return false;
     }
   } else {
     if (!validateJson(json_test_data)) {
-      WS_DEBUG_PRINTLN("Invalid JSON string received!");
+      WS_DEBUG_PRINTLN("[SD] Invalid JSON string received!");
       return false;
     }
   }
 
-  WS_DEBUG_PRINTLN("Valid JSON string received!");
+  WS_DEBUG_PRINTLN("[SD] Valid JSON string received!");
   return true;
 }
