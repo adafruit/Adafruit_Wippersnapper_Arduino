@@ -62,7 +62,8 @@ bool ws_sdcard::parseConfigFile() {
 
   // Attempt to de-serialize the JSON document
   DeserializationError error;
-#ifdef ONLINE_MODE_DEBUG
+#ifdef OFFLINE_MODE_DEBUG
+  _use_test_data = true; // TODO: This should be global
   if (!_use_test_data) {
     // Read the config file from the serial input buffer
     WS_DEBUG_PRINTLN("Reading JSON config file...");
@@ -107,25 +108,25 @@ bool ws_sdcard::parseConfigFile() {
 
   // TODO- maybe a Switch case to handle the different component API types but
   // for now just a simple if-else is OK
+
   if (strcmp(component_api_type, "digitalio") == 0) {
-    // TODO - dispatch to create digitalio component protobuf message
     // Create a new digitalio add protobuf message
-    WsV2._offline_msg_DigitalIOAdd =
-        wippersnapper_digitalio_DigitalIOAdd_init_default;
+    wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd;
+    msg_DigitalIOAdd = wippersnapper_digitalio_DigitalIOAdd_init_default;
 
     // Parse pinName
-    strcpy(WsV2._offline_msg_DigitalIOAdd.pin_name, components["pinName"]);
+    strcpy(msg_DigitalIOAdd.pin_name, components["pinName"]);
 
     // Parse direction
     const char *direction = components["direction"];
     if (strcmp(direction, "INPUT") == 0) {
-      WsV2._offline_msg_DigitalIOAdd.gpio_direction =
+      msg_DigitalIOAdd.gpio_direction =
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
     } else if (strcmp(direction, "INPUT-PULLUP") == 0) {
-      WsV2._offline_msg_DigitalIOAdd.gpio_direction =
+      msg_DigitalIOAdd.gpio_direction =
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
     } else if (strcmp(direction, "OUTPUT") == 0) {
-      WsV2._offline_msg_DigitalIOAdd.gpio_direction =
+      msg_DigitalIOAdd.gpio_direction =
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT;
     } else { // Unknown direction, bail out
       WS_DEBUG_PRINTLN("Unknown digital pin direction found: " +
@@ -141,33 +142,61 @@ bool ws_sdcard::parseConfigFile() {
 
     if (is_timer_sample_mode) {
       // If we're sampling periodically, parse the period
-      WsV2._offline_msg_DigitalIOAdd.period = components["timer"];
+      msg_DigitalIOAdd.period = components["timer"];
       // and set the sample mode
-      WsV2._offline_msg_DigitalIOAdd.sample_mode =
+      msg_DigitalIOAdd.sample_mode =
           wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
     } else {
       // set the sample mode for event
-      WsV2._offline_msg_DigitalIOAdd.sample_mode =
+      msg_DigitalIOAdd.sample_mode =
           wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
     }
 
     // Print out the contents of the DigitalIOADD message
     WS_DEBUG_PRINTLN("DigitalIOAdd message:");
-    WS_DEBUG_PRINTLN("Pin Name: " +
-                     String(WsV2._offline_msg_DigitalIOAdd.pin_name));
+    WS_DEBUG_PRINTLN("Pin Name: " + String(msg_DigitalIOAdd.pin_name));
     WS_DEBUG_PRINTLN("Direction: " + String(direction));
     WS_DEBUG_PRINTLN("Sample Mode: " + String(sample_mode));
-    WS_DEBUG_PRINTLN("Period: " +
-                     String(WsV2._offline_msg_DigitalIOAdd.period));
+    WS_DEBUG_PRINTLN("Period: " + String(msg_DigitalIOAdd.period));
     return true;
   } else if (strcmp(component_api_type, "analogio") == 0) {
     // TODO - dispatch to create analogio component protobuf message
+    // Parse the AnalogIOAdd message
+    wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
+        wippersnapper_analogio_AnalogIOAdd_init_default;
+    // Fill in the AnalogIOAdd message
+    strcpy(msg_AnalogIOAdd.pin_name, components["pinName"]);
+    msg_AnalogIOAdd.period = components["period"];
+    // Parse the analog pin's read mode
+    if (strcmp(components["analogReadMode"], "PIN_VALUE") == 0) {
+      msg_AnalogIOAdd.read_mode =
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+    } else if (strcmp(components["analogReadMode"], "VOLTAGE") == 0) {
+      msg_AnalogIOAdd.read_mode =
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+    } else {
+      // Unknown analog read mode, bail out
+      WS_DEBUG_PRINTLN("Unknown analog read mode found: " +
+                       String(components["analogReadMode"]));
+      return false;
+    }
+
+    // Print out the contents of the AnalogIOAdd message
+    WS_DEBUG_PRINTLN("AnalogIOAdd message:");
+    WS_DEBUG_PRINTLN("Pin Name: " + String(msg_AnalogIOAdd.pin_name));
+    WS_DEBUG_PRINTLN("Period: " + String(msg_AnalogIOAdd.period));
+    WS_DEBUG_PRINTLN("Read Mode: " + String(msg_AnalogIOAdd.read_mode));
   } else {
     // Unknown component API type
     WS_DEBUG_PRINTLN("Unknown component API type found: " +
                      String(component_api_type));
     return false;
   }
+
+  // TODO: Note that the TOP-LEVEL decoder is actually looking
+  // for a SIGNAL message with one of these SUBMESSAGEd
+  // so we'll need to encode this into a signalproto form before sending
+  // it over
 
   return true;
 }
