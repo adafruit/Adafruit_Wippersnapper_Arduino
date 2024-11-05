@@ -434,6 +434,28 @@ void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
 }
 
+void callDecodeB2D() {
+  WS_DEBUG_PRINTLN("\n[App] Parsing new Signal->B2D Message");
+
+  wippersnapper_signal_BrokerToDevice msg_signal =
+      wippersnapper_signal_BrokerToDevice_init_default;
+
+  // Configure the payload callback
+  msg_signal.cb_payload.funcs.decode = cbDecodeBrokerToDevice;
+
+  // Decode msg_signal
+  WS_DEBUG_PRINTLN("Creating input stream...");
+  pb_istream_t istream =
+      pb_istream_from_buffer(WsV2._msgBuf, WsV2._szMessageBuf);
+  WS_DEBUG_PRINTLN("Decoding BrokerToDevice message...");
+  if (!pb_decode(&istream, wippersnapper_signal_BrokerToDevice_fields,
+                 &msg_signal)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
+    return;
+  }
+  WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
+}
+
 /**************************************************************************/
 /*!
     @brief    Called when client receives a message published across the
@@ -1170,7 +1192,8 @@ void Wippersnapper_V2::connectV2() {
     // Parse the JSON file
     if (!WsV2._sdCardV2->parseConfigFile())
       haltErrorV2("Failed to parse incoming JSON file");
-    // TODO: Configure the device using the incoming JSON file
+    WS_DEBUG_PRINT("[Offline] Attempting to configure hardware...");
+    callDecodeB2D(); // TODO: We need a way to repeat this call better
     WS_DEBUG_PRINTLN(
         "[Offline Mode] Hardware configured, skipping network setup...");
     return;

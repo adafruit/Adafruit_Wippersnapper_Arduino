@@ -100,10 +100,12 @@ bool ws_sdcard::parseConfigFile() {
       components["componentAPI"]; // ie: "analogio", "digitalio", etc.
 
   if (component_api_type == nullptr) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No component API type found in JSON string!");
+    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No component API type found "
+                     "in JSON string!");
     return false;
   } else {
-    WS_DEBUG_PRINTLN("[SD] Component API type found: " + String(component_api_type));
+    WS_DEBUG_PRINTLN("[SD] Component API type found: " +
+                     String(component_api_type));
   }
 
   // TODO- maybe a Switch case to handle the different component API types but
@@ -186,17 +188,47 @@ bool ws_sdcard::parseConfigFile() {
     WS_DEBUG_PRINTLN("Pin Name: " + String(msg_AnalogIOAdd.pin_name));
     WS_DEBUG_PRINTLN("Period: " + String(msg_AnalogIOAdd.period));
     WS_DEBUG_PRINTLN("Read Mode: " + String(msg_AnalogIOAdd.read_mode));
+
+    // TODO: Note that the TOP-LEVEL decoder is actually looking
+    // for a SIGNAL message with one of these SUBMESSAGEd
+    // so we'll need to encode this into a signalproto form before sending
+    // it over
+
+    // Zero-out the signal message
+    // TODO: This should be global
+    WsV2._signalB2dV2 = wippersnapper_signal_BrokerToDevice_init_zero;
+    //. Fill the signal message with msg_AnalogIOAdd data
+    WsV2._signalB2dV2.which_payload =
+        wippersnapper_signal_BrokerToDevice_analogio_add_tag;
+    WsV2._signalB2dV2.payload.analogio_add = msg_AnalogIOAdd;
+
+    // Get the encoded size of the signal message
+    WS_DEBUG_PRINTLN("Encoding D2b signal message...");
+    // size_t szMessageBuf;
+    if (!pb_get_encoded_size(&WsV2._szMessageBuf,
+                             wippersnapper_signal_BrokerToDevice_fields,
+                             &WsV2._signalB2dV2)) {
+      WS_DEBUG_PRINTLN("[SD] ERROR: Unable to get signal message size!");
+      return false;
+    }
+    // Encode the signal message
+    // uint8_t msgBuf[szMessageBuf];
+    WsV2._signalStream =
+        pb_ostream_from_buffer(WsV2._msgBuf, WsV2._szMessageBuf);
+    if (!ws_pb_encode(&WsV2._signalStream,
+                      wippersnapper_signal_BrokerToDevice_fields,
+                      &WsV2._signalB2dV2)) {
+      WS_DEBUG_PRINTLN("[SD] ERROR: Unable to encode D2B signal message!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("Encoded the D2b signal message");
+
   } else {
     // Unknown component API type
     WS_DEBUG_PRINTLN("[SD] Unknown component API type found: " +
                      String(component_api_type));
     return false;
   }
-
-  // TODO: Note that the TOP-LEVEL decoder is actually looking
-  // for a SIGNAL message with one of these SUBMESSAGEd
-  // so we'll need to encode this into a signalproto form before sending
-  // it over
 
   return true;
 }
