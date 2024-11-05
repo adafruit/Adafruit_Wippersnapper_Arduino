@@ -15,10 +15,10 @@
 #ifndef WS_SDCARD_H
 #define WS_SDCARD_H
 
+#include "RTClib.h"
 #include "SdFat.h"
 #include "Wippersnapper_V2.h"
 #define SD_FAT_TYPE 3
-
 // forward decl.
 class Wippersnapper_V2;
 
@@ -37,6 +37,8 @@ public:
   bool waitForSerialConfig();
   bool validateJson(const char *input);
 
+  // Logging
+
 private:
   bool _is_sd_card_inserted;  ///< True if an SD card is inserted, False
                               ///< otherwise.
@@ -45,6 +47,9 @@ private:
   const char *json_test_data; ///< Json test data
   bool _use_test_data; ///< True if sample data is being used to test, instead
                        ///< of serial input, False otherwise.
+  RTC_DS3231 *_rtc_ds3231 = nullptr;
+  RTC_DS1307 *_rtc_ds1307 = nullptr;
+  bool _rtc_enabled;
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H
