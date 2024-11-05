@@ -1183,7 +1183,11 @@ void Wippersnapper_V2::connectV2() {
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
   if (WsV2._sdCardV2->IsSDCardInserted() == true) {
-    WS_DEBUG_PRINTLN("[Offline Mode] Running device configuration...");
+    WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
+    // Enable logging
+    // TODO: Change func. name to ConfigureLogging
+    WS_DEBUG_PRINTLN("[Offline] Enabling logging...");
+    WsV2._sdCardV2->EnableLogging();
 // Wait for incoming JSON string from Serial
 #ifdef OFFLINE_MODE_DEBUG
     if (!WsV2._sdCardV2->waitForSerialConfig())
@@ -1195,7 +1199,7 @@ void Wippersnapper_V2::connectV2() {
     WS_DEBUG_PRINT("[Offline] Attempting to configure hardware...");
     callDecodeB2D(); // TODO: We need a way to repeat this call better
     WS_DEBUG_PRINTLN(
-        "[Offline Mode] Hardware configured, skipping network setup...");
+        "[Offline] Hardware configured, skipping network setup...");
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");

@@ -30,34 +30,6 @@ ws_sdcard::ws_sdcard() {
   if (_sd.begin(SD_CS_PIN)) {
     _is_sd_card_inserted = true;
   }
-
-  // Attempt to search for a DS3231 RTC
-  WS_DEBUG_PRINTLN("Searching for DS3231 RTC...");
-  _rtc_ds3231 = new RTC_DS3231();
-  if (!_rtc_ds3231->begin()) {
-    WS_DEBUG_PRINTLN("Unable to find DS3231 RTC");
-    delete _rtc_ds3231;
-    _rtc_ds3231 = nullptr;
-  } else {
-    WS_DEBUG_PRINTLN("Found DS3231 RTC!")
-    _rtc_enabled = true;
-  }
-
-  // Attempt to search for a DS1307 RTC
-  WS_DEBUG_PRINTLN("Searching for DS1307 RTC...");
-  _rtc_ds1307 = new RTC_DS1307();
-  if (!_rtc_ds1307->begin()) {
-    WS_DEBUG_PRINTLN("Unable to find DS1307 RTC");
-    delete _rtc_ds1307;
-    _rtc_ds1307 = nullptr;
-  } else {
-    WS_DEBUG_PRINTLN("Found DS1307 RTC!")
-    _rtc_enabled = true;
-  }
-  if (!_rtc_enabled) {
-    WS_DEBUG_PRINTLN(
-        "[SD] No RTC found, defaulting to use millis() timestamps!")
-  }
 }
 
 /**************************************************************************/
@@ -69,6 +41,35 @@ ws_sdcard::~ws_sdcard() {
   // TODO: Close any open files
   // Then, end the SD card (ends SPI transaction)
   _sd.end();
+}
+
+void ws_sdcard::EnableLogging() {
+  // Attempt to search for a DS3231 RTC
+  WS_DEBUG_PRINTLN("Searching for DS1307 RTC...");
+  _rtc_ds1307 = new RTC_DS1307();
+  if (_rtc_ds1307->begin()) {
+    WS_DEBUG_PRINTLN("Found DS1307 RTC!");
+  } else {
+    WS_DEBUG_PRINT("Unable to find DS1307 RTC, ");
+    delete _rtc_ds1307;
+    _rtc_ds1307 = nullptr;
+    // Attempt to search for a DS3231 RTC if DS1307 is not found
+    WS_DEBUG_PRINTLN("searching for DS3231 RTC...");
+    _rtc_ds3231 = new RTC_DS3231();
+    if (_rtc_ds3231->begin()) {
+      WS_DEBUG_PRINTLN("Found DS3231 RTC!");
+    } else {
+      WS_DEBUG_PRINTLN("Unable to find DS3231 RTC");
+      delete _rtc_ds3231;
+      _rtc_ds3231 = nullptr;
+    }
+  }
+
+  // Fallback to millis() if no RTC is found
+  if (_rtc_ds1307 == nullptr && _rtc_ds3231 == nullptr) {
+    WS_DEBUG_PRINTLN(
+        "[SD] No RTC found, defaulting to use millis() timestamps!")
+  }
 }
 
 /**************************************************************************/
