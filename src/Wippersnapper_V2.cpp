@@ -99,7 +99,7 @@ void Wippersnapper_V2::provisionV2() {
 
   // If an SD card is inserted and mounted, we do not need to provision
   // wifi/io credentials
-  if (WsV2._sdCardV2->IsSDCardInserted() == true)
+  if (WsV2._sdCardV2->mode_offline == true)
     return;
 
 // Initialize the filesystem
@@ -1182,7 +1182,7 @@ void Wippersnapper_V2::connectV2() {
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
-  if (WsV2._sdCardV2->IsSDCardInserted() == true) {
+  if (WsV2._sdCardV2->mode_offline == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
     // Enable logging
     // TODO: Change func. name to ConfigureLogging
