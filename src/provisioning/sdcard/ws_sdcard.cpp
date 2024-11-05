@@ -275,11 +275,13 @@ bool ws_sdcard::waitForSerialConfig() {
   // 1. Use a SD card with a JSON config file
   // 2. Provide a JSON string via the hardware's serial input
   // 3. Use a test JSON string - for debugging purposes ONLY
+
+  // TODO: Add checkin pins/data to the JSON string
   json_test_data =
       "{\"components\":[{\"componentAPI\":\"analogio\",\"name\":\"Analog "
-      "Pin\",\"pinName\":\"A18\",\"type\":\"analog_pin\",\"mode\":\"ANALOG\","
+      "Pin\",\"pinName\":\"D14\",\"type\":\"analog_pin\",\"mode\":\"ANALOG\","
       "\"direction\":\"INPUT\",\"sampleMode\":\"TIMER\",\"analogReadMode\":"
-      "\"PIN_VALUE\",\"period\":30,\"isPin\":true}]}\\n\r\n";
+      "\"PIN_VALUE\",\"period\":5,\"isPin\":true}]}\\n\r\n";
   _use_test_data = true;
 
   _serialInput = ""; // Clear the serial input buffer

@@ -99,7 +99,6 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   WS_DEBUG_PRINT("Read Mode: ");
   WS_DEBUG_PRINTLN(new_pin.read_mode);
 
-
   // Add the new pin to the vector
   _analogio_pins.push_back(new_pin);
 
@@ -186,14 +185,28 @@ bool AnalogIOController::EncodePublishPinEvent(
   }
 
   // Publish the AnalogIO message to the broker
-  if (!WsV2.PublishSignal(
-          wippersnapper_signal_DeviceToBroker_analogio_event_tag,
-          _analogio_model->GetAnalogIOEvent())) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
-                     "moving onto the next pin!");
-    return false;
+  if (!WsV2._sdCardV2->mode_offline) {
+    WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
+    if (!WsV2.PublishSignal(
+            wippersnapper_signal_DeviceToBroker_analogio_event_tag,
+            _analogio_model->GetAnalogIOEvent())) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Unable to publish analogio voltage event message, "
+          "moving onto the next pin!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
+  } else {
+    // Print event data
+    WS_DEBUG_PRINTLN("AnalogIOEvent message:");
+    WS_DEBUG_PRINT("Pin Name: ");
+    WS_DEBUG_PRINTLN(c_pin_name);
+    WS_DEBUG_PRINT("Value: ");
+    WS_DEBUG_PRINTLN(value);
+    WS_DEBUG_PRINT("Read Type: ");
+    WS_DEBUG_PRINTLN(read_type);
+    WS_DEBUG_PRINTLN("[AnalogIO] Offline analogIOEvent message not published!");
   }
-  WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
 
   return true;
 }

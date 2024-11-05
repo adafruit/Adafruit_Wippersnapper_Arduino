@@ -1197,7 +1197,15 @@ void Wippersnapper_V2::connectV2() {
     if (!WsV2._sdCardV2->parseConfigFile())
       haltErrorV2("Failed to parse incoming JSON file");
     WS_DEBUG_PRINT("[Offline] Attempting to configure hardware...");
-    callDecodeB2D(); // TODO: We need a way to repeat this call better
+    // Mock the "check in" process
+    // Configure GPIO classes based on checkin response message
+    // TODO: Add checkin pins/data to the JSON string, we are hardcoding here
+    WsV2.digital_io_controller->SetMaxDigitalPins(10);
+    WsV2.analogio_controller->SetRefVoltage(3.3);
+    WsV2.analogio_controller->SetTotalAnalogPins(4);
+    // Call the signal decoder to parse the incoming JSON string
+    // TODO: We need a way to repeat this call better
+    callDecodeB2D();
     WS_DEBUG_PRINTLN(
         "[Offline] Hardware configured, skipping network setup...");
     return;
@@ -1258,13 +1266,14 @@ void Wippersnapper_V2::connectV2() {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper_V2::runV2() {
-  // Check networking
-  runNetFSMV2();
-  WsV2.feedWDTV2();
-  pingBrokerV2();
-
-  // Process all incoming packets from Wippersnapper_V2 MQTT Broker
-  WsV2._mqttV2->processPackets(10);
+  if (!WsV2._sdCardV2->mode_offline) {
+    // Handle networking functions
+    runNetFSMV2();
+    WsV2.feedWDTV2();
+    pingBrokerV2();
+    // Process all incoming packets from Wippersnapper_V2 MQTT Broker
+    WsV2._mqttV2->processPackets(10);
+  }
 
   // Process all digital events
   WsV2.digital_io_controller->Update();
