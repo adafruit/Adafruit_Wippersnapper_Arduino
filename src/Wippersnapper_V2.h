@@ -254,6 +254,12 @@ public:
 #endif
   bool got_checkin_response; ///< True if a checkin response was received, False
                              ///< otherwise.
+
+  wippersnapper_signal_BrokerToDevice _signalB2dV2;
+  pb_ostream_t _signalStream;
+  size_t _szMessageBuf;
+  uint8_t _msgBuf[512];
+
 private:
   void _initV2();
 
