@@ -52,11 +52,11 @@ public:
         return;
       }
       //set backing RH+Temp
-      if (doc.containsKey("temp")){
-        ref_temp = doc["temp"];
+      if (doc.containsKey("input-temp")){
+        ref_temp = doc["input-temp"];
       }
-      if (doc.containsKey("rh")){
-        ref_rh = doc["rh"];
+      if (doc.containsKey("input-humidity")){
+        ref_rh = doc["input-humidity"];
       }
     }
   }
