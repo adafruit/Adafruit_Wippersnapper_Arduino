@@ -32,6 +32,7 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
+  void EnableLogging();
   bool IsSDCardInserted();
   bool parseConfigFile();
   bool waitForSerialConfig();
@@ -49,7 +50,6 @@ private:
                        ///< of serial input, False otherwise.
   RTC_DS3231 *_rtc_ds3231 = nullptr;
   RTC_DS1307 *_rtc_ds1307 = nullptr;
-  bool _rtc_enabled;
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H
