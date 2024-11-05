@@ -20,15 +20,14 @@
 */
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
-  _is_sd_card_inserted = false;
-  _rtc_enabled = false;
+  mode_offline = false;
 #ifndef SD_CS_PIN
   return;
 #endif
 
   // Attempt to initialize the SD card
   if (_sd.begin(SD_CS_PIN)) {
-    _is_sd_card_inserted = true;
+    mode_offline = true;
   }
 }
 
@@ -71,14 +70,6 @@ void ws_sdcard::EnableLogging() {
         "[SD] No RTC found, defaulting to use millis() timestamps!")
   }
 }
-
-/**************************************************************************/
-/*!
-    @brief    Checks if an SD card is inserted and mounted.
-    @returns  True if an SD card is inserted and mounted, False otherwise.
-*/
-/**************************************************************************/
-bool ws_sdcard::IsSDCardInserted() { return _is_sd_card_inserted; }
 
 bool ws_sdcard::parseConfigFile() {
   File32 file_config; // TODO: MAke this global?

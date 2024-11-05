@@ -33,16 +33,13 @@ public:
   ws_sdcard();
   ~ws_sdcard();
   void EnableLogging();
-  bool IsSDCardInserted();
   bool parseConfigFile();
   bool waitForSerialConfig();
   bool validateJson(const char *input);
-
+  bool mode_offline;
   // Logging
-
+  // TODO
 private:
-  bool _is_sd_card_inserted;  ///< True if an SD card is inserted, False
-                              ///< otherwise.
   SdFat _sd;                  ///< SD object from Adafruit SDFat library
   String _serialInput;        ///< Serial input buffer
   const char *json_test_data; ///< Json test data
