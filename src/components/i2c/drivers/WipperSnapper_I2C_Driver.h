@@ -37,11 +37,14 @@ public:
                 The I2C hardware interface, default is Wire.
       @param    sensorAddress
                 The I2C sensor's unique address.
+      @param    customProperties
+                String of json serialised custom properties passed to the driver
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress) {
+  WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress, String customProperties="") {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
+    _customProperties = customProperties;
   }
 
   /*******************************************************************************/
@@ -1318,8 +1321,9 @@ public:
   }
 
 protected:
-  TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
-  uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
+  TwoWire *_i2c;                 ///< Pointer to the I2C driver's Wire object
+  uint16_t _sensorAddress;       ///< The I2C driver's unique I2C address.
+  String _customProperties = ""; ///< Custom properties JSON
   long _tempSensorPeriod =
       0L; ///< The time period between reading the temperature sensor's value.
   long _tempSensorPeriodPrv =

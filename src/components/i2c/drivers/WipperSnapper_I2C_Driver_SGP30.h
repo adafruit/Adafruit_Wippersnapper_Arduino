@@ -3,6 +3,7 @@
 
 #include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_SGP30.h>
+#include <ArduinoJson.h>
 
 /**************************************************************************/
 /*!
@@ -18,12 +19,15 @@ public:
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
+      @param    customProperties
+                String of json serialised custom properties passed to the driver
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_SGP30(TwoWire *i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+  WipperSnapper_I2C_Driver_SGP30(TwoWire *i2c, uint16_t sensorAddress, String customProperties)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress, customProperties) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
+    _customProperties = customProperties;
   }
 
   /*******************************************************************************/
@@ -36,6 +40,35 @@ public:
     delete _sgp30;
   }
 
+
+  bool processCustomProperties(){
+    // decode the json for RH + Temp, ideally the dynamic baseline bytes too
+    if (customProperties.length() > 0) {
+      StaticJsonDocument<100> doc;
+      DeserializationError error = deserializeJson(doc, customProperties);
+      if (error) {
+        WS_DEBUG_PRINT("deserializeJson() failed: ");
+        WS_DEBUG_PRINTLN(error.c_str());
+        return;
+      }
+      //set backing RH+Temp
+      if (doc.containsKey("temp")){
+        ref_temp = doc["temp"];
+      }
+      if (doc.containsKey("rh")){
+        ref_rh = doc["rh"];
+      }
+    }
+  }
+
+  bool setBaseLineRHT(){
+    if (ref_rh == 0.0) {
+      return _sgp30->setHumidity(0); // turn off humidity compensation
+    } // else convert Relative Humidity + Temp to absolute humidity (mg/m3)
+    uint32_t absoluteHumidity = ref_rh + ref_temp; // not this!!!
+    return _sgp30->setHumidity(absoluteHumidity/1000);
+  }
+
   /*******************************************************************************/
   /*!
       @brief    Initializes the SGP30 sensor and begins I2C.
@@ -45,6 +78,10 @@ public:
   bool begin() {
     _sgp30 = new Adafruit_SGP30();
     bool isInit = _sgp30->begin(_i2c);
+    if (isInit && processCustomProperties()) {
+      // we catch the fail and avoid activating humidity compensation.
+      isInit = setBaseLineRHT();
+    }
     if (isInit) {
       _sgp30->IAQinit();
     }
@@ -68,6 +105,8 @@ public:
   }
 
 protected:
+  float ref_temp = 20.0f;
+  float ref_rh = 50.0f;
   Adafruit_SGP30 *_sgp30; ///< Pointer to SGP30 temperature sensor object
 };
 
