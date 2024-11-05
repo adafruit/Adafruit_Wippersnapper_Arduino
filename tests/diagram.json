@@ -30,10 +30,10 @@
     [ "sd1:DI", "esp:D23", "blue", [ "v0" ] ],
     [ "sd1:SCK", "esp:D18", "green", [ "v0" ] ],
     [ "sd1:DO", "esp:D19", "orange", [ "v0" ] ],
-    [ "rtc1:5V", "esp:VIN", "red", [ "v163.2", "h-230.8" ] ],
     [ "rtc1:GND", "esp:GND.1", "black", [ "v76.8", "h-124.5" ] ],
     [ "rtc1:SDA", "esp:D21", "violet", [ "v57.6", "h-144" ] ],
-    [ "rtc1:SCL", "esp:D22", "green", [ "v28.8", "h-153.5" ] ]
+    [ "rtc1:SCL", "esp:D22", "green", [ "v28.8", "h-153.5" ] ],
+    [ "rtc1:5V", "esp:VIN", "red", [ "v201.6", "h-230.8" ] ]
   ],
   "serialMonitor": { "display": "terminal", "newline": "lf" },
   "dependencies": {}

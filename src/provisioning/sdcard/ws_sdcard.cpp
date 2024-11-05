@@ -21,6 +21,7 @@
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
   _is_sd_card_inserted = false;
+  _rtc_enabled = false;
 #ifndef SD_CS_PIN
   return;
 #endif
@@ -28,6 +29,34 @@ ws_sdcard::ws_sdcard() {
   // Attempt to initialize the SD card
   if (_sd.begin(SD_CS_PIN)) {
     _is_sd_card_inserted = true;
+  }
+
+  // Attempt to search for a DS3231 RTC
+  WS_DEBUG_PRINTLN("Searching for DS3231 RTC...");
+  _rtc_ds3231 = new RTC_DS3231();
+  if (!_rtc_ds3231->begin()) {
+    WS_DEBUG_PRINTLN("Unable to find DS3231 RTC");
+    delete _rtc_ds3231;
+    _rtc_ds3231 = nullptr;
+  } else {
+    WS_DEBUG_PRINTLN("Found DS3231 RTC!")
+    _rtc_enabled = true;
+  }
+
+  // Attempt to search for a DS1307 RTC
+  WS_DEBUG_PRINTLN("Searching for DS1307 RTC...");
+  _rtc_ds1307 = new RTC_DS1307();
+  if (!_rtc_ds1307->begin()) {
+    WS_DEBUG_PRINTLN("Unable to find DS1307 RTC");
+    delete _rtc_ds1307;
+    _rtc_ds1307 = nullptr;
+  } else {
+    WS_DEBUG_PRINTLN("Found DS1307 RTC!")
+    _rtc_enabled = true;
+  }
+  if (!_rtc_enabled) {
+    WS_DEBUG_PRINTLN(
+        "[SD] No RTC found, defaulting to use millis() timestamps!")
   }
 }
 
