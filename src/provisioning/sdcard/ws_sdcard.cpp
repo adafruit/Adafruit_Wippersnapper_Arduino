@@ -138,6 +138,25 @@ bool ws_sdcard::parseConfigFile() {
     return false;
   }
 
+  // NOTE: While we can't do a "proper" check-in procedure with
+  // the MQTT broker while in offline mode, we can still configure
+  // the hardware by parsing the JSON object's "exportedFromDevice"
+  // contents and setting up the hardware
+  WS_DEBUG_PRINT("[SD] Performing check-in process...");
+  JsonObject exportedFromDevice = doc["exportedFromDevice"];
+  if (exportedFromDevice.isNull()) {
+    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No exportedFromDevice object "
+                     "found in JSON string! Unable to configure hardware!");
+    return false;
+  }
+  WsV2.digital_io_controller->SetMaxDigitalPins(
+      exportedFromDevice["totalGPIOPins"]);
+  WsV2.analogio_controller->SetRefVoltage(
+      exportedFromDevice["referenceVoltage"]);
+  WsV2.analogio_controller->SetTotalAnalogPins(
+      exportedFromDevice["totalAnalogPins"]);
+  WS_DEBUG_PRINTLN("[SD] OK!");
+
   // Parse the "components" array into a JsonObject
   JsonObject components = doc["components"][0];
 
@@ -304,13 +323,33 @@ bool ws_sdcard::waitForSerialConfig() {
   // 2. Provide a JSON string via the hardware's serial input
   // 3. Use a test JSON string - for debugging purposes ONLY
 
-  // TODO: Add checkin pins/data to the JSON string
-  json_test_data =
-      "{\"components\":[{\"componentAPI\":\"analogio\",\"name\":\"Analog "
-      "Pin\",\"pinName\":\"D14\",\"type\":\"analog_pin\",\"mode\":\"ANALOG\","
-      "\"direction\":\"INPUT\",\"sampleMode\":\"TIMER\",\"analogReadMode\":"
-      "\"PIN_VALUE\",\"period\":5,\"isPin\":true}]}\\n\r\n";
   _use_test_data = true;
+  json_test_data = "{"
+                   "\"exportVersion\": \"1.0.0\","
+                   "\"exportedBy\": \"tester\","
+                   "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
+                   "\"exportedFromDevice\": {"
+                   "\"board\": \"metroesp32s3\","
+                   "\"firmwareVersion\": \"1.0.0-beta.93\","
+                   "\"referenceVoltage\": 2.6,"
+                   "\"totalGPIOPins\": 11,"
+                   "\"totalAnalogPins\": 6"
+                   "},"
+                   "\"components\": ["
+                   "{"
+                   "\"componentAPI\": \"analogio\","
+                   "\"name\": \"Analog Pin\","
+                   "\"pinName\": \"D14\","
+                   "\"type\": \"analog_pin\","
+                   "\"mode\": \"ANALOG\","
+                   "\"direction\": \"INPUT\","
+                   "\"sampleMode\": \"TIMER\","
+                   "\"analogReadMode\": \"PIN_VALUE\","
+                   "\"period\": 5,"
+                   "\"isPin\": true"
+                   "}"
+                   "]"
+                   "}\\n\r\n";
 
   _serialInput = ""; // Clear the serial input buffer
   if (!_use_test_data) {
