@@ -43,6 +43,10 @@ public:
                               wippersnapper_sensor_SensorType read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
                               wippersnapper_sensor_SensorType read_type);
+  bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
+                              wippersnapper_sensor_SensorType read_type);
+  // RTC
+  uint32_t GetTimestamp();
   // Logging
   // TODO:
   // 1) Create a logging file on the SD
