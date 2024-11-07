@@ -359,18 +359,7 @@ bool ws_sdcard::waitForSerialConfig() {
   return true;
 }
 
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
-  // TODO!
-  return true;
-}
-
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
-  // Get the pin name in the correct format ("A0", "A1", etc.)
-  char c_pin_name[12];
-  sprintf(c_pin_name, "A%d", pin);
-
+uint32_t ws_sdcard::GetTimestamp() {
   // Obtain RTC timestamp (TODO - refactor this out)
   DateTime now;
   if (_rtc_ds3231 != nullptr)
@@ -382,22 +371,149 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   else {
     // TODO! implement software millis() version of now() and unixtime()
   }
-  uint32_t timestamp = now.unixtime();
+  return now.unixtime();
+}
 
-  // Format like?
-  // timestamp + " " + c_pin_name + " " + value + " " + read_type
-  // what about a list?
-
-  // sensor_type will be used for printign the UNITS!
-  // Expected sensorEvent:
-  /*
-  {
-    "pin_name": "",
-    "sensor_type": "",
-    "float_value": 0,
-    "bytes_value": [],
-    "bool_value": false
+const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
+  switch (sensorType) {
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
+    return "UNSPECIFIED";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER:
+    return "ACCELEROMETER";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD:
+    return "MAGNETIC_FIELD";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION:
+    return "ORIENTATION";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE:
+    return "GYROSCOPE";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
+    return "LIGHT";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
+    return "PRESSURE";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY:
+    return "PROXIMITY";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY:
+    return "GRAVITY";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION:
+    return "LINEAR_ACCELERATION";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR:
+    return "ROTATION_VECTOR";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+    return "RELATIVE_HUMIDITY";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+    return "AMBIENT_TEMPERATURE";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+    return "OBJECT_TEMPERATURE";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
+    return "VOLTAGE";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
+    return "CURRENT";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR:
+    return "COLOR";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
+    return "RAW";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
+    return "PM10_STD";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
+    return "PM25_STD";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
+    return "PM100_STD";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV:
+    return "PM10_ENV";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV:
+    return "PM25_ENV";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV:
+    return "PM100_ENV";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
+    return "CO2";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+    return "GAS_RESISTANCE";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
+    return "ALTITUDE";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX:
+    return "LUX";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
+    return "ECO2";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+    return "UNITLESS_PERCENT";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+    return "AMBIENT_TEMPERATURE_FAHRENHEIT";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+    return "OBJECT_TEMPERATURE_FAHRENHEIT";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
+    return "VOC_INDEX";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
+    return "NOX_INDEX";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
+    return "TVOC";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES:
+    return "BYTES";
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN:
+    return "BOOLEAN";
+  default:
+    return "UNKNOWN";
   }
-  */
+}
+
+bool ws_sdcard::LogGPIOSensorEventToSD(
+    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
+  // Get the pin name in the correct format ("A0", "A1", etc.)
+  char c_pin_name[12];
+  sprintf(c_pin_name, "A%d", pin);
+
+  // Get the RTC's timestamp
+  uint32_t timestamp = GetTimestamp();
+
+  // Create the JSON document
+  JsonDocument doc;
+
+  doc["timestamp"] = timestamp;
+  doc["pin"] = c_pin_name;
+  doc["value"] = value;
+  doc["sensor_type"] = SensorTypeToString(read_type);
+  serializeJson(doc, Serial);
+
+  return true;
+}
+
+bool ws_sdcard::LogGPIOSensorEventToSD(
+    uint8_t pin, uint16_t value, wippersnapper_sensor_SensorType read_type) {
+  // Get the pin name in the correct format ("A0", "A1", etc.)
+  char c_pin_name[12];
+  sprintf(c_pin_name, "A%d", pin);
+
+  // Get the RTC's timestamp
+  uint32_t timestamp = GetTimestamp();
+
+  // Create the JSON document
+  JsonDocument doc;
+
+  doc["timestamp"] = timestamp;
+  doc["pin"] = c_pin_name;
+  doc["value"] = value;
+  doc["si_unit"] = SensorTypeToString(read_type);
+  serializeJson(doc, Serial);
+
+  return true;
+}
+
+bool ws_sdcard::LogGPIOSensorEventToSD(
+    uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
+  // Get the pin name in the correct format ("A0", "A1", etc.)
+  char c_pin_name[12];
+  sprintf(c_pin_name, "A%d", pin);
+
+  // Get the RTC's timestamp
+  uint32_t timestamp = GetTimestamp();
+
+  // Create the JSON document
+  JsonDocument doc;
+
+  doc["timestamp"] = timestamp;
+  doc["pin"] = c_pin_name;
+  doc["value"] = value;
+  doc["sensor_type"] = SensorTypeToString(read_type);
+  serializeJson(doc, Serial);
+
   return true;
 }
