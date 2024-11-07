@@ -55,38 +55,78 @@ public:
     _scd->begin(*_i2c);
 
     // stop previously started measurement
-    if (_scd->stopPeriodicMeasurement())
+    if (_scd->stopPeriodicMeasurement() != 0) {
       return false;
+    }
 
     // start measurements
-    if (_scd->startPeriodicMeasurement())
+    if (_scd->startPeriodicMeasurement() != 0) {
       return false;
+    }
 
     return true;
   }
 
-  /********************************************************************************/
+  /*******************************************************************************/
   /*!
-      @brief    Attempts to read the SCD4x's sensor measurements
-      @returns  True if the measurements were read without errors, False
-                if read errors occured or if sensor did not have data ready.
+      @brief    Checks if sensor was read within last 1s, or is the first read.
+      @returns  True if the sensor was recently read, False otherwise.
   */
-  /********************************************************************************/
-  bool readSensorMeasurements() {
-    uint16_t error;
-    bool isDataReady = false;
-    delay(100);
+  bool alreadyRecentlyRead() {
+    return _lastRead != 0 && millis() - _lastRead < 1000;
+  }
 
-    // Check if data is ready
-    error = _scd->getDataReadyFlag(isDataReady);
-    if (error || !isDataReady)
+  /*******************************************************************************/
+  /*!
+      @brief    Checks if the sensor is ready to be read
+      @returns  True if the sensor is ready, False otherwise.
+  */
+  /*******************************************************************************/
+  bool sensorReady() {
+    bool isDataReady = false;
+    uint16_t error = _scd->getDataReadyFlag(isDataReady);
+    if (error != 0 || !isDataReady) {
+      // failed, one more quick attempt
+      delay(100);
+      error = _scd->getDataReadyFlag(isDataReady);
+      if (error != 0 || !isDataReady) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the sensor.
+      @returns  True if the sensor was read successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool readSensorData() {
+    // dont read sensor more than once per second
+    if (alreadyRecentlyRead()) {
+      return true;
+    }
+
+    if (!sensorReady()) {
       return false;
+    }
+
 
     // Read SCD4x measurement
-    error = _scd->readMeasurement(_co2, _temperature, _humidity);
-    if (error || _co2 == 0)
+    uint16_t error = _scd->readMeasurement(_co2, _temperature, _humidity);
+    if (error != 0 || _co2 == 0) {
+      WS_DEBUG_PRINT("Error reading SCD4x measurements: #");
+      WS_DEBUG_PRINT(error);
+      WS_DEBUG_PRINT("  CO2: ");
+      WS_DEBUG_PRINTLN(_co2);
+      WS_DEBUG_PRINT("Temp: ");
+      WS_DEBUG_PRINT(_temperature);
+      WS_DEBUG_PRINT("  Humidity: ");
+      WS_DEBUG_PRINTLN(_humidity);
       return false;
-
+    }
+    _lastRead = millis();
     return true;
   }
 
@@ -101,8 +141,9 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // read all sensor measurements
-    if (!readSensorMeasurements())
+    if (!readSensorData()) {
       return false;
+    }
 
     tempEvent->temperature = _temperature;
     return true;
@@ -119,8 +160,9 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // read all sensor measurements
-    if (!readSensorMeasurements())
+    if (!readSensorData()) {
       return false;
+    }
 
     humidEvent->relative_humidity = _humidity;
     return true;
@@ -137,18 +179,20 @@ public:
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
     // read all sensor measurements
-    if (!readSensorMeasurements())
+    if (!readSensorData()) {
       return false;
+    }
 
     co2Event->CO2 = (float)_co2;
     return true;
   }
 
-protected:
-  SensirionI2CScd4x *_scd; ///< SCD4x driver object
-  uint16_t _co2;           ///< SCD4x co2 reading
-  float _temperature;      ///< SCD4x temperature reading
-  float _humidity;         ///< SCD4x humidity reading
+private:
+  SensirionI2CScd4x *_scd = nullptr; ///< SCD4x driver object
+  uint16_t _co2 = 0;                 ///< SCD4x co2 reading
+  float _temperature = 20.0f;           ///< SCD4x temperature reading
+  float _humidity = 50.0f;              ///< SCD4x humidity reading
+  ulong _lastRead = 0;               ///< Last time the sensor was read
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD4X
