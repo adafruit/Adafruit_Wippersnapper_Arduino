@@ -64,6 +64,12 @@ public:
       return false;
     }
 
+    // Takes 5seconds to have data ready, don't queue read until then
+    ulong currentTime = millis() - 25000uL; // T-25s, so 5s time for 30s polling
+    this->setSensorCO2PeriodPrv(currentTime);
+    this->setSensorAmbientTempFPeriodPrv(currentTime);
+    this->setSensorAmbientTempPeriodPrv(currentTime);
+    this->setSensorRelativeHumidityPeriodPrv(currentTime);
     return true;
   }
 
