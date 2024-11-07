@@ -206,6 +206,7 @@ bool AnalogIOController::EncodePublishPinEvent(
     WS_DEBUG_PRINT("Read Type: ");
     WS_DEBUG_PRINTLN(read_type);
     WS_DEBUG_PRINTLN("[AnalogIO] Offline analogIOEvent message not published!");
+    // TODO: Log out this data by calling a logging function in sdcard class
   }
 
   return true;
