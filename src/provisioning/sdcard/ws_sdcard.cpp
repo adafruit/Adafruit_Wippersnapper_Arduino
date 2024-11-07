@@ -48,6 +48,12 @@ void ws_sdcard::EnableLogging() {
   _rtc_ds1307 = new RTC_DS1307();
   if (_rtc_ds1307->begin()) {
     WS_DEBUG_PRINTLN("Found DS1307 RTC!");
+    if (!_rtc_ds1307->isrunning()) {
+      Serial.println("RTC is not running, let's set the time!");
+      // When time needs to be set on a new device, or after a power loss, the
+      // following line sets the RTC to the date & time this sketch was compiled
+      _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
+    }
   } else {
     WS_DEBUG_PRINT("Unable to find DS1307 RTC, ");
     delete _rtc_ds1307;
@@ -57,10 +63,30 @@ void ws_sdcard::EnableLogging() {
     _rtc_ds3231 = new RTC_DS3231();
     if (_rtc_ds3231->begin()) {
       WS_DEBUG_PRINTLN("Found DS3231 RTC!");
+      if (_rtc_ds3231->lostPower()) {
+        Serial.println("RTC lost power, let's set the time!");
+        // When time needs to be set on a new device, or after a power loss, the
+        // following line sets the RTC to the date & time this sketch was
+        // compiled
+        _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
+      }
     } else {
-      WS_DEBUG_PRINTLN("Unable to find DS3231 RTC");
+      WS_DEBUG_PRINT("Unable to find DS3231 RTC, ");
       delete _rtc_ds3231;
       _rtc_ds3231 = nullptr;
+      // Attempt to search for a DS3231 RTC if DS1307 is not found
+      WS_DEBUG_PRINTLN("searching for PCF8523 RTC...");
+      _rtc_pcf8523 = new RTC_PCF8523();
+      if (_rtc_pcf8523->begin()) {
+        WS_DEBUG_PRINTLN("Found PCF8523 RTC!");
+        if (_rtc_pcf8523->lostPower()) {
+          Serial.println("RTC lost power, let's set the time!");
+          // When time needs to be set on a new device, or after a power loss,
+          // the following line sets the RTC to the date & time this sketch was
+          // compiled
+          _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
+        }
+      }
     }
   }
 
@@ -68,6 +94,8 @@ void ws_sdcard::EnableLogging() {
   if (_rtc_ds1307 == nullptr && _rtc_ds3231 == nullptr) {
     WS_DEBUG_PRINTLN(
         "[SD] No RTC found, defaulting to use millis() timestamps!")
+  } else {
+    WS_DEBUG_PRINTLN("[SD] RTC found, using RTC timestamps!");
   }
 }
 
@@ -328,5 +356,48 @@ bool ws_sdcard::waitForSerialConfig() {
   }
 
   WS_DEBUG_PRINTLN("[SD] Valid JSON string received!");
+  return true;
+}
+
+bool ws_sdcard::LogGPIOSensorEventToSD(
+    uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
+  // TODO!
+  return true;
+}
+
+bool ws_sdcard::LogGPIOSensorEventToSD(
+    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
+  // Get the pin name in the correct format ("A0", "A1", etc.)
+  char c_pin_name[12];
+  sprintf(c_pin_name, "A%d", pin);
+
+  // Obtain RTC timestamp (TODO - refactor this out)
+  DateTime now;
+  if (_rtc_ds3231 != nullptr)
+    now = _rtc_ds3231->now();
+  else if (_rtc_ds1307 != nullptr)
+    now = _rtc_ds1307->now();
+  else if (_rtc_pcf8523 != nullptr)
+    now = _rtc_pcf8523->now();
+  else {
+    // TODO! implement software millis() version of now() and unixtime()
+  }
+  uint32_t timestamp = now.unixtime();
+
+  // Format like?
+  // timestamp + " " + c_pin_name + " " + value + " " + read_type
+  // what about a list?
+
+  // sensor_type will be used for printign the UNITS!
+  // Expected sensorEvent:
+  /*
+  {
+    "pin_name": "",
+    "sensor_type": "",
+    "float_value": 0,
+    "bytes_value": [],
+    "bool_value": false
+  }
+  */
   return true;
 }
