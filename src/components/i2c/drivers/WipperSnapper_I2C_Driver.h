@@ -190,7 +190,7 @@ public:
       @returns  Time when the co2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
+  virtual ulong getSensorCO2PeriodPrv() { return _CO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -199,7 +199,7 @@ public:
                 The time when the co2 sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorCO2PeriodPrv(long period) {
+  virtual void setSensorCO2PeriodPrv(ulong period) {
     _CO2SensorPeriodPrv = period;
   }
 
@@ -236,7 +236,7 @@ public:
       @returns  Time when the eCO2 sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorECO2PeriodPrv() { return _ECO2SensorPeriodPrv; }
+  virtual ulong getSensorECO2PeriodPrv() { return _ECO2SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -245,7 +245,7 @@ public:
                 The time when the CO2 sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorECO2PeriodPrv(long period) {
+  virtual void setSensorECO2PeriodPrv(ulong period) {
     _ECO2SensorPeriodPrv = period;
   }
 
@@ -282,7 +282,7 @@ public:
       @returns  Time when the TVOC sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorTVOCPeriodPrv() { return _TVOCSensorPeriodPrv; }
+  virtual ulong getSensorTVOCPeriodPrv() { return _TVOCSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -291,7 +291,7 @@ public:
                 The time when the TVOC sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorTVOCPeriodPrv(long period) {
+  virtual void setSensorTVOCPeriodPrv(ulong period) {
     _TVOCSensorPeriodPrv = period;
   }
 
@@ -329,7 +329,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorAmbientTempPeriodPrv() { return _tempSensorPeriodPrv; }
+  virtual ulong getSensorAmbientTempPeriodPrv() { return _tempSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -340,7 +340,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorAmbientTempPeriodPrv(long periodPrv) {
+  virtual void setSensorAmbientTempPeriodPrv(ulong periodPrv) {
     _tempSensorPeriodPrv = periodPrv;
   }
 
@@ -378,7 +378,7 @@ public:
       @returns  Time when the humidity sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorRelativeHumidityPeriodPrv() {
+  virtual ulong getSensorRelativeHumidityPeriodPrv() {
     return _humidSensorPeriodPrv;
   }
 
@@ -389,7 +389,7 @@ public:
                 The time when the temperature sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorRelativeHumidityPeriodPrv(long periodPrv) {
+  virtual void setSensorRelativeHumidityPeriodPrv(ulong periodPrv) {
     _humidSensorPeriodPrv = periodPrv;
   }
 
@@ -427,7 +427,7 @@ public:
       @returns  Time when the pressure sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
+  virtual ulong getSensorPressurePeriodPrv() { return _pressureSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -436,7 +436,7 @@ public:
                 The time when the pressure sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorPressurePeriodPrv(long period) {
+  virtual void setSensorPressurePeriodPrv(ulong period) {
     _pressureSensorPeriodPrv = period;
   }
 
@@ -474,7 +474,7 @@ public:
       @returns  Time when the Altitude sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorAltitudePeriodPrv() { return _altitudeSensorPeriodPrv; }
+  virtual ulong getSensorAltitudePeriodPrv() { return _altitudeSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -483,7 +483,7 @@ public:
                 The time when the Altitude sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorAltitudePeriodPrv(long period) {
+  virtual void setSensorAltitudePeriodPrv(ulong period) {
     _altitudeSensorPeriodPrv = period;
   }
 
@@ -523,7 +523,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorObjectTempPeriodPrv() {
+  virtual ulong getSensorObjectTempPeriodPrv() {
     return _objectTempSensorPeriodPrv;
   }
 
@@ -535,7 +535,7 @@ public:
                 The time when the object temperature sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorObjectTempPeriodPrv(long period) {
+  virtual void setSensorObjectTempPeriodPrv(ulong period) {
     _objectTempSensorPeriodPrv = period;
   }
 
@@ -575,7 +575,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorLightPeriodPrv() { return _lightSensorPeriodPrv; }
+  virtual ulong getSensorLightPeriodPrv() { return _lightSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -585,7 +585,7 @@ public:
                 The time when the light sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorLightPeriodPrv(long period) {
+  virtual void setSensorLightPeriodPrv(ulong period) {
     _lightSensorPeriodPrv = period;
   }
 
@@ -625,7 +625,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorPM10_STDPeriodPrv() { return _PM10SensorPeriodPrv; }
+  virtual ulong getSensorPM10_STDPeriodPrv() { return _PM10SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -635,7 +635,7 @@ public:
                 The time when the light sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorPM10_STDPeriodPrv(long period) {
+  virtual void setSensorPM10_STDPeriodPrv(ulong period) {
     _PM10SensorPeriodPrv = period;
   }
 
@@ -675,7 +675,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorPM25_STDPeriodPrv() { return _PM25SensorPeriodPrv; }
+  virtual ulong getSensorPM25_STDPeriodPrv() { return _PM25SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -685,7 +685,7 @@ public:
                 The time when the light sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorPM25_STDPeriodPrv(long period) {
+  virtual void setSensorPM25_STDPeriodPrv(ulong period) {
     _PM25SensorPeriodPrv = period;
   }
 
@@ -725,7 +725,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorPM100_STDPeriodPrv() { return _PM100SensorPeriodPrv; }
+  virtual ulong getSensorPM100_STDPeriodPrv() { return _PM100SensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -735,7 +735,7 @@ public:
                 The time when the light sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorPM100_STDPeriodPrv(long period) {
+  virtual void setSensorPM100_STDPeriodPrv(ulong period) {
     _PM100SensorPeriodPrv = period;
   }
 
@@ -777,7 +777,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorUnitlessPercentPeriodPrv() {
+  virtual ulong getSensorUnitlessPercentPeriodPrv() {
     return _unitlessPercentPeriodPrv;
   }
 
@@ -789,7 +789,7 @@ public:
                 The time when the unitless % sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorUnitlessPercentPeriodPrv(long period) {
+  virtual void setSensorUnitlessPercentPeriodPrv(ulong period) {
     _unitlessPercentPeriodPrv = period;
   }
 
@@ -827,7 +827,7 @@ public:
       @returns  Time when the voltage sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorVoltagePeriodPrv() { return _voltagePeriodPrv; }
+  virtual ulong getSensorVoltagePeriodPrv() { return _voltagePeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -836,7 +836,7 @@ public:
                 The time when the voltage sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorVoltagePeriodPrv(long period) {
+  virtual void setSensorVoltagePeriodPrv(ulong period) {
     _voltagePeriodPrv = period;
   }
 
@@ -874,7 +874,7 @@ public:
       @returns  Time when the current sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorCurrentPeriodPrv() { return _currentPeriodPrv; }
+  virtual ulong getSensorCurrentPeriodPrv() { return _currentPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -883,7 +883,7 @@ public:
                 The time when the current sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorCurrentPeriodPrv(long period) {
+  virtual void setSensorCurrentPeriodPrv(ulong period) {
     _currentPeriodPrv = period;
   }
 
@@ -921,7 +921,7 @@ public:
       @returns  Time when the raw sensor was last queried, in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorRawPeriodPrv() { return _rawSensorPeriodPrv; }
+  virtual ulong getSensorRawPeriodPrv() { return _rawSensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -930,7 +930,7 @@ public:
                 The time when the raw sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorRawPeriodPrv(long period) {
+  virtual void setSensorRawPeriodPrv(ulong period) {
     _rawSensorPeriodPrv = period;
   }
 
@@ -978,7 +978,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorAmbientTempFPeriodPrv() {
+  virtual ulong getSensorAmbientTempFPeriodPrv() {
     return _ambientTempFPeriodPrv;
   }
 
@@ -991,7 +991,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorAmbientTempFPeriodPrv(long period) {
+  virtual void setSensorAmbientTempFPeriodPrv(ulong period) {
     _ambientTempFPeriodPrv = period;
   }
 
@@ -1036,7 +1036,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorObjectTempFPeriodPrv() { return _objectTempFPeriodPrv; }
+  virtual ulong getSensorObjectTempFPeriodPrv() { return _objectTempFPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -1047,7 +1047,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorObjectTempFPeriodPrv(long period) {
+  virtual void setSensorObjectTempFPeriodPrv(ulong period) {
     _objectTempFPeriodPrv = period;
   }
 
@@ -1092,7 +1092,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorGasResistancePeriodPrv() {
+  virtual ulong getSensorGasResistancePeriodPrv() {
     return _gasResistancePeriodPrv;
   }
 
@@ -1105,7 +1105,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorGasResistancePeriodPrv(long period) {
+  virtual void setSensorGasResistancePeriodPrv(ulong period) {
     _gasResistancePeriodPrv = period;
   }
 
@@ -1145,7 +1145,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorNOxIndexPeriodPrv() { return _NOxIndexPeriodPrv; }
+  virtual ulong getSensorNOxIndexPeriodPrv() { return _NOxIndexPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -1156,7 +1156,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorNOxIndexPeriodPrv(long period) {
+  virtual void setSensorNOxIndexPeriodPrv(ulong period) {
     _NOxIndexPeriodPrv = period;
   }
 
@@ -1196,7 +1196,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long getSensorVOCIndexPeriodPrv() { return _VOCIndexPeriodPrv; }
+  virtual ulong getSensorVOCIndexPeriodPrv() { return _VOCIndexPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -1207,7 +1207,7 @@ public:
      last.
   */
   /*******************************************************************************/
-  virtual void setSensorVOCIndexPeriodPrv(long period) {
+  virtual void setSensorVOCIndexPeriodPrv(ulong period) {
     _VOCIndexPeriodPrv = period;
   }
 
@@ -1275,7 +1275,7 @@ public:
                 in seconds.
   */
   /*********************************************************************************/
-  virtual long SensorProximityPeriodPrv() { return _proximitySensorPeriodPrv; }
+  virtual ulong SensorProximityPeriodPrv() { return _proximitySensorPeriodPrv; }
 
   /*******************************************************************************/
   /*!
@@ -1285,7 +1285,7 @@ public:
                 The time when the proximity sensor was queried last.
   */
   /*******************************************************************************/
-  virtual void setSensorProximityPeriodPrv(long period) {
+  virtual void setSensorProximityPeriodPrv(ulong period) {
     _proximitySensorPeriodPrv = period;
   }
 

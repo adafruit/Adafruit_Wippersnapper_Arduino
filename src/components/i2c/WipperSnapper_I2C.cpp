@@ -1328,8 +1328,8 @@ void WipperSnapper_Component_I2C::sensorEventRead(
     unsigned long curTime, wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
     bool (WipperSnapper_I2C_Driver::*getEventFunc)(sensors_event_t *),
     long (WipperSnapper_I2C_Driver::*getPeriodFunc)(),
-    long (WipperSnapper_I2C_Driver::*getPeriodPrvFunc)(),
-    void (WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long),
+    ulong (WipperSnapper_I2C_Driver::*getPeriodPrvFunc)(),
+    void (WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(ulong),
     wippersnapper_i2c_v1_SensorType sensorType, const char *sensorName,
     const char *unit, sensors_event_t event,
     float sensors_event_t::*valueMember, bool &sensorsReturningFalse,
@@ -1337,7 +1337,7 @@ void WipperSnapper_Component_I2C::sensorEventRead(
   // sensorName used for prefix + error message, units is value suffix
   curTime = millis();
   if (((*iter)->*getPeriodFunc)() != 0L &&
-      curTime - ((*iter)->*getPeriodPrvFunc)() > ((*iter)->*getPeriodFunc)()) {
+      curTime - ((*iter)->*getPeriodPrvFunc)() > (ulong)((*iter)->*getPeriodFunc)()) {
     // within the period, read the sensor
     if (((*iter)->*getEventFunc)(&event)) {
       float value;
