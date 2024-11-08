@@ -155,13 +155,23 @@ bool ws_sdcard::parseConfigFile() {
       exportedFromDevice["referenceVoltage"]);
   WsV2.analogio_controller->SetTotalAnalogPins(
       exportedFromDevice["totalAnalogPins"]);
-  WS_DEBUG_PRINTLN("[SD] OK!");
+  WS_DEBUG_PRINTLN("OK!");
 
   // Parse the "components" array into a JsonObject
   JsonObject components = doc["components"][0];
+  JsonObject components_1 = doc["components"][1];
+
+  // TODO: Print out the contnets of components and components_1
+  // for debugging purposes
+  WS_DEBUG_PRINTLN("[SD] Components:");
+  serializeJsonPretty(components, Serial);
+  WS_DEBUG_PRINTLN("[SD] Components_1:");
+  serializeJsonPretty(components_1, Serial);
 
   // TODO: This is a list so we'll need to refactor the following to loop thru,
   // parse and dispatch each component individually
+  // TODO - parse through each component and dispatch to the handler in the
+  // application!?
 
   // Parse the PB API type
   const char *component_api_type =
@@ -324,32 +334,44 @@ bool ws_sdcard::waitForSerialConfig() {
   // 3. Use a test JSON string - for debugging purposes ONLY
 
   _use_test_data = true;
-  json_test_data = "{"
-                   "\"exportVersion\": \"1.0.0\","
-                   "\"exportedBy\": \"tester\","
-                   "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
-                   "\"exportedFromDevice\": {"
-                   "\"board\": \"metroesp32s3\","
-                   "\"firmwareVersion\": \"1.0.0-beta.93\","
-                   "\"referenceVoltage\": 2.6,"
-                   "\"totalGPIOPins\": 11,"
-                   "\"totalAnalogPins\": 6"
-                   "},"
-                   "\"components\": ["
-                   "{"
-                   "\"componentAPI\": \"analogio\","
-                   "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D14\","
-                   "\"type\": \"analog_pin\","
-                   "\"mode\": \"ANALOG\","
-                   "\"direction\": \"INPUT\","
-                   "\"sampleMode\": \"TIMER\","
-                   "\"analogReadMode\": \"PIN_VALUE\","
-                   "\"period\": 5,"
-                   "\"isPin\": true"
-                   "}"
-                   "]"
-                   "}\\n\r\n";
+  const char *json_test_data = "{"
+                               "\"exportVersion\": \"1.0.0\","
+                               "\"exportedBy\": \"tester\","
+                               "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
+                               "\"exportedFromDevice\": {"
+                               "\"board\": \"metroesp32s3\","
+                               "\"firmwareVersion\": \"1.0.0-beta.93\","
+                               "\"referenceVoltage\": 2.6,"
+                               "\"totalGPIOPins\": 11,"
+                               "\"totalAnalogPins\": 6"
+                               "},"
+                               "\"components\": ["
+                               "{"
+                               "\"componentAPI\": \"analogio\","
+                               "\"name\": \"Analog Pin\","
+                               "\"pinName\": \"A18\","
+                               "\"type\": \"analog_pin\","
+                               "\"mode\": \"ANALOG\","
+                               "\"direction\": \"INPUT\","
+                               "\"sampleMode\": \"TIMER\","
+                               "\"analogReadMode\": \"PIN_VALUE\","
+                               "\"period\": 30,"
+                               "\"isPin\": true"
+                               "},"
+                               "{"
+                               "\"componentAPI\": \"analogio\","
+                               "\"name\": \"Analog Pin\","
+                               "\"pinName\": \"A19\","
+                               "\"type\": \"analog_pin\","
+                               "\"mode\": \"ANALOG\","
+                               "\"direction\": \"INPUT\","
+                               "\"sampleMode\": \"TIMER\","
+                               "\"analogReadMode\": \"PIN_VALUE\","
+                               "\"period\": 30,"
+                               "\"isPin\": true"
+                               "}"
+                               "]"
+                               "}\\n\r\n";
 
   _serialInput = ""; // Clear the serial input buffer
   if (!_use_test_data) {
@@ -371,6 +393,9 @@ bool ws_sdcard::waitForSerialConfig() {
       }
     }
   }
+
+  // Strip the '\n' off the end of _serialInput
+  _serialInput.trim();
 
   // Print out the received JSON string
   WS_DEBUG_PRINT("[SD][Debug] JSON string received: ");
