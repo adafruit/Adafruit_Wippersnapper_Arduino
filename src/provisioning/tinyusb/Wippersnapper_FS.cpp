@@ -106,9 +106,18 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
-  if (!initFilesystem()){ //} && !initFilesystem(true)) {
-    setStatusLEDColor(RED);
-    fsHalt("ERROR Initializing Filesystem");
+  if (!initFilesystem()) {
+    if (WS.brownOutCausedReset) {
+      // try once more for good measure
+      delay(10); // let power stablise after failure
+      if (!initFilesystem()) {
+        // no lights, save power as we're probably on a low battery
+        fsHalt("Brownout detected. Couldn't initialise filesystem.");
+      }
+    } else if (!WS.brownOutCausedReset && !initFilesystem(true)) {
+      setStatusLEDColor(RED);
+      fsHalt("ERROR Initializing Filesystem");
+    }
   }
 
   // Initialize USB-MSD
