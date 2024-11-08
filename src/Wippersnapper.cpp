@@ -2734,7 +2734,38 @@ void get_and_print_reset_reason_for_cpu(int cpuCore) {
   print_reset_reason(rtc_get_reset_reason(cpuCore));
 }
 
-#endif // ARDUINO_ARCH_ESP32
+// end of ARDUINO_ARCH_ESP32
+#elif defined(ARDUINO_ARCH_RP2040)
+
+void print_reset_reason()
+{
+  RP2040::resetReason_t reason = rp2040.getResetReason();
+  WS_DEBUG_PRINT("RP2040 RESET REASON: ");
+  switch (reason)
+  {
+  case RP2040::resetReason_t::UNKNOWN_RESET:
+    WS_DEBUG_PRINTLN("Unknown Reset");
+  case RP2040::resetReason_t::PWRON_RESET:
+    WS_DEBUG_PRINTLN("Power-On Reset");
+  case RP2040::resetReason_t::RUN_PIN_RESET:
+    WS_DEBUG_PRINTLN("Run Pin Reset");
+  case RP2040::resetReason_t::SOFT_RESET:
+    WS_DEBUG_PRINTLN("Soft Reset");
+  case RP2040::resetReason_t::WDT_RESET:
+    WS_DEBUG_PRINTLN("Watchdog Timer Reset");
+  case RP2040::resetReason_t::DEBUG_RESET:
+    WS_DEBUG_PRINTLN("Debug Reset");
+  case RP2040::resetReason_t::GLITCH_RESET:
+    WS_DEBUG_PRINTLN("Glitch Reset");
+  case RP2040::resetReason_t::BROWNOUT_RESET:
+    WS.brownOutCausedReset = true;
+    WS_DEBUG_PRINTLN("Brownout Reset");
+  default:
+    WS_DEBUG_PRINTLN("Unknown Reset Reason");
+  }
+}
+
+#endif
 
 /**************************************************************************/
 /*!
@@ -2765,12 +2796,14 @@ void printDeviceInfo() {
   get_and_print_reset_reason_for_cpu(0);
   WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
   get_and_print_reset_reason_for_cpu(1);
+#elif defined(ARDUINO_ARCH_RP2040) || defined(PICO_RP2350)
+  print_reset_reason();
 #endif
 }
 
 /**************************************************************************/
 /*!
-    @brief    Connects to Adafruit IO+ Wippersnapper broker.
+    @brief    Connects to Adafruit IO Wippersnapper broker.
 */
 /**************************************************************************/
 void Wippersnapper::connect() {
