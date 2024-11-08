@@ -125,7 +125,15 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If we created a new filesystem, halt until user RESETs device.
   if (_freshFS)
-    fsHalt("New filesystem created! Press the reset button on your board."); // TODO: just reset here after printing message then a delay/countdown.
+  {
+    WS_DEBUG_PRINTLN("New filesystem created! Resetting the board shortly...");
+    WS_PRINTER.flush();
+    WS.enableWDT(500);
+    while (1)
+    {
+      delay(1000);
+    }
+  }
 }
 
 /************************************************************/
