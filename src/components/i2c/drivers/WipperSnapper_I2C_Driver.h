@@ -1240,7 +1240,7 @@ public:
       @brief    Enables the device's proximity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableSensorProximity() {};
+  virtual void enableSensorProximity(){};
 
   /*******************************************************************************/
   /*!
@@ -1403,8 +1403,8 @@ protected:
   long _ambientTempFPeriod = 0L; ///< The time period between reading the
                                  ///< ambient temp. (°F) sensor's value.
   long _ambientTempFPeriodPrv =
-      PERIOD_24HRS_AGO_MILLIS;  ///< The time when the ambient temp. (°F) sensor
-                                ///< was last read.
+      PERIOD_24HRS_AGO_MILLIS; ///< The time when the ambient temp. (°F) sensor
+                               ///< was last read.
   long _objectTempFPeriod = 0L; ///< The time period between reading the object
                                 ///< temp. (°F) sensor's value.
   long _objectTempFPeriodPrv =
