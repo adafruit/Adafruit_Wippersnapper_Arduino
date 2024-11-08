@@ -95,10 +95,12 @@ public:
       return false;
     }
 
-    if (_scd->getEvent(&_humidity, &_temperature)) {
+    if (!_scd->read()) {
       return false;
     }
-    _CO2.CO2 = _scd->CO2;
+    _CO2 = _scd->CO2;
+    _humidity = _scd->relative_humidity;
+    _temperature = _scd->temperature;
     _lastRead = millis();
     return true;
   }
@@ -118,7 +120,7 @@ public:
       return false;
     }
 
-    tempEvent = &_temperature;
+    tempEvent->temperature = _temperature;
     return true;
   }
 
@@ -137,7 +139,7 @@ public:
       return false;
     }
 
-    humidEvent = &_humidity;
+    humidEvent->relative_humidity = _humidity;
     return true;
   }
 
@@ -156,16 +158,16 @@ public:
       return false;
     }
 
-    co2Event = &_CO2;
+    co2Event->CO2 = _CO2;
     return true;
   }
 
 protected:
   Adafruit_SCD30 *_scd = nullptr; ///< SCD30 driver object
   ulong _lastRead = 0;            ///< Last time the sensor was read
-  sensors_event_t _temperature;   ///< Temperature
-  sensors_event_t _humidity;      ///< Relative Humidity
-  sensors_event_t _CO2;           ///< CO2
+  float _temperature;             ///< Temperature
+  float _humidity;                ///< Relative Humidity
+  float _CO2;                     ///< CO2
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD30

@@ -120,7 +120,6 @@ public:
       return false;
     }
 
-
     // Read SCD4x measurement
     uint16_t error = _scd->readMeasurement(_co2, _temperature, _humidity);
     if (error != 0 || _co2 == 0) {
@@ -190,8 +189,8 @@ public:
 protected:
   SensirionI2CScd4x *_scd = nullptr; ///< SCD4x driver object
   uint16_t _co2 = 0;                 ///< SCD4x co2 reading
-  float _temperature = 20.0f;           ///< SCD4x temperature reading
-  float _humidity = 50.0f;              ///< SCD4x humidity reading
+  float _temperature = 20.0f;        ///< SCD4x temperature reading
+  float _humidity = 50.0f;           ///< SCD4x humidity reading
   ulong _lastRead = 0;               ///< Last time the sensor was read
 };
 
