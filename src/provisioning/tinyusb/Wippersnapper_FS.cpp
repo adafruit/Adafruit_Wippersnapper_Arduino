@@ -418,7 +418,23 @@ void Wippersnapper_FS::parseSecrets() {
   // Attempt to deserialize the file's JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
-  if (error) {
+  if (error == DeserializationError::EmptyInput)
+  {
+    if (WS.brownOutCausedReset)
+    {
+      fsHalt("ERROR: Empty secrets.json file, can't recreate due to brownout - recharge or must be fixed manually.");
+    }
+    else
+    {
+      // TODO: Can't serial print here, in next PR check we're not out of space
+      WS_DEBUG_PRINTLN("ERROR: Empty secrets.json file, recreating...");
+      secretsFile.close();
+      wipperFatFs.remove("/secrets.json");
+      createSecretsFile(); // calls fsHalt
+    }
+  }
+  else if (error)
+  {
     fsHalt(String("ERROR: Unable to parse secrets.json file - "
                   "deserializeJson() failed with code") +
            error.c_str());
