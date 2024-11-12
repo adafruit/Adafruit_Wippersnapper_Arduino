@@ -58,11 +58,6 @@ public:
   void Update();
 
   bool EncodePublishPinEvent(uint8_t pin_name, bool pin_value);
-  void
-  CreateDigitalIOPin(uint8_t name,
-                     wippersnapper_digitalio_DigitalIODirection direction,
-                     wippersnapper_digitalio_DigitalIOSampleMode sample_mode,
-                     bool value, long period);
   bool CheckEventPin(DigitalIOPin *pin);
   bool CheckTimerPin(DigitalIOPin *pin);
   bool IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time);
@@ -70,6 +65,7 @@ public:
   void PrintPinValue(DigitalIOPin *pin);
   void SetMaxDigitalPins(uint8_t max_digital_pins);
   int GetPinIdx(uint8_t pin_name);
+
 private:
   std::vector<DigitalIOPin> _digitalio_pins;
   uint8_t _max_digitalio_pins;
