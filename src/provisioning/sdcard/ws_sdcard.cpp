@@ -158,156 +158,95 @@ bool ws_sdcard::parseConfigFile() {
   WS_DEBUG_PRINTLN("OK!");
 
   // Parse the "components" array into a JsonObject
-  JsonObject components = doc["components"][0];
-  JsonObject components_1 = doc["components"][1];
+  JsonArray components_ar = doc["components"].as<JsonArray>();
+  int count = components_ar.size();
+  WS_DEBUG_PRINTLN("[SD] Found " + String(count) + " components in JSON file!");
 
-  // TODO: Print out the contnets of components and components_1
-  // for debugging purposes
-  WS_DEBUG_PRINTLN("[SD] Components:");
-  serializeJsonPretty(components, Serial);
-  WS_DEBUG_PRINTLN("[SD] Components_1:");
-  serializeJsonPretty(components_1, Serial);
-
-  // TODO: This is a list so we'll need to refactor the following to loop thru,
-  // parse and dispatch each component individually
-  // TODO - parse through each component and dispatch to the handler in the
-  // application!?
-
-  // Parse the PB API type
-  const char *component_api_type =
-      components["componentAPI"]; // ie: "analogio", "digitalio", etc.
-
-  if (component_api_type == nullptr) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No component API type found "
-                     "in JSON string!");
-    return false;
-  } else {
-    WS_DEBUG_PRINTLN("[SD] Component API type found: " +
-                     String(component_api_type));
-  }
-
-  // TODO- maybe a Switch case to handle the different component API types but
-  // for now just a simple if-else is OK
-
-  if (strcmp(component_api_type, "digitalio") == 0) {
-    // Create a new digitalio add protobuf message
-    wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd;
-    msg_DigitalIOAdd = wippersnapper_digitalio_DigitalIOAdd_init_default;
-
-    // Parse pinName
-    strcpy(msg_DigitalIOAdd.pin_name, components["pinName"]);
-
-    // Parse direction
-    const char *direction = components["direction"];
-    if (strcmp(direction, "INPUT") == 0) {
-      msg_DigitalIOAdd.gpio_direction =
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
-    } else if (strcmp(direction, "INPUT-PULLUP") == 0) {
-      msg_DigitalIOAdd.gpio_direction =
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
-    } else if (strcmp(direction, "OUTPUT") == 0) {
-      msg_DigitalIOAdd.gpio_direction =
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_OUTPUT;
-    } else { // Unknown direction, bail out
-      WS_DEBUG_PRINTLN("Unknown digital pin direction found: " +
-                       String(direction));
+  // Use the iterator feature of ArduinoJSON v7 to quickly iterate over
+  // components[]
+  for (JsonObject component : doc["components"].as<JsonArray>()) {
+    // Create a new signal message
+    wippersnapper_signal_BrokerToDevice msg_signal_b2d;
+    // Parse the component API type
+    const char *component_api_type = component["componentAPI"];
+    if (component_api_type == nullptr) {
+      WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No component API type found "
+                       "in JSON string!");
       return false;
     }
 
-    // Determine the sample mode
-    bool is_timer_sample_mode = false;
-    const char *sample_mode = components["sampleMode"];
-    if (strcmp(sample_mode, "TIMER") == 0)
-      is_timer_sample_mode = true;
+    // Determine the component type and parse
+    if (strcmp(component_api_type, "digitalio") == 0) {
+      WS_DEBUG_PRINTLN(
+          "[SD] DigitalIO component found, decoding JSON to PB...");
+      // TODO: Implement digitalio component parsing
+      return true;
+    } else if (strcmp(component_api_type, "analogio") == 0) {
+      WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
+      // Parse the AnalogIOAdd message
+      wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
+          wippersnapper_analogio_AnalogIOAdd_init_default;
+      // Fill in the AnalogIOAdd message
+      strcpy(msg_AnalogIOAdd.pin_name, component["pinName"]);
+      msg_AnalogIOAdd.period = component["period"];
+      // Parse the analog pin's read mode
+      if (strcmp(component["analogReadMode"], "PIN_VALUE") == 0) {
+        msg_AnalogIOAdd.read_mode =
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+      } else if (strcmp(component["analogReadMode"], "VOLTAGE") == 0) {
+        msg_AnalogIOAdd.read_mode =
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+      } else {
+        // Unknown analog read mode, bail out
+        WS_DEBUG_PRINTLN("[SD] Unknown analog read mode found: " +
+                         String(component["analogReadMode"]));
+        return false;
+      }
 
-    if (is_timer_sample_mode) {
-      // If we're sampling periodically, parse the period
-      msg_DigitalIOAdd.period = components["timer"];
-      // and set the sample mode
-      msg_DigitalIOAdd.sample_mode =
-          wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
-    } else {
-      // set the sample mode for event
-      msg_DigitalIOAdd.sample_mode =
-          wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
-    }
+      // Print out the contents of the AnalogIOAdd message
+      WS_DEBUG_PRINTLN("[SD] AnalogIOAdd message:");
+      WS_DEBUG_PRINTLN("\tPin Name: " + String(msg_AnalogIOAdd.pin_name));
+      WS_DEBUG_PRINTLN("\tPeriod: " + String(msg_AnalogIOAdd.period));
+      WS_DEBUG_PRINTLN("\tRead Mode: " + String(msg_AnalogIOAdd.read_mode));
 
-    // Print out the contents of the DigitalIOADD message
-    WS_DEBUG_PRINTLN("[SD] DigitalIOAdd message:");
-    WS_DEBUG_PRINTLN("Pin Name: " + String(msg_DigitalIOAdd.pin_name));
-    WS_DEBUG_PRINTLN("Direction: " + String(direction));
-    WS_DEBUG_PRINTLN("Sample Mode: " + String(sample_mode));
-    WS_DEBUG_PRINTLN("Period: " + String(msg_DigitalIOAdd.period));
-    return true;
-  } else if (strcmp(component_api_type, "analogio") == 0) {
-    // TODO - dispatch to create analogio component protobuf message
-    // Parse the AnalogIOAdd message
-    wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
-        wippersnapper_analogio_AnalogIOAdd_init_default;
-    // Fill in the AnalogIOAdd message
-    strcpy(msg_AnalogIOAdd.pin_name, components["pinName"]);
-    msg_AnalogIOAdd.period = components["period"];
-    // Parse the analog pin's read mode
-    if (strcmp(components["analogReadMode"], "PIN_VALUE") == 0) {
-      msg_AnalogIOAdd.read_mode =
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
-    } else if (strcmp(components["analogReadMode"], "VOLTAGE") == 0) {
-      msg_AnalogIOAdd.read_mode =
-          wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+      // Create a new signal message
+      msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
+      //. Fill the signal message with msg_AnalogIOAdd data
+      msg_signal_b2d.which_payload =
+          wippersnapper_signal_BrokerToDevice_analogio_add_tag;
+      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
     } else {
-      // Unknown analog read mode, bail out
-      WS_DEBUG_PRINTLN("[SD] Unknown analog read mode found: " +
-                       String(components["analogReadMode"]));
+      // Unknown component API type
+      WS_DEBUG_PRINTLN("[SD] Unknown component API type found: " +
+                       String(component_api_type));
       return false;
     }
 
-    // Print out the contents of the AnalogIOAdd message
-    WS_DEBUG_PRINTLN("[SD] AnalogIOAdd message:");
-    WS_DEBUG_PRINTLN("Pin Name: " + String(msg_AnalogIOAdd.pin_name));
-    WS_DEBUG_PRINTLN("Period: " + String(msg_AnalogIOAdd.period));
-    WS_DEBUG_PRINTLN("Read Mode: " + String(msg_AnalogIOAdd.read_mode));
+    // Create a temporary buffer to hold the encoded signal message
+    std::vector<uint8_t> tempBuf(512);
+    size_t tempBufSz;
 
-    // TODO: Note that the TOP-LEVEL decoder is actually looking
-    // for a SIGNAL message with one of these SUBMESSAGEd
-    // so we'll need to encode this into a signalproto form before sending
-    // it over
-
-    // Zero-out the signal message
-    // TODO: This should be global
-    WsV2._signalB2dV2 = wippersnapper_signal_BrokerToDevice_init_zero;
-    //. Fill the signal message with msg_AnalogIOAdd data
-    WsV2._signalB2dV2.which_payload =
-        wippersnapper_signal_BrokerToDevice_analogio_add_tag;
-    WsV2._signalB2dV2.payload.analogio_add = msg_AnalogIOAdd;
-
-    // Get the encoded size of the signal message
+    // Get the encoded size of the signal message first so we can resize the
+    // buffer prior to encoding
     WS_DEBUG_PRINTLN("Encoding D2b signal message...");
-    // size_t szMessageBuf;
-    if (!pb_get_encoded_size(&WsV2._szMessageBuf,
+    if (!pb_get_encoded_size(&tempBufSz,
                              wippersnapper_signal_BrokerToDevice_fields,
-                             &WsV2._signalB2dV2)) {
+                             &msg_signal_b2d)) {
       WS_DEBUG_PRINTLN("[SD] ERROR: Unable to get signal message size!");
       return false;
     }
-    // Encode the signal message
-    // uint8_t msgBuf[szMessageBuf];
-    WsV2._signalStream =
-        pb_ostream_from_buffer(WsV2._msgBuf, WsV2._szMessageBuf);
-    if (!ws_pb_encode(&WsV2._signalStream,
-                      wippersnapper_signal_BrokerToDevice_fields,
-                      &WsV2._signalB2dV2)) {
+    // Encode and push the signal message to the shared config buffer
+    tempBuf.resize(tempBufSz);
+    pb_ostream_t ostream =
+        pb_ostream_from_buffer(tempBuf.data(), tempBuf.size());
+    if (!ws_pb_encode(&ostream, wippersnapper_signal_BrokerToDevice_fields,
+                      &msg_signal_b2d)) {
       WS_DEBUG_PRINTLN("[SD] ERROR: Unable to encode D2B signal message!");
       return false;
     }
+    WsV2._sharedConfigBuffers.push_back(std::move(tempBuf));
     WS_DEBUG_PRINTLN("Encoded the D2b signal message");
-
-  } else {
-    // Unknown component API type
-    WS_DEBUG_PRINTLN("[SD] Unknown component API type found: " +
-                     String(component_api_type));
-    return false;
   }
-
   return true;
 }
 
@@ -317,11 +256,7 @@ bool ws_sdcard::validateJson(const char *input) {
 
   DeserializationError error =
       deserializeJson(doc, input, DeserializationOption::Filter(filter));
-  WS_DEBUG_PRINTLN("Error: " + String(error.c_str()));
   return error == DeserializationError::Ok;
-  // return deserializeJson(doc, input, DeserializationOption::Filter(filter))
-  // ==
-  //         DeserializationError::Ok;
 }
 
 // Waits for incoming config file and parses it
@@ -334,44 +269,44 @@ bool ws_sdcard::waitForSerialConfig() {
   // 3. Use a test JSON string - for debugging purposes ONLY
 
   _use_test_data = true;
-  const char *json_test_data = "{"
-                               "\"exportVersion\": \"1.0.0\","
-                               "\"exportedBy\": \"tester\","
-                               "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
-                               "\"exportedFromDevice\": {"
-                               "\"board\": \"metroesp32s3\","
-                               "\"firmwareVersion\": \"1.0.0-beta.93\","
-                               "\"referenceVoltage\": 2.6,"
-                               "\"totalGPIOPins\": 11,"
-                               "\"totalAnalogPins\": 6"
-                               "},"
-                               "\"components\": ["
-                               "{"
-                               "\"componentAPI\": \"analogio\","
-                               "\"name\": \"Analog Pin\","
-                               "\"pinName\": \"A18\","
-                               "\"type\": \"analog_pin\","
-                               "\"mode\": \"ANALOG\","
-                               "\"direction\": \"INPUT\","
-                               "\"sampleMode\": \"TIMER\","
-                               "\"analogReadMode\": \"PIN_VALUE\","
-                               "\"period\": 30,"
-                               "\"isPin\": true"
-                               "},"
-                               "{"
-                               "\"componentAPI\": \"analogio\","
-                               "\"name\": \"Analog Pin\","
-                               "\"pinName\": \"A19\","
-                               "\"type\": \"analog_pin\","
-                               "\"mode\": \"ANALOG\","
-                               "\"direction\": \"INPUT\","
-                               "\"sampleMode\": \"TIMER\","
-                               "\"analogReadMode\": \"PIN_VALUE\","
-                               "\"period\": 30,"
-                               "\"isPin\": true"
-                               "}"
-                               "]"
-                               "}\\n\r\n";
+  json_test_data = "{"
+                   "\"exportVersion\": \"1.0.0\","
+                   "\"exportedBy\": \"tester\","
+                   "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
+                   "\"exportedFromDevice\": {"
+                   "\"board\": \"metroesp32s3\","
+                   "\"firmwareVersion\": \"1.0.0-beta.93\","
+                   "\"referenceVoltage\": 2.6,"
+                   "\"totalGPIOPins\": 11,"
+                   "\"totalAnalogPins\": 6"
+                   "},"
+                   "\"components\": ["
+                   "{"
+                   "\"componentAPI\": \"analogio\","
+                   "\"name\": \"Analog Pin\","
+                   "\"pinName\": \"D15\","
+                   "\"type\": \"analog_pin\","
+                   "\"mode\": \"ANALOG\","
+                   "\"direction\": \"INPUT\","
+                   "\"sampleMode\": \"TIMER\","
+                   "\"analogReadMode\": \"PIN_VALUE\","
+                   "\"period\": 5,"
+                   "\"isPin\": true"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"analogio\","
+                   "\"name\": \"Analog Pin\","
+                   "\"pinName\": \"D27\","
+                   "\"type\": \"analog_pin\","
+                   "\"mode\": \"ANALOG\","
+                   "\"direction\": \"INPUT\","
+                   "\"sampleMode\": \"TIMER\","
+                   "\"analogReadMode\": \"PIN_VALUE\","
+                   "\"period\": 5,"
+                   "\"isPin\": true"
+                   "}"
+                   "]"
+                   "}\\n\r\n";
 
   _serialInput = ""; // Clear the serial input buffer
   if (!_use_test_data) {
@@ -557,7 +492,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
   serializeJson(doc, Serial);
-
+  Serial.println("");
   return true;
 }
 
@@ -572,12 +507,11 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
 
   // Create the JSON document
   JsonDocument doc;
-
   doc["timestamp"] = timestamp;
   doc["pin"] = c_pin_name;
   doc["value"] = value;
   doc["sensor_type"] = SensorTypeToString(read_type);
   serializeJson(doc, Serial);
-
+  Serial.println("");
   return true;
 }
