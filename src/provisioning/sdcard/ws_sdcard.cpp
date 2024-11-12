@@ -138,6 +138,7 @@ bool ws_sdcard::parseConfigFile() {
     return false;
   }
 
+  // TODO: Let's refactor this outwards to a function called `CheckInJSON()`
   // NOTE: While we can't do a "proper" check-in procedure with
   // the MQTT broker while in offline mode, we can still configure
   // the hardware by parsing the JSON object's "exportedFromDevice"
@@ -175,11 +176,62 @@ bool ws_sdcard::parseConfigFile() {
       return false;
     }
 
-    // Determine the component type and parse
+    // Determine the component type and parse it into a PB message
     if (strcmp(component_api_type, "digitalio") == 0) {
       WS_DEBUG_PRINTLN(
           "[SD] DigitalIO component found, decoding JSON to PB...");
-      // TODO: Implement digitalio component parsing
+      // Parse the JSON component's fields into a new DigitalIOAdd message
+      wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd =
+          wippersnapper_digitalio_DigitalIOAdd_init_default;
+      strcpy(msg_DigitalIOAdd.pin_name, component["pinName"]);
+      msg_DigitalIOAdd.period = component["period"];
+      msg_DigitalIOAdd.value = component["value"];
+      // Determine the sample mode
+      if (strcmp(component["sampleMode"], "TIMER") == 0) {
+        msg_DigitalIOAdd.sample_mode =
+            wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
+      } else if (strcmp(component["sampleMode"], "EVENT") == 0) {
+        msg_DigitalIOAdd.sample_mode =
+            wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
+      } else {
+        WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown sample mode found: " +
+                         String(component["sampleMode"]));
+      }
+      // Determine the pin direction and pull
+      if (strcmp(component["direction"], "INPUT") == 0) {
+        if (component["pull"] != nullptr) {
+          msg_DigitalIOAdd.gpio_direction =
+              wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
+        } else {
+          msg_DigitalIOAdd.gpio_direction =
+              wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
+        }
+      } else if (strcmp(component["direction"], "OUTPUT") == 0) {
+        WS_DEBUG_PRINTLN(
+            "[SD] Error - Can not set OUTPUT direction in offline mode!");
+        return false;
+      } else {
+        WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown direction found: " +
+                         String(component["direction"]));
+        return false;
+      }
+
+      // Print out the contents of the DigitalIOAdd message
+      WS_DEBUG_PRINTLN("[SD] DigitalIOAdd message:");
+      WS_DEBUG_PRINTLN("\tPin Name: " + String(msg_DigitalIOAdd.pin_name));
+      WS_DEBUG_PRINTLN("\tDirection: " +
+                       String(msg_DigitalIOAdd.gpio_direction));
+      WS_DEBUG_PRINTLN("\tSample Mode: " +
+                       String(msg_DigitalIOAdd.sample_mode));
+      WS_DEBUG_PRINTLN("\tPeriod: " + String(msg_DigitalIOAdd.period));
+      WS_DEBUG_PRINTLN("\tValue: " + String(msg_DigitalIOAdd.value));
+
+      // Create a new signal message
+      msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
+      msg_signal_b2d.which_payload =
+          wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
+      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
+
       return true;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
@@ -471,7 +523,6 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   doc["value"] = value;
   doc["sensor_type"] = SensorTypeToString(read_type);
   serializeJson(doc, Serial);
-
   return true;
 }
 
@@ -484,15 +535,14 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   // Get the RTC's timestamp
   uint32_t timestamp = GetTimestamp();
 
-  // Create the JSON document
+  // Append to the file in JSONL format
   JsonDocument doc;
-
   doc["timestamp"] = timestamp;
   doc["pin"] = c_pin_name;
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
   serializeJson(doc, Serial);
-  Serial.println("");
+  Serial.println(""); // JSON requires a newline at the end of each log line
   return true;
 }
 

@@ -50,36 +50,6 @@ void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
 
 /***********************************************************************/
 /*!
-    @brief  Create a new digital pin and add it to the controller's vector
-    @param  name
-            The pin's name.
-    @param  direction
-            The pin's direction.
-    @param  sample_mode
-            The pin's sample mode.
-    @param  value
-            The pin's value.
-    @param  period
-            The pin's period.
-*/
-/***********************************************************************/
-void DigitalIOController::CreateDigitalIOPin(
-    uint8_t name, wippersnapper_digitalio_DigitalIODirection direction,
-    wippersnapper_digitalio_DigitalIOSampleMode sample_mode, bool value,
-    long period) {
-  DigitalIOPin new_pin;
-  new_pin.pin_name = name;
-  new_pin.pin_direction = direction;
-  new_pin.sample_mode = sample_mode;
-  // Period is in seconds but the timer operates in milliseconds
-  new_pin.pin_period = (ulong)period * 1000;
-  new_pin.prv_pin_time = (millis() - 1) - period;
-  new_pin.pin_value = value;
-  _digitalio_pins.push_back(new_pin);
-}
-
-/***********************************************************************/
-/*!
     @brief  Add a new digital pin to the controller
     @param  stream
             The nanopb input stream.
@@ -89,14 +59,15 @@ void DigitalIOController::CreateDigitalIOPin(
 bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   // Early-out if we have reached the maximum number of digital pins
   if (_digitalio_pins.size() >= _max_digitalio_pins) {
-    WS_DEBUG_PRINTLN("ERROR: Can not add new digital pin, all pins have "
+    WS_DEBUG_PRINTLN("[digitalio] ERROR: Can not add new pin, all pins have "
                      "already been allocated!");
     return false;
   }
 
   // Attempt to decode the DigitalIOAdd message and parse it into the model
   if (!_dio_model->DecodeDigitalIOAdd(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIOAdd message!");
+    WS_DEBUG_PRINTLN(
+        "[digitalio] ERROR: Unable to decode DigitalIOAdd message!");
     return false;
   }
 
@@ -115,16 +86,20 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   if (!_dio_hardware->ConfigurePin(
           pin_name, _dio_model->GetDigitalIOAddMsg()->gpio_direction)) {
     WS_DEBUG_PRINTLN(
-        "ERROR: Digital pin provided an invalid protobuf direction!");
+        "[digitalio] ERROR: Pin provided an invalid protobuf direction!");
     return false;
   }
 
-  // Create the digital pin and add it to the controller;s vector
-  CreateDigitalIOPin(pin_name, _dio_model->GetDigitalIOAddMsg()->gpio_direction,
-                     _dio_model->GetDigitalIOAddMsg()->sample_mode,
-                     _dio_model->GetDigitalIOAddMsg()->value,
-                     _dio_model->GetDigitalIOAddMsg()->period);
-
+  ulong period = _dio_model->GetDigitalIOAddMsg()->period;
+  // Create the digital pin and add it to the vector
+  DigitalIOPin new_pin = {
+      .pin_name = pin_name,
+      .pin_direction = _dio_model->GetDigitalIOAddMsg()->gpio_direction,
+      .sample_mode = _dio_model->GetDigitalIOAddMsg()->sample_mode,
+      .pin_value = _dio_model->GetDigitalIOAddMsg()->value,
+      .pin_period = period * 1000,
+      .prv_pin_time = (millis() - 1) - period};
+  _digitalio_pins.push_back(new_pin);
   return true;
 }
 
@@ -139,7 +114,8 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
 bool DigitalIOController::Handle_DigitalIO_Remove(pb_istream_t *stream) {
   // Attempt to decode the DigitalIORemove message
   if (!_dio_model->DecodeDigitalIORemove(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIORemove message!");
+    WS_DEBUG_PRINTLN(
+        "[digitalio] ERROR: Unable to decode DigitalIORemove message!");
     return false;
   }
 
@@ -149,7 +125,7 @@ bool DigitalIOController::Handle_DigitalIO_Remove(pb_istream_t *stream) {
   // Bail out if the pin does not exist within controller
   if (GetPinIdx(pin_name) == -1) {
     WS_DEBUG_PRINTLN(
-        "ERROR: Unable to find digital output pin on the controller!");
+        "[digitalio] ERROR: Unable to find output pin on the controller!");
     return false;
   }
 
@@ -186,7 +162,7 @@ int DigitalIOController::GetPinIdx(uint8_t pin_name) {
 bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
   // Attempt to decode the DigitalIOWrite message
   if (!_dio_model->DecodeDigitalIOWrite(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode DigitalIOWrite message!");
+    WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to decode Write message!");
     return false;
   }
 
@@ -195,18 +171,19 @@ bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
       GetPinIdx(atoi(_dio_model->GetDigitalIOWriteMsg()->pin_name + 1));
   // Check if the pin was found and is a valid digital output pin
   if (pin_idx == -1) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to find the requested digital output pin!");
+    WS_DEBUG_PRINTLN(
+        "[digitalio] ERROR: Unable to find the requested output pin!");
     return false;
   }
 
   // Ensure we got the correct value type
   if (!_dio_model->GetDigitalIOWriteMsg()->value.which_value ==
       wippersnapper_sensor_SensorEvent_bool_value_tag) {
-    WS_DEBUG_PRINTLN("ERROR: DigitalIO controller got invalid value type!");
+    WS_DEBUG_PRINTLN("[digitalio] ERROR: controller got invalid value type!");
     return false;
   }
 
-  WS_DEBUG_PRINT("Writing value: ");
+  WS_DEBUG_PRINT("[digitalio] Writing value: ");
   WS_DEBUG_PRINTLN(_dio_model->GetDigitalIOWriteMsg()->value.value.bool_value);
   WS_DEBUG_PRINT("on Pin: ");
   WS_DEBUG_PRINTLN(_digitalio_pins[pin_idx].pin_name);
@@ -251,7 +228,7 @@ bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
 */
 /***********************************************************************/
 void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
-  WS_DEBUG_PRINT("DIO Pin D");
+  WS_DEBUG_PRINT("[digitalio] DIO Pin D");
   WS_DEBUG_PRINT(pin->pin_name);
   WS_DEBUG_PRINT(" | value: ");
   WS_DEBUG_PRINTLN(pin->prv_pin_value);
@@ -297,7 +274,6 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   pin->prv_pin_value = pin->pin_value;
 
   PrintPinValue(pin);
-
   return true;
 }
 
@@ -317,21 +293,34 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
   char c_pin_name[12];
   sprintf(c_pin_name, "D%d", pin_name);
 
-  // Encode the DigitalIOEvent message
-  if (!_dio_model->EncodeDigitalIOEvent(c_pin_name, pin_value)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
-    return false;
-  }
+  // If we are in ONLINE mode, publish the event to the broker
+  if (!WsV2._sdCardV2->mode_offline) {
+    WS_DEBUG_PRINT(
+        "[digitalio] Publishing DigitalIOEvent message to broker for pin: ");
+    WS_DEBUG_PRINTLN(c_pin_name);
+    // Encode the DigitalIOEvent message
+    if (!_dio_model->EncodeDigitalIOEvent(c_pin_name, pin_value)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode DigitalIOEvent message!");
+      return false;
+    }
 
-  // Publish the DigitalIOEvent message to the broker
-  if (!WsV2.PublishSignal(
-          wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
-          _dio_model->GetDigitalIOEventMsg())) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to publish digitalio event message, "
-                     "moving onto the next pin!");
-    return false;
+    // Publish the DigitalIOEvent message to the broker
+    if (!WsV2.PublishSignal(
+            wippersnapper_signal_DeviceToBroker_digitalio_event_tag,
+            _dio_model->GetDigitalIOEventMsg())) {
+      WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to publish event message, "
+                       "moving onto the next pin!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[digitalio] Published DigitalIOEvent to broker!")
+  } else {
+    // let's log the event to the SD card
+    WS_DEBUG_PRINTLN("[digitalio] Logging SensorEvent to SD Card...");
+    if (!WsV2._sdCardV2->LogGPIOSensorEventToSD(
+            pin_name, pin_value,
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN))
+      return false;
   }
-  WS_DEBUG_PRINTLN("Published DigitalIOEvent to broker!")
 
   return true;
 }
@@ -376,7 +365,7 @@ void DigitalIOController::Update() {
         continue; // Failed to encode and publish event, move onto the next pin
     } else {
       // Invalid sample mode
-      WS_DEBUG_PRINT("ERROR: DigitalIO Pin ");
+      WS_DEBUG_PRINT("[digitalio] ERROR: DigitalIO Pin ");
       WS_DEBUG_PRINT(pin.pin_name);
       WS_DEBUG_PRINTLN(" contains an invalid sample mode!");
     }
