@@ -2737,12 +2737,10 @@ void get_and_print_reset_reason_for_cpu(int cpuCore) {
 // end of ARDUINO_ARCH_ESP32
 #elif defined(ARDUINO_ARCH_RP2040)
 
-void print_reset_reason()
-{
+void print_reset_reason() {
   RP2040::resetReason_t reason = rp2040.getResetReason();
   WS_DEBUG_PRINT("RP2040 RESET REASON: ");
-  switch (reason)
-  {
+  switch (reason) {
   case RP2040::resetReason_t::UNKNOWN_RESET:
     WS_DEBUG_PRINTLN("Unknown Reset");
   case RP2040::resetReason_t::PWRON_RESET:
