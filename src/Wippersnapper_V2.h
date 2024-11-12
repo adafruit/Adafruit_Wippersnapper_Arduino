@@ -257,8 +257,9 @@ public:
 
   wippersnapper_signal_BrokerToDevice _signalB2dV2;
   pb_ostream_t _signalStream;
-  size_t _szMessageBuf;
-  uint8_t _msgBuf[512];
+  size_t _szMessageBuf; // TODO: Delete
+  uint8_t _msgBuf[512]; // TODO: Delete
+  std::vector<std::vector<uint8_t>> _sharedConfigBuffers;
 
 private:
   void _initV2();
