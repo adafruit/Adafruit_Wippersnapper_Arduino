@@ -435,22 +435,22 @@ void cbBrokerToDevice(char *data, uint16_t len) {
 }
 
 void callDecodeB2D() {
-  WS_DEBUG_PRINTLN("\n[App] Parsing new Signal->B2D Message");
+  WS_DEBUG_PRINTLN("\n[App] Parsing Offline Configuration Messages...");
+  WS_DEBUG_PRINT("[debug] Total Messages: ");
+  WS_DEBUG_PRINTLN(WsV2._sharedConfigBuffers.size());
 
   for (size_t i = 0; i < WsV2._sharedConfigBuffers.size(); i++) {
     wippersnapper_signal_BrokerToDevice msg_signal =
         wippersnapper_signal_BrokerToDevice_init_default;
-
     // Configure the payload callback
     msg_signal.cb_payload.funcs.decode = cbDecodeBrokerToDevice;
-
     // TDOO: This can be cleaned up, get the buffer
     const std::vector<uint8_t> &buffer = WsV2._sharedConfigBuffers[i];
     WS_DEBUG_PRINTLN("Creating istream...");
     pb_istream_t istream = pb_istream_from_buffer(buffer.data(), buffer.size());
-
     // Decode the message
-    WS_DEBUG_PRINTLN("Decoding BrokerToDevice message...");
+    WS_DEBUG_PRINT("Decoding BrokerToDevice message #");
+    WS_DEBUG_PRINTLN(i);
     if (!pb_decode(&istream, wippersnapper_signal_BrokerToDevice_fields,
                    &msg_signal)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");

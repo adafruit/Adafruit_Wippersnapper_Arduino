@@ -71,7 +71,7 @@ void AnalogIOController::SetTotalAnalogPins(uint8_t total_pins) {
 bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   // Attempt to decode the incoming message into an AnalogIOAdd object
   if (!_analogio_model->DecodeAnalogIOAdd(stream)) {
-    WS_DEBUG_PRINTLN("ERROR: Unable to decode AnalogIOAdd message");
+    WS_DEBUG_PRINTLN("[analogio] ERROR: Unable to decode Add message");
     return false;
   }
 
@@ -91,7 +91,7 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   _analogio_hardware->InitPin(pin_name);
 
   // Print out the pin's details
-  WS_DEBUG_PRINTLN("[AnalogIO] Added new pin:");
+  WS_DEBUG_PRINTLN("[analogio] Added new pin:");
   WS_DEBUG_PRINT("\tPin Name: ");
   WS_DEBUG_PRINTLN(new_pin.name);
   WS_DEBUG_PRINT("\tPeriod: ");
@@ -205,7 +205,7 @@ bool AnalogIOController::EncodePublishPinEvent(
     WS_DEBUG_PRINTLN(value);
     WS_DEBUG_PRINT("Read Type: ");
     WS_DEBUG_PRINTLN(read_type);
-    WS_DEBUG_PRINTLN("[AnalogIO] Offline analogIOEvent message not published!");
+    WS_DEBUG_PRINTLN("[analogio] Offline analogIOEvent message not published!");
     // TODO: Log out this data by calling a logging function in sdcard class
   }
 
@@ -289,7 +289,7 @@ void AnalogIOController::update() {
       EncodePublishPinVoltage(pin.name, pin_value);
       pin.prv_period = cur_time; // Reset the pin's period
     } else {
-      WS_DEBUG_PRINTLN("ERROR: Invalid read mode for analog pin!");
+      WS_DEBUG_PRINTLN("[analogio] ERROR: Invalid read mode for analog pin!");
     }
   }
 }

@@ -100,6 +100,18 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
       .pin_period = period * 1000,
       .prv_pin_time = (millis() - 1) - period};
   _digitalio_pins.push_back(new_pin);
+
+  // Print out the pin's details
+  WS_DEBUG_PRINTLN("[digitalio] Added new pin:");
+  WS_DEBUG_PRINT("\tPin Name: ");
+  WS_DEBUG_PRINTLN(new_pin.pin_name);
+  WS_DEBUG_PRINT("\tPeriod: ");
+  WS_DEBUG_PRINTLN(new_pin.pin_period);
+  WS_DEBUG_PRINT("\tSample Mode: ");
+  WS_DEBUG_PRINTLN(new_pin.sample_mode);
+  WS_DEBUG_PRINT("\tDirection: ");
+  WS_DEBUG_PRINTLN(new_pin.pin_direction);
+
   return true;
 }
 
@@ -228,6 +240,8 @@ bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
 */
 /***********************************************************************/
 void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
+  if (WsV2._sdCardV2->mode_offline)
+    return;
   WS_DEBUG_PRINT("[digitalio] DIO Pin D");
   WS_DEBUG_PRINT(pin->pin_name);
   WS_DEBUG_PRINT(" | value: ");
@@ -315,7 +329,6 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     WS_DEBUG_PRINTLN("[digitalio] Published DigitalIOEvent to broker!")
   } else {
     // let's log the event to the SD card
-    WS_DEBUG_PRINTLN("[digitalio] Logging SensorEvent to SD Card...");
     if (!WsV2._sdCardV2->LogGPIOSensorEventToSD(
             pin_name, pin_value,
             wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN))
