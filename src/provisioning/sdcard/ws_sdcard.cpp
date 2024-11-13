@@ -231,8 +231,6 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
       msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
-
-      return true;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
       // Parse the AnalogIOAdd message
@@ -275,7 +273,7 @@ bool ws_sdcard::parseConfigFile() {
     }
 
     // Create a temporary buffer to hold the encoded signal message
-    std::vector<uint8_t> tempBuf(512);
+    std::vector<uint8_t> tempBuf(128);
     size_t tempBufSz;
 
     // Get the encoded size of the signal message first so we can resize the
@@ -287,6 +285,7 @@ bool ws_sdcard::parseConfigFile() {
       WS_DEBUG_PRINTLN("[SD] ERROR: Unable to get signal message size!");
       return false;
     }
+    WS_DEBUG_PRINTLN("Signal message size: " + String(tempBufSz));
     // Encode and push the signal message to the shared config buffer
     tempBuf.resize(tempBufSz);
     pb_ostream_t ostream =
@@ -336,7 +335,7 @@ bool ws_sdcard::waitForSerialConfig() {
                    "{"
                    "\"componentAPI\": \"analogio\","
                    "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D15\","
+                   "\"pinName\": \"D14\","
                    "\"type\": \"analog_pin\","
                    "\"mode\": \"ANALOG\","
                    "\"direction\": \"INPUT\","
@@ -355,6 +354,18 @@ bool ws_sdcard::waitForSerialConfig() {
                    "\"sampleMode\": \"TIMER\","
                    "\"analogReadMode\": \"PIN_VALUE\","
                    "\"period\": 5,"
+                   "\"isPin\": true"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"digitalio\","
+                   "\"name\": \"Button (D4)\","
+                   "\"pinName\": \"D4\","
+                   "\"type\": \"push_button\","
+                   "\"mode\": \"DIGITAL\","
+                   "\"sampleMode\": \"EVENT\","
+                   "\"direction\": \"INPUT\","
+                   "\"period\": 5,"
+                   "\"pull\": \"UP\","
                    "\"isPin\": true"
                    "}"
                    "]"
