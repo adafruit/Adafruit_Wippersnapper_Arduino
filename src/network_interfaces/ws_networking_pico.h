@@ -94,14 +94,14 @@ public:
     _pass = WS._config.network.pass;
   }
 
-  /**********************************************************/
+  /****************************************************************/
   /*!
-  @brief  a structure to hold network information
+  @brief  a structure to hold network information for sorting
   */
-  /**********************************************************/
+  /****************************************************************/
   struct WiFiNetwork {
-    char ssid[33]; // Maximum SSID length is 32 characters + null terminator
-    int rssi;
+    char ssid[33]; /*!< SSID (Max 32 characters + null terminator */
+    int rssi;      /*!< Received Signal Strength Indicator */
   };
 
   /*******************************************************************/
