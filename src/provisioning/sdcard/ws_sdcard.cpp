@@ -305,30 +305,43 @@ bool ws_sdcard::parseConfigFile() {
         return false;
       }
 
+      WS_DEBUG_PRINT("[SD] msg_DS18X20Add.sensor_types_count: ");
+      WS_DEBUG_PRINTLN(msg_DS18X20Add.sensor_types_count);
+
       // Parse the sensor types into the DS18X20Add message
       // TODO: This structor needs a refactoring pass! It's too confusing
-      if (msg_DS18X20Add.sensor_types_count == 1) {
-        if (component["sensorType1"] != nullptr) {
-          msg_DS18X20Add.sensor_types[0] = component["sensorType1"];
+      if (msg_DS18X20Add.sensor_types_count == 1 ||
+          msg_DS18X20Add.sensor_types_count == 2) {
+        if (strcmp(component["sensorType1"], "ambient-temp-fahrenheit") == 0) {
+          msg_DS18X20Add.sensor_types[0] =
+              wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT;
+        } else if (strcmp(component["sensorType1"], "ambient-temp") == 0) {
+          msg_DS18X20Add.sensor_types[0] =
+              wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
         } else {
-          WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor type found in "
-                           "JSON string!");
+          WS_DEBUG_PRINTLN(
+              "[SD] FATAL Parsing error - Unsupported ds18x sensor "
+              "type found in JSON!");
           return false;
         }
-      } else if (msg_DS18X20Add.sensor_types_count == 2) {
-        if (component["sensorType1"] != nullptr &&
-            component["sensorType2"] != nullptr) {
-          msg_DS18X20Add.sensor_types[0] = component["sensorType1"];
-          msg_DS18X20Add.sensor_types[1] = component["sensorType2"];
-        } else {
-          WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor type found in "
-                           "JSON string!");
-          return false;
+      }
+      if (msg_DS18X20Add.sensor_types_count == 2) {
+        WS_DEBUG_PRINTLN("[SD] Parsing sensor type 2...");
+        if (component["sensorType2"] != nullptr) {
+          if (strcmp(component["sensorType2"], "ambient-temp-fahrenheit") ==
+              0) {
+            msg_DS18X20Add.sensor_types[1] =
+                wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT;
+          } else if (strcmp(component["sensorType2"], "ambient-temp") == 0) {
+            msg_DS18X20Add.sensor_types[1] =
+                wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
+          } else {
+            WS_DEBUG_PRINTLN(
+                "[SD] FATAL Parsing error - Unsupported ds18x sensor "
+                "type found in JSON!");
+            return false;
+          }
         }
-      } else {
-        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - Unsupported ds18x sensor "
-                         "type count found in JSON!");
-        return false;
       }
 
       // Configure the signal message for the ds18x20 payload
