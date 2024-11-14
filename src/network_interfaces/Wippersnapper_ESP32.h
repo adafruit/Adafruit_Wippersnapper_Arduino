@@ -23,12 +23,12 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
-#include <vector>
-#include <algorithm>
 #include "WiFi.h"
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
+#include <algorithm>
+#include <vector>
 extern Wippersnapper WS;
 
 /****************************************************************************/
@@ -94,13 +94,13 @@ public:
 
   // Define a structure to hold network information
   struct WiFiNetwork {
-      char ssid[33]; // Maximum SSID length is 32 characters + null terminator
-      int rssi;
+    char ssid[33]; // Maximum SSID length is 32 characters + null terminator
+    int rssi;
   };
 
   // Comparison function to sort by RSSI in descending order
   bool static compareByRSSI(const WiFiNetwork &a, const WiFiNetwork &b) {
-      return a.rssi > b.rssi;
+    return a.rssi > b.rssi;
   }
 
   /***********************************************************/
@@ -129,8 +129,8 @@ public:
     // Perform a network scan
     int n = WiFi.scanNetworks();
     if (n == 0) {
-        WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
-        return false;
+      WS_DEBUG_PRINTLN("ERROR: No WiFi networks found!");
+      return false;
     }
 
     // Dynamically allocate memory for the network list
@@ -138,9 +138,11 @@ public:
 
     // Store the scanned networks in the vector
     for (int i = 0; i < n; ++i) {
-        strncpy(networks[i].ssid, WiFi.SSID(i).c_str(), sizeof(networks[i].ssid) - 1);
-        networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0'; // Ensure null termination
-        networks[i].rssi = WiFi.RSSI(i);
+      strncpy(networks[i].ssid, WiFi.SSID(i).c_str(),
+              sizeof(networks[i].ssid) - 1);
+      networks[i].ssid[sizeof(networks[i].ssid) - 1] =
+          '\0'; // Ensure null termination
+      networks[i].rssi = WiFi.RSSI(i);
     }
 
     // Sort the networks by RSSI in descending order
@@ -148,35 +150,35 @@ public:
 
     // Was the network within secrets.json found?
     for (const auto &network : networks) {
-        if (strcmp(_ssid, network.ssid) == 0) {
+      if (strcmp(_ssid, network.ssid) == 0) {
+        WS_DEBUG_PRINT("SSID (");
+        WS_DEBUG_PRINT(_ssid);
+        WS_DEBUG_PRINT(") found! RSSI: ");
+        WS_DEBUG_PRINTLN(network.rssi);
+        return true;
+      }
+      if (WS._isWiFiMulti) {
+        // multi network mode
+        for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
+          if (strcmp(WS._multiNetworks[j].ssid, network.ssid) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(_ssid);
+            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(network.rssi);
             return true;
+          }
         }
-        if (WS._isWiFiMulti) {
-            // multi network mode
-            for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-                if (strcmp(WS._multiNetworks[j].ssid, network.ssid) == 0) {
-                    WS_DEBUG_PRINT("SSID (");
-                    WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
-                    WS_DEBUG_PRINT(") found! RSSI: ");
-                    WS_DEBUG_PRINTLN(network.rssi);
-                    return true;
-                }
-            }
-        }
+      }
     }
 
     // User-set network not found, print scan results to serial console
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
     for (const auto &network : networks) {
-        WS_DEBUG_PRINT(network.ssid);
-        WS_DEBUG_PRINT(" ");
-        WS_DEBUG_PRINT(network.rssi);
-        WS_DEBUG_PRINTLN("dB");
+      WS_DEBUG_PRINT(network.ssid);
+      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(network.rssi);
+      WS_DEBUG_PRINTLN("dB");
     }
 
     return false;

@@ -18,13 +18,13 @@
 #define WIPPERSNAPPER_ESP8266_H
 
 #ifdef ARDUINO_ARCH_ESP8266
-#include <vector>
-#include <algorithm>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "ESP8266WiFi.h"
 #include "ESP8266WiFiMulti.h"
 #include "Wippersnapper.h"
+#include <algorithm>
+#include <vector>
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
@@ -116,15 +116,13 @@ public:
   }
 
   // Define a structure to hold network information
-  struct WiFiNetwork
-  {
+  struct WiFiNetwork {
     char ssid[33]; // Maximum SSID length is 32 characters + null terminator
     int rssi;
   };
 
   // Comparison function to sort by RSSI in descending order
-  bool static compareByRSSI(const WiFiNetwork &a, const WiFiNetwork &b)
-  {
+  bool static compareByRSSI(const WiFiNetwork &a, const WiFiNetwork &b) {
     return a.rssi > b.rssi;
   }
 
@@ -153,8 +151,10 @@ public:
 
     // Store the scanned networks in the vector
     for (int i = 0; i < n; ++i) {
-      strncpy(networks[i].ssid, WiFi.SSID(i).c_str(), sizeof(networks[i].ssid) - 1);
-      networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0'; // Ensure null termination
+      strncpy(networks[i].ssid, WiFi.SSID(i).c_str(),
+              sizeof(networks[i].ssid) - 1);
+      networks[i].ssid[sizeof(networks[i].ssid) - 1] =
+          '\0'; // Ensure null termination
       networks[i].rssi = WiFi.RSSI(i);
     }
 
@@ -187,8 +187,7 @@ public:
     // User-set network not found, print scan results to serial console
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (const auto &network : networks)
-    {
+    for (const auto &network : networks) {
       WS_DEBUG_PRINT(network.ssid);
       WS_DEBUG_PRINT(" ");
       WS_DEBUG_PRINT(network.rssi);
