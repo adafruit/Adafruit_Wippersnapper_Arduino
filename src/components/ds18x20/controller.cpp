@@ -102,19 +102,21 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     is_initialized = false;
   }
 
-  // Encode and publish a Ds18x20Added message back to the broker
-  unsigned long encode_start_time = millis();
-  if (!_DS18X20_model->EncodeDS18x20Added(
-          _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
-    WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to encode Ds18x20Added message!");
-    return false;
-  }
+  // If we're not in offline mode, publish a Ds18x20Added message back to the broker
+  if (! WsV2._sdCardV2->mode_offline) {
+    // Encode and publish a Ds18x20Added message back to the broker
+    if (!_DS18X20_model->EncodeDS18x20Added(
+            _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
+        WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to encode Ds18x20Added message!");
+        return false;
+    }
 
-  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
-                          _DS18X20_model->GetDS18x20AddedMsg())) {
-    WS_DEBUG_PRINTLN(
-        "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
-    return false;
+    if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
+                            _DS18X20_model->GetDS18x20AddedMsg())) {
+        WS_DEBUG_PRINTLN(
+            "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
+        return false;
+    }
   }
 
   return true;
