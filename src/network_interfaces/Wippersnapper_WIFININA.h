@@ -149,7 +149,7 @@ public:
 
     // Store the scanned networks in the vector
     for (int i = 0; i < n; ++i) {
-        strncpy(networks[i].ssid, WiFi.SSID(i).c_str(), sizeof(networks[i].ssid) - 1);
+        strncpy(networks[i].ssid, WiFi.SSID(i), sizeof(networks[i].ssid) - 1);
         networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0'; // Ensure null termination
         networks[i].rssi = WiFi.RSSI(i);
     }
