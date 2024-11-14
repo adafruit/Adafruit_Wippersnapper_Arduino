@@ -111,13 +111,26 @@ public:
     strlcpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
   }
 
-  // Define a structure to hold network information
+  /**********************************************************/
+  /*!
+  @brief  a structure to hold network information
+  */
+  /**********************************************************/
   struct WiFiNetwork {
     char ssid[33]; // Maximum SSID length is 32 characters + null terminator
     int rssi;
   };
 
-  // Comparison function to sort by RSSI in descending order
+  /*******************************************************************/
+  /*!
+  @brief  Comparison function to sort by RSSI in descending order
+  @param  a
+          WiFiNetwork object
+  @param  b
+          WiFiNetwork object
+  @returns True if a.rssi > b.rssi
+  */
+  /*******************************************************************/
   bool static compareByRSSI(const WiFiNetwork &a, const WiFiNetwork &b) {
     return a.rssi > b.rssi;
   }
