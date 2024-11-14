@@ -325,7 +325,7 @@ bool Wippersnapper_AnalogIO::encodePinEvent(
 */
 /**********************************************************/
 void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
-                         uint16_t *pinValThreshHi, uint16_t *pinValThreshLow) {
+                         uint16_t &pinValThreshHi, uint16_t &pinValThreshLow) {
   // All boards ADC values scaled to 16bit, in future we may need to
   // adjust dynamically
   uint16_t maxDecimalValue = 65535;
@@ -342,10 +342,19 @@ void calculateHysteresis(analogInputPin pin, uint16_t pinValRaw,
   } else {
     CURRENT_HYSTERISIS = maxDecimalValue * DEFAULT_HYSTERISIS * 4;
   }
-
-  // get the threshold values for previous pin value
-  *pinValThreshHi = pin.prvPinVal + CURRENT_HYSTERISIS;
-  *pinValThreshLow = pin.prvPinVal - CURRENT_HYSTERISIS;
+  // get the threshold values for previous pin value, but don't overflow
+  float overflowableThHi = pin.prvPinVal + CURRENT_HYSTERISIS;
+  float overflowableThLow = pin.prvPinVal - CURRENT_HYSTERISIS;
+  if (overflowableThHi > maxDecimalValue) {
+    pinValThreshHi = maxDecimalValue;
+  } else {
+    pinValThreshHi = overflowableThHi;
+  }
+  if (overflowableThLow < 0) {
+    pinValThreshLow = 0;
+  } else {
+    pinValThreshLow = overflowableThLow;
+  }
 }
 
 /**********************************************************/
@@ -425,14 +434,8 @@ void Wippersnapper_AnalogIO::update() {
 
         // check if pin value has changed enough
         uint16_t pinValThreshHi, pinValThreshLow;
-        calculateHysteresis(_analog_input_pins[i], pinValRaw, &pinValThreshHi,
-                            &pinValThreshLow);
-        WS_DEBUG_PRINT("Returned pinValThreshHi: ");
-        WS_DEBUG_PRINTLN(pinValThreshHi);
-        WS_DEBUG_PRINT("Returned pinValThreshLow: ");
-        WS_DEBUG_PRINTLN(pinValThreshLow);
-        WS_DEBUG_PRINT("Current pinValRaw: ");
-        WS_DEBUG_PRINTLN(pinValRaw);
+        calculateHysteresis(_analog_input_pins[i], pinValRaw, pinValThreshHi,
+                            pinValThreshLow);
 
         if (_analog_input_pins[i].prvPeriod == 0 ||
             pinValRaw > pinValThreshHi || pinValRaw < pinValThreshLow) {
@@ -450,12 +453,10 @@ void Wippersnapper_AnalogIO::update() {
           // mark last execution time
           _analog_input_pins[i].prvPeriod = millis();
 
-        } else {
-          // WS_DEBUG_PRINTLN("ADC has not changed enough, continue...");
+        } else { // ADC has not changed enough
           continue;
         }
-        // set the pin value in the digital pin object for comparison on next
-        // run
+        // set the pin value in the digital pin object for comparison next run
         _analog_input_pins[i].prvPinVal = pinValRaw;
       }
     }
