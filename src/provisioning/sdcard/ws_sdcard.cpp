@@ -107,7 +107,7 @@ bool ws_sdcard::parseConfigFile() {
 
   JsonDocument doc;
   // TODO: Change max input length to fit an expected/max json size
-  int max_input_len = 1024;
+  int max_input_len = 2048;
 
   // Attempt to de-serialize the JSON document
   DeserializationError error;
@@ -265,6 +265,77 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_analogio_add_tag;
       msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
+    } else if (strcmp(component_api_type, "ds18x20") == 0) {
+      WS_DEBUG_PRINTLN("[SD] ds18x20 component found, decoding JSON to PB...");
+      // Create new DS18X20Add message
+      wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
+          wippersnapper_ds18x20_Ds18x20Add_init_default;
+      // Parse JSON into the DS18X20Add message
+      // TODO: This pattern should be refactored into a function like
+      // "ParseAndAssign(component["type"], msg_field)"
+      if (component["pinName"] != nullptr) {
+        strcpy(msg_DS18X20Add.onewire_pin, component["pinName"]);
+      } else {
+        WS_DEBUG_PRINTLN(
+            "[SD] FATAL Parsing error - No pin name found in JSON string!");
+        return false;
+      }
+
+      if (component["sensorResolution"] != nullptr) {
+        msg_DS18X20Add.sensor_resolution = component["sensorResolution"];
+      } else {
+        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor resolution "
+                         "found in JSON string!");
+        return false;
+      }
+
+      if (component["period"] != nullptr) {
+        msg_DS18X20Add.period = component["period"];
+      } else {
+        WS_DEBUG_PRINTLN(
+            "[SD] FATAL Parsing error - No period found in JSON string!");
+        return false;
+      }
+
+      if (component["sensorTypeCount"] != nullptr) {
+        msg_DS18X20Add.sensor_types_count = component["sensorTypeCount"];
+      } else {
+        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor type count "
+                         "found in JSON string!");
+        return false;
+      }
+
+      // Parse the sensor types into the DS18X20Add message
+      // TODO: This structor needs a refactoring pass! It's too confusing
+      if (msg_DS18X20Add.sensor_types_count == 1) {
+        if (component["sensorType1"] != nullptr) {
+          msg_DS18X20Add.sensor_types[0] = component["sensorType1"];
+        } else {
+          WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor type found in "
+                           "JSON string!");
+          return false;
+        }
+      } else if (msg_DS18X20Add.sensor_types_count == 2) {
+        if (component["sensorType1"] != nullptr &&
+            component["sensorType2"] != nullptr) {
+          msg_DS18X20Add.sensor_types[0] = component["sensorType1"];
+          msg_DS18X20Add.sensor_types[1] = component["sensorType2"];
+        } else {
+          WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor type found in "
+                           "JSON string!");
+          return false;
+        }
+      } else {
+        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - Unsupported ds18x sensor "
+                         "type count found in JSON!");
+        return false;
+      }
+
+      // Configure the signal message for the ds18x20 payload
+      msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
+      msg_signal_b2d.which_payload =
+          wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
+      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
     } else {
       // Unknown component API type
       WS_DEBUG_PRINTLN("[SD] Unknown component API type found: " +
@@ -367,6 +438,16 @@ bool ws_sdcard::waitForSerialConfig() {
                    "\"period\": 5,"
                    "\"pull\": \"UP\","
                    "\"isPin\": true"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"ds18x20\","
+                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
+                   "\"sensorTypeCount\": 2,"
+                   "\"sensorType1\": \"ambient-temp-fahrenheit\","
+                   "\"sensorType2\": \"ambient-temp\","
+                   "\"pinName\": \"D6\","
+                   "\"sensorResolution\": 12,"
+                   "\"period\": 900"
                    "}"
                    "]"
                    "}\\n\r\n";
