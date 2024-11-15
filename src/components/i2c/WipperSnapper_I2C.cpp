@@ -217,6 +217,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
 
   uint16_t i2cAddress = (uint16_t)msgDeviceInitReq->i2c_device_address;
   if ((strcmp("aht20", msgDeviceInitReq->i2c_device_name) == 0) ||
+      (strcmp("aht21", msgDeviceInitReq->i2c_device_name) == 0) ||
       (strcmp("am2301b", msgDeviceInitReq->i2c_device_name) == 0) ||
       (strcmp("am2315c", msgDeviceInitReq->i2c_device_name) == 0) ||
       (strcmp("dht20", msgDeviceInitReq->i2c_device_name) == 0)) {
