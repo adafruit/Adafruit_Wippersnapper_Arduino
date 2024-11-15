@@ -127,7 +127,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   if (_freshFS)
   {
     WS_DEBUG_PRINTLN("New filesystem created! Resetting the board shortly...");
-    WS_PRINTER.flush();
     WS.enableWDT(500);
     while (1)
     {
@@ -387,8 +386,6 @@ void Wippersnapper_FS::createSecretsFile() {
   // Flush and close file
   secretsFile.flush();
   secretsFile.close();
-  delay(2500);
-  initUSBMSC(); // re-init USB MSC to show new file to user for editing
 
   // Signal to user that action must be taken (edit secrets.json)
   writeToBootOut(
@@ -400,6 +397,8 @@ void Wippersnapper_FS::createSecretsFile() {
       "Please edit it to reflect your Adafruit IO and network credentials. "
       "When you're done, press RESET on the board.");
 #endif
+  delay(500); // previously 2500
+  initUSBMSC(); // re-init USB MSC to show new file to user for editing
   fsHalt("ERROR: Please edit the secrets.json file. Then, reset your board.");
 }
 
