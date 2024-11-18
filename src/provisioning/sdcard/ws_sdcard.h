@@ -45,6 +45,7 @@ public:
                               wippersnapper_sensor_SensorType read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
                               wippersnapper_sensor_SensorType read_type);
+  bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
   // RTC
   uint32_t GetTimestamp();
   // Logging
