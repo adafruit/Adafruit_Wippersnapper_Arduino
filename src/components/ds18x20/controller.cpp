@@ -224,21 +224,14 @@ void DS18X20Controller::update() {
         _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->sensor_events_count;
 
-    // Print the message's content out for debugging
-    WS_DEBUG_PRINT("DS18x20: OneWire pin: ");
-    WS_DEBUG_PRINT(temp_dsx_driver.GetOneWirePin());
-    WS_DEBUG_PRINT(" got value(s): ");
-    for (int i = 0; i < event_count; i++) {
-      WS_DEBUG_PRINT(event_msg->sensor_events[i].value.float_value);
-    }
-
+    if (! WsV2._sdCardV2->mode_offline)
+    {
     // Encode the Ds18x20Event message
     if (!_DS18X20_model->EncodeDs18x20Event()) {
       WS_DEBUG_PRINTLN(
           "ERROR | DS18x20: Failed to encode Ds18x20Event message");
       continue;
     }
-
     // Publish the Ds18x20Event message to the broker
     WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
     if (!WsV2.PublishSignal(
@@ -249,6 +242,12 @@ void DS18X20Controller::update() {
       continue;
     }
     WS_DEBUG_PRINTLN("Published!");
+    } else {
+        if (!WsV2._sdCardV2->LogDS18xSensorEventToSD(_DS18X20_model->GetDS18x20EventMsg())) {
+            WS_DEBUG_PRINTLN("ERROR | DS18x20: Failed to log DS18x20 event to SD card");
+            continue;
+        }
+    }
 
 #ifdef DEBUG_PROFILE
     unsigned long sensor_end_time = millis();

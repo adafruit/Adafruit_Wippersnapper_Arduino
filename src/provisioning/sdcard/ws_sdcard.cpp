@@ -458,9 +458,19 @@ bool ws_sdcard::waitForSerialConfig() {
                    "\"sensorTypeCount\": 2,"
                    "\"sensorType1\": \"ambient-temp-fahrenheit\","
                    "\"sensorType2\": \"ambient-temp\","
-                   "\"pinName\": \"D6\","
+                   "\"pinName\": \"D12\","
                    "\"sensorResolution\": 12,"
-                   "\"period\": 900"
+                   "\"period\": 5"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"ds18x20\","
+                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
+                   "\"sensorTypeCount\": 2,"
+                   "\"sensorType1\": \"ambient-temp-fahrenheit\","
+                   "\"sensorType2\": \"ambient-temp\","
+                   "\"pinName\": \"D25\","
+                   "\"sensorResolution\": 12,"
+                   "\"period\": 5"
                    "}"
                    "]"
                    "}\\n\r\n";
@@ -626,7 +636,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   doc["timestamp"] = timestamp;
   doc["pin"] = c_pin_name;
   doc["value"] = value;
-  doc["sensor_type"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToString(read_type);
   serializeJson(doc, Serial);
   return true;
 }
@@ -665,8 +675,27 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   doc["timestamp"] = timestamp;
   doc["pin"] = c_pin_name;
   doc["value"] = value;
-  doc["sensor_type"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToString(read_type);
   serializeJson(doc, Serial);
   Serial.println("");
+  return true;
+}
+
+bool ws_sdcard::LogDS18xSensorEventToSD(
+    wippersnapper_ds18x20_Ds18x20Event *event_msg) {
+  // Get the RTC's timestamp
+  uint32_t timestamp = GetTimestamp();
+
+  // Create the JSON document
+  JsonDocument doc;
+  // Iterate over the event message's sensor events
+  for (int i = 0; i < event_msg->sensor_events_count; i++) {
+    doc["timestamp"] = timestamp;
+    doc["pin"] = event_msg->onewire_pin;
+    doc["value"] = event_msg->sensor_events[i].value.float_value;
+    doc["si_unit"] = SensorTypeToString(event_msg->sensor_events[i].type);
+    serializeJson(doc, Serial);
+    Serial.println("");
+  }
   return true;
 }
