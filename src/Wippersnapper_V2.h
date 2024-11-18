@@ -254,13 +254,8 @@ public:
 #endif
   bool got_checkin_response; ///< True if a checkin response was received, False
                              ///< otherwise.
-
-  wippersnapper_signal_BrokerToDevice _signalB2dV2;
-  pb_ostream_t _signalStream;
-  size_t _szMessageBuf; // TODO: Delete
-  uint8_t _msgBuf[512]; // TODO: Delete
-  std::vector<std::vector<uint8_t>> _sharedConfigBuffers;
-
+  std::vector<std::vector<uint8_t>>
+      _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
 private:
   void _initV2();
 
