@@ -36,7 +36,7 @@
       "top": 9.2,
       "left": 74,
       "rotate": 270,
-      "attrs": { "color": "green" }
+      "attrs": { "bounce": "0", "color": "green" }
     },
     { "type": "board-ds18b20", "id": "temp1", "top": -87.53, "left": 272.88, "attrs": {} },
     {
