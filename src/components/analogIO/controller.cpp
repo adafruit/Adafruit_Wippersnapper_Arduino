@@ -92,11 +92,11 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
 
   // Print out the pin's details
   WS_DEBUG_PRINTLN("[analogio] Added new pin:");
-  WS_DEBUG_PRINT("\tPin Name: ");
+  WS_DEBUG_PRINT("Pin Name: ");
   WS_DEBUG_PRINTLN(new_pin.name);
-  WS_DEBUG_PRINT("\tPeriod: ");
+  WS_DEBUG_PRINT("Period: ");
   WS_DEBUG_PRINTLN(new_pin.period);
-  WS_DEBUG_PRINT("\tRead Mode: ");
+  WS_DEBUG_PRINT("Read Mode: ");
   WS_DEBUG_PRINTLN(new_pin.read_mode);
 
   // Add the new pin to the vector
