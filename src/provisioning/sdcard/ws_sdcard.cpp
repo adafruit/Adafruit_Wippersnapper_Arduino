@@ -21,6 +21,7 @@
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
   mode_offline = false;
+  _wokwi_runner = false;
 #ifndef SD_CS_PIN
   return;
 #endif
@@ -129,7 +130,6 @@ bool ws_sdcard::parseConfigFile() {
   // Attempt to de-serialize the JSON document
   DeserializationError error;
 #ifdef OFFLINE_MODE_DEBUG
-  _use_test_data = true; // TODO: This should be global
   if (!_use_test_data) {
     // Read the config file from the serial input buffer
     WS_DEBUG_PRINTLN("[SD] Reading JSON config file...");
@@ -193,6 +193,12 @@ bool ws_sdcard::parseConfigFile() {
       return false;
     }
 
+    // This is enabled for wokwi-cli testing only
+    const char *exportedBy = doc["exportedBy"];
+    if (strcmp(exportedBy, "wokwi") == 0) {
+      _wokwi_runner = true;
+    }
+
     // Determine the component type and parse it into a PB message
     if (strcmp(component_api_type, "digitalio") == 0) {
       WS_DEBUG_PRINTLN(
@@ -232,31 +238,17 @@ bool ws_sdcard::parseConfigFile() {
                          String(component["direction"]));
         return false;
       }
-
-      // Print out the contents of the DigitalIOAdd message
-      WS_DEBUG_PRINTLN("[SD] DigitalIOAdd message:");
-      WS_DEBUG_PRINTLN("\tPin Name: " + String(msg_DigitalIOAdd.pin_name));
-      WS_DEBUG_PRINTLN("\tDirection: " +
-                       String(msg_DigitalIOAdd.gpio_direction));
-      WS_DEBUG_PRINTLN("\tSample Mode: " +
-                       String(msg_DigitalIOAdd.sample_mode));
-      WS_DEBUG_PRINTLN("\tPeriod: " + String(msg_DigitalIOAdd.period));
-      WS_DEBUG_PRINTLN("\tValue: " + String(msg_DigitalIOAdd.value));
-
-      // Create a new signal message
+      
       msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
       msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
-      // Parse the AnalogIOAdd message
       wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
           wippersnapper_analogio_AnalogIOAdd_init_default;
-      // Fill in the AnalogIOAdd message
       strcpy(msg_AnalogIOAdd.pin_name, component["pinName"]);
       msg_AnalogIOAdd.period = component["period"];
-      // Parse the analog pin's read mode
       if (strcmp(component["analogReadMode"], "PIN_VALUE") == 0) {
         msg_AnalogIOAdd.read_mode =
             wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
@@ -270,15 +262,7 @@ bool ws_sdcard::parseConfigFile() {
         return false;
       }
 
-      // Print out the contents of the AnalogIOAdd message
-      WS_DEBUG_PRINTLN("[SD] AnalogIOAdd message:");
-      WS_DEBUG_PRINTLN("\tPin Name: " + String(msg_AnalogIOAdd.pin_name));
-      WS_DEBUG_PRINTLN("\tPeriod: " + String(msg_AnalogIOAdd.period));
-      WS_DEBUG_PRINTLN("\tRead Mode: " + String(msg_AnalogIOAdd.read_mode));
-
-      // Create a new signal message
       msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
-      //. Fill the signal message with msg_AnalogIOAdd data
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_analogio_add_tag;
       msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
@@ -432,7 +416,7 @@ bool ws_sdcard::waitForSerialConfig() {
   // 2. Provide a JSON string via the hardware's serial input
   // 3. Use a test JSON string - for debugging purposes ONLY
 
-  _use_test_data = true;
+  _use_test_data = false;
   json_test_data = "{"
                    "\"exportVersion\": \"1.0.0\","
                    "\"exportedBy\": \"tester\","
@@ -505,31 +489,35 @@ bool ws_sdcard::waitForSerialConfig() {
                    "}\\n\r\n";
 
   _serialInput = ""; // Clear the serial input buffer
-  if (!_use_test_data) {
+if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Waiting for incoming JSON string...");
     while (true) {
-      // Check if there is data available to read
-      if (Serial.available() > 0) {
-        // Read and append to _serialInput
-        char c = Serial.read();
-        _serialInput += c;
-        // Check for EoL or end of JSON string
-        // Read the TODO/Note below!
-        // NOTE: This is checking for a \n delimeter from the serial
-        // and that wont be present in non-serial application
-        // Parse JSON normally if not using serial and inspect this condition!
-        if (c == '\n') {
-          break;
+        // Check if there is data available to read
+        if (Serial.available() > 0) {
+            // Read and append to _serialInput
+            char c = Serial.read();
+            _serialInput += c;
+
+            // DEBUG - Check JSON output as an Int and total output
+            // WS_DEBUG_PRINT("[SD] Character read: ");
+            // WS_DEBUG_PRINTLN((int)c);
+            // WS_DEBUG_PRINTLN(_serialInput);
+
+            // Check for end of JSON string using \n sequence
+            if (_serialInput.endsWith("\\n")) {
+                WS_DEBUG_PRINTLN("[SD] End of JSON string detected!");
+                break;
+            }
         }
-      }
     }
-  }
+}
+
 
   // Strip the '\n' off the end of _serialInput
   _serialInput.trim();
 
   // Print out the received JSON string
-  WS_DEBUG_PRINT("[SD][Debug] JSON string received: ");
+  WS_DEBUG_PRINT("[SD][Debug] JSON string received!");
   if (_use_test_data) {
     WS_DEBUG_PRINTLN("[from json test data]");
     WS_DEBUG_PRINTLN(json_test_data);
@@ -572,6 +560,10 @@ uint32_t ws_sdcard::GetTimestamp() {
   else {
     // TODO! implement software millis() version of now() and unixtime()
   }
+
+  if (_wokwi_runner)
+    return 0;
+
   return now.unixtime();
 }
 

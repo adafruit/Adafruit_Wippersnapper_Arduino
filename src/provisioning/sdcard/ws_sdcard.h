@@ -59,6 +59,7 @@ private:
   const char *json_test_data; ///< Json test data
   bool _use_test_data; ///< True if sample data is being used to test, instead
                        ///< of serial input, False otherwise.
+  bool _wokwi_runner; ///< True if `exportedBy` key is "wokwi", otherwise False
   RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object
   RTC_DS1307 *_rtc_ds1307 = nullptr;   ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object
