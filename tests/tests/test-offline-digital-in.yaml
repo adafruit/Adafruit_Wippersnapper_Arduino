@@ -1,0 +1,20 @@
+name: Offline Mode - Digital Input
+version: 1
+author: Brent Rubell for Adafruit Industries
+
+steps:
+  - wait-serial: '[SD] Waiting for incoming JSON string...'
+  - write-serial: '{"exportVersion":"1.0.0","exportedBy":"wokwi","exportedAt":"2024-10-28T18:58:23.976Z","exportedFromDevice":{"board":"metroesp32s3","firmwareVersion":"1.0.0-beta.93","referenceVoltage":2.6,"totalGPIOPins":11,"totalAnalogPins":6},"components":[{"componentAPI":"digitalio","name":"Button (D4)","pinName":"D4","type":"push_button","mode":"DIGITAL","sampleMode":"TIMER","direction":"INPUT","period":5,"pull":"UP","isPin":true}]}'
+  - write-serial: '\n'
+  - wait-serial: '[SD] Valid JSON string received!'
+  - wait-serial: '[digitalio] Added new pin:'
+  - wait-serial: 'Pin Name: 4'
+  - wait-serial: 'Period: 5000'
+  - wait-serial: 'Sample Mode: 1'
+  - wait-serial: 'Direction: 2'
+  - wait-serial: '{"timestamp":0,"pin":"A4","value":true,"si_unit":"BOOLEAN"}'
+  - set-control:
+      part-id: btn1
+      control: pressed
+      value: 1
+  - wait-serial: '{"timestamp":0,"pin":"A4","value":false,"si_unit":"BOOLEAN"}'

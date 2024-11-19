@@ -103,13 +103,13 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
 
   // Print out the pin's details
   WS_DEBUG_PRINTLN("[digitalio] Added new pin:");
-  WS_DEBUG_PRINT("\tPin Name: ");
+  WS_DEBUG_PRINT("Pin Name: ");
   WS_DEBUG_PRINTLN(new_pin.pin_name);
-  WS_DEBUG_PRINT("\tPeriod: ");
+  WS_DEBUG_PRINT("Period: ");
   WS_DEBUG_PRINTLN(new_pin.pin_period);
-  WS_DEBUG_PRINT("\tSample Mode: ");
+  WS_DEBUG_PRINT("Sample Mode: ");
   WS_DEBUG_PRINTLN(new_pin.sample_mode);
-  WS_DEBUG_PRINT("\tDirection: ");
+  WS_DEBUG_PRINT("Direction: ");
   WS_DEBUG_PRINTLN(new_pin.pin_direction);
 
   return true;
