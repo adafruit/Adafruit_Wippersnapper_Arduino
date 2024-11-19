@@ -1,0 +1,11 @@
+name: Offline Mode - DS18b20
+version: 1
+author: Brent Rubell for Adafruit Industries
+
+steps:
+  - wait-serial: '[SD] Waiting for incoming JSON string...'
+  - write-serial: '{"exportVersion":"1.0.0","exportedBy":"wokwi","exportedAt":"2024-10-28T18:58:23.976Z","exportedFromDevice":{"board":"metroesp32s3","firmwareVersion":"1.0.0-beta.93","referenceVoltage":2.6,"totalGPIOPins":11,"totalAnalogPins":6},"components":[{"componentAPI":"ds18x20","name":"DS18B20: Temperature Sensor (°F)","sensorTypeCount":2,"sensorType1":"ambient-temp-fahrenheit","sensorType2":"ambient-temp","pinName":"D6","sensorResolution":12,"period":5}]}'
+  - write-serial: '\n'
+  - wait-serial: '[SD] Valid JSON string received!'
+  - wait-serial: '{"timestamp":0,"pin":"D6","value":0,"si_unit":"OBJECT_TEMPERATURE"}'
+  - wait-serial: '{"timestamp":0,"pin":"D6","value":32,"si_unit":"OBJECT_TEMPERATURE_FAHRENHEIT"}'
