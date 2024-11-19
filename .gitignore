@@ -39,12 +39,15 @@ html/*
 # VSCode artifacts
 .vscode/*
 src/.vscode/settings.json
-
 .DS_STORE
-
 examples/Wippersnapper_demo/build/
 
+# Virtual environment directories
 .venv/
+venv/
+
+# Python artifacts
+tests/__pycache__/
 
 # Platformio artifacts
 .pio/
