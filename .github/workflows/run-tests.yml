@@ -39,7 +39,7 @@ jobs:
         run: curl -L https://wokwi.com/ci/install.sh | sh
 
       - name: Test on Wokwi
-        run: pytest test_${{ matrix.test }}.py  --junitxml=report.xml
+        run: pytest ${{ matrix.test }}.py  --junitxml=report.xml
         env:
           WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
 
