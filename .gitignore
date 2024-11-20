@@ -55,3 +55,6 @@ tests/__pycache__/
 # These sometimes contain credentials, don't commit them!
 src/Wippersnapper_demo_wokwi.ino
 data/
+
+# Test results
+report.xml
