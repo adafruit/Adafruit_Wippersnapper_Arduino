@@ -22,14 +22,16 @@
 ws_sdcard::ws_sdcard() {
   mode_offline = false;
   _wokwi_runner = false;
-#ifndef SD_CS_PIN
+/* #ifndef SD_CS_PIN
   return;
-#endif
-
+#else
   // Attempt to initialize the SD card
   if (_sd.begin(SD_CS_PIN)) {
     mode_offline = true;
   }
+#endif
+ */
+
 }
 
 /**************************************************************************/

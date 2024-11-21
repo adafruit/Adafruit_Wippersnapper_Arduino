@@ -13,7 +13,7 @@
  *
  */
 #if defined(ARDUINO_MAGTAG29_ESP32S2) || defined(ARDUINO_METRO_ESP32S2) ||     \
-    defined(ARDUINO_FUNHOUSE_ESP32S2) ||                                       \
+    defined(ARDUINO_METRO_ESP32S3) || defined(ARDUINO_FUNHOUSE_ESP32S2) ||     \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) ||                                    \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) ||                               \
@@ -129,9 +129,6 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
     fsHalt("FATAL ERROR: Could not write filesystem contents!");
   }
 
-  // Initialize USB-MSC
-  initUSBMSC();
-
   // If we wrote a fresh secrets.json file, halt until user edits the file and
   // RESETs the device Signal to user that action must be taken (edit
   // secrets.json)
@@ -149,6 +146,8 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
            "values\n. Using a text editor, edit it to reflect your Adafruit IO "
            "and WiFi credentials. Then, reset the board.");
   }
+  delay(500);
+  initUSBMSC(); // re-init USB MSC to show new file to user for editing
 }
 
 /************************************************************/
