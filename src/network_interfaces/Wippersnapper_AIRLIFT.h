@@ -109,8 +109,8 @@ public:
   */
   /****************************************************************/
   struct WiFiNetwork {
-    char ssid[33]; /*!< SSID (Max 32 characters + null terminator */
-    int rssi;      /*!< Received Signal Strength Indicator */
+    String ssid[32]; /*!< SSID (Max 32 characters + null terminator */
+    int32_t rssi = -99;      /*!< Received Signal Strength Indicator */
   };
 
   /*******************************************************************/
@@ -145,27 +145,24 @@ public:
       return false;
     }
 
-    // Dynamically allocate memory for the network list
-    std::vector<WiFiNetwork> networks(n);
+    WiFiNetwork networks[WS_MAX_SORTED_NETWORKS];
 
-    // Store the scanned networks in the vector
-    for (int i = 0; i < n; ++i) {
-      strncpy(networks[i].ssid, WiFi.SSID(i), sizeof(networks[i].ssid) - 1);
-      networks[i].ssid[sizeof(networks[i].ssid) - 1] =
-          '\0'; // Ensure null termination
+    // Store the scanned networks in the array
+    for (int i = 0; i < n && i < WS_MAX_SORTED_NETWORKS; ++i) {
+      strncpy(networks[i].ssid, WiFi.SSID(i), sizeof(networks[i].ssid));
       networks[i].rssi = WiFi.RSSI(i);
     }
 
     // Sort the networks by RSSI in descending order
-    std::sort(networks.begin(), networks.end(), compareByRSSI);
+    std::sort(networks, networks + std::min(n, WS_MAX_SORTED_NETWORKS), compareByRSSI);
 
     // Was the network within secrets.json found?
-    for (const auto &network : networks) {
-      if (strcmp(_ssid, network.ssid) == 0) {
+    for (int i = 0; i < n; ++i) {
+      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
         WS_DEBUG_PRINT("SSID (");
         WS_DEBUG_PRINT(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(network.rssi);
+        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
     }
@@ -173,10 +170,10 @@ public:
     // User-set network not found, print scan results to serial console
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (const auto &network : networks) {
-      WS_DEBUG_PRINT(network.ssid);
+    for (int i = 0; i < n; ++i) {
+      WS_DEBUG_PRINT(WiFi.SSID(i));
       WS_DEBUG_PRINT(" ");
-      WS_DEBUG_PRINT(network.rssi);
+      WS_DEBUG_PRINT(WiFi.RSSI(i));
       WS_DEBUG_PRINTLN("dB");
     }
 

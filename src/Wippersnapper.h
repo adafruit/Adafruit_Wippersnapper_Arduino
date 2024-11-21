@@ -20,6 +20,7 @@
 
 // Cpp STD
 #include <vector>
+#include <algorithm>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
@@ -215,6 +216,7 @@ typedef enum {
 } fsm_net_t;
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
+#define WS_MAX_SORTED_NETWORKS 15  ///< Maximum number of networks to sort
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
