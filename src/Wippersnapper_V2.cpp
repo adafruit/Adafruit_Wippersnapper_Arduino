@@ -97,17 +97,19 @@ void Wippersnapper_V2::provisionV2() {
   // Initialize the status LED for signaling FS errors
   initStatusLED();
 
-  // If an SD card is inserted and mounted, we do not need to provision
-  // wifi/io credentials
-  if (WsV2._sdCardV2->mode_offline == true)
-    return;
-
 // Initialize the filesystem
 #ifdef USE_TINYUSB
   _fileSystemV2 = new Wippersnapper_FS_V2();
 #elif defined(USE_LITTLEFS)
   _littleFSV2 = new WipperSnapper_LittleFS();
 #endif
+
+  if (WsV2._sdCardV2->initSDCard()) {
+    setStatusLEDColor(GREEN);
+    return;
+  } else {
+    setStatusLEDColor(RED);
+  }
 
 #ifdef USE_DISPLAY
   // Initialize the display
@@ -1168,8 +1170,8 @@ void printDeviceInfoV2() {
 */
 /**************************************************************************/
 void Wippersnapper_V2::connectV2() {
+  setStatusLEDColor(BLUE);
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
-
   // Dump device info to the serial monitor
   printDeviceInfoV2();
 

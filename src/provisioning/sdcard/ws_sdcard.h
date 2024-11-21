@@ -32,6 +32,7 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
+  bool initSDCard();
   void EnableLogging();
   bool parseConfigFile();
   bool waitForSerialConfig();
