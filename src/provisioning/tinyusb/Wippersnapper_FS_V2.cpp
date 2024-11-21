@@ -129,6 +129,9 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
     fsHalt("FATAL ERROR: Could not write filesystem contents!");
   }
 
+  // Initialize USB-MSC
+  initUSBMSC();
+
   // If we wrote a fresh secrets.json file, halt until user edits the file and
   // RESETs the device Signal to user that action must be taken (edit
   // secrets.json)
@@ -146,8 +149,6 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
            "values\n. Using a text editor, edit it to reflect your Adafruit IO "
            "and WiFi credentials. Then, reset the board.");
   }
-  delay(500);
-  initUSBMSC(); // re-init USB MSC to show new file to user for editing
 }
 
 /************************************************************/
@@ -243,11 +244,9 @@ void Wippersnapper_FS_V2::initUSBMSC() {
 
   // If already enumerated, additional class driverr begin() e.g msc, hid, midi
   // won't take effect until re-enumeration
-  if (TinyUSBDevice.mounted()) {
-    TinyUSBDevice.detach();
-    delay(10);
-    TinyUSBDevice.attach();
-  }
+  // Attach MSC and wait for enumeration
+  TinyUSBDevice.attach();
+  delay(500);
 }
 
 /**************************************************************************/
