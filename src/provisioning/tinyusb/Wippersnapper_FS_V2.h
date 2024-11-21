@@ -19,11 +19,11 @@
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/diskio.h"
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
+#include "fatfs/diskio.h"
 
 #include "Wippersnapper_V2.h"
-#define SD_FAT_TYPE 3
+#define SD_FAT_TYPE 3 // TODO: Remove this and move to sdcard class instead?
 
 // forward decl.
 class Wippersnapper_V2;
