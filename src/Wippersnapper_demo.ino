@@ -31,6 +31,7 @@ void setup() {
 
   Serial.begin(115200);
   while (!Serial) delay(10);
+
   Serial.println("Adafruit Wippersnapper API Manager Demo");
   Serial.print("Running Wippersnapper API Version: ");
   Serial.println(manager.getAPIVersion());
