@@ -254,6 +254,8 @@ public:
 
   void provision();
 
+  bool brownOutCausedReset =
+      false;               ///< True if low power reset - flash write issues
   bool lockStatusNeoPixel; ///< True if status LED is using the status neopixel
   bool lockStatusDotStar;  ///< True if status LED is using the status dotstar
   bool lockStatusLED;      ///< True if status LED is using the built-in LED
