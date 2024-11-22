@@ -120,36 +120,40 @@ bool ws_sdcard::InitSoftRTC() {
 /**************************************************************************/
 /*!
     @brief  Initializes and configures a RTC for logging.
-    @param  type
+    @param  rtc_type
             The desired type of RTC to configure.
     @returns True if the RTC was successfully configured, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::ConfigureRTC(sdcard_rtc type) {
+bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
   bool did_init = false;
-  switch (type) {
-  case DS1307:
+  // Initialize the RTC based on the rtc_type
+  if (strcmp(rtc_type, "DS1307")) {
     did_init = InitDS1307();
     WS_DEBUG_PRINTLN("[SD] Enabled DS1307 RTC");
-    break;
-  case DS3231:
+  } else if (strcmp(rtc_type, "DS3231")) {
     did_init = InitDS3231();
     WS_DEBUG_PRINTLN("[SD] Enabled DS3231 RTC");
-    break;
-  case PCF8523:
+  } else if (strcmp(rtc_type, "PCF8523")) {
     did_init = InitPCF8523();
     WS_DEBUG_PRINTLN("[SD] Enabled PCF8523 RTC");
-    break;
-  case SOFT_RTC:
+  } else if (strcmp(rtc_type, "SOFT_RTC")) {
     did_init = InitSoftRTC();
     WS_DEBUG_PRINTLN("[SD] Enabled software RTC");
-    break;
-  default:
-    WS_DEBUG_PRINTLN("[SD] Unknown RTC type");
+  } else {
+    WS_DEBUG_PRINTLN(
+        "[SD] FATAL Parsing error - Unknown RTC type found in JSON string!");
     did_init = false;
-    break;
   }
+
   return did_init;
+}
+
+void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
+                        float ref_voltage) {
+  WsV2.digital_io_controller->SetMaxDigitalPins(max_digital_pins);
+  WsV2.analogio_controller->SetTotalAnalogPins(max_analog_pins);
+  WsV2.analogio_controller->SetRefVoltage(ref_voltage);
 }
 
 /**************************************************************************/
@@ -161,81 +165,55 @@ bool ws_sdcard::ConfigureRTC(sdcard_rtc type) {
 */
 /**************************************************************************/
 bool ws_sdcard::parseConfigFile() {
-  File32 file_config; // TODO: MAke this global?
-#ifndef OFFLINE_MODE_DEBUG
-  file_config = _sd.open("config.json", FILE_READ);
-#endif
-
+  File32 file_config;
   JsonDocument doc;
-  // TODO: Change max input length to fit an expected/max json size
-  int max_input_len = 2048;
+  int max_json_len =
+      2048; // TODO: It's possible this is too small - what's the max size?
 
-  // Attempt to de-serialize the JSON document
+  // Attempt to open and deserialize the JSON config file
   DeserializationError error;
-#ifdef OFFLINE_MODE_DEBUG
-  if (!_use_test_data) {
-    // Read the config file from the serial input buffer
-    WS_DEBUG_PRINTLN("[SD] Reading JSON config file...");
-    error = deserializeJson(doc, _serialInput.c_str(), max_input_len);
-  } else {
-    // Read the config file from the test JSON string
-    WS_DEBUG_PRINTLN("[SD] Reading test JSON data...");
-    error = deserializeJson(doc, json_test_data, max_input_len);
-  }
-#else
+#ifndef OFFLINE_MODE_DEBUG
   // Read the config file from the SD card
-  WS_DEBUG_PRINTLN("[SD] Reading config file...");
-// TODO - implement this
-// error = deserializeJson(doc, file_config, max_input_len);
+  file_config = _sd.open("config.json", FILE_READ);
+  error = deserializeJson(doc, file_config, max_json_len);
+#else
+  // Test Mode - do not use the SD card, use test data instead!
+  if (_use_test_data)
+    error = deserializeJson(doc, _serialInput.c_str(), max_json_len);
+  else
+    error = deserializeJson(doc, json_test_data, max_json_len);
 #endif
 
   // If the JSON document failed to deserialize - halt the running device and
   // print the error because it is not possible to continue running in offline
   // mode without a valid config file
   if (error) {
-    WS_DEBUG_PRINTLN("[SD] deserializeJson() failed, error code: " +
+    WS_DEBUG_PRINTLN("[SD] Unable to deserialize config JSON, error code: " +
                      String(error.c_str()));
     return false;
   }
 
-  // TODO: Let's refactor this outwards to a function called `CheckInJSON()`
-  // NOTE: While we can't do a "proper" check-in procedure with
-  // the MQTT broker while in offline mode, we can still configure
-  // the hardware by parsing the JSON object's "exportedFromDevice"
-  // contents and setting up the hardware
-
-  WS_DEBUG_PRINT("[SD] Performing check-in process...");
+  // Parse the exportedFromDevice array
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   if (exportedFromDevice.isNull()) {
     WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No exportedFromDevice object "
                      "found in JSON string! Unable to configure hardware!");
     return false;
   }
-  WsV2.digital_io_controller->SetMaxDigitalPins(
-      exportedFromDevice["totalGPIOPins"]);
-  WsV2.analogio_controller->SetRefVoltage(
-      exportedFromDevice["referenceVoltage"]);
-  WsV2.analogio_controller->SetTotalAnalogPins(
-      exportedFromDevice["totalAnalogPins"]);
-  WS_DEBUG_PRINTLN("OK!");
 
-  // Configure RTC based on the RTC type
-  sdcard_rtc type;
-  if (strcmp(exportedFromDevice["rtc"], "DS1307")) {
-    type = DS1307;
-  } else if (strcmp(exportedFromDevice["rtc"], "DS3231")) {
-    type = DS3231;
-  } else if (strcmp(exportedFromDevice["rtc"], "PCF8523")) {
-    type = PCF8523;
-  } else if (strcmp(exportedFromDevice["rtc"], "SOFT_RTC")) {
-    type = SOFT_RTC;
-  } else {
-    WS_DEBUG_PRINTLN(
-        "[SD] FATAL Parsing error - Unknown RTC type found in JSON string!");
-    type = UNKNOWN;
+  // Mock the check-in process using the JSON's values
+  CheckIn(exportedFromDevice["totalGPIOPins"],
+          exportedFromDevice["totalAnalogPins"],
+          exportedFromDevice["referenceVoltage"]);
+
+  // Initialize and configure RTC
+  const char *json_rtc = exportedFromDevice["rtc"];
+  if (json_rtc == nullptr) {
+    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - rtc field not found in "
+                     "configuration JSON, unable to configure RTC!");
+    return false;
   }
-
-  if (!ConfigureRTC(type)) {
+  if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Failed to to configure RTC!");
     return false;
   }
