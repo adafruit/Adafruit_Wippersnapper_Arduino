@@ -41,6 +41,7 @@ public:
   void InitDS18x20EventMsg(const char *ow_pin_name);
   void addSensorEvent(wippersnapper_sensor_SensorType sensor_type,
                       float sensor_value);
+
 private:
   wippersnapper_ds18x20_Ds18x20Add
       _msg_DS18x20Add; ///< wippersnapper_ds18x20_Ds18x20Add message

@@ -102,20 +102,23 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     is_initialized = false;
   }
 
-  // If we're not in offline mode, publish a Ds18x20Added message back to the broker
-  if (! WsV2._sdCardV2->mode_offline) {
+  // If we're not in offline mode, publish a Ds18x20Added message back to the
+  // broker
+  if (!WsV2._sdCardV2->mode_offline) {
     // Encode and publish a Ds18x20Added message back to the broker
     if (!_DS18X20_model->EncodeDS18x20Added(
             _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
-        WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to encode Ds18x20Added message!");
-        return false;
+      WS_DEBUG_PRINTLN(
+          "ERROR | DS18x20: Unable to encode Ds18x20Added message!");
+      return false;
     }
 
-    if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
-                            _DS18X20_model->GetDS18x20AddedMsg())) {
-        WS_DEBUG_PRINTLN(
-            "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
-        return false;
+    if (!WsV2.PublishSignal(
+            wippersnapper_signal_DeviceToBroker_ds18x20_added_tag,
+            _DS18X20_model->GetDS18x20AddedMsg())) {
+      WS_DEBUG_PRINTLN(
+          "ERROR | DS18x20: Unable to publish Ds18x20Added message!");
+      return false;
     }
   }
 
@@ -224,29 +227,30 @@ void DS18X20Controller::update() {
         _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->sensor_events_count;
 
-    if (! WsV2._sdCardV2->mode_offline)
-    {
-    // Encode the Ds18x20Event message
-    if (!_DS18X20_model->EncodeDs18x20Event()) {
-      WS_DEBUG_PRINTLN(
-          "ERROR | DS18x20: Failed to encode Ds18x20Event message");
-      continue;
-    }
-    // Publish the Ds18x20Event message to the broker
-    WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
-    if (!WsV2.PublishSignal(
-            wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
-            _DS18X20_model->GetDS18x20EventMsg())) {
-      WS_DEBUG_PRINTLN(
-          "ERROR | DS18x20: Failed to publish Ds18x20Event message");
-      continue;
-    }
-    WS_DEBUG_PRINTLN("Published!");
+    if (!WsV2._sdCardV2->mode_offline) {
+      // Encode the Ds18x20Event message
+      if (!_DS18X20_model->EncodeDs18x20Event()) {
+        WS_DEBUG_PRINTLN(
+            "ERROR | DS18x20: Failed to encode Ds18x20Event message");
+        continue;
+      }
+      // Publish the Ds18x20Event message to the broker
+      WS_DEBUG_PRINT("DS18x20: Publishing event to broker...");
+      if (!WsV2.PublishSignal(
+              wippersnapper_signal_DeviceToBroker_ds18x20_event_tag,
+              _DS18X20_model->GetDS18x20EventMsg())) {
+        WS_DEBUG_PRINTLN(
+            "ERROR | DS18x20: Failed to publish Ds18x20Event message");
+        continue;
+      }
+      WS_DEBUG_PRINTLN("Published!");
     } else {
-        if (!WsV2._sdCardV2->LogDS18xSensorEventToSD(_DS18X20_model->GetDS18x20EventMsg())) {
-            WS_DEBUG_PRINTLN("ERROR | DS18x20: Failed to log DS18x20 event to SD card");
-            continue;
-        }
+      if (!WsV2._sdCardV2->LogDS18xSensorEventToSD(
+              _DS18X20_model->GetDS18x20EventMsg())) {
+        WS_DEBUG_PRINTLN(
+            "ERROR | DS18x20: Failed to log DS18x20 event to SD card");
+        continue;
+      }
     }
 
 #ifdef DEBUG_PROFILE
