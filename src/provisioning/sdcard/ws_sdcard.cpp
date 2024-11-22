@@ -38,77 +38,118 @@ ws_sdcard::~ws_sdcard() {
   }
 }
 
-bool ws_sdcard::initSDCard() {
+bool ws_sdcard::InitSDCard() {
 #ifdef SD_CS_PIN
   // Attempt to initialize the SD card
   if (_sd.begin(SD_CS_PIN)) {
     mode_offline = true;
   }
 #endif
-return mode_offline;
+  return mode_offline;
 }
 
 /**************************************************************************/
 /*!
-    @brief  Enables logging via a physical RTC to a SD-card, if available.
-            Otherwise, enables logging using millis() timestamps.
+    @brief    Initializes a DS1307 RTC
+    @returns  True if the RTC was successfully initialized, False otherwise.
 */
 /**************************************************************************/
-void ws_sdcard::EnableLogging() {
-  // Attempt to search for a DS3231 RTC
-  WS_DEBUG_PRINTLN("Searching for DS1307 RTC...");
+bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
-  if (_rtc_ds1307->begin()) {
-    WS_DEBUG_PRINTLN("Found DS1307 RTC!");
-    if (!_rtc_ds1307->isrunning()) {
-      Serial.println("RTC is not running, let's set the time!");
-      // When time needs to be set on a new device, or after a power loss, the
-      // following line sets the RTC to the date & time this sketch was compiled
-      _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
-    }
-  } else {
-    WS_DEBUG_PRINT("Unable to find DS1307 RTC, ");
+  if (!_rtc_ds1307->begin()) {
+    WS_DEBUG_PRINTLN("[SD] Failed to initialize DS1307 RTC");
     delete _rtc_ds1307;
-    _rtc_ds1307 = nullptr;
-    // Attempt to search for a DS3231 RTC if DS1307 is not found
-    WS_DEBUG_PRINTLN("searching for DS3231 RTC...");
-    _rtc_ds3231 = new RTC_DS3231();
-    if (_rtc_ds3231->begin()) {
-      WS_DEBUG_PRINTLN("Found DS3231 RTC!");
-      if (_rtc_ds3231->lostPower()) {
-        Serial.println("RTC lost power, let's set the time!");
-        // When time needs to be set on a new device, or after a power loss, the
-        // following line sets the RTC to the date & time this sketch was
-        // compiled
-        _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
-      }
-    } else {
-      WS_DEBUG_PRINT("Unable to find DS3231 RTC, ");
-      delete _rtc_ds3231;
-      _rtc_ds3231 = nullptr;
-      // Attempt to search for a DS3231 RTC if DS1307 is not found
-      WS_DEBUG_PRINTLN("searching for PCF8523 RTC...");
-      _rtc_pcf8523 = new RTC_PCF8523();
-      if (_rtc_pcf8523->begin()) {
-        WS_DEBUG_PRINTLN("Found PCF8523 RTC!");
-        if (_rtc_pcf8523->lostPower()) {
-          Serial.println("RTC lost power, let's set the time!");
-          // When time needs to be set on a new device, or after a power loss,
-          // the following line sets the RTC to the date & time this sketch was
-          // compiled
-          _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
-        }
-      }
-    }
+    return false;
   }
+  if (!_rtc_ds1307->isrunning())
+    _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  return true;
+}
 
-  // Fallback to millis() if no RTC is found
-  if (_rtc_ds1307 == nullptr && _rtc_ds3231 == nullptr) {
-    WS_DEBUG_PRINTLN(
-        "[SD] No RTC found, defaulting to use millis() timestamps!")
-  } else {
-    WS_DEBUG_PRINTLN("[SD] RTC found, using RTC timestamps!");
+/**************************************************************************/
+/*!
+    @brief    Initializes a DS3231 RTC.
+    @returns  True if the RTC was successfully initialized, False
+              otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::InitDS3231() {
+  _rtc_ds3231 = new RTC_DS3231();
+  if (!_rtc_ds3231->begin()) {
+    WS_DEBUG_PRINTLN("[SD] Failed to initialize DS3231 RTC");
+    delete _rtc_ds3231;
+    return false;
   }
+  if (_rtc_ds3231->lostPower())
+    _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  WS_DEBUG_PRINTLN("[SD] Enabled DS3231 RTC");
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes a PCF8523 RTC.
+    @returns  True if the RTC was successfully initialized, False
+              otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::InitPCF8523() {
+  _rtc_pcf8523 = new RTC_PCF8523();
+  if (!_rtc_pcf8523->begin()) {
+    WS_DEBUG_PRINTLN("[SD] Failed to initialize PCF8523 RTC");
+    delete _rtc_pcf8523;
+    return false;
+  }
+  if (_rtc_pcf8523->lostPower())
+    _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes a software RTC.
+    @returns  True if the RTC was successfully initialized, False
+              otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::InitSoftRTC() {
+  _rtc_soft->begin(DateTime(F(__DATE__), F(__TIME__)));
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Initializes and configures a RTC for logging.
+    @param  type
+            The desired type of RTC to configure.
+    @returns True if the RTC was successfully configured, False otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::ConfigureRTC(sdcard_rtc type) {
+  bool did_init = false;
+  switch (type) {
+  case DS1307:
+    did_init = InitDS1307();
+    WS_DEBUG_PRINTLN("[SD] Enabled DS1307 RTC");
+    break;
+  case DS3231:
+    did_init = InitDS3231();
+    WS_DEBUG_PRINTLN("[SD] Enabled DS3231 RTC");
+    break;
+  case PCF8523:
+    did_init = InitPCF8523();
+    WS_DEBUG_PRINTLN("[SD] Enabled PCF8523 RTC");
+    break;
+  case SOFT_RTC:
+    did_init = InitSoftRTC();
+    WS_DEBUG_PRINTLN("[SD] Enabled software RTC");
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[SD] Unknown RTC type");
+    did_init = false;
+    break;
+  }
+  return did_init;
 }
 
 /**************************************************************************/
@@ -162,6 +203,7 @@ bool ws_sdcard::parseConfigFile() {
   // the MQTT broker while in offline mode, we can still configure
   // the hardware by parsing the JSON object's "exportedFromDevice"
   // contents and setting up the hardware
+
   WS_DEBUG_PRINT("[SD] Performing check-in process...");
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   if (exportedFromDevice.isNull()) {
@@ -176,6 +218,27 @@ bool ws_sdcard::parseConfigFile() {
   WsV2.analogio_controller->SetTotalAnalogPins(
       exportedFromDevice["totalAnalogPins"]);
   WS_DEBUG_PRINTLN("OK!");
+
+  // Configure RTC based on the RTC type
+  sdcard_rtc type;
+  if (strcmp(exportedFromDevice["rtc"], "DS1307")) {
+    type = DS1307;
+  } else if (strcmp(exportedFromDevice["rtc"], "DS3231")) {
+    type = DS3231;
+  } else if (strcmp(exportedFromDevice["rtc"], "PCF8523")) {
+    type = PCF8523;
+  } else if (strcmp(exportedFromDevice["rtc"], "SOFT_RTC")) {
+    type = SOFT_RTC;
+  } else {
+    WS_DEBUG_PRINTLN(
+        "[SD] FATAL Parsing error - Unknown RTC type found in JSON string!");
+    type = UNKNOWN;
+  }
+
+  if (!ConfigureRTC(type)) {
+    WS_DEBUG_PRINTLN("[SD] Failed to to configure RTC!");
+    return false;
+  }
 
   // Parse the "components" array into a JsonObject
   JsonArray components_ar = doc["components"].as<JsonArray>();
@@ -240,7 +303,7 @@ bool ws_sdcard::parseConfigFile() {
                          String(component["direction"]));
         return false;
       }
-      
+
       msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
@@ -491,29 +554,28 @@ bool ws_sdcard::waitForSerialConfig() {
                    "}\\n\r\n";
 
   _serialInput = ""; // Clear the serial input buffer
-if (!_use_test_data) {
+  if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Waiting for incoming JSON string...");
     while (true) {
-        // Check if there is data available to read
-        if (Serial.available() > 0) {
-            // Read and append to _serialInput
-            char c = Serial.read();
-            _serialInput += c;
+      // Check if there is data available to read
+      if (Serial.available() > 0) {
+        // Read and append to _serialInput
+        char c = Serial.read();
+        _serialInput += c;
 
-            // DEBUG - Check JSON output as an Int and total output
-            // WS_DEBUG_PRINT("[SD] Character read: ");
-            // WS_DEBUG_PRINTLN((int)c);
-            // WS_DEBUG_PRINTLN(_serialInput);
+        // DEBUG - Check JSON output as an Int and total output
+        // WS_DEBUG_PRINT("[SD] Character read: ");
+        // WS_DEBUG_PRINTLN((int)c);
+        // WS_DEBUG_PRINTLN(_serialInput);
 
-            // Check for end of JSON string using \n sequence
-            if (_serialInput.endsWith("\\n")) {
-                WS_DEBUG_PRINTLN("[SD] End of JSON string detected!");
-                break;
-            }
+        // Check for end of JSON string using \n sequence
+        if (_serialInput.endsWith("\\n")) {
+          WS_DEBUG_PRINTLN("[SD] End of JSON string detected!");
+          break;
         }
+      }
     }
-}
-
+  }
 
   // Strip the '\n' off the end of _serialInput
   _serialInput.trim();

@@ -104,12 +104,9 @@ void Wippersnapper_V2::provisionV2() {
   _littleFSV2 = new WipperSnapper_LittleFS();
 #endif
 
-  if (WsV2._sdCardV2->initSDCard()) {
-    setStatusLEDColor(GREEN);
+  // Are we using sd-card/offline mode?
+  if (WsV2._sdCardV2->InitSDCard())
     return;
-  } else {
-    setStatusLEDColor(RED);
-  }
 
 #ifdef USE_DISPLAY
   // Initialize the display
@@ -1190,10 +1187,6 @@ void Wippersnapper_V2::connectV2() {
   // NOTE: After this, bail out of this function and run the app loop!!!
   if (WsV2._sdCardV2->mode_offline == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
-    // Enable logging
-    // TODO: Change func. name to ConfigureLogging
-    WS_DEBUG_PRINTLN("[Offline] Enabling logging...");
-    WsV2._sdCardV2->EnableLogging();
 // Wait for incoming JSON string from Serial
 #ifdef OFFLINE_MODE_DEBUG
     if (!WsV2._sdCardV2->waitForSerialConfig())
