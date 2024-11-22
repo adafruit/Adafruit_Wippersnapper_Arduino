@@ -20,14 +20,6 @@
 
 #define SD_FAT_TYPE 3
 
-enum sdcard_rtc {
-  UNKNOWN,
-  DS1307,
-  DS3231,
-  PCF8523,
-  SOFT_RTC
-}; ///< Supported types of RTCs
-
 // forward decl.
 class Wippersnapper_V2;
 
@@ -42,7 +34,7 @@ public:
   ws_sdcard();
   ~ws_sdcard();
   bool InitSDCard();
-  bool ConfigureRTC(sdcard_rtc type);
+  bool ConfigureRTC(const char *rtc_type);
   bool parseConfigFile();
   bool waitForSerialConfig();
   bool validateJson(const char *input);
@@ -63,6 +55,8 @@ private:
   bool InitDS3231();
   bool InitPCF8523();
   bool InitSoftRTC();
+  void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
+               float ref_voltage);
   SdFat _sd;                  ///< SD object from Adafruit SDFat library
   String _serialInput;        ///< Serial input buffer
   const char *json_test_data; ///< Json test data
