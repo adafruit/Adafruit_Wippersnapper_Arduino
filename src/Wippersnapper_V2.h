@@ -19,7 +19,6 @@
 #define WIPPERSNAPPER_V2_H
 
 // Debug Flags
-#define OFFLINE_MODE_DEBUG 1 ///< Debug flag for offline mode (read via serial)
 // #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
 
 // Cpp STD
