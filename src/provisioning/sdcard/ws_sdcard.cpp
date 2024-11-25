@@ -22,6 +22,7 @@
 ws_sdcard::ws_sdcard() {
   mode_offline = false;
   _wokwi_runner = false;
+  _use_test_data = false;
 }
 
 /**************************************************************************/
@@ -172,16 +173,21 @@ bool ws_sdcard::parseConfigFile() {
 
   // Attempt to open and deserialize the JSON config file
   DeserializationError error;
-#ifndef OFFLINE_MODE_DEBUG
-  // Read the config file from the SD card
-  file_config = _sd.open("config.json", FILE_READ);
-  error = deserializeJson(doc, file_config, max_json_len);
-#else
+#ifdef OFFLINE_MODE_DEBUG
   // Test Mode - do not use the SD card, use test data instead!
-  if (_use_test_data)
+  if (_use_test_data == true) {
+    WS_DEBUG_PRINTLN("[SD] Using SERIAL INPUT for JSON config...");
     error = deserializeJson(doc, _serialInput.c_str(), max_json_len);
-  else
+  }
+  else {
+    WS_DEBUG_PRINTLN("[SD] Using TEST DATA for JSON config...");
     error = deserializeJson(doc, json_test_data, max_json_len);
+  }
+#else
+  WS_DEBUG_PRINTLN("[SD] Opening config.json FILE...");
+  file_config = _sd.open("config.json", FILE_READ);
+  // TODO: Unimplemented
+  // error = deserializeJson(doc, file_config, max_json_len);
 #endif
 
   // If the JSON document failed to deserialize - halt the running device and
@@ -459,7 +465,7 @@ bool ws_sdcard::waitForSerialConfig() {
   // 2. Provide a JSON string via the hardware's serial input
   // 3. Use a test JSON string - for debugging purposes ONLY
 
-  _use_test_data = false;
+  _use_test_data = true;
   json_test_data = "{"
                    "\"exportVersion\": \"1.0.0\","
                    "\"exportedBy\": \"tester\","

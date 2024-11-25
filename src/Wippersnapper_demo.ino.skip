@@ -25,8 +25,8 @@ Wippersnapper_Manager manager;
 #define API_PIN 0
 
 void setup() {
-  // NOTE: Provisioning must occur prior to serial init.
-  manager.checkAPIVersion(API_PIN); 
+  // NOTE: Provisioning must occur prior to serial init.h
+  manager.checkAPIVersion(API_PIN);
   manager.provision();
 
   Serial.begin(115200);
