@@ -35,10 +35,10 @@ public:
   ~ws_sdcard();
   bool InitSDCard();
   bool ConfigureRTC(const char *rtc_type);
-  bool waitForSerialConfig();
-  bool validateJson(const char *input);
-  bool mode_offline; // TODO: Refactor to getter/setter
   uint32_t GetTimestamp();
+  bool mode_offline; // TODO: Refactor to getter/setter
+  bool
+  PushSignalToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
 
   bool parseConfigFile();
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
@@ -50,8 +50,8 @@ public:
                         const char *pin, float period, const char *mode);
   bool ParseDS18X20Add(wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add,
                        const char *pin, int resolution, float period,
-                       int num_sensors, char *sensor_type_1,
-                       char *sensor_type_2);
+                       int num_sensors, const char *sensor_type_1,
+                       const char *sensor_type_2);
 
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
                               wippersnapper_sensor_SensorType read_type);
@@ -61,6 +61,10 @@ public:
                               wippersnapper_sensor_SensorType read_type);
   bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
 
+#ifdef OFFLINE_MODE_DEBUG
+  bool waitForSerialConfig();
+  bool validateJson(const char *input);
+#endif
 private:
   bool InitDS1307();
   bool InitDS3231();
