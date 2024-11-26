@@ -103,13 +103,13 @@ public:
     _pass = WS._config.network.pass;
   }
 
-  /****************************************************************/
+  /*******************************************************************/
   /*!
-  @brief  a structure to hold network information for sorting
+  @brief  fixed size structure to hold network information for sorting
   */
-  /****************************************************************/
+  /*******************************************************************/
   struct WiFiNetwork {
-    String ssid[32]; /*!< SSID (Max 32 characters + null terminator */
+    char ssid[33]; /*!< SSID (Max 32 characters + null terminator */
     int32_t rssi = -99;      /*!< Received Signal Strength Indicator */
   };
 
@@ -148,9 +148,17 @@ public:
     WiFiNetwork networks[WS_MAX_SORTED_NETWORKS];
 
     // Store the scanned networks in the array
-    for (int i = 0; i < n && i < WS_MAX_SORTED_NETWORKS; ++i) {
-      strncpy(networks[i].ssid, WiFi.SSID(i), sizeof(networks[i].ssid));
-      networks[i].rssi = WiFi.RSSI(i);
+    for (int i = 0; i < n; ++i) {
+      if (i < WS_MAX_SORTED_NETWORKS){
+        strncpy(networks[i].ssid, WiFi.SSID(i), sizeof(networks[i].ssid));
+        networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0';
+        networks[i].rssi = WiFi.RSSI(i);
+      } else {
+        WS_DEBUG_PRINT("ERROR: Too many networks found! (>");
+        WS_DEBUG_PRINT(WS_MAX_SORTED_NETWORKS);
+        WS_DEBUG_PRINT(") Ignoring ");
+        WS_DEBUG_PRINT(WiFi.SSID(i));
+      }
     }
 
     // Sort the networks by RSSI in descending order
