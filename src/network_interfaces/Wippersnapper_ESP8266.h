@@ -315,7 +315,7 @@ protected:
       delay(100);
       // ESP8266 MUST be in STA mode to avoid device acting as client/server
       WiFi.mode(WIFI_STA);
-      WiFi.begin(_ssid, _pass);
+      // WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
       delay(100);
 
