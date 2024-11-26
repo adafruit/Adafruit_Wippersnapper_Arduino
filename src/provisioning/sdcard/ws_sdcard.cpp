@@ -231,7 +231,7 @@ bool ws_sdcard::ParseAnalogIOAdd(
 bool ws_sdcard::ParseDS18X20Add(
     wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add, const char *pin,
     int resolution, float period, int num_sensors, const char *sensor_type_1,
-    char *sensor_type_2) {
+    const char *sensor_type_2) {
   strcpy(msg_DS18X20Add.onewire_pin, pin);
   msg_DS18X20Add.sensor_resolution = resolution;
   msg_DS18X20Add.period = period;
@@ -246,6 +246,35 @@ bool ws_sdcard::ParseDS18X20Add(
   if (num_sensors == 2) {
     msg_DS18X20Add.sensor_types[1] = ParseSensorType(sensor_type_2);
   }
+  return true;
+}
+
+bool ws_sdcard::PushSignalToSharedBuffer(
+    wippersnapper_signal_BrokerToDevice &msg_signal) {
+  // Create a temporary buffer to hold the encoded signal message
+  std::vector<uint8_t> tempBuf(128);
+  size_t tempBufSz;
+
+  // Get the encoded size of the signal message first so we can resize the
+  // buffer prior to encoding
+  WS_DEBUG_PRINTLN("Encoding D2b signal message...");
+  if (!pb_get_encoded_size(&tempBufSz,
+                           wippersnapper_signal_BrokerToDevice_fields,
+                           &msg_signal)) {
+    WS_DEBUG_PRINTLN("[SD] ERROR: Unable to get signal message size!");
+    return false;
+  }
+
+  // Encode and push the signal message to the shared config buffer
+  tempBuf.resize(tempBufSz);
+  pb_ostream_t ostream = pb_ostream_from_buffer(tempBuf.data(), tempBuf.size());
+  if (!ws_pb_encode(&ostream, wippersnapper_signal_BrokerToDevice_fields,
+                    &msg_signal)) {
+    WS_DEBUG_PRINTLN("[SD] ERROR: Unable to encode D2B signal message!");
+    return false;
+  }
+  WsV2._sharedConfigBuffers.push_back(std::move(tempBuf));
+  WS_DEBUG_PRINTLN("Encoded the D2b signal message");
   return true;
 }
 
@@ -340,8 +369,8 @@ bool ws_sdcard::parseConfigFile() {
     // Parse the component API type
     const char *component_api_type = component["componentAPI"];
     if (component_api_type == nullptr) {
-      WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No component API type found "
-                       "in JSON string!");
+      WS_DEBUG_PRINTLN(
+          "[SD] FATAL Parsing error - Missing component API type!");
       return false;
     }
 
@@ -349,10 +378,11 @@ bool ws_sdcard::parseConfigFile() {
     if (strcmp(component_api_type, "digitalio") == 0) {
       WS_DEBUG_PRINTLN(
           "[SD] DigitalIO component found, decoding JSON to PB...");
-
-      // Parse: JSON->DigitalIOAdd
       wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd =
           wippersnapper_digitalio_DigitalIOAdd_init_default;
+      msg_signal_b2d.which_payload =
+          wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
+      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
       if (!ParseDigitalIOAdd(msg_DigitalIOAdd, component["pinName"],
                              component["period"], component["value"],
                              component["sampleMode"], component["direction"],
@@ -361,16 +391,13 @@ bool ws_sdcard::parseConfigFile() {
             "[SD] FATAL Parsing error - Unable to parse DigitalIO component!");
         return false;
       }
-
-      // Configure the signal message for the digitalio payload
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
-      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
       wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
           wippersnapper_analogio_AnalogIOAdd_init_default;
-
+      msg_signal_b2d.which_payload =
+          wippersnapper_signal_BrokerToDevice_analogio_add_tag;
+      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
       // Parse: JSON->AnalogIOAdd
       if (!ParseAnalogIOAdd(msg_AnalogIOAdd, component["pinName"],
                             component["period"], component["analogReadMode"])) {
@@ -378,16 +405,13 @@ bool ws_sdcard::parseConfigFile() {
             "[SD] FATAL Parsing error - Unable to parse AnalogIO component!");
         return false;
       }
-
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_analogio_add_tag;
-      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
     } else if (strcmp(component_api_type, "ds18x20") == 0) {
-      WS_DEBUG_PRINTLN("[SD] ds18x20 component found, decoding JSON to PB...");
-      // Create new DS18X20Add message
+      WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
       wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
           wippersnapper_ds18x20_Ds18x20Add_init_default;
-
+      msg_signal_b2d.which_payload =
+          wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
+      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
       // Parse: JSON->DS18X20Add
       if (!ParseDS18X20Add(msg_DS18X20Add, component["pinName"],
                            component["sensorResolution"], component["period"],
@@ -398,11 +422,6 @@ bool ws_sdcard::parseConfigFile() {
             "[SD] FATAL Parsing error - Unable to parse DS18X20 component!");
         return false;
       }
-
-      // Configure the signal message for the ds18x20 payload
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
-      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
     } else {
       // Unknown component API type
       WS_DEBUG_PRINTLN("[SD] Unknown component API type found: " +
@@ -410,35 +429,16 @@ bool ws_sdcard::parseConfigFile() {
       return false;
     }
 
-    // Create a temporary buffer to hold the encoded signal message
-    std::vector<uint8_t> tempBuf(128);
-    size_t tempBufSz;
-
-    // Get the encoded size of the signal message first so we can resize the
-    // buffer prior to encoding
-    WS_DEBUG_PRINTLN("Encoding D2b signal message...");
-    if (!pb_get_encoded_size(&tempBufSz,
-                             wippersnapper_signal_BrokerToDevice_fields,
-                             &msg_signal_b2d)) {
-      WS_DEBUG_PRINTLN("[SD] ERROR: Unable to get signal message size!");
+    if (!PushSignalToSharedBuffer(msg_signal_b2d)) {
+      WS_DEBUG_PRINTLN("[SD] FATAL Error - Unable to push signal message to "
+                       "shared buffer!");
       return false;
     }
-    WS_DEBUG_PRINTLN("Signal message size: " + String(tempBufSz));
-    // Encode and push the signal message to the shared config buffer
-    tempBuf.resize(tempBufSz);
-    pb_ostream_t ostream =
-        pb_ostream_from_buffer(tempBuf.data(), tempBuf.size());
-    if (!ws_pb_encode(&ostream, wippersnapper_signal_BrokerToDevice_fields,
-                      &msg_signal_b2d)) {
-      WS_DEBUG_PRINTLN("[SD] ERROR: Unable to encode D2B signal message!");
-      return false;
-    }
-    WsV2._sharedConfigBuffers.push_back(std::move(tempBuf));
-    WS_DEBUG_PRINTLN("Encoded the D2b signal message");
   }
   return true;
 }
 
+#ifdef OFFLINE_MODE_DEBUG
 /**************************************************************************/
 /*!
     @brief  Validates a JSON string.
@@ -593,6 +593,7 @@ bool ws_sdcard::waitForSerialConfig() {
   WS_DEBUG_PRINTLN("[SD] Valid JSON string received!");
   return true;
 }
+#endif
 
 /**************************************************************************/
 /*!
