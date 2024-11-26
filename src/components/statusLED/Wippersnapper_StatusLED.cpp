@@ -127,6 +127,11 @@ void releaseStatusLED() {
 */
 /****************************************************************************/
 void setStatusLEDBrightness(float brightness) {
+  // Clamp brightness between 0.0-1.0 (0% to 100%)
+  if (brightness > 1.0)
+    brightness = 1.0;
+  if (brightness < 0.0)
+    brightness = 0.0;
   WS.status_pixel_brightness = brightness;
 }
 

@@ -1167,7 +1167,6 @@ void printDeviceInfoV2() {
 */
 /**************************************************************************/
 void Wippersnapper_V2::connectV2() {
-  setStatusLEDColor(BLUE);
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   printDeviceInfoV2();
