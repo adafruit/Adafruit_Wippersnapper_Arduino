@@ -19,8 +19,8 @@
 #define WIPPERSNAPPER_H
 
 // Cpp STD
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
