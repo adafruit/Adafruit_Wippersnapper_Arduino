@@ -21,8 +21,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <WiFiNINA.h>
-#include <algorithm>
-#include <vector>
 
 #include "Wippersnapper.h"
 

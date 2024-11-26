@@ -26,8 +26,6 @@
 #include "SPI.h"
 #include "WiFiNINA.h"
 #include "Wippersnapper.h"
-#include <algorithm>
-#include <vector>
 
 #define NINAFWVER                                                              \
   "1.7.7" /*!< min. nina-fw version compatible with this library. */

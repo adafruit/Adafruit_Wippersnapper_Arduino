@@ -27,8 +27,6 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-#include <algorithm>
-#include <vector>
 extern Wippersnapper WS;
 
 /****************************************************************************/
