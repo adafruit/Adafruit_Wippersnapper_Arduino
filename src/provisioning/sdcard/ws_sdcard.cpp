@@ -157,6 +157,98 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
   WsV2.analogio_controller->SetRefVoltage(ref_voltage);
 }
 
+bool ws_sdcard::ParseDigitalIOAdd(
+    wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd, const char *pin,
+    float period, bool value, const char *sample_mode, const char *direction,
+    const char *pull) {
+  bool rc = true;
+  strcpy(msg_DigitalIOAdd.pin_name, pin);
+  msg_DigitalIOAdd.period = period;
+  msg_DigitalIOAdd.value = value;
+  // Determine the sample mode
+  if (strcmp(sample_mode, "TIMER") == 0) {
+    msg_DigitalIOAdd.sample_mode =
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
+  } else if (strcmp(sample_mode, "EVENT") == 0) {
+    msg_DigitalIOAdd.sample_mode =
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown sample mode found: " +
+                     String(sample_mode));
+  }
+
+  // Determine the pin direction and pull
+  if (strcmp(direction, "INPUT") == 0) {
+    if (pull != nullptr) {
+      msg_DigitalIOAdd.gpio_direction =
+          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
+    } else {
+      msg_DigitalIOAdd.gpio_direction =
+          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
+    }
+  } else if (strcmp(direction, "OUTPUT") == 0) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Error - Can not set OUTPUT direction in offline mode!");
+    rc = false;
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown direction found: " +
+                     String(direction));
+    rc = false;
+  }
+  return rc;
+}
+
+wippersnapper_sensor_SensorType
+ws_sdcard::ParseSensorType(const char *sensor_type) {
+  if (strcmp(sensor_type, "PIN_VALUE") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+  } else if (strcmp(sensor_type, "VOLTAGE") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+  } else if (strcmp(sensor_type, "ambient-temp-fahrenheit") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+  } else if (strcmp(sensor_type, "ambient-temp") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+  } else {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED;
+  }
+}
+
+bool ws_sdcard::ParseAnalogIOAdd(
+    wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd, const char *pin,
+    float period, const char *mode) {
+  strcpy(msg_AnalogIOAdd.pin_name, pin);
+  msg_AnalogIOAdd.period = period;
+  msg_AnalogIOAdd.read_mode = ParseSensorType(mode);
+  if (msg_AnalogIOAdd.read_mode ==
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown read mode found: " +
+                     String(mode));
+    return false;
+  }
+  return true;
+}
+
+bool ws_sdcard::ParseDS18X20Add(
+    wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add, const char *pin,
+    int resolution, float period, int num_sensors, const char *sensor_type_1,
+    char *sensor_type_2) {
+  strcpy(msg_DS18X20Add.onewire_pin, pin);
+  msg_DS18X20Add.sensor_resolution = resolution;
+  msg_DS18X20Add.period = period;
+  msg_DS18X20Add.sensor_types_count = num_sensors;
+
+  WS_DEBUG_PRINT("[SD] msg_DS18X20Add.sensor_types_count: ");
+  WS_DEBUG_PRINTLN(msg_DS18X20Add.sensor_types_count);
+
+  // Parse the first sensor type
+  msg_DS18X20Add.sensor_types[0] = ParseSensorType(sensor_type_1);
+  // Parse the second sensor type, if it exists
+  if (num_sensors == 2) {
+    msg_DS18X20Add.sensor_types[1] = ParseSensorType(sensor_type_2);
+  }
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief  Searches for and parses the JSON configuration file and sets up
@@ -178,8 +270,7 @@ bool ws_sdcard::parseConfigFile() {
   if (_use_test_data == true) {
     WS_DEBUG_PRINTLN("[SD] Using SERIAL INPUT for JSON config...");
     error = deserializeJson(doc, _serialInput.c_str(), max_json_len);
-  }
-  else {
+  } else {
     WS_DEBUG_PRINTLN("[SD] Using TEST DATA for JSON config...");
     error = deserializeJson(doc, json_test_data, max_json_len);
   }
@@ -197,6 +288,13 @@ bool ws_sdcard::parseConfigFile() {
     WS_DEBUG_PRINTLN("[SD] Unable to deserialize config JSON, error code: " +
                      String(error.c_str()));
     return false;
+  }
+
+  // NOTE: This is only used by the CI runner, production builds do not run
+  // this!
+  const char *exportedBy = doc["exportedBy"];
+  if (strcmp(exportedBy, "wokwi") == 0) {
+    _wokwi_runner = true;
   }
 
   // Parse the exportedFromDevice array
@@ -226,14 +324,19 @@ bool ws_sdcard::parseConfigFile() {
 
   // Parse the "components" array into a JsonObject
   JsonArray components_ar = doc["components"].as<JsonArray>();
+  if (components_ar.isNull()) {
+    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No components array found in "
+                     "JSON string!");
+    return false;
+  }
   int count = components_ar.size();
   WS_DEBUG_PRINTLN("[SD] Found " + String(count) + " components in JSON file!");
 
-  // Use the iterator feature of ArduinoJSON v7 to quickly iterate over
-  // components[]
+  // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
-    // Create a new signal message
-    wippersnapper_signal_BrokerToDevice msg_signal_b2d;
+    wippersnapper_signal_BrokerToDevice msg_signal_b2d =
+        wippersnapper_signal_BrokerToDevice_init_default;
+
     // Parse the component API type
     const char *component_api_type = component["componentAPI"];
     if (component_api_type == nullptr) {
@@ -242,53 +345,24 @@ bool ws_sdcard::parseConfigFile() {
       return false;
     }
 
-    // This is enabled for wokwi-cli testing only
-    const char *exportedBy = doc["exportedBy"];
-    if (strcmp(exportedBy, "wokwi") == 0) {
-      _wokwi_runner = true;
-    }
-
     // Determine the component type and parse it into a PB message
     if (strcmp(component_api_type, "digitalio") == 0) {
       WS_DEBUG_PRINTLN(
           "[SD] DigitalIO component found, decoding JSON to PB...");
-      // Parse the JSON component's fields into a new DigitalIOAdd message
+
+      // Parse: JSON->DigitalIOAdd
       wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd =
           wippersnapper_digitalio_DigitalIOAdd_init_default;
-      strcpy(msg_DigitalIOAdd.pin_name, component["pinName"]);
-      msg_DigitalIOAdd.period = component["period"];
-      msg_DigitalIOAdd.value = component["value"];
-      // Determine the sample mode
-      if (strcmp(component["sampleMode"], "TIMER") == 0) {
-        msg_DigitalIOAdd.sample_mode =
-            wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
-      } else if (strcmp(component["sampleMode"], "EVENT") == 0) {
-        msg_DigitalIOAdd.sample_mode =
-            wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
-      } else {
-        WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown sample mode found: " +
-                         String(component["sampleMode"]));
-      }
-      // Determine the pin direction and pull
-      if (strcmp(component["direction"], "INPUT") == 0) {
-        if (component["pull"] != nullptr) {
-          msg_DigitalIOAdd.gpio_direction =
-              wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
-        } else {
-          msg_DigitalIOAdd.gpio_direction =
-              wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
-        }
-      } else if (strcmp(component["direction"], "OUTPUT") == 0) {
+      if (!ParseDigitalIOAdd(msg_DigitalIOAdd, component["pinName"],
+                             component["period"], component["value"],
+                             component["sampleMode"], component["direction"],
+                             component["pull"])) {
         WS_DEBUG_PRINTLN(
-            "[SD] Error - Can not set OUTPUT direction in offline mode!");
-        return false;
-      } else {
-        WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown direction found: " +
-                         String(component["direction"]));
+            "[SD] FATAL Parsing error - Unable to parse DigitalIO component!");
         return false;
       }
 
-      msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
+      // Configure the signal message for the digitalio payload
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
       msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
@@ -296,22 +370,15 @@ bool ws_sdcard::parseConfigFile() {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
       wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
           wippersnapper_analogio_AnalogIOAdd_init_default;
-      strcpy(msg_AnalogIOAdd.pin_name, component["pinName"]);
-      msg_AnalogIOAdd.period = component["period"];
-      if (strcmp(component["analogReadMode"], "PIN_VALUE") == 0) {
-        msg_AnalogIOAdd.read_mode =
-            wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
-      } else if (strcmp(component["analogReadMode"], "VOLTAGE") == 0) {
-        msg_AnalogIOAdd.read_mode =
-            wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
-      } else {
-        // Unknown analog read mode, bail out
-        WS_DEBUG_PRINTLN("[SD] Unknown analog read mode found: " +
-                         String(component["analogReadMode"]));
+
+      // Parse: JSON->AnalogIOAdd
+      if (!ParseAnalogIOAdd(msg_AnalogIOAdd, component["pinName"],
+                            component["period"], component["analogReadMode"])) {
+        WS_DEBUG_PRINTLN(
+            "[SD] FATAL Parsing error - Unable to parse AnalogIO component!");
         return false;
       }
 
-      msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_analogio_add_tag;
       msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
@@ -320,82 +387,19 @@ bool ws_sdcard::parseConfigFile() {
       // Create new DS18X20Add message
       wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
           wippersnapper_ds18x20_Ds18x20Add_init_default;
-      // Parse JSON into the DS18X20Add message
-      // TODO: This pattern should be refactored into a function like
-      // "ParseAndAssign(component["type"], msg_field)"
-      if (component["pinName"] != nullptr) {
-        strcpy(msg_DS18X20Add.onewire_pin, component["pinName"]);
-      } else {
+
+      // Parse: JSON->DS18X20Add
+      if (!ParseDS18X20Add(msg_DS18X20Add, component["pinName"],
+                           component["sensorResolution"], component["period"],
+                           component["sensorTypeCount"],
+                           component["sensorType1"],
+                           component["sensorType2"])) {
         WS_DEBUG_PRINTLN(
-            "[SD] FATAL Parsing error - No pin name found in JSON string!");
+            "[SD] FATAL Parsing error - Unable to parse DS18X20 component!");
         return false;
-      }
-
-      if (component["sensorResolution"] != nullptr) {
-        msg_DS18X20Add.sensor_resolution = component["sensorResolution"];
-      } else {
-        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor resolution "
-                         "found in JSON string!");
-        return false;
-      }
-
-      if (component["period"] != nullptr) {
-        msg_DS18X20Add.period = component["period"];
-      } else {
-        WS_DEBUG_PRINTLN(
-            "[SD] FATAL Parsing error - No period found in JSON string!");
-        return false;
-      }
-
-      if (component["sensorTypeCount"] != nullptr) {
-        msg_DS18X20Add.sensor_types_count = component["sensorTypeCount"];
-      } else {
-        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No sensor type count "
-                         "found in JSON string!");
-        return false;
-      }
-
-      WS_DEBUG_PRINT("[SD] msg_DS18X20Add.sensor_types_count: ");
-      WS_DEBUG_PRINTLN(msg_DS18X20Add.sensor_types_count);
-
-      // Parse the sensor types into the DS18X20Add message
-      // TODO: This structor needs a refactoring pass! It's too confusing
-      if (msg_DS18X20Add.sensor_types_count == 1 ||
-          msg_DS18X20Add.sensor_types_count == 2) {
-        if (strcmp(component["sensorType1"], "ambient-temp-fahrenheit") == 0) {
-          msg_DS18X20Add.sensor_types[0] =
-              wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT;
-        } else if (strcmp(component["sensorType1"], "ambient-temp") == 0) {
-          msg_DS18X20Add.sensor_types[0] =
-              wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
-        } else {
-          WS_DEBUG_PRINTLN(
-              "[SD] FATAL Parsing error - Unsupported ds18x sensor "
-              "type found in JSON!");
-          return false;
-        }
-      }
-      if (msg_DS18X20Add.sensor_types_count == 2) {
-        WS_DEBUG_PRINTLN("[SD] Parsing sensor type 2...");
-        if (component["sensorType2"] != nullptr) {
-          if (strcmp(component["sensorType2"], "ambient-temp-fahrenheit") ==
-              0) {
-            msg_DS18X20Add.sensor_types[1] =
-                wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT;
-          } else if (strcmp(component["sensorType2"], "ambient-temp") == 0) {
-            msg_DS18X20Add.sensor_types[1] =
-                wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
-          } else {
-            WS_DEBUG_PRINTLN(
-                "[SD] FATAL Parsing error - Unsupported ds18x sensor "
-                "type found in JSON!");
-            return false;
-          }
-        }
       }
 
       // Configure the signal message for the ds18x20 payload
-      msg_signal_b2d = wippersnapper_signal_BrokerToDevice_init_zero;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
       msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
