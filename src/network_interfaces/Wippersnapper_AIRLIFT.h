@@ -109,8 +109,8 @@ public:
   */
   /*******************************************************************/
   struct WiFiNetwork {
-    char ssid[33]; /*!< SSID (Max 32 characters + null terminator */
-    int32_t rssi = -99;      /*!< Received Signal Strength Indicator */
+    char ssid[33];      /*!< SSID (Max 32 characters + null terminator */
+    int32_t rssi = -99; /*!< Received Signal Strength Indicator */
   };
 
   /*******************************************************************/
@@ -146,42 +146,54 @@ public:
     }
 
     WiFiNetwork networks[WS_MAX_SORTED_NETWORKS];
+    uint8_t numSavedNetworks = 0;
 
     // Store the scanned networks in the array
     for (int i = 0; i < n; ++i) {
-      if (i < WS_MAX_SORTED_NETWORKS){
+      if (i < WS_MAX_SORTED_NETWORKS) {
         strncpy(networks[i].ssid, WiFi.SSID(i), sizeof(networks[i].ssid));
         networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0';
         networks[i].rssi = WiFi.RSSI(i);
+        numSavedNetworks++;
       } else {
         WS_DEBUG_PRINT("ERROR: Too many networks found! (>");
         WS_DEBUG_PRINT(WS_MAX_SORTED_NETWORKS);
         WS_DEBUG_PRINT(") Ignoring ");
         WS_DEBUG_PRINT(WiFi.SSID(i));
+        WS_DEBUG_PRINT("(");
+        WS_DEBUG_PRINT(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLN(")");
       }
     }
 
     // Sort the networks by RSSI in descending order
-    std::sort(networks, networks + std::min(n, WS_MAX_SORTED_NETWORKS), compareByRSSI);
+    std::sort(networks, networks + numSavedNetworks, compareByRSSI);
 
     // Was the network within secrets.json found?
-    for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
+    for (int i = 0; i < numSavedNetworks; ++i) {
+      if (strcmp(_ssid, networks[i].ssid) == 0) {
         WS_DEBUG_PRINT("SSID (");
         WS_DEBUG_PRINT(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLN(networks[i].rssi);
         return true;
       }
     }
 
     // User-set network not found, print scan results to serial console
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
+    WS_DEBUG_PRINT("WipperSnapper found these WiFi networks");
+    if (n > WS_MAX_SORTED_NETWORKS) {
+      WS_DEBUG_PRINT(" (only first ");
+      WS_DEBUG_PRINT(WS_MAX_SORTED_NETWORKS);
+      WS_DEBUG_PRINTLN(" used):");
+    } else {
+      WS_DEBUG_PRINTLN(":");
+    }
     for (int i = 0; i < n; ++i) {
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINT(networks[i].ssid);
       WS_DEBUG_PRINT(" ");
-      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINT(networks[i].rssi);
       WS_DEBUG_PRINTLN("dB");
     }
 
