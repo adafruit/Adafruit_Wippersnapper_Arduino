@@ -329,38 +329,28 @@ protected:
                              WS._multiNetworks[i].pass);
           }
         }
-        // add default network
-        if (_wifiMulti.existsAP(_ssid) == false) {
-          _wifiMulti.addAP(_ssid, _pass);
-        }
-        long startRetry = millis();
-        WS_DEBUG_PRINTLN("CONNECTING");
-        while (_wifiMulti.run(5000) != WL_CONNECTED &&
-               millis() - startRetry < 10000) {
-          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-          yield();
-        }
-        if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
-        } else {
-          _status = WS_NET_DISCONNECTED;
-        }
-      } else {
-        // single network mode
-
-        // wait for a connection to be established
-        long startRetry = millis();
-        WS_DEBUG_PRINTLN("CONNECTING");
-        while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
-          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-          yield();
-        }
-        if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
-        } else {
-          _status = WS_NET_DISCONNECTED;
-        }
       }
+
+      // add default network
+      if (_wifiMulti.existsAP(_ssid) == false) {
+        _wifiMulti.addAP(_ssid, _pass);
+      }
+
+      long startRetry = millis();
+      WS_DEBUG_PRINTLN("CONNECTING");
+      
+      while (_wifiMulti.run(5000) != WL_CONNECTED &&
+              millis() - startRetry < 10000) {
+        // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
+        yield();
+      }
+      
+      if (WiFi.status() == WL_CONNECTED) {
+        _status = WS_NET_CONNECTED;
+      } else {
+        _status = WS_NET_DISCONNECTED;
+      }
+      
       WS.feedWDT();
     }
   }
