@@ -315,7 +315,6 @@ protected:
       delay(100);
       // ESP8266 MUST be in STA mode to avoid device acting as client/server
       WiFi.mode(WIFI_STA);
-      // WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
       delay(100);
 
@@ -338,19 +337,19 @@ protected:
 
       long startRetry = millis();
       WS_DEBUG_PRINTLN("CONNECTING");
-      
+
       while (_wifiMulti.run(5000) != WL_CONNECTED &&
-              millis() - startRetry < 10000) {
+             millis() - startRetry < 10000) {
         // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
         yield();
       }
-      
+
       if (WiFi.status() == WL_CONNECTED) {
         _status = WS_NET_CONNECTED;
       } else {
         _status = WS_NET_DISCONNECTED;
       }
-      
+
       WS.feedWDT();
     }
   }
