@@ -16,6 +16,7 @@
 #define WS_SDCARD_H
 #include "RTClib.h"
 #include "SdFat.h"
+#include "StreamUtils.h"
 #include "Wippersnapper_V2.h"
 
 #define SD_FAT_TYPE 3
@@ -53,6 +54,12 @@ public:
                        int num_sensors, const char *sensor_type_1,
                        const char *sensor_type_2);
 
+  void BuildJSONDoc(JsonDocument &doc, const char *pin, float value,
+                    wippersnapper_sensor_SensorType read_type);
+  void BuildJSONDoc(JsonDocument &doc, const char *pin, uint16_t value,
+                    wippersnapper_sensor_SensorType read_type);
+  void BuildJSONDoc(JsonDocument &doc, const char *pin, bool value,
+                    wippersnapper_sensor_SensorType read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
                               wippersnapper_sensor_SensorType read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
@@ -78,6 +85,7 @@ private:
   bool _use_test_data; ///< True if sample data is being used to test, instead
                        ///< of serial input, False otherwise.
   bool _wokwi_runner;  ///< True if `exportedBy` key is "wokwi", otherwise False
+  const char *_log_filename;           ///< Path to the log file
   RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object
   RTC_DS1307 *_rtc_ds1307 = nullptr;   ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object

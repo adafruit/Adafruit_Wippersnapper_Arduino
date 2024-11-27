@@ -406,14 +406,12 @@ bool ws_sdcard::parseConfigFile() {
     return false;
   }
 
-  // Configure the status LED
-  float brightness = exportedFromDevice["statusLEDBrightness"];
-  setStatusLEDBrightness(brightness);
-
   // Mock the check-in process using the JSON's values
   CheckIn(exportedFromDevice["totalGPIOPins"],
           exportedFromDevice["totalAnalogPins"],
           exportedFromDevice["referenceVoltage"]);
+
+  setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"]);
 
   // Initialize and configure RTC
   const char *json_rtc = exportedFromDevice["rtc"];
@@ -426,6 +424,23 @@ bool ws_sdcard::parseConfigFile() {
     WS_DEBUG_PRINTLN("[SD] Failed to to configure RTC!");
     return false;
   }
+
+// Create new logging file on device from the RTC's timestamp
+#ifndef OFFLINE_MODE_DEBUG
+  // TODO: Refactor this out into a func
+  // TODO: Implement a counter within the log funcs to track # of lines in the
+  // file and implement a MAX_LINE cutoff
+  String logFilename = "log_" + String(GetTimestamp()) + ".json";
+  _log_filename = logFilename.c_str();
+  File32 file;
+  if (!file.open(_log_filename, FILE_WRITE)) {
+    WS_DEBUG_PRINTLN(
+        "[SD] FATAL - Failed to create initial logging file on SD card!");
+    return false;
+  }
+  WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
+  WS_DEBUG_PRINTLN(_log_filename);
+#endif
 
   // Parse the "components" array into a JsonObject
   JsonArray components_ar = doc["components"].as<JsonArray>();
@@ -522,7 +537,6 @@ bool ws_sdcard::parseConfigFile() {
 */
 /**************************************************************************/
 uint32_t ws_sdcard::GetTimestamp() {
-  // Obtain RTC timestamp (TODO - refactor this out)
   DateTime now;
   if (_rtc_ds3231 != nullptr)
     now = _rtc_ds3231->now();
@@ -531,7 +545,7 @@ uint32_t ws_sdcard::GetTimestamp() {
   else if (_rtc_pcf8523 != nullptr)
     now = _rtc_pcf8523->now();
   else {
-    // TODO! implement software millis() version of now() and unixtime()
+    now = _rtc_soft->now();
   }
 
   if (_wokwi_runner)
@@ -629,6 +643,30 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   }
 }
 
+void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, float value,
+                             wippersnapper_sensor_SensorType read_type) {
+  doc["timestamp"] = GetTimestamp();
+  doc["pin"] = pin;
+  doc["value"] = value;
+  doc["si_unit"] = SensorTypeToString(read_type);
+}
+
+void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, uint16_t value,
+                             wippersnapper_sensor_SensorType read_type) {
+  doc["timestamp"] = GetTimestamp();
+  doc["pin"] = pin;
+  doc["value"] = value;
+  doc["si_unit"] = SensorTypeToString(read_type);
+}
+
+void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, bool value,
+                             wippersnapper_sensor_SensorType read_type) {
+  doc["timestamp"] = GetTimestamp();
+  doc["pin"] = pin;
+  doc["value"] = value;
+  doc["si_unit"] = SensorTypeToString(read_type);
+}
+
 /**************************************************************************/
 /*!
     @brief  Logs a GPIO sensor event to the SD card.
@@ -644,20 +682,29 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
 bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
   // Get the pin name in the correct format ("A0", "A1", etc.)
+  // TODO: Maybe send c_pin_name to sprintf and include A/D specifier from here?
   char c_pin_name[12];
   sprintf(c_pin_name, "A%d", pin);
 
-  // Get the RTC's timestamp
-  uint32_t timestamp = GetTimestamp();
-
   // Create the JSON document
   JsonDocument doc;
+  BuildJSONDoc(doc, c_pin_name, value, read_type);
 
-  doc["timestamp"] = timestamp;
-  doc["pin"] = c_pin_name;
-  doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
-  serializeJson(doc, Serial);
+  // Serialize the JSON document
+#ifndef OFFLINE_MODE_DEBUG
+  // TODO: Make this an attempt to open and return false on failure
+  File32 file = _sd.open("log.json", FILE_WRITE);
+  BufferingPrint bufferedFile(file, 64); // Add buffering to the file
+  serializeJson(doc, file); // Serialize the JSON to the file in 64-byte chunks
+  // TODO: I am not sure if this works, consult PDF ch 4.7
+  bufferedFile.print("\n");
+  bufferedFile.flush(); // Send the remaining bytes
+#else
+  serializeJson(doc, Serial); // TODO: Add buffering here, too?
+  Serial.print("\n"); // JSON requires a newline at the end of each log line
+#endif
+
+  // TODO: Does this need to be a boolean?
   return true;
 }
 
@@ -679,17 +726,25 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   char c_pin_name[12];
   sprintf(c_pin_name, "A%d", pin);
 
-  // Get the RTC's timestamp
-  uint32_t timestamp = GetTimestamp();
-
-  // Append to the file in JSONL format
+  // Create the JSON document
   JsonDocument doc;
-  doc["timestamp"] = timestamp;
-  doc["pin"] = c_pin_name;
-  doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
-  serializeJson(doc, Serial);
-  Serial.println(""); // JSON requires a newline at the end of each log line
+  BuildJSONDoc(doc, c_pin_name, value, read_type);
+
+  // Serialize the JSON document
+#ifndef OFFLINE_MODE_DEBUG
+  // TODO: Make this an attempt to open and return false on failure
+  File32 file = _sd.open("log.json", FILE_WRITE);
+  BufferingPrint bufferedFile(file, 64); // Add buffering to the file
+  serializeJson(doc, file); // Serialize the JSON to the file in 64-byte chunks
+  // TODO: I am not sure if this works, consult PDF ch 4.7
+  bufferedFile.print("\n");
+  bufferedFile.flush(); // Send the remaining bytes
+#else
+  serializeJson(doc, Serial); // TODO: Add buffering here, too?
+  Serial.print("\n"); // JSON requires a newline at the end of each log line
+#endif
+
+  // TODO: Does this need to be a boolean?
   return true;
 }
 
@@ -709,19 +764,30 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
   // Get the pin name in the correct format ("A0", "A1", etc.)
   char c_pin_name[12];
-  sprintf(c_pin_name, "A%d", pin);
-
-  // Get the RTC's timestamp
-  uint32_t timestamp = GetTimestamp();
+  sprintf(c_pin_name, "D%d", pin);
 
   // Create the JSON document
   JsonDocument doc;
-  doc["timestamp"] = timestamp;
-  doc["pin"] = c_pin_name;
-  doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
-  serializeJson(doc, Serial);
-  Serial.println("");
+  BuildJSONDoc(doc, c_pin_name, value, read_type);
+
+  // Serialize the JSON document
+#ifndef OFFLINE_MODE_DEBUG
+  // TODO: Make this an attempt to open and return false on failure
+  File32 file;
+  if (!_sd.open("log.json", FILE_WRITE)) {
+    WS_DEBUG_PRINTLN("[SD] FATAL Error - Unable to open JSON log file!");
+  }
+  BufferingPrint bufferedFile(file, 64); // Add buffering to the file
+  serializeJson(doc, file); // Serialize the JSON to the file in 64-byte chunks
+  // TODO: I am not sure if this works, consult PDF ch 4.7
+  bufferedFile.print("\n");
+  bufferedFile.flush(); // Send the remaining bytes
+#else
+  serializeJson(doc, Serial); // TODO: Add buffering here, too?
+  Serial.print("\n"); // JSON requires a newline at the end of each log line
+#endif
+
+  // TODO: Does this need to be a boolean?
   return true;
 }
 
