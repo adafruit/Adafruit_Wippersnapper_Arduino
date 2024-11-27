@@ -83,7 +83,7 @@ void initStatusLED() {
 #elif defined(ARDUINO_ARCH_ESP32)
   WS._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
   WS._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(ARDUINO_ARCH_RP2040)
   digitalWrite(STATUS_LED_PIN, 0);
 #else
   analogWrite(STATUS_LED_PIN, 0);
@@ -177,7 +177,7 @@ void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_LED
   if (!WS.lockStatusLED)
     return; // status pixel is in-use elsewhere
-#ifdef ARDUINO_RASPBERRY_PI_PICO_W
+#ifdef ARDUINO_ARCH_RP2040
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
   if (color != BLACK)
@@ -236,7 +236,7 @@ void setStatusLEDColor(uint32_t color, int brightness) {
   if (!WS.lockStatusLED)
     return;
 
-#ifdef ARDUINO_RASPBERRY_PI_PICO_W
+#ifdef ARDUINO_ARCH_RP2040
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
   if (color != BLACK) {

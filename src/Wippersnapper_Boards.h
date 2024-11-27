@@ -185,7 +185,7 @@
 #define BOARD_ID "mkrwifi1010"
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 6
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ARDUINO_ARCH_RP2040)
 #define BOARD_ID "rpi-pico-w"
 #define USE_TINYUSB
 #define USE_STATUS_LED
