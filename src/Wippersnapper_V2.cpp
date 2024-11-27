@@ -1094,7 +1094,11 @@ void Wippersnapper_V2::pingBrokerV2() {
     @brief    Feeds the WDT to prevent hardware reset.
 */
 /*******************************************************/
-void Wippersnapper_V2::feedWDTV2() { Watchdog.reset(); }
+void Wippersnapper_V2::feedWDTV2() {
+    // TODO: This is a temporary fix for watchdog.reset() not firing
+    // Watchdog.reset();
+    esp_task_wdt_reset();
+}
 
 /********************************************************/
 /*!
@@ -1264,10 +1268,10 @@ void Wippersnapper_V2::connectV2() {
 */
 /**************************************************************************/
 ws_status_t Wippersnapper_V2::runV2() {
+  WsV2.feedWDTV2();
   if (!WsV2._sdCardV2->mode_offline) {
     // Handle networking functions
     runNetFSMV2();
-    WsV2.feedWDTV2();
     pingBrokerV2();
     // Process all incoming packets from Wippersnapper_V2 MQTT Broker
     WsV2._mqttV2->processPackets(10);
