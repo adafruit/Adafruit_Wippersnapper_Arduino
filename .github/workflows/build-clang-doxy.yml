@@ -494,7 +494,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["picow_rp2040_tinyusb"]
+        arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb"]
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -508,7 +508,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
+          ref: ci-wippersnapper-rp2040
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
