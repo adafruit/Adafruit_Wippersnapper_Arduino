@@ -240,7 +240,7 @@ bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
 */
 /***********************************************************************/
 void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
-  if (WsV2._sdCardV2->mode_offline)
+  if (WsV2._sdCardV2->isModeOffline())
     return;
   WS_DEBUG_PRINT("[digitalio] DIO Pin D");
   WS_DEBUG_PRINT(pin->pin_name);
@@ -308,7 +308,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
   sprintf(c_pin_name, "D%d", pin_name);
 
   // If we are in ONLINE mode, publish the event to the broker
-  if (!WsV2._sdCardV2->mode_offline) {
+  if (!WsV2._sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINT(
         "[digitalio] Publishing DigitalIOEvent message to broker for pin: ");
     WS_DEBUG_PRINTLN(c_pin_name);

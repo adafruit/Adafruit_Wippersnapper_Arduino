@@ -1188,7 +1188,7 @@ void Wippersnapper_V2::connectV2() {
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
-  if (WsV2._sdCardV2->mode_offline == true) {
+  if (WsV2._sdCardV2->isModeOffline() == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
 // Wait for incoming JSON string from Serial
 #ifdef OFFLINE_MODE_DEBUG
@@ -1199,14 +1199,13 @@ void Wippersnapper_V2::connectV2() {
     if (!WsV2._sdCardV2->parseConfigFile())
       haltErrorV2("Failed to parse incoming JSON file");
     WS_DEBUG_PRINT("[Offline] Attempting to configure hardware...");
-    // Mock the "check in" process
-    // Configure GPIO classes based on checkin response message
-    // TODO: Add checkin pins/data to the JSON string, we are hardcoding here
-    WsV2.digital_io_controller->SetMaxDigitalPins(10);
-    WsV2.analogio_controller->SetRefVoltage(3.3);
-    WsV2.analogio_controller->SetTotalAnalogPins(4);
-    // Call the signal decoder to parse the incoming JSON string
-    // TODO: We need a way to repeat this call better
+    #ifndef OFFLINE_MODE_DEBUG
+    // Create a new file to store the json log
+    if (!WsV2._sdCardV2->CreateNewLogFile()) {
+      haltErrorV2("Unable to create log file");
+    }
+    #endif
+    // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
     WS_DEBUG_PRINTLN(
         "[Offline] Hardware configured, skipping network setup...");
@@ -1269,7 +1268,7 @@ void Wippersnapper_V2::connectV2() {
 /**************************************************************************/
 ws_status_t Wippersnapper_V2::runV2() {
   WsV2.feedWDTV2();
-  if (!WsV2._sdCardV2->mode_offline) {
+  if (!WsV2._sdCardV2->isModeOffline()) {
     // Handle networking functions
     runNetFSMV2();
     pingBrokerV2();

@@ -20,6 +20,7 @@
 #include "Wippersnapper_V2.h"
 
 #define SD_FAT_TYPE 3
+#define MAX_LOG_FILE_SZ 500 ///< Maximum log file size of 500 bytes
 
 // forward decl.
 class Wippersnapper_V2;
@@ -35,13 +36,32 @@ public:
   ws_sdcard();
   ~ws_sdcard();
   bool InitSDCard();
+  bool parseConfigFile();
+#ifdef OFFLINE_MODE_DEBUG
+  bool waitForSerialConfig();
+#endif
+  bool CreateNewLogFile();
+  bool isModeOffline() { return is_mode_offline; }
+
+  bool LogGPIOSensorEventToSD(uint8_t pin, float value,
+                              wippersnapper_sensor_SensorType read_type);
+  bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
+                              wippersnapper_sensor_SensorType read_type);
+  bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
+                              wippersnapper_sensor_SensorType read_type);
+  bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
+
+private:
   bool ConfigureRTC(const char *rtc_type);
   uint32_t GetTimestamp();
-  bool mode_offline; // TODO: Refactor to getter/setter
-  bool
-  PushSignalToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
+  bool InitDS1307();
+  bool InitDS3231();
+  bool InitPCF8523();
+  bool InitSoftRTC();
+  bool validateJson(const char *input);
+  void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
+               float ref_voltage);
 
-  bool parseConfigFile();
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
   bool ParseDigitalIOAdd(wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd,
                          const char *pin, float period, bool value,
@@ -60,36 +80,21 @@ public:
                     wippersnapper_sensor_SensorType read_type);
   void BuildJSONDoc(JsonDocument &doc, const char *pin, bool value,
                     wippersnapper_sensor_SensorType read_type);
-  bool LogGPIOSensorEventToSD(uint8_t pin, float value,
-                              wippersnapper_sensor_SensorType read_type);
-  bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
-                              wippersnapper_sensor_SensorType read_type);
-  bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
-                              wippersnapper_sensor_SensorType read_type);
-  bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
-
-#ifdef OFFLINE_MODE_DEBUG
-  bool waitForSerialConfig();
-  bool validateJson(const char *input);
-#endif
-private:
-  bool InitDS1307();
-  bool InitDS3231();
-  bool InitPCF8523();
-  bool InitSoftRTC();
-  void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
-               float ref_voltage);
-  SdFat _sd;                  ///< SD object from Adafruit SDFat library
-  String _serialInput;        ///< Serial input buffer
-  const char *json_test_data; ///< Json test data
-  bool _use_test_data; ///< True if sample data is being used to test, instead
-                       ///< of serial input, False otherwise.
-  bool _wokwi_runner;  ///< True if `exportedBy` key is "wokwi", otherwise False
-  const char *_log_filename;           ///< Path to the log file
-  RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object
-  RTC_DS1307 *_rtc_ds1307 = nullptr;   ///< DS1307 RTC object
+  bool
+  PushSignalToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
+  SdFat _sd;            ///< SD object from Adafruit SDFat library
+  bool is_mode_offline; ///< True if offline mode is enabled, False otherwise
+  String _serialInput;  ///< Serial input buffer
+  const char *json_test_data;        ///< Json test data
+  const char *_log_filename;         ///< Path to the log file
+  int _sz_log_file;                  ///< Size of the current log file, in Bytes
+  RTC_DS3231 *_rtc_ds3231 = nullptr; ///< DS3231 RTC object
+  RTC_DS1307 *_rtc_ds1307 = nullptr; ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object
   RTC_Millis *_rtc_soft = nullptr;     ///< Software RTC object
+  // Testing
+  bool _use_test_data;  ///< True if sample data is being used for testing
+  bool _is_using_wokwi; ///< True if `exportedBy` key is "wokwi"
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H
