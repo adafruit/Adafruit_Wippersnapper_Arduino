@@ -508,7 +508,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper-rp2040
+          ref: ci-wippersnapper
           path: ci
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
