@@ -19,7 +19,7 @@
 #include "StreamUtils.h"
 #include "Wippersnapper_V2.h"
 
-#define SD_FAT_TYPE 3
+#define SD_FAT_TYPE 3       ///< SdFat type (3 = SdFs)
 #define MAX_LOG_FILE_SZ 500 ///< Maximum log file size of 500 bytes
 
 // forward decl.
@@ -74,12 +74,14 @@ private:
                        int num_sensors, const char *sensor_type_1,
                        const char *sensor_type_2);
 
-  void BuildJSONDoc(JsonDocument &doc, const char *pin, float value,
+  void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                     wippersnapper_sensor_SensorType read_type);
-  void BuildJSONDoc(JsonDocument &doc, const char *pin, uint16_t value,
+  void BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
                     wippersnapper_sensor_SensorType read_type);
-  void BuildJSONDoc(JsonDocument &doc, const char *pin, bool value,
+  void BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                     wippersnapper_sensor_SensorType read_type);
+  bool LogJSONDoc(JsonDocument &doc);
+
   bool
   PushSignalToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
   SdFat _sd;            ///< SD object from Adafruit SDFat library
@@ -87,7 +89,7 @@ private:
   String _serialInput;  ///< Serial input buffer
   const char *json_test_data;        ///< Json test data
   const char *_log_filename;         ///< Path to the log file
-  int _sz_log_file;                  ///< Size of the current log file, in Bytes
+  size_t _sz_log_file;               ///< Size of the current log file, in Bytes
   RTC_DS3231 *_rtc_ds3231 = nullptr; ///< DS3231 RTC object
   RTC_DS1307 *_rtc_ds1307 = nullptr; ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object

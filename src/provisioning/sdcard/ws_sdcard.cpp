@@ -646,28 +646,54 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   }
 }
 
-void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, float value,
+void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                              wippersnapper_sensor_SensorType read_type) {
+  char pin_name[12];
+  sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin;
+  doc["pin"] = pin_name;
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
-void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, uint16_t value,
+void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
                              wippersnapper_sensor_SensorType read_type) {
+  char pin_name[12];
+  sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin;
+  doc["pin"] = pin_name;
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
-void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, bool value,
+void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                              wippersnapper_sensor_SensorType read_type) {
+  char pin_name[12];
+  sprintf(pin_name, "D%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin;
+  doc["pin"] = pin_name;
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
+}
+
+bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
+  File32 file;
+  size_t szJson;
+  // Serialize the JSON document
+#ifndef OFFLINE_MODE_DEBUG
+  if (!_sd.open("log.json", FILE_WRITE))
+    return false;
+  BufferingPrint bufferedFile(file, 64); // Add buffering to the file
+  szJson = serializeJson(
+      doc, file);           // Serialize the JSON to the file in 64-byte chunks
+  bufferedFile.print("\n"); // JSONL format specifier
+  bufferedFile.flush();     // Send the remaining bytes
+#else
+  szJson = serializeJson(doc, Serial); // TODO: Add buffering here, too?
+  Serial.print("\n");                  // JSONL format specifier
+#endif
+  _sz_log_file = szJson + 2; // +2 bytes for "\n"
+  return true;
 }
 
 /**************************************************************************/
@@ -684,30 +710,10 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, const char *pin, bool value,
 /**************************************************************************/
 bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
-  // Get the pin name in the correct format ("A0", "A1", etc.)
-  // TODO: Maybe send c_pin_name to sprintf and include A/D specifier from here?
-  char c_pin_name[12];
-  sprintf(c_pin_name, "A%d", pin);
-
-  // Create the JSON document
   JsonDocument doc;
-  BuildJSONDoc(doc, c_pin_name, value, read_type);
-
-  // Serialize the JSON document
-#ifndef OFFLINE_MODE_DEBUG
-  // TODO: Make this an attempt to open and return false on failure
-  File32 file = _sd.open("log.json", FILE_WRITE);
-  BufferingPrint bufferedFile(file, 64); // Add buffering to the file
-  serializeJson(doc, file); // Serialize the JSON to the file in 64-byte chunks
-  // TODO: I am not sure if this works, consult PDF ch 4.7
-  bufferedFile.print("\n");
-  bufferedFile.flush(); // Send the remaining bytes
-#else
-  serializeJson(doc, Serial); // TODO: Add buffering here, too?
-  Serial.print("\n"); // JSON requires a newline at the end of each log line
-#endif
-
-  // TODO: Does this need to be a boolean?
+  BuildJSONDoc(doc, pin, value, read_type);
+  if (!LogJSONDoc(doc))
+    return false;
   return true;
 }
 
@@ -725,29 +731,10 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
 /**************************************************************************/
 bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, uint16_t value, wippersnapper_sensor_SensorType read_type) {
-  // Get the pin name in the correct format ("A0", "A1", etc.)
-  char c_pin_name[12];
-  sprintf(c_pin_name, "A%d", pin);
-
-  // Create the JSON document
   JsonDocument doc;
-  BuildJSONDoc(doc, c_pin_name, value, read_type);
-
-  // Serialize the JSON document
-#ifndef OFFLINE_MODE_DEBUG
-  // TODO: Make this an attempt to open and return false on failure
-  File32 file = _sd.open("log.json", FILE_WRITE);
-  BufferingPrint bufferedFile(file, 64); // Add buffering to the file
-  serializeJson(doc, file); // Serialize the JSON to the file in 64-byte chunks
-  // TODO: I am not sure if this works, consult PDF ch 4.7
-  bufferedFile.print("\n");
-  bufferedFile.flush(); // Send the remaining bytes
-#else
-  serializeJson(doc, Serial); // TODO: Add buffering here, too?
-  Serial.print("\n"); // JSON requires a newline at the end of each log line
-#endif
-
-  // TODO: Does this need to be a boolean?
+  BuildJSONDoc(doc, pin, value, read_type);
+  if (!LogJSONDoc(doc))
+    return false;
   return true;
 }
 
@@ -765,32 +752,10 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
 /**************************************************************************/
 bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
-  // Get the pin name in the correct format ("A0", "A1", etc.)
-  char c_pin_name[12];
-  sprintf(c_pin_name, "D%d", pin);
-
-  // Create the JSON document
   JsonDocument doc;
-  BuildJSONDoc(doc, c_pin_name, value, read_type);
-
-  // Serialize the JSON document
-#ifndef OFFLINE_MODE_DEBUG
-  // TODO: Make this an attempt to open and return false on failure
-  File32 file;
-  if (!_sd.open("log.json", FILE_WRITE)) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Error - Unable to open JSON log file!");
-  }
-  BufferingPrint bufferedFile(file, 64); // Add buffering to the file
-  serializeJson(doc, file); // Serialize the JSON to the file in 64-byte chunks
-  // TODO: I am not sure if this works, consult PDF ch 4.7
-  bufferedFile.print("\n");
-  bufferedFile.flush(); // Send the remaining bytes
-#else
-  serializeJson(doc, Serial); // TODO: Add buffering here, too?
-  Serial.print("\n"); // JSON requires a newline at the end of each log line
-#endif
-
-  // TODO: Does this need to be a boolean?
+  BuildJSONDoc(doc, pin, value, read_type);
+  if (!LogJSONDoc(doc))
+    return false;
   return true;
 }
 
