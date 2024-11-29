@@ -104,7 +104,7 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
 
   // If we're not in offline mode, publish a Ds18x20Added message back to the
   // broker
-  if (!WsV2._sdCardV2->mode_offline) {
+  if (!WsV2._sdCardV2->isModeOffline()) {
     // Encode and publish a Ds18x20Added message back to the broker
     if (!_DS18X20_model->EncodeDS18x20Added(
             _DS18X20_model->GetDS18x20AddMsg()->onewire_pin, is_initialized)) {
@@ -227,7 +227,7 @@ void DS18X20Controller::update() {
         _DS18X20_model->GetDS18x20EventMsg();
     pb_size_t event_count = event_msg->sensor_events_count;
 
-    if (!WsV2._sdCardV2->mode_offline) {
+    if (!WsV2._sdCardV2->isModeOffline()) {
       // Encode the Ds18x20Event message
       if (!_DS18X20_model->EncodeDs18x20Event()) {
         WS_DEBUG_PRINTLN(

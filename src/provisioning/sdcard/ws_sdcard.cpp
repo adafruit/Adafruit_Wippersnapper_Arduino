@@ -20,9 +20,10 @@
 */
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
-  mode_offline = false;
-  _wokwi_runner = false;
+  is_mode_offline = false;
+  _is_using_wokwi = false;
   _use_test_data = false;
+  _sz_log_file = 0;
 }
 
 /**************************************************************************/
@@ -33,9 +34,9 @@ ws_sdcard::ws_sdcard() {
 ws_sdcard::~ws_sdcard() {
   // TODO: Close any open files
   // Then, end the SD card (ends SPI transaction)
-  if (mode_offline) {
+  if (is_mode_offline) {
     _sd.end();
-    mode_offline = false;
+    is_mode_offline = false;
   }
 }
 
@@ -43,10 +44,10 @@ bool ws_sdcard::InitSDCard() {
 #ifdef SD_CS_PIN
   // Attempt to initialize the SD card
   if (_sd.begin(SD_CS_PIN)) {
-    mode_offline = true;
+    is_mode_offline = true;
   }
 #endif
-  return mode_offline;
+  return is_mode_offline;
 }
 
 /**************************************************************************/
@@ -348,6 +349,25 @@ bool ws_sdcard::PushSignalToSharedBuffer(
 
 /**************************************************************************/
 /*!
+    @brief  Creates a new logging file on the SD card using the RTC's
+            timestamp and sets the current log file path to reflect this
+            file.
+    @returns True if a log file was successfully created, False otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::CreateNewLogFile() {
+  File32 file;
+  String logFilename = "log_" + String(GetTimestamp()) + ".json";
+  _log_filename = logFilename.c_str();
+  if (!file.open(_log_filename, FILE_WRITE))
+    return false;
+  WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
+  WS_DEBUG_PRINTLN(_log_filename);
+  return true;
+}
+
+/**************************************************************************/
+/*!
     @brief  Searches for and parses the JSON configuration file and sets up
             the hardware accordingly.
     @returns True if the JSON file was successfully parsed and the hardware
@@ -395,7 +415,7 @@ bool ws_sdcard::parseConfigFile() {
   // this!
   const char *exportedBy = doc["exportedBy"];
   if (strcmp(exportedBy, "wokwi") == 0) {
-    _wokwi_runner = true;
+    _is_using_wokwi = true;
   }
 
   // Parse the exportedFromDevice array
@@ -424,23 +444,6 @@ bool ws_sdcard::parseConfigFile() {
     WS_DEBUG_PRINTLN("[SD] Failed to to configure RTC!");
     return false;
   }
-
-// Create new logging file on device from the RTC's timestamp
-#ifndef OFFLINE_MODE_DEBUG
-  // TODO: Refactor this out into a func
-  // TODO: Implement a counter within the log funcs to track # of lines in the
-  // file and implement a MAX_LINE cutoff
-  String logFilename = "log_" + String(GetTimestamp()) + ".json";
-  _log_filename = logFilename.c_str();
-  File32 file;
-  if (!file.open(_log_filename, FILE_WRITE)) {
-    WS_DEBUG_PRINTLN(
-        "[SD] FATAL - Failed to create initial logging file on SD card!");
-    return false;
-  }
-  WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
-  WS_DEBUG_PRINTLN(_log_filename);
-#endif
 
   // Parse the "components" array into a JsonObject
   JsonArray components_ar = doc["components"].as<JsonArray>();
@@ -548,7 +551,7 @@ uint32_t ws_sdcard::GetTimestamp() {
     now = _rtc_soft->now();
   }
 
-  if (_wokwi_runner)
+  if (_is_using_wokwi)
     return 0;
 
   return now.unixtime();

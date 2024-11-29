@@ -185,7 +185,7 @@ bool AnalogIOController::EncodePublishPinEvent(
   }
 
   // Publish the AnalogIO message to the broker
-  if (!WsV2._sdCardV2->mode_offline) {
+  if (!WsV2._sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
     if (!WsV2.PublishSignal(
             wippersnapper_signal_DeviceToBroker_analogio_event_tag,
@@ -225,7 +225,7 @@ bool AnalogIOController::EncodePublishPinEvent(
 /***************************************************************************/
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
 
-  if (WsV2._sdCardV2->mode_offline) {
+  if (WsV2._sdCardV2->isModeOffline()) {
     return WsV2._sdCardV2->LogGPIOSensorEventToSD(
         pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
   } else {
@@ -246,7 +246,7 @@ bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
 */
 /***************************************************************************/
 bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
-  if (WsV2._sdCardV2->mode_offline) {
+  if (WsV2._sdCardV2->isModeOffline()) {
     return WsV2._sdCardV2->LogGPIOSensorEventToSD(
         pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE);
   } else {
