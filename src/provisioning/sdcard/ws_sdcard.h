@@ -19,8 +19,9 @@
 #include "StreamUtils.h"
 #include "Wippersnapper_V2.h"
 
-#define SD_FAT_TYPE 3       ///< SdFat type (3 = SdFs)
-#define MAX_LOG_FILE_SZ 500 ///< Maximum log file size of 500 bytes
+#define SD_FAT_TYPE 3           ///< SdFat type (3 = SdFs)
+#define MAX_LOG_FILE_SZ 500     ///< Maximum log file size of 500 bytes
+#define UNKNOWN_VALUE "unknown" ///< Unknown JSON field value
 
 // forward decl.
 class Wippersnapper_V2;
@@ -42,7 +43,6 @@ public:
 #endif
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
-
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
                               wippersnapper_sensor_SensorType read_type);
   bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
@@ -52,15 +52,16 @@ public:
   bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
 
 private:
+  bool ValidateJSON(const char *input);
+  void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
+               float ref_voltage);
+
   bool ConfigureRTC(const char *rtc_type);
   uint32_t GetTimestamp();
   bool InitDS1307();
   bool InitDS3231();
   bool InitPCF8523();
   bool InitSoftRTC();
-  bool validateJson(const char *input);
-  void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
-               float ref_voltage);
 
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
   bool ParseDigitalIOAdd(wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd,
