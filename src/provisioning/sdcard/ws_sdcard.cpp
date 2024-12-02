@@ -32,11 +32,9 @@ ws_sdcard::ws_sdcard() {
 */
 /**************************************************************************/
 ws_sdcard::~ws_sdcard() {
-  // TODO: Close any open files
-  // Then, end the SD card (ends SPI transaction)
   if (is_mode_offline) {
-    _sd.end();
-    is_mode_offline = false;
+    _sd.end();               // Close the SD card
+    is_mode_offline = false; // Disable offline mode
   }
 }
 
@@ -195,11 +193,25 @@ bool ws_sdcard::ParseDigitalIOAdd(
     float period, bool value, const char *sample_mode, const char *direction,
     const char *pull) {
   bool rc = true;
+  if (!strcmp(pin, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin name not found!");
+    return false;
+  }
   strcpy(msg_DigitalIOAdd.pin_name, pin);
+
+  if (period == 0.0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin period not found!");
+    return false;
+  }
   msg_DigitalIOAdd.period = period;
   msg_DigitalIOAdd.value = value;
+
   // Determine the sample mode
-  if (strcmp(sample_mode, "TIMER") == 0) {
+  if (strcmp(sample_mode, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Parsing Error: Digital pin's sample mode not found!");
+    return false;
+  } else if (strcmp(sample_mode, "TIMER") == 0) {
     msg_DigitalIOAdd.sample_mode =
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
   } else if (strcmp(sample_mode, "EVENT") == 0) {
@@ -211,7 +223,10 @@ bool ws_sdcard::ParseDigitalIOAdd(
   }
 
   // Determine the pin direction and pull
-  if (strcmp(direction, "INPUT") == 0) {
+  if (strcmp(direction, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin's direction not found!");
+    return false;
+  } else if (strcmp(direction, "INPUT") == 0) {
     if (pull != nullptr) {
       msg_DigitalIOAdd.gpio_direction =
           wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
@@ -321,7 +336,7 @@ bool ws_sdcard::ParseDS18X20Add(
 bool ws_sdcard::PushSignalToSharedBuffer(
     wippersnapper_signal_BrokerToDevice &msg_signal) {
   // Create a temporary buffer to hold the encoded signal message
-  std::vector<uint8_t> tempBuf(128);
+  std::vector<uint8_t> tempBuf(512);
   size_t tempBufSz;
 
   // Get the encoded size of the signal message first so we can resize the
@@ -357,8 +372,15 @@ bool ws_sdcard::PushSignalToSharedBuffer(
 /**************************************************************************/
 bool ws_sdcard::CreateNewLogFile() {
   File32 file;
+  // Generate a name for the new log file using the RTC's timestamp
   String logFilename = "log_" + String(GetTimestamp()) + ".json";
-  _log_filename = logFilename.c_str();
+  static char log_filename_buffer[256];
+  strncpy(log_filename_buffer, logFilename.c_str(),
+          sizeof(log_filename_buffer) - 1);
+  log_filename_buffer[sizeof(log_filename_buffer) - 1] = '\0';
+  _log_filename = log_filename_buffer;
+
+  // Attempt to create the new log file
   if (!file.open(_log_filename, FILE_WRITE))
     return false;
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
@@ -375,18 +397,17 @@ bool ws_sdcard::CreateNewLogFile() {
 */
 /**************************************************************************/
 bool ws_sdcard::parseConfigFile() {
-  File32 file_config;
-  JsonDocument doc;
-  int max_json_len =
-      2048; // TODO: It's possible this is too small - what's the max size?
+  int max_json_len = 4096;
 
   // Attempt to open and deserialize the JSON config file
+  File32 file_config;
   DeserializationError error;
+  JsonDocument doc;
 #ifndef OFFLINE_MODE_DEBUG
-  WS_DEBUG_PRINTLN("[SD] Parsing config.json from SD card...");
+  WS_DEBUG_PRINTLN("[SD] Parsing config.txt from SD card...");
   if (!_sd.exists("config.txt")) {
     WS_DEBUG_PRINTLN(
-        "[SD] FATAL Error - config.json file not found on SD Card!");
+        "[SD] FATAL Error - config.txt file not found on SD Card!");
     return false;
   }
   file_config = _sd.open("config.txt", O_RDONLY);
@@ -427,14 +448,14 @@ bool ws_sdcard::parseConfigFile() {
   }
 
   // Mock the check-in process using the JSON's values
-  CheckIn(exportedFromDevice["totalGPIOPins"],
-          exportedFromDevice["totalAnalogPins"],
-          exportedFromDevice["referenceVoltage"]);
+  CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
+          exportedFromDevice["totalAnalogPins"] | 0,
+          exportedFromDevice["referenceVoltage"] | 0.0);
 
-  setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"]);
+  setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
 
   // Initialize and configure RTC
-  const char *json_rtc = exportedFromDevice["rtc"];
+  const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
   if (json_rtc == nullptr) {
     WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - rtc field not found in "
                      "configuration JSON, unable to configure RTC!");
@@ -474,12 +495,13 @@ bool ws_sdcard::parseConfigFile() {
           "[SD] DigitalIO component found, decoding JSON to PB...");
       wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd =
           wippersnapper_digitalio_DigitalIOAdd_init_default;
-      if (!ParseDigitalIOAdd(msg_DigitalIOAdd, component["pinName"],
-                             component["period"], component["value"],
-                             component["sampleMode"], component["direction"],
-                             component["pull"])) {
-        WS_DEBUG_PRINTLN(
-            "[SD] FATAL Parsing error - Unable to parse DigitalIO component!");
+      if (!ParseDigitalIOAdd(
+              msg_DigitalIOAdd, component["pinName"] | UNKNOWN_VALUE,
+              component["period"] | 0.0, component["value"],
+              component["sampleMode"] | UNKNOWN_VALUE,
+              component["direction"] | UNKNOWN_VALUE, component["pull"])) {
+        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - Unable to parse "
+                         "DigitalIO component!");
         return false;
       }
       msg_signal_b2d.which_payload =
@@ -693,6 +715,14 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   Serial.print("\n");                  // JSONL format specifier
 #endif
   _sz_log_file = szJson + 2; // +2 bytes for "\n"
+
+  if (_sz_log_file > MAX_LOG_FILE_SZ) {
+    WS_DEBUG_PRINTLN("[SD] Log file size has exceeded maximum size, creating "
+                     "a new file...");
+    CreateNewLogFile();
+    return false;
+  }
+
   return true;
 }
 
@@ -773,19 +803,15 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
 /**************************************************************************/
 bool ws_sdcard::LogDS18xSensorEventToSD(
     wippersnapper_ds18x20_Ds18x20Event *event_msg) {
-  // Get the RTC's timestamp
-  uint32_t timestamp = GetTimestamp();
-
-  // Create the JSON document
   JsonDocument doc;
   // Iterate over the event message's sensor events
   for (int i = 0; i < event_msg->sensor_events_count; i++) {
+    uint32_t timestamp = GetTimestamp();
     doc["timestamp"] = timestamp;
     doc["pin"] = event_msg->onewire_pin;
     doc["value"] = event_msg->sensor_events[i].value.float_value;
     doc["si_unit"] = SensorTypeToString(event_msg->sensor_events[i].type);
-    serializeJson(doc, Serial);
-    Serial.println("");
+    LogJSONDoc(doc);
   }
   return true;
 }
@@ -799,7 +825,7 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
     @returns True if the provided JSON string is valid, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::validateJson(const char *input) {
+bool ws_sdcard::ValidateJSON(const char *input) {
   JsonDocument doc, filter;
 
   DeserializationError error =
@@ -931,12 +957,12 @@ bool ws_sdcard::waitForSerialConfig() {
 
   // Attempt to validate the string as JSON
   if (!_use_test_data) {
-    if (!validateJson(_serialInput.c_str())) {
+    if (!ValidateJSON(_serialInput.c_str())) {
       WS_DEBUG_PRINTLN("[SD] Invalid JSON string received!");
       return false;
     }
   } else {
-    if (!validateJson(json_test_data)) {
+    if (!ValidateJSON(json_test_data)) {
       WS_DEBUG_PRINTLN("[SD] Invalid JSON string received!");
       return false;
     }
