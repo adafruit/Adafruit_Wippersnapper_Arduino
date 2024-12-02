@@ -90,6 +90,30 @@ public:
     _pass = WS._config.network.pass;
   }
 
+  /****************************************************************/
+  /*!
+  @brief  a structure to hold network information for sorting
+  */
+  /****************************************************************/
+  struct WiFiNetwork {
+    char ssid[33]; /*!< SSID (Max 32 characters + null terminator */
+    int32_t rssi;  /*!< Received Signal Strength Indicator */
+  };
+
+  /*******************************************************************/
+  /*!
+  @brief  Comparison function to sort by RSSI in descending order
+  @param  a
+          WiFiNetwork object
+  @param  b
+          WiFiNetwork object
+  @returns True if a.rssi > b.rssi
+  */
+  /*******************************************************************/
+  bool static compareByRSSI(const WiFiNetwork &a, const WiFiNetwork &b) {
+    return a.rssi > b.rssi;
+  }
+
   /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
@@ -120,23 +144,47 @@ public:
       return false;
     }
 
-    // Was the network within secrets.json found?
+    WiFiNetwork networks[WS_MAX_SORTED_NETWORKS];
+    uint8_t numSavedNetworks = 0;
+    // Store the scanned networks in the vector
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
+      if (i < WS_MAX_SORTED_NETWORKS) {
+        strncpy(networks[i].ssid, WiFi.SSID(i).c_str(),
+                sizeof(networks[i].ssid));
+        networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0';
+        networks[i].rssi = WiFi.RSSI(i);
+        numSavedNetworks++;
+      } else {
+        WS_DEBUG_PRINT("ERROR: Too many networks found! (>");
+        WS_DEBUG_PRINT(WS_MAX_SORTED_NETWORKS);
+        WS_DEBUG_PRINT(") Ignoring ");
+        WS_DEBUG_PRINT(WiFi.SSID(i));
+        WS_DEBUG_PRINT("(");
+        WS_DEBUG_PRINT(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLN(")");
+      }
+    }
+
+    // Sort the networks by RSSI in descending order
+    std::sort(networks, networks + numSavedNetworks, compareByRSSI);
+
+    // Was the network within secrets.json found?
+    for (int i = 0; i < numSavedNetworks; ++i) {
+      if (strcmp(_ssid, networks[i].ssid) == 0) {
         WS_DEBUG_PRINT("SSID (");
         WS_DEBUG_PRINT(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLN(networks[i].rssi);
         return true;
       }
       if (WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+          if (strcmp(WS._multiNetworks[j].ssid, networks[i].ssid) == 0) {
             WS_DEBUG_PRINT("SSID (");
             WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
-            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+            WS_DEBUG_PRINTLN(networks[i].rssi);
             return true;
           }
         }
@@ -145,11 +193,18 @@ public:
 
     // User-set network not found, print scan results to serial console
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
+    WS_DEBUG_PRINT("WipperSnapper found these WiFi networks");
+    if (n > WS_MAX_SORTED_NETWORKS) {
+      WS_DEBUG_PRINT(" (only first ");
+      WS_DEBUG_PRINT(WS_MAX_SORTED_NETWORKS);
+      WS_DEBUG_PRINTLN(" used):");
+    } else {
+      WS_DEBUG_PRINTLN(":");
+    }
     for (int i = 0; i < n; ++i) {
-      WS_DEBUG_PRINT(WiFi.SSID(i));
+      WS_DEBUG_PRINT(networks[i].ssid);
       WS_DEBUG_PRINT(" ");
-      WS_DEBUG_PRINT(WiFi.RSSI(i));
+      WS_DEBUG_PRINT(networks[i].rssi);
       WS_DEBUG_PRINTLN("dB");
     }
 
