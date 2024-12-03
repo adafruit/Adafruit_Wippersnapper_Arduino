@@ -21,7 +21,11 @@
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
   is_mode_offline = false;
+#ifdef OFFLINE_MODE_WOKWI
+  _is_using_wokwi = true;
+#else
   _is_using_wokwi = false;
+#endif
   _use_test_data = false;
   _sz_log_file = 0;
 }
@@ -169,85 +173,6 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
 
 /**************************************************************************/
 /*!
-    @brief  Parses a DigitalIOAdd message from the JSON configuration file.
-    @param  msg_DigitalIOAdd
-            The DigitalIOAdd message to populate.
-    @param  pin
-            The GPIO pin name.
-    @param  period
-            The desired period to read the sensor, in seconds.
-    @param  value
-            The sensor value.
-    @param  sample_mode
-            The sample mode.
-    @param  direction
-            The GPIO pin direction.
-    @param  pull
-            The GPIO pin pull.
-    @returns True if the DigitalIOAdd message was successfully parsed,
-             False otherwise.
-*/
-/**************************************************************************/
-bool ws_sdcard::ParseDigitalIOAdd(
-    wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd, const char *pin,
-    float period, bool value, const char *sample_mode, const char *direction,
-    const char *pull) {
-  bool rc = true;
-  if (!strcmp(pin, UNKNOWN_VALUE) == 0) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin name not found!");
-    return false;
-  }
-  strcpy(msg_DigitalIOAdd.pin_name, pin);
-
-  if (period == 0.0) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin period not found!");
-    return false;
-  }
-  msg_DigitalIOAdd.period = period;
-  msg_DigitalIOAdd.value = value;
-
-  // Determine the sample mode
-  if (strcmp(sample_mode, UNKNOWN_VALUE) == 0) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Parsing Error: Digital pin's sample mode not found!");
-    return false;
-  } else if (strcmp(sample_mode, "TIMER") == 0) {
-    msg_DigitalIOAdd.sample_mode =
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
-  } else if (strcmp(sample_mode, "EVENT") == 0) {
-    msg_DigitalIOAdd.sample_mode =
-        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
-  } else {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown sample mode found: " +
-                     String(sample_mode));
-  }
-
-  // Determine the pin direction and pull
-  if (strcmp(direction, UNKNOWN_VALUE) == 0) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin's direction not found!");
-    return false;
-  } else if (strcmp(direction, "INPUT") == 0) {
-    if (pull != nullptr) {
-      msg_DigitalIOAdd.gpio_direction =
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
-    } else {
-      msg_DigitalIOAdd.gpio_direction =
-          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
-    }
-  } else if (strcmp(direction, "OUTPUT") == 0) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Error - Can not set OUTPUT direction in offline mode!");
-    rc = false;
-  } else {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown direction found: " +
-                     String(direction));
-    rc = false;
-  }
-  return rc;
-}
-
-/**************************************************************************/
-/*!
     @brief  Parses a sensor type from the JSON configuration file.
     @param  sensor_type
             The sensor type to parse.
@@ -273,6 +198,92 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   }
 }
 
+bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
+  if (strcmp(key, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN(error_msg);
+    return false;
+  }
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Parses a DigitalIOAdd message from the JSON configuration file.
+    @param  msg_DigitalIOAdd
+            The DigitalIOAdd message to populate.
+    @param  pin
+            The GPIO pin name.
+    @param  period
+            The desired period to read the sensor, in seconds.
+    @param  value
+            The sensor value.
+    @param  sample_mode
+            The sample mode.
+    @param  direction
+            The GPIO pin direction.
+    @param  pull
+            The GPIO pin pull.
+    @returns True if the DigitalIOAdd message was successfully parsed,
+             False otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::ParseDigitalIOAdd(
+    wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd, const char *pin,
+    float period, bool value, const char *sample_mode, const char *direction,
+    const char *pull) {
+  bool rc = true;
+  if (!ValidateJSONKey(pin, "[SD] Parsing Error: Digital pin name not found!"))
+    return false;
+  strcpy(msg_DigitalIOAdd.pin_name, pin);
+
+  if (period == 0.0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin period not found!");
+    return false;
+  }
+  msg_DigitalIOAdd.period = period;
+  msg_DigitalIOAdd.value = value;
+
+  // Determine the sample mode
+  if (!ValidateJSONKey(
+          sample_mode,
+          "[SD] Parsing Error: Digital pin's sample mode not found!")) {
+    return false;
+  } else if (strcmp(sample_mode, "TIMER") == 0) {
+    msg_DigitalIOAdd.sample_mode =
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER;
+  } else if (strcmp(sample_mode, "EVENT") == 0) {
+    msg_DigitalIOAdd.sample_mode =
+        wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_EVENT;
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown sample mode found: " +
+                     String(sample_mode));
+  }
+
+  // Determine the pin direction and pull
+  if (!ValidateJSONKey(
+          direction,
+          "[SD] Parsing Error: Digital pin's direction not found!")) {
+    return false;
+  } else if (strcmp(direction, "INPUT") == 0) {
+    if (pull != nullptr) {
+      msg_DigitalIOAdd.gpio_direction =
+          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT_PULL_UP;
+    } else {
+      msg_DigitalIOAdd.gpio_direction =
+          wippersnapper_digitalio_DigitalIODirection_DIGITAL_IO_DIRECTION_INPUT;
+    }
+  } else if (strcmp(direction, "OUTPUT") == 0) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Error - Can not set OUTPUT direction in offline mode!");
+    rc = false;
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown direction found: " +
+                     String(direction));
+    rc = false;
+  }
+  return rc;
+}
+
 /**************************************************************************/
 /*!
     @brief  Parses an AnalogIOAdd message from the JSON configuration file.
@@ -291,8 +302,21 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
 bool ws_sdcard::ParseAnalogIOAdd(
     wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd, const char *pin,
     float period, const char *mode) {
+
+  if (!ValidateJSONKey(pin, "[SD] Parsing Error: Analog pin name not found!"))
+    return false;
   strcpy(msg_AnalogIOAdd.pin_name, pin);
+
+  if (period == 0.0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Analog pin period less than 1.0 "
+                     "seconds or not found!");
+    return false;
+  }
   msg_AnalogIOAdd.period = period;
+
+  if (!ValidateJSONKey(mode,
+                       "[SD] Parsing Error: Analog pin read mode not found!"))
+    return false;
   msg_AnalogIOAdd.read_mode = ParseSensorType(mode);
   if (msg_AnalogIOAdd.read_mode ==
       wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED) {
@@ -307,18 +331,47 @@ bool ws_sdcard::ParseDS18X20Add(
     wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add, const char *pin,
     int resolution, float period, int num_sensors, const char *sensor_type_1,
     const char *sensor_type_2) {
+
+  if (strcmp(pin, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 pin name not found!");
+    return false;
+  }
   strcpy(msg_DS18X20Add.onewire_pin, pin);
+
+  if (resolution == 0) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Parsing Error: DS18X20 sensor resolution not found!");
+    return false;
+  }
   msg_DS18X20Add.sensor_resolution = resolution;
+
+  if (period == 0.0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor period not found!");
+    return false;
+  }
   msg_DS18X20Add.period = period;
+
+  if (num_sensors == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor count not found!");
+    return false;
+  }
   msg_DS18X20Add.sensor_types_count = num_sensors;
 
   WS_DEBUG_PRINT("[SD] msg_DS18X20Add.sensor_types_count: ");
   WS_DEBUG_PRINTLN(msg_DS18X20Add.sensor_types_count);
 
   // Parse the first sensor type
+  if (strcmp(sensor_type_1, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 1 not found!");
+    return false;
+  }
   msg_DS18X20Add.sensor_types[0] = ParseSensorType(sensor_type_1);
   // Parse the second sensor type, if it exists
   if (num_sensors == 2) {
+    if (strcmp(sensor_type_2, UNKNOWN_VALUE) == 0) {
+      WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 2 not found!");
+      return false;
+    }
     msg_DS18X20Add.sensor_types[1] = ParseSensorType(sensor_type_2);
   }
   return true;
@@ -414,8 +467,9 @@ bool ws_sdcard::parseConfigFile() {
   error = deserializeJson(doc, file_config);
 #else
   // Test Mode - do not use the SD card, use test data instead!
-  if (_use_test_data == true) {
+  if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
+    WS_DEBUG_PRINT(_serialInput);
     error = deserializeJson(doc, _serialInput.c_str(), max_json_len);
   } else {
     WS_DEBUG_PRINTLN("[SD] Parsing Test Data...");
@@ -431,6 +485,8 @@ bool ws_sdcard::parseConfigFile() {
                      String(error.c_str()));
     return false;
   }
+
+  WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
 
   // NOTE: This is only used by the CI runner, production builds do not run
   // this!
@@ -448,25 +504,28 @@ bool ws_sdcard::parseConfigFile() {
   }
 
   // Mock the check-in process using the JSON's values
+  WS_DEBUG_PRINTLN("[SD] Mocking check-in process...");
   CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
           exportedFromDevice["totalAnalogPins"] | 0,
           exportedFromDevice["referenceVoltage"] | 0.0);
 
+  WS_DEBUG_PRINTLN("[SD] Configuring status LED...");
   setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
 
-  // Initialize and configure RTC
+// Initialize and configure RTC
+#ifndef OFFLINE_MODE_WOKWI
+  WS_DEBUG_PRINTLN("[SD] Configuring RTC...");
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
-  if (json_rtc == nullptr) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - rtc field not found in "
-                     "configuration JSON, unable to configure RTC!");
-    return false;
-  }
   if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Failed to to configure RTC!");
     return false;
   }
+#else
+  WS_DEBUG_PRINTLN("[SD] Skipping RTC configuration for Wokwi Simulator...");
+#endif
 
   // Parse the "components" array into a JsonObject
+  WS_DEBUG_PRINTLN("[SD] Parsing out components array...");
   JsonArray components_ar = doc["components"].as<JsonArray>();
   if (components_ar.isNull()) {
     WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No components array found in "
@@ -512,8 +571,10 @@ bool ws_sdcard::parseConfigFile() {
       wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
           wippersnapper_analogio_AnalogIOAdd_init_default;
       // Parse: JSON->AnalogIOAdd
-      if (!ParseAnalogIOAdd(msg_AnalogIOAdd, component["pinName"],
-                            component["period"], component["analogReadMode"])) {
+      if (!ParseAnalogIOAdd(msg_AnalogIOAdd,
+                            component["pinName"] | UNKNOWN_VALUE,
+                            component["period"] | 0.0,
+                            component["analogReadMode"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
             "[SD] FATAL Parsing error - Unable to parse AnalogIO component!");
         return false;
@@ -526,11 +587,12 @@ bool ws_sdcard::parseConfigFile() {
       wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
           wippersnapper_ds18x20_Ds18x20Add_init_default;
       // Parse: JSON->DS18X20Add
-      if (!ParseDS18X20Add(msg_DS18X20Add, component["pinName"],
-                           component["sensorResolution"], component["period"],
-                           component["sensorTypeCount"],
-                           component["sensorType1"],
-                           component["sensorType2"])) {
+      if (!ParseDS18X20Add(msg_DS18X20Add, component["pinName"] | UNKNOWN_VALUE,
+                           component["sensorResolution"] | 0,
+                           component["period"] | 0.0,
+                           component["sensorTypeCount"] | 0,
+                           component["sensorType1"] | UNKNOWN_VALUE,
+                           component["sensorType2"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
             "[SD] FATAL Parsing error - Unable to parse DS18X20 component!");
         return false;
@@ -569,12 +631,11 @@ uint32_t ws_sdcard::GetTimestamp() {
     now = _rtc_ds1307->now();
   else if (_rtc_pcf8523 != nullptr)
     now = _rtc_pcf8523->now();
-  else {
+  else if (_rtc_soft != nullptr) {
     now = _rtc_soft->now();
-  }
-
-  if (_is_using_wokwi)
+  } else { // we're either using a simulator or have undefined behavior
     return 0;
+  }
 
   return now.unixtime();
 }
@@ -683,6 +744,7 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
   char pin_name[12];
   sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
+  ;
   doc["pin"] = pin_name;
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
@@ -847,7 +909,13 @@ bool ws_sdcard::waitForSerialConfig() {
   // 2. Provide a JSON string via the hardware's serial input
   // 3. Use a test JSON string - for debugging purposes ONLY
 
-  _use_test_data = true;
+  // TODO: Redundant conditional - should this just be enabled within the class
+  // ctor?
+  if (_is_using_wokwi)
+    _use_test_data = false;
+  else
+    _use_test_data = true;
+
   json_test_data = "{"
                    "\"exportVersion\": \"1.0.0\","
                    "\"exportedBy\": \"tester\","
@@ -900,8 +968,8 @@ bool ws_sdcard::waitForSerialConfig() {
                    "\"componentAPI\": \"ds18x20\","
                    "\"name\": \"DS18B20: Temperature Sensor (°F)\","
                    "\"sensorTypeCount\": 2,"
-                   "\"sensorType1\": \"ambient-temp-fahrenheit\","
-                   "\"sensorType2\": \"ambient-temp\","
+                   "\"sensorType1\": \"object-temp-fahrenheit\","
+                   "\"sensorType2\": \"object-temp\","
                    "\"pinName\": \"D12\","
                    "\"sensorResolution\": 12,"
                    "\"period\": 5"
@@ -910,8 +978,8 @@ bool ws_sdcard::waitForSerialConfig() {
                    "\"componentAPI\": \"ds18x20\","
                    "\"name\": \"DS18B20: Temperature Sensor (°F)\","
                    "\"sensorTypeCount\": 2,"
-                   "\"sensorType1\": \"ambient-temp-fahrenheit\","
-                   "\"sensorType2\": \"ambient-temp\","
+                   "\"sensorType1\": \"object-temp-fahrenheit\","
+                   "\"sensorType2\": \"object-temp\","
                    "\"pinName\": \"D25\","
                    "\"sensorResolution\": 12,"
                    "\"period\": 5"

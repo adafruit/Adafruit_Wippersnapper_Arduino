@@ -53,6 +53,7 @@ public:
 
 private:
   bool ValidateJSON(const char *input);
+  bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
                float ref_voltage);
 
