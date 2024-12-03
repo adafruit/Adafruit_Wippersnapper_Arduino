@@ -6,4 +6,4 @@ steps:
   - wait-serial: '[SD] Waiting for incoming JSON string...'
   - write-serial: '{"exportVersion":"1.0.0",'
   - write-serial: '\n'
-  - wait-serial: 'ERROR [WDT RESET]: Unable to validate incoming JSON file'
+  - wait-serial: '[SD] Invalid JSON string received!'

@@ -224,8 +224,8 @@ bool AnalogIOController::EncodePublishPinEvent(
 */
 /***************************************************************************/
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
-
   if (WsV2._sdCardV2->isModeOffline()) {
+    WS_DEBUG_PRINTLN("Logging offline analogio event...");
     return WsV2._sdCardV2->LogGPIOSensorEventToSD(
         pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
   } else {
@@ -262,8 +262,9 @@ bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
 /***************************************************************************/
 void AnalogIOController::update() {
   // Bail-out if the vector is empty
-  if (_analogio_pins.empty())
+  if (_analogio_pins.empty()) {
     return;
+  }
 
   // Process analog input pins
   for (int i = 0; i < _analogio_pins.size(); i++) {
