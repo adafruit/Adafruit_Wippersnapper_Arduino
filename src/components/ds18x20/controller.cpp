@@ -97,6 +97,22 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     // If the sensor was successfully initialized, add it to the controller
     if (is_initialized == true)
       _DS18X20_pins.push_back(std::move(new_dsx_driver));
+
+    // Print out the details
+    WS_DEBUG_PRINTLN("[ds18x] New Sensor Added!");
+    WS_DEBUG_PRINT("\tPin: ");
+    WS_DEBUG_PRINTLN(pin_name);
+    WS_DEBUG_PRINT("\tResolution: ");
+    WS_DEBUG_PRINTLN(_DS18X20_model->GetDS18x20AddMsg()->sensor_resolution);
+    WS_DEBUG_PRINT("\tPeriod: ");
+    WS_DEBUG_PRINTLN(_DS18X20_model->GetDS18x20AddMsg()->period);
+    WS_DEBUG_PRINT("\tSI Units: ");
+    for (int i = 0; i < _DS18X20_model->GetDS18x20AddMsg()->sensor_types_count;
+         i++) {
+      WS_DEBUG_PRINT(_DS18X20_model->GetDS18x20AddMsg()->sensor_types[i]);
+      WS_DEBUG_PRINT(", ");
+    }
+    WS_DEBUG_PRINTLN("");
   } else {
     WS_DEBUG_PRINTLN("ERROR | DS18x20: Unable to get sensor ID!");
     is_initialized = false;

@@ -457,13 +457,13 @@ bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
 #ifndef OFFLINE_MODE_DEBUG
-  WS_DEBUG_PRINTLN("[SD] Parsing config.txt from SD card...");
-  if (!_sd.exists("config.txt")) {
+  WS_DEBUG_PRINTLN("[SD] Parsing config.json from SD card...");
+  if (!_sd.exists("config.json")) {
     WS_DEBUG_PRINTLN(
-        "[SD] FATAL Error - config.txt file not found on SD Card!");
+        "[SD] FATAL Error - config.json file not found on SD Card!");
     return false;
   }
-  file_config = _sd.open("config.txt", O_RDONLY);
+  file_config = _sd.open("config.json", O_RDONLY);
   error = deserializeJson(doc, file_config);
 #else
   // Test Mode - do not use the SD card, use test data instead!
@@ -744,7 +744,6 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
   char pin_name[12];
   sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
-  ;
   doc["pin"] = pin_name;
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
@@ -761,17 +760,23 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
 }
 
 bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
-  File32 file;
   size_t szJson;
   // Serialize the JSON document
 #ifndef OFFLINE_MODE_DEBUG
-  if (!_sd.open("log.json", FILE_WRITE))
+  File32 file;
+  file = _sd.open(_log_filename, FILE_WRITE);
+  if (!file) {
+    WS_DEBUG_PRINTLN("[SD] FATAL Error - Unable to open the log file for writing!");
     return false;
+  }
   BufferingPrint bufferedFile(file, 64); // Add buffering to the file
   szJson = serializeJson(
       doc, file);           // Serialize the JSON to the file in 64-byte chunks
   bufferedFile.print("\n"); // JSONL format specifier
   bufferedFile.flush();     // Send the remaining bytes
+  // print the doc to the serial
+  serializeJson(doc, Serial);
+  Serial.print("\n");
 #else
   szJson = serializeJson(doc, Serial); // TODO: Add buffering here, too?
   Serial.print("\n");                  // JSONL format specifier

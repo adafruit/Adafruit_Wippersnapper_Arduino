@@ -1200,7 +1200,7 @@ void Wippersnapper_V2::connectV2() {
     // Parse the JSON file
     if (!WsV2._sdCardV2->parseConfigFile())
       haltErrorV2("Failed to parse incoming JSON file");
-    WS_DEBUG_PRINT("[Offline] Attempting to configure hardware...");
+    WS_DEBUG_PRINTLN("[Offline] Attempting to configure hardware...");
     #ifndef OFFLINE_MODE_DEBUG
     // Create a new file to store the json log
     if (!WsV2._sdCardV2->CreateNewLogFile()) {
@@ -1210,7 +1210,7 @@ void Wippersnapper_V2::connectV2() {
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
     WS_DEBUG_PRINTLN(
-        "[Offline] Hardware configured, skipping network setup...");
+        "[Offline] Hardware configured, skipping network setup and running app...");
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");
