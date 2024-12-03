@@ -197,15 +197,7 @@ bool AnalogIOController::EncodePublishPinEvent(
     }
     WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
   } else {
-    // Print event data
-    WS_DEBUG_PRINTLN("AnalogIOEvent message:");
-    WS_DEBUG_PRINT("Pin Name: ");
-    WS_DEBUG_PRINTLN(c_pin_name);
-    WS_DEBUG_PRINT("Value: ");
-    WS_DEBUG_PRINTLN(value);
-    WS_DEBUG_PRINT("Read Type: ");
-    WS_DEBUG_PRINTLN(read_type);
-    WS_DEBUG_PRINTLN("[analogio] Offline analogIOEvent message not published!");
+
     // TODO: Log out this data by calling a logging function in sdcard class
   }
 
@@ -225,7 +217,6 @@ bool AnalogIOController::EncodePublishPinEvent(
 /***************************************************************************/
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
   if (WsV2._sdCardV2->isModeOffline()) {
-    WS_DEBUG_PRINTLN("Logging offline analogio event...");
     return WsV2._sdCardV2->LogGPIOSensorEventToSD(
         pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
   } else {
