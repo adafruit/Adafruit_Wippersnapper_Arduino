@@ -140,6 +140,6 @@ float AnalogIOHardware::GetPinVoltage(uint8_t pin) {
 #ifdef ARDUINO_ARCH_ESP32
   return analogReadMilliVolts(pin) / 1000.0;
 #else
-  return (getPinValue(pin) * _ref_voltage) / 65536;
+  return (GetPinValue(pin) * _ref_voltage) / 65536;
 #endif // ARDUINO_ARCH_ESP32
 }
