@@ -26,7 +26,8 @@
     defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
-    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2)
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) || \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2)
 #include "Wippersnapper_FS_V2.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported

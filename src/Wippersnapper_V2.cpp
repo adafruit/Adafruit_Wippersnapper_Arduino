@@ -1097,8 +1097,8 @@ void Wippersnapper_V2::pingBrokerV2() {
 void Wippersnapper_V2::feedWDTV2() {
     #ifndef OFFLINE_MODE_WOKWI
     // TODO: This is a temporary fix for watchdog.reset() not firing
-    // Watchdog.reset();
-    esp_task_wdt_reset();
+    Watchdog.reset();
+    //esp_task_wdt_reset(); // TODO: Putback for ESP32 WDT
     #endif
 }
 

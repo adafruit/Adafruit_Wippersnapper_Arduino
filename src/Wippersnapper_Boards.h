@@ -206,6 +206,12 @@
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 32
 #define SD_CS_PIN 17
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2)
+#define BOARD_ID "rpi-pico-2"
+#define USE_TINYUSB
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
+#define SD_CS_PIN 17
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif
