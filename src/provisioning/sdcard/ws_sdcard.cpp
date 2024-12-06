@@ -20,12 +20,6 @@
 */
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
-  is_mode_offline = false;
-#ifdef OFFLINE_MODE_WOKWI
-  _is_using_wokwi = true;
-#else
-  _is_using_wokwi = false;
-#endif
   _use_test_data = false;
   _sz_log_file = 0;
 }
@@ -43,12 +37,13 @@ ws_sdcard::~ws_sdcard() {
 }
 
 bool ws_sdcard::InitSDCard() {
-#ifdef SD_CS_PIN
-  // Attempt to initialize the SD card
-  if (_sd.begin(SD_CS_PIN)) {
-    is_mode_offline = true;
+  is_mode_offline = false;
+  if (WsV2.pin_sd_cs == 255) { // No SD card CS pin defined
+    return is_mode_offline;
+  } else { // SD card CS pin defined
+    if (_sd.begin(WsV2.pin_sd_cs))
+      is_mode_offline = true;
   }
-#endif
   return is_mode_offline;
 }
 
@@ -504,18 +499,11 @@ bool ws_sdcard::parseConfigFile() {
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
 
   // Calculate the 8-bit checksum of the JSON file to ensure it is valid data
-  if (! ValidateChecksum(doc)) {
-    WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its original state!");
+  if (!ValidateChecksum(doc)) {
+    WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
+                     "original state!");
   }
   WS_DEBUG_PRINTLN("[SD] JSON checksum OK!");
-
-  // NOTE: This is only used by the CI runner, production builds do not run
-  // this!
-  // TODO: Do we even need this anymore? We switched to a compile-time constant instead
-  const char *exportedBy = doc["exportedBy"];
-  if (strcmp(exportedBy, "wokwi") == 0) {
-    _is_using_wokwi = true;
-  }
 
   // Parse the exportedFromDevice array
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
@@ -788,7 +776,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   File32 file;
   file = _sd.open(_log_filename, FILE_WRITE);
   if (!file) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Error - Unable to open the log file for writing!");
+    WS_DEBUG_PRINTLN(
+        "[SD] FATAL Error - Unable to open the log file for writing!");
     return false;
   }
   BufferingPrint bufferedFile(file, 64); // Add buffering to the file
@@ -935,13 +924,6 @@ bool ws_sdcard::waitForSerialConfig() {
   // 1. Use a SD card with a JSON config file
   // 2. Provide a JSON string via the hardware's serial input
   // 3. Use a test JSON string - for debugging purposes ONLY
-
-  // TODO: Redundant conditional - should this just be enabled within the class
-  // ctor?
-  if (_is_using_wokwi)
-    _use_test_data = false;
-  else
-    _use_test_data = true;
 
   json_test_data = "{"
                    "\"exportVersion\": \"1.0.0\","

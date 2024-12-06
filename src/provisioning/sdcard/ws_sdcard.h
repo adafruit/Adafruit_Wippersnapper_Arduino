@@ -57,14 +57,12 @@ private:
   bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
                float ref_voltage);
-
   bool ConfigureRTC(const char *rtc_type);
   uint32_t GetTimestamp();
   bool InitDS1307();
   bool InitDS3231();
   bool InitPCF8523();
   bool InitSoftRTC();
-
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
   bool ParseDigitalIOAdd(wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd,
                          const char *pin, float period, bool value,
@@ -76,7 +74,6 @@ private:
                        const char *pin, int resolution, float period,
                        int num_sensors, const char *sensor_type_1,
                        const char *sensor_type_2);
-
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                     wippersnapper_sensor_SensorType read_type);
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
@@ -84,7 +81,6 @@ private:
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                     wippersnapper_sensor_SensorType read_type);
   bool LogJSONDoc(JsonDocument &doc);
-
   bool
   PushSignalToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
   SdFat _sd;            ///< SD object from Adafruit SDFat library
@@ -97,9 +93,7 @@ private:
   RTC_DS1307 *_rtc_ds1307 = nullptr; ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object
   RTC_Millis *_rtc_soft = nullptr;     ///< Software RTC object
-  // Testing
-  bool _use_test_data;  ///< True if sample data is being used for testing
-  bool _is_using_wokwi; ///< True if `exportedBy` key is "wokwi"
+  bool _use_test_data; ///< True if sample data is being used for testing
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H
