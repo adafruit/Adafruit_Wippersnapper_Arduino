@@ -52,6 +52,7 @@ public:
   bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
 
 private:
+  bool ValidateChecksum(JsonDocument &doc);
   bool ValidateJSON(const char *input);
   bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,

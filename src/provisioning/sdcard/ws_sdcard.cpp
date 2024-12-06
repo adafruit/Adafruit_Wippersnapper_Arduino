@@ -441,6 +441,23 @@ bool ws_sdcard::CreateNewLogFile() {
   return true;
 }
 
+bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
+  int json_doc_checksum = doc["checksum"];
+  // Calculate the checksum of the JSON document without the checksum field
+  doc.remove("checksum");
+  String doc_without_checksum;
+  serializeJson(doc, doc_without_checksum);
+  uint8_t calculated_checksum = 0;
+  for (unsigned int i = 0; i < doc_without_checksum.length(); i++) {
+    calculated_checksum += doc_without_checksum[i];
+  }
+  calculated_checksum &= 0xFF; // take lsb
+
+  if (json_doc_checksum != calculated_checksum)
+    return false;
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief  Searches for and parses the JSON configuration file and sets up
@@ -476,7 +493,6 @@ bool ws_sdcard::parseConfigFile() {
     error = deserializeJson(doc, json_test_data, max_json_len);
   }
 #endif
-
   // If the JSON document failed to deserialize - halt the running device and
   // print the error because it is not possible to continue running in offline
   // mode without a valid config file
@@ -485,11 +501,17 @@ bool ws_sdcard::parseConfigFile() {
                      String(error.c_str()));
     return false;
   }
-
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
+
+  // Calculate the 8-bit checksum of the JSON file to ensure it is valid data
+  if (! ValidateChecksum(doc)) {
+    WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its original state!");
+  }
+  WS_DEBUG_PRINTLN("[SD] JSON checksum OK!");
 
   // NOTE: This is only used by the CI runner, production builds do not run
   // this!
+  // TODO: Do we even need this anymore? We switched to a compile-time constant instead
   const char *exportedBy = doc["exportedBy"];
   if (strcmp(exportedBy, "wokwi") == 0) {
     _is_using_wokwi = true;

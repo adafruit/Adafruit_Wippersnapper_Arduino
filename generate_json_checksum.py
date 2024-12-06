@@ -9,10 +9,11 @@ if not json_data:
     print("Error: JSON file did not contain any data or path didn't match exactly, exiting...")
     exit(1)
 
-# convert json dict->string and sum
-str_json_data = json.dumps(json_data)
-sum_json_data = sum(bytearray(str_json_data.encode()))
-print('Sum (hex): ', hex(sum_json_data))
+if 'checksum' in json_data:
+    del json_data['checksum']
+
+# NOTE: This is important to re-serialize json data to match ArduinoJSON's compact serialization format
+str_json_data = json.dumps(json_data, separators=(',', ':'), sort_keys=True)
 
 # calculate checksum
 calculated_checksum = sum(bytearray(str_json_data.encode())) & 0xFF
