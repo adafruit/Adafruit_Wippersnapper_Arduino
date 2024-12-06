@@ -170,6 +170,64 @@ public:
 
   /********************************************************/
   /*!
+  @brief  Puts a 32-bit integer into a buffer in little-endian format.
+  @param  buf
+          Buffer to write to.
+  @param  x
+          32-bit integer to write.
+  */
+  /********************************************************/
+  void putLittleEndian32intoBuffer(uint8_t *buf, uint32_t x) {
+    buf[0] = x & 0xFF;
+    buf[1] = (x >> 8) & 0xFF;
+    buf[2] = (x >> 16) & 0xFF;
+    buf[3] = (x >> 24) & 0xFF;
+  }
+
+    /********************************************************/
+  /*!
+  @brief  Gets a 32-bit integer from a buffer in little-endian format.
+  @param  buf
+          Buffer to fetch from.
+  @return float
+  */
+  /********************************************************/
+  float getLittleEndian32fromBuffer(uint8_t *buf) {
+    return (float)(buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24));
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Gets the RPi Pico's WiFi transmit power.
+  @return float
+  */
+  /********************************************************/
+  float common_hal_wifi_radio_get_tx_power() {
+    uint8_t buf[13];
+    memcpy(buf, "qtxpower\x00\x00\x00\x00\x00", 13);
+    cyw43_ioctl(&cyw43_state, CYW43_IOCTL_GET_VAR, 13, buf, CYW43_ITF_STA);
+    return getLittleEndian32fromBuffer(buf) * 0.25f;
+  }
+
+  /********************************************************/
+  /*!
+  @brief  Sets the RPi Pico's WiFi transmit power.
+  @param  dbmPower
+          Transmit power in dBm.
+  */
+  /********************************************************/
+  void setTxPower(float dbmPower) {
+    // https://github.com/adafruit/circuitpython/blob/main/ports/raspberrypi/common-hal/wifi/Radio.c#L101C1-L108C2
+    int dbm_times_four = (int)(4 * dbmPower);
+    uint8_t buf[9 + 4];
+    memcpy(buf, "qtxpower\x00", 9);
+    putLittleEndian32intoBuffer(buf + 9, dbm_times_four);
+    cyw43_ioctl(&cyw43_state, CYW43_IOCTL_SET_VAR, 9 + 4, buf, CYW43_ITF_STA);
+    cyw43_ioctl(&cyw43_state, CYW43_IOCTL_SET_VAR, 9 + 4, buf, CYW43_ITF_AP);
+  }
+
+  /********************************************************/
+  /*!
   @brief  Initializes the MQTT client
   @param  clientID
           MQTT client identifier
