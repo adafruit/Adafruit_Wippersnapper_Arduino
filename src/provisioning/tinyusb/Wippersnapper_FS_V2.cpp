@@ -162,6 +162,24 @@ Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {
   wipperFatFs_v2.end();
 }
 
+void GetSDCSPin() { 
+  File32 file_cfg = wipperFatFs_v2.open("/config.json");
+  if (!file_cfg) {
+    WsV2.pin_sd_cs = 255;
+    return;
+  }
+  DeserializationError error = deserializeJson(doc, file_cfg);
+  // failed to deserialize the config file, bail out
+  if (error) {
+    file_cfg.close();
+    WsV2.pin_sd_cs = 255;
+    return;
+  }
+  JsonObject exportedFromDevice = doc["exportedFromDevice"];
+  WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
+  file_cfg.close();
+}
+
 /**************************************************************************/
 /*!
     @brief    Writes files to the filesystem to disable macOS from indexing.

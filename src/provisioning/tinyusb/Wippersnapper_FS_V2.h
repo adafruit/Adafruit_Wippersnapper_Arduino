@@ -59,6 +59,8 @@ public:
   bool getSecretsFile();
   void parseSecrets();
 
+  void GetSDCSPin();
+
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
   void parseDisplayConfig(displayConfig &displayFile);
   void createDisplayConfig();

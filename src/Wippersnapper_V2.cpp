@@ -23,7 +23,7 @@
  *
  * @section author Author
  *
- * Copyright (c) Brent Rubell 2020-2023 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * @section license License
  *
@@ -105,6 +105,7 @@ void Wippersnapper_V2::provisionV2() {
 #endif
 
   // Are we using sd-card/offline mode?
+  WsV2._fileSystemV2->GetSDCSPin(); // TODO: Implement this for LittleFS TOO
   if (WsV2._sdCardV2->InitSDCard())
     return;
 

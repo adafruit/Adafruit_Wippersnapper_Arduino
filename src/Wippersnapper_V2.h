@@ -255,6 +255,9 @@ public:
                              ///< otherwise.
   std::vector<std::vector<uint8_t>>
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
+
+
+  uint8_t pin_sd_cs; ///< SD card chip select pin  
 private:
   void _initV2();
 
@@ -268,7 +271,6 @@ private:
   Adafruit_MQTT_Subscribe *_subscribeB2d;
   Adafruit_MQTT_Subscribe *_subscribeError;
   Adafruit_MQTT_Subscribe *_subscribeThrottle;
-
 protected:
   ws_status_t _statusV2 = WS_IDLE; ///< Wippersnapper status
 
