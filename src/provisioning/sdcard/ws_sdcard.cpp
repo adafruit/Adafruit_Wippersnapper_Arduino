@@ -45,15 +45,13 @@ ws_sdcard::~ws_sdcard() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitSDCard(uint8_t pin_cs) {
-/*   if (pin_cs == 255)
-    return false; */
+  /*   if (pin_cs == 255)
+      return false; */
   if (_sd.begin(pin_cs)) {
     is_mode_offline = true;
     return is_mode_offline;
   }
-    return false;
-
-
+  return false;
 }
 
 /**************************************************************************/
@@ -390,7 +388,7 @@ bool ws_sdcard::ParseDS18X20Add(
              buffer, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::PushSignalToSharedBuffer(
+bool ws_sdcard::AddSignalMessageToSharedBuffer(
     wippersnapper_signal_BrokerToDevice &msg_signal) {
   // Create a temporary buffer to hold the encoded signal message
   std::vector<uint8_t> tempBuf(512);
@@ -472,16 +470,14 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 /**************************************************************************/
 bool ws_sdcard::parseConfigFile() {
   int max_json_len = 4096;
-
-  // Attempt to open and deserialize the JSON config file
-  File32 file_config;
   DeserializationError error;
   JsonDocument doc;
+
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = WsV2._config_doc;
+  doc = WsV2._config_doc; // Use the config document from the filesystem
 #else
-  // Test Mode - do not use the SD card, use test data instead!
+  // Use test data rather than data from the filesystem
   if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
     WS_DEBUG_PRINT(_serialInput);
@@ -491,9 +487,8 @@ bool ws_sdcard::parseConfigFile() {
     error = deserializeJson(doc, json_test_data, max_json_len);
   }
 #endif
-  // If the JSON document failed to deserialize - halt the running device and
-  // print the error because it is not possible to continue running in offline
-  // mode without a valid config file
+  // It is not possible to continue running in offline mode without a valid
+  // config file
   if (error) {
     WS_DEBUG_PRINTLN("[SD] Unable to deserialize config JSON, error code: " +
                      String(error.c_str()));
@@ -501,33 +496,34 @@ bool ws_sdcard::parseConfigFile() {
   }
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
 
-  // Calculate the 8-bit checksum of the JSON file to ensure it is valid data
+  // Check the file's integrity
   if (!ValidateChecksum(doc)) {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
   }
   WS_DEBUG_PRINTLN("[SD] JSON checksum OK!");
 
-  // Parse the exportedFromDevice array
+  // Begin parsing the JSON document
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   if (exportedFromDevice.isNull()) {
     WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No exportedFromDevice object "
                      "found in JSON string! Unable to configure hardware!");
     return false;
   }
+  JsonArray components_ar = doc["components"].as<JsonArray>();
+  if (components_ar.isNull()) {
+    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No components array found in "
+                     "JSON string!");
+    return false;
+  }
 
-  // Mock the check-in process using the JSON's values
-  WS_DEBUG_PRINTLN("[SD] Mocking check-in process...");
+  // We don't talk to IO here, perform an "offline" device check-in
   CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
           exportedFromDevice["totalAnalogPins"] | 0,
           exportedFromDevice["referenceVoltage"] | 0.0);
-
-  WS_DEBUG_PRINTLN("[SD] Configuring status LED...");
   setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
 
-// Initialize and configure RTC
 #ifndef OFFLINE_MODE_WOKWI
-  WS_DEBUG_PRINTLN("[SD] Configuring RTC...");
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
   if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Failed to to configure RTC!");
@@ -536,17 +532,6 @@ bool ws_sdcard::parseConfigFile() {
 #else
   WS_DEBUG_PRINTLN("[SD] Skipping RTC configuration for Wokwi Simulator...");
 #endif
-
-  // Parse the "components" array into a JsonObject
-  WS_DEBUG_PRINTLN("[SD] Parsing out components array...");
-  JsonArray components_ar = doc["components"].as<JsonArray>();
-  if (components_ar.isNull()) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No components array found in "
-                     "JSON string!");
-    return false;
-  }
-  int count = components_ar.size();
-  WS_DEBUG_PRINTLN("[SD] Found " + String(count) + " components in JSON file!");
 
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
@@ -576,6 +561,7 @@ bool ws_sdcard::parseConfigFile() {
                          "DigitalIO component!");
         return false;
       }
+
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
       msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
@@ -583,7 +569,6 @@ bool ws_sdcard::parseConfigFile() {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
       wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
           wippersnapper_analogio_AnalogIOAdd_init_default;
-      // Parse: JSON->AnalogIOAdd
       if (!ParseAnalogIOAdd(msg_AnalogIOAdd,
                             component["pinName"] | UNKNOWN_VALUE,
                             component["period"] | 0.0,
@@ -592,6 +577,7 @@ bool ws_sdcard::parseConfigFile() {
             "[SD] FATAL Parsing error - Unable to parse AnalogIO component!");
         return false;
       }
+
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_analogio_add_tag;
       msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
@@ -599,7 +585,6 @@ bool ws_sdcard::parseConfigFile() {
       WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
       wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
           wippersnapper_ds18x20_Ds18x20Add_init_default;
-      // Parse: JSON->DS18X20Add
       if (!ParseDS18X20Add(msg_DS18X20Add, component["pinName"] | UNKNOWN_VALUE,
                            component["sensorResolution"] | 0,
                            component["period"] | 0.0,
@@ -610,6 +595,7 @@ bool ws_sdcard::parseConfigFile() {
             "[SD] FATAL Parsing error - Unable to parse DS18X20 component!");
         return false;
       }
+
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
       msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
@@ -620,10 +606,10 @@ bool ws_sdcard::parseConfigFile() {
       return false;
     }
 
-    // Push the signal message into the shared buffer
-    if (!PushSignalToSharedBuffer(msg_signal_b2d)) {
-      WS_DEBUG_PRINTLN("[SD] FATAL Error - Unable to push signal message to "
-                       "shared buffer!");
+    // App handles the signal messages, in-order
+    if (!AddSignalMessageToSharedBuffer(msg_signal_b2d)) {
+      WS_DEBUG_PRINTLN(
+          "[SD] FATAL Error - Unable to add signal message to shared buffer!");
       return false;
     }
   }
@@ -897,6 +883,8 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
   return true;
 }
 
+// TODO: Do we even need to use this function anymore now that we're running
+// wokwi unit tests?
 #ifdef OFFLINE_MODE_DEBUG
 /**************************************************************************/
 /*!
