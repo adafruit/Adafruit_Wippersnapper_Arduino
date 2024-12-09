@@ -105,7 +105,10 @@ void Wippersnapper_V2::provisionV2() {
 #endif
 
   // Are we using sd-card/offline mode?
-  WsV2._fileSystemV2->GetSDCSPin(); // TODO: Implement this for LittleFS TOO
+  #ifdef USE_TINYUSB
+  _fileSystemV2->GetSDCSPin(); 
+  // TODO: Implement this for LittleFS TOO and do an elseif for USE_LITTLEFS
+  #endif
   if (WsV2._sdCardV2->InitSDCard())
     return;
 

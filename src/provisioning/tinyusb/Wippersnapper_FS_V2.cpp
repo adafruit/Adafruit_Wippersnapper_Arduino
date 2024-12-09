@@ -162,7 +162,7 @@ Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {
   wipperFatFs_v2.end();
 }
 
-void GetSDCSPin() { 
+void Wippersnapper_FS_V2::GetSDCSPin() { 
   File32 file_cfg = wipperFatFs_v2.open("/config.json");
   if (!file_cfg) {
     WsV2.pin_sd_cs = 255;
