@@ -36,7 +36,7 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
-  bool InitSDCard();
+  bool InitSDCard(uint8_t pin_cs);
   bool parseConfigFile();
 #ifdef OFFLINE_MODE_DEBUG
   bool waitForSerialConfig();

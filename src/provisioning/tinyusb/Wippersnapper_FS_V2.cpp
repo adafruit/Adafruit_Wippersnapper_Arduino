@@ -168,27 +168,24 @@ Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {
               config.json file.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::GetSDCSPin() { 
+uint8_t Wippersnapper_FS_V2::GetSDCSPin() { 
   File32 file_cfg;
-  JsonDocument doc;
   DeserializationError error;
   // Attempt to open and deserialize the config.json file
   file_cfg = wipperFatFs_v2.open("/config.json");
-  if (!file_cfg) {
-    WsV2.pin_sd_cs = 255;
-    return;
-  }
-  deserializeJson(doc, file_cfg);
+  if (!file_cfg)
+    return 255;
+  error = deserializeJson(WsV2._config_doc, file_cfg);
   if (error) {
     file_cfg.close();
-    WsV2.pin_sd_cs = 255;
-    return;
+    return 255;
   }
 
   // Parse config.json and save the SD CS pin
-  JsonObject exportedFromDevice = doc["exportedFromDevice"];
-  WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
+  JsonObject exportedFromDevice = WsV2._config_doc["exportedFromDevice"];
+  uint8_t pin_cs = exportedFromDevice["sd_cs_pin"] | 255;
   file_cfg.close();
+  return pin_cs;
 }
 
 /**************************************************************************/
