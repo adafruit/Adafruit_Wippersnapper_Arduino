@@ -46,6 +46,8 @@ public:
 
   void initUSBMSC();
 
+  uint8_t GetSDCSPin();
+
   bool writeFSContents();
   void fsHalt(String msg);
   void eraseCPFS();
@@ -58,9 +60,6 @@ public:
   void createSecretsFile();
   bool getSecretsFile();
   void parseSecrets();
-
-  uint8_t GetSDCSPin();
-
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
   void parseDisplayConfig(displayConfig &displayFile);
   void createDisplayConfig();

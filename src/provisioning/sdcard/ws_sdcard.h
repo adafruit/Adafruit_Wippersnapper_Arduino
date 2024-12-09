@@ -82,7 +82,7 @@ private:
                     wippersnapper_sensor_SensorType read_type);
   bool LogJSONDoc(JsonDocument &doc);
   bool
-  PushSignalToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
+  AddSignalMessageToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
   SdFat _sd;            ///< SD object from Adafruit SDFat library
   bool is_mode_offline; ///< True if offline mode is enabled, False otherwise
   String _serialInput;  ///< Serial input buffer
