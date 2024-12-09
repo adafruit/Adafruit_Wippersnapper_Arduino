@@ -257,7 +257,7 @@ public:
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
 
 
-  uint8_t pin_sd_cs; ///< SD card chip select pin  
+  JsonDocument _config_doc;
 private:
   void _initV2();
 

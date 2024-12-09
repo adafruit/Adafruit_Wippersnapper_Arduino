@@ -34,7 +34,7 @@ public:
   ~WipperSnapper_LittleFS_V2();
   void parseSecrets();
   void fsHalt(String msg);
-  void GetSDCSPin();
+  uint8_t GetSDCSPin();
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WIPPERSNAPPER_LITTLEFS_H

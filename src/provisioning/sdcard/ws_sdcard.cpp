@@ -20,6 +20,7 @@
 */
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
+  is_mode_offline = false;
   _use_test_data = false;
   _sz_log_file = 0;
 }
@@ -43,14 +44,16 @@ ws_sdcard::~ws_sdcard() {
               otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::InitSDCard() {
-  // Check if GetSDCSPin() threw error
-  if (WsV2.pin_sd_cs == 255)
+bool ws_sdcard::InitSDCard(uint8_t pin_cs) {
+/*   if (pin_cs == 255)
+    return false; */
+  if (_sd.begin(pin_cs)) {
+    is_mode_offline = true;
+    return is_mode_offline;
+  }
     return false;
 
-  if (!_sd.begin(WsV2.pin_sd_cs))
-    return false;
-  return true;
+
 }
 
 /**************************************************************************/
@@ -475,14 +478,8 @@ bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
 #ifndef OFFLINE_MODE_DEBUG
-  WS_DEBUG_PRINTLN("[SD] Parsing config.json from SD card...");
-  if (!_sd.exists("config.json")) {
-    WS_DEBUG_PRINTLN(
-        "[SD] FATAL Error - config.json file not found on SD Card!");
-    return false;
-  }
-  file_config = _sd.open("config.json", O_RDONLY);
-  error = deserializeJson(doc, file_config);
+  WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
+  doc = WsV2._config_doc;
 #else
   // Test Mode - do not use the SD card, use test data instead!
   if (!_use_test_data) {
