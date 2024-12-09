@@ -97,6 +97,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
     WS_DEBUG_PRINTLN(project_dependencies);
     WS_DEBUG_PRINTLN("*********************");
     WS_PRINTER.flush();
+    delay(50); // give host a chance to finish reading serial buffer
 #endif
   // Detach USB device during init.
   TinyUSBDevice.detach();
@@ -105,9 +106,18 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
-  if (!initFilesystem() && !initFilesystem(true)) {
-    setStatusLEDColor(RED);
-    fsHalt("ERROR Initializing Filesystem");
+  if (!initFilesystem()) {
+    if (WS.brownOutCausedReset) {
+      // try once more for good measure
+      delay(10); // let power stablise after failure
+      if (!initFilesystem()) {
+        // no lights, save power as we're probably on a low battery
+        fsHalt("Brownout detected. Couldn't initialise filesystem.");
+      }
+    } else if (!WS.brownOutCausedReset && !initFilesystem(true)) {
+      setStatusLEDColor(RED);
+      fsHalt("ERROR Initializing Filesystem");
+    }
   }
 
   // Initialize USB-MSD
@@ -115,7 +125,14 @@ Wippersnapper_FS::Wippersnapper_FS() {
 
   // If we created a new filesystem, halt until user RESETs device.
   if (_freshFS)
-    fsHalt("New filesystem created! Press the reset button on your board.");
+  {
+    WS_DEBUG_PRINTLN("New filesystem created! Resetting the board shortly...");
+    WS.enableWDT(500);
+    while (1)
+    {
+      delay(1000);
+    }
+  }
 }
 
 /************************************************************/
@@ -159,32 +176,39 @@ bool Wippersnapper_FS::initFilesystem(bool force_format) {
   if (!wipperFatFs.begin(&flash))
     return false;
 
+  //TODO: Don't do this unless we need the space and createSecrets fails
   // If CircuitPython was previously installed - erase CPY FS
   eraseCPFS();
-
-  // If WipperSnapper was previously installed - remove the
-  // wippersnapper_boot_out.txt file
-  eraseBootFile();
+  // Also, should probably relabel drive to WIPPER if CIRCUITPY was there
+  // using setVolumeLabel(), but note the FS must be unmounted first
 
   // No file indexing on macOS
-  wipperFatFs.mkdir("/.fseventsd/");
-  File32 writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
-  if (!writeFile)
-    return false;
-  writeFile.close();
+  if (!wipperFatFs.exists("/.fseventsd/no_log"))
+  {
+    wipperFatFs.mkdir("/.fseventsd/");
+    File32 writeFile = wipperFatFs.open("/.fseventsd/no_log", FILE_WRITE);
+    if (!writeFile)
+      return false;
+    writeFile.close();
+  }
 
-  writeFile = wipperFatFs.open("/.metadata_never_index", FILE_WRITE);
-  if (!writeFile)
-    return false;
-  writeFile.close();
-
-  writeFile = wipperFatFs.open("/.Trashes", FILE_WRITE);
-  if (!writeFile)
-    return false;
-  writeFile.close();
+  if (!wipperFatFs.exists("/.metadata_never_index"))
+  {
+    File32 writeFile = wipperFatFs.open("/.metadata_never_index", FILE_WRITE);
+    if (!writeFile)
+      return false;
+    writeFile.close();
+  }
+  if (!wipperFatFs.exists("/.Trashes"))
+  {
+    File32 writeFile = wipperFatFs.open("/.Trashes", FILE_WRITE);
+    if (!writeFile)
+      return false;
+    writeFile.close();
+  }
 
   // Create wippersnapper_boot_out.txt file
-  if (!createBootFile())
+  if (!createBootFile() && !WS.brownOutCausedReset)
     return false;
 
   // Check if secrets.json file already exists
@@ -241,6 +265,9 @@ bool Wippersnapper_FS::configFileExists() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::eraseCPFS() {
+  if (WS.brownOutCausedReset){
+    return; // Can't serial print here, in next PR check we're not out of space
+  }
   if (wipperFatFs.exists("/boot_out.txt")) {
     wipperFatFs.remove("/boot_out.txt");
     wipperFatFs.remove("/code.py");
@@ -269,44 +296,66 @@ void Wippersnapper_FS::eraseBootFile() {
 bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   char sMAC[18] = {0};
+  String newContent;
 
-  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
-  if (bootFile) {
-    bootFile.println("Adafruit.io WipperSnapper");
-
-    bootFile.print("Firmware Version: ");
-    bootFile.println(WS_VERSION);
-
-    bootFile.print("Board ID: ");
-    bootFile.println(BOARD_ID);
-
-    sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
-            WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
-            WS._macAddr[5]);
-    bootFile.print("MAC Address: ");
-    bootFile.println(sMAC);
+  // Generate new content
+  newContent += "Adafruit.io WipperSnapper\n";
+  newContent += "Firmware Version: " + String(WS_VERSION) + "\n";
+  newContent += "Board ID: " + String(BOARD_ID) + "\n";
+  sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
+          WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
+          WS._macAddr[5]);
+  newContent += "MAC Address: " + String(sMAC) + "\n";
 
 #if PRINT_DEPENDENCIES
-    bootFile.println("Build dependencies:");
-    bootFile.println(project_dependencies);
+    newContent += ("Build dependencies:\n");
+    newContent += (project_dependencies);
+    newContent += ("\n");
 #endif
 
-    // Print ESP-specific info to boot file
-    #ifdef ARDUINO_ARCH_ESP32
-    // Get version of ESP-IDF
-    bootFile.print("ESP-IDF Version: ");
-    bootFile.println(ESP.getSdkVersion());
-    // Get version of this core
-    bootFile.print("ESP32 Core Version: ");
-    bootFile.println(ESP.getCoreVersion());
-    #endif
+  #ifdef ARDUINO_ARCH_ESP32
+  newContent += "ESP-IDF Version: " + String(ESP.getSdkVersion()) + "\n";
+  newContent += "ESP32 Core Version: " + String(ESP.getCoreVersion()) + "\n";
+  #endif
 
+  // Check if the file exists and read its content
+  File32 bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_READ);
+  if (bootFile) {
+    String existingContent;
+    while (bootFile.available()) {
+      existingContent += char(bootFile.read());
+    }
+    bootFile.close();
+
+    // Compare existing content with new content
+    if (existingContent == newContent) {
+      WS_DEBUG_PRINTLN("INFO: wipper_boot_out.txt already exists with the "
+                        "same content.");
+      return true; // No need to overwrite
+    } else {
+      WS_DEBUG_PRINTLN("INFO: wipper_boot_out.txt exists but with different "
+                        "content. Overwriting...");
+    }
+  } else {
+    WS_DEBUG_PRINTLN("INFO: could not open wipper_boot_out.txt for reading. "
+                     "Creating new file...");
+  }
+
+  if (WS.brownOutCausedReset){
+    return false;
+  }
+
+  // Overwrite the file with new content
+  bootFile = wipperFatFs.open("/wipper_boot_out.txt", FILE_WRITE);
+  if (bootFile) {
+    bootFile.print(newContent);
     bootFile.flush();
     bootFile.close();
     is_success = true;
   } else {
-    bootFile.close();
+    WS_DEBUG_PRINTLN("ERROR: Unable to open wipper_boot_out.txt for writing!");
   }
+
   return is_success;
 }
 
@@ -337,7 +386,6 @@ void Wippersnapper_FS::createSecretsFile() {
   // Flush and close file
   secretsFile.flush();
   secretsFile.close();
-  delay(2500);
 
   // Signal to user that action must be taken (edit secrets.json)
   writeToBootOut(
@@ -349,6 +397,8 @@ void Wippersnapper_FS::createSecretsFile() {
       "Please edit it to reflect your Adafruit IO and network credentials. "
       "When you're done, press RESET on the board.");
 #endif
+  delay(500); // previously 2500
+  initUSBMSC(); // re-init USB MSC to show new file to user for editing
   fsHalt("ERROR: Please edit the secrets.json file. Then, reset your board.");
 }
 
@@ -367,7 +417,23 @@ void Wippersnapper_FS::parseSecrets() {
   // Attempt to deserialize the file's JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
-  if (error) {
+  if (error == DeserializationError::EmptyInput)
+  {
+    if (WS.brownOutCausedReset)
+    {
+      fsHalt("ERROR: Empty secrets.json file, can't recreate due to brownout - recharge or must be fixed manually.");
+    }
+    else
+    {
+      // TODO: Can't serial print here, in next PR check we're not out of space
+      WS_DEBUG_PRINTLN("ERROR: Empty secrets.json file, recreating...");
+      secretsFile.close();
+      wipperFatFs.remove("/secrets.json");
+      createSecretsFile(); // calls fsHalt
+    }
+  }
+  else if (error)
+  {
     fsHalt(String("ERROR: Unable to parse secrets.json file - "
                   "deserializeJson() failed with code") +
            error.c_str());

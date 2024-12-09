@@ -2644,9 +2644,10 @@ void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   }
 }
 
+#ifdef ARDUINO_ARCH_ESP32
 /**************************************************************/
 /*!
-    @brief    Prints last reset reason of ESP32
+    @brief    Prints string reset reason of ESP32
     @param    reason
               The return code of rtc_get_reset_reason(coreNum)
 */
@@ -2696,6 +2697,7 @@ void print_reset_reason(int reason) {
     break; /**<14, for APP CPU, reseted by PRO CPU*/
   case 15:
     WS_DEBUG_PRINTLN("RTCWDT_BROWN_OUT_RESET");
+    WS.brownOutCausedReset = true;
     break; /**<15, Reset when the vdd voltage is not stable*/
   case 16:
     WS_DEBUG_PRINTLN("RTCWDT_RTC_RESET");
@@ -2704,6 +2706,64 @@ void print_reset_reason(int reason) {
     WS_DEBUG_PRINTLN("NO_MEAN");
   }
 }
+
+#if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
+#include "esp32/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#include "esp32c2/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#include "esp32c6/rom/rtc.h"
+#else
+#error Target CONFIG_IDF_TARGET is not supported
+#endif
+
+/**************************************************************************/
+/*!
+    @brief    Prints the reason why the ESP32 CPU was reset.
+    @param    cpuCore
+              The core number to print the reset reason for.
+*/
+/**************************************************************************/
+void get_and_print_reset_reason_for_cpu(int cpuCore) {
+  print_reset_reason(rtc_get_reset_reason(cpuCore));
+}
+
+// end of ARDUINO_ARCH_ESP32
+#elif defined(ARDUINO_ARCH_RP2040)
+
+void print_reset_reason() {
+  RP2040::resetReason_t reason = rp2040.getResetReason();
+  WS_DEBUG_PRINT("RP2040 RESET REASON: ");
+  switch (reason) {
+  case RP2040::resetReason_t::UNKNOWN_RESET:
+    WS_DEBUG_PRINTLN("Unknown Reset");
+  case RP2040::resetReason_t::PWRON_RESET:
+    WS_DEBUG_PRINTLN("Power-On Reset");
+  case RP2040::resetReason_t::RUN_PIN_RESET:
+    WS_DEBUG_PRINTLN("Run Pin Reset");
+  case RP2040::resetReason_t::SOFT_RESET:
+    WS_DEBUG_PRINTLN("Soft Reset");
+  case RP2040::resetReason_t::WDT_RESET:
+    WS_DEBUG_PRINTLN("Watchdog Timer Reset");
+  case RP2040::resetReason_t::DEBUG_RESET:
+    WS_DEBUG_PRINTLN("Debug Reset");
+  case RP2040::resetReason_t::GLITCH_RESET:
+    WS_DEBUG_PRINTLN("Glitch Reset");
+  case RP2040::resetReason_t::BROWNOUT_RESET:
+    WS.brownOutCausedReset = true;
+    WS_DEBUG_PRINTLN("Brownout Reset");
+  default:
+    WS_DEBUG_PRINTLN("Unknown Reset Reason");
+  }
+}
+
+#endif
 
 /**************************************************************************/
 /*!
@@ -2731,15 +2791,17 @@ void printDeviceInfo() {
 // (ESP32-Only) Print reason why device was reset
 #ifdef ARDUINO_ARCH_ESP32
   WS_DEBUG_PRINT("ESP32 CPU0 RESET REASON: ");
-  print_reset_reason(0);
+  get_and_print_reset_reason_for_cpu(0);
   WS_DEBUG_PRINT("ESP32 CPU1 RESET REASON: ");
-  print_reset_reason(1);
+  get_and_print_reset_reason_for_cpu(1);
+#elif defined(ARDUINO_ARCH_RP2040) || defined(PICO_RP2350)
+  print_reset_reason();
 #endif
 }
 
 /**************************************************************************/
 /*!
-    @brief    Connects to Adafruit IO+ Wippersnapper broker.
+    @brief    Connects to Adafruit IO Wippersnapper broker.
 */
 /**************************************************************************/
 void Wippersnapper::connect() {
