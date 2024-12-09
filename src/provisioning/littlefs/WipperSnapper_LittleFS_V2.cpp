@@ -155,4 +155,25 @@ void WipperSnapper_LittleFS_V2::fsHalt(String msg) {
   }
 }
 
+void WipperSnapper_LittleFS_V2::GetSDCSPin() {
+
+BRENT YOU WERE HERE YOU WERE HERE !!!
+
+  File file_cfg = LittleFS.open("/config.json");
+  if (!file_cfg) {
+    WsV2.pin_sd_cs = 255;
+    return;
+  }
+  DeserializationError error = deserializeJson(doc, file_cfg);
+  // failed to deserialize the config file, bail out
+  if (error) {
+    file_cfg.close();
+    WsV2.pin_sd_cs = 255;
+    return;
+  }
+  JsonObject exportedFromDevice = doc["exportedFromDevice"];
+  WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
+  file_cfg.close();
+}
+
 #endif
