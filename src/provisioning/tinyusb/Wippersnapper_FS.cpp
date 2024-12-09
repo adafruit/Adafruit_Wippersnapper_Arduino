@@ -28,8 +28,8 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2)
-#include "print_dependencies.h"
 #include "Wippersnapper_FS.h"
+#include "print_dependencies.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
 // - EXTERNAL_FLASH_USE_QSPI
@@ -92,11 +92,11 @@ bool setVolumeLabel() {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
 #if PRINT_DEPENDENCIES
-    WS_DEBUG_PRINTLN("Build Dependencies:");
-    WS_DEBUG_PRINTLN("*********************");
-    WS_DEBUG_PRINTLN(project_dependencies);
-    WS_DEBUG_PRINTLN("*********************");
-    WS_PRINTER.flush();
+  WS_DEBUG_PRINTLN("Build Dependencies:");
+  WS_DEBUG_PRINTLN("*********************");
+  WS_DEBUG_PRINTLN(project_dependencies);
+  WS_DEBUG_PRINTLN("*********************");
+  WS_PRINTER.flush();
 #endif
   // Detach USB device during init.
   TinyUSBDevice.detach();
@@ -291,15 +291,15 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.println(project_dependencies);
 #endif
 
-    // Print ESP-specific info to boot file
-    #ifdef ARDUINO_ARCH_ESP32
+// Print ESP-specific info to boot file
+#ifdef ARDUINO_ARCH_ESP32
     // Get version of ESP-IDF
     bootFile.print("ESP-IDF Version: ");
     bootFile.println(ESP.getSdkVersion());
     // Get version of this core
     bootFile.print("ESP32 Core Version: ");
     bootFile.println(ESP.getCoreVersion());
-    #endif
+#endif
 
     bootFile.flush();
     bootFile.close();
@@ -327,19 +327,17 @@ void Wippersnapper_FS::createSecretsFile() {
   strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
   secretsConfig.status_pixel_brightness = 0.2;
 
-  // Create and fill JSON document from secretsConfig
+  // Serialize the struct to a JSON document
   JsonDocument doc;
   doc.set(secretsConfig);
-
-  // Serialize JSON to file
   serializeJsonPretty(doc, secretsFile);
-
-  // Flush and close file
   secretsFile.flush();
   secretsFile.close();
-  delay(2500);
 
-  // Signal to user that action must be taken (edit secrets.json)
+  // Re-attach the USB device for file access
+  delay(500);
+  initUSBMSC();
+
   writeToBootOut(
       "ERROR: Please edit the secrets.json file. Then, reset your board.\n");
 #ifdef USE_DISPLAY
