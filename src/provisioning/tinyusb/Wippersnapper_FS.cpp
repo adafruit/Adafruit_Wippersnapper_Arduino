@@ -279,15 +279,15 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("MAC Address: ");
     bootFile.println(sMAC);
 
-    // Print ESP-specific info to boot file
-    #ifdef ARDUINO_ARCH_ESP32
+// Print ESP-specific info to boot file
+#ifdef ARDUINO_ARCH_ESP32
     // Get version of ESP-IDF
     bootFile.print("ESP-IDF Version: ");
     bootFile.println(ESP.getSdkVersion());
     // Get version of this core
     bootFile.print("ESP32 Core Version: ");
     bootFile.println(ESP.getCoreVersion());
-    #endif
+#endif
 
     bootFile.flush();
     bootFile.close();
@@ -617,26 +617,26 @@ DSTATUS fdisk_initialize(BYTE pdrv) {
 }
 
 DRESULT fdisk_read(BYTE pdrv,  /* Physical drive nmuber to identify the drive */
-                  BYTE *buff, /* Data buffer to store read data */
-                  DWORD sector, /* Start sector in LBA */
-                  UINT count    /* Number of sectors to read */
+                   BYTE *buff, /* Data buffer to store read data */
+                   DWORD sector, /* Start sector in LBA */
+                   UINT count    /* Number of sectors to read */
 ) {
   (void)pdrv;
   return flash.readBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
 DRESULT fdisk_write(BYTE pdrv, /* Physical drive nmuber to identify the drive */
-                   const BYTE *buff, /* Data to be written */
-                   DWORD sector,     /* Start sector in LBA */
-                   UINT count        /* Number of sectors to write */
+                    const BYTE *buff, /* Data to be written */
+                    DWORD sector,     /* Start sector in LBA */
+                    UINT count        /* Number of sectors to write */
 ) {
   (void)pdrv;
   return flash.writeBlocks(sector, buff, count) ? RES_OK : RES_ERROR;
 }
 
 DRESULT fdisk_ioctl(BYTE pdrv, /* Physical drive nmuber (0..) */
-                   BYTE cmd,  /* Control code */
-                   void *buff /* Buffer to send/receive control data */
+                    BYTE cmd,  /* Control code */
+                    void *buff /* Buffer to send/receive control data */
 ) {
   (void)pdrv;
 

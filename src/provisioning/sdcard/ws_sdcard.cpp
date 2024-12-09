@@ -36,15 +36,21 @@ ws_sdcard::~ws_sdcard() {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Attempts to initialize the SD card and filesystem.
+    @returns  True if the SD card was successfully initialized, False
+              otherwise.
+*/
+/**************************************************************************/
 bool ws_sdcard::InitSDCard() {
-  is_mode_offline = false;
-  if (WsV2.pin_sd_cs == 255) { // No SD card CS pin defined
-    return is_mode_offline;
-  } else { // SD card CS pin defined
-    if (_sd.begin(WsV2.pin_sd_cs))
-      is_mode_offline = true;
-  }
-  return is_mode_offline;
+  // Check if GetSDCSPin() threw error
+  if (WsV2.pin_sd_cs == 255)
+    return false;
+
+  if (!_sd.begin(WsV2.pin_sd_cs))
+    return false;
+  return true;
 }
 
 /**************************************************************************/
