@@ -155,22 +155,30 @@ void WipperSnapper_LittleFS_V2::fsHalt(String msg) {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Attempts to obtain the hardware's CS pin from the
+              config.json file.
+*/
+/**************************************************************************/
 void WipperSnapper_LittleFS_V2::GetSDCSPin() {
-
-BRENT YOU WERE HERE YOU WERE HERE !!!
-
-  File file_cfg = LittleFS.open("/config.json");
+  File32 file_cfg;
+  JsonDocument doc;
+  DeserializationError error;
+  // Attempt to open and deserialize the config.json file
+  file_cfg = LittleFS.open("/config.json");
   if (!file_cfg) {
     WsV2.pin_sd_cs = 255;
     return;
   }
-  DeserializationError error = deserializeJson(doc, file_cfg);
-  // failed to deserialize the config file, bail out
+  error = deserializeJson(doc, file_cfg);
   if (error) {
     file_cfg.close();
     WsV2.pin_sd_cs = 255;
     return;
   }
+
+  // Parse config.json and save the SD CS pin
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
   file_cfg.close();
