@@ -44,14 +44,18 @@ ws_sdcard::~ws_sdcard() {
               otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::InitSDCard(uint8_t pin_cs) {
-  /*   if (pin_cs == 255)
-      return false; */
-  if (_sd.begin(pin_cs)) {
-    is_mode_offline = true;
+bool ws_sdcard::InitSDCard() {
+  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR) {
+    is_mode_offline = false;
     return is_mode_offline;
   }
-  return false;
+
+  if (_sd.begin(WsV2.pin_sd_cs)) {
+    is_mode_offline = true;
+  } else {
+    is_mode_offline = false;
+  }
+  return is_mode_offline;
 }
 
 /**************************************************************************/
@@ -882,161 +886,3 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
   }
   return true;
 }
-
-// TODO: Do we even need to use this function anymore now that we're running
-// wokwi unit tests?
-#ifdef OFFLINE_MODE_DEBUG
-/**************************************************************************/
-/*!
-    @brief  Validates a JSON string.
-    @param  input
-            A JSON string to validate.
-    @returns True if the provided JSON string is valid, False otherwise.
-*/
-/**************************************************************************/
-bool ws_sdcard::ValidateJSON(const char *input) {
-  JsonDocument doc, filter;
-
-  DeserializationError error =
-      deserializeJson(doc, input, DeserializationOption::Filter(filter));
-  return error == DeserializationError::Ok;
-}
-
-/**************************************************************************/
-/*!
-    @brief  Waits for a valid JSON string to be received via the hardware's
-            serial input or from a hardcoded test JSON string.
-    @returns True if a valid JSON string was received, False otherwise.
-*/
-/**************************************************************************/
-bool ws_sdcard::waitForSerialConfig() {
-
-  // We provide three ways to use this function:
-  // 1. Use a SD card with a JSON config file
-  // 2. Provide a JSON string via the hardware's serial input
-  // 3. Use a test JSON string - for debugging purposes ONLY
-
-  json_test_data = "{"
-                   "\"exportVersion\": \"1.0.0\","
-                   "\"exportedBy\": \"tester\","
-                   "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
-                   "\"exportedFromDevice\": {"
-                   "\"board\": \"metroesp32s3\","
-                   "\"firmwareVersion\": \"1.0.0-beta.93\","
-                   "\"referenceVoltage\": 2.6,"
-                   "\"totalGPIOPins\": 11,"
-                   "\"totalAnalogPins\": 6"
-                   "},"
-                   "\"components\": ["
-                   "{"
-                   "\"componentAPI\": \"analogio\","
-                   "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D14\","
-                   "\"type\": \"analog_pin\","
-                   "\"mode\": \"ANALOG\","
-                   "\"direction\": \"INPUT\","
-                   "\"sampleMode\": \"TIMER\","
-                   "\"analogReadMode\": \"PIN_VALUE\","
-                   "\"period\": 5,"
-                   "\"isPin\": true"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"analogio\","
-                   "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D27\","
-                   "\"type\": \"analog_pin\","
-                   "\"mode\": \"ANALOG\","
-                   "\"direction\": \"INPUT\","
-                   "\"sampleMode\": \"TIMER\","
-                   "\"analogReadMode\": \"PIN_VALUE\","
-                   "\"period\": 5,"
-                   "\"isPin\": true"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"digitalio\","
-                   "\"name\": \"Button (D4)\","
-                   "\"pinName\": \"D4\","
-                   "\"type\": \"push_button\","
-                   "\"mode\": \"DIGITAL\","
-                   "\"sampleMode\": \"EVENT\","
-                   "\"direction\": \"INPUT\","
-                   "\"period\": 5,"
-                   "\"pull\": \"UP\","
-                   "\"isPin\": true"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"ds18x20\","
-                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
-                   "\"sensorTypeCount\": 2,"
-                   "\"sensorType1\": \"object-temp-fahrenheit\","
-                   "\"sensorType2\": \"object-temp\","
-                   "\"pinName\": \"D12\","
-                   "\"sensorResolution\": 12,"
-                   "\"period\": 5"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"ds18x20\","
-                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
-                   "\"sensorTypeCount\": 2,"
-                   "\"sensorType1\": \"object-temp-fahrenheit\","
-                   "\"sensorType2\": \"object-temp\","
-                   "\"pinName\": \"D25\","
-                   "\"sensorResolution\": 12,"
-                   "\"period\": 5"
-                   "}"
-                   "]"
-                   "}\\n\r\n";
-
-  _serialInput = ""; // Clear the serial input buffer
-  if (!_use_test_data) {
-    WS_DEBUG_PRINTLN("[SD] Waiting for incoming JSON string...");
-    while (true) {
-      // Check if there is data available to read
-      if (Serial.available() > 0) {
-        // Read and append to _serialInput
-        char c = Serial.read();
-        _serialInput += c;
-
-        // DEBUG - Check JSON output as an Int and total output
-        // WS_DEBUG_PRINT("[SD] Character read: ");
-        // WS_DEBUG_PRINTLN((int)c);
-        // WS_DEBUG_PRINTLN(_serialInput);
-
-        // Check for end of JSON string using \n sequence
-        if (_serialInput.endsWith("\\n")) {
-          WS_DEBUG_PRINTLN("[SD] End of JSON string detected!");
-          break;
-        }
-      }
-    }
-  }
-
-  // Strip the '\n' off the end of _serialInput
-  _serialInput.trim();
-
-  // Print out the received JSON string
-  WS_DEBUG_PRINT("[SD][Debug] JSON string received!");
-  if (_use_test_data) {
-    WS_DEBUG_PRINTLN("[from json test data]");
-    WS_DEBUG_PRINTLN(json_test_data);
-  } else {
-    WS_DEBUG_PRINTLN(_serialInput);
-  }
-
-  // Attempt to validate the string as JSON
-  if (!_use_test_data) {
-    if (!ValidateJSON(_serialInput.c_str())) {
-      WS_DEBUG_PRINTLN("[SD] Invalid JSON string received!");
-      return false;
-    }
-  } else {
-    if (!ValidateJSON(json_test_data)) {
-      WS_DEBUG_PRINTLN("[SD] Invalid JSON string received!");
-      return false;
-    }
-  }
-
-  WS_DEBUG_PRINTLN("[SD] Valid JSON string received!");
-  return true;
-}
-#endif

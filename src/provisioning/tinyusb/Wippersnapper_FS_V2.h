@@ -46,7 +46,7 @@ public:
 
   void initUSBMSC();
 
-  uint8_t GetSDCSPin();
+  void GetSDCSPin();
 
   bool writeFSContents();
   void fsHalt(String msg);

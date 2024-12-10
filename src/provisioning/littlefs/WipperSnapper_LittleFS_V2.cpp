@@ -161,24 +161,23 @@ void WipperSnapper_LittleFS_V2::fsHalt(String msg) {
               config.json file.
 */
 /**************************************************************************/
-uint8_t WipperSnapper_LittleFS_V2::GetSDCSPin() {
+void WipperSnapper_LittleFS_V2::GetSDCSPin() {
   File32 file_cfg;
   DeserializationError error;
   // Attempt to open and deserialize the config.json file
   file_cfg = LittleFS.open("/config.json");
   if (!file_cfg)
-    return 255;
+    WsV2.pin_sd_cs = 255;
   error = deserializeJson(WsV2._config_doc, file_cfg);
   if (error) {
     file_cfg.close();
-    return 255;
+    WsV2.pin_sd_cs = 255;
   }
 
   // Parse config.json and save the SD CS pin
   JsonObject exportedFromDevice = WsV2._config_doc["exportedFromDevice"];
-  uint8_t pin_cs = exportedFromDevice["sd_cs_pin"] | 255;
+  WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
   file_cfg.close();
-  return pin_cs;
 }
 
 #endif
