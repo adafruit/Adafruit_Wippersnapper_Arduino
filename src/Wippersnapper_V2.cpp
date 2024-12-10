@@ -105,13 +105,12 @@ void Wippersnapper_V2::provisionV2() {
 #endif
 
   // Determine if app is in SDLogger mode
-  uint8_t pin_cs;
   #ifdef USE_TINYUSB
-  pin_cs = _fileSystemV2->GetSDCSPin(); 
+  _fileSystemV2->GetSDCSPin(); 
   #else
-  pin_cs = _littleFSV2->GetSDCSPin();
+  _littleFSV2->GetSDCSPin();
   #endif
-  if (WsV2._sdCardV2->InitSDCard(pin_cs))
+  if (WsV2._sdCardV2->InitSDCard())
     return;
 
 #ifdef USE_DISPLAY

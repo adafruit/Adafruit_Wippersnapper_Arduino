@@ -21,6 +21,7 @@
 
 #define SD_FAT_TYPE 3           ///< SdFat type (3 = SdFs)
 #define MAX_LOG_FILE_SZ 500     ///< Maximum log file size of 500 bytes
+#define PIN_SD_CS_ERROR 255     ///< Error code for invalid SD card CS pin
 #define UNKNOWN_VALUE "unknown" ///< Unknown JSON field value
 
 // forward decl.
@@ -36,11 +37,8 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
-  bool InitSDCard(uint8_t pin_cs);
+  bool InitSDCard();
   bool parseConfigFile();
-#ifdef OFFLINE_MODE_DEBUG
-  bool waitForSerialConfig();
-#endif
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
   bool LogGPIOSensorEventToSD(uint8_t pin, float value,
@@ -53,7 +51,6 @@ public:
 
 private:
   bool ValidateChecksum(JsonDocument &doc);
-  bool ValidateJSON(const char *input);
   bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
                float ref_voltage);
