@@ -364,8 +364,10 @@ void DigitalIOController::Update() {
         continue; // No change in pin value detected, move onto the next pin
 
       // Encode and publish the event
-      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value))
-        continue; // Unable to encode and publish event, move onto the next pin
+      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value)) {
+        WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to record pin value!");
+        continue;
+      }
     } else if (
         pin.sample_mode ==
         wippersnapper_digitalio_DigitalIOSampleMode_DIGITAL_IO_SAMPLE_MODE_TIMER) {
@@ -374,8 +376,10 @@ void DigitalIOController::Update() {
         continue; // Timer has not expired yet, move onto the next pin
 
       // Encode and publish the event
-      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value))
-        continue; // Failed to encode and publish event, move onto the next pin
+      if (!EncodePublishPinEvent(pin.pin_name, pin.pin_value)) {
+        WS_DEBUG_PRINTLN("[digitalio] ERROR: Unable to record pin value!");
+        continue;
+      }
     } else {
       // Invalid sample mode
       WS_DEBUG_PRINT("[digitalio] ERROR: DigitalIO Pin ");
