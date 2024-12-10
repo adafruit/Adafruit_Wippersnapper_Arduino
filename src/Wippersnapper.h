@@ -215,6 +215,9 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
+#ifndef WL_MAC_ADDR_LENGTH
+#define WL_MAC_ADDR_LENGTH 6 // MAC address length - from RP2040 BSP
+#endif
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_SORTED_NETWORKS 15  ///< Maximum number of networks to sort
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
