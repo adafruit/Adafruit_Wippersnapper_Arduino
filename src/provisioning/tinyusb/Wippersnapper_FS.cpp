@@ -334,10 +334,6 @@ void Wippersnapper_FS::createSecretsFile() {
   secretsFile.flush();
   secretsFile.close();
 
-  // Re-attach the USB device for file access
-  delay(500);
-  initUSBMSC();
-
   writeToBootOut(
       "ERROR: Please edit the secrets.json file. Then, reset your board.\n");
 #ifdef USE_DISPLAY
@@ -347,6 +343,9 @@ void Wippersnapper_FS::createSecretsFile() {
       "Please edit it to reflect your Adafruit IO and network credentials. "
       "When you're done, press RESET on the board.");
 #endif
+  // Re-attach the USB device for file access
+  delay(500);
+  initUSBMSC();
   fsHalt("ERROR: Please edit the secrets.json file. Then, reset your board.");
 }
 
