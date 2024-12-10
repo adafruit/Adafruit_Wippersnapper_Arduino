@@ -2500,6 +2500,7 @@ void Wippersnapper::runNetFSM() {
 */
 /**************************************************************************/
 void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
+  WS.enableWDT(5000);
   for (;;) {
     WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
     WS_DEBUG_PRINTLN(error);
