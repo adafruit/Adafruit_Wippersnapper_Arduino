@@ -1,7 +1,8 @@
 {
     "files.associations": {
         "limits": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "vector": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "dotnet.defaultSolution": "disable",

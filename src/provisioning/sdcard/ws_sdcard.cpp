@@ -22,7 +22,7 @@
 ws_sdcard::ws_sdcard() {
   is_mode_offline = false;
   _use_test_data = false;
-  _sz_log_file = 0;
+  _sz_cur_log_file = 0;
 }
 
 /**************************************************************************/
@@ -45,16 +45,36 @@ ws_sdcard::~ws_sdcard() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitSDCard() {
-  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR) {
-    is_mode_offline = false;
+  is_mode_offline = false;
+  csd_t csd;
+  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
+    return is_mode_offline;
+
+  if (!_sd.begin(WsV2.pin_sd_cs)) {
+    WS_DEBUG_PRINTLN(
+        "SD initialization failed.\nDo not reformat the card!\nIs the card "
+        "correctly inserted?\nIs there a wiring/soldering problem\n");
     return is_mode_offline;
   }
 
-  if (_sd.begin(WsV2.pin_sd_cs)) {
-    is_mode_offline = true;
-  } else {
-    is_mode_offline = false;
+  // Calculate the maximum number of log files that can be stored on the SD card
+  if (!_sd.card()->readCSD(&csd)) {
+    WS_DEBUG_PRINTLN("ERROR: Could not read sdcard information");
+    return is_mode_offline;
   }
+  // get the complete sdcard capacity in bytes
+  _sd_capacity = (uint64_t)512 * csd.capacity();
+  // account for 3-5% fatfs overhead utilization
+  size_t sd_capacity_usable = _sd_capacity * (1 - 0.05);
+  // proportionally set sz of each log file to 10% of the SD card's usable capacity
+  _max_sz_log_file = sd_capacity_usable / 10;
+  // Regardless of sd card size, cap log files to 512MB
+  if (_max_sz_log_file > MAX_SZ_LOG_FILE) {
+    _max_sz_log_file = MAX_SZ_LOG_FILE;
+  }
+  _sd_max_num_log_files = sd_capacity_usable / _max_sz_log_file;
+
+  is_mode_offline = true;
   return is_mode_offline;
 }
 
@@ -430,6 +450,12 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
 */
 /**************************************************************************/
 bool ws_sdcard::CreateNewLogFile() {
+  if (_sd_cur_log_files >= _sd_max_num_log_files) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Maximum number of log files for SD card capacity reached!");
+    return false;
+  }
+
   File32 file;
   // Generate a name for the new log file using the RTC's timestamp
   String logFilename = "log_" + String(GetTimestamp()) + ".json";
@@ -444,6 +470,7 @@ bool ws_sdcard::CreateNewLogFile() {
     return false;
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
   WS_DEBUG_PRINTLN(_log_filename);
+  _sd_cur_log_files++;
   return true;
 }
 
@@ -473,6 +500,14 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 */
 /**************************************************************************/
 bool ws_sdcard::parseConfigFile() {
+  // TODO: THIS IS JUST DEBUG!
+  WS_DEBUG_PRINT("SD card capacity: ");
+  WS_DEBUG_PRINTLN(_sd_capacity);
+  WS_DEBUG_PRINT("Maximum number of log files: ");
+  WS_DEBUG_PRINTLN(_sd_max_num_log_files);
+  WS_DEBUG_PRINT("Maximum size of log file: ");
+  WS_DEBUG_PRINTLN(_max_sz_log_file);
+
   int max_json_len = 4096;
   DeserializationError error;
   JsonDocument doc;
@@ -785,12 +820,13 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   szJson = serializeJson(doc, Serial); // TODO: Add buffering here, too?
   Serial.print("\n");                  // JSONL format specifier
 #endif
-  _sz_log_file = szJson + 2; // +2 bytes for "\n"
+  _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
 
-  if (_sz_log_file > MAX_LOG_FILE_SZ) {
-    WS_DEBUG_PRINTLN("[SD] Log file size has exceeded maximum size, creating "
-                     "a new file...");
-    CreateNewLogFile();
+  if (_sz_cur_log_file >= _max_sz_log_file) {
+    WS_DEBUG_PRINTLN("[SD] Log file has exceeded maximum size! Attempting to "
+                     "create a new file...");
+    if (!CreateNewLogFile())
+      return false;
     return false;
   }
 

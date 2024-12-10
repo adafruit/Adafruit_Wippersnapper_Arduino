@@ -18,11 +18,12 @@
 #include "SdFat.h"
 #include "StreamUtils.h"
 #include "Wippersnapper_V2.h"
+#include "sdios.h"
 
 #define SD_FAT_TYPE 3           ///< SdFat type (3 = SdFs)
-#define MAX_LOG_FILE_SZ 500     ///< Maximum log file size of 500 bytes
 #define PIN_SD_CS_ERROR 255     ///< Error code for invalid SD card CS pin
 #define UNKNOWN_VALUE "unknown" ///< Unknown JSON field value
+#define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 
 // forward decl.
 class Wippersnapper_V2;
@@ -78,16 +79,23 @@ private:
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                     wippersnapper_sensor_SensorType read_type);
   bool LogJSONDoc(JsonDocument &doc);
-  bool
-  AddSignalMessageToSharedBuffer(wippersnapper_signal_BrokerToDevice &msg_signal);
-  SdFat _sd;            ///< SD object from Adafruit SDFat library
-  bool is_mode_offline; ///< True if offline mode is enabled, False otherwise
-  String _serialInput;  ///< Serial input buffer
-  const char *json_test_data;        ///< Json test data
-  const char *_log_filename;         ///< Path to the log file
-  size_t _sz_log_file;               ///< Size of the current log file, in Bytes
-  RTC_DS3231 *_rtc_ds3231 = nullptr; ///< DS3231 RTC object
-  RTC_DS1307 *_rtc_ds1307 = nullptr; ///< DS1307 RTC object
+  bool AddSignalMessageToSharedBuffer(
+      wippersnapper_signal_BrokerToDevice &msg_signal);
+
+  SdFat _sd;               ///< SD object from Adafruit SDFat library
+  size_t _sd_capacity;     ///< Capacity of the SD card, in Bytes
+  size_t _sz_cur_log_file; ///< Size of the current log file, in Bytes
+  size_t _max_sz_log_file; ///< Calculated maximum size of a log file, in Bytes
+  int _sd_max_num_log_files; ///< Maximum number of log files that can fit on
+                             ///< the SD card
+  int _sd_cur_log_files; ///< Current number of log files that can fit on the SD
+                         ///< card
+  bool is_mode_offline;  ///< True if offline mode is enabled, False otherwise
+  String _serialInput;   ///< Serial input buffer
+  const char *json_test_data;          ///< Json test data
+  const char *_log_filename;           ///< Path to the log file
+  RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object
+  RTC_DS1307 *_rtc_ds1307 = nullptr;   ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object
   RTC_Millis *_rtc_soft = nullptr;     ///< Software RTC object
   bool _use_test_data; ///< True if sample data is being used for testing

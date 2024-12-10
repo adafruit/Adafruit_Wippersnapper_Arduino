@@ -271,7 +271,10 @@ void AnalogIOController::update() {
       // Read the pin's raw value
       uint16_t value = _analogio_hardware->GetPinValue(pin.name);
       // Encode and publish it to the broker
-      EncodePublishPinValue(pin.name, value);
+      if (!EncodePublishPinValue(pin.name, value)) {
+        WS_DEBUG_PRINTLN("[analogio] ERROR: Unable to record pin value!");
+        continue;
+      }
       pin.prv_period = cur_time; // Reset the pin's period
     } else if (pin.read_mode ==
                wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE) {
