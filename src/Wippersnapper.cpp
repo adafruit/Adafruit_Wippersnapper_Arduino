@@ -2500,13 +2500,10 @@ void Wippersnapper::runNetFSM() {
 */
 /**************************************************************************/
 void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
-  #ifdef USE_TINYUSB
-    if (!TinyUSBDevice.mounted()) {
-      TinyUSBDevice.attach(); // calling when already attached breaks SAMD
-    }
-  #endif
   for (int i=0;;i++) {
-    WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
+    WS_DEBUG_PRINT("ERROR [WDT RESET IN ");
+    WS_DEBUG_PRINT(25 - i);
+    WS_DEBUG_PRINTLN("]: ");
     WS_DEBUG_PRINTLN(error);
     // let the WDT fail out and reset!
     statusLEDSolid(ledStatusColor);

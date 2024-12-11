@@ -106,6 +106,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
   if (!initFilesystem() && !initFilesystem(true)) {
+    TinyUSBDevice.attach();
     setStatusLEDColor(RED);
     fsHalt("ERROR Initializing Filesystem");
   }
@@ -222,8 +223,8 @@ void Wippersnapper_FS::initUSBMSC() {
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
     delay(10);
+    TinyUSBDevice.attach();
   }
-  TinyUSBDevice.attach();
   delay(500);
 }
 
@@ -490,8 +491,6 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 */
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg) {
-  TinyUSBDevice.attach();
-  delay(500);
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
