@@ -217,7 +217,12 @@ void Wippersnapper_FS::initUSBMSC() {
 
   // init MSC
   usb_msc.begin();
+
   // Attach MSC and wait for enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+  }
   TinyUSBDevice.attach();
   delay(500);
 }

@@ -2500,8 +2500,12 @@ void Wippersnapper::runNetFSM() {
 */
 /**************************************************************************/
 void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
-  WS.enableWDT(5000);
-  for (;;) {
+  #ifdef USE_TINYUSB
+    if (!TinyUSBDevice.mounted()) {
+      TinyUSBDevice.attach(); // calling when already attached breaks SAMD
+    }
+  #endif
+  for (int i=0;;i++) {
     WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
     WS_DEBUG_PRINTLN(error);
     // let the WDT fail out and reset!
@@ -2513,6 +2517,12 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
     // hardware and software watchdog timers, delayMicroseconds does not.
     delayMicroseconds(1000000);
 #endif
+    if (i < 20) {
+      yield();
+      WS.feedWDT();  // feed the WDT for the first 20 seconds
+    } else if (i == 20) {
+      WS.enableWDT(5000);
+    }
   }
 }
 
@@ -2712,8 +2722,10 @@ void print_reset_reason(int reason) {
 */
 /**************************************************************************/
 void printDeviceInfo() {
+  WS_PRINTER.flush();
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
+  WS_PRINTER.flush();
   WS_DEBUG_PRINTLN(WS_VERSION);
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
