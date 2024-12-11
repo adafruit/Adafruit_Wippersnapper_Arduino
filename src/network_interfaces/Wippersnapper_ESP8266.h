@@ -23,6 +23,7 @@
 #include "ESP8266WiFi.h"
 #include "ESP8266WiFiMulti.h"
 #include "Wippersnapper.h"
+#include "Wippersnapper_Networking.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
@@ -160,7 +161,7 @@ public:
     WiFiNetwork networks[WS_MAX_SORTED_NETWORKS];
     uint8_t numSavedNetworks = 0;
     // Store the scanned networks in the vector
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; i++) {
       if (i < WS_MAX_SORTED_NETWORKS) {
         strncpy(networks[i].ssid, WiFi.SSID(i).c_str(),
                 sizeof(networks[i].ssid));
@@ -182,7 +183,7 @@ public:
     std::sort(networks, networks + numSavedNetworks, compareByRSSI);
 
     // Was the network within secrets.json found?
-    for (int i = 0; i < numSavedNetworks; ++i) {
+    for (int i = 0; i < numSavedNetworks; i++) {
       if (strcmp(_ssid, networks[i].ssid) == 0) {
         WS_DEBUG_PRINT("SSID (");
         WS_DEBUG_PRINT(_ssid);
@@ -207,7 +208,7 @@ public:
     // User-set network not found, print scan results to serial console
     WS_DEBUG_PRINTLN("ERROR: Your WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
-    for (uint8_t i = 0; i < n; ++i)
+    for (uint8_t i = 0; i < n; i++)
     {
       WS_DEBUG_PRINT(WiFi.SSID(i));
       WS_DEBUG_PRINT(" (");
