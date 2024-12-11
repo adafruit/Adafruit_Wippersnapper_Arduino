@@ -143,45 +143,14 @@ public:
       return false;
     }
 
-    WiFiNetwork networks[WS_MAX_SORTED_NETWORKS];
-    uint8_t numSavedNetworks = 0;
+    bool foundNetwork = false;
 
-    // Store the scanned networks in the array
-    for (int i = 0; i < n; ++i) {
-      if (i < WS_MAX_SORTED_NETWORKS) {
-        strncpy(networks[i].ssid, WiFi.SSID(i), sizeof(networks[i].ssid));
-        networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0';
-        networks[i].rssi = WiFi.RSSI(i);
-        numSavedNetworks++;
-      } else {
-        WS_DEBUG_PRINT("ERROR: Too many networks found! (>");
-        WS_DEBUG_PRINT(WS_MAX_SORTED_NETWORKS);
-        WS_DEBUG_PRINT(") Ignoring ");
-        WS_DEBUG_PRINT(WiFi.SSID(i));
-        WS_DEBUG_PRINT("(");
-        WS_DEBUG_PRINT(WiFi.RSSI(i));
-        WS_DEBUG_PRINTLN(")");
-      }
-    }
-
-    // Sort the networks by RSSI in descending order
-    std::sort(networks, networks + numSavedNetworks, compareByRSSI);
-
-    // Was the network within secrets.json found?
-    for (int i = 0; i < numSavedNetworks; ++i) {
-      if (strcmp(_ssid, networks[i].ssid) == 0) {
-        WS_DEBUG_PRINT("SSID (");
-        WS_DEBUG_PRINT(_ssid);
-        WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(networks[i].rssi);
-        return true;
-      }
-    }
-
-    // User-set network not found, print scan results to serial console
-    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
     WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
-    for (uint8_t i = 0; i < n; ++i) {
+    for (uint8_t i = 0; i < n; i++) {
+      if (strcmp(WiFi.SSID(i), _ssid) == 0) {
+        foundNetwork = true;
+        break;
+      }
       WS_DEBUG_PRINT(WiFi.SSID(i));
       WS_DEBUG_PRINT(" (");
       uint8_t BSSID[WL_MAC_ADDR_LENGTH];
@@ -198,7 +167,11 @@ public:
       WS_DEBUG_PRINTLN(")");
     }
 
-    return false;
+    if(foundNetwork == 0) {
+      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+      return false;
+    }
+    return true;
   }
 
   /********************************************************/
