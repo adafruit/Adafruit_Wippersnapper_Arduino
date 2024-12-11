@@ -223,8 +223,8 @@ void Wippersnapper_FS::initUSBMSC() {
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
     delay(10);
-    TinyUSBDevice.attach();
   }
+  TinyUSBDevice.attach();
   delay(500);
 }
 
