@@ -1,10 +1,10 @@
 #ifndef WIPPERSNAPPER_MANAGER_H
 #define WIPPERSNAPPER_MANAGER_H
 
-#include "network_interfaces/Wippersnapper_ESP32.h"
-typedef Wippersnapper_ESP32 Wippersnapper_WiFi;
-#include "network_interfaces/Wippersnapper_ESP32_V2.h"
-typedef Wippersnapper_ESP32V2 Wippersnapper_WiFiV2;
+#include "network_interfaces/ws_networking_pico.h"
+typedef ws_networking_pico Wippersnapper_WiFi;
+#include "network_interfaces/ws_networking_pico_v2.h"
+typedef ws_networking_pico_v2 Wippersnapper_WiFiV2;
 
 /****************************************************************************/
 /*!
