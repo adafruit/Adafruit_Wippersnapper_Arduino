@@ -23,6 +23,7 @@
 #include "ESP8266WiFi.h"
 #include "ESP8266WiFiMulti.h"
 #include "Wippersnapper.h"
+#include "Wippersnapper_Networking.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
@@ -113,6 +114,30 @@ public:
     _pass = WS._config.network.pass;
   }
 
+  /****************************************************************/
+  /*!
+  @brief  a structure to hold network information for sorting
+  */
+  /****************************************************************/
+  struct WiFiNetwork {
+    char ssid[33]; /*!< SSID (Max 32 characters + null terminator */
+    int rssi;      /*!< Received Signal Strength Indicator */
+  };
+
+  /*******************************************************************/
+  /*!
+  @brief  Comparison function to sort by RSSI in descending order
+  @param  a
+          WiFiNetwork object
+  @param  b
+          WiFiNetwork object
+  @returns True if a.rssi > b.rssi
+  */
+  /*******************************************************************/
+  bool static compareByRSSI(const WiFiNetwork &a, const WiFiNetwork &b) {
+    return a.rssi > b.rssi;
+  }
+
   /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
@@ -133,23 +158,47 @@ public:
       return false;
     }
 
+    WiFiNetwork networks[WS_MAX_SORTED_NETWORKS];
+    uint8_t numSavedNetworks = 0;
+    // Store the scanned networks in the vector
+    for (int i = 0; i < n; i++) {
+      if (i < WS_MAX_SORTED_NETWORKS) {
+        strncpy(networks[i].ssid, WiFi.SSID(i).c_str(),
+                sizeof(networks[i].ssid));
+        networks[i].ssid[sizeof(networks[i].ssid) - 1] = '\0';
+        networks[i].rssi = WiFi.RSSI(i);
+        numSavedNetworks++;
+      } else {
+        WS_DEBUG_PRINT("ERROR: Too many networks found! (>");
+        WS_DEBUG_PRINT(WS_MAX_SORTED_NETWORKS);
+        WS_DEBUG_PRINT(") Ignoring ");
+        WS_DEBUG_PRINT(WiFi.SSID(i));
+        WS_DEBUG_PRINT("(");
+        WS_DEBUG_PRINT(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLN(")");
+      }
+    }
+
+    // Sort the networks by RSSI in descending order
+    std::sort(networks, networks + numSavedNetworks, compareByRSSI);
+
     // Was the network within secrets.json found?
-    for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
+    for (int i = 0; i < numSavedNetworks; i++) {
+      if (strcmp(_ssid, networks[i].ssid) == 0) {
         WS_DEBUG_PRINT("SSID (");
         WS_DEBUG_PRINT(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+        WS_DEBUG_PRINTLN(networks[i].rssi);
         return true;
       }
       if (WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+          if (strcmp(WS._multiNetworks[j].ssid, networks[i].ssid) == 0) {
             WS_DEBUG_PRINT("SSID (");
             WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
-            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
+            WS_DEBUG_PRINTLN(networks[i].rssi);
             return true;
           }
         }
@@ -157,13 +206,24 @@ public:
     }
 
     // User-set network not found, print scan results to serial console
-    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (int i = 0; i < n; ++i) {
+    WS_DEBUG_PRINTLN("ERROR: Your WiFi network was not found!");
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
+    for (uint8_t i = 0; i < n; i++)
+    {
       WS_DEBUG_PRINT(WiFi.SSID(i));
-      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(" (");
+      const uint8_t* BSSID = WiFi.BSSID(i);
+      for (int m = 0; m < WL_MAC_ADDR_LENGTH; m++)
+      {
+        if (m != 0)
+          WS_DEBUG_PRINT(":");
+        WS_DEBUG_PRINTHEX(BSSID[m]);
+      }
+      WS_DEBUG_PRINT(") ");
       WS_DEBUG_PRINT(WiFi.RSSI(i));
-      WS_DEBUG_PRINTLN("dB");
+      WS_DEBUG_PRINT("dB (ch");
+      WS_DEBUG_PRINT(WiFi.channel(i))
+      WS_DEBUG_PRINTLN(")");
     }
 
     return false;
@@ -260,7 +320,6 @@ protected:
       delay(100);
       // ESP8266 MUST be in STA mode to avoid device acting as client/server
       WiFi.mode(WIFI_STA);
-      WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
       delay(100);
 
@@ -274,38 +333,28 @@ protected:
                              WS._multiNetworks[i].pass);
           }
         }
-        // add default network
-        if (_wifiMulti.existsAP(_ssid) == false) {
-          _wifiMulti.addAP(_ssid, _pass);
-        }
-        long startRetry = millis();
-        WS_DEBUG_PRINTLN("CONNECTING");
-        while (_wifiMulti.run(5000) != WL_CONNECTED &&
-               millis() - startRetry < 10000) {
-          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-          yield();
-        }
-        if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
-        } else {
-          _status = WS_NET_DISCONNECTED;
-        }
-      } else {
-        // single network mode
-
-        // wait for a connection to be established
-        long startRetry = millis();
-        WS_DEBUG_PRINTLN("CONNECTING");
-        while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
-          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-          yield();
-        }
-        if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
-        } else {
-          _status = WS_NET_DISCONNECTED;
-        }
       }
+
+      // add default network
+      if (_wifiMulti.existsAP(_ssid) == false) {
+        _wifiMulti.addAP(_ssid, _pass);
+      }
+
+      long startRetry = millis();
+      WS_DEBUG_PRINTLN("CONNECTING");
+
+      while (_wifiMulti.run(5000) != WL_CONNECTED &&
+             millis() - startRetry < 10000) {
+        // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
+        yield();
+      }
+
+      if (WiFi.status() == WL_CONNECTED) {
+        _status = WS_NET_CONNECTED;
+      } else {
+        _status = WS_NET_DISCONNECTED;
+      }
+
       WS.feedWDT();
     }
   }
