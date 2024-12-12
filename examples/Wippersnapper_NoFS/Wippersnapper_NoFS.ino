@@ -30,7 +30,7 @@
 #define WIFI_PASS "YOUR_WIFI_PASSWORD"
 
 #include "Wippersnapper_Networking.h"
-Wippersnapper_WiFi wipper(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
+ws_adapter_wifi wipper(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 
 void setup() {
   // Provisioning must occur prior to serial init.

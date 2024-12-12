@@ -2,7 +2,7 @@
 // Brent Rubell for Adafruit Industries, 2021 - 2023
 
 #include "Wippersnapper_Networking.h"
-Wippersnapper_WiFi wipper;
+ws_adapter_wifi wipper;
 
 // Enable debug output for beta builds
 #define WS_DEBUG
