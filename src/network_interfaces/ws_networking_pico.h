@@ -23,6 +23,7 @@
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
 #include "Wippersnapper.h"
+#include "Wippersnapper_Networking.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
