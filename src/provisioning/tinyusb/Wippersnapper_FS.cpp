@@ -238,6 +238,13 @@ bool Wippersnapper_FS::configFileExists() {
   // Does secrets.json file exist?
   if (!wipperFatFs.exists("/secrets.json"))
     return false;
+  File32 file = wipperFatFs.open("/secrets.json", FILE_READ);
+  if (!file)
+    return false;
+  int firstChar = file.peek();
+  file.close();
+  if (firstChar <= 0 || firstChar == 255)
+    return false;
   return true;
 }
 
@@ -324,7 +331,7 @@ bool Wippersnapper_FS::createBootFile() {
 void Wippersnapper_FS::createSecretsFile() {
   // Open file for writing
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
-
+  secretsFile.truncate(0);
   // Create a default secretsConfig structure
   secretsConfig secretsConfig;
   strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
@@ -339,7 +346,7 @@ void Wippersnapper_FS::createSecretsFile() {
   serializeJsonPretty(doc, secretsFile);
   secretsFile.flush();
   secretsFile.close();
-
+  
   writeToBootOut(
       "ERROR: Please edit the secrets.json file. Then, reset your board.\n");
 #ifdef USE_DISPLAY
