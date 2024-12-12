@@ -17,7 +17,7 @@
 #ifndef WS_NETWORKING_PICO_H
 #define WS_NETWORKING_PICO_H
 
-#ifdef ARDUINO_ARCH_RP2040
+#ifdef ARDUINO_RASPBERRY_PI_PICO_W
 
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
@@ -363,4 +363,4 @@ protected:
 };
 
 #endif // ARDUINO_ARCH_RP2040
-#endif // WS_NETWORKING_PICO_H
+#endif // RASPBERRY_PI_PICO_W
