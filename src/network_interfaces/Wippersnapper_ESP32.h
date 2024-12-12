@@ -19,6 +19,7 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "Wippersnapper.h"
+#include "Wippersnapper_Networking.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
