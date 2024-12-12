@@ -2,7 +2,7 @@
 #define WIPPERSNAPPER_MANAGER_H
 
 #include "network_interfaces/ws_nonet_pico.h"
-typedef ws_nonet_pico ws_adapter_wifi;
+typedef ws_nonet_pico Wippersnapper_WiFi;
 #include "network_interfaces/ws_nonet_pico_v2.h"
 typedef ws_nonet_pico_v2 Wippersnapper_WiFiV2;
 
@@ -27,7 +27,7 @@ public:
   void run();
 
 protected:
-  ws_adapter_wifi *ws_instance;      ///< Instance of Wippersnapper API v1
+  Wippersnapper_WiFi *ws_instance;      ///< Instance of Wippersnapper API v1
   Wippersnapper_WiFiV2 *ws_instance_v2; ///< Instance of Wippersnapper API v2
 private:
   int _api_version;

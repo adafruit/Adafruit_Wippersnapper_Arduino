@@ -72,7 +72,7 @@ void Wippersnapper_Manager::checkAPIVersion(int pinNum) {
     ws_instance_v2 = new Wippersnapper_WiFiV2();
     _api_version = 2;
   } else { // API version 1 if D12 is low
-    ws_instance = new ws_adapter_wifi();
+    ws_instance = new Wippersnapper_WiFi();
     _api_version = 1;
   }
 }
