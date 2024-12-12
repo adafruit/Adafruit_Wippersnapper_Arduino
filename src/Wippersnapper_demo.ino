@@ -15,7 +15,7 @@
 
 #include "ws_manager.h"
 //#include "Wippersnapper_Networking.h"
-//Wippersnapper_WiFi wipper;
+//ws_adapter_wifi wipper;
 Wippersnapper_Manager manager;
 
 // Enable debug output for beta builds

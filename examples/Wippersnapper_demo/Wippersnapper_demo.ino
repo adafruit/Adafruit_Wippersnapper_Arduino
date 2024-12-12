@@ -14,7 +14,7 @@
 // All text above must be included in any redistribution.
 
 #include "Wippersnapper_Networking.h"
-Wippersnapper_WiFi wipper;
+ws_adapter_wifi wipper;
 
 // Enable debug output for beta builds
 #define WS_DEBUG

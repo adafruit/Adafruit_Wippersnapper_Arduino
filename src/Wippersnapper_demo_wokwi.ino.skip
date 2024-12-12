@@ -22,7 +22,7 @@
 #define API_PIN 0
 #include "ws_manager.h"
 //#include "Wippersnapper_Networking.h"
-//Wippersnapper_WiFi wipper;
+//ws_adapter_wifi wipper;
 Wippersnapper_Manager manager;
 Wippersnapper_WiFiV2 wipper(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS, "io.adafruit.com", 8883);
 
