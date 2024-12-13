@@ -1,14 +1,13 @@
 /*!
  * @file ws_offline_pico.h
  *
- * This is a driver for using the Raspberry Pi Pico/Pico2
- * without a network interface with Adafruit IO Wippersnapper.
+ * This is a stub class for using the RP2040/RP2350 without a network interface
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024-2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -22,8 +21,8 @@
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
-#include "Wippersnapper.h"
 #include "Arduino.h"
+#include "Wippersnapper.h"
 
 extern Wippersnapper WS;
 
@@ -41,8 +40,7 @@ public:
   */
   /**************************************************************************/
   ws_offline_pico() : Wippersnapper() {
-    _ssid = 0;
-    _pass = 0;
+    // do-nothing
   }
 
   /**************************************************************************/
@@ -51,7 +49,7 @@ public:
   */
   /**************************************************************************/
   ~ws_offline_pico() {
-    // Do nothing
+    // do-nothing - this class has no resources to release
   }
 
   /********************************************************/
@@ -64,7 +62,8 @@ public:
   */
   /********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
-    // Do nothing
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: set_ssid_pass is not supported "
+                     "in this implementation!");
   }
 
   /**********************************************************/
@@ -73,7 +72,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    // Do nothing
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: set_ssid_pass is not supported "
+                     "in this implementation!");
   }
 
   /***********************************************************/
@@ -83,6 +83,8 @@ public:
   */
   /***********************************************************/
   bool check_valid_ssid() {
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: check_valid_ssid is not "
+                     "supported in this implementation!");
     return false;
   }
 
@@ -93,7 +95,8 @@ public:
   */
   /********************************************************/
   void getMacAddr() {
-    // Do nothing
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: getMacAddr() is not supported "
+                     "in this implementation!");
   }
 
   /********************************************************/
@@ -102,7 +105,11 @@ public:
   @return int32_t RSSI value
   */
   /********************************************************/
-  int32_t getRSSI() { return 0; }
+  int32_t getRSSI() {
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: getRSSI() is not supported in "
+                     "this implementation!");
+    return -9999; // return an invalid value
+  }
 
   /********************************************************/
   /*!
@@ -112,7 +119,8 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    // Do nothing
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: setupMQTTClient() is not "
+                     "supported in this implementation!");
   }
 
   /********************************************************/
@@ -122,7 +130,10 @@ public:
   */
   /********************************************************/
   ws_status_t networkStatus() {
-    return WS_NET_DISCONNECTED;
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: networkStatus() is not "
+                     "supported in this implementation!");
+    return WS_NET_DISCONNECTED; // this value is valid, we are not connected to
+                                // a network
   }
 
   /*******************************************************************/
@@ -131,28 +142,27 @@ public:
   @return Pico
   */
   /*******************************************************************/
-  const char *connectionType() { return "Pico-NoNet"; }
+  const char *connectionType() { return "ws-offline-pico"; }
 
 protected:
-  const char *_ssid; ///< WiFi SSID
-  const char *_pass; ///< WiFi password
-
   /**************************************************************************/
   /*!
-  @brief  Establishes a connection with the wireless network.
+  @brief  Establishes a connection with a wireless network.
   */
   /**************************************************************************/
   void _connect() {
-    // Do nothing
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: _connect() is not supported in "
+                     "this implementation!");
   }
 
   /**************************************************************************/
   /*!
-      @brief  Disconnects from the wireless network.
+      @brief  Disconnects from a wireless network.
   */
   /**************************************************************************/
   void _disconnect() {
-    // Do nothing
+    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: _connect() is not supported in "
+                     "this implementation!");
   }
 };
 
