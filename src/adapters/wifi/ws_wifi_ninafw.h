@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_WIFININA.h
+ * @file ws_wifi_ninafw.h
  *
  * Network interface for the ublox wifi module on the
  * Arduino MKR WiFi 1010, Arduino Nano 33 IoT and Arduino UNO WiFi Rev.2.
@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef WIPPERSNAPPER_WIFININA_H
-#define WIPPERSNAPPER_WIFININA_H
+#ifndef WS_WIFI_NINAFW_H
+#define WS_WIFI_NINAFW_H
 #include <Adafruit_MQTT.h>
 #include <Adafruit_MQTT_Client.h>
 #include <Arduino.h>
@@ -33,7 +33,7 @@ extern Wippersnapper WS;
     @brief  Class for using the AirLift Co-Processor network iface.
 */
 /****************************************************************************/
-class Wippersnapper_WIFININA : public Wippersnapper {
+class ws_wifi_ninafw : public Wippersnapper {
 
 public:
   /**************************************************************************/
@@ -49,7 +49,7 @@ public:
           Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_WIFININA(const char *aioUsername, const char *aioKey,
+  ws_wifi_ninafw(const char *aioUsername, const char *aioKey,
                          const char *netSSID, const char *netPass)
       : Wippersnapper() {
     _ssid = netSSID;
@@ -66,7 +66,7 @@ public:
   @brief  Destructor for the Adafruit IO ublox class.
   */
   /**************************************************************************/
-  ~Wippersnapper_WIFININA() {
+  ~ws_wifi_ninafw() {
     if (_mqtt)
       delete _mqtt;
   }
@@ -283,4 +283,4 @@ protected:
   }
 };
 
-#endif // WIPPERSNAPPER_WIFININA_H
+#endif // WS_WIFI_NINAFW_H

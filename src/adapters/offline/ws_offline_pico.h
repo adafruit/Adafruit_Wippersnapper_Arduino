@@ -1,5 +1,5 @@
 /*!
- * @file ws_nonet_pico.h
+ * @file ws_offline_pico.h
  *
  * This is a driver for using the Raspberry Pi Pico/Pico2
  * without a network interface with Adafruit IO Wippersnapper.
@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef WS_NONET_PICO_H
-#define WS_NONET_PICO_H
+#ifndef WS_OFFLINE_PICO_H
+#define WS_OFFLINE_PICO_H
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_2)
 
@@ -32,7 +32,7 @@ extern Wippersnapper WS;
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
 /****************************************************************************/
-class ws_nonet_pico : public Wippersnapper {
+class ws_offline_pico : public Wippersnapper {
 
 public:
   /**************************************************************************/
@@ -40,7 +40,7 @@ public:
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
   /**************************************************************************/
-  ws_nonet_pico() : Wippersnapper() {
+  ws_offline_pico() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
   }
@@ -50,7 +50,7 @@ public:
   @brief  Destructor
   */
   /**************************************************************************/
-  ~ws_nonet_pico() {
+  ~ws_offline_pico() {
     // Do nothing
   }
 

@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_AIRLIFT.h
+ * @file ws_wifi_airlift.h
  *
  * This is a driver for using the Adafruit AirLift
  * ESP32 Co-Processor's network interface with Wippersnapper.
@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef WIPPERSNAPPER_AIRLIFT_H
-#define WIPPERSNAPPER_AIRLIFT_H
+#ifndef WS_WIFI_AIRLIFT_H
+#define WS_WIFI_AIRLIFT_H
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
@@ -40,7 +40,7 @@ extern Wippersnapper WS;
     @brief  Class for using the AirLift Co-Processor network iface.
 */
 /****************************************************************************/
-class Wippersnapper_AIRLIFT : public Wippersnapper {
+class ws_wifi_airlift : public Wippersnapper {
 
 public:
   /**************************************************************************/
@@ -48,7 +48,7 @@ public:
   @brief  Initializes the Adafruit IO class for AirLift devices.
   */
   /**************************************************************************/
-  Wippersnapper_AIRLIFT() : Wippersnapper() {
+  ws_wifi_airlift() : Wippersnapper() {
     _ssPin = SPIWIFI_SS;     // 10;
     _ackPin = SPIWIFI_ACK;   // 7;
     _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
@@ -71,7 +71,7 @@ public:
   @brief  Destructor for the Adafruit IO AirLift class.
   */
   /**************************************************************************/
-  ~Wippersnapper_AIRLIFT() {
+  ~ws_wifi_airlift() {
     if (_mqtt)
       delete _mqtt;
   }
@@ -394,4 +394,4 @@ protected:
   }
 };
 
-#endif // WIPPERSNAPPER_AIRLIFT_H
+#endif // WS_WIFI_AIRLIFT_H

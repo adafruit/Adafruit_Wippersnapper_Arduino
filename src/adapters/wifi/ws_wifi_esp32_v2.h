@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef Wippersnapper_ESP32_V2_H
-#define Wippersnapper_ESP32_V2_H
+#ifndef WS_WIFI_ESP32_V2_H
+#define WS_WIFI_ESP32_V2_H
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "Wippersnapper_V2.h"
@@ -34,7 +34,7 @@ extern Wippersnapper_V2 WsV2;
     @brief  Class for using the ESP32 network interface.
 */
 /****************************************************************************/
-class Wippersnapper_ESP32V2 : public Wippersnapper_V2 {
+class ws_wifi_esp32_v2 : public Wippersnapper_V2 {
 
 public:
   /**************************************************************************/
@@ -42,7 +42,7 @@ public:
   @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
   /**************************************************************************/
-  Wippersnapper_ESP32V2() : Wippersnapper_V2() {
+  ws_wifi_esp32_v2() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
   }
@@ -52,7 +52,7 @@ public:
   @brief  Overload for ESP32 devices without filesystem-backed provisioning.
   */
   /**************************************************************************/
-  Wippersnapper_ESP32V2(const char *aioUsername, const char *aioKey,
+  ws_wifi_esp32_v2(const char *aioUsername, const char *aioKey,
                       const char *netSSID, const char *netPass,
                       const char *brokerURL, uint16_t brokerPort)
       : Wippersnapper_V2() {
@@ -73,7 +73,7 @@ public:
   @brief  Destructor for the Adafruit IO AirLift class.
   */
   /**************************************************************************/
-  ~Wippersnapper_ESP32V2() {
+  ~ws_wifi_esp32_v2() {
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
     if (_mqtt_client_insecure)
@@ -365,4 +365,4 @@ protected:
 };
 
 #endif // ARDUINO_ARCH_ESP32_H
-#endif // Wippersnapper_ESP32_V2_H
+#endif // WS_WIFI_ESP32_V2_H

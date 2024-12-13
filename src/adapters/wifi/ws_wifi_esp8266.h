@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_ESP8266.h
+ * @file ws_wifi_esp8266.h
  *
  * This is a driver for using the ESP8266's network interface
  *  with Wippersnapper.
@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef WIPPERSNAPPER_ESP8266_H
-#define WIPPERSNAPPER_ESP8266_H
+#ifndef WS_WIFI_ESP8266_H
+#define WS_WIFI_ESP8266_H
 
 #ifdef ARDUINO_ARCH_ESP8266
 #include "Adafruit_MQTT.h"
@@ -45,7 +45,7 @@ extern Wippersnapper WS;
    interface.
 */
 /******************************************************************************/
-class Wippersnapper_ESP8266 : public Wippersnapper {
+class ws_wifi_esp8266 : public Wippersnapper {
 
 public:
   /**************************************************************************/
@@ -61,7 +61,7 @@ public:
           Wireless Network password
   */
   /**************************************************************************/
-  Wippersnapper_ESP8266() : Wippersnapper() {
+  ws_wifi_esp8266() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
     _wifi_client = new WiFiClient;
@@ -74,7 +74,7 @@ public:
   @brief  Destructor for the ESP8266's network iface.
   */
   /**************************************************************************/
-  ~Wippersnapper_ESP8266() {
+  ~ws_wifi_esp8266() {
     if (_wifi_client)
       delete _wifi_client;
     if (_mqtt)
@@ -322,4 +322,4 @@ protected:
 };
 
 #endif // ARDUINO_ARCH_ESP8266
-#endif // WIPPERSNAPPER_ESP8266_H
+#endif // WS_WIFI_ESP8266_H

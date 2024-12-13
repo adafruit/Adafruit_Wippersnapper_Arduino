@@ -22,32 +22,32 @@
 #if defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT)
-#include "adapters/network_interfaces/Wippersnapper_AIRLIFT.h"
-typedef Wippersnapper_AIRLIFT ws_adapter_wifi;
+#include "adapters/wifi/ws_wifi_airlift.h"
+typedef ws_wifi_airlift ws_adapter_wifi;
 // ESP8266 networking adapter
 #elif defined(ARDUINO_ARCH_ESP8266)
-#include "adapters/network_interfaces/Wippersnapper_ESP8266.h"
-typedef Wippersnapper_ESP8266 ws_adapter_wifi;
+#include "adapters/wifi/ws_wifi_esp8266.h"
+typedef ws_wifi_esp8266 ws_adapter_wifi;
 // ESP32 networking adapter
 #elif defined(ARDUINO_ARCH_ESP32)
-#include "adapters/network_interfaces/Wippersnapper_ESP32.h"
-typedef Wippersnapper_ESP32 ws_adapter_wifi;
+#include "adapters/wifi/ws_wifi_esp32.h"
+typedef ws_wifi_esp32 ws_adapter_wifi;
 // Networking adapters for Raspberry Pi Pico W-series
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-#include "adapters/network_interfaces/ws_networking_pico.h"
-typedef ws_networking_pico ws_adapter_wifi;
+#include "adapters/wifi/ws_wifi_pico.h"
+typedef ws_wifi_pico ws_adapter_wifi;
 // Networking adapter for Arduino Nano 33 IoT and MKR WiFi 1010
 #elif defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
-#include "adapters/network_interfaces/Wippersnapper_WIFININA.h"
-typedef Wippersnapper_WIFININA ws_adapter_wifi;
+#include "adapters/wifi/ws_wifi_ninafw.h"
+typedef ws_wifi_ninafw ws_adapter_wifi;
 /**
- * The following are adapters for use with non-networked devices.
+ * The following are adapters for use without networking functionality.
 */
 #elif defined(RASPBERRY_PI_PICO) || defined(RASPBERRY_PI_PICO_2)
-#include "adapters/network_interfaces/ws_nonet_pico.h"
-typedef ws_nonet_pico ws_adapter_offline;
+#include "adapters/offline/ws_offline_pico.h"
+typedef ws_offline_pico ws_adapter_offline;
 #else
-#warning "Must define network interface in config.h!"
+#warning "Transport adapter not defined within ws_adapters.h!"
 #endif
 
 #endif // WS_ADAPTERS_H

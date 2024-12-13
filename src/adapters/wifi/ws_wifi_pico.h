@@ -1,5 +1,5 @@
 /*!
- * @file ws_networking_pico.h
+ * @file ws_wifi_pico.h
  *
  * This is a driver for using the Raspberry Pi Pico (RP2040)
  * network interface with Adafruit IO Wippersnapper.
@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef WS_NETWORKING_PICO_H
-#define WS_NETWORKING_PICO_H
+#ifndef WS_WIFI_PICO_H
+#define WS_WIFI_PICO_H
 
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
 
@@ -36,7 +36,7 @@ extern Wippersnapper WS;
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
 /****************************************************************************/
-class ws_networking_pico : public Wippersnapper {
+class ws_wifi_pico : public Wippersnapper {
 
 public:
   /**************************************************************************/
@@ -44,7 +44,7 @@ public:
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
   /**************************************************************************/
-  ws_networking_pico() : Wippersnapper() {
+  ws_wifi_pico() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
   }
@@ -54,7 +54,7 @@ public:
   @brief  Destructor
   */
   /**************************************************************************/
-  ~ws_networking_pico() {
+  ~ws_wifi_pico() {
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
     if (_mqtt_client_secure)

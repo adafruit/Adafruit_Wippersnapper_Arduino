@@ -1,64 +1,83 @@
 /*!
- * @file ws_networking_pico_v2.h
+ * @file ws_wifi_esp32.h
  *
- * This is a driver for using the Raspberry Pi Pico (RP2040)
- * network interface with Adafruit IO Wippersnapper.
+ * This is a driver for using the ESP32's network interface
+ * with Adafruit IO Wippersnapper.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2023 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef WS_NETWORKING_PICO_V2_H
-#define WS_NETWORKING_PICO_V2_H
+#ifndef WS_WIFI_ESP32_H
+#define WS_WIFI_ESP32_H
 
-#ifdef ARDUINO_RASPBERRY_PI_PICO_W
-
-#define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
-#define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
-
-#include "Wippersnapper_V2.h"
+#ifdef ARDUINO_ARCH_ESP32
+#include "Wippersnapper.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
-#include <WiFiClient.h>
-#include <WiFiClientSecure.h>
-extern Wippersnapper_V2 WsV2;
+#include "WiFi.h"
+#include "WiFiMulti.h"
+#include <NetworkClient.h>
+#include <NetworkClientSecure.h>
+extern Wippersnapper WS;
 
 /****************************************************************************/
 /*!
-    @brief  Class for using the Raspberry Pi Pico network interface.
+    @brief  Class for using the ESP32 network interface.
 */
 /****************************************************************************/
-class ws_networking_pico_v2 : public Wippersnapper_V2 {
+class ws_wifi_esp32 : public Wippersnapper {
 
 public:
   /**************************************************************************/
   /*!
-  @brief  Initializes the WipperSnapper class for RPi Pico.
+  @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
   /**************************************************************************/
-  ws_networking_pico_v2() : Wippersnapper_V2() {
+  ws_wifi_esp32() : Wippersnapper() {
     _ssid = 0;
     _pass = 0;
   }
 
   /**************************************************************************/
   /*!
-  @brief  Destructor
+  @brief  Overload for ESP32 devices without filesystem-backed provisioning.
   */
   /**************************************************************************/
-  ~ws_networking_pico_v2() {
+  ws_wifi_esp32(const char *aioUsername, const char *aioKey,
+                      const char *netSSID, const char *netPass,
+                      const char *brokerURL, uint16_t brokerPort)
+      : Wippersnapper() {
+    _ssid = netSSID;
+    _pass = netPass;
+
+    // Move credentials to the config struct
+    strncpy(WS._config.network.ssid, _ssid, sizeof(WS._config.network.ssid));
+    strncpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
+    strncpy(WS._config.aio_key, aioKey, sizeof(WS._config.aio_key));
+    strncpy(WS._config.aio_user, aioUsername, sizeof(WS._config.aio_user));
+    strncpy(WS._config.aio_url, brokerURL, sizeof(WS._config.aio_url));
+    WS._config.io_port = brokerPort;
+  }
+
+  /**************************************************************************/
+  /*!
+  @brief  Destructor for the Adafruit IO AirLift class.
+  */
+  /**************************************************************************/
+  ~ws_wifi_esp32() {
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
-    if (_mqtt_client_secure)
-      delete _mqtt_client_secure;
+    if (_mqtt_client_insecure)
+      delete _mqtt_client_insecure;
   }
 
   /********************************************************/
@@ -88,8 +107,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WsV2._configV2.network.ssid;
-    _pass = WsV2._configV2.network.pass;
+    _ssid = WS._config.network.ssid;
+    _pass = WS._config.network.pass;
   }
 
   /***********************************************************/
@@ -114,19 +133,19 @@ public:
 
     // Was the network within secrets.json found?
     for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
+      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
         WS_DEBUG_PRINT("SSID (");
         WS_DEBUG_PRINT(_ssid);
         WS_DEBUG_PRINT(") found! RSSI: ");
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WsV2._isWiFiMultiV2) {
+      if (WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i)) == 0) {
+          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
+            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
@@ -150,14 +169,14 @@ public:
 
   /********************************************************/
   /*!
-  @brief  Sets the RPi Pico's unique client identifier
-  @note   On RPi Pico, the UID is the MAC address.
+  @brief  Sets the ESP32's unique client identifier
+  @note   On ESP32, the UID is the MAC address.
   */
   /********************************************************/
   void getMacAddr() {
     uint8_t mac[6] = {0};
-    WiFi.macAddress(mac);
-    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
+    Network.macAddress(mac);
+    memcpy(WS._macAddr, mac, sizeof(mac));
   }
 
   /********************************************************/
@@ -176,27 +195,29 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
-        strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
-      _mqtt_client_secure = new WiFiClientSecure();
+    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
+      _mqtt_client_secure = new NetworkClientSecure();
       _mqtt_client_secure->setCACert(
-          strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0
+          strcmp(WS._config.aio_url, "io.adafruit.com") == 0
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
-      WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
-          WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, WS._config.aio_url, WS._config.io_port, clientID,
+          WS._config.aio_user, WS._config.aio_key);
     } else {
-      _mqtt_client_insecure = new WiFiClient();
-      WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_insecure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
-          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+      // Insecure connections require a NetworkClient object rather than a
+      // NetworkClientSecure object
+      _mqtt_client_insecure = new NetworkClient();
+      WS._mqtt = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, WS._config.aio_url, WS._config.io_port,
+          clientID, WS._config.aio_user, WS._config.aio_key);
     }
   }
 
   /********************************************************/
   /*!
-  @brief  Returns the network status of an RPi Pico.
+  @brief  Returns the network status of an ESP32 module.
   @return ws_status_t
   */
   /********************************************************/
@@ -216,19 +237,19 @@ public:
   /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
-  @return Pico
+  @return ESP32
   */
   /*******************************************************************/
-  const char *connectionType() { return "Pico"; }
+  const char *connectionType() { return "ESP32"; }
 
 protected:
   const char *_ssid; ///< WiFi SSID
   const char *_pass; ///< WiFi password
-  WiFiClient
-      *_mqtt_client_insecure; ///< Pointer to an insecure WiFi client object
-  WiFiClientSecure
-      *_mqtt_client_secure; ///< Pointer to a secure WiFi client object
-  WiFiMulti _wifiMulti;     ///< WiFiMulti object for multi-network mode
+  NetworkClientSecure
+      *_mqtt_client_secure; ///< Pointer to a secure network client object
+  NetworkClient
+      *_mqtt_client_insecure; ///< Pointer to an insecure network client object
+  WiFiMulti _wifiMulti;       ///< WiFiMulti object for multi-network mode
 
   const char *_aio_root_ca_staging =
       "-----BEGIN CERTIFICATE-----\n"
@@ -297,55 +318,38 @@ protected:
     if (WiFi.status() == WL_CONNECTED)
       return;
 
-    WiFi.mode(WIFI_STA);
-    WsV2.feedWDTV2();
-    WiFi.setTimeout(20000);
-    WsV2.feedWDTV2();
-
     if (strlen(_ssid) == 0) {
-      _statusV2 = WS_SSID_INVALID;
+      _status = WS_SSID_INVALID;
     } else {
+      WiFi.setAutoReconnect(false);
       _disconnect();
-      delay(5000);
-      WsV2.feedWDTV2();
-      if (WsV2._isWiFiMultiV2) {
+      delay(100);
+      if (WS._isWiFiMulti) {
         // multi network mode
-        _wifiMulti.clearAPList();
+        _wifiMulti.APlistClean();
+        _wifiMulti.setAllowOpenAP(false);
         // add default network
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
-                           WsV2._multiNetworksV2[i].pass);
+          if (strlen(WS._multiNetworks[i].ssid) > 0) {
+            _wifiMulti.addAP(WS._multiNetworks[i].ssid,
+                             WS._multiNetworks[i].pass);
+          }
         }
-        WsV2.feedWDTV2();
-        if (_wifiMulti.run(10000) == WL_CONNECTED) {
-          WsV2.feedWDTV2();
-          _statusV2 = WS_NET_CONNECTED;
-          return;
+        if (_wifiMulti.run(20000) == WL_CONNECTED) {
+          _status = WS_NET_CONNECTED;
+        } else {
+          _status = WS_NET_DISCONNECTED;
         }
-        WsV2.feedWDTV2();
       } else {
+        // single network mode
         WiFi.begin(_ssid, _pass);
-
-        // Use the macro to retry the status check until connected / timed out
-        int lastResult;
-/*         RETRY_FUNCTION_UNTIL_TIMEOUT(
-            []() -> int { return WiFi.status(); }, // Function call each cycle
-            int,                                   // return type
-            lastResult, // return variable (unused here)
-            [](int status) { return status == WL_CONNECTED; }, // check
-            PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
-            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries */
-
-        if (lastResult == WL_CONNECTED) {
-          _statusV2 = WS_NET_CONNECTED;
-          // wait 2seconds for connection to stabilize
-          // WS_DELAY_WITH_WDT(2000);
-          return;
-        }
+        _status = WS_NET_DISCONNECTED;
+        WS.feedWDT();
+        delay(5000);
       }
-      _statusV2 = WS_NET_DISCONNECTED;
+      WS.feedWDT();
     }
   }
 
@@ -355,12 +359,10 @@ protected:
   */
   /**************************************************************************/
   void _disconnect() {
-    WsV2.feedWDTV2();
     WiFi.disconnect();
-    delay(5000);
-    WsV2.feedWDTV2();
+    delay(500);
   }
 };
 
-#endif // RASPBERRY_PI_PICO_W
-#endif // WS_NETWORKING_PICO_V2_H
+#endif // ARDUINO_ARCH_ESP32_H
+#endif // WS_WIFI_ESP32_H

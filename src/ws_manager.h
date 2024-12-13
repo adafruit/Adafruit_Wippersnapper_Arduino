@@ -1,10 +1,10 @@
 #ifndef WIPPERSNAPPER_MANAGER_H
 #define WIPPERSNAPPER_MANAGER_H
 
-#include "adapters/network_interfaces/ws_nonet_pico.h"
-typedef ws_nonet_pico ws_adapter_offline;
-#include "adapters/network_interfaces/ws_nonet_pico_v2.h"
-typedef ws_nonet_pico_v2 ws_adapter_offline_v2;
+#include "adapters/offline/ws_offline_pico.h"
+typedef ws_offline_pico ws_adapter_offline;
+#include "adapters/offline/ws_offline_pico_v2.h"
+typedef ws_offline_pico_v2 ws_adapter_offline_v2;
 
 /****************************************************************************/
 /*!
