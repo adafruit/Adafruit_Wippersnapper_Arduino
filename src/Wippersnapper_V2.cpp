@@ -101,7 +101,7 @@ void Wippersnapper_V2::provisionV2() {
 #ifdef USE_TINYUSB
   _fileSystemV2 = new Wippersnapper_FS_V2();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2 = new WipperSnapper_LittleFS();
+  _littleFSV2 = new WipperSnapper_LittleFS_V2();
 #endif
 
   // Determine if app is in SDLogger mode

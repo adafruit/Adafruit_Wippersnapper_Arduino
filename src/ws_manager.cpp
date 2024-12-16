@@ -69,10 +69,10 @@ void Wippersnapper_Manager::checkAPIVersion(int pinNum) {
   // NOTE: For debugging right now, we are forcing the API version
   readButton = true;
   if (readButton) { // API version 2 if D12 is high
-    ws_instance_v2 = new ws_adapter_offline_v2();
+    ws_instance_v2 = new ws_adapter_wifi_v2();
     _api_version = 2;
   } else { // API version 1 if D12 is low
-    ws_instance = new ws_adapter_offline();
+    ws_instance = new ws_adapter_wifi();
     _api_version = 1;
   }
 }

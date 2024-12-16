@@ -80,7 +80,7 @@
 #include "provisioning/tinyusb/Wippersnapper_FS_V2.h"
 #endif
 #if defined(USE_LITTLEFS)
-#include "provisioning/littlefs/WipperSnapper_LittleFS.h"
+#include "provisioning/littlefs/WipperSnapper_LittleFS_V2.h"
 #endif
 
 #define WS_VERSION                                                             \
@@ -95,7 +95,7 @@
 // Forward declarations (API v1)
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS_V2;
-class WipperSnapper_LittleFS;
+class WipperSnapper_LittleFS_V2;
 class ws_sdcard;
 #ifdef USE_DISPLAY
 class ws_display_driver;
@@ -207,7 +207,7 @@ public:
   // to free up space on the heap
   Wippersnapper_AnalogIO *_analogIOV2; ///< Instance of analog io class
   Wippersnapper_FS_V2 *_fileSystemV2;  ///< Instance of Filesystem (native USB)
-  WipperSnapper_LittleFS
+  WipperSnapper_LittleFS_V2
       *_littleFSV2;     ///< Instance of LittleFS Filesystem (non-native USB)
   ws_sdcard *_sdCardV2; ///< Instance of SD card class
 #ifdef USE_DISPLAY
