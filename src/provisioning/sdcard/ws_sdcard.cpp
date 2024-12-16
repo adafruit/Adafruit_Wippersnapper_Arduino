@@ -466,7 +466,7 @@ bool ws_sdcard::CreateNewLogFile() {
   _log_filename = log_filename_buffer;
 
   // Attempt to create the new log file
-  if (!file.open(_log_filename, FILE_WRITE))
+  if (!file.open(_log_filename, O_RDWR | O_CREAT | O_AT_END))
     return false;
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
   WS_DEBUG_PRINTLN(_log_filename);
@@ -802,7 +802,7 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   // Serialize the JSON document
 #ifndef OFFLINE_MODE_DEBUG
   File32 file;
-  file = _sd.open(_log_filename, FILE_WRITE);
+  file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
   if (!file) {
     WS_DEBUG_PRINTLN(
         "[SD] FATAL Error - Unable to open the log file for writing!");

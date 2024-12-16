@@ -16,7 +16,6 @@
 #define WIPPERSNAPPER_LITTLEFS_V2_H
 
 #include "Wippersnapper_V2.h"
-
 #include <FS.h>
 #include <LittleFS.h>
 
