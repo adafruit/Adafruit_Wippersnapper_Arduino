@@ -46,17 +46,49 @@
 
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
+#if defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+    yield();                                                                   \
+  } ///< Prints line from debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+    yield();                                                                   \
+  } ///< Prints line from debug output.
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
+    yield();                                                                   \
+  } ///< Prints debug output.
+#else
+#define WS_DEBUG_PRINT(...)                                                    \
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+    WS_PRINTER.flush();                                                        \
+    yield();                                                                   \
+  } ///< Prints line from debug output.
+#define WS_DEBUG_PRINTLN(...)                                                  \
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+    WS_PRINTER.flush();                                                        \
+    yield();                                                                   \
+  } ///< Prints line from debug output.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
+    WS_PRINTER.flush();                                                        \
+    yield();                                                                   \
+  } ///< Prints debug output.
+#endif
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
   {} ///< Prints debug output
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {} ///< Prints line from debug output.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {} ///< Prints debug output.
 #endif
 
 #define WS_DELAY_WITH_WDT(timeout)                                             \

@@ -2711,8 +2711,10 @@ void print_reset_reason(int reason) {
 */
 /**************************************************************************/
 void printDeviceInfo() {
+  WS_PRINTER.flush();
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
+  WS_PRINTER.flush();
   WS_DEBUG_PRINTLN(WS_VERSION);
   WS_DEBUG_PRINT("Board ID: ");
   WS_DEBUG_PRINTLN(BOARD_ID);
