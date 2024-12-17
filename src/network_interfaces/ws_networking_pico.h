@@ -137,12 +137,23 @@ public:
 
     // User-set network not found, print scan results to serial console
     WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (int i = 0; i < n; ++i) {
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
+    for (uint8_t i = 0; i < n; ++i) {
       WS_DEBUG_PRINT(WiFi.SSID(i));
-      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(" (");
+      uint8_t BSSID[WL_MAC_ADDR_LENGTH];
+      WiFi.BSSID(i, BSSID);
+      for (int m = 0; m < WL_MAC_ADDR_LENGTH; ++m) {
+        if (m != 0) {
+          WS_DEBUG_PRINT(":");
+        }
+        WS_DEBUG_PRINTHEX(BSSID[m]);
+      }
+      WS_DEBUG_PRINT(") ");
       WS_DEBUG_PRINT(WiFi.RSSI(i));
-      WS_DEBUG_PRINTLN("dB");
+      WS_DEBUG_PRINT("dB (ch");
+      WS_DEBUG_PRINT(WiFi.channel(i))
+      WS_DEBUG_PRINTLN(")");
     }
 
     return false;
