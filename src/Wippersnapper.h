@@ -214,7 +214,12 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
-#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
+#ifdef ARDUINO_ARCH_RP2040
+#define WS_WDT_TIMEOUT 8388 ///< Pico Max WDT timeout
+#else
+#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
+#endif
+
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
