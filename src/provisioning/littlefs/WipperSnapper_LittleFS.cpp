@@ -138,14 +138,11 @@ void WipperSnapper_LittleFS::parseSecrets() {
            "credentials!\n");
   }
 
-  if (doc["status_pixel_brightness"]) {
-    // check it casts to float and support user specifying 0.0f which is
-    // default, by using the |operator instead of .as
-    // https://arduinojson.org/v7/api/jsonvariant/or/
-    if ((doc["status_pixel_brightness"] | -1.0f) != -1.0f) {
-      WS.status_pixel_brightness = doc["status_pixel_brightness"].as<float>();
-    }
-  }
+  // specify type of value for json key, by using the |operator to include
+  // a typed default value equivalent of with .as<float> w/ default value
+  // https://arduinojson.org/v7/api/jsonvariant/or/
+  WS._config.status_pixel_brightness =
+      doc["status_pixel_brightness"] | (float)STATUS_PIXEL_BRIGHTNESS_DEFAULT;
 
   // Close the file
   secretsFile.close();
