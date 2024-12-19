@@ -17,8 +17,7 @@
     defined(ARDUINO_ADAFRUIT_ITSYBITSY_ESP32) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
-    defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || \
-    defined(ARDUINO_ESP32_DEV) || \
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32_DEV) ||    \
     defined(ESP32_DEV)
 #include "WipperSnapper_LittleFS_V2.h"
 
@@ -31,8 +30,8 @@
 WipperSnapper_LittleFS_V2::WipperSnapper_LittleFS_V2() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
-    setStatusLEDColor(RED);
-    fsHalt("ERROR: Failure initializing LittleFS!");
+    fsHalt("ERROR: Failure initializing LittleFS!",
+           WS_LED_STATUS_WAITING_FOR_REG_MSG);
   }
 }
 
@@ -145,8 +144,9 @@ void WipperSnapper_LittleFS_V2::parseSecrets() {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS_V2::fsHalt(String msg) {
-  statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+void WipperSnapper_LittleFS_V2::fsHalt(String msg,
+                                       ws_led_status_t status_state) {
+  statusLEDSolid(status_state);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
     WS_DEBUG_PRINTLN(msg.c_str());
@@ -167,6 +167,7 @@ void WipperSnapper_LittleFS_V2::GetSDCSPin() {
   File file_cfg = LittleFS.open("/config.json");
   if (!file_cfg)
     WsV2.pin_sd_cs = 255;
+
   error = deserializeJson(WsV2._config_doc, file_cfg);
   if (error) {
     file_cfg.close();

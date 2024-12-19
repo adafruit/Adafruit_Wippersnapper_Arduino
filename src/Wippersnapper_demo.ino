@@ -26,11 +26,10 @@ Wippersnapper_Manager manager;
 
 void setup() {
   // NOTE: Provisioning must occur prior to serial init.h
+    Serial.begin(115200);
+  while (!Serial) delay(10);
   manager.checkAPIVersion(API_PIN);
   manager.provision();
-
-  Serial.begin(115200);
-  while (!Serial) delay(10);
 
   Serial.println("Adafruit Wippersnapper API Manager Demo");
   Serial.print("Running Wippersnapper API Version: ");

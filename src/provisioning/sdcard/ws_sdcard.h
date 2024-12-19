@@ -20,9 +20,18 @@
 #include "Wippersnapper_V2.h"
 #include "sdios.h"
 
-#define SD_FAT_TYPE 3           ///< SdFat type (3 = SdFs)
+#if defined(ARDUINO_FEATHER_ESP32) ||                                          \
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
+#define SPI_SD_CLOCK                                                           \
+  SD_SCK_MHZ(25) ///< For ESP32/Pico silicon rev 3.0, we clock at 25MHz
+#else
+#define SPI_SD_CLOCK SD_SCK_MHZ(50) ///< Default SPI clock speed
+#endif
+
+#define SD_FAT_TYPE 3           ///< SD type (3 = FAT16/FAT32 and exFAT)
 #define PIN_SD_CS_ERROR 255     ///< Error code for invalid SD card CS pin
-#define UNKNOWN_VALUE "unknown" ///< Unknown JSON field value
+#define UNKNOWN_VALUE "unknown" ///< Default unknown JSON field value
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 
 // forward decl.
@@ -38,7 +47,8 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
-  bool InitSDCard();
+  void calculateFileLimits();
+  bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
@@ -82,6 +92,7 @@ private:
   bool AddSignalMessageToSharedBuffer(
       wippersnapper_signal_BrokerToDevice &msg_signal);
 
+  SdSpiConfig _sd_spi_cfg; ///< SPI configuration for the SD card
   SdFat _sd;               ///< SD object from Adafruit SDFat library
   size_t _sd_capacity;     ///< Capacity of the SD card, in Bytes
   size_t _sz_cur_log_file; ///< Size of the current log file, in Bytes
