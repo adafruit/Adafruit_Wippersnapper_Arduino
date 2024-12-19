@@ -2494,15 +2494,19 @@ void Wippersnapper::runNetFSM() {
     @brief    Prints an error to the serial and halts the hardware until
               the WDT bites.
     @param    error
-              The desired error to print to serial.
+              The error to print to serial.
     @param    ledStatusColor
-              The desired color to blink.
+              The color to blink.
+    @param    seconds_until_reboot
+              The amount of time to wait before rebooting.
 */
 /**************************************************************************/
 void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor,
                               uint8_t seconds_until_reboot) {
-  uint8_t wdt_timeout = 5; // future platform-specific differences
-  int seconds_until_wdt_enable = seconds_until_reboot - wdt_timeout;
+  uint8_t wdt_timeout_ms = 5000; // future platform-specific differences
+  int seconds_until_wdt_enable =
+      seconds_until_reboot - (int)(wdt_timeout_ms / 1000);
+
   for (int i = 0;; i++) {
     WS_DEBUG_PRINT("ERROR [WDT RESET IN ");
     WS_DEBUG_PRINT(seconds_until_reboot - i);
@@ -2521,7 +2525,7 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor,
       yield();
       WS.feedWDT(); // feed the WDT for the first 20 seconds
     } else if (i == seconds_until_reboot) {
-      WS.enableWDT(wdt_timeout * 1000);
+      WS.enableWDT(wdt_timeout_ms);
     }
   }
 }
