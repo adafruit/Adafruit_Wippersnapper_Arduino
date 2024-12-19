@@ -2,7 +2,14 @@
     "files.associations": {
         "limits": "c",
         "type_traits": "c",
-        "vector": "cpp"
+        "vector": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "span": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "dotnet.defaultSolution": "disable",

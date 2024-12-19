@@ -19,10 +19,25 @@
     @brief    Constructs an instance of the Wippersnapper SD card class.
 */
 /**************************************************************************/
-ws_sdcard::ws_sdcard() {
+ws_sdcard::ws_sdcard()
+    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
   is_mode_offline = false;
   _use_test_data = false;
   _sz_cur_log_file = 0;
+
+  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
+    is_mode_offline = false;
+
+  if (!_sd.begin(_sd_spi_cfg)) {
+    WS_DEBUG_PRINTLN(
+        "SD initialization failed.\nDo not reformat the card!\nIs the card "
+        "correctly inserted?\nIs there a wiring/soldering problem\n");
+    is_mode_offline = false;
+  } else {
+    // Card initialized - calculate file limits
+    is_mode_offline = true;
+    calculateFileLimits();
+  }
 }
 
 /**************************************************************************/
@@ -37,45 +52,26 @@ ws_sdcard::~ws_sdcard() {
   }
 }
 
-/**************************************************************************/
-/*!
-    @brief    Attempts to initialize the SD card and filesystem.
-    @returns  True if the SD card was successfully initialized, False
-              otherwise.
-*/
-/**************************************************************************/
-bool ws_sdcard::InitSDCard() {
-  is_mode_offline = false;
-  csd_t csd;
-  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
-    return is_mode_offline;
-
-  if (!_sd.begin(WsV2.pin_sd_cs)) {
-    WS_DEBUG_PRINTLN(
-        "SD initialization failed.\nDo not reformat the card!\nIs the card "
-        "correctly inserted?\nIs there a wiring/soldering problem\n");
-    return is_mode_offline;
-  }
-
+void ws_sdcard::calculateFileLimits() {
   // Calculate the maximum number of log files that can be stored on the SD card
+  csd_t csd;
   if (!_sd.card()->readCSD(&csd)) {
     WS_DEBUG_PRINTLN("ERROR: Could not read sdcard information");
-    return is_mode_offline;
+    return;
   }
+
   // get the complete sdcard capacity in bytes
   _sd_capacity = (uint64_t)512 * csd.capacity();
   // account for 3-5% fatfs overhead utilization
   size_t sd_capacity_usable = _sd_capacity * (1 - 0.05);
-  // proportionally set sz of each log file to 10% of the SD card's usable capacity
+  // proportionally set sz of each log file to 10% of the SD card's usable
+  // capacity
   _max_sz_log_file = sd_capacity_usable / 10;
   // Regardless of sd card size, cap log files to 512MB
   if (_max_sz_log_file > MAX_SZ_LOG_FILE) {
     _max_sz_log_file = MAX_SZ_LOG_FILE;
   }
   _sd_max_num_log_files = sd_capacity_usable / _max_sz_log_file;
-
-  is_mode_offline = true;
-  return is_mode_offline;
 }
 
 /**************************************************************************/

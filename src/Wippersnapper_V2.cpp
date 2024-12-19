@@ -68,9 +68,6 @@ Wippersnapper_V2::Wippersnapper_V2() {
   // Initialize model classes
   WsV2.sensorModel = new SensorModel();
 
-  // SD Card
-  WsV2._sdCardV2 = new ws_sdcard();
-
   // Initialize controller classes
   WsV2.digital_io_controller = new DigitalIOController();
   WsV2.analogio_controller = new AnalogIOController();
@@ -106,12 +103,18 @@ void Wippersnapper_V2::provisionV2() {
 
   // Determine if app is in SDLogger mode
   #ifdef USE_TINYUSB
-  _fileSystemV2->GetSDCSPin(); 
-  #else
+  _fileSystemV2->GetSDCSPin();
+  #elif defined(USE_LITTLEFS)
   _littleFSV2->GetSDCSPin();
   #endif
-  if (WsV2._sdCardV2->InitSDCard())
+  WsV2._sdCardV2 = new ws_sdcard();
+  if (WsV2._sdCardV2->isSDCardInitialized()) {
+    haltErrorV2("GOOD: passed sd cspin check", WS_LED_STATUS_KAT);
     return;
+  } else {
+    // We are hitting against this at 4:16pm 12/16/2021
+    haltErrorV2("ERROR: failed sd cspin check", WS_LED_STATUS_MQTT_CONNECTING);
+  }
 
 #ifdef USE_DISPLAY
   // Initialize the display

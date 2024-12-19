@@ -16,7 +16,6 @@
 #define WIPPERSNAPPER_LITTLEFS_V2_H
 
 #include "Wippersnapper_V2.h"
-#include <FS.h>
 #include <LittleFS.h>
 
 // forward decl.
@@ -32,7 +31,8 @@ public:
   WipperSnapper_LittleFS_V2();
   ~WipperSnapper_LittleFS_V2();
   void parseSecrets();
-  void fsHalt(String msg);
+  void fsHalt(String msg,
+              ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
   void GetSDCSPin();
 };
 extern Wippersnapper_V2 WsV2;
