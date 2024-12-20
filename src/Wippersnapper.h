@@ -214,8 +214,7 @@ typedef enum {
   FSM_NET_ESTABLISH_MQTT,
 } fsm_net_t;
 
-#define WS_WDT_TIMEOUT 60000       ///< WDT timeout
-#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
+#define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 /* MQTT Configuration */
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds

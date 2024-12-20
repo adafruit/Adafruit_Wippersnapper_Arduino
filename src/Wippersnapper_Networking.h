@@ -16,6 +16,11 @@
 #ifndef WIPPERSNAPPER_NETWORKING_H
 #define WIPPERSNAPPER_NETWORKING_H
 
+#ifndef WL_MAC_ADDR_LENGTH
+#define WL_MAC_ADDR_LENGTH 6 ///< MAC address length - from RP2040 BSP
+#endif
+#define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
+
 #if defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
     defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT)
