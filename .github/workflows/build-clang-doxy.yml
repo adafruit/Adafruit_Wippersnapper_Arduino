@@ -56,10 +56,11 @@ jobs:
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -68,7 +69,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -221,10 +222,11 @@ jobs:
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -233,7 +235,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -320,10 +322,11 @@ jobs:
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -332,7 +335,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -447,10 +450,11 @@ jobs:
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -459,7 +463,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -519,10 +523,11 @@ jobs:
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -531,7 +536,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -590,10 +595,11 @@ jobs:
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -602,7 +608,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -649,10 +655,11 @@ jobs:
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -661,7 +668,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -744,10 +751,11 @@ jobs:
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -756,7 +764,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
@@ -836,10 +844,11 @@ jobs:
           git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
       - name: Download stable Nanopb
+        id: download-nanopb
         continue-on-error: true
         run: |
           wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() }}
+      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
         name: Restore cached nanopb
         id: cache-nanopb-restore
         uses: actions/cache/restore@v4
@@ -848,7 +857,7 @@ jobs:
         with:
           path: ./nanopb-0.4.8.tar.gz
           key: nanopb-0.4.8.tar.gz
-      - if: ${{ success() }}
+      - if: ${{ steps.download-nanopb.outcome == 'success' }}
         name: Save nanopb to cache
         id: cache-nanopb-save
         uses: actions/cache/save@v4
