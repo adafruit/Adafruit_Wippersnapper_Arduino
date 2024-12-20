@@ -109,7 +109,7 @@ void Wippersnapper_V2::provisionV2() {
   #endif
   WsV2._sdCardV2 = new ws_sdcard();
   if (WsV2._sdCardV2->isSDCardInitialized()) {
-    haltErrorV2("GOOD: passed sd cspin check", WS_LED_STATUS_KAT);
+    //haltErrorV2("GOOD: passed sd cspin check", WS_LED_STATUS_KAT);
     return;
   } else {
     // We are hitting against this at 4:16pm 12/16/2021

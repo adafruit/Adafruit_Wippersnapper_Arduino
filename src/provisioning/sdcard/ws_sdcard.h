@@ -33,6 +33,8 @@
 #define PIN_SD_CS_ERROR 255     ///< Error code for invalid SD card CS pin
 #define UNKNOWN_VALUE "unknown" ///< Default unknown JSON field value
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
+#define MAX_LEN_CFG_JSON                                                       \
+  4096 ///< Maximum length of the configuration JSON file, in Bytes
 
 // forward decl.
 class Wippersnapper_V2;
@@ -47,7 +49,6 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
-  void calculateFileLimits();
   bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();
   bool CreateNewLogFile();
@@ -61,6 +62,7 @@ public:
   bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
 
 private:
+  void calculateFileLimits();
   bool ValidateChecksum(JsonDocument &doc);
   bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
