@@ -2748,11 +2748,6 @@ void Wippersnapper::connect() {
   // Dump device info to the serial monitor
   printDeviceInfo();
 
-// enable global WDT
-#ifndef ARDUINO_ARCH_RP2040
-  WS.enableWDT(WS_WDT_TIMEOUT);
-#endif
-
   // Generate device identifier
   if (!generateDeviceUID()) {
     haltError("Unable to generate Device UID");
@@ -2774,11 +2769,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Running Network FSM...");
   // Run the network fsm
   runNetFSM();
-#ifdef ARDUINO_ARCH_RP2040
-  WS.enableWDT(WS_WDT_TIMEOUT); // wifi multi doesn't feed the WDT
-#else
-  WS.feedWDT();
-#endif
+
+  // Enable WDT after wifi connection as wifiMulti doesnt feed WDT
+  WS.enableWDT(WS_WDT_TIMEOUT);
 
 #ifdef USE_DISPLAY
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
