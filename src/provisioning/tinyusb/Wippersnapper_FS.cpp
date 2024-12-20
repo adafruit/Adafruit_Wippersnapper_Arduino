@@ -106,6 +106,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
   if (!initFilesystem() && !initFilesystem(true)) {
+    TinyUSBDevice.attach();
     setStatusLEDColor(RED);
     fsHalt("ERROR Initializing Filesystem");
   }
@@ -217,7 +218,12 @@ void Wippersnapper_FS::initUSBMSC() {
 
   // init MSC
   usb_msc.begin();
+
   // Attach MSC and wait for enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+  }
   TinyUSBDevice.attach();
   delay(500);
 }
@@ -231,6 +237,13 @@ void Wippersnapper_FS::initUSBMSC() {
 bool Wippersnapper_FS::configFileExists() {
   // Does secrets.json file exist?
   if (!wipperFatFs.exists("/secrets.json"))
+    return false;
+  File32 file = wipperFatFs.open("/secrets.json", FILE_READ);
+  if (!file)
+    return false;
+  int firstChar = file.peek();
+  file.close();
+  if (firstChar <= 0 || firstChar == 255)
     return false;
   return true;
 }
@@ -318,7 +331,7 @@ bool Wippersnapper_FS::createBootFile() {
 void Wippersnapper_FS::createSecretsFile() {
   // Open file for writing
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
-
+  secretsFile.truncate(0);
   // Create a default secretsConfig structure
   secretsConfig secretsConfig;
   strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
@@ -491,8 +504,6 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 */
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg) {
-  TinyUSBDevice.attach();
-  delay(500);
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
