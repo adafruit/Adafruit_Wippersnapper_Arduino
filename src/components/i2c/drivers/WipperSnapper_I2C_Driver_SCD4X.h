@@ -42,13 +42,16 @@ public:
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
+    _lastRead = 0;
+    _temperature = 20.0;
+    _humidity = 50.0;
   }
 
   /*******************************************************************************/
   /*!
       @brief    Initializes the SCD40 sensor and begins I2C.
       @param    pollPeriod
-                The sensor's polling period in milliseconds.
+                The sensor's polling period in seconds.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
@@ -67,7 +70,7 @@ public:
     }
 
     // Takes 5seconds to have data ready, don't queue read until then
-    ulong currentTime = millis() - (pollPeriod * 1000 - 5000); // 5s time
+    long currentTime = (long)millis() - ((pollPeriod * 1000) - 5000); // 5s time
     this->setSensorCO2PeriodPrv(currentTime);
     this->setSensorAmbientTempFPeriodPrv(currentTime);
     this->setSensorAmbientTempPeriodPrv(currentTime);
@@ -80,7 +83,7 @@ public:
       @brief    Checks if sensor was read within last 1s, or is the first read.
       @returns  True if the sensor was recently read, False otherwise.
   */
-  bool alreadyRecentlyRead() {
+  bool hasBeenReadInLastSecond() {
     return _lastRead != 0 && millis() - _lastRead < 1000;
   }
 
@@ -90,7 +93,7 @@ public:
       @returns  True if the sensor is ready, False otherwise.
   */
   /*******************************************************************************/
-  bool sensorReady() {
+  bool isSensorReady() {
     bool isDataReady = false;
     uint16_t error = _scd->getDataReadyFlag(isDataReady);
     if (error != 0 || !isDataReady) {
@@ -112,11 +115,11 @@ public:
   /*******************************************************************************/
   bool readSensorData() {
     // dont read sensor more than once per second
-    if (alreadyRecentlyRead()) {
+    if (hasBeenReadInLastSecond()) {
       return true;
     }
 
-    if (!sensorReady()) {
+    if (!isSensorReady()) {
       return false;
     }
 
@@ -189,9 +192,9 @@ public:
 protected:
   SensirionI2CScd4x *_scd = nullptr; ///< SCD4x driver object
   uint16_t _co2 = 0;                 ///< SCD4x co2 reading
-  float _temperature = 20.0f;        ///< SCD4x temperature reading
-  float _humidity = 50.0f;           ///< SCD4x humidity reading
-  ulong _lastRead = 0;               ///< Last time the sensor was read
+  float _temperature;        ///< SCD4x temperature reading
+  float _humidity;           ///< SCD4x humidity reading
+  ulong _lastRead;               ///< Last time the sensor was read
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD4X

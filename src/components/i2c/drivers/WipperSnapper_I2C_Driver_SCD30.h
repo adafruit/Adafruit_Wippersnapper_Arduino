@@ -58,7 +58,7 @@ public:
       @brief    Checks if sensor was read within last 1s, or is the first read.
       @returns  True if the sensor was recently read, False otherwise.
   */
-  bool alreadyRecentlyRead() {
+  bool hasBeenReadInLastSecond() {
     return _lastRead != 0 && millis() - _lastRead < 1000;
   }
 
@@ -68,7 +68,7 @@ public:
       @returns  True if the sensor is ready, False otherwise.
   */
   /*******************************************************************************/
-  bool sensorReady() {
+  bool isSensorReady() {
     if (!_scd->dataReady()) {
       // failed, one more quick attempt
       delay(100);
@@ -87,11 +87,11 @@ public:
   /*******************************************************************************/
   bool readSensorData() {
     // dont read sensor more than once per second
-    if (alreadyRecentlyRead()) {
+    if (hasBeenReadInLastSecond()) {
       return true;
     }
 
-    if (!sensorReady()) {
+    if (!isSensorReady()) {
       return false;
     }
 
