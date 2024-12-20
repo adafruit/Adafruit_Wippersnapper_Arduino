@@ -325,7 +325,7 @@ void Wippersnapper_FS::createSecretsFile() {
   strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
   strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
   strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
-  secretsConfig.status_pixel_brightness = 0.2;
+  secretsConfig.status_pixel_brightness = STATUS_PIXEL_BRIGHTNESS_DEFAULT;
 
   // Serialize the struct to a JSON document
   JsonDocument doc;
@@ -451,6 +451,12 @@ void Wippersnapper_FS::parseSecrets() {
            "change network_ssid and network_password to match your Adafruit IO "
            "credentials!");
   }
+
+  // specify type of value for json key, by using the |operator to include
+  // a typed default value equivalent of with .as<float> w/ default value
+  // https://arduinojson.org/v7/api/jsonvariant/or/
+  WS._config.status_pixel_brightness =
+      doc["status_pixel_brightness"] | (float)STATUS_PIXEL_BRIGHTNESS_DEFAULT;
 
   // Close secrets.json file
   secretsFile.close();

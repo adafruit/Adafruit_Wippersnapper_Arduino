@@ -138,6 +138,12 @@ void WipperSnapper_LittleFS::parseSecrets() {
            "credentials!\n");
   }
 
+  // specify type of value for json key, by using the |operator to include
+  // a typed default value equivalent of with .as<float> w/ default value
+  // https://arduinojson.org/v7/api/jsonvariant/or/
+  WS._config.status_pixel_brightness =
+      doc["status_pixel_brightness"] | (float)STATUS_PIXEL_BRIGHTNESS_DEFAULT;
+
   // Close the file
   secretsFile.close();
 
