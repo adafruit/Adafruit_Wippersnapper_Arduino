@@ -553,6 +553,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _vcnl4040->configureDriver(msgDeviceInitReq);
     drivers.push_back(_vcnl4040);
     WS_DEBUG_PRINTLN("VCNL4040 Initialized Successfully!");
+  } else if (strcmp("vcnl4200", msgDeviceInitReq->i2c_device_name) == 0) {
+    _vcnl4200 = new WipperSnapper_I2C_Driver_VCNL4200(this->_i2c, i2cAddress);
+    if (!_vcnl4200->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize VCNL4200!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _vcnl4200->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_vcnl4200);
+    WS_DEBUG_PRINTLN("VCNL4200 Initialized Successfully!");
   } else if (strcmp("veml7700", msgDeviceInitReq->i2c_device_name) == 0) {
     _veml7700 = new WipperSnapper_I2C_Driver_VEML7700(this->_i2c, i2cAddress);
     if (!_veml7700->begin()) {
