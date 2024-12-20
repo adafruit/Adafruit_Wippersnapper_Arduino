@@ -215,7 +215,7 @@ typedef enum {
 } fsm_net_t;
 
 #ifdef ARDUINO_ARCH_RP2040
-#define WS_WDT_TIMEOUT 8388 ///< Pico Max WDT timeout
+#define WS_WDT_TIMEOUT 8388 ///< RP2040 Max WDT timeout
 #else
 #define WS_WDT_TIMEOUT 60000 ///< WDT timeout
 #endif
