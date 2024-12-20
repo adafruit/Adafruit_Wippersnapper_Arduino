@@ -30,7 +30,8 @@ ws_sdcard::ws_sdcard()
 
   if (!_sd.begin(_sd_spi_cfg)) {
     WS_DEBUG_PRINTLN(
-        "SD initialization failed.\nDo not reformat the card!\nIs the card "
+        "[SD] Runtime Error: SD initialization failed.\nDo not reformat the "
+        "card!\nIs the card "
         "correctly inserted?\nIs there a wiring/soldering problem\n");
     is_mode_offline = false;
   } else {
@@ -47,16 +48,16 @@ ws_sdcard::ws_sdcard()
 /**************************************************************************/
 ws_sdcard::~ws_sdcard() {
   if (is_mode_offline) {
-    _sd.end();               // Close the SD card
-    is_mode_offline = false; // Disable offline mode
+    _sd.end(); // Close the SD card
   }
+  is_mode_offline = false;
 }
 
 void ws_sdcard::calculateFileLimits() {
   // Calculate the maximum number of log files that can be stored on the SD card
   csd_t csd;
   if (!_sd.card()->readCSD(&csd)) {
-    WS_DEBUG_PRINTLN("ERROR: Could not read sdcard information");
+    WS_DEBUG_PRINTLN("Runtime Error: Could not read sdcard information");
     return;
   }
 
@@ -83,9 +84,11 @@ void ws_sdcard::calculateFileLimits() {
 bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
   if (!_rtc_ds1307->begin()) {
-    WS_DEBUG_PRINTLN("[SD] Failed to initialize DS1307 RTC");
-    delete _rtc_ds1307;
-    return false;
+    if (!_rtc_ds1307->begin(&Wire1)) {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS1307 RTC");
+      delete _rtc_ds1307;
+      return false;
+    }
   }
   if (!_rtc_ds1307->isrunning())
     _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -102,9 +105,11 @@ bool ws_sdcard::InitDS1307() {
 bool ws_sdcard::InitDS3231() {
   _rtc_ds3231 = new RTC_DS3231();
   if (!_rtc_ds3231->begin()) {
-    WS_DEBUG_PRINTLN("[SD] Failed to initialize DS3231 RTC");
-    delete _rtc_ds3231;
-    return false;
+    if (!_rtc_ds3231->begin(&Wire1)) {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS3231 RTC");
+      delete _rtc_ds3231;
+      return false;
+    }
   }
   if (_rtc_ds3231->lostPower())
     _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -121,9 +126,11 @@ bool ws_sdcard::InitDS3231() {
 bool ws_sdcard::InitPCF8523() {
   _rtc_pcf8523 = new RTC_PCF8523();
   if (!_rtc_pcf8523->begin()) {
-    WS_DEBUG_PRINTLN("[SD] Failed to initialize PCF8523 RTC");
-    delete _rtc_pcf8523;
-    return false;
+    if (!_rtc_pcf8523->begin(&Wire1)) {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize PCF8523 RTC");
+      delete _rtc_pcf8523;
+      return false;
+    }
   }
   if (_rtc_pcf8523->lostPower())
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -167,7 +174,7 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
     WS_DEBUG_PRINTLN("[SD] Enabled software RTC");
   } else {
     WS_DEBUG_PRINTLN(
-        "[SD] FATAL Parsing error - Unknown RTC type found in JSON string!");
+        "[SD] Runtime Error: Unknown RTC type found in JSON string!");
     did_init = false;
   }
 
@@ -416,11 +423,10 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
 
   // Get the encoded size of the signal message first so we can resize the
   // buffer prior to encoding
-  WS_DEBUG_PRINTLN("Encoding D2b signal message...");
   if (!pb_get_encoded_size(&tempBufSz,
                            wippersnapper_signal_BrokerToDevice_fields,
                            &msg_signal)) {
-    WS_DEBUG_PRINTLN("[SD] ERROR: Unable to get signal message size!");
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to get signal message size!");
     return false;
   }
 
@@ -429,11 +435,11 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
   pb_ostream_t ostream = pb_ostream_from_buffer(tempBuf.data(), tempBuf.size());
   if (!ws_pb_encode(&ostream, wippersnapper_signal_BrokerToDevice_fields,
                     &msg_signal)) {
-    WS_DEBUG_PRINTLN("[SD] ERROR: Unable to encode D2B signal message!");
+    WS_DEBUG_PRINTLN(
+        "[SD] Runtime Error: Unable to encode D2B signal message!");
     return false;
   }
   WsV2._sharedConfigBuffers.push_back(std::move(tempBuf));
-  WS_DEBUG_PRINTLN("Encoded the D2b signal message");
   return true;
 }
 
@@ -447,14 +453,14 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
 /**************************************************************************/
 bool ws_sdcard::CreateNewLogFile() {
   if (_sd_cur_log_files >= _sd_max_num_log_files) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Maximum number of log files for SD card capacity reached!");
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Maximum number of log files for SD "
+                     "card capacity reached!");
     return false;
   }
 
   File32 file;
   // Generate a name for the new log file using the RTC's timestamp
-  String logFilename = "log_" + String(GetTimestamp()) + ".json";
+  String logFilename = "log_" + String(GetTimestamp()) + ".log";
   static char log_filename_buffer[256];
   strncpy(log_filename_buffer, logFilename.c_str(),
           sizeof(log_filename_buffer) - 1);
@@ -496,17 +502,15 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 */
 /**************************************************************************/
 bool ws_sdcard::parseConfigFile() {
-  // TODO: THIS IS JUST DEBUG!
+  DeserializationError error;
+  JsonDocument doc;
+  // TODO: THIS IS JUST FOR DEBUG Testing, remove for PR review
   WS_DEBUG_PRINT("SD card capacity: ");
   WS_DEBUG_PRINTLN(_sd_capacity);
   WS_DEBUG_PRINT("Maximum number of log files: ");
   WS_DEBUG_PRINTLN(_sd_max_num_log_files);
   WS_DEBUG_PRINT("Maximum size of log file: ");
   WS_DEBUG_PRINTLN(_max_sz_log_file);
-
-  int max_json_len = 4096;
-  DeserializationError error;
-  JsonDocument doc;
 
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
@@ -516,22 +520,23 @@ bool ws_sdcard::parseConfigFile() {
   if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
     WS_DEBUG_PRINT(_serialInput);
-    error = deserializeJson(doc, _serialInput.c_str(), max_json_len);
+    error = deserializeJson(doc, _serialInput.c_str(), MAX_LEN_CFG_JSON);
   } else {
     WS_DEBUG_PRINTLN("[SD] Parsing Test Data...");
-    error = deserializeJson(doc, json_test_data, max_json_len);
+    error = deserializeJson(doc, json_test_data, MAX_LEN_CFG_JSON);
   }
 #endif
   // It is not possible to continue running in offline mode without a valid
   // config file
   if (error) {
-    WS_DEBUG_PRINTLN("[SD] Unable to deserialize config JSON, error code: " +
-                     String(error.c_str()));
+    WS_DEBUG_PRINTLN(
+        "[SD] Runtime Error: Unable to deserialize config.json. Error Code: " +
+        String(error.c_str()));
     return false;
   }
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
 
-  // Check the file's integrity
+  // Check config.json file's integrity
   if (!ValidateChecksum(doc)) {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
@@ -541,14 +546,14 @@ bool ws_sdcard::parseConfigFile() {
   // Begin parsing the JSON document
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   if (exportedFromDevice.isNull()) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No exportedFromDevice object "
-                     "found in JSON string! Unable to configure hardware!");
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Required exportedFromDevice not "
+                     "found in config file!");
     return false;
   }
   JsonArray components_ar = doc["components"].as<JsonArray>();
   if (components_ar.isNull()) {
-    WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - No components array found in "
-                     "JSON string!");
+    WS_DEBUG_PRINTLN(
+        "[SD] Runtime Error: Required components array not found!");
     return false;
   }
 
@@ -561,11 +566,11 @@ bool ws_sdcard::parseConfigFile() {
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
   if (!ConfigureRTC(json_rtc)) {
-    WS_DEBUG_PRINTLN("[SD] Failed to to configure RTC!");
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;
   }
 #else
-  WS_DEBUG_PRINTLN("[SD] Skipping RTC configuration for Wokwi Simulator...");
+  WS_DEBUG_PRINTLN("[SD] Did not configure RTC for Wokwi...");
 #endif
 
   // Parse each component from JSON->PB and push into a shared buffer
@@ -576,8 +581,7 @@ bool ws_sdcard::parseConfigFile() {
     // Parse the component API type
     const char *component_api_type = component["componentAPI"];
     if (component_api_type == nullptr) {
-      WS_DEBUG_PRINTLN(
-          "[SD] FATAL Parsing error - Missing component API type!");
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Missing component API type!");
       return false;
     }
 
@@ -592,8 +596,9 @@ bool ws_sdcard::parseConfigFile() {
               component["period"] | 0.0, component["value"],
               component["sampleMode"] | UNKNOWN_VALUE,
               component["direction"] | UNKNOWN_VALUE, component["pull"])) {
-        WS_DEBUG_PRINTLN("[SD] FATAL Parsing error - Unable to parse "
-                         "DigitalIO component!");
+        WS_DEBUG_PRINT(
+            "[SD] Runtime Error: Unable to parse DigitalIO Component, Pin: ");
+        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
 
@@ -609,7 +614,8 @@ bool ws_sdcard::parseConfigFile() {
                             component["period"] | 0.0,
                             component["analogReadMode"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
-            "[SD] FATAL Parsing error - Unable to parse AnalogIO component!");
+            "[SD] Runtime Error: Unable to parse AnalogIO Component, Pin: ");
+        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
 
@@ -627,24 +633,23 @@ bool ws_sdcard::parseConfigFile() {
                            component["sensorType1"] | UNKNOWN_VALUE,
                            component["sensorType2"] | UNKNOWN_VALUE)) {
         WS_DEBUG_PRINTLN(
-            "[SD] FATAL Parsing error - Unable to parse DS18X20 component!");
+            "[SD] Runtime Error: Unable to parse DS18X20 Component, Pin: ");
+        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
-
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
       msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
     } else {
-      // Unknown component API type
-      WS_DEBUG_PRINTLN("[SD] Unknown component API type found: " +
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
                        String(component_api_type));
       return false;
     }
 
     // App handles the signal messages, in-order
     if (!AddSignalMessageToSharedBuffer(msg_signal_b2d)) {
-      WS_DEBUG_PRINTLN(
-          "[SD] FATAL Error - Unable to add signal message to shared buffer!");
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
+                       "to shared buffer!");
       return false;
     }
   }
@@ -801,7 +806,7 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
   if (!file) {
     WS_DEBUG_PRINTLN(
-        "[SD] FATAL Error - Unable to open the log file for writing!");
+        "[SD] Runtime Error: Unable to open log file for writing!");
     return false;
   }
   BufferingPrint bufferedFile(file, 64); // Add buffering to the file
@@ -819,8 +824,9 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
 
   if (_sz_cur_log_file >= _max_sz_log_file) {
-    WS_DEBUG_PRINTLN("[SD] Log file has exceeded maximum size! Attempting to "
-                     "create a new file...");
+    WS_DEBUG_PRINTLN(
+        "[SD] NOTE: Log file has exceeded maximum size! Attempting to "
+        "create a new file...");
     if (!CreateNewLogFile())
       return false;
     return false;
