@@ -319,7 +319,7 @@ protected:
                            WS._multiNetworks[i].pass);
         }
         WS.feedWDT();
-        if (_wifiMulti.run(10000) == WL_CONNECTED) {
+        if (_wifiMulti.run(20000) == WL_CONNECTED) {
           WS.feedWDT();
           _status = WS_NET_CONNECTED;
           return;
