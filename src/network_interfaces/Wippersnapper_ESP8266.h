@@ -133,40 +133,40 @@ public:
       return false;
     }
 
-    // Was the network within secrets.json found?
-    for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i).c_str()) == 0) {
-        WS_DEBUG_PRINT("SSID (");
-        WS_DEBUG_PRINT(_ssid);
-        WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
-        return true;
-      }
-      if (WS._isWiFiMulti) {
+    bool foundNetwork = false;
+
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
+    for (uint8_t i = 0; i < n; i++) {
+      if (!foundNetwork && strcmp(WiFi.SSID(i).c_str(), _ssid) == 0) {
+        foundNetwork = true;
+      } else if (!foundNetwork && WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
-            WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
-            WS_DEBUG_PRINT(") found! RSSI: ");
-            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
-            return true;
+            foundNetwork = true;
           }
         }
       }
-    }
-
-    // User-set network not found, print scan results to serial console
-    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (int i = 0; i < n; ++i) {
       WS_DEBUG_PRINT(WiFi.SSID(i));
-      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(" (");
+      uint8_t BSSID[WL_MAC_ADDR_LENGTH];
+      memcpy(BSSID, WiFi.BSSID(i), WL_MAC_ADDR_LENGTH);
+      for (int m = 0; m < WL_MAC_ADDR_LENGTH; m++) {
+        if (m != 0)
+          WS_DEBUG_PRINT(":");
+        WS_DEBUG_PRINTHEX(BSSID[m]);
+      }
+      WS_DEBUG_PRINT(") ");
       WS_DEBUG_PRINT(WiFi.RSSI(i));
-      WS_DEBUG_PRINTLN("dB");
+      WS_DEBUG_PRINT("dB (ch");
+      WS_DEBUG_PRINT(WiFi.channel(i))
+      WS_DEBUG_PRINTLN(")");
     }
 
-    return false;
+    if (!foundNetwork) {
+      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+    }
+    return foundNetwork;
   }
 
   /********************************************************/
@@ -260,7 +260,6 @@ protected:
       delay(100);
       // ESP8266 MUST be in STA mode to avoid device acting as client/server
       WiFi.mode(WIFI_STA);
-      WiFi.begin(_ssid, _pass);
       _status = WS_NET_DISCONNECTED;
       delay(100);
 
@@ -274,38 +273,28 @@ protected:
                              WS._multiNetworks[i].pass);
           }
         }
-        // add default network
-        if (_wifiMulti.existsAP(_ssid) == false) {
-          _wifiMulti.addAP(_ssid, _pass);
-        }
-        long startRetry = millis();
-        WS_DEBUG_PRINTLN("CONNECTING");
-        while (_wifiMulti.run(5000) != WL_CONNECTED &&
-               millis() - startRetry < 10000) {
-          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-          yield();
-        }
-        if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
-        } else {
-          _status = WS_NET_DISCONNECTED;
-        }
-      } else {
-        // single network mode
-
-        // wait for a connection to be established
-        long startRetry = millis();
-        WS_DEBUG_PRINTLN("CONNECTING");
-        while (WiFi.status() != WL_CONNECTED && millis() - startRetry < 10000) {
-          // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
-          yield();
-        }
-        if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
-        } else {
-          _status = WS_NET_DISCONNECTED;
-        }
       }
+
+      // add default network
+      if (_wifiMulti.existsAP(_ssid) == false) {
+        _wifiMulti.addAP(_ssid, _pass);
+      }
+
+      long startRetry = millis();
+      WS_DEBUG_PRINTLN("CONNECTING");
+
+      while (_wifiMulti.run(5000) != WL_CONNECTED &&
+             millis() - startRetry < 10000) {
+        // ESP8266 WDT requires yield() during a busy-loop so it doesn't bite
+        yield();
+      }
+
+      if (WiFi.status() == WL_CONNECTED) {
+        _status = WS_NET_CONNECTED;
+      } else {
+        _status = WS_NET_DISCONNECTED;
+      }
+
       WS.feedWDT();
     }
   }

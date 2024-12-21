@@ -189,7 +189,12 @@
 #define BOARD_ID "rpi-pico-w"
 #define USE_TINYUSB
 #define USE_STATUS_LED
-#define STATUS_LED_PIN 32
+#define STATUS_LED_PIN LED_BUILTIN
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
+#define BOARD_ID "rpi-pico-2w"
+#define USE_TINYUSB
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

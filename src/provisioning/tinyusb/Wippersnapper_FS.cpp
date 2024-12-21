@@ -24,7 +24,7 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
-    defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
+    defined(ARDUINO_ARCH_RP2040) ||                                            \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2)
@@ -106,6 +106,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   // If a filesystem does not already exist - attempt to initialize a new
   // filesystem
   if (!initFilesystem() && !initFilesystem(true)) {
+    TinyUSBDevice.attach();
     setStatusLEDColor(RED);
     fsHalt("ERROR Initializing Filesystem");
   }
@@ -217,7 +218,12 @@ void Wippersnapper_FS::initUSBMSC() {
 
   // init MSC
   usb_msc.begin();
+
   // Attach MSC and wait for enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+  }
   TinyUSBDevice.attach();
   delay(500);
 }
@@ -231,6 +237,13 @@ void Wippersnapper_FS::initUSBMSC() {
 bool Wippersnapper_FS::configFileExists() {
   // Does secrets.json file exist?
   if (!wipperFatFs.exists("/secrets.json"))
+    return false;
+  File32 file = wipperFatFs.open("/secrets.json", FILE_READ);
+  if (!file)
+    return false;
+  int firstChar = file.peek();
+  file.close();
+  if (firstChar <= 0 || firstChar == 255)
     return false;
   return true;
 }
@@ -318,14 +331,14 @@ bool Wippersnapper_FS::createBootFile() {
 void Wippersnapper_FS::createSecretsFile() {
   // Open file for writing
   File32 secretsFile = wipperFatFs.open("/secrets.json", FILE_WRITE);
-
+  secretsFile.truncate(0);
   // Create a default secretsConfig structure
   secretsConfig secretsConfig;
   strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
   strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
   strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
   strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
-  secretsConfig.status_pixel_brightness = 0.2;
+  secretsConfig.status_pixel_brightness = STATUS_PIXEL_BRIGHTNESS_DEFAULT;
 
   // Serialize the struct to a JSON document
   JsonDocument doc;
@@ -452,6 +465,12 @@ void Wippersnapper_FS::parseSecrets() {
            "credentials!");
   }
 
+  // specify type of value for json key, by using the |operator to include
+  // a typed default value equivalent of with .as<float> w/ default value
+  // https://arduinojson.org/v7/api/jsonvariant/or/
+  WS._config.status_pixel_brightness =
+      doc["status_pixel_brightness"] | (float)STATUS_PIXEL_BRIGHTNESS_DEFAULT;
+
   // Close secrets.json file
   secretsFile.close();
 }
@@ -485,8 +504,6 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
 */
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg) {
-  TinyUSBDevice.attach();
-  delay(500);
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
