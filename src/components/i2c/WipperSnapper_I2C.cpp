@@ -600,6 +600,22 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _sen5x->configureDriver(msgDeviceInitReq);
     drivers.push_back(_sen5x);
     WS_DEBUG_PRINTLN("SEN5X Initialized Successfully!");
+  } else if ((strcmp("sen6x", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("sen60", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("sen63C", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("sen65", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("sen66", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("sen68", msgDeviceInitReq->i2c_device_name) == 0)) {
+    _sen6x = new WipperSnapper_I2C_Driver_SEN6X(this->_i2c, i2cAddress);
+    if (!_sen6x->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize SEN6X!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _sen6x->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_sen6x);
+    WS_DEBUG_PRINTLN("SEN6X Initialized Successfully!");
   } else if ((strcmp("sht40", msgDeviceInitReq->i2c_device_name) == 0) ||
              (strcmp("sht41", msgDeviceInitReq->i2c_device_name) == 0) ||
              (strcmp("sht45", msgDeviceInitReq->i2c_device_name) == 0)) {
