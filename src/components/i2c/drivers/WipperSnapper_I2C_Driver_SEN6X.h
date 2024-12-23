@@ -1,5 +1,5 @@
 /*!
- * @file WipperSnapper_I2C_Driver_SEN6x.h
+ * @file WipperSnapper_I2C_Driver_SEN6X.h
  *
  * Device driver for the SEN66 Particulate Matter, Temperature, Humidity, VOC, NOX, and CO2 sensor.
  *
@@ -18,7 +18,7 @@
 #define WipperSnapper_I2C_Driver_SEN6X_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <SensirionI2CSen66.h>
+#include <SensirionI2cSen66.h>
 #include <Wire.h>
 
 /**************************************************************************/
