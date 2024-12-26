@@ -103,8 +103,8 @@ public:
 
   /***********************************************************/
   /*!
-  @brief   Performs a scan of local WiFi networks.
-  @returns True if `_network_ssid` is found, False otherwise.
+    @brief   Performs a scan of local WiFi networks.
+    @returns True if `_network_ssid` is found, False otherwise.
   */
   /***********************************************************/
   bool check_valid_ssid() {
@@ -119,26 +119,33 @@ public:
       return false;
     }
 
-    // Was the network within secrets.json found?
-    for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
-        WS_DEBUG_PRINT("SSID found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
-        return true;
+    bool foundNetwork = false;
+
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
+    for (uint8_t i = 0; i < n; i++) {
+      if (!foundNetwork && strcmp(WiFi.SSID(i), _ssid) == 0) {
+        foundNetwork = true;
       }
-    }
-
-    // User-set network not found, print scan results to serial console
-    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (int i = 0; i < n; ++i) {
       WS_DEBUG_PRINT(WiFi.SSID(i));
-      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(" (");
+      uint8_t BSSID[WL_MAC_ADDR_LENGTH];
+      WiFi.BSSID(i, BSSID);
+      for (int m = 0; m < WL_MAC_ADDR_LENGTH; m++) {
+        if (m != 0)
+          WS_DEBUG_PRINT(":");
+        WS_DEBUG_PRINTHEX(BSSID[m]);
+      }
+      WS_DEBUG_PRINT(") ");
       WS_DEBUG_PRINT(WiFi.RSSI(i));
-      WS_DEBUG_PRINTLN("dB");
+      WS_DEBUG_PRINT("dB (ch");
+      WS_DEBUG_PRINT(WiFi.channel(i))
+      WS_DEBUG_PRINTLN(")");
     }
 
-    return false;
+    if (!foundNetwork) {
+      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+    }
+    return foundNetwork;
   }
 
   /********************************************************/
@@ -323,6 +330,7 @@ protected:
 
       // validate co-processor's firmware version
       if (!firmwareCheck()) {
+        // TODO: see if there's a way to add to bootlog without usb reattach
         WS_DEBUG_PRINTLN("Please upgrade the firmware on the ESP module to the "
                          "latest version.");
       }

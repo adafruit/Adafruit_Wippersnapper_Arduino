@@ -112,40 +112,40 @@ public:
       return false;
     }
 
-    // Was the network within secrets.json found?
-    for (int i = 0; i < n; ++i) {
-      if (strcmp(_ssid, WiFi.SSID(i)) == 0) {
-        WS_DEBUG_PRINT("SSID (");
-        WS_DEBUG_PRINT(_ssid);
-        WS_DEBUG_PRINT(") found! RSSI: ");
-        WS_DEBUG_PRINTLN(WiFi.RSSI(i));
-        return true;
-      }
-      if (WS._isWiFiMulti) {
+    bool foundNetwork = false;
+
+    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks:");
+    for (uint8_t i = 0; i < n; i++) {
+      if (!foundNetwork && strcmp(WiFi.SSID(i), _ssid) == 0) {
+        foundNetwork = true;
+      } else if (!foundNetwork && WS._isWiFiMulti) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0) {
-            WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
-            WS_DEBUG_PRINT(") found! RSSI: ");
-            WS_DEBUG_PRINTLN(WiFi.RSSI(i));
-            return true;
+            foundNetwork = true;
           }
         }
       }
-    }
-
-    // User-set network not found, print scan results to serial console
-    WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
-    WS_DEBUG_PRINTLN("WipperSnapper found these WiFi networks: ");
-    for (int i = 0; i < n; ++i) {
       WS_DEBUG_PRINT(WiFi.SSID(i));
-      WS_DEBUG_PRINT(" ");
+      WS_DEBUG_PRINT(" (");
+      uint8_t BSSID[WL_MAC_ADDR_LENGTH];
+      WiFi.BSSID(i, BSSID);
+      for (int m = 0; m < WL_MAC_ADDR_LENGTH; m++) {
+        if (m != 0)
+          WS_DEBUG_PRINT(":");
+        WS_DEBUG_PRINTHEX(BSSID[m]);
+      }
+      WS_DEBUG_PRINT(") ");
       WS_DEBUG_PRINT(WiFi.RSSI(i));
-      WS_DEBUG_PRINTLN("dB");
+      WS_DEBUG_PRINT("dB (ch");
+      WS_DEBUG_PRINT(WiFi.channel(i))
+      WS_DEBUG_PRINTLN(")");
     }
 
-    return false;
+    if (!foundNetwork) {
+      WS_DEBUG_PRINTLN("ERROR: Your requested WiFi network was not found!");
+    }
+    return foundNetwork;
   }
 
   /********************************************************/
@@ -319,7 +319,7 @@ protected:
                            WS._multiNetworks[i].pass);
         }
         WS.feedWDT();
-        if (_wifiMulti.run(10000) == WL_CONNECTED) {
+        if (_wifiMulti.run(20000) == WL_CONNECTED) {
           WS.feedWDT();
           _status = WS_NET_CONNECTED;
           return;

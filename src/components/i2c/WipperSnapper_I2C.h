@@ -64,6 +64,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_TSL2591.h"
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4020.h"
 #include "drivers/WipperSnapper_I2C_Driver_VCNL4040.h"
+#include "drivers/WipperSnapper_I2C_Driver_VCNL4200.h"
 #include "drivers/WipperSnapper_I2C_Driver_VEML7700.h"
 #include "drivers/WipperSnapper_I2C_Driver_VL53L0X.h"
 #include "drivers/WipperSnapper_I2C_Driver_VL53L1X.h"
@@ -159,6 +160,7 @@ private:
   WipperSnapper_I2C_Driver_TSL2591 *_tsl2591 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4020 *_vcnl4020 = nullptr;
   WipperSnapper_I2C_Driver_VCNL4040 *_vcnl4040 = nullptr;
+  WipperSnapper_I2C_Driver_VCNL4200 *_vcnl4200 = nullptr;
   WipperSnapper_I2C_Driver_VEML7700 *_veml7700 = nullptr;
   WipperSnapper_I2C_Driver_SCD4X *_scd40 = nullptr;
   WipperSnapper_I2C_Driver_SEN5X *_sen5x = nullptr;

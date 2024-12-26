@@ -2494,14 +2494,27 @@ void Wippersnapper::runNetFSM() {
     @brief    Prints an error to the serial and halts the hardware until
               the WDT bites.
     @param    error
-              The desired error to print to serial.
+              The error to print to serial.
     @param    ledStatusColor
-              The desired color to blink.
+              The color to blink.
+    @param    seconds_until_reboot
+              The amount of time to wait before rebooting.
 */
 /**************************************************************************/
-void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
-  for (;;) {
-    WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
+void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor,
+                              uint8_t seconds_until_reboot) {
+#ifdef ARDUINO_ARCH_ESP8266
+  uint8_t wdt_timeout_ms = 3200;
+#else
+  uint8_t wdt_timeout_ms = 5000;
+#endif
+  int seconds_until_wdt_enable =
+      seconds_until_reboot - (int)(wdt_timeout_ms / 1000);
+
+  for (int i = 0;; i++) {
+    WS_DEBUG_PRINT("ERROR [WDT RESET IN ");
+    WS_DEBUG_PRINT(seconds_until_reboot - i);
+    WS_DEBUG_PRINTLN("]: ");
     WS_DEBUG_PRINTLN(error);
     // let the WDT fail out and reset!
     statusLEDSolid(ledStatusColor);
@@ -2512,6 +2525,12 @@ void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor) {
     // hardware and software watchdog timers, delayMicroseconds does not.
     delayMicroseconds(1000000);
 #endif
+    if (i < seconds_until_wdt_enable) {
+      yield();
+      WS.feedWDT(); // feed the WDT for the first X-5 seconds
+    } else if (i == seconds_until_reboot) {
+      WS.enableWDT(wdt_timeout_ms);
+    }
   }
 }
 
@@ -2748,9 +2767,6 @@ void Wippersnapper::connect() {
   // Dump device info to the serial monitor
   printDeviceInfo();
 
-  // enable global WDT
-  WS.enableWDT(WS_WDT_TIMEOUT);
-
   // Generate device identifier
   if (!generateDeviceUID()) {
     haltError("Unable to generate Device UID");
@@ -2772,7 +2788,9 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("Running Network FSM...");
   // Run the network fsm
   runNetFSM();
-  WS.feedWDT();
+
+  // Enable WDT after wifi connection as wifiMulti doesnt feed WDT
+  WS.enableWDT(WS_WDT_TIMEOUT);
 
 #ifdef USE_DISPLAY
   WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
