@@ -106,14 +106,12 @@ void Wippersnapper_V2::provisionV2() {
   _fileSystemV2->GetSDCSPin();
   #elif defined(USE_LITTLEFS)
   _littleFSV2->GetSDCSPin();
+  #elif defined(OFFLINE_MODE_WOKWI)
+  WsV2.pin_sd_cs = 15;
   #endif
   WsV2._sdCardV2 = new ws_sdcard();
   if (WsV2._sdCardV2->isSDCardInitialized()) {
-    //haltErrorV2("GOOD: passed sd cspin check", WS_LED_STATUS_KAT);
     return;
-  } else {
-    // We are hitting against this at 4:16pm 12/16/2021
-    haltErrorV2("ERROR: failed sd cspin check", WS_LED_STATUS_MQTT_CONNECTING);
   }
 
 #ifdef USE_DISPLAY
@@ -1200,11 +1198,10 @@ void Wippersnapper_V2::connectV2() {
   // NOTE: After this, bail out of this function and run the app loop!!!
   if (WsV2._sdCardV2->isModeOffline() == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
-// Wait for incoming JSON string from Serial
-#ifdef OFFLINE_MODE_DEBUG
-    if (!WsV2._sdCardV2->waitForSerialConfig())
-      haltErrorV2("Unable to validate incoming JSON file");
-#endif
+    // If debug mode, wait for serial config
+    #ifdef OFFLINE_MODE_DEBUG
+    WsV2._sdCardV2->waitForSerialConfig();
+    #endif
     // Parse the JSON file
     if (!WsV2._sdCardV2->parseConfigFile())
       haltErrorV2("Failed to parse incoming JSON file");

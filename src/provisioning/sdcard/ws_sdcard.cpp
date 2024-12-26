@@ -529,9 +529,8 @@ bool ws_sdcard::parseConfigFile() {
   // It is not possible to continue running in offline mode without a valid
   // config file
   if (error) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Unable to deserialize config.json. Error Code: " +
-        String(error.c_str()));
+    WS_DEBUG_PRINT("[SD] Runtime Error: Unable to deserialize config.json");
+    WS_DEBUG_PRINTLN("\nError Code: " + String(error.c_str()));
     return false;
   }
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
@@ -924,3 +923,115 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
   }
   return true;
 }
+
+#ifdef OFFLINE_MODE_DEBUG
+/**************************************************************************/
+/*!
+    @brief  Waits for a valid JSON string to be received via the hardware's
+            serial input or from a hardcoded test JSON string.
+    @returns True if a valid JSON string was received, False otherwise.
+*/
+/**************************************************************************/
+void ws_sdcard::waitForSerialConfig() {
+  json_test_data = "{"
+                   "\"exportVersion\": \"1.0.0\","
+                   "\"exportedBy\": \"tester\","
+                   "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
+                   "\"exportedFromDevice\": {"
+                   "\"board\": \"metroesp32s3\","
+                   "\"firmwareVersion\": \"1.0.0-beta.93\","
+                   "\"referenceVoltage\": 2.6,"
+                   "\"totalGPIOPins\": 11,"
+                   "\"totalAnalogPins\": 6"
+                   "},"
+                   "\"components\": ["
+                   "{"
+                   "\"componentAPI\": \"analogio\","
+                   "\"name\": \"Analog Pin\","
+                   "\"pinName\": \"D14\","
+                   "\"type\": \"analog_pin\","
+                   "\"mode\": \"ANALOG\","
+                   "\"direction\": \"INPUT\","
+                   "\"sampleMode\": \"TIMER\","
+                   "\"analogReadMode\": \"PIN_VALUE\","
+                   "\"period\": 5,"
+                   "\"isPin\": true"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"analogio\","
+                   "\"name\": \"Analog Pin\","
+                   "\"pinName\": \"D27\","
+                   "\"type\": \"analog_pin\","
+                   "\"mode\": \"ANALOG\","
+                   "\"direction\": \"INPUT\","
+                   "\"sampleMode\": \"TIMER\","
+                   "\"analogReadMode\": \"PIN_VALUE\","
+                   "\"period\": 5,"
+                   "\"isPin\": true"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"digitalio\","
+                   "\"name\": \"Button (D4)\","
+                   "\"pinName\": \"D4\","
+                   "\"type\": \"push_button\","
+                   "\"mode\": \"DIGITAL\","
+                   "\"sampleMode\": \"EVENT\","
+                   "\"direction\": \"INPUT\","
+                   "\"period\": 5,"
+                   "\"pull\": \"UP\","
+                   "\"isPin\": true"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"ds18x20\","
+                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
+                   "\"sensorTypeCount\": 2,"
+                   "\"sensorType1\": \"object-temp-fahrenheit\","
+                   "\"sensorType2\": \"object-temp\","
+                   "\"pinName\": \"D12\","
+                   "\"sensorResolution\": 12,"
+                   "\"period\": 5"
+                   "},"
+                   "{"
+                   "\"componentAPI\": \"ds18x20\","
+                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
+                   "\"sensorTypeCount\": 2,"
+                   "\"sensorType1\": \"object-temp-fahrenheit\","
+                   "\"sensorType2\": \"object-temp\","
+                   "\"pinName\": \"D25\","
+                   "\"sensorResolution\": 12,"
+                   "\"period\": 5"
+                   "}"
+                   "]"
+                   "}\\n\r\n";
+
+  _serialInput = ""; // Clear the serial input buffer
+  if (!_use_test_data) {
+    WS_DEBUG_PRINTLN("[SD] Waiting for incoming JSON string...");
+    while (true) {
+      // Check if there is data available to read
+      if (Serial.available() > 0) {
+        char c = Serial.read();
+        _serialInput += c;
+        if (_serialInput.endsWith("\\n")) {
+          WS_DEBUG_PRINTLN("[SD] End of JSON string detected!");
+          break;
+        }
+      }
+    }
+  }
+  // Trim the newline
+  _serialInput.trim();
+
+  // Print out the received JSON string
+  // TODO: REMOVE this for the PR 
+  WS_DEBUG_PRINT("[SD][Debug] JSON string received!");
+  if (_use_test_data) {
+    WS_DEBUG_PRINTLN("[from json test data]");
+    WS_DEBUG_PRINTLN(json_test_data);
+  } else {
+    WS_DEBUG_PRINTLN(_serialInput);
+  }
+
+  WS_DEBUG_PRINTLN("[SD] JSON string received!");
+}
+#endif

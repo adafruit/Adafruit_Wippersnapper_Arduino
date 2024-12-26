@@ -162,13 +162,12 @@ void WipperSnapper_LittleFS_V2::fsHalt(String msg,
 */
 /**************************************************************************/
 void WipperSnapper_LittleFS_V2::GetSDCSPin() {
-  DeserializationError error;
   // Attempt to open and deserialize the config.json file
   File file_cfg = LittleFS.open("/config.json");
   if (!file_cfg)
     WsV2.pin_sd_cs = 255;
 
-  error = deserializeJson(WsV2._config_doc, file_cfg);
+  DeserializationError error = deserializeJson(WsV2._config_doc, file_cfg);
   if (error) {
     file_cfg.close();
     WsV2.pin_sd_cs = 255;
