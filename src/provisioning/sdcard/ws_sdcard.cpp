@@ -1023,7 +1023,7 @@ void ws_sdcard::waitForSerialConfig() {
   _serialInput.trim();
 
   // Print out the received JSON string
-  // TODO: REMOVE this for the PR 
+  // TODO: REMOVE this for the PR
   WS_DEBUG_PRINT("[SD][Debug] JSON string received!");
   if (_use_test_data) {
     WS_DEBUG_PRINTLN("[from json test data]");
