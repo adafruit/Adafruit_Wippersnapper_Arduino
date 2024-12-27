@@ -439,6 +439,13 @@ void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
 }
 
+/**************************************************************************/
+/*!
+    @brief      In offline mode, this function iterates through a shared
+                buffer of BrokerToDevice messages, decodes each message and
+                executes the associated callback.
+*/
+/**************************************************************************/
 void callDecodeB2D() {
   WS_DEBUG_PRINTLN("\n[App] Parsing Offline Configuration Messages...");
   WS_DEBUG_PRINT("[debug] Total Messages: ");

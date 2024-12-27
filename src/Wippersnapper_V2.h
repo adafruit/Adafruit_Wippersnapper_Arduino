@@ -255,8 +255,8 @@ public:
                              ///< otherwise.
   std::vector<std::vector<uint8_t>>
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
-  JsonDocument _config_doc;
-  uint8_t pin_sd_cs; ///< SD card chip select pin
+  JsonDocument _config_doc; ///< Stores the config.json file, used by offline mode
+  uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
   void _initV2();
 

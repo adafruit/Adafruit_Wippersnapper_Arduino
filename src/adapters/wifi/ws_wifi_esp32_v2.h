@@ -50,6 +50,18 @@ public:
   /**************************************************************************/
   /*!
   @brief  Overload for ESP32 devices without filesystem-backed provisioning.
+    @param  aioUsername
+            Adafruit IO username.
+    @param  aioKey
+            Adafruit IO key.
+    @param  netSSID
+            WiFi network's SSID.
+    @param  netPass
+            WiFi network's password.
+    @param  brokerURL
+            Adafruit IO MQTT broker URL.
+    @param  brokerPort
+            Adafruit IO MQTT broker port.
   */
   /**************************************************************************/
   ws_wifi_esp32_v2(const char *aioUsername, const char *aioKey,

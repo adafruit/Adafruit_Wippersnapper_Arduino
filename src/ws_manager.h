@@ -1,10 +1,18 @@
 #ifndef WIPPERSNAPPER_MANAGER_H
 #define WIPPERSNAPPER_MANAGER_H
 
+// For compiling with ESP32
 #include "adapters/wifi/ws_wifi_esp32.h"
 typedef ws_wifi_esp32 ws_adapter_wifi;
 #include "adapters/wifi/ws_wifi_esp32_v2.h"
 typedef ws_wifi_esp32_v2 ws_adapter_wifi_v2;
+
+// Uncomment the following lines to compile for Pico
+// NOTE: When compiling for pico, you must also modify L39-L40 to reflect the following lines
+// #include "adapters/offline/ws_offline_pico.h"
+// typedef ws_offline_pico ws_adapter_offline;
+// #include "adapters/offline/ws_offline_pico_v2.h"
+// typedef ws_offline_pico_v2 ws_adapter_offline;
 
 /****************************************************************************/
 /*!
