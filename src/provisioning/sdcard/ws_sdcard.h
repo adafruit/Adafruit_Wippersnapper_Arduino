@@ -94,24 +94,24 @@ private:
   bool AddSignalMessageToSharedBuffer(
       wippersnapper_signal_BrokerToDevice &msg_signal);
 
-  SdSpiConfig _sd_spi_cfg; ///< SPI configuration for the SD card
-  SdFat _sd;               ///< SD object from Adafruit SDFat library
-  size_t _sd_capacity;     ///< Capacity of the SD card, in Bytes
-  size_t _sz_cur_log_file; ///< Size of the current log file, in Bytes
-  size_t _max_sz_log_file; ///< Calculated maximum size of a log file, in Bytes
-  int _sd_max_num_log_files; ///< Maximum number of log files that can fit on
-                             ///< the SD card
-  int _sd_cur_log_files; ///< Current number of log files that can fit on the SD
-                         ///< card
-  bool is_mode_offline;  ///< True if offline mode is enabled, False otherwise
-  String _serialInput;   ///< Serial input buffer
+  SdSpiConfig _sd_spi_cfg;             ///< SPI configuration for the SD card
+  SdFat _sd;                           ///< SD object from Adafruit SDFat library
+  size_t _sd_capacity;                 ///< Capacity of the SD card, in Bytes
+  size_t _sz_cur_log_file;             ///< Size of the current log file, in Bytes
+  size_t _max_sz_log_file;             ///< Calculated maximum size of a log file, in Bytes
+  int _sd_max_num_log_files;           ///< Maximum number of log files that can fit on
+                                       ///< the SD card
+  int _sd_cur_log_files;               ///< Current number of log files that can fit on the SD
+                                       ///< card
+  bool is_mode_offline;                ///< True if offline mode is enabled, False otherwise
+  String _serialInput;                 ///< Serial input buffer
   const char *json_test_data;          ///< Json test data
   const char *_log_filename;           ///< Path to the log file
   RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object
   RTC_DS1307 *_rtc_ds1307 = nullptr;   ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object
   RTC_Millis *_rtc_soft = nullptr;     ///< Software RTC object
-  bool _use_test_data; ///< True if sample data is being used for testing
+  bool _use_test_data;                 ///< True if sample data is being used for testing
 };
-extern Wippersnapper_V2 WsV2;
+extern Wippersnapper_V2 WsV2; ///< Global member
 #endif // WS_SDCARD_H

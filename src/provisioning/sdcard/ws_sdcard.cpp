@@ -21,7 +21,7 @@
 /**************************************************************************/
 ws_sdcard::ws_sdcard()
     : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
-  is_mode_offline = false;
+  is_mode_offline = true;
   _use_test_data = false;
   _sz_cur_log_file = 0;
 
@@ -35,8 +35,7 @@ ws_sdcard::ws_sdcard()
         "correctly inserted?\nIs there a wiring/soldering problem\n");
     is_mode_offline = false;
   } else {
-    // Card initialized - calculate file limits
-    is_mode_offline = true;
+    // Card initialized!
     calculateFileLimits();
   }
 }
@@ -47,9 +46,7 @@ ws_sdcard::ws_sdcard()
 */
 /**************************************************************************/
 ws_sdcard::~ws_sdcard() {
-  if (is_mode_offline) {
-    _sd.end(); // Close the SD card
-  }
+  _sd.end(); // Close the SD card interface
   is_mode_offline = false;
 }
 
@@ -145,6 +142,7 @@ bool ws_sdcard::InitPCF8523() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitSoftRTC() {
+  // NOTE: RTC_Soft always returns void
   _rtc_soft->begin(DateTime(F(__DATE__), F(__TIME__)));
   return true;
 }
@@ -266,7 +264,7 @@ bool ws_sdcard::ParseDigitalIOAdd(
   strcpy(msg_DigitalIOAdd.pin_name, pin);
 
   if (period == 0.0) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin period not found!");
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid pin period!");
     return false;
   }
   msg_DigitalIOAdd.period = period;
@@ -504,19 +502,12 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
-  // TODO: THIS IS JUST FOR DEBUG Testing, remove for PR review
-  WS_DEBUG_PRINT("SD card capacity: ");
-  WS_DEBUG_PRINTLN(_sd_capacity);
-  WS_DEBUG_PRINT("Maximum number of log files: ");
-  WS_DEBUG_PRINTLN(_sd_max_num_log_files);
-  WS_DEBUG_PRINT("Maximum size of log file: ");
-  WS_DEBUG_PRINTLN(_max_sz_log_file);
 
+// Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = WsV2._config_doc; // Use the config document from the filesystem
+  doc = WsV2._config_doc;
 #else
-  // Use test data rather than data from the filesystem
   if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
     WS_DEBUG_PRINT(_serialInput);
@@ -540,7 +531,7 @@ bool ws_sdcard::parseConfigFile() {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
   }
-  WS_DEBUG_PRINTLN("[SD] JSON checksum OK!");
+  WS_DEBUG_PRINTLN("[SD] Checksum OK!");
 
   // Begin parsing the JSON document
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
@@ -556,20 +547,19 @@ bool ws_sdcard::parseConfigFile() {
     return false;
   }
 
-  // We don't talk to IO here, perform an "offline" device check-in
+  // We don't talk to IO here, mock an "offline" device check-in
   CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
           exportedFromDevice["totalAnalogPins"] | 0,
           exportedFromDevice["referenceVoltage"] | 0.0);
   setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
 
+// Configure the RTC
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
   if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;
   }
-#else
-  WS_DEBUG_PRINTLN("[SD] Did not configure RTC for Wokwi...");
 #endif
 
   // Parse each component from JSON->PB and push into a shared buffer
