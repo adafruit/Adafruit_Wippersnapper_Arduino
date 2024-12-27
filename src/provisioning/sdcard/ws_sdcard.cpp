@@ -663,18 +663,17 @@ bool ws_sdcard::parseConfigFile() {
 /**************************************************************************/
 uint32_t ws_sdcard::GetTimestamp() {
   DateTime now;
-  if (_rtc_ds3231 != nullptr)
+  if (_rtc_ds3231) {
     now = _rtc_ds3231->now();
-  else if (_rtc_ds1307 != nullptr)
+  } else if (_rtc_ds1307) {
     now = _rtc_ds1307->now();
-  else if (_rtc_pcf8523 != nullptr)
+  } else if (_rtc_pcf8523) {
     now = _rtc_pcf8523->now();
-  else if (_rtc_soft != nullptr) {
+  } else if (_rtc_soft) {
     now = _rtc_soft->now();
   } else { // we're either using a simulator or have undefined behavior
     return 0;
   }
-
   return now.unixtime();
 }
 
@@ -769,38 +768,32 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
 
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                              wippersnapper_sensor_SensorType read_type) {
-  char pin_name[12];
-  sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin_name;
+  doc["pin"] = "A" + String(pin);
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
                              wippersnapper_sensor_SensorType read_type) {
-  char pin_name[12];
-  sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin_name;
+  doc["pin"] = "A" + String(pin);
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                              wippersnapper_sensor_SensorType read_type) {
-  char pin_name[12];
-  sprintf(pin_name, "D%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin_name;
+  doc["pin"] = "D" + String(pin);
   doc["value"] = value;
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
 bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   size_t szJson;
-  // Serialize the JSON document
 #ifndef OFFLINE_MODE_DEBUG
+  // Attempt to open the .log file for writing
   File32 file;
   file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
   if (!file) {
@@ -817,8 +810,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   serializeJson(doc, Serial);
   Serial.print("\n");
 #else
-  szJson = serializeJson(doc, Serial); // TODO: Add buffering here, too?
-  Serial.print("\n");                  // JSONL format specifier
+  szJson = serializeJson(doc, Serial);
+  Serial.print("\n"); // JSONL format specifier
 #endif
   _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
 
@@ -830,7 +823,6 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
       return false;
     return false;
   }
-
   return true;
 }
 
@@ -1013,7 +1005,6 @@ void ws_sdcard::waitForSerialConfig() {
         char c = Serial.read();
         _serialInput += c;
         if (_serialInput.endsWith("\\n")) {
-          WS_DEBUG_PRINTLN("[SD] End of JSON string detected!");
           break;
         }
       }
@@ -1021,16 +1012,6 @@ void ws_sdcard::waitForSerialConfig() {
   }
   // Trim the newline
   _serialInput.trim();
-
-  // Print out the received JSON string
-  // TODO: REMOVE this for the PR
-  WS_DEBUG_PRINT("[SD][Debug] JSON string received!");
-  if (_use_test_data) {
-    WS_DEBUG_PRINTLN("[from json test data]");
-    WS_DEBUG_PRINTLN(json_test_data);
-  } else {
-    WS_DEBUG_PRINTLN(_serialInput);
-  }
 
   WS_DEBUG_PRINTLN("[SD] JSON string received!");
 }
