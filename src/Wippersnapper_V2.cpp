@@ -72,6 +72,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   WsV2.digital_io_controller = new DigitalIOController();
   WsV2.analogio_controller = new AnalogIOController();
   WsV2._ds18x20_controller = new DS18X20Controller();
+  WsV2._i2c_controller = new I2cController();
 };
 
 /**************************************************************************/

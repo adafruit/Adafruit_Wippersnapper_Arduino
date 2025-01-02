@@ -57,10 +57,10 @@
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
 #include "components/sensor/model.h"
+#include "components/i2c/controller.h"
 
 // Components (API v1)
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
-#include "components/i2c/WipperSnapper_I2C.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
@@ -116,6 +116,7 @@ class SensorModel;
 class DigitalIOController;
 class AnalogIOController;
 class DS18X20Controller;
+class I2cController;
 
 /**************************************************************************/
 /*!
@@ -186,19 +187,6 @@ public:
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode
 
-  // I2C
-  // TODO: Audit all of this!
-  std::vector<WipperSnapper_Component_I2C *>
-      i2cComponentsV2; ///< Vector containing all I2C components
-  WipperSnapper_Component_I2C *_i2cPort0V2 =
-      NULL; ///< WipperSnapper I2C Component for I2C port #0
-  WipperSnapper_Component_I2C *_i2cPort1V2 =
-      NULL; ///< WipperSnapper I2C Component for I2C port #1
-  bool _isI2CPort0InitV2 =
-      false; ///< True if I2C port 0 has been initialized, False otherwise.
-  bool _isI2CPort1InitV2 =
-      false; ///< True if I2C port 1 has been initialized, False otherwise.
-
   // TODO: Do we need this?
   ws_board_status_t _boardStatusV2 =
       WS_BOARD_DEF_IDLE; ///< Hardware's registration status
@@ -221,12 +209,12 @@ public:
   ws_uart *_uartComponentV2;        ///< Instance of UART class
 
   // API v2 Components
-  CheckinModel *CheckInModel; ///< Instance of CheckinModel class
-  SensorModel *sensorModel;   ///< Instance of SensorModel class
-  DigitalIOController
-      *digital_io_controller; ///< Instance of DigitalIO controller class
-  AnalogIOController *analogio_controller; ///< Instance of AnalogIO controller
-  DS18X20Controller *_ds18x20_controller;  ///< Instance of DS18X20 controller
+  CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
+  SensorModel *sensorModel = nullptr;   ///< Instance of SensorModel class
+  DigitalIOController *digital_io_controller = nullptr; ///< Instance of DigitalIO controller class
+  AnalogIOController *analogio_controller = nullptr; ///< Instance of AnalogIO controller
+  DS18X20Controller *_ds18x20_controller = nullptr;  ///< Instance of DS18X20 controller
+  I2cController *_i2c_controller = nullptr;
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
