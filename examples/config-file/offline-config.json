@@ -1,0 +1,62 @@
+{
+    "exportVersion": "1.0.0",
+    "exportedBy": "tester",
+    "exportedAt": "2024-10-28T18:58:23.976Z",
+    "exportedFromDevice": {
+      "board": "metroesp32s3",
+      "firmwareVersion": "1.0.0-beta.93",
+      "referenceVoltage": 2.6,
+      "totalGPIOPins": 11,
+      "totalAnalogPins": 6,
+      "rtc": "DS3231",
+      "statusLEDBrightness": 0.1
+    },
+    "components": [
+      {
+        "componentAPI": "analogio",
+        "name": "Analog Pin",
+        "pinName": "A0",
+        "type": "analog_pin",
+        "mode": "ANALOG",
+        "direction": "INPUT",
+        "sampleMode": "TIMER",
+        "analogReadMode": "PIN_VALUE",
+        "period": 5,
+        "isPin": true
+      },
+      {
+        "componentAPI": "analogio",
+        "name": "Analog Pin",
+        "pinName": "A1",
+        "type": "analog_pin",
+        "mode": "ANALOG",
+        "direction": "INPUT",
+        "sampleMode": "TIMER",
+        "analogReadMode": "PIN_VALUE",
+        "period": 5,
+        "isPin": true
+      },
+      {
+        "componentAPI": "digitalio",
+        "name": "D2",
+        "pinName": "D2",
+        "type": "push_button",
+        "mode": "DIGITAL",
+        "sampleMode": "EVENT",
+        "direction": "INPUT",
+        "period": 5,
+        "pull": "UP",
+        "isPin": true
+      },
+      {
+        "componentAPI": "ds18x20",
+        "name": "DS18B20: Temperature Sensor (°F)",
+        "sensorTypeCount": 2,
+        "sensorType1": "object-temp-fahrenheit",
+        "sensorType2": "object-temp",
+        "pinName": "D4",
+        "sensorResolution": 12,
+        "period": 5
+      }
+    ]
+  }
