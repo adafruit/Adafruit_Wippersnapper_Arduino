@@ -400,6 +400,13 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag:
+    WS_DEBUG_PRINTLN("-> I2C Device Add/Replace Message Type");
+    if (!WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to add/replace I2C device!");
+      return false;
+    }
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;

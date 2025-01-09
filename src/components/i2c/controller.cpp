@@ -20,8 +20,12 @@
 */
 /***********************************************************************/
 I2cController::I2cController() {
-  // no-op
-  // Attempt to initialize default I2C bus
+  _i2c_model = new I2cModel();
+  // Initialize the *default* I2C bus
+  _i2c_hardware = new I2cHardware();
+  _i2c_hardware->InitDefaultBus();
+  // NOTE: In the handle() functions, we'll need to
+  // check the value of GetBusStatus() elsewhere in the handlers
 }
 
 /***********************************************************************/
@@ -30,5 +34,13 @@ I2cController::I2cController() {
 */
 /***********************************************************************/
 I2cController::~I2cController() {
-  // no-op
+  if (_i2c_model)
+    delete _i2c_model;
+
+  if (_i2c_hardware)
+    delete _i2c_hardware;
+}
+
+bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
+
 }
