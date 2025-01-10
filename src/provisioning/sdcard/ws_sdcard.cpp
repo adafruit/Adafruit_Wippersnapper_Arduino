@@ -515,7 +515,7 @@ bool ws_sdcard::parseConfigFile() {
   doc = WsV2._config_doc; // Use the pre-serialized JSON document
 #else
   WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
-  WS_DEBUG_PRINT(_serialInput);
+  WS_DEBUG_PRINTLN(_serialInput);
   error = deserializeJson(doc, _serialInput.c_str(), MAX_LEN_CFG_JSON);
   if (error) {
     WS_DEBUG_PRINT("[SD] Runtime Error: Unable to deserialize JSON stream!");
