@@ -474,6 +474,13 @@ bool ws_sdcard::CreateNewLogFile() {
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Validates the checksum of the JSON configuration document.
+    @param  doc
+            The JSON document.
+    @returns True if the checksum is valid, False otherwise.
+/**************************************************************************/
 bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
   int json_doc_checksum = doc["checksum"];
   // Calculate the checksum of the JSON document without the checksum field
@@ -506,25 +513,18 @@ bool ws_sdcard::parseConfigFile() {
 // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = WsV2._config_doc;
+  doc = WsV2._config_doc; // Use the pre-serialized JSON document
 #else
-  if (!_use_test_data) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
-    WS_DEBUG_PRINT(_serialInput);
-    error = deserializeJson(doc, _serialInput.c_str(), MAX_LEN_CFG_JSON);
-  } else {
-    WS_DEBUG_PRINTLN("[SD] Parsing Test Data...");
-    error = deserializeJson(doc, json_test_data, MAX_LEN_CFG_JSON);
-  }
-#endif
-  // It is not possible to continue running in offline mode without a valid
-  // config file
+  WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
+  WS_DEBUG_PRINT(_serialInput);
+  error = deserializeJson(doc, _serialInput.c_str(), MAX_LEN_CFG_JSON);
   if (error) {
-    WS_DEBUG_PRINT("[SD] Runtime Error: Unable to deserialize config.json");
+    WS_DEBUG_PRINT("[SD] Runtime Error: Unable to deserialize JSON stream!");
     WS_DEBUG_PRINTLN("\nError Code: " + String(error.c_str()));
     return false;
   }
-  WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
+  WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON stream!");
+#endif
 
   // Check config.json file's integrity
   if (!ValidateChecksum(doc)) {
@@ -803,7 +803,7 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   szJson = serializeJson(doc, Serial);
   Serial.print("\n"); // JSONL format specifier
 #endif
-  _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
+  _sz_cur_log_file = szJson + 1; // +1 byte for "\n"
 
   if (_sz_cur_log_file >= _max_sz_log_file) {
     WS_DEBUG_PRINTLN(
@@ -881,9 +881,9 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
 
 /**************************************************************************/
 /*!
-    @brief  Logs a GPIO sensor event to the SD card.
+    @brief  Logs a DS18b20 sensor event to the SD card.
     @param  pin
-            The GPIO pin number.
+            The DS18b20's GPIO pin number.
     @param  value
             The sensor value.
     @param  read_type

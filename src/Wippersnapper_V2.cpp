@@ -403,9 +403,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
   }
-
-  // once this is returned, pb_dec_submessage()
-  // decodes the submessage contents.
   return true;
 }
 
@@ -1229,10 +1226,9 @@ void Wippersnapper_V2::connectV2() {
     // Set the status LED to off during app runtime
     setStatusLEDColor(0x000000, WS.status_pixel_brightness);
     return;
-  } else {
-    WS_DEBUG_PRINTLN("Running in online mode...");
   }
 
+  WS_DEBUG_PRINTLN("Running in online mode...");
   // Configures an Adafruit Arduino MQTT object
   WS_DEBUG_PRINTLN("Setting up MQTT client...");
   setupMQTTClientV2(_device_uidV2);

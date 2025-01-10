@@ -230,7 +230,7 @@ public:
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
-  char sUIDV2[13];        /*!< Unique network iface identifier */
+  char sUIDV2[13];        /*!< Unique hardware identifier */
   const char *_boardIdV2; /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqttV2; /*!< Reference to Adafruit_MQTT, _mqtt. */
 

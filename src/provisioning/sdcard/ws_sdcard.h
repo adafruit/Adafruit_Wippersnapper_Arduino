@@ -34,7 +34,7 @@
 #define UNKNOWN_VALUE "unknown" ///< Default unknown JSON field value
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 #define MAX_LEN_CFG_JSON                                                       \
-  4096 ///< Maximum length of the configuration JSON file, in Bytes
+  8192 ///< Maximum length of the configuration JSON file, in Bytes
 
 // forward decl.
 class Wippersnapper_V2;
