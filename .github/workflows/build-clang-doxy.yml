@@ -563,69 +563,6 @@ jobs:
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
 
-  # NOTE: This does NOT release artifacts, it only builds
-  build-samd-non-fs:
-    name: 🏗️SAMD🚫⧾🔱
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arduino-platform: ["mkrwifi1010", "nano_33_iot"]
-    steps:
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - uses: actions/checkout@v4
-      - name: Get WipperSnapper version
-        run: |
-          git fetch --prune --unshallow --tags
-          git describe --dirty --tags
-          echo >>$GITHUB_ENV WS_VERSION=$(git describe --dirty --tags)
-      - uses: actions/checkout@v4
-        with:
-          repository: adafruit/ci-arduino
-          ref: ci-wippersnapper
-          path: ci
-      - name: Install CI-Arduino
-        run: bash ci/actions_install.sh
-      - name: Install extra Arduino libraries
-        run: |
-          git clone --quiet https://github.com/arduino-libraries/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
-          git clone --quiet https://github.com/arduino-libraries/Servo.git /home/runner/Arduino/libraries/Servo
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
-      - name: Download stable Nanopb
-        id: download-nanopb
-        continue-on-error: true
-        run: |
-          wget https://jpa.kapsi.fi/nanopb/download/nanopb-0.4.8.tar.gz
-      - if: ${{ failure() || steps.download-nanopb.outcome != 'success' }}
-        name: Restore cached nanopb
-        id: cache-nanopb-restore
-        uses: actions/cache/restore@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
-      - if: ${{ steps.download-nanopb.outcome == 'success' }}
-        name: Save nanopb to cache
-        id: cache-nanopb-save
-        uses: actions/cache/save@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ./nanopb-0.4.8.tar.gz
-          key: nanopb-0.4.8.tar.gz
-      - name: Install stable Nanopb
-        run: |
-          tar -xf nanopb-0.4.8.tar.gz
-          # Copy files to WipperSnapper's src/nanopb directory
-          cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
-          mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: build SAMD (no-FS) platforms
-        run: python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
-
   build-esp8266:
     name: 🏗️ESP8266
     runs-on: ubuntu-latest
