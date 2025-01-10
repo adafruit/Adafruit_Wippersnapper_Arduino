@@ -112,7 +112,6 @@ private:
   RTC_DS1307 *_rtc_ds1307 = nullptr;   ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object
   RTC_Millis *_rtc_soft = nullptr;     ///< Software RTC object
-  bool _use_test_data; ///< True if sample data is being used for testing
 };
 extern Wippersnapper_V2 WsV2; ///< Global member
 #endif                        // WS_SDCARD_H

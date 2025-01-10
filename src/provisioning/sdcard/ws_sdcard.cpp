@@ -22,7 +22,6 @@
 ws_sdcard::ws_sdcard()
     : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
   is_mode_offline = true;
-  _use_test_data = false;
   _sz_cur_log_file = 0;
 
   if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
@@ -915,94 +914,20 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
 */
 /**************************************************************************/
 void ws_sdcard::waitForSerialConfig() {
-  json_test_data = "{"
-                   "\"exportVersion\": \"1.0.0\","
-                   "\"exportedBy\": \"tester\","
-                   "\"exportedAt\": \"2024-10-28T18:58:23.976Z\","
-                   "\"exportedFromDevice\": {"
-                   "\"board\": \"metroesp32s3\","
-                   "\"firmwareVersion\": \"1.0.0-beta.93\","
-                   "\"referenceVoltage\": 2.6,"
-                   "\"totalGPIOPins\": 11,"
-                   "\"totalAnalogPins\": 6"
-                   "},"
-                   "\"components\": ["
-                   "{"
-                   "\"componentAPI\": \"analogio\","
-                   "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D14\","
-                   "\"type\": \"analog_pin\","
-                   "\"mode\": \"ANALOG\","
-                   "\"direction\": \"INPUT\","
-                   "\"sampleMode\": \"TIMER\","
-                   "\"analogReadMode\": \"PIN_VALUE\","
-                   "\"period\": 5,"
-                   "\"isPin\": true"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"analogio\","
-                   "\"name\": \"Analog Pin\","
-                   "\"pinName\": \"D27\","
-                   "\"type\": \"analog_pin\","
-                   "\"mode\": \"ANALOG\","
-                   "\"direction\": \"INPUT\","
-                   "\"sampleMode\": \"TIMER\","
-                   "\"analogReadMode\": \"PIN_VALUE\","
-                   "\"period\": 5,"
-                   "\"isPin\": true"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"digitalio\","
-                   "\"name\": \"Button (D4)\","
-                   "\"pinName\": \"D4\","
-                   "\"type\": \"push_button\","
-                   "\"mode\": \"DIGITAL\","
-                   "\"sampleMode\": \"EVENT\","
-                   "\"direction\": \"INPUT\","
-                   "\"period\": 5,"
-                   "\"pull\": \"UP\","
-                   "\"isPin\": true"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"ds18x20\","
-                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
-                   "\"sensorTypeCount\": 2,"
-                   "\"sensorType1\": \"object-temp-fahrenheit\","
-                   "\"sensorType2\": \"object-temp\","
-                   "\"pinName\": \"D12\","
-                   "\"sensorResolution\": 12,"
-                   "\"period\": 5"
-                   "},"
-                   "{"
-                   "\"componentAPI\": \"ds18x20\","
-                   "\"name\": \"DS18B20: Temperature Sensor (°F)\","
-                   "\"sensorTypeCount\": 2,"
-                   "\"sensorType1\": \"object-temp-fahrenheit\","
-                   "\"sensorType2\": \"object-temp\","
-                   "\"pinName\": \"D25\","
-                   "\"sensorResolution\": 12,"
-                   "\"period\": 5"
-                   "}"
-                   "]"
-                   "}\\n\r\n";
-
   _serialInput = ""; // Clear the serial input buffer
-  if (!_use_test_data) {
-    WS_DEBUG_PRINTLN("[SD] Waiting for incoming JSON string...");
-    while (true) {
-      // Check if there is data available to read
-      if (Serial.available() > 0) {
-        char c = Serial.read();
-        _serialInput += c;
-        if (_serialInput.endsWith("\\n")) {
-          break;
-        }
+  WS_DEBUG_PRINTLN("[SD] Waiting for incoming JSON string...");
+  // Read data from the serial into a buffer
+  while (true) {
+    if (Serial.available() > 0) {
+      char c = Serial.read();
+      _serialInput += c;
+      if (_serialInput.endsWith("\\n")) {
+        break;
       }
     }
   }
-  // Trim the newline
+  // Remove the "\n"
   _serialInput.trim();
-
   WS_DEBUG_PRINTLN("[SD] JSON string received!");
 }
 #endif
