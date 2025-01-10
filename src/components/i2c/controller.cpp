@@ -14,6 +14,18 @@
  */
 #include "controller.h"
 
+
+// WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress) {
+std::map <std::string, WipperSnapper_I2C_Driver> i2c_drivers = {
+    {"aht20", &WipperSnapper_I2C_Driver_AHTX0},
+    {"am2301b", &WipperSnapper_I2C_Driver_AHTX0},
+    {"am2315c", &WipperSnapper_I2C_Driver_AHTX0},
+    {"dht20", &WipperSnapper_I2C_Driver_AHTX0},
+    {"bh1750", &WipperSnapper_I2C_Driver_BH1750},
+    {"bme280", &WipperSnapper_I2C_Driver_BME280},
+    {"bmp280", &WipperSnapper_I2C_Driver_BMP280}
+};
+
 /***********************************************************************/
 /*!
     @brief  I2cController constructor
@@ -42,5 +54,10 @@ I2cController::~I2cController() {
 }
 
 bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
+    if (! _i2c_model->DecodeI2cDeviceAddReplace()) {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
+        return false;
+    }
 
+    // _i2c_model->GetI2cDeviceAddOrReplaceMsg()
 }

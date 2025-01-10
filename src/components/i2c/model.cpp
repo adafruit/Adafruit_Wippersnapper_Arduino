@@ -30,6 +30,10 @@ I2cModel::I2cModel() {
 }
 
 bool I2cModel::DecodeI2cDeviceAddReplace(pb_istream_t *stream) {
-    // TODO!
-return true;
+    _msg_i2c_device_add_replace = wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+    return pb_decode(stream, wippersnapper_i2c_I2cDeviceAddOrReplace_fields, &_msg_i2c_device_add_replace);
+}
+
+wippersnapper_i2c_I2cDeviceAddOrReplace *I2cModel::GetI2cDeviceAddOrReplaceMsg() {
+  return &_msg_i2c_device_add_replace;
 }

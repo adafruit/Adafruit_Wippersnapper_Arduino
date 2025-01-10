@@ -27,6 +27,7 @@ public:
   I2cModel();
   ~I2cModel();
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
+  wippersnapper_i2c_I2cDeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
 private:
     wippersnapper_i2c_I2cBusScan _msg_i2c_bus_scan;
     wippersnapper_i2c_I2cBusScanned _msg_i2c_bus_scanned;
