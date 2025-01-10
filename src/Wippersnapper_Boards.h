@@ -177,14 +177,6 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#elif defined(ARDUINO_SAMD_NANO_33_IOT)
-#define BOARD_ID "nano-33-iot"
-#define USE_STATUS_LED
-#define STATUS_LED_PIN 13
-#elif defined(ARDUINO_SAMD_MKRWIFI1010)
-#define BOARD_ID "mkrwifi1010"
-#define USE_STATUS_LED
-#define STATUS_LED_PIN 6
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
 #define BOARD_ID "rpi-pico-w"
 #define USE_TINYUSB
