@@ -674,82 +674,82 @@ uint32_t ws_sdcard::GetTimestamp() {
     @returns A string representation of the SensorType enum.
 */
 /**************************************************************************/
-const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
+const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   switch (sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
-    return "UNSPECIFIED";
+    return "raw value";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER:
-    return "ACCELEROMETER";
+    return "m/s/s";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD:
-    return "MAGNETIC_FIELD";
+    return "\u00B5T";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION:
-    return "ORIENTATION";
+    return "\u00B0";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE:
-    return "GYROSCOPE";
+    return "rad/s";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
-    return "LIGHT";
+    return "raw value";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
-    return "PRESSURE";
+    return "hPa";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY:
-    return "PROXIMITY";
+    return "raw value";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY:
-    return "GRAVITY";
+    return "m/s^2";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION:
-    return "LINEAR_ACCELERATION";
+    return "m/s^2";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR:
-    return "ROTATION_VECTOR";
+    return "rad";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-    return "RELATIVE_HUMIDITY";
+    return "%";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-    return "AMBIENT_TEMPERATURE";
+    return "\u00B0C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-    return "OBJECT_TEMPERATURE";
+    return "\u00B0C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
-    return "VOLTAGE";
+    return "V";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
-    return "CURRENT";
+    return "mA";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR:
-    return "COLOR";
+    return "raw value";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
-    return "RAW";
+    return "raw value";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
-    return "PM10_STD";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
-    return "PM25_STD";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
-    return "PM100_STD";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV:
-    return "PM10_ENV";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV:
-    return "PM25_ENV";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV:
-    return "PM100_ENV";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
-    return "CO2";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-    return "GAS_RESISTANCE";
+    return "Ω";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
-    return "ALTITUDE";
+    return "m";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX:
-    return "LUX";
+    return "raw value";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
-    return "ECO2";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
-    return "UNITLESS_PERCENT";
+    return "%";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-    return "AMBIENT_TEMPERATURE_FAHRENHEIT";
+    return "";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-    return "OBJECT_TEMPERATURE_FAHRENHEIT";
+    return "\u00B0F";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
-    return "VOC_INDEX";
+    return "VOC";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
-    return "NOX_INDEX";
+    return "NOx";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
-    return "TVOC";
+    return "ppb";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES:
-    return "BYTES";
+    return "bytes";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN:
-    return "BOOLEAN";
+    return "raw value";
   default:
     return "UNKNOWN";
   }
@@ -760,7 +760,7 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
   doc["timestamp"] = GetTimestamp();
   doc["pin"] = "A" + String(pin);
   doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
@@ -768,7 +768,7 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
   doc["timestamp"] = GetTimestamp();
   doc["pin"] = "A" + String(pin);
   doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
@@ -776,7 +776,7 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
   doc["timestamp"] = GetTimestamp();
   doc["pin"] = "D" + String(pin);
   doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
 bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
@@ -899,7 +899,7 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
     doc["timestamp"] = timestamp;
     doc["pin"] = event_msg->onewire_pin;
     doc["value"] = event_msg->sensor_events[i].value.float_value;
-    doc["si_unit"] = SensorTypeToString(event_msg->sensor_events[i].type);
+    doc["si_unit"] = SensorTypeToSIUnit(event_msg->sensor_events[i].type);
     LogJSONDoc(doc);
   }
   return true;

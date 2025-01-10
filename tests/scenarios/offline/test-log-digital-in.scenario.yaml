@@ -12,9 +12,9 @@ steps:
   - wait-serial: 'Period: 5000'
   - wait-serial: 'Sample Mode: 1'
   - wait-serial: 'Direction: 2'
-  - wait-serial: '{"timestamp":0,"pin":"D4","value":true,"si_unit":"BOOLEAN"}'
+  - wait-serial: '{"timestamp":0,"pin":"D4","value":true,"si_unit":"raw value"}'
   - set-control:
       part-id: btn1
       control: pressed
       value: 1
-  - wait-serial: '{"timestamp":0,"pin":"D4","value":false,"si_unit":"BOOLEAN"}'
+  - wait-serial: '{"timestamp":0,"pin":"D4","value":false,"si_unit":"raw value"}'
