@@ -1,14 +1,13 @@
 /*!
  * @file WipperSnapper_I2C_Driver_SEN5X.h
  *
- * Device driver for the SEN5X CO2, Temperature, and Humidity sensor.
- * TEMPORARY HACK
+ * Device driver for the SEN5X air quality sensors.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *

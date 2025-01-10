@@ -1,13 +1,14 @@
 /*!
  * @file WipperSnapper_I2C_Driver_SEN6X.h
  *
- * Device driver for the SEN66 Particulate Matter, Temperature, Humidity, VOC, NOX, and CO2 sensor.
+ * Device driver for the SEN66 Particulate Matter, Temperature, Humidity, VOC,
+ * NOX, and CO2 sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2022 for Adafruit Industries.
  * Modified (c) by Martin Ebner 2024 https://github.com/MartinEbnerSensirion
  *
  * MIT license, all text here must be included in any redistribution.
@@ -325,7 +326,7 @@ public:
         massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
         noxIndex, co2);
 
-    if ((_CO2SensorPeriod != 0 && error != 0) || co2 == NAN) {
+    if ((_CO2SensorPeriod != 0 && error != 0) || co2 == 0xFFFF) {
       return false;
     }
 
