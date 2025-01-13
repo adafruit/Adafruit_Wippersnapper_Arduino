@@ -32,6 +32,7 @@ class I2cController {
 public:
   I2cController();
   ~I2cController();
+  bool IsBusOK();
   // Routing
   bool Handle_I2cBusScan(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
@@ -42,6 +43,7 @@ public:
 private:
   I2cModel *_i2c_model;       ///< I2c model
   I2cHardware *_i2c_hardware; ///< I2c hardware
+  std::vector<WipperSnapper_I2C_Driver *> _i2c_drivers;
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H

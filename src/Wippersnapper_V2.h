@@ -24,6 +24,7 @@
 // Cpp STD
 #include <vector>
 #include <map>
+#include <functional>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>

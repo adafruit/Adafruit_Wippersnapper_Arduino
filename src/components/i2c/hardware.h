@@ -32,6 +32,7 @@ public:
   ~I2cHardware();
   // TODO
   void InitDefaultBus();
+  TwoWire *GetI2cBus() { return _i2c_bus; }
   wippersnapper_i2c_I2cBusStatus GetBusStatus() { return _bus_status; }
 
 private:
