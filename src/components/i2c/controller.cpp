@@ -17,6 +17,8 @@
 // lambda function to create WipperSnapper_I2C_Driver driver
 using FnCreateI2CDriver =
     std::function<WipperSnapper_I2C_Driver *(TwoWire *, uint16_t)>;
+
+// Map of sensor names to lambda functions that create an I2C device driver
 // NOTE: This list is NOT comprehensive, it's a  subset for now
 // to assess the feasibility of this approach.
 static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
@@ -49,15 +51,16 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
        return new WipperSnapper_I2C_Driver_BMP280(i2c, addr);
      }}};
 
-WipperSnapper_I2C_Driver *createI2CDriverByName(const char *sensorName,
-                                                TwoWire *i2c, uint16_t addr) {
+WipperSnapper_I2C_Driver *createI2CDriverByName(const char *sensorName, TwoWire *i2c, uint16_t addr, wippersnapper_i2c_I2cDeviceStatus &status) {
+  status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
   auto it = I2cFactory.find(sensorName);
-  // TODO: Here, we can't find the driver
-  // maybe pass in a reference to wippersnapper_i2c_I2cDeviceStatus enum
-  if (it == I2cFactory.end())
+  if (it == I2cFactory.end()) {
+    status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
     return nullptr;
+  }
 
-  // Call the lambda to create the driver.
+  status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
+  // Call the lambda to create the driver
   return it->second(i2c, addr);
 }
 
@@ -69,10 +72,9 @@ WipperSnapper_I2C_Driver *createI2CDriverByName(const char *sensorName,
 I2cController::I2cController() {
   _i2c_model = new I2cModel();
   // Initialize the *default* I2C bus
+  // TODO: Handle multiple buses, maybe not from here though!
   _i2c_hardware = new I2cHardware();
   _i2c_hardware->InitDefaultBus();
-  // NOTE: In the handle() functions, we'll need to
-  // check the value of GetBusStatus() elsewhere in the handlers
 }
 
 /***********************************************************************/
@@ -101,6 +103,15 @@ bool I2cController::IsBusOK() {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief    Implements handling for a I2cDeviceAddOrReplace message
+    @param    stream
+                A pointer to the pb_istream_t stream.
+    @returns  True if the I2cDeviceAddOrReplace message was handled 
+              (created or replaced), False otherwise.
+*/
+/***********************************************************************/
 bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   wippersnapper_i2c_I2cDeviceStatus device_status;
 
@@ -124,22 +135,18 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
       _i2c_hardware->GetI2cBus(),
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-          ->i2c_device_description.i2c_device_mux_address);
+          ->i2c_device_description.i2c_device_mux_address,
+      device_status);
 
-  if (drv == nullptr) {
-    WS_DEBUG_PRINTLN(
-        "[i2c] ERROR: Unable to create i2c driver, driver not found!");
-    device_status =
-        wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
+  if (drv == nullptr)
     return false;
-  } else {
-    // Configure the driver
-    // TODO: We may need to refactor this method because API V2 functions
-    // differently!
-    // drv->configureDriver(_i2c_model->GetI2cDeviceAddOrReplaceMsg());
-    _i2c_drivers.push_back(drv);
-    device_status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
-  }
+
+  // Configure the driver
+  // TODO: We may need to refactor this method because API V2 functions
+  // differently!
+  // drv->configureDriver(_i2c_model->GetI2cDeviceAddOrReplaceMsg());
+  _i2c_drivers.push_back(drv);
+  device_status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
 
   // _i2c_model->GetI2cDeviceAddOrReplaceMsg()
 }
