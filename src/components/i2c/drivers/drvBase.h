@@ -1,5 +1,5 @@
 /*!
- * @file WipperSnapper_I2C_Driver.h
+ * @file drvBase.h
  *
  * Base implementation for I2C device drivers.
  *
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_V2_H
-#define WipperSnapper_I2C_Driver_V2_H
+#ifndef DRV_BASE_H
+#define DRV_BASE_H
 
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
@@ -27,7 +27,7 @@
     @brief  Base class for I2C Drivers.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver {
+class drvBase {
 
 public:
   /*******************************************************************************/
@@ -39,7 +39,7 @@ public:
                 The I2C sensor's unique address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t address) {
+  drvBase(TwoWire *i2c, uint16_t address) {
     _i2c = i2c;
     _address = address;
   }
@@ -49,7 +49,7 @@ public:
       @brief    Destructor for an I2C sensor.
   */
   /*******************************************************************************/
-  virtual ~WipperSnapper_I2C_Driver() {}
+  virtual ~drvBase() {}
 
   /*******************************************************************************/
   /*!
@@ -57,7 +57,6 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  // NOTE: We changed this to virtual so drivers must now reflect: bool begin() override{} 
   virtual bool begin() { }
 
   /*******************************************************************************/
@@ -88,7 +87,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventCO2(sensors_event_t *co2Event) = 0;
+  virtual bool GetEventCO2(sensors_event_t *co2Event) = 0;
 
   /*******************************************************************************/
   /*!
@@ -99,7 +98,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventECO2(sensors_event_t *eco2Event) = 0;
+  virtual bool GetEventECO2(sensors_event_t *eco2Event) = 0;
 
   /*******************************************************************************/
   /*!
@@ -110,7 +109,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventTVOC(sensors_event_t *tvocEvent) = 0;
+  virtual bool GetEventTVOC(sensors_event_t *tvocEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -122,7 +121,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) = 0;
+  virtual bool GetEventAmbientTemp(sensors_event_t *tempEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -134,7 +133,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventRelativeHumidity(sensors_event_t *humidEvent) = 0;
+  virtual bool GetEventRelativeHumidity(sensors_event_t *humidEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -146,7 +145,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPressure(sensors_event_t *pressureEvent) = 0;
+  virtual bool GetEventPressure(sensors_event_t *pressureEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -158,7 +157,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAltitude(sensors_event_t *altitudeEvent) = 0;
+  virtual bool GetEventAltitude(sensors_event_t *altitudeEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -170,7 +169,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) = 0;
+  virtual bool GetEventObjectTemp(sensors_event_t *objectTempEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -182,7 +181,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventLight(sensors_event_t *lightEvent) = 0;
+  virtual bool GetEventLight(sensors_event_t *lightEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -194,7 +193,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) = 0;
+  virtual bool GetEventPM10_STD(sensors_event_t *pm10StdEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -206,7 +205,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) = 0;
+  virtual bool GetEventPM25_STD(sensors_event_t *pm25StdEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -218,7 +217,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) = 0;
+  virtual bool GetEventPM100_STD(sensors_event_t *pm100StdEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -230,7 +229,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) = 0;
+  virtual bool GetEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -242,7 +241,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventVoltage(sensors_event_t *voltageEvent) = 0;
+  virtual bool GetEventVoltage(sensors_event_t *voltageEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -254,7 +253,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventCurrent(sensors_event_t *currentEvent) = 0;
+  virtual bool GetEventCurrent(sensors_event_t *currentEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -265,12 +264,12 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventRaw(sensors_event_t *rawEvent) = 0;
+  virtual bool GetEventRaw(sensors_event_t *rawEvent) = 0;
 
   /*******************************************************************************/
   /*!
       @brief    Helper function to obtain a sensor's ambient temperature value
-                in °F. Requires `getEventAmbientTemp()` to be fully
+                in °F. Requires `GetEventAmbientTemp()` to be fully
                 implemented by a driver.
       @param    AmbientTempFEvent
                 The ambient temperature value, in °F.
@@ -278,9 +277,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
+  virtual bool GetEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
     // obtain ambient temp. in °C
-    if (!getEventAmbientTemp(AmbientTempFEvent))
+    if (!GetEventAmbientTemp(AmbientTempFEvent))
       return false;
     // convert event from °C to °F
     AmbientTempFEvent->temperature =
@@ -291,7 +290,7 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Helper function to obtain a sensor's object temperature value
-                in °F. Requires `getEventObjectTemp()` to be fully
+                in °F. Requires `GetEventObjectTemp()` to be fully
                 implemented by a driver.
       @param    objectTempFEvent
                 The object temperature value, in °F.
@@ -299,9 +298,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventObjectTempF(sensors_event_t *objectTempFEvent) {
+  virtual bool GetEventObjectTempF(sensors_event_t *objectTempFEvent) {
     // obtain ambient temp. in °C
-    if (!getEventObjectTemp(objectTempFEvent))
+    if (!GetEventObjectTemp(objectTempFEvent))
       return false;
     // convert event from °C to °F
     objectTempFEvent->temperature =
@@ -322,7 +321,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventGasResistance(sensors_event_t *gasEvent) = 0;
+  virtual bool GetEventGasResistance(sensors_event_t *gasEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -334,7 +333,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) = 0;
+  virtual bool GetEventNOxIndex(sensors_event_t *gasEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -346,7 +345,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) = 0;
+  virtual bool GetEventVOCIndex(sensors_event_t *gasEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -358,7 +357,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventProximity(sensors_event_t *proximityEvent) = 0;
+  virtual bool GetEventProximity(sensors_event_t *proximityEvent) = 0;
 
 protected:
   TwoWire *_i2c;            ///< Pointer to the I2C bus
@@ -367,4 +366,4 @@ protected:
   long _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
 };
 
-#endif // WipperSnapper_I2C_Driver_H
+#endif // DRV_BASE_H

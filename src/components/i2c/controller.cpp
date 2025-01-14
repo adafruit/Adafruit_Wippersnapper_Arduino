@@ -14,9 +14,9 @@
  */
 #include "controller.h"
 
-// lambda function to create WipperSnapper_I2C_Driver driver
+// lambda function to create drvBase driver
 using FnCreateI2CDriver =
-    std::function<WipperSnapper_I2C_Driver *(TwoWire *, uint16_t)>;
+    std::function<drvBase *(TwoWire *, uint16_t)>;
 
 // Map of sensor names to lambda functions that create an I2C device driver
 // NOTE: This list is NOT comprehensive, it's a  subset for now
@@ -51,7 +51,7 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
        return new WipperSnapper_I2C_Driver_BMP280(i2c, addr);
      }}};
 
-WipperSnapper_I2C_Driver *createI2CDriverByName(const char *sensorName, TwoWire *i2c, uint16_t addr, wippersnapper_i2c_I2cDeviceStatus &status) {
+drvBase *createI2CDriverByName(const char *sensorName, TwoWire *i2c, uint16_t addr, wippersnapper_i2c_I2cDeviceStatus &status) {
   status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
   auto it = I2cFactory.find(sensorName);
   if (it == I2cFactory.end()) {
@@ -131,7 +131,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // TODO: Differentiate between Add and Replace message types
 
   // only using the default bus, for now
-  WipperSnapper_I2C_Driver *drv = createI2CDriverByName(
+  drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
       _i2c_hardware->GetI2cBus(),
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()

@@ -17,6 +17,9 @@
 #include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+// I2C Drivers
+#include "drivers/drvBase.h" ///< Base driver class
+#include "drivers/drvAhtx0.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
@@ -43,7 +46,7 @@ public:
 private:
   I2cModel *_i2c_model;       ///< I2c model
   I2cHardware *_i2c_hardware; ///< I2c hardware
-  std::vector<WipperSnapper_I2C_Driver *> _i2c_drivers;
+  std::vector<drvBase *> _i2c_drivers;
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H
