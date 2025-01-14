@@ -35,13 +35,13 @@ public:
       @brief    Instanciates an I2C sensor.
       @param    i2c
                 The I2C hardware interface, default is Wire.
-      @param    sensorAddress
+      @param    address
                 The I2C sensor's unique address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t sensorAddress) {
+  WipperSnapper_I2C_Driver(TwoWire *i2c, uint16_t address) {
     _i2c = i2c;
-    _sensorAddress = sensorAddress;
+    _address = address;
   }
 
   /*******************************************************************************/
@@ -58,111 +58,17 @@ public:
   */
   /*******************************************************************************/
   // NOTE: We changed this to virtual so drivers must now reflect: bool begin() override{} 
-  virtual bool begin() { return false; }
+  virtual bool begin() { }
 
   /*******************************************************************************/
   /*!
-      @brief    Sets the sensor's period, provided a
-     wippersnapper_i2c_v1_SensorType.
+      @brief    Sets the sensor's period.
       @param    period The period for the sensor to return values within, in
-     seconds.
-      @param    sensorType The type of sensor device.
+                seconds.
   */
   /*******************************************************************************/
-  void setSensorPeriod(float period,
-                       wippersnapper_i2c_v1_SensorType sensorType) {
-    long sensorPeriod = (long)period * 1000;
-
-    switch (sensorType) {
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-      _tempSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-      _humidSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PRESSURE:
-      _pressureSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CO2:
-      _CO2SensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ECO2:
-      _ECO2SensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_TVOC:
-      _TVOCSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_ALTITUDE:
-      _altitudeSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-      _objectTempSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_LIGHT:
-      _lightSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM10_STD:
-      _PM10SensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM25_STD:
-      _PM25SensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PM100_STD:
-      _PM100SensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
-      _unitlessPercentPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOLTAGE:
-      _voltagePeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_CURRENT:
-      _currentPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_PROXIMITY:
-      _proximitySensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_RAW:
-      _rawSensorPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-      _ambientTempFPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-      _objectTempFPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-      _gasResistancePeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_NOX_INDEX:
-      _NOxIndexPeriod = sensorPeriod;
-      break;
-    case wippersnapper_i2c_v1_SensorType_SENSOR_TYPE_VOC_INDEX:
-      _VOCIndexPeriod = sensorPeriod;
-      break;
-    default:
-      break;
-    }
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Uses an I2CDeviceInitRequest message to configure the sensors
-                  belonging to the driver.
-      @param    msgDeviceInitReq
-                I2CDeviceInitRequest containing a list of I2C device properties.
-  */
-  /*******************************************************************************/
-  void
-  configureDriver(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq) {
-    int propertyIdx = 0; // contains the amount of i2c sensors in the
-                         // msgDeviceInitReq to configure
-    while (propertyIdx < msgDeviceInitReq->i2c_device_properties_count) {
-      setSensorPeriod(
-          msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_period,
-          msgDeviceInitReq->i2c_device_properties[propertyIdx].sensor_type);
-      ++propertyIdx;
-    }
+  void setSensorPeriod(float period) {
+    long _sensor_period = (long)period * 1000;
   }
 
   /*******************************************************************************/
@@ -171,10 +77,7 @@ public:
       @returns  The I2C device's unique i2c address.
   */
   /*******************************************************************************/
-  uint16_t getI2CAddress() { return _sensorAddress; }
-
-  /****************************** SENSOR_TYPE: CO2
-   * *******************************/
+  uint16_t GetAddress() { return _address; }
 
   /*******************************************************************************/
   /*!
@@ -185,14 +88,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventCO2(sensors_event_t *co2Event) {
-    (void)
-        co2Event; // Parameter is intentionally unused in this virtual function.
-    return false;
-  }
-
-  /****************************** SENSOR_TYPE: ECO2
-   * *******************************/
+  virtual bool getEventCO2(sensors_event_t *co2Event) = 0;
 
   /*******************************************************************************/
   /*!
@@ -203,14 +99,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventECO2(sensors_event_t *eco2Event) {
-    (void)eco2Event; // Parameter is intentionally unused in this virtual
-                     // function.
-    return false;
-  }
-
-  /****************************** SENSOR_TYPE: TVOC
-   * *******************************/
+  virtual bool getEventECO2(sensors_event_t *eco2Event) = 0;
 
   /*******************************************************************************/
   /*!
@@ -221,14 +110,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventTVOC(sensors_event_t *tvocEvent) {
-    (void)tvocEvent; // Parameter is intentionally unused in this virtual
-                     // function.
-    return false;
-  }
-
-  /********************** SENSOR_TYPE: AMBIENT TEMPERATURE (°C)
-   * ***********************/
+  virtual bool getEventTVOC(sensors_event_t *tvocEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -240,14 +122,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    (void)tempEvent; // Parameter is intentionally unused in this virtual
-                     // function.
-    return false;
-  }
-
-  /************************* SENSOR_TYPE: RELATIVE_HUMIDITY
-   * ***********************/
+  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -259,14 +134,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    (void)humidEvent; // Parameter is intentionally unused in this virtual
-                      // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: PRESSURE
-   * ****************************/
+  virtual bool getEventRelativeHumidity(sensors_event_t *humidEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -278,14 +146,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPressure(sensors_event_t *pressureEvent) {
-    (void)pressureEvent; // Parameter is intentionally unused in this virtual
-                         // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: Altitude
-   * ****************************/
+  virtual bool getEventPressure(sensors_event_t *pressureEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -297,14 +158,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    (void)altitudeEvent; // Parameter is intentionally unused in this virtual
-                         // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: Object_Temperature
-   * ****************************/
+  virtual bool getEventAltitude(sensors_event_t *altitudeEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -316,14 +170,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) {
-    (void)objectTempEvent; // Parameter is intentionally unused in this virtual
-                           // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: LIGHT
-   * ****************************/
+  virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -335,14 +182,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventLight(sensors_event_t *lightEvent) {
-    (void)lightEvent; // Parameter is intentionally unused in this virtual
-                      // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: PM10_STD
-   * ****************************/
+  virtual bool getEventLight(sensors_event_t *lightEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -354,14 +194,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    (void)pm10StdEvent; // Parameter is intentionally unused in this virtual
-                        // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: PM25_STD
-   * ****************************/
+  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -373,14 +206,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    (void)pm25StdEvent; // Parameter is intentionally unused in this virtual
-                        // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: PM100_STD
-   * ****************************/
+  virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -392,14 +218,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    (void)pm100StdEvent; // Parameter is intentionally unused in this virtual
-                         // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: UNITLESS_PERCENT
-   * ****************************/
+  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -411,14 +230,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
-    (void)unitlessPercentEvent; // Parameter is intentionally unused in this
-                                // virtual function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: VOLTAGE
-   * ****************************/
+  virtual bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -430,14 +242,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventVoltage(sensors_event_t *voltageEvent) {
-    (void)voltageEvent; // Parameter is intentionally unused in this virtual
-                        // function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: CURRENT
-   * ****************************/
+  virtual bool getEventVoltage(sensors_event_t *voltageEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -449,14 +254,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventCurrent(sensors_event_t *currentEvent) {
-    (void)currentEvent; // Parameter is intentionally unused in this virtual
-                        // function.
-    return false;
-  }
-
-  /****************************** SENSOR_TYPE: Raw
-   * *******************************/
+  virtual bool getEventCurrent(sensors_event_t *currentEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -467,14 +265,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventRaw(sensors_event_t *rawEvent) {
-    (void)
-        rawEvent; // Parameter is intentionally unused in this virtual function.
-    return false;
-  }
-
-  /****************************** SENSOR_TYPE: Ambient Temp (°F)
-   * *******************************/
+  virtual bool getEventRaw(sensors_event_t *rawEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -496,9 +287,6 @@ public:
         (AmbientTempFEvent->temperature * 9.0) / 5.0 + 32;
     return true;
   }
-
-  /****************************** SENSOR_TYPE: Object Temp (°F)
-   * *******************************/
 
   /*******************************************************************************/
   /*!
@@ -534,14 +322,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
-    (void)
-        gasEvent; // Parameter is intentionally unused in this virtual function.
-    return false;
-  }
-
-  /****************************** SENSOR_TYPE: NOx Index (index)
-   * *******************************/
+  virtual bool getEventGasResistance(sensors_event_t *gasEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -553,14 +334,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) {
-    (void)
-        gasEvent; // Parameter is intentionally unused in this virtual function.
-    return false;
-  }
-
-  /****************************** SENSOR_TYPE: VOC Index (index)
-   * *******************************/
+  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -572,14 +346,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) {
-    (void)
-        gasEvent; // Parameter is intentionally unused in this virtual function.
-    return false;
-  }
-
-  /**************************** SENSOR_TYPE: PROXIMITY
-   * ****************************/
+  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -591,15 +358,13 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool getEventProximity(sensors_event_t *proximityEvent) {
-    (void)proximityEvent; // Parameter is intentionally unused in this virtual
-                          // function.
-    return false;
-  }
+  virtual bool getEventProximity(sensors_event_t *proximityEvent) = 0;
 
 protected:
-  TwoWire *_i2c;           ///< Pointer to the I2C driver's Wire object
-  uint16_t _sensorAddress; ///< The I2C driver's unique I2C address.
+  TwoWire *_i2c;            ///< Pointer to the I2C bus
+  uint16_t _address;        ///< The device's I2C address.
+  long _sensor_period;      ///< The sensor's period, in milliseconds.
+  long _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
 };
 
 #endif // WipperSnapper_I2C_Driver_H
