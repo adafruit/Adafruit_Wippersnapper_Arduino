@@ -1240,7 +1240,7 @@ public:
       @brief    Enables the device's proximity sensor, if it exists.
   */
   /*******************************************************************************/
-  virtual void enableSensorProximity(){};
+  virtual void enableSensorProximity() {};
 
   /*******************************************************************************/
   /*!

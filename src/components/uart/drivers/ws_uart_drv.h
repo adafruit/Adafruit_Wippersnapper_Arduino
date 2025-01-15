@@ -160,7 +160,7 @@ public:
       @brief   Reads the UART device's data then packs and sends it to IO.
   */
   /*******************************************************************************/
-  virtual void send_data(){};
+  virtual void send_data() {};
 
   const char *uartTopic = nullptr;     ///< UART device's MQTT topic
   Adafruit_MQTT *mqttClient = nullptr; ///< Pointer to MQTT client object

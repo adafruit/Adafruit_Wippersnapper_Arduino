@@ -38,10 +38,6 @@ typedef Wippersnapper_ESP32 Wippersnapper_WiFi;
 #elif defined(ARDUINO_ARCH_RP2040)
 #include "network_interfaces/ws_networking_pico.h"
 typedef ws_networking_pico Wippersnapper_WiFi;
-#elif defined(ARDUINO_SAMD_NANO_33_IOT) || defined(ARDUINO_SAMD_MKRWIFI1010)
-/** Nina-FW (arduino) networking class */
-#include "network_interfaces/Wippersnapper_WIFININA.h"
-typedef Wippersnapper_WIFININA Wippersnapper_WiFi;
 #else
 #warning "Must define network interface in config.h!"
 #endif
