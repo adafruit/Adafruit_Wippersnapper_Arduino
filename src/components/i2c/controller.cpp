@@ -15,8 +15,7 @@
 #include "controller.h"
 
 // lambda function to create drvBase driver
-using FnCreateI2CDriver =
-    std::function<drvBase *(TwoWire *, uint16_t)>;
+using FnCreateI2CDriver = std::function<drvBase *(TwoWire *, uint16_t)>;
 
 // Map of sensor names to lambda functions that create an I2C device driver
 // NOTE: This list is NOT comprehensive, it's a  subset for now
@@ -51,11 +50,14 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
        return new WipperSnapper_I2C_Driver_BMP280(i2c, addr);
      }}};
 
-drvBase *createI2CDriverByName(const char *sensorName, TwoWire *i2c, uint16_t addr, wippersnapper_i2c_I2cDeviceStatus &status) {
+drvBase *createI2CDriverByName(const char *sensorName, TwoWire *i2c,
+                               uint16_t addr,
+                               wippersnapper_i2c_I2cDeviceStatus &status) {
   status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
   auto it = I2cFactory.find(sensorName);
   if (it == I2cFactory.end()) {
-    status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
+    status =
+        wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
     return nullptr;
   }
 
@@ -108,7 +110,7 @@ bool I2cController::IsBusOK() {
     @brief    Implements handling for a I2cDeviceAddOrReplace message
     @param    stream
                 A pointer to the pb_istream_t stream.
-    @returns  True if the I2cDeviceAddOrReplace message was handled 
+    @returns  True if the I2cDeviceAddOrReplace message was handled
               (created or replaced), False otherwise.
 */
 /***********************************************************************/
@@ -128,25 +130,24 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     return false;
   }
 
-  // TODO: Differentiate between Add and Replace message types
+  // TODO: Handle Replace messages by implementing a Remove handler first...then
+  // proceed to adding a new device
 
-  // only using the default bus, for now
+  // TODO: This is only using the default bus, for now
   drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
       _i2c_hardware->GetI2cBus(),
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()
           ->i2c_device_description.i2c_device_mux_address,
       device_status);
+  if (drv != nullptr) {
+    // Configure and add the new driver to the controller
+    drv->ConfigureSensorTypes(
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+            ->i2c_device_sensor_types_count);
+    _i2c_drivers.push_back(drv);
+  }
 
-  if (drv == nullptr)
-    return false;
-
-  // Configure the driver
-  // TODO: We may need to refactor this method because API V2 functions
-  // differently!
-  // drv->configureDriver(_i2c_model->GetI2cDeviceAddOrReplaceMsg());
-  _i2c_drivers.push_back(drv);
-  device_status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
-
-  // _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+  // TODO: Publish back wippersnapper_i2c_I2cDeviceAddedOrReplaced
 }

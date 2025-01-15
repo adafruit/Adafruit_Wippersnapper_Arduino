@@ -18,9 +18,9 @@
 
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
+#include <protos/i2c.pb.h>
 
-#define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
-///< Used for last sensor read time, initially set 24hrs ago (max period)
+#define NO_MUX_CH 0xFFFF; ///< No MUX channel specified
 
 /**************************************************************************/
 /*!
@@ -42,6 +42,25 @@ public:
   drvBase(TwoWire *i2c, uint16_t address) {
     _i2c = i2c;
     _address = address;
+    _i2c_mux_channel = NO_MUX_CH;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Instanciates an I2C sensor.
+      @param    i2c
+                The I2C hardware interface, default is Wire.
+      @param    address
+                The I2C sensor's unique address.
+      @param    muxChannel
+                An optional channel number used to address a device on a I2C
+     MUX.
+  */
+  /*******************************************************************************/
+  drvBase(TwoWire *i2c, uint16_t address, uint32_t muxChannel) {
+    _i2c = i2c;
+    _address = address;
+    _i2c_mux_channel = muxChannel;
   }
 
   /*******************************************************************************/
@@ -53,11 +72,28 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Configures an i2c device's sensors.
+      @param    sensors
+                Pointer to an array of SensorType objects.
+      @param    count
+                The number of active sensors on the device.
+  */
+  /*******************************************************************************/
+  void ConfigureSensorTypes(wippersnapper_sensor_SensorType *sensor_types,
+                            size_t sensor_types_count) {
+    _sensors_count = sensor_types_count;
+    for (size_t i = 0; i < _sensors_count; i++) {
+      _sensors[i] = sensor_types[i];
+    }
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Initializes the I2C sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  virtual bool begin() { }
+  virtual bool begin() {}
 
   /*******************************************************************************/
   /*!
@@ -229,7 +265,8 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) = 0;
+  virtual bool
+  GetEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) = 0;
 
   /*******************************************************************************/
   /*!
@@ -360,10 +397,13 @@ public:
   virtual bool GetEventProximity(sensors_event_t *proximityEvent) = 0;
 
 protected:
-  TwoWire *_i2c;            ///< Pointer to the I2C bus
-  uint16_t _address;        ///< The device's I2C address.
-  long _sensor_period;      ///< The sensor's period, in milliseconds.
-  long _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
+  TwoWire *_i2c;             ///< Pointer to the I2C bus
+  uint16_t _address;         ///< The device's I2C address.
+  uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
+  long _sensor_period;       ///< The sensor's period, in milliseconds.
+  long _sensor_period_prv;   ///< The sensor's previous period, in milliseconds.
+  wippersnapper_sensor_SensorType
+      _sensors[15];      ///< Sensors attached to the device.
+  size_t _sensors_count; ///< Number of sensors on the device.
 };
-
 #endif // DRV_BASE_H
