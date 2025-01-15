@@ -129,6 +129,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         "[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
     return false;
   }
+  wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
+      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
   // TODO: Handle Replace messages by implementing a Remove handler first...then
   // proceed to adding a new device
@@ -136,9 +138,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // TODO: This is only using the default bus, for now
   drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
-      _i2c_hardware->GetI2cBus(),
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-          ->i2c_device_description.i2c_device_mux_address,
+      _i2c_hardware->GetI2cBus(), device_descriptor.i2c_device_mux_address,
       device_status);
   if (drv != nullptr) {
     // Configure and add the new driver to the controller
@@ -149,5 +149,23 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     _i2c_drivers.push_back(drv);
   }
 
-  // TODO: Publish back wippersnapper_i2c_I2cDeviceAddedOrReplaced
+  if (WsV2._sdCardV2->isModeOffline())
+    return true;
+
+  // Publish I2cDeviceAddedOrReplaced message back to IO
+  if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
+          device_descriptor, _i2c_hardware->GetBusStatus(), device_status)) {
+    WS_DEBUG_PRINTLN(
+        "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
+    return false;
+  }
+
+  if (!WsV2.PublishSignal(
+          wippersnapper_signal_DeviceToBroker_i2c_device_added_replaced_tag,
+          _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish I2cDeviceAddedorReplaced "
+                     "message to IO!");
+    return false;
+  }
+  return true;
 }
