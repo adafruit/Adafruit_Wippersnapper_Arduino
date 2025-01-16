@@ -65,7 +65,6 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      feedWDT();                                                               \
       if (millis() < start) {                                                  \
         start = millis(); /* if rollover */                                    \
       }                                                                        \
