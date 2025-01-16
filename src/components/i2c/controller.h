@@ -20,6 +20,7 @@
 // I2C Drivers
 #include "drivers/drvBase.h" ///< Base driver class
 #include "drivers/drvAhtx0.h"
+#include "drivers/drvBME280.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
@@ -35,7 +36,7 @@ class I2cController {
 public:
   I2cController();
   ~I2cController();
-  bool IsBusOK();
+  bool IsBusStatusOK();
   // Routing
   bool Handle_I2cBusScan(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);

@@ -7,7 +7,7 @@ I2cHardware::~I2cHardware() {
   // TODO
 }
 
-void ToggleI2CPowerPin() {
+void I2cHardware::ToggleI2CPowerPin() {
 #if defined(PIN_I2C_POWER)
   // turn on the I2C power by setting pin to opposite of 'rest state'
   pinMode(PIN_I2C_POWER, INPUT);

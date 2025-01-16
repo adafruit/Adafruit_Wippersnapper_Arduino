@@ -44,6 +44,7 @@
 #include "Adafruit_SleepyDog.h" // Watchdog
 #include "Arduino.h"            // Wiring
 #include <SPI.h>                // SPI
+#include <Wire.h>               // I2C
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"

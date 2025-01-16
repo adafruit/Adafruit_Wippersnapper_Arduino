@@ -93,7 +93,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  virtual bool begin() {}
+  virtual bool begin() = 0;
 
   /*******************************************************************************/
   /*!
@@ -123,7 +123,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventCO2(sensors_event_t *co2Event) = 0;
+  virtual bool GetEventCO2(sensors_event_t *co2Event) { return false; };
 
   /*******************************************************************************/
   /*!
@@ -134,7 +134,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventECO2(sensors_event_t *eco2Event) = 0;
+  virtual bool GetEventECO2(sensors_event_t *eco2Event) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -145,7 +145,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventTVOC(sensors_event_t *tvocEvent) = 0;
+  virtual bool GetEventTVOC(sensors_event_t *tvocEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -157,7 +157,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventAmbientTemp(sensors_event_t *tempEvent) = 0;
+  virtual bool GetEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -169,7 +169,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventRelativeHumidity(sensors_event_t *humidEvent) = 0;
+  virtual bool GetEventRelativeHumidity(sensors_event_t *humidEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -181,7 +183,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPressure(sensors_event_t *pressureEvent) = 0;
+  virtual bool GetEventPressure(sensors_event_t *pressureEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -193,7 +197,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventAltitude(sensors_event_t *altitudeEvent) = 0;
+  virtual bool GetEventAltitude(sensors_event_t *altitudeEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -205,7 +211,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventObjectTemp(sensors_event_t *objectTempEvent) = 0;
+  virtual bool GetEventObjectTemp(sensors_event_t *objectTempEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -217,7 +225,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventLight(sensors_event_t *lightEvent) = 0;
+  virtual bool GetEventLight(sensors_event_t *lightEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -229,7 +237,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPM10_STD(sensors_event_t *pm10StdEvent) = 0;
+  virtual bool GetEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -241,7 +249,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPM25_STD(sensors_event_t *pm25StdEvent) = 0;
+  virtual bool GetEventPM25_STD(sensors_event_t *pm25StdEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -253,7 +261,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPM100_STD(sensors_event_t *pm100StdEvent) = 0;
+  virtual bool GetEventPM100_STD(sensors_event_t *pm100StdEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -265,8 +275,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool
-  GetEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) = 0;
+  virtual bool GetEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -278,7 +289,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventVoltage(sensors_event_t *voltageEvent) = 0;
+  virtual bool GetEventVoltage(sensors_event_t *voltageEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -290,7 +301,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventCurrent(sensors_event_t *currentEvent) = 0;
+  virtual bool GetEventCurrent(sensors_event_t *currentEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -301,7 +312,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventRaw(sensors_event_t *rawEvent) = 0;
+  virtual bool GetEventRaw(sensors_event_t *rawEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -358,7 +369,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventGasResistance(sensors_event_t *gasEvent) = 0;
+  virtual bool GetEventGasResistance(sensors_event_t *gasEvent) {
+    return false;
+  }
 
   /*******************************************************************************/
   /*!
@@ -370,7 +383,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventNOxIndex(sensors_event_t *gasEvent) = 0;
+  virtual bool GetEventNOxIndex(sensors_event_t *gasEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -382,7 +395,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventVOCIndex(sensors_event_t *gasEvent) = 0;
+  virtual bool GetEventVOCIndex(sensors_event_t *gasEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -394,7 +407,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventProximity(sensors_event_t *proximityEvent) = 0;
+  virtual bool GetEventProximity(sensors_event_t *proximityEvent) {
+    return false;
+  }
 
 protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus

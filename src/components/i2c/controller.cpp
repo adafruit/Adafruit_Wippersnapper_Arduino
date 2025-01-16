@@ -20,34 +20,10 @@ using FnCreateI2CDriver = std::function<drvBase *(TwoWire *, uint16_t)>;
 // Map of sensor names to lambda functions that create an I2C device driver
 // NOTE: This list is NOT comprehensive, it's a  subset for now
 // to assess the feasibility of this approach.
+// TODO: Add in a MUX here!
 static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
-    // Many sensors share the same driver class AHTX0
-    {"aht20",
-     [](TwoWire *i2c, uint16_t addr) {
-       return new WipperSnapper_I2C_Driver_AHTX0(i2c, addr);
-     }},
-    {"am2301b",
-     [](TwoWire *i2c, uint16_t addr) {
-       return new WipperSnapper_I2C_Driver_AHTX0(i2c, addr);
-     }},
-    {"am2315c",
-     [](TwoWire *i2c, uint16_t addr) {
-       return new WipperSnapper_I2C_Driver_AHTX0(i2c, addr);
-     }},
-    {"dht20",
-     [](TwoWire *i2c, uint16_t addr) {
-       return new WipperSnapper_I2C_Driver_AHTX0(i2c, addr);
-     }},
-    {"bh1750",
-     [](TwoWire *i2c, uint16_t addr) {
-       return new WipperSnapper_I2C_Driver_BH1750(i2c, addr);
-     }},
-    {"bme280",
-     [](TwoWire *i2c, uint16_t addr) {
-       return new WipperSnapper_I2C_Driver_BME280(i2c, addr);
-     }},
-    {"bmp280", [](TwoWire *i2c, uint16_t addr) {
-       return new WipperSnapper_I2C_Driver_BMP280(i2c, addr);
+    {"bme280", [](TwoWire *i2c, uint16_t addr) -> drvBase * {
+       return new drvBme280(i2c, addr);
      }}};
 
 drvBase *createI2CDriverByName(const char *sensorName, TwoWire *i2c,
@@ -98,7 +74,7 @@ I2cController::~I2cController() {
     @returns  True if the I2C bus is operational, False otherwise.
 */
 /***********************************************************************/
-bool I2cController::IsBusOK() {
+bool I2cController::IsBusStatusOK() {
   if (!_i2c_hardware->GetBusStatus() ==
       wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS)
     return false;
@@ -117,7 +93,7 @@ bool I2cController::IsBusOK() {
 bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   wippersnapper_i2c_I2cDeviceStatus device_status;
 
-  if (!IsBusOK()) {
+  if (!IsBusStatusOK()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus is not operational or stuck, please "
                      "restart device!");
     return false;
