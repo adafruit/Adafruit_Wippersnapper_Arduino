@@ -37,12 +37,15 @@ public:
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
+      @param    mux_channel
+                The I2C MUX channel, if applicable.
   */
   /*******************************************************************************/
-  drvBme280(TwoWire *i2c, uint16_t sensorAddress)
-      : drvBase(i2c, sensorAddress) {
+  drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel)
+      : drvBase(i2c, sensorAddress, mux_channel) {
     _i2c = i2c;
     _address = sensorAddress;
+    _i2c_mux_channel = mux_channel;
   }
 
   /*******************************************************************************/

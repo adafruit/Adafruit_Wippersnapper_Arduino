@@ -15,19 +15,25 @@
 #include "controller.h"
 
 // lambda function to create drvBase driver
-using FnCreateI2CDriver = std::function<drvBase *(TwoWire *, uint16_t)>;
+using FnCreateI2CDriver =
+    std::function<drvBase *(TwoWire *, uint16_t, uint32_t)>;
 
 // Map of sensor names to lambda functions that create an I2C device driver
 // NOTE: This list is NOT comprehensive, it's a  subset for now
 // to assess the feasibility of this approach.
 // TODO: Add in a MUX here!
 static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
-    {"bme280", [](TwoWire *i2c, uint16_t addr) -> drvBase * {
-       return new drvBme280(i2c, addr);
+    {"bme280",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel) -> drvBase * {
+       return new drvBme280(i2c, addr, mux_channel);
+     }},
+    {"pca9586",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel) -> drvBase * {
+       return new drvPca9546(i2c, addr, mux_channel);
      }}};
 
 drvBase *createI2CDriverByName(const char *sensorName, TwoWire *i2c,
-                               uint16_t addr,
+                               uint16_t addr, uint32_t i2c_mux_channel,
                                wippersnapper_i2c_I2cDeviceStatus &status) {
   status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
   auto it = I2cFactory.find(sensorName);
@@ -39,7 +45,7 @@ drvBase *createI2CDriverByName(const char *sensorName, TwoWire *i2c,
 
   status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
   // Call the lambda to create the driver
-  return it->second(i2c, addr);
+  return it->second(i2c, addr, i2c_mux_channel);
 }
 
 /***********************************************************************/
@@ -113,18 +119,30 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // proceed to adding a new device
 
   // TODO: This is only using the default bus, for now
+  // TODO: Implement the ability to work with > 1 i2c hardware bus
   WS_DEBUG_PRINT("[i2c] Initializing I2C driver...");
   drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
       _i2c_hardware->GetI2cBus(), device_descriptor.i2c_device_mux_address,
-      device_status);
+      device_descriptor.i2c_mux_channel, device_status);
   WS_DEBUG_PRINTLN("OK!");
   if (drv != nullptr) {
-    // Configure and add the new driver to the controller
-    drv->ConfigureSensorTypes(
-        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
-        _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-            ->i2c_device_sensor_types_count);
+    // Determine if the device is a MUX (TODO: For now, this works but we'll
+    // need to scale!)
+    if (strcmp(_i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
+               "pca9546") != 0) {
+      // Configure and add the new driver to the controller
+      drv->ConfigureSensorTypes(
+          _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
+          _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+              ->i2c_device_sensor_types_count);
+    }
+    // TODO: We shoudl call begin() here
+    // TODO: But that involves first check for if the device has a mux_channel
+    // set (!=0xFF)
+    // TODO: then, we need to check if the mux exists
+    // TODO: Feel like there is a better way of doing this, maybe a flag for
+    // when we configure a mux
     _i2c_drivers.push_back(drv);
     WS_DEBUG_PRINTLN("[i2c] I2C driver added to controller: ");
     WS_DEBUG_PRINTLN(

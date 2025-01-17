@@ -52,15 +52,15 @@ public:
                 The I2C hardware interface, default is Wire.
       @param    address
                 The I2C sensor's unique address.
-      @param    muxChannel
+      @param    mux_channel
                 An optional channel number used to address a device on a I2C
      MUX.
   */
   /*******************************************************************************/
-  drvBase(TwoWire *i2c, uint16_t address, uint32_t muxChannel) {
+  drvBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel) {
     _i2c = i2c;
     _address = address;
-    _i2c_mux_channel = muxChannel;
+    _i2c_mux_channel = mux_channel;
   }
 
   /*******************************************************************************/
