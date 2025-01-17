@@ -102,16 +102,18 @@ void Wippersnapper_V2::provisionV2() {
   _littleFSV2 = new WipperSnapper_LittleFS_V2();
 #endif
 
-  // Determine if app is in SDLogger mode
-  #ifdef USE_TINYUSB
+// Determine if app is in SDLogger mode
+#ifdef USE_TINYUSB
+  WS_DEBUG_PRINTLN("Getting SD CS Pin...");
   _fileSystemV2->GetSDCSPin();
-  #elif defined(USE_LITTLEFS)
+#elif defined(USE_LITTLEFS)
   _littleFSV2->GetSDCSPin();
-  #elif defined(OFFLINE_MODE_WOKWI)
+#elif defined(OFFLINE_MODE_WOKWI)
   WsV2.pin_sd_cs = 15;
-  #endif
+#endif
   WsV2._sdCardV2 = new ws_sdcard();
   if (WsV2._sdCardV2->isSDCardInitialized()) {
+    WS_DEBUG_PRINTLN("SD Card Initialized!");
     return;
   }
 
@@ -1109,11 +1111,11 @@ void Wippersnapper_V2::pingBrokerV2() {
 */
 /*******************************************************/
 void Wippersnapper_V2::feedWDTV2() {
-    #ifndef OFFLINE_MODE_WOKWI
-    // TODO: This is a temporary fix for watchdog.reset() not firing
-    Watchdog.reset();
-    //esp_task_wdt_reset(); // TODO: Putback for ESP32 WDT
-    #endif
+#ifndef OFFLINE_MODE_WOKWI
+  // TODO: This is a temporary fix for watchdog.reset() not firing
+  Watchdog.reset();
+// esp_task_wdt_reset(); // TODO: Putback for ESP32 WDT
+#endif
 }
 
 /********************************************************/
@@ -1206,24 +1208,24 @@ void Wippersnapper_V2::connectV2() {
   // NOTE: After this, bail out of this function and run the app loop!!!
   if (WsV2._sdCardV2->isModeOffline() == true) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
-    // If debug mode, wait for serial config
-    #ifdef OFFLINE_MODE_DEBUG
+// If debug mode, wait for serial config
+#ifdef OFFLINE_MODE_DEBUG
     WsV2._sdCardV2->waitForSerialConfig();
-    #endif
+#endif
     // Parse the JSON file
     if (!WsV2._sdCardV2->parseConfigFile())
       haltErrorV2("Failed to parse incoming JSON file");
     WS_DEBUG_PRINTLN("[Offline] Attempting to configure hardware...");
-    #ifndef OFFLINE_MODE_DEBUG
+#ifndef OFFLINE_MODE_DEBUG
     // Create a new file to store the json log
     if (!WsV2._sdCardV2->CreateNewLogFile()) {
       haltErrorV2("Unable to create log file");
     }
-    #endif
+#endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
-    WS_DEBUG_PRINTLN(
-        "[Offline] Hardware configured, skipping network setup and running app...");
+    WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
+                     "and running app...");
     // Set the status LED to green to indicate successful configuration
     setStatusLEDColor(0x00A300, WS.status_pixel_brightness);
     delay(100);

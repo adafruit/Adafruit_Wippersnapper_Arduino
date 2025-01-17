@@ -100,6 +100,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   }
 
   // Attempt to decode an I2cDeviceAddOrReplace message
+  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceAddOrReplace message...");
   if (!_i2c_model->DecodeI2cDeviceAddReplace(stream)) {
     WS_DEBUG_PRINTLN(
         "[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
@@ -112,10 +113,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // proceed to adding a new device
 
   // TODO: This is only using the default bus, for now
+  WS_DEBUG_PRINT("[i2c] Initializing I2C driver...");
   drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
       _i2c_hardware->GetI2cBus(), device_descriptor.i2c_device_mux_address,
       device_status);
+  WS_DEBUG_PRINTLN("OK!");
   if (drv != nullptr) {
     // Configure and add the new driver to the controller
     drv->ConfigureSensorTypes(
@@ -123,10 +126,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()
             ->i2c_device_sensor_types_count);
     _i2c_drivers.push_back(drv);
+    WS_DEBUG_PRINTLN("[i2c] I2C driver added to controller: ");
+    WS_DEBUG_PRINTLN(
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name);
   }
-
-  if (WsV2._sdCardV2->isModeOffline())
-    return true;
 
   // Publish I2cDeviceAddedOrReplaced message back to IO
   if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
@@ -135,6 +138,17 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
     return false;
   }
+
+  WS_DEBUG_PRINTLN("[i2c] I2cDeviceAddedorReplaced Message Contents:");
+  WS_DEBUG_PRINT("\t Bus Status: ")
+  WS_DEBUG_PRINTLN(
+      _i2c_model->GetMsgI2cDeviceAddedOrReplaced()->i2c_bus_status);
+  WS_DEBUG_PRINT("\t Device Status: ")
+  WS_DEBUG_PRINTLN(
+      _i2c_model->GetMsgI2cDeviceAddedOrReplaced()->i2c_device_status);
+
+  if (WsV2._sdCardV2->isModeOffline())
+    return true;
 
   if (!WsV2.PublishSignal(
           wippersnapper_signal_DeviceToBroker_i2c_device_added_replaced_tag,

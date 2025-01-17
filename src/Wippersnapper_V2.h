@@ -22,9 +22,10 @@
 // #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
 
 // Cpp STD
-#include <vector>
-#include <map>
 #include <functional>
+#include <map>
+#include <string>
+#include <vector>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
@@ -59,8 +60,8 @@
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
-#include "components/sensor/model.h"
 #include "components/i2c/controller.h"
+#include "components/sensor/model.h"
 
 // Components (API v1)
 #include "components/analogIO/Wippersnapper_AnalogIO.h"
@@ -214,9 +215,12 @@ public:
   // API v2 Components
   CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
   SensorModel *sensorModel = nullptr;   ///< Instance of SensorModel class
-  DigitalIOController *digital_io_controller = nullptr; ///< Instance of DigitalIO controller class
-  AnalogIOController *analogio_controller = nullptr; ///< Instance of AnalogIO controller
-  DS18X20Controller *_ds18x20_controller = nullptr;  ///< Instance of DS18X20 controller
+  DigitalIOController *digital_io_controller =
+      nullptr; ///< Instance of DigitalIO controller class
+  AnalogIOController *analogio_controller =
+      nullptr; ///< Instance of AnalogIO controller
+  DS18X20Controller *_ds18x20_controller =
+      nullptr; ///< Instance of DS18X20 controller
   I2cController *_i2c_controller = nullptr;
 
   // TODO: does this really need to be global?
@@ -261,6 +265,7 @@ private:
   Adafruit_MQTT_Subscribe *_subscribeB2d;
   Adafruit_MQTT_Subscribe *_subscribeError;
   Adafruit_MQTT_Subscribe *_subscribeThrottle;
+
 protected:
   ws_status_t _statusV2 = WS_IDLE; ///< Wippersnapper status
 

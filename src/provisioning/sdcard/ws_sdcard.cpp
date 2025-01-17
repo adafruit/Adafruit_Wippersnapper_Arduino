@@ -125,13 +125,16 @@ bool ws_sdcard::InitDS3231() {
 /**************************************************************************/
 bool ws_sdcard::InitPCF8523() {
   _rtc_pcf8523 = new RTC_PCF8523();
+  Serial.println("Begin PCF init");
   if (!_rtc_pcf8523->begin()) {
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE");
     if (!_rtc_pcf8523->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize PCF8523 RTC");
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE1");
       delete _rtc_pcf8523;
       return false;
     }
   }
+  Serial.println("End PCF init");
   if (_rtc_pcf8523->lostPower())
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
   return true;
@@ -200,6 +203,7 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
   WsV2.analogio_controller->SetRefVoltage(ref_voltage);
 }
 
+// TODO: This could be a switch/map/or something mucccch cleaner...
 /**************************************************************************/
 /*!
     @brief  Parses a sensor type from the JSON configuration file.
@@ -220,6 +224,18 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   } else if (strcmp(sensor_type, "object-temp") == 0) {
     WS_DEBUG_PRINTLN("Found object-temp");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
+  } else if (strcmp(sensor_type, "altitude") == 0) {
+    WS_DEBUG_PRINTLN("Found altitude");
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE;
+  } else if (strcmp(sensor_type, "humidity") == 0) {
+    WS_DEBUG_PRINTLN("Found humidity");
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+  } else if (strcmp(sensor_type, "pressure") == 0) {
+    WS_DEBUG_PRINTLN("Found pressure");
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
+  } else if (strcmp(sensor_type, "ambient-temp") == 0) {
+    WS_DEBUG_PRINTLN("Found ambient temp");
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
   } else {
     WS_DEBUG_PRINT("Found unspecified sensortype - ");
     WS_DEBUG_PRINTLN(sensor_type);
@@ -504,6 +520,8 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
+  
+  delay(5000);
   // TODO: THIS IS JUST FOR DEBUG Testing, remove for PR review
   WS_DEBUG_PRINT("SD card capacity: ");
   WS_DEBUG_PRINTLN(_sd_capacity);
@@ -549,6 +567,10 @@ bool ws_sdcard::parseConfigFile() {
                      "found in config file!");
     return false;
   }
+
+  WS_DEBUG_PRINTLN("Parsing components array...");
+  // TODO: It gets stuck here because we reformated how components works,
+  // try possibly adding another component like a button and then troubleshoot
   JsonArray components_ar = doc["components"].as<JsonArray>();
   if (components_ar.isNull()) {
     WS_DEBUG_PRINTLN(
@@ -556,21 +578,30 @@ bool ws_sdcard::parseConfigFile() {
     return false;
   }
 
+  WS_DEBUG_PRINTLN("Parsing exportedFromDevice object...");
+
   // We don't talk to IO here, perform an "offline" device check-in
   CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
           exportedFromDevice["totalAnalogPins"] | 0,
           exportedFromDevice["referenceVoltage"] | 0.0);
   setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
 
+ WS_DEBUG_PRINTLN("Configuring RTC...");
+
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
-  if (!ConfigureRTC(json_rtc)) {
+  WS_DEBUG_PRINT("RTC Type: ");
+  WS_DEBUG_PRINTLN(json_rtc);
+  // TODO: PCF8523 won't init the RTC here! NEEDFIX
+/*   if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;
-  }
+  } */
 #else
   WS_DEBUG_PRINTLN("[SD] Did not configure RTC for Wokwi...");
 #endif
+
+  WS_DEBUG_PRINTLN("Parsing components array...");
 
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
@@ -639,6 +670,51 @@ bool ws_sdcard::parseConfigFile() {
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
       msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
+    } else if (strcmp(component_api_type, "i2c") == 0) {
+      WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
+      wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add = wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+      // TODO: We are manually parsing here instead of breaking that out into a function
+      msg_i2c_add.has_i2c_device_description = true;
+      strcpy(msg_i2c_add.i2c_device_name, component["i2cDeviceName"] | UNKNOWN_VALUE);
+      msg_i2c_add.i2c_device_period = component["period"] | 0.0;
+      msg_i2c_add.i2c_device_description.i2c_bus = component["i2cBus"] | 0;
+
+      const char* addr_device_mux = component["i2cDeviceMuxAddress"] | "0x00";
+      uint32_t address = std::stoi(addr_device_mux, nullptr, 16);
+      msg_i2c_add.i2c_device_description.i2c_device_mux_address = address;
+
+      const char* mux_channel = component["i2cMuxChannel"] | "0xFF";
+      uint32_t channel = std::stoi(mux_channel, nullptr, 16);
+      msg_i2c_add.i2c_device_description.i2c_mux_channel = channel;
+
+      // TODO: Figure out how many sensors are within the array
+      msg_i2c_add.i2c_device_sensor_types_count = 0;
+      for (JsonObject components_0_i2cDeviceSensorType : component["i2cDeviceSensorTypes"].as<JsonArray>()) {
+        msg_i2c_add.i2c_device_sensor_types[msg_i2c_add.i2c_device_sensor_types_count] = ParseSensorType(components_0_i2cDeviceSensorType["type"]);
+        msg_i2c_add.i2c_device_sensor_types_count++;
+      }
+
+      // DEBUG printing
+      WS_DEBUG_PRINT("[SD] Added I2C Device:");
+      WS_DEBUG_PRINT("\tI2C Device Name: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_name);
+      WS_DEBUG_PRINT("\tI2C Device Period: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_period);
+      WS_DEBUG_PRINT("\tI2C Device Bus: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_bus);
+      WS_DEBUG_PRINT("\tI2C Device Mux Address: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_device_mux_address);
+      WS_DEBUG_PRINT("\tI2C Device Mux Channel: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_mux_channel);
+      WS_DEBUG_PRINT("\tI2C Device Sensor Types Count: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_sensor_types_count);
+      for (int i = 0; i < msg_i2c_add.i2c_device_sensor_types_count; i++) {
+        WS_DEBUG_PRINT("\tI2C Device Sensor Type: ");
+        WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_sensor_types[i]);
+      }
+
+      msg_signal_b2d.which_payload = wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
+      msg_signal_b2d.payload.i2c_device_add_replace = msg_i2c_add;
     } else {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
                        String(component_api_type));
