@@ -17,6 +17,7 @@
 #define DRV_PCA_9546_H
 
 #include "drvBase.h"
+#define MAX_CHANNEL 3
 
 /**************************************************************************/
 /*!
@@ -37,11 +38,13 @@ public:
                 The I2C MUX channel.
   */
   /*******************************************************************************/
-  drvPca9546(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel)
-      : drvBase(i2c, sensorAddress, mux_channel) {
+  drvPca9546(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+      : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
     _i2c_mux_channel = mux_channel; // Eh, we probably don't need this in this driver, TODO!
+    strncpy(_name, driver_name, sizeof(_name) - 1);
+    _name[sizeof(_name) - 1] = '\0';
   }
 
   bool begin() override {
@@ -50,9 +53,9 @@ public:
   }
 
   void SelectMUXChannel(uint8_t channel) {
-    if (channel > 3) return;
+    if (channel > MAX_CHANNEL) return;
     _i2c->beginTransmission(_address);
-    _i2c->write(channel << channel);
+    _i2c->write(1 << channel);
     _i2c->endTransmission();
   }
 protected:

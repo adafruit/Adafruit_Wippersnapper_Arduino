@@ -39,10 +39,12 @@ public:
                 The I2C sensor's unique address.
   */
   /*******************************************************************************/
-  drvBase(TwoWire *i2c, uint16_t address) {
+  drvBase(TwoWire *i2c, uint16_t address, const char* driver_name) {
     _i2c = i2c;
     _address = address;
     _i2c_mux_channel = NO_MUX_CH;
+    strncpy(_name, driver_name, sizeof(_name) - 1);
+    _name[sizeof(_name) - 1] = '\0';
   }
 
   /*******************************************************************************/
@@ -57,10 +59,12 @@ public:
      MUX.
   */
   /*******************************************************************************/
-  drvBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel) {
+  drvBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel, const char* driver_name) {
     _i2c = i2c;
     _address = address;
     _i2c_mux_channel = mux_channel;
+    strncpy(_name, driver_name, sizeof(_name) - 1);
+    _name[sizeof(_name) - 1] = '\0';
   }
 
   /*******************************************************************************/
@@ -69,6 +73,11 @@ public:
   */
   /*******************************************************************************/
   virtual ~drvBase() {}
+
+  uint32_t GetMuxChannel() { return _i2c_mux_channel; }
+
+  // return _name
+  const char* GetDrvName() { return _name; }
 
   /*******************************************************************************/
   /*!
@@ -214,6 +223,8 @@ public:
   virtual bool GetEventObjectTemp(sensors_event_t *objectTempEvent) {
     return false;
   }
+
+  virtual void SelectMUXChannel(uint8_t channel) { return; }
 
   /*******************************************************************************/
   /*!
@@ -415,6 +426,7 @@ protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus
   uint16_t _address;         ///< The device's I2C address.
   uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
+  char _name[15];            ///< The device's name.
   long _sensor_period;       ///< The sensor's period, in milliseconds.
   long _sensor_period_prv;   ///< The sensor's previous period, in milliseconds.
   wippersnapper_sensor_SensorType

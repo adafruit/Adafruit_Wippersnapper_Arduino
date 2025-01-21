@@ -41,11 +41,14 @@ public:
                 The I2C MUX channel, if applicable.
   */
   /*******************************************************************************/
-  drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel)
-      : drvBase(i2c, sensorAddress, mux_channel) {
+  drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+      : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
+    // TODO: Can we just use the default constructo for these?
     _i2c = i2c;
     _address = sensorAddress;
     _i2c_mux_channel = mux_channel;
+    strncpy(_name, driver_name, sizeof(_name) - 1);
+    _name[sizeof(_name) - 1] = '\0';
   }
 
   /*******************************************************************************/
@@ -64,7 +67,7 @@ public:
   bool begin() override {
     _bme = new Adafruit_BME280();
     // attempt to initialize BME280
-    if (!_bme->begin(_address, _i2c))
+    if (!_bme->begin(0x77, _i2c))
       return false;
     // configure BME280 device
     _bme_temp = _bme->getTemperatureSensor();

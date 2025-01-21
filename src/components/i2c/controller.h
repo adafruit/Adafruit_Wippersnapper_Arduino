@@ -36,14 +36,14 @@ class I2cController {
 public:
   I2cController();
   ~I2cController();
-  bool IsBusStatusOK();
+  void update();
   // Routing
   bool Handle_I2cBusScan(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
-  // Polling loop
-  void update();
-
+  // Helpers
+  bool IsBusStatusOK();
+  drvBase* GetMuxDrv(uint32_t mux_address);
 private:
   I2cModel *_i2c_model;       ///< I2c model
   I2cHardware *_i2c_hardware; ///< I2c hardware
