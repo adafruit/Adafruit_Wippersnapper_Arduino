@@ -67,7 +67,7 @@ public:
   bool begin() override {
     _bme = new Adafruit_BME280();
     // attempt to initialize BME280
-    if (!_bme->begin(0x77, _i2c))
+    if (!_bme->begin(_address, _i2c))
       return false;
     // configure BME280 device
     _bme_temp = _bme->getTemperatureSensor();

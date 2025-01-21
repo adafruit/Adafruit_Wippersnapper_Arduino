@@ -138,10 +138,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // TODO: We will need to modify the sdconfig parser to reflect "no value" set == the 0xFFFF magic value
   if (device_descriptor.i2c_mux_channel != 0xFFFF) {
     WS_DEBUG_PRINT("Device has a MUX channel, attempting to locate MUX on addr: ");
-    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_mux_address);
-    // TODO: Hardcode to 0x70 for now, this is a bad hardcode and we need to change
-    // this to a new value, set within the i2c.proto api
-    drvBase* muxDriver = GetMuxDrv(0x70);
+    WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_address);
+    drvBase* muxDriver = GetMuxDrv(device_descriptor.i2c_mux_address);
     if (muxDriver == nullptr) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to find MUX driver for device!");
       return false; // TODO: Dont' return, instead set the busStatus enum 
@@ -156,7 +154,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("Creating a new I2C driver obj");
   drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
-      _i2c_hardware->GetI2cBus(), device_descriptor.i2c_device_mux_address,
+      _i2c_hardware->GetI2cBus(), device_descriptor.i2c_device_address,
       device_descriptor.i2c_mux_channel, device_status);
 
   // TODO: Clean up for clarity - confusing checks and returns
