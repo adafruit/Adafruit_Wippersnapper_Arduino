@@ -1,7 +1,7 @@
 var searchData=
 [
   ['sealevelpressure_5fhpa',['SEALEVELPRESSURE_HPA',['../_wipper_snapper___i2_c___driver___b_m_e280_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BME280.h'],['../_wipper_snapper___i2_c___driver___b_m_e680_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BME680.h'],['../_wipper_snapper___i2_c___driver___b_m_p280_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BMP280.h'],['../_wipper_snapper___i2_c___driver___b_m_p3_x_x_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_BMP3XX.h'],['../_wipper_snapper___i2_c___driver___e_n_s160_8h.html#a3fd1be5675628ccdd1cd809ee995b2e7',1,'SEALEVELPRESSURE_HPA():&#160;WipperSnapper_I2C_Driver_ENS160.h']]],
-  ['spiwifi',['SPIWIFI',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#a02a0537d71f1fad2ceb5cef4950f4f18',1,'SPIWIFI():&#160;Wippersnapper_AIRLIFT.h'],['../_wippersnapper___w_i_f_i_n_i_n_a_8h.html#a02a0537d71f1fad2ceb5cef4950f4f18',1,'SPIWIFI():&#160;Wippersnapper_WIFININA.h']]],
+  ['spiwifi',['SPIWIFI',['../_wippersnapper___a_i_r_l_i_f_t_8h.html#a02a0537d71f1fad2ceb5cef4950f4f18',1,'Wippersnapper_AIRLIFT.h']]],
   ['status_5fdotstar_5fcolor_5forder',['STATUS_DOTSTAR_COLOR_ORDER',['../_wippersnapper___boards_8h.html#a8bf6b21e770886d409a5266b34dbc40b',1,'Wippersnapper_Boards.h']]],
   ['status_5fdotstar_5fnum',['STATUS_DOTSTAR_NUM',['../_wippersnapper___boards_8h.html#a064728df19116a95cb2b2672e85c01bc',1,'Wippersnapper_Boards.h']]],
   ['status_5fdotstar_5fpin_5fclk',['STATUS_DOTSTAR_PIN_CLK',['../_wippersnapper___boards_8h.html#a882cdccd2b9725880419c51137a383fd',1,'Wippersnapper_Boards.h']]],

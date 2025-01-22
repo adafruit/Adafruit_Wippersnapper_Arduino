@@ -110,9 +110,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a79251a27be95ce1ba49fa8421f5c14cf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a79251a27be95ce1ba49fa8421f5c14cf">getNativeResolution</a> ()</td></tr>
 <tr class="memdesc:a79251a27be95ce1ba49fa8421f5c14cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the device's native ADC resolution.  <a href="#a79251a27be95ce1ba49fa8421f5c14cf">More...</a><br /></td></tr>
 <tr class="separator:a79251a27be95ce1ba49fa8421f5c14cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b9a2a52d3d0ffac5c8a21ef8b74e43b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#a7b9a2a52d3d0ffac5c8a21ef8b74e43b">timerExpired</a> (long currentTime, <a class="el" href="structanalog_input_pin.html">analogInputPin</a> pin)</td></tr>
-<tr class="memdesc:a7b9a2a52d3d0ffac5c8a21ef8b74e43b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if pin's period is expired.  <a href="#a7b9a2a52d3d0ffac5c8a21ef8b74e43b">More...</a><br /></td></tr>
-<tr class="separator:a7b9a2a52d3d0ffac5c8a21ef8b74e43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa59bc605a9a601452b708d716f43923a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#aa59bc605a9a601452b708d716f43923a">timerExpired</a> (long currentTime, <a class="el" href="structanalog_input_pin.html">analogInputPin</a> pin, long periodOffset=0)</td></tr>
+<tr class="memdesc:aa59bc605a9a601452b708d716f43923a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if pin's period is expired.  <a href="#aa59bc605a9a601452b708d716f43923a">More...</a><br /></td></tr>
+<tr class="separator:aa59bc605a9a601452b708d716f43923a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab4ad7852708862ccda06a510a4b3d59"><td class="memItemLeft" align="right" valign="top"><a id="aab4ad7852708862ccda06a510a4b3d59"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___analog_i_o.html#aab4ad7852708862ccda06a510a4b3d59">update</a> ()</td></tr>
 <tr class="memdesc:aab4ad7852708862ccda06a510a4b3d59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates thru analog inputs. <br /></td></tr>
@@ -442,8 +442,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a7b9a2a52d3d0ffac5c8a21ef8b74e43b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7b9a2a52d3d0ffac5c8a21ef8b74e43b">&#9670;&nbsp;</a></span>timerExpired()</h2>
+<a id="aa59bc605a9a601452b708d716f43923a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa59bc605a9a601452b708d716f43923a">&#9670;&nbsp;</a></span>timerExpired()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -458,7 +458,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="structanalog_input_pin.html">analogInputPin</a>&#160;</td>
-          <td class="paramname"><em>pin</em>&#160;</td>
+          <td class="paramname"><em>pin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">long&#160;</td>
+          <td class="paramname"><em>periodOffset</em> = <code>0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -473,6 +479,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   <table class="params">
     <tr><td class="paramname">currentTime</td><td>The current software timer value. </td></tr>
     <tr><td class="paramname">pin</td><td>The desired analog pin to check </td></tr>
+    <tr><td class="paramname">periodOffset</td><td>Offset to add to the pin's period (used for on_change). </td></tr>
   </table>
   </dd>
 </dl>

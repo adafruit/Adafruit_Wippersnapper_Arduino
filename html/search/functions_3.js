@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['calculatehysteresis',['calculateHysteresis',['../_wippersnapper___analog_i_o_8cpp.html#a090ac9aa22bca6965e84a97ea3048bc1',1,'Wippersnapper_AnalogIO.cpp']]],
   ['cbdecodedigitalpinwritemsg',['cbDecodeDigitalPinWriteMsg',['../_wippersnapper_8cpp.html#a10bcdf641a00178a2051f9c913c3ce1b',1,'Wippersnapper.cpp']]],
   ['cbdecodeds18x20msg',['cbDecodeDs18x20Msg',['../_wippersnapper_8cpp.html#ae9f35382d74f2d8914948038f9fc6d24',1,'Wippersnapper.cpp']]],
   ['cbdecodei2cdeviceinitrequestlist',['cbDecodeI2CDeviceInitRequestList',['../_wippersnapper_8cpp.html#a847c2a4449caffd9e61983089a72a3ed',1,'Wippersnapper.cpp']]],
@@ -20,7 +21,7 @@ var searchData=
   ['cbsignaltopic',['cbSignalTopic',['../_wippersnapper_8cpp.html#adf3bf6470c06cad9086c3a8556474dbe',1,'Wippersnapper.cpp']]],
   ['cbsignaluartreq',['cbSignalUARTReq',['../_wippersnapper_8cpp.html#afbca6f75bec609c0af55ff815be2e964',1,'Wippersnapper.cpp']]],
   ['cbthrottletopic',['cbThrottleTopic',['../_wippersnapper_8cpp.html#aa1e37658221dffced66cc9e1548e5be1',1,'Wippersnapper.cpp']]],
-  ['check_5fvalid_5fssid',['check_valid_ssid',['../class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a',1,'Wippersnapper_AIRLIFT::check_valid_ssid()'],['../class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b',1,'Wippersnapper_ESP32::check_valid_ssid()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#aaee5680c8abe5ec08f34166f1d669adf',1,'Wippersnapper_WIFININA::check_valid_ssid()'],['../class_wippersnapper.html#a288ccdd64ddcec63c3cd2b7a74182a66',1,'Wippersnapper::check_valid_ssid()']]],
+  ['check_5fvalid_5fssid',['check_valid_ssid',['../class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a',1,'Wippersnapper_AIRLIFT::check_valid_ssid()'],['../class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b',1,'Wippersnapper_ESP32::check_valid_ssid()'],['../class_wippersnapper.html#a288ccdd64ddcec63c3cd2b7a74182a66',1,'Wippersnapper::check_valid_ssid()']]],
   ['clear_5fscr_5fload',['clear_scr_load',['../classws__display__ui__helper.html#a9afaed92b8e6de31aa5b87cc58e615d8',1,'ws_display_ui_helper']]],
   ['compareversions',['compareVersions',['../class_wippersnapper___a_i_r_l_i_f_t.html#abc598a748031959da5643da3b9935834',1,'Wippersnapper_AIRLIFT']]],
   ['configanaloginpinreq',['configAnalogInPinReq',['../class_wippersnapper.html#a089cb6c8b641aa22762f00dda783bb12',1,'Wippersnapper']]],
@@ -29,5 +30,5 @@ var searchData=
   ['configuredriver',['configureDriver',['../class_wipper_snapper___i2_c___driver.html#a86ede95ee6f5495739c16a3cf47a8c5a',1,'WipperSnapper_I2C_Driver']]],
   ['configuresensor',['configureSensor',['../class_wipper_snapper___i2_c___driver___m_c_p3421.html#a06d957e925f7505b2e3cc4c0d017ad3d',1,'WipperSnapper_I2C_Driver_MCP3421']]],
   ['connect',['connect',['../class_wippersnapper.html#add749b3d330161a132fd7e0114618ec0',1,'Wippersnapper']]],
-  ['connectiontype',['connectionType',['../class_wippersnapper___a_i_r_l_i_f_t.html#adf8d75a7530ff367f8a03e8e9afca7b1',1,'Wippersnapper_AIRLIFT::connectionType()'],['../class_wippersnapper___e_s_p32.html#a3ae46effd5e7bd00898ed5967898a58a',1,'Wippersnapper_ESP32::connectionType()'],['../class_wippersnapper___w_i_f_i_n_i_n_a.html#ab003b4b439f438ffef72779b0adb179f',1,'Wippersnapper_WIFININA::connectionType()']]]
+  ['connectiontype',['connectionType',['../class_wippersnapper___a_i_r_l_i_f_t.html#adf8d75a7530ff367f8a03e8e9afca7b1',1,'Wippersnapper_AIRLIFT::connectionType()'],['../class_wippersnapper___e_s_p32.html#a3ae46effd5e7bd00898ed5967898a58a',1,'Wippersnapper_ESP32::connectionType()']]]
 ];

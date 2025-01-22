@@ -191,9 +191,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ab3e122ca0d602d5ee3e2a0b82bbc32ad">feedWDT</a> ()</td></tr>
 <tr class="memdesc:ab3e122ca0d602d5ee3e2a0b82bbc32ad inherit pub_methods_class_wippersnapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Feeds the WDT to prevent hardware reset. <br /></td></tr>
 <tr class="separator:ab3e122ca0d602d5ee3e2a0b82bbc32ad inherit pub_methods_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835 inherit pub_methods_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">haltError</a> (String error, <a class="el" href="_wippersnapper___status_l_e_d_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a> ledStatusColor=WS_LED_STATUS_ERROR_RUNTIME)</td></tr>
-<tr class="memdesc:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835 inherit pub_methods_class_wippersnapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error to the serial and halts the hardware until the WDT bites.  <a href="class_wippersnapper.html#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">More...</a><br /></td></tr>
-<tr class="separator:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835 inherit pub_methods_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa46f91b35371db5169facea47456854d inherit pub_methods_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aa46f91b35371db5169facea47456854d">haltError</a> (String error, <a class="el" href="_wippersnapper___status_l_e_d_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a> ledStatusColor=WS_LED_STATUS_ERROR_RUNTIME, uint8_t seconds_until_reboot=25)</td></tr>
+<tr class="memdesc:aa46f91b35371db5169facea47456854d inherit pub_methods_class_wippersnapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error to the serial and halts the hardware until the WDT bites.  <a href="class_wippersnapper.html#aa46f91b35371db5169facea47456854d">More...</a><br /></td></tr>
+<tr class="separator:aa46f91b35371db5169facea47456854d inherit pub_methods_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accf1a53e54aef5140f68f6511c3406fc inherit pub_methods_class_wippersnapper"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#accf1a53e54aef5140f68f6511c3406fc">errorWriteHang</a> (String error)</td></tr>
 <tr class="memdesc:accf1a53e54aef5140f68f6511c3406fc inherit pub_methods_class_wippersnapper"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes an error message to the serial and the filesystem, blinks WS_LED_STATUS_ERROR_RUNTIME pattern and hangs.  <a href="class_wippersnapper.html#accf1a53e54aef5140f68f6511c3406fc">More...</a><br /></td></tr>
 <tr class="separator:accf1a53e54aef5140f68f6511c3406fc inherit pub_methods_class_wippersnapper"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -243,8 +243,9 @@ NetworkClient *&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 WiFiMulti&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a3bb14b42e597e2ac2a78df5fd32ea6c4">_wifiMulti</a></td></tr>
 <tr class="memdesc:a3bb14b42e597e2ac2a78df5fd32ea6c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">WiFiMulti object for multi-network mode. <br /></td></tr>
 <tr class="separator:a3bb14b42e597e2ac2a78df5fd32ea6c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a867f26fbfd6660048972a89618c77c89"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a867f26fbfd6660048972a89618c77c89">_aio_root_ca_staging</a></td></tr>
-<tr class="memdesc:a867f26fbfd6660048972a89618c77c89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root certificate for io.adafruit.us.  <a href="#a867f26fbfd6660048972a89618c77c89">More...</a><br /></td></tr>
+<tr class="memitem:a867f26fbfd6660048972a89618c77c89"><td class="memItemLeft" align="right" valign="top"><a id="a867f26fbfd6660048972a89618c77c89"></a>
+const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a867f26fbfd6660048972a89618c77c89">_aio_root_ca_staging</a></td></tr>
+<tr class="memdesc:a867f26fbfd6660048972a89618c77c89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root certificate for io.adafruit.us. <br /></td></tr>
 <tr class="separator:a867f26fbfd6660048972a89618c77c89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f4517dcc59821de2acfe7d14284bcaf"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper___e_s_p32.html#a4f4517dcc59821de2acfe7d14284bcaf">_aio_root_ca_prod</a></td></tr>
 <tr class="memdesc:a4f4517dcc59821de2acfe7d14284bcaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root certificate for io.adafruit.com.  <a href="#a4f4517dcc59821de2acfe7d14284bcaf">More...</a><br /></td></tr>
@@ -694,30 +695,6 @@ wippersnapper_signal_v1_UARTRequest&#160;</td><td class="memItemRight" valign="b
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a867f26fbfd6660048972a89618c77c89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a867f26fbfd6660048972a89618c77c89">&#9670;&nbsp;</a></span>_aio_root_ca_staging</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* Wippersnapper_ESP32::_aio_root_ca_staging</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      <span class="stringliteral">&quot;-----BEGIN CERTIFICATE-----\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;MIIEVzCCAj+gAwIBAgIRAIOPbGPOsTmMYgZigxXJ/d4wDQYJKoZIhvcNAQELBQAw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjQwMzEzMDAwMDAw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;WhcNMjcwMzEyMjM1OTU5WjAyMQswCQYDVQQGEwJVUzEWMBQGA1UEChMNTGV0J3Mg\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;RW5jcnlwdDELMAkGA1UEAxMCRTUwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAQNCzqK\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;a2GOtu/cX1jnxkJFVKtj9mZhSAouWXW0gQI3ULc/FnncmOyhKJdyIBwsz9V8UiBO\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;VHhbhBRrwJCuhezAUUE8Wod/Bk3U/mDR+mwt4X2VEIiiCFQPmRpM5uoKrNijgfgw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;gfUwDgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcD\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;ATASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBSfK1/PPCFPnQS37SssxMZw\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;i9LXDTAfBgNVHSMEGDAWgBR5tFnme7bl5AFzgAiIyBpY9umbbjAyBggrBgEFBQcB\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;AQQmMCQwIgYIKwYBBQUHMAKGFmh0dHA6Ly94MS5pLmxlbmNyLm9yZy8wEwYDVR0g\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;BAwwCjAIBgZngQwBAgEwJwYDVR0fBCAwHjAcoBqgGIYWaHR0cDovL3gxLmMubGVu\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;Y3Iub3JnLzANBgkqhkiG9w0BAQsFAAOCAgEAH3KdNEVCQdqk0LKyuNImTKdRJY1C\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;2uw2SJajuhqkyGPY8C+zzsufZ+mgnhnq1A2KVQOSykOEnUbx1cy637rBAihx97r+\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;bcwbZM6sTDIaEriR/PLk6LKs9Be0uoVxgOKDcpG9svD33J+G9Lcfv1K9luDmSTgG\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;6XNFIN5vfI5gs/lMPyojEMdIzK9blcl2/1vKxO8WGCcjvsQ1nJ/Pwt8LQZBfOFyV\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;XP8ubAp/au3dc4EKWG9MO5zcx1qT9+NXRGdVWxGvmBFRAajciMfXME1ZuGmk3/GO\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;koAM7ZkjZmleyokP1LGzmfJcUd9s7eeu1/9/eg5XlXd/55GtYjAM+C4DG5i7eaNq\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;cm2F+yxYIPt6cbbtYVNJCGfHWqHEQ4FYStUyFnv8sjyqU8ypgZaNJ9aVcWSICLOI\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;E1/Qv/7oKsnZCWJ926wU6RqG1OYPGOi1zuABhLw61cuPVDT28nQS/e6z95cJXq0e\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;K1BcaJ6fJZsmbjRgD5p3mvEf5vdQM7MCEvU0tHbsx2I5mHHJoABHb8KVBgWp/lcX\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;GWiWaeOyB7RP+OfDtvi2OsapxXiV7vNVs7fMlrRjY1joKaqmmycnBvAq14AEbtyL\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;sVfOS66B8apkeFX2NY4XPEYV4ZSCe8VHPrdrERk2wILG3T/EGmSIkCYVUMSnjmJd\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;VQD9F6Na/+zmXCc=\n&quot;</span></div><div class="line">      <span class="stringliteral">&quot;-----END CERTIFICATE-----\n&quot;</span></div></div><!-- fragment -->
-<p>Root certificate for io.adafruit.us. </p>
-
-</div>
-</div>
 <a id="a4f4517dcc59821de2acfe7d14284bcaf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4f4517dcc59821de2acfe7d14284bcaf">&#9670;&nbsp;</a></span>_aio_root_ca_prod</h2>
 

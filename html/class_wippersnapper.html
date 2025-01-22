@@ -78,9 +78,8 @@ Inheritance diagram for Wippersnapper:</div>
  <div class="center">
   <img src="class_wippersnapper.png" usemap="#Wippersnapper_map" alt=""/>
   <map id="Wippersnapper_map" name="Wippersnapper_map">
-<area href="class_wippersnapper___a_i_r_l_i_f_t.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_AIRLIFT" shape="rect" coords="0,56,160,80"/>
-<area href="class_wippersnapper___e_s_p32.html" title="Class for using the ESP32 network interface. " alt="Wippersnapper_ESP32" shape="rect" coords="170,56,330,80"/>
-<area href="class_wippersnapper___w_i_f_i_n_i_n_a.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_WIFININA" shape="rect" coords="340,56,500,80"/>
+<area href="class_wippersnapper___a_i_r_l_i_f_t.html" title="Class for using the AirLift Co-Processor network iface. " alt="Wippersnapper_AIRLIFT" shape="rect" coords="0,56,150,80"/>
+<area href="class_wippersnapper___e_s_p32.html" title="Class for using the ESP32 network interface. " alt="Wippersnapper_ESP32" shape="rect" coords="160,56,310,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -190,9 +189,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ab3e122ca0d602d5ee3e2a0b82bbc32ad">feedWDT</a> ()</td></tr>
 <tr class="memdesc:ab3e122ca0d602d5ee3e2a0b82bbc32ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Feeds the WDT to prevent hardware reset. <br /></td></tr>
 <tr class="separator:ab3e122ca0d602d5ee3e2a0b82bbc32ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">haltError</a> (String error, <a class="el" href="_wippersnapper___status_l_e_d_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a> ledStatusColor=WS_LED_STATUS_ERROR_RUNTIME)</td></tr>
-<tr class="memdesc:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error to the serial and halts the hardware until the WDT bites.  <a href="#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">More...</a><br /></td></tr>
-<tr class="separator:ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa46f91b35371db5169facea47456854d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#aa46f91b35371db5169facea47456854d">haltError</a> (String error, <a class="el" href="_wippersnapper___status_l_e_d_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a> ledStatusColor=WS_LED_STATUS_ERROR_RUNTIME, uint8_t seconds_until_reboot=25)</td></tr>
+<tr class="memdesc:aa46f91b35371db5169facea47456854d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error to the serial and halts the hardware until the WDT bites.  <a href="#aa46f91b35371db5169facea47456854d">More...</a><br /></td></tr>
+<tr class="separator:aa46f91b35371db5169facea47456854d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accf1a53e54aef5140f68f6511c3406fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wippersnapper.html#accf1a53e54aef5140f68f6511c3406fc">errorWriteHang</a> (String error)</td></tr>
 <tr class="memdesc:accf1a53e54aef5140f68f6511c3406fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes an error message to the serial and the filesystem, blinks WS_LED_STATUS_ERROR_RUNTIME pattern and hangs.  <a href="#accf1a53e54aef5140f68f6511c3406fc">More...</a><br /></td></tr>
 <tr class="separator:accf1a53e54aef5140f68f6511c3406fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -465,7 +464,7 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#a12f2c625c55546f1cc318ed352db7be4">Wippersnapper_WIFININA</a>, <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5d98c8d0158c551f78c242ed57e42165">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a6e93f243e49a45ad4a41a1e1f48a9bcf">Wippersnapper_ESP32</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5d98c8d0158c551f78c242ed57e42165">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a6e93f243e49a45ad4a41a1e1f48a9bcf">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -495,7 +494,7 @@ Protected Attributes</h2></td></tr>
 <p>Performs a scan of local WiFi networks. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if <code>_network_ssid</code> is found, False otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#aaee5680c8abe5ec08f34166f1d669adf">Wippersnapper_WIFININA</a>, <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b">Wippersnapper_ESP32</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ad7a4443676e200227a9dc661f263c52a">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a36994b82d22db88f67777aaf4e097f1b">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -525,7 +524,7 @@ Protected Attributes</h2></td></tr>
 <p>Gets the network's RSSI. </p>
 <dl class="section return"><dt>Returns</dt><dd>int32_t RSSI value, 0 to 255, in dB </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5a8ac4e59e125a2c3d13d8bed12efa9f">Wippersnapper_AIRLIFT</a>, <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#ae09df9ca5a275779929b76bc8d286de7">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#ae2c425e0feaf49bf794eac887f95a4cb">Wippersnapper_ESP32</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#a5a8ac4e59e125a2c3d13d8bed12efa9f">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#ae2c425e0feaf49bf794eac887f95a4cb">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -561,7 +560,7 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">Wippersnapper_AIRLIFT</a>, <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#af93ea859ff730b169c2ff1bfec455e11">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a7b0795b00c8de7f3f3523a6ef567700b">Wippersnapper_ESP32</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac05433b076a739d94e07222d926a0045">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#a7b0795b00c8de7f3f3523a6ef567700b">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -591,7 +590,7 @@ Protected Attributes</h2></td></tr>
 <p>Returns the network's connection status. </p>
 <dl class="section return"><dt>Returns</dt><dd>Network status as ws_status_t. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac238fc561ddcd654a47b474f74ec37fb">Wippersnapper_AIRLIFT</a>, <a class="el" href="class_wippersnapper___w_i_f_i_n_i_n_a.html#aa33a4dfb0f3d2857deafdd4847baa07c">Wippersnapper_WIFININA</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#aa8d043c0f7516489964bd4eeb465bb6d">Wippersnapper_ESP32</a>.</p>
+<p>Reimplemented in <a class="el" href="class_wippersnapper___a_i_r_l_i_f_t.html#ac238fc561ddcd654a47b474f74ec37fb">Wippersnapper_AIRLIFT</a>, and <a class="el" href="class_wippersnapper___e_s_p32.html#aa8d043c0f7516489964bd4eeb465bb6d">Wippersnapper_ESP32</a>.</p>
 
 </div>
 </div>
@@ -870,8 +869,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ad1ea32dd9cbe0b9e0c05ad1ad1dc4835"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1ea32dd9cbe0b9e0c05ad1ad1dc4835">&#9670;&nbsp;</a></span>haltError()</h2>
+<a id="aa46f91b35371db5169facea47456854d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa46f91b35371db5169facea47456854d">&#9670;&nbsp;</a></span>haltError()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -886,7 +885,13 @@ Protected Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="_wippersnapper___status_l_e_d_8h.html#a3efb114f5d6fceed6a90b98c23d75b26">ws_led_status_t</a>&#160;</td>
-          <td class="paramname"><em>ledStatusColor</em> = <code>WS_LED_STATUS_ERROR_RUNTIME</code>&#160;</td>
+          <td class="paramname"><em>ledStatusColor</em> = <code>WS_LED_STATUS_ERROR_RUNTIME</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>seconds_until_reboot</em> = <code>25</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -899,8 +904,9 @@ Protected Attributes</h2></td></tr>
 <p>Prints an error to the serial and halts the hardware until the WDT bites. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">error</td><td>The desired error to print to serial. </td></tr>
-    <tr><td class="paramname">ledStatusColor</td><td>The desired color to blink. </td></tr>
+    <tr><td class="paramname">error</td><td>The error to print to serial. </td></tr>
+    <tr><td class="paramname">ledStatusColor</td><td>The color to blink. </td></tr>
+    <tr><td class="paramname">seconds_until_reboot</td><td>The amount of time to wait before rebooting. </td></tr>
   </table>
   </dd>
 </dl>
