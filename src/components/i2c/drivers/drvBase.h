@@ -39,7 +39,7 @@ public:
                 The I2C sensor's unique address.
   */
   /*******************************************************************************/
-  drvBase(TwoWire *i2c, uint16_t address, const char* driver_name) {
+  drvBase(TwoWire *i2c, uint16_t address, const char *driver_name) {
     _i2c = i2c;
     _address = address;
     _i2c_mux_channel = NO_MUX_CH;
@@ -59,7 +59,8 @@ public:
      MUX.
   */
   /*******************************************************************************/
-  drvBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel, const char* driver_name) {
+  drvBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel,
+          const char *driver_name) {
     _i2c = i2c;
     _address = address;
     _i2c_mux_channel = mux_channel;
@@ -77,7 +78,7 @@ public:
   uint32_t GetMuxChannel() { return _i2c_mux_channel; }
 
   // return _name
-  const char* GetDrvName() { return _name; }
+  const char *GetDrvName() { return _name; }
 
   /*******************************************************************************/
   /*!

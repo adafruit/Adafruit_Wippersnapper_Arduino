@@ -43,7 +43,9 @@ public:
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
   // Helpers
   bool IsBusStatusOK();
+  bool ConfigureMuxChannel(uint32_t mux_address, uint32_t mux_channel);
   drvBase* GetMuxDrv(uint32_t mux_address);
+  bool PublishI2cDeviceAddedorReplaced(const wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor, const wippersnapper_i2c_I2cDeviceStatus& device_status);
 private:
   I2cModel *_i2c_model;       ///< I2c model
   I2cHardware *_i2c_hardware; ///< I2c hardware
