@@ -56,11 +56,11 @@ drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
 */
 /***********************************************************************/
 I2cController::I2cController() {
+  _i2c_bus_alt = nullptr;
   _i2c_model = new I2cModel();
   // Initialize the *default* I2C bus
-  // TODO: Handle multiple buses, maybe not from here though!
-  _i2c_hardware = new I2cHardware();
-  _i2c_hardware->InitDefaultBus();
+  _i2c_bus_default = new I2cHardware();
+  _i2c_bus_default->InitDefaultBus();
 }
 
 /***********************************************************************/
@@ -72,8 +72,8 @@ I2cController::~I2cController() {
   if (_i2c_model)
     delete _i2c_model;
 
-  if (_i2c_hardware)
-    delete _i2c_hardware;
+  if (_i2c_bus_default)
+    delete _i2c_bus_default;
 }
 
 /***********************************************************************/
@@ -83,7 +83,7 @@ I2cController::~I2cController() {
 */
 /***********************************************************************/
 bool I2cController::IsBusStatusOK() {
-  if (!_i2c_hardware->GetBusStatus() ==
+  if (!_i2c_bus_default->GetBusStatus() ==
       wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS)
     return false;
   return true;
@@ -111,6 +111,17 @@ drvBase *I2cController::GetMuxDrv(uint32_t mux_address) {
   return nullptr;
 }
 
+/***********************************************************************/
+/*!
+    @brief    Configures the MUX channel
+    @param    mux_address
+                The I2C address of the MUX
+    @param    mux_channel
+                The MUX channel to select
+    @returns  True if the MUX channel was configured successfully, False
+              otherwise.
+*/
+/***********************************************************************/
 bool I2cController::ConfigureMuxChannel(uint32_t mux_address,
                                         uint32_t mux_channel) {
   drvBase *muxDriver = GetMuxDrv(mux_address);
@@ -120,11 +131,22 @@ bool I2cController::ConfigureMuxChannel(uint32_t mux_address,
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief    Publishes an I2cDeviceAddedorReplaced message to the broker
+    @param    device_descriptor
+                The I2cDeviceDescriptor message.
+    @param    device_status
+                The I2cDeviceStatus message.
+    @returns  True if the I2cDeviceAddedorReplaced message was published
+              successfully, False otherwise.
+*/
+/***********************************************************************/
 bool I2cController::PublishI2cDeviceAddedorReplaced(
     const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
     const wippersnapper_i2c_I2cDeviceStatus &device_status) {
   if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
-          device_descriptor, _i2c_hardware->GetBusStatus(), device_status)) {
+          device_descriptor, _i2c_bus_default->GetBusStatus(), device_status)) {
     WS_DEBUG_PRINTLN(
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
     return false;
@@ -185,9 +207,14 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // TODO: Handle Replace messages by implementing a Remove handler first...then
   // proceed to adding a new device
 
-  // NOTE: This is only using the default bus, for now
-  // TODO: Implement the ability to work with > 1 i2c hardware bus
   WS_DEBUG_PRINTLN("[i2c] Initializing I2C driver...");
+
+  // Does the device's descriptor specify a different i2c bus?
+  if (device_descriptor.i2c_bus != 0) {
+    WS_DEBUG_PRINTLN("[i2c] Attempting to initialize a new i2c bus object!");
+    _i2c_bus_default = new I2cHardware();
+    _i2c_bus_default->InitDefaultBus();
+  }
 
   // Does the device's descriptor have a mux channel?
   // TODO: We will need to modify the sdconfig parser to reflect "no value" set
@@ -207,7 +234,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("Creating a new I2C driver obj");
   drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
-      _i2c_hardware->GetI2cBus(), device_descriptor.i2c_device_address,
+      _i2c_bus_default->GetI2cBus(), device_descriptor.i2c_device_address,
       device_descriptor.i2c_mux_channel, device_status);
 
   // TODO: Clean up for clarity - confusing checks and returns

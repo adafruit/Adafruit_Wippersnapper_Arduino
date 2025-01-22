@@ -41,15 +41,17 @@ public:
   bool Handle_I2cBusScan(pb_istream_t *stream);
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
+  // Publishing
+  bool PublishI2cDeviceAddedorReplaced(const wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor, const wippersnapper_i2c_I2cDeviceStatus& device_status);
   // Helpers
   bool IsBusStatusOK();
   bool ConfigureMuxChannel(uint32_t mux_address, uint32_t mux_channel);
   drvBase* GetMuxDrv(uint32_t mux_address);
-  bool PublishI2cDeviceAddedorReplaced(const wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor, const wippersnapper_i2c_I2cDeviceStatus& device_status);
 private:
-  I2cModel *_i2c_model;       ///< I2c model
-  I2cHardware *_i2c_hardware; ///< I2c hardware
-  std::vector<drvBase *> _i2c_drivers;
+  I2cModel *_i2c_model;                 ///< Pointer to an I2C model object
+  I2cHardware *_i2c_bus_default;        ///< Pointer to the default I2C bus
+  I2cHardware *_i2c_bus_alt;            ///< Pointer to an alternative I2C bus
+  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C device drivers
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H

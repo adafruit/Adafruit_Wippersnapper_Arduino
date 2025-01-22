@@ -30,11 +30,9 @@ class I2cHardware {
 public:
   I2cHardware();
   ~I2cHardware();
-  // TODO
   void InitDefaultBus();
   TwoWire *GetI2cBus() { return _i2c_bus; }
   wippersnapper_i2c_I2cBusStatus GetBusStatus() { return _bus_status; }
-
 private:
   wippersnapper_i2c_I2cBusStatus _bus_status;
   void ToggleI2CPowerPin();
