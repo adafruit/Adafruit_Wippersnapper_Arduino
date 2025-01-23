@@ -104,9 +104,9 @@ public:
   bool read_data() override {
     // Attempt to read the PM2.5 Sensor, can be flaky see Adafruit_PM25AQI#14
     bool result = false;
-    RETRY_FUNCTION_UNTIL_TIMEOUT(_aqi->read, bool, result, 
-      [](bool res) -> bool { return res==true; },
-      500, 100, &_data);
+    RETRY_FUNCTION_UNTIL_TIMEOUT(
+        _aqi->read, bool, result, [](bool res) -> bool { return res == true; },
+        500, 100, &_data);
 
     if (!result) {
       WS_DEBUG_PRINTLN("[UART, PM25] Data not available.");
