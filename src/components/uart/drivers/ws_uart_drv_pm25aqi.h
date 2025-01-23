@@ -102,35 +102,37 @@ public:
   */
   /*******************************************************************************/
   bool read_data() override {
-    Serial.println("[UART, PM25] Reading data...");
-    // Attempt to read the PM2.5 Sensor
-    if (!_aqi->read(&_data)) {
-      Serial.println("[UART, PM25] Data not available.");
-      delay(500);
-      return false;
-    }
-    Serial.println("[UART, PM25] Read data OK");
-    Serial.println();
-    Serial.println(F("---------------------------------------"));
-    Serial.println(F("Concentration Units (standard)"));
-    Serial.println(F("---------------------------------------"));
-    Serial.print(F("PM 1.0: "));
-    Serial.print(_data.pm10_standard);
-    Serial.print(F("\t\tPM 2.5: "));
-    Serial.print(_data.pm25_standard);
-    Serial.print(F("\t\tPM 10: "));
-    Serial.println(_data.pm100_standard);
-    Serial.println(F("Concentration Units (environmental)"));
-    Serial.println(F("---------------------------------------"));
-    Serial.print(F("PM 1.0: "));
-    Serial.print(_data.pm10_env);
-    Serial.print(F("\t\tPM 2.5: "));
-    Serial.print(_data.pm25_env);
-    Serial.print(F("\t\tPM 10: "));
-    Serial.println(_data.pm100_env);
-    Serial.println(F("---------------------------------------"));
+    // Attempt to read the PM2.5 Sensor, can be flaky see Adafruit_PM25AQI#14
+    bool result = false;
+    RETRY_FUNCTION_UNTIL_TIMEOUT(_aqi->read, bool, result, 
+      [](bool res) -> bool { return res==true; },
+      500, 100, &_data);
 
-    return true;
+    if (!result) {
+      WS_DEBUG_PRINTLN("[UART, PM25] Data not available.");
+      return result;
+    }
+    WS_DEBUG_PRINTLN("[UART, PM25] Read data OK");
+    WS_DEBUG_PRINTLN();
+    WS_DEBUG_PRINTLN(F("---------------------------------------"));
+    WS_DEBUG_PRINTLN(F("Concentration Units (standard)"));
+    WS_DEBUG_PRINTLN(F("---------------------------------------"));
+    WS_DEBUG_PRINT(F("PM 1.0: "));
+    WS_DEBUG_PRINT(_data.pm10_standard);
+    WS_DEBUG_PRINT(F("\t\tPM 2.5: "));
+    WS_DEBUG_PRINT(_data.pm25_standard);
+    WS_DEBUG_PRINT(F("\t\tPM 10: "));
+    WS_DEBUG_PRINTLN(_data.pm100_standard);
+    WS_DEBUG_PRINTLN(F("Concentration Units (environmental)"));
+    WS_DEBUG_PRINTLN(F("---------------------------------------"));
+    WS_DEBUG_PRINT(F("PM 1.0: "));
+    WS_DEBUG_PRINT(_data.pm10_env);
+    WS_DEBUG_PRINT(F("\t\tPM 2.5: "));
+    WS_DEBUG_PRINT(_data.pm25_env);
+    WS_DEBUG_PRINT(F("\t\tPM 10: "));
+    WS_DEBUG_PRINTLN(_data.pm100_env);
+    WS_DEBUG_PRINTLN(F("---------------------------------------"));
+    return result;
   }
 
   /*******************************************************************************/
@@ -187,7 +189,7 @@ public:
         pb_ostream_from_buffer(mqttBuffer, sizeof(mqttBuffer));
     if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_UARTResponse_fields,
                       &msgUARTResponse)) {
-      Serial.println("[ERROR, UART]: Unable to encode device response!");
+      WS_DEBUG_PRINTLN("[ERROR, UART]: Unable to encode device response!");
       return;
     }
 
@@ -195,9 +197,9 @@ public:
     size_t msgSz;
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_UARTResponse_fields,
                         &msgUARTResponse);
-    Serial.print("[UART] Publishing event to IO..");
+    WS_DEBUG_PRINT("[UART] Publishing event to IO..");
     mqttClient->publish(uartTopic, mqttBuffer, msgSz, 1);
-    Serial.println("Published!");
+    WS_DEBUG_PRINTLN("Published!");
 
     setPrvPollTime(millis());
   }

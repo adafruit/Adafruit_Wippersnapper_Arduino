@@ -95,7 +95,7 @@
   {                                                                            \
     unsigned long startTime = millis();                                        \
     while (millis() - startTime < timeout) {                                   \
-      result_type result_var = func(__VA_ARGS__);                              \
+      result_var = func(__VA_ARGS__);                              \
       if (condition(result_var)) {                                             \
         break;                                                                 \
       }                                                                        \
