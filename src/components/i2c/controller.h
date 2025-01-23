@@ -44,7 +44,7 @@ public:
   // Publishing
   bool PublishI2cDeviceAddedorReplaced(const wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor, const wippersnapper_i2c_I2cDeviceStatus& device_status);
   // Helpers
-  bool IsBusStatusOK();
+  bool IsBusStatusOK(bool is_default_bus);
   bool ConfigureMuxChannel(uint32_t mux_address, uint32_t mux_channel);
   drvBase* GetMuxDrv(uint32_t mux_address);
 private:

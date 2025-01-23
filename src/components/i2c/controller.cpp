@@ -58,9 +58,9 @@ drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
 I2cController::I2cController() {
   _i2c_bus_alt = nullptr;
   _i2c_model = new I2cModel();
-  // Initialize the *default* I2C bus
+  // Initialize a default I2C bus
   _i2c_bus_default = new I2cHardware();
-  _i2c_bus_default->InitDefaultBus();
+  _i2c_bus_default->InitBus(true);
 }
 
 /***********************************************************************/
@@ -79,10 +79,20 @@ I2cController::~I2cController() {
 /***********************************************************************/
 /*!
     @brief    Returns the status of the I2C bus
+    @param    is_default_bus
+                True if the default I2C bus is being queried, False
+                otherwise.
     @returns  True if the I2C bus is operational, False otherwise.
 */
 /***********************************************************************/
-bool I2cController::IsBusStatusOK() {
+bool I2cController::IsBusStatusOK(bool is_default_bus) {
+  if (!is_default_bus) {
+    if (!_i2c_bus_alt->GetBusStatus() ==
+        wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS)
+      return false;
+    return true;
+  }
+
   if (!_i2c_bus_default->GetBusStatus() ==
       wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS)
     return false;
@@ -184,6 +194,7 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
 */
 /***********************************************************************/
 bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
+  bool use_alt_bus = false;
   // Attempt to decode an I2cDeviceAddOrReplace message
   WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceAddOrReplace message...");
   if (!_i2c_model->DecodeI2cDeviceAddReplace(stream)) {
@@ -196,24 +207,30 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
-  if (!IsBusStatusOK()) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus is not operational or stuck, please "
-                     "restart device!");
-    if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
-      return false;
-    return true;
-  }
-
   // TODO: Handle Replace messages by implementing a Remove handler first...then
   // proceed to adding a new device
 
   WS_DEBUG_PRINTLN("[i2c] Initializing I2C driver...");
 
   // Does the device's descriptor specify a different i2c bus?
-  if (device_descriptor.i2c_bus != 0) {
-    WS_DEBUG_PRINTLN("[i2c] Attempting to initialize a new i2c bus object!");
-    _i2c_bus_default = new I2cHardware();
-    _i2c_bus_default->InitDefaultBus();
+  if (strcmp(device_descriptor.i2c_bus_scl, "default") != 0) {
+    WS_DEBUG_PRINTLN("[i2c] Non-default I2C bus specified!");
+    if (_i2c_bus_alt == nullptr) {
+      WS_DEBUG_PRINT("[i2c] Initializing alternative i2c bus...");
+      _i2c_bus_alt = new I2cHardware();
+      _i2c_bus_alt->InitBus(false, device_descriptor.i2c_bus_sda,
+                            device_descriptor.i2c_bus_scl);
+    }
+    use_alt_bus = true;
+  }
+
+  // Before we do anything on the bus - was the bus initialized correctly?
+  if (!IsBusStatusOK(use_alt_bus)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus is not operational or stuck, please "
+                     "restart device!");
+    if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
+      return false;
+    return true;
   }
 
   // Does the device's descriptor have a mux channel?

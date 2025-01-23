@@ -9,7 +9,7 @@
 PB_BIND(wippersnapper_signal_BrokerToDevice, wippersnapper_signal_BrokerToDevice, 2)
 
 
-PB_BIND(wippersnapper_signal_DeviceToBroker, wippersnapper_signal_DeviceToBroker, 2)
+PB_BIND(wippersnapper_signal_DeviceToBroker, wippersnapper_signal_DeviceToBroker, 4)
 
 
 

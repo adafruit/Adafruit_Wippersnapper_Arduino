@@ -677,8 +677,8 @@ bool ws_sdcard::parseConfigFile() {
       msg_i2c_add.has_i2c_device_description = true;
       strcpy(msg_i2c_add.i2c_device_name, component["i2cDeviceName"] | UNKNOWN_VALUE);
       msg_i2c_add.i2c_device_period = component["period"] | 0.0;
-      msg_i2c_add.i2c_device_description.i2c_bus = component["i2cBus"] | 0;
-
+      strcpy(msg_i2c_add.i2c_device_description.i2c_bus_scl, component["i2cBusScl"] | "default");
+      strcpy(msg_i2c_add.i2c_device_description.i2c_bus_sda, component["i2cBusSda"] | "default");
       const char* addr_device = component["i2cDeviceAddress"] | "0x00";
       uint32_t device_address = std::stoi(addr_device, nullptr, 16);
       msg_i2c_add.i2c_device_description.i2c_device_address = device_address;
@@ -704,8 +704,8 @@ bool ws_sdcard::parseConfigFile() {
       WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_name);
       WS_DEBUG_PRINT("\tI2C Device Period: ");
       WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_period);
-      WS_DEBUG_PRINT("\tI2C Device Bus: ");
-      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_bus);
+      //WS_DEBUG_PRINT("\tI2C Device Bus: ");
+      //WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_bus);
       WS_DEBUG_PRINT("\tI2C Device Address: ");
       WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_device_address);
       WS_DEBUG_PRINT("\tI2C MUX Address: ");
