@@ -184,7 +184,7 @@ public:
     buf[3] = (x >> 24) & 0xFF;
   }
 
-    /********************************************************/
+  /********************************************************/
   /*!
   @brief  Gets a 32-bit integer from a buffer in little-endian format.
   @param  buf
@@ -363,6 +363,13 @@ protected:
     WiFi.mode(WIFI_STA);
     WS.feedWDT();
     WiFi.setTimeout(20000);
+    WS_DEBUG_PRINT("Current WiFi TX Power: ");
+    float currentPower = common_hal_wifi_radio_get_tx_power();
+    WS_DEBUG_PRINTLN(currentPower);
+    // set tx rate lower to avoid reflectivity issues
+    setTxPower(currentPower - 4.0f);
+    WS_DEBUG_PRINT("New WiFi TX Power: ");
+    WS_DEBUG_PRINTLN(common_hal_wifi_radio_get_tx_power());
     WS.feedWDT();
 
     if (strlen(_ssid) == 0) {
