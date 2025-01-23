@@ -48,6 +48,11 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
     pin_scl = atoi(scl);
   }
 
+  WS_DEBUG_PRINT("I2C Bus SDA: ");
+  WS_DEBUG_PRINTLN(pin_sda);
+  WS_DEBUG_PRINT("I2C Bus SCL: ");
+  WS_DEBUG_PRINTLN(pin_scl);
+
   // Enable pullups
   pinMode(pin_scl, INPUT_PULLUP);
   pinMode(pin_sda, INPUT_PULLUP);
@@ -66,9 +71,16 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 // Initialize bus
 // NOTE: Each platform has a slightly different bus initialization routine
 #ifdef ARDUINO_ARCH_ESP32
-  _i2c_bus = new TwoWire(0);
-  if (!_i2c_bus->begin(pin_sda, pin_scl))
+  if (is_default) {
+    _i2c_bus = new TwoWire(0);
+  } else {
+    _i2c_bus = new TwoWire(1);
+    Wire1.setPins(pin_sda, pin_scl);
+  }
+  if (!_i2c_bus->begin(pin_sda, pin_scl)) {
     _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_HANG;
+    return;
+  }
   _i2c_bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
   _i2c_bus = new TwoWire();

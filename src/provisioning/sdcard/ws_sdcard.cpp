@@ -699,7 +699,7 @@ bool ws_sdcard::parseConfigFile() {
       }
 
       // DEBUG printing
-      WS_DEBUG_PRINT("[SD] Added I2C Device:");
+      WS_DEBUG_PRINTLN("[SD] Added I2C Device:");
       WS_DEBUG_PRINT("\tI2C Device Name: ");
       WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_name);
       WS_DEBUG_PRINT("\tI2C Device Period: ");
