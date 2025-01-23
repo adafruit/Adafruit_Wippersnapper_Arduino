@@ -704,8 +704,10 @@ bool ws_sdcard::parseConfigFile() {
       WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_name);
       WS_DEBUG_PRINT("\tI2C Device Period: ");
       WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_period);
-      //WS_DEBUG_PRINT("\tI2C Device Bus: ");
-      //WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_bus);
+      WS_DEBUG_PRINT("\tI2C Device Bus SCL: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_bus_scl);
+      WS_DEBUG_PRINT("\tI2C Device Bus SDA: ");
+      WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_bus_sda);
       WS_DEBUG_PRINT("\tI2C Device Address: ");
       WS_DEBUG_PRINTLN(msg_i2c_add.i2c_device_description.i2c_device_address);
       WS_DEBUG_PRINT("\tI2C MUX Address: ");

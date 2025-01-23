@@ -76,27 +76,22 @@ I2cController::~I2cController() {
     delete _i2c_bus_default;
 }
 
-/***********************************************************************/
+/*************************************************************************/
 /*!
     @brief    Returns the status of the I2C bus
-    @param    is_default_bus
-                True if the default I2C bus is being queried, False
-                otherwise.
+    @param    is_alt_bus
+              True if the alt. I2C bus is being queried, False otherwise.
     @returns  True if the I2C bus is operational, False otherwise.
 */
-/***********************************************************************/
-bool I2cController::IsBusStatusOK(bool is_default_bus) {
-  if (!is_default_bus) {
-    if (!_i2c_bus_alt->GetBusStatus() ==
-        wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS)
-      return false;
-    return true;
+/*************************************************************************/
+bool I2cController::IsBusStatusOK(bool is_alt_bus) {
+  if (is_alt_bus) {
+    return (_i2c_bus_alt->GetBusStatus() ==
+            wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS);
   }
 
-  if (!_i2c_bus_default->GetBusStatus() ==
-      wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS)
-    return false;
-  return true;
+  return (_i2c_bus_default->GetBusStatus() ==
+          wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS);
 }
 
 /***********************************************************************/
@@ -210,8 +205,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // TODO: Handle Replace messages by implementing a Remove handler first...then
   // proceed to adding a new device
 
-  WS_DEBUG_PRINTLN("[i2c] Initializing I2C driver...");
-
   // Does the device's descriptor specify a different i2c bus?
   if (strcmp(device_descriptor.i2c_bus_scl, "default") != 0) {
     WS_DEBUG_PRINTLN("[i2c] Non-default I2C bus specified!");
@@ -249,10 +242,16 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   }
 
   WS_DEBUG_PRINTLN("Creating a new I2C driver obj");
+  TwoWire *bus = nullptr;
+  if (use_alt_bus) {
+    bus = _i2c_bus_alt->GetI2cBus();
+  } else {
+    bus = _i2c_bus_default->GetI2cBus();
+  }
   drvBase *drv = createI2CDriverByName(
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name,
-      _i2c_bus_default->GetI2cBus(), device_descriptor.i2c_device_address,
-      device_descriptor.i2c_mux_channel, device_status);
+      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name, bus,
+      device_descriptor.i2c_device_address, device_descriptor.i2c_mux_channel,
+      device_status);
 
   // TODO: Clean up for clarity - confusing checks and returns
   if (drv != nullptr) {
