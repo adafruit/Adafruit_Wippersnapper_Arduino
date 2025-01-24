@@ -409,6 +409,12 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_i2c_device_remove_tag:
+    WS_DEBUG_PRINTLN("-> I2C Device Remove Message Type");
+    if (!WsV2._i2c_controller->Handle_I2cDeviceRemove(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to remove I2C device!");
+      return false;
+    }
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;

@@ -23,7 +23,7 @@
 
 /**************************************************************************/
 /*!
-    @brief  Interface for I2c two-wire communication.
+    @brief  Interfaces with the I2C bus via the Arduino "Wire" API.
 */
 /**************************************************************************/
 class I2cHardware {
@@ -32,12 +32,12 @@ public:
   ~I2cHardware();
   void InitBus(bool is_default, const char *sda = nullptr,
                const char *scl = nullptr);
-  TwoWire *GetI2cBus() { return _i2c_bus; }
+  TwoWire *GetBus() { return _bus; }
   wippersnapper_i2c_I2cBusStatus GetBusStatus() { return _bus_status; }
 
 private:
+  void TogglePowerPin();
   wippersnapper_i2c_I2cBusStatus _bus_status;
-  void ToggleI2CPowerPin();
-  TwoWire *_i2c_bus = nullptr;
+  TwoWire *_bus = nullptr;
 };
 #endif // WS_I2C_HARDWARE_H

@@ -77,7 +77,6 @@ public:
 
   uint32_t GetMuxChannel() { return _i2c_mux_channel; }
 
-  // return _name
   const char *GetDrvName() { return _name; }
 
   /*******************************************************************************/

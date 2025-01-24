@@ -7,7 +7,7 @@ I2cHardware::~I2cHardware() {
   // TODO
 }
 
-void I2cHardware::ToggleI2CPowerPin() {
+void I2cHardware::TogglePowerPin() {
 #if defined(PIN_I2C_POWER)
   // turn on the I2C power by setting pin to opposite of 'rest state'
   pinMode(PIN_I2C_POWER, INPUT);
@@ -36,7 +36,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 // to the i2c bus. If the pin is defined, turn the power to the i2c bus on.
 #if defined(PIN_I2C_POWER) || defined(TFT_I2C_POWER) ||                        \
     defined(NEOPIXEL_I2C_POWER)
-  ToggleI2CPowerPin();
+  TogglePowerPin();
 #endif
 
   // Assign I2C bus pins
@@ -72,20 +72,20 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 // NOTE: Each platform has a slightly different bus initialization routine
 #ifdef ARDUINO_ARCH_ESP32
   if (is_default) {
-    _i2c_bus = new TwoWire(0);
+    _bus = new TwoWire(0);
   } else {
-    _i2c_bus = new TwoWire(1);
+    _bus = new TwoWire(1);
     Wire1.setPins(pin_sda, pin_scl);
   }
-  if (!_i2c_bus->begin(pin_sda, pin_scl)) {
+  if (!_bus->begin(pin_sda, pin_scl)) {
     _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_HANG;
     return;
   }
-  _i2c_bus->setClock(50000);
+  _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
-  _i2c_bus = new TwoWire();
-  _i2c_bus->begin(pin_sda, pin_scl);
-  _i2c_bus->setClock(50000);
+  _bus = new TwoWire();
+  _bus->begin(pin_sda, pin_scl);
+  _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_RP2040)
   _i2c = &WIRE;
   _i2c->begin();

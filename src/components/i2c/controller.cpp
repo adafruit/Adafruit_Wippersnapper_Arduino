@@ -181,6 +181,29 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
 
 /***********************************************************************/
 /*!
+    @brief    Implements handling for a I2cDeviceRemove message
+    @param    stream
+                A pointer to the pb_istream_t stream.
+    @returns  True if the I2cDeviceRemove message was handled, False
+              otherwise.
+*/
+/***********************************************************************/
+bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
+  // Attempt to decode an I2cDeviceRemove message
+  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceRemove message...");
+  if (!_i2c_model->DecodeI2cDeviceRemove(stream)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cDeviceRemove message!");
+    return false;
+  }
+
+  // TODO: Implement the rest of this function
+  WS_DEBUG_PRINTLN("[i2c] I2cDeviceRemove message not yet implemented!");
+
+return true;
+}
+
+/***********************************************************************/
+/*!
     @brief    Implements handling for a I2cDeviceAddOrReplace message
     @param    stream
                 A pointer to the pb_istream_t stream.
@@ -244,9 +267,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("Creating a new I2C driver obj");
   TwoWire *bus = nullptr;
   if (use_alt_bus) {
-    bus = _i2c_bus_alt->GetI2cBus();
+    bus = _i2c_bus_alt->GetBus();
   } else {
-    bus = _i2c_bus_default->GetI2cBus();
+    bus = _i2c_bus_default->GetBus();
   }
   drvBase *drv = createI2CDriverByName(
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name, bus,

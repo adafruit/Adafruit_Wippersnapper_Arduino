@@ -31,6 +31,31 @@ I2cModel::I2cModel() {
   _msg_i2c_device_event = wippersnapper_i2c_I2cDeviceEvent_init_default;
 }
 
+/****************************************************************************/
+/*!
+    @brief  Decodes a I2cDeviceRemove message from an input stream.
+    @param    stream
+                A pointer to the pb_istream_t stream.
+    @returns  True if the I2cDeviceRemove message was decoded successfully,
+              False otherwise.
+*/
+/****************************************************************************/
+bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
+  _msg_i2c_device_remove = wippersnapper_i2c_I2cDeviceRemove_init_default;
+  return pb_decode(stream, wippersnapper_i2c_I2cDeviceRemove_fields,
+                   &_msg_i2c_device_remove);
+}
+
+/**********************************************************************/
+/*!
+    @brief    Returns a pointer to the I2cDeviceRemove message.
+    @returns  Pointer to the I2cDeviceRemove message.
+*/
+/**********************************************************************/
+wippersnapper_i2c_I2cDeviceRemove *I2cModel::GetI2cDeviceRemoveMsg() {
+  return &_msg_i2c_device_remove;
+}
+
 /***************************************************************************/
 /*!
     @brief    Decodes a I2cDeviceAddReplace message from an input stream.
