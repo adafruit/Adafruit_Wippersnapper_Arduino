@@ -84,6 +84,9 @@ private:
                        const char *pin, int resolution, float period,
                        int num_sensors, const char *sensor_type_1,
                        const char *sensor_type_2);
+  bool ParseI2cDeviceAddReplace(JsonObject &component, wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);
+  uint32_t HexStrToInt(const char *hex_str);
+
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                     wippersnapper_sensor_SensorType read_type);
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
