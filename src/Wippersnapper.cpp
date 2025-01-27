@@ -2664,6 +2664,19 @@ bool Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
                             uint8_t qos) {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
+#ifdef ARDUINO_ARCH_ESP32
+// print stack and heap usage
+  WS_DEBUG_PRINT("Free Heap: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Min Free Heap: ");
+  WS_DEBUG_PRINTLN(ESP.getMinFreeHeap());
+  WS_DEBUG_PRINT("Max Alloc Heap: ");
+  WS_DEBUG_PRINTLN(ESP.getMaxAllocHeap());
+  WS_DEBUG_PRINT("Heap Size: ");
+  WS_DEBUG_PRINTLN(ESP.getHeapSize());
+  WS_DEBUG_PRINT("Free Stack: ");
+  WS_DEBUG_PRINTLN(uxTaskGetStackHighWaterMark(NULL));
+#endif
   WS.feedWDT();
   bool response = WS._mqtt->publish(topic, payload, bLen, qos);
   if (!response) {
