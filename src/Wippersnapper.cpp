@@ -2666,7 +2666,7 @@ bool Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   // method when caused with WS object in another file.
 #ifdef ARDUINO_ARCH_ESP32
 // print stack and heap usage
-  WS_DEBUG_PRINT("Free Heap: ");
+  WS_DEBUG_PRINT("\nFree Heap: ");
   WS_DEBUG_PRINTLN(ESP.getFreeHeap());
   WS_DEBUG_PRINT("Min Free Heap: ");
   WS_DEBUG_PRINTLN(ESP.getMinFreeHeap());
@@ -2894,9 +2894,15 @@ void Wippersnapper::publishPinConfigComplete() {
 
   // Publish message
   WS_DEBUG_PRINTLN("Publishing to pin config complete...");
-  WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
-             _message_len, 1);
-  WS_DEBUG_PRINTLN("Published! (pin config complete)");
+  if (WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
+                 _message_len, 1))
+  {
+    WS_DEBUG_PRINTLN("Published! (pin config complete)");
+  }
+  else
+  {
+    WS_DEBUG_PRINTLN("Failed to publish! (pin config complete)");
+  }
 }
 
 /**************************************************************************/
