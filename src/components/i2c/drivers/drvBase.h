@@ -88,13 +88,21 @@ public:
                 The number of active sensors on the device.
   */
   /*******************************************************************************/
-  void ConfigureSensorTypes(wippersnapper_sensor_SensorType *sensor_types,
-                            size_t sensor_types_count) {
+  void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
+                         size_t sensor_types_count) {
     _sensors_count = sensor_types_count;
     for (size_t i = 0; i < _sensors_count; i++) {
       _sensors[i] = sensor_types[i];
     }
   }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the number of enabled sensors.
+      @returns  The number of enabled sensors.
+  */
+  /*******************************************************************************/
+  size_t GetEnabledSensorCnt() { return _sensors_count; }
 
   /*******************************************************************************/
   /*!
@@ -106,14 +114,47 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Sets the sensor's period.
+      @brief    Sets the sensor's period and converts from seconds to
+                milliseconds.
       @param    period The period for the sensor to return values within, in
                 seconds.
   */
   /*******************************************************************************/
-  void setSensorPeriod(float period) {
-    long _sensor_period = (long)period * 1000;
+  void SetSensorPeriod(float period) {
+    if (period < 0)
+      _sensor_period = 0;
+    _sensor_period = static_cast<unsigned long>(period * 1000.0f);
   }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Sets the sensor's previous period and converts from seconds
+                to milliseconds.
+      @param    period The period for the sensor to return values within, in
+                seconds.
+  */
+  /*******************************************************************************/
+  void SetSensorPeriodPrv(float period) {
+    if (period < 0)
+      _sensor_period_prv = 0;
+    _sensor_period_prv = static_cast<unsigned long>(period * 1000.0f);
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the sensor's period.
+      @returns  The sensor's period, in milliseconds.
+  */
+  /*******************************************************************************/
+  ulong GetSensorPeriod() { return _sensor_period; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the sensor's previous period.
+      @returns  The sensor's previous period, in milliseconds.
+  */
+  /*******************************************************************************/
+  ulong GetSensorPeriodPrv() { return _sensor_period_prv; }
 
   /*******************************************************************************/
   /*!
@@ -427,8 +468,8 @@ protected:
   uint16_t _address;         ///< The device's I2C address.
   uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
   char _name[15];            ///< The device's name.
-  long _sensor_period;       ///< The sensor's period, in milliseconds.
-  long _sensor_period_prv;   ///< The sensor's previous period, in milliseconds.
+  ulong _sensor_period;      ///< The sensor's period, in milliseconds.
+  ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   wippersnapper_sensor_SensorType
       _sensors[15];      ///< Sensors attached to the device.
   size_t _sensors_count; ///< Number of sensors on the device.

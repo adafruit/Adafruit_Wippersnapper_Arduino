@@ -129,3 +129,25 @@ wippersnapper_i2c_I2cDeviceAddedOrReplaced *
 I2cModel::GetMsgI2cDeviceAddedOrReplaced() {
   return &_msg_i2c_device_added_replaced;
 }
+
+/**********************************************************************/
+/*!
+    @brief    Clears the I2cDeviceEvent message.
+*/
+/**********************************************************************/
+void I2cModel::ClearI2cDeviceEvent() {
+  _msg_i2c_device_event = wippersnapper_i2c_I2cDeviceEvent_init_zero;
+}
+
+void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
+                                                 const char *bus_sda,
+                                                 uint32_t addr_device,
+                                                 uint32_t addr_mux,
+                                                 uint32_t mux_channel) {
+  _msg_i2c_device_event.has_i2c_device_description = true;
+  strcpy(_msg_i2c_device_event.i2c_device_description.i2c_bus_scl, bus_scl);
+  strcpy(_msg_i2c_device_event.i2c_device_description.i2c_bus_sda, bus_sda);
+  _msg_i2c_device_event.i2c_device_description.i2c_device_address = addr_device;
+  _msg_i2c_device_event.i2c_device_description.i2c_mux_address = addr_mux;
+  _msg_i2c_device_event.i2c_device_description.i2c_mux_channel = mux_channel;
+}

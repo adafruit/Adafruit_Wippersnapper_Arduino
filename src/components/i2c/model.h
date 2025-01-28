@@ -35,6 +35,13 @@ public:
       wippersnapper_i2c_I2cBusStatus i2c_bus_status,
       wippersnapper_i2c_I2cDeviceStatus i2c_device_status);
   wippersnapper_i2c_I2cDeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
+  // Device Event Message API
+  void ClearI2cDeviceEvent();
+  void SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
+                                         const char *bus_sda,
+                                         uint32_t addr_device,
+                                         uint32_t addr_mux,
+                                         uint32_t mux_channel);
 
 private:
   wippersnapper_i2c_I2cBusScan _msg_i2c_bus_scan;

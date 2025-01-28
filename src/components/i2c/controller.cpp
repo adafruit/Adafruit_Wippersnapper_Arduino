@@ -199,7 +199,7 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
   // TODO: Implement the rest of this function
   WS_DEBUG_PRINTLN("[i2c] I2cDeviceRemove message not yet implemented!");
 
-return true;
+  return true;
 }
 
 /***********************************************************************/
@@ -279,7 +279,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // TODO: Clean up for clarity - confusing checks and returns
   if (drv != nullptr) {
     WS_DEBUG_PRINTLN("OK! Configuring sensor types...");
-    drv->ConfigureSensorTypes(
+    drv->EnableSensorReads(
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()
             ->i2c_device_sensor_types_count);
@@ -309,4 +309,31 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
     return false;
   return true;
+}
+
+void I2cController::update() {
+  if (_i2c_drivers.size() == 0)
+    return; // bail out if no drivers exist
+
+  for (auto *driver : _i2c_drivers) {
+    // Does this driver have any enabled sensors?
+    size_t sensor_count = driver->GetEnabledSensorCnt();
+    if (sensor_count == 0)
+      continue; // bail out if driver has no sensors enabled
+    // Did driver's period elapse yet?
+    ulong cur_time = millis();
+    if (cur_time - driver->GetSensorPeriodPrv() < driver->GetSensorPeriod())
+      continue; // bail out if the period hasn't elapsed
+
+    // Everything looks OK, let's attempt to read the sensors
+    _i2c_model->ClearI2cDeviceEvent();
+    for (size_t i = 0; i < sensor_count; i++) {
+      // read and fill the event(s)
+      // fill via SetI2cDeviceEventDeviceDescripton
+      // ^ can probably do from a map->event handler
+
+      // log event
+      // send even stream (either publish or to ws_sd)
+    }
+  }
 }
