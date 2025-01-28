@@ -242,6 +242,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         WS_DEBUG_PRINTLN(mux_channel);
         _i2c_bus_alt->SelectMuxChannel(mux_channel);
         WS_DEBUG_PRINTLN("[i2c] MUX channel selected!");
+        did_set_mux_ch = true;
       } else {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
                          "been initialized first");
@@ -256,6 +257,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         WS_DEBUG_PRINTLN(mux_channel);
         _i2c_bus_default->SelectMuxChannel(mux_channel);
         WS_DEBUG_PRINTLN("[i2c] MUX channel selected!");
+        did_set_mux_ch = true;
       } else {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
                          "been initialized first");
