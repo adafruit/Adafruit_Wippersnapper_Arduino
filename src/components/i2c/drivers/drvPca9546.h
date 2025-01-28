@@ -59,7 +59,6 @@ public:
     _i2c->endTransmission();
   }
 protected:
-
 };
 
 #endif // drvPca9546

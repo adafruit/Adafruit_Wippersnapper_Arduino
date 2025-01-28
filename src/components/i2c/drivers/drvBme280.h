@@ -69,10 +69,19 @@ public:
     // attempt to initialize BME280
     if (!_bme->begin(_address, _i2c))
       return false;
-    // configure BME280 device
+    
+    // Configure sensors
     _bme_temp = _bme->getTemperatureSensor();
+    if (_bme_temp == NULL)
+      return false;
+
     _bme_humidity = _bme->getHumiditySensor();
+    if (_bme_humidity == NULL)
+      return false;
+
     _bme_pressure = _bme->getPressureSensor();
+    if (_bme_pressure == NULL)
+      return false;
     return true;
   }
 
@@ -86,10 +95,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (_bme_temp == NULL)
-      return false;
-    _bme_temp->getEvent(tempEvent);
-    return true;
+    return _bme_temp->getEvent(tempEvent);
   }
 
   /*******************************************************************************/
@@ -102,10 +108,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (_bme_humidity == NULL)
-      return false;
-    _bme_humidity->getEvent(humidEvent);
-    return true;
+    return _bme_humidity->getEvent(humidEvent);
   }
 
   /*******************************************************************************/
@@ -119,10 +122,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (_bme_pressure == NULL)
-      return false;
-    _bme_pressure->getEvent(pressureEvent);
-    return true;
+    return _bme_pressure->getEvent(pressureEvent);
   }
 
   /*******************************************************************************/

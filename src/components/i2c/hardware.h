@@ -34,7 +34,6 @@ public:
                const char *scl = nullptr);
   TwoWire *GetBus() { return _bus; }
   wippersnapper_i2c_I2cBusStatus GetBusStatus() { return _bus_status; }
-
 private:
   void TogglePowerPin();
   wippersnapper_i2c_I2cBusStatus _bus_status;

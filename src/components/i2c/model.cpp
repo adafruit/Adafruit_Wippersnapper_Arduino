@@ -137,6 +137,7 @@ I2cModel::GetMsgI2cDeviceAddedOrReplaced() {
 /**********************************************************************/
 void I2cModel::ClearI2cDeviceEvent() {
   _msg_i2c_device_event = wippersnapper_i2c_I2cDeviceEvent_init_zero;
+  _msg_i2c_device_event.i2c_device_events_count = 0;
 }
 
 void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,

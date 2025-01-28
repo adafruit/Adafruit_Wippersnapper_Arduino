@@ -21,7 +21,7 @@ using FnCreateI2CDriver =
 // Map of sensor names to lambda functions that create an I2C device driver
 // NOTE: This list is NOT comprehensive, it's a  subset for now
 // to assess the feasibility of this approach.
-// TODO: Add in a MUX here!
+// TODO: Implement as hash table, unsorted_map instead
 static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
     {"bme280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -327,6 +327,10 @@ void I2cController::update() {
 
     // Everything looks OK, let's attempt to read the sensors
     _i2c_model->ClearI2cDeviceEvent();
+
+    // Is the driver using a specific mux channel?
+    // TODO: I want to refactor the mux drivers first into a separate vector
+
     for (size_t i = 0; i < sensor_count; i++) {
       // read and fill the event(s)
       // fill via SetI2cDeviceEventDeviceDescripton
