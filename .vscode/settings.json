@@ -9,7 +9,8 @@
         "unordered_map": "cpp",
         "string_view": "cpp",
         "initializer_list": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "*.tcc": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "dotnet.defaultSolution": "disable",

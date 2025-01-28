@@ -20,7 +20,6 @@
 // I2C Drivers
 #include "drivers/drvBase.h" ///< Base driver class
 #include "drivers/drvBME280.h"
-#include "drivers/drvPca9546.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
@@ -45,8 +44,6 @@ public:
   bool PublishI2cDeviceAddedorReplaced(const wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor, const wippersnapper_i2c_I2cDeviceStatus& device_status);
   // Helpers
   bool IsBusStatusOK(bool is_alt_bus);
-  bool ConfigureMuxChannel(uint32_t mux_address, uint32_t mux_channel);
-  drvBase* GetMuxDrv(uint32_t mux_address);
 private:
   I2cModel *_i2c_model;                 ///< Pointer to an I2C model object
   I2cHardware *_i2c_bus_default;        ///< Pointer to the default I2C bus

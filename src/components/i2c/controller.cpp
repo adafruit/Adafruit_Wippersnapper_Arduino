@@ -27,11 +27,6 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvBme280(i2c, addr, mux_channel, driver_name);
-     }},
-    {"pca9546",
-     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
-        const char *driver_name) -> drvBase * {
-       return new drvPca9546(i2c, addr, mux_channel, driver_name);
      }}};
 
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
@@ -92,48 +87,6 @@ bool I2cController::IsBusStatusOK(bool is_alt_bus) {
 
   return (_i2c_bus_default->GetBusStatus() ==
           wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS);
-}
-
-/***********************************************************************/
-/*!
-    @brief    Returns the MUX driver for a given address
-    @param    mux_address
-                The I2C address of the MUX
-    @returns  The MUX driver, if found, nullptr otherwise.
-*/
-/***********************************************************************/
-drvBase *I2cController::GetMuxDrv(uint32_t mux_address) {
-  for (auto *driver : _i2c_drivers) {
-    // TODO: Refactor the first part, strcmp
-    // When I implement >1 mux type, how to do this might make more sense..
-    if (strcmp(driver->GetDrvName(), "pca9546") == 0 &&
-        driver->GetAddress() == mux_address) {
-      WS_DEBUG_PRINTLN("Found MUX driver!")
-      return driver;
-    }
-  }
-  WS_DEBUG_PRINTLN("No MUX driver found!")
-  return nullptr;
-}
-
-/***********************************************************************/
-/*!
-    @brief    Configures the MUX channel
-    @param    mux_address
-                The I2C address of the MUX
-    @param    mux_channel
-                The MUX channel to select
-    @returns  True if the MUX channel was configured successfully, False
-              otherwise.
-*/
-/***********************************************************************/
-bool I2cController::ConfigureMuxChannel(uint32_t mux_address,
-                                        uint32_t mux_channel) {
-  drvBase *muxDriver = GetMuxDrv(mux_address);
-  if (muxDriver == nullptr)
-    return false;
-  muxDriver->SelectMUXChannel(mux_channel);
-  return true;
 }
 
 /***********************************************************************/
@@ -213,6 +166,7 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
 /***********************************************************************/
 bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   bool use_alt_bus = false;
+  bool did_set_mux_ch = false;
   // Attempt to decode an I2cDeviceAddOrReplace message
   WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceAddOrReplace message...");
   if (!_i2c_model->DecodeI2cDeviceAddReplace(stream)) {
@@ -224,6 +178,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_UNSPECIFIED;
   wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
+  char device_name[15];
+  strcpy(device_name,
+         _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name);
 
   // TODO: Handle Replace messages by implementing a Remove handler first...then
   // proceed to adding a new device
@@ -249,18 +206,64 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     return true;
   }
 
-  // Does the device's descriptor have a mux channel?
-  // TODO: We will need to modify the sdconfig parser to reflect "no value" set
-  // == the 0xFFFF magic value
-  if (device_descriptor.i2c_mux_channel != 0xFFFF) {
-    if (!ConfigureMuxChannel(device_descriptor.i2c_mux_address,
-                             device_descriptor.i2c_mux_channel)) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Did not find MUX - Was it created first?");
-      device_status =
-          wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_NOT_FOUND;
-      if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
+  // Mux case #1: We are creating a mux via I2cDeviceAddorReplace message
+  // TODO: Refactor
+  if ((strcmp(device_name, "pca9546") == 0)) {
+    if (use_alt_bus) {
+      if (!_i2c_bus_alt->HasMux()) {
+        _i2c_bus_alt->AddMuxToBus(device_descriptor.i2c_mux_address,
+                                  device_name);
+      } else {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Mux specified but not created");
+      }
+    } else {
+      if (!_i2c_bus_default->HasMux()) {
+        _i2c_bus_default->AddMuxToBus(device_descriptor.i2c_mux_address,
+                                      device_name);
+      } else {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Mux specified but not created");
+      }
+    }
+    // TODO: Publish back out to IO instead of blindly returning true
+    return true;
+  }
+
+  // 2) We are creating a new driver that USES THE MUX via I2cDeviceAddorReplace
+  // message
+  //   a) Check if mux is initialized
+  //   b) Set the mux's channel
+  if (device_descriptor.i2c_mux_address != 0x00) {
+    // TODO: Remove all debug prints for PR build
+    WS_DEBUG_PRINTLN("[i2c] Device requests a MUX channel!");
+    uint32_t mux_channel = device_descriptor.i2c_mux_channel;
+    if (use_alt_bus) {
+      if (_i2c_bus_alt->HasMux()) {
+        WS_DEBUG_PRINT("[i2c] Selecting MUX ch# ");
+        WS_DEBUG_PRINTLN(mux_channel);
+        _i2c_bus_alt->SelectMuxChannel(mux_channel);
+        WS_DEBUG_PRINTLN("[i2c] MUX channel selected!");
+      } else {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
+                         "been initialized first");
+        device_status =
+            wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
+        PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
         return false;
-      return true;
+      }
+    } else {
+      if (_i2c_bus_default->HasMux()) {
+        WS_DEBUG_PRINT("[i2c] Selecting MUX ch# ");
+        WS_DEBUG_PRINTLN(mux_channel);
+        _i2c_bus_default->SelectMuxChannel(mux_channel);
+        WS_DEBUG_PRINTLN("[i2c] MUX channel selected!");
+      } else {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
+                         "been initialized first");
+        device_status =
+            wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
+        PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
+        return false;
+      }
     }
   }
 
@@ -271,10 +274,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   } else {
     bus = _i2c_bus_default->GetBus();
   }
+
   drvBase *drv = createI2CDriverByName(
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name, bus,
-      device_descriptor.i2c_device_address, device_descriptor.i2c_mux_channel,
-      device_status);
+      device_name, bus, device_descriptor.i2c_device_address,
+      device_descriptor.i2c_mux_channel, device_status);
 
   // TODO: Clean up for clarity - confusing checks and returns
   if (drv != nullptr) {
@@ -286,8 +289,16 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     if (drv->begin()) {
       _i2c_drivers.push_back(drv);
       WS_DEBUG_PRINTLN("[i2c] I2C driver added to controller: ");
-      WS_DEBUG_PRINTLN(
-          _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name);
+      WS_DEBUG_PRINTLN(device_name);
+      // If we're using a MUX, clear the channel for any subsequent bus
+      // operations that may not involve the MUX
+      if (did_set_mux_ch) {
+        if (use_alt_bus) {
+          _i2c_bus_alt->ClearMuxChannel();
+        } else {
+          _i2c_bus_default->ClearMuxChannel();
+        }
+      }
     } else {
       WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver failed to initialize!");
       device_status =

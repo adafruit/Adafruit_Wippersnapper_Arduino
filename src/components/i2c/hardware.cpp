@@ -1,11 +1,7 @@
 #include "hardware.h"
 
-I2cHardware::I2cHardware() {
-  // TODO
-}
-I2cHardware::~I2cHardware() {
-  // TODO
-}
+I2cHardware::I2cHardware() { _has_mux = false; }
+I2cHardware::~I2cHardware() { _has_mux = false; }
 
 void I2cHardware::TogglePowerPin() {
 #if defined(PIN_I2C_POWER)
@@ -97,4 +93,39 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 #endif
 
   _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
+}
+
+bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
+  if (strcmp(name, "pca9546") == 0) {
+    _mux_max_channels = 4; // PCA9546 supports 4 channels
+  } else {
+    WS_DEBUG_PRINTLN(
+        "ERROR: No mux type found"); // DEBUG ONLY, REMOVE FOR PROD!
+    return false;
+  }
+  _mux_address_register = address_register;
+  _has_mux = true;
+  // Put MUX in back into its default state cuz we don't know if we're about to
+  // use it again
+  ClearMuxChannel();
+  return true;
+}
+
+void I2cHardware::ClearMuxChannel() {
+  if (!_has_mux)
+    return;
+  _bus->beginTransmission(_mux_address_register);
+  if (_mux_max_channels == 4)
+    _bus->write(0b0000);
+  else if (_mux_max_channels == 8)
+    _bus->write(0b00000000);
+  _bus->endTransmission();
+}
+
+void I2cHardware::SelectMuxChannel(uint32_t channel) {
+  if (channel > _mux_max_channels - 1)
+    return;
+  _bus->beginTransmission(_mux_address_register);
+  _bus->write(1 << channel);
+  _bus->endTransmission();
 }

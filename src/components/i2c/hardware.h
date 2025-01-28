@@ -15,6 +15,7 @@
 #ifndef WS_I2C_HARDWARE_H
 #define WS_I2C_HARDWARE_H
 #include "Wippersnapper_V2.h"
+#include "drivers/drvBase.h" ///< Base driver class
 
 #ifdef ARDUINO_ARCH_RP2040
 // Wire uses GPIO4 (SDA) and GPIO5 (SCL) automatically.
@@ -34,9 +35,18 @@ public:
                const char *scl = nullptr);
   TwoWire *GetBus() { return _bus; }
   wippersnapper_i2c_I2cBusStatus GetBusStatus() { return _bus_status; }
+  // MUX
+  bool AddMuxToBus(uint32_t address_register, const char *name);
+  void SelectMuxChannel(uint32_t channel);
+  bool HasMux() { return _has_mux; }
+  void ClearMuxChannel();
+
 private:
   void TogglePowerPin();
   wippersnapper_i2c_I2cBusStatus _bus_status;
   TwoWire *_bus = nullptr;
+  bool _has_mux;
+  uint32_t _mux_address_register;
+  int _mux_max_channels;
 };
 #endif // WS_I2C_HARDWARE_H
