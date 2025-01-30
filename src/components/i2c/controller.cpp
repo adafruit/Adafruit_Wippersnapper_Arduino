@@ -206,9 +206,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     return true;
   }
 
-  // Mux case #1: We are creating a mux via I2cDeviceAddorReplace message
+  // Mux case #1 - We are creating a mux via I2cDeviceAddorReplace message
   // TODO: Refactor
   if ((strcmp(device_name, "pca9546") == 0)) {
+    WS_DEBUG_PRINTLN("[i2c] Creating a new MUX driver obj");
     if (use_alt_bus) {
       if (!_i2c_bus_alt->HasMux()) {
         _i2c_bus_alt->AddMuxToBus(device_descriptor.i2c_mux_address,
@@ -218,8 +219,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       }
     } else {
       if (!_i2c_bus_default->HasMux()) {
+        WS_DEBUG_PRINT("[i2c] Adding MUX to default bus...");
         _i2c_bus_default->AddMuxToBus(device_descriptor.i2c_mux_address,
                                       device_name);
+        WS_DEBUG_PRINTLN("added!");
       } else {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Mux specified but not created");
       }
@@ -228,10 +231,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     return true;
   }
 
-  // 2) We are creating a new driver that USES THE MUX via I2cDeviceAddorReplace
-  // message
-  //   a) Check if mux is initialized
-  //   b) Set the mux's channel
+  // Mux case #2 - We are creating a new driver that USES THE MUX via
+  // I2cDeviceAddorReplace message
   if (device_descriptor.i2c_mux_address != 0x00) {
     // TODO: Remove all debug prints for PR build
     WS_DEBUG_PRINTLN("[i2c] Device requests a MUX channel!");
@@ -292,6 +293,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       _i2c_drivers.push_back(drv);
       WS_DEBUG_PRINTLN("[i2c] I2C driver added to controller: ");
       WS_DEBUG_PRINTLN(device_name);
+
+      if (use_alt_bus)
+        drv->EnableAltI2CBus();
+
       // If we're using a MUX, clear the channel for any subsequent bus
       // operations that may not involve the MUX
       if (did_set_mux_ch) {
@@ -328,21 +333,35 @@ void I2cController::update() {
   if (_i2c_drivers.size() == 0)
     return; // bail out if no drivers exist
 
-  for (auto *driver : _i2c_drivers) {
+  for (auto *drv : _i2c_drivers) {
     // Does this driver have any enabled sensors?
-    size_t sensor_count = driver->GetEnabledSensorCnt();
+    size_t sensor_count = drv->GetEnabledSensorCnt();
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
     // Did driver's period elapse yet?
     ulong cur_time = millis();
-    if (cur_time - driver->GetSensorPeriodPrv() < driver->GetSensorPeriod())
-      continue; // bail out if the period hasn't elapsed
+    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
+      continue; // bail out if the period hasn't elapsed yet
 
     // Everything looks OK, let's attempt to read the sensors
     _i2c_model->ClearI2cDeviceEvent();
 
-    // Is the driver using a specific mux channel?
-    // TODO: I want to refactor the mux drivers first into a separate vector
+    // Is the driver on the mux?
+    uint32_t mux_channel = drv->GetMuxChannel();
+    if (mux_channel != 0xFFFF) {
+      // Enable the bus on the mux channel
+      if (drv->HasAltI2CBus()) {
+        WS_DEBUG_PRINT("[i2c] Alt. Bus, MUX CH#: ");
+        WS_DEBUG_PRINTLN(mux_channel)
+        _i2c_bus_alt->ClearMuxChannel(); // sanity-check
+        _i2c_bus_alt->SelectMuxChannel(mux_channel);
+      } else {
+        WS_DEBUG_PRINT("[i2c] Reg. Bus, MUX CH#: ");
+        WS_DEBUG_PRINTLN(mux_channel)
+        _i2c_bus_default->ClearMuxChannel(); // sanity-check
+        _i2c_bus_default->SelectMuxChannel(mux_channel);
+      }
+    }
 
     for (size_t i = 0; i < sensor_count; i++) {
       // read and fill the event(s)

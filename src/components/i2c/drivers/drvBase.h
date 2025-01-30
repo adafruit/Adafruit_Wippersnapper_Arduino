@@ -45,6 +45,7 @@ public:
     _i2c_mux_channel = NO_MUX_CH;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
+    _has_alt_i2c_bus = false;
   }
 
   /*******************************************************************************/
@@ -66,6 +67,7 @@ public:
     _i2c_mux_channel = mux_channel;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
+    _has_alt_i2c_bus = false;
   }
 
   /*******************************************************************************/
@@ -74,6 +76,9 @@ public:
   */
   /*******************************************************************************/
   virtual ~drvBase() {}
+
+  void EnableAltI2CBus() { _has_alt_i2c_bus = true; }
+  bool HasAltI2CBus() { return _has_alt_i2c_bus; }
 
   uint32_t GetMuxChannel() { return _i2c_mux_channel; }
 
@@ -465,6 +470,7 @@ public:
 
 protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus
+  bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
   uint16_t _address;         ///< The device's I2C address.
   uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
   char _name[15];            ///< The device's name.
