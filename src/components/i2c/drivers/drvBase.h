@@ -126,9 +126,11 @@ public:
   */
   /*******************************************************************************/
   void SetSensorPeriod(float period) {
-    if (period < 0)
+    if (period < 0) {
       _sensor_period = 0;
-    _sensor_period = static_cast<unsigned long>(period * 1000.0f);
+      return;
+    }
+    _sensor_period = (unsigned long)(period * 1000.0f);
   }
 
   /*******************************************************************************/
@@ -139,11 +141,7 @@ public:
                 seconds.
   */
   /*******************************************************************************/
-  void SetSensorPeriodPrv(float period) {
-    if (period < 0)
-      _sensor_period_prv = 0;
-    _sensor_period_prv = static_cast<unsigned long>(period * 1000.0f);
-  }
+  void SetSensorPeriodPrv(ulong period) { _sensor_period_prv = period; }
 
   /*******************************************************************************/
   /*!
@@ -468,12 +466,20 @@ public:
     return false;
   }
 
-private:
-  // Lambda function type for all GetEventX() function calls
+  bool GetSensorEvent(wippersnapper_sensor_SensorType sensor_type,
+                      sensors_event_t *sensors_event) {
+    auto it = SensorEventHandlers.find(sensor_type);
+    if (it == SensorEventHandlers.end())
+      return false; // Could not find sensor_type
+    return it->second(sensors_event);
+  }
+
+  // private:
+  //  Lambda function type for all GetEventX() function calls
   using fnGetEvent = std::function<bool(sensors_event_t *)>;
 
   // Maps SensorType to function calls
-  std::map<wippersnapper_sensor_SensorType, fnGetEvent> eventHandlers = {
+  std::map<wippersnapper_sensor_SensorType, fnGetEvent> SensorEventHandlers = {
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
        [this](sensors_event_t *event) -> bool {
          return this->GetEventAmbientTemp(event);
@@ -496,6 +502,9 @@ private:
        }},
   };
 
+  wippersnapper_sensor_SensorType
+      _sensors[15]; ///< Sensors attached to the device.
+
 protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus
   bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
@@ -504,8 +513,7 @@ protected:
   char _name[15];            ///< The device's name.
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
-  wippersnapper_sensor_SensorType
-      _sensors[15];      ///< Sensors attached to the device.
+
   size_t _sensors_count; ///< Number of sensors on the device.
 };
 #endif // DRV_BASE_H

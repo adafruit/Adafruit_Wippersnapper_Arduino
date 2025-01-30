@@ -284,11 +284,14 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   // TODO: Clean up for clarity - confusing checks and returns
   if (drv != nullptr) {
-    WS_DEBUG_PRINTLN("OK! Configuring sensor types...");
+    WS_DEBUG_PRINTLN("OK! Configuring sensor types and period...");
     drv->EnableSensorReads(
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()
             ->i2c_device_sensor_types_count);
+    drv->SetSensorPeriod(
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
+
     if (drv->begin()) {
       _i2c_drivers.push_back(drv);
       WS_DEBUG_PRINTLN("[i2c] I2C driver added to controller: ");
@@ -351,25 +354,33 @@ void I2cController::update() {
     if (mux_channel != 0xFFFF) {
       // Enable the bus on the mux channel
       if (drv->HasAltI2CBus()) {
-        WS_DEBUG_PRINT("[i2c] Alt. Bus, MUX CH#: ");
-        WS_DEBUG_PRINTLN(mux_channel)
-        _i2c_bus_alt->ClearMuxChannel(); // sanity-check
+        WS_DEBUG_PRINT(
+            "[i2c] Alt. Bus, MUX CH#: "); // TODO: Debug print, remove in PR
+        WS_DEBUG_PRINTLN(mux_channel)     // TODO: Debug print, remove in PR
+        _i2c_bus_alt->ClearMuxChannel();  // sanity-check
         _i2c_bus_alt->SelectMuxChannel(mux_channel);
       } else {
-        WS_DEBUG_PRINT("[i2c] Reg. Bus, MUX CH#: ");
-        WS_DEBUG_PRINTLN(mux_channel)
+        WS_DEBUG_PRINT(
+            "[i2c] Reg. Bus, MUX CH#: ");    // TODO: Debug print, remove in PR
+        WS_DEBUG_PRINTLN(mux_channel)        // TODO: Debug print, remove in PR
         _i2c_bus_default->ClearMuxChannel(); // sanity-check
         _i2c_bus_default->SelectMuxChannel(mux_channel);
       }
     }
 
+    // Read the driver's sensors
     for (size_t i = 0; i < sensor_count; i++) {
-      // read and fill the event(s)
-      // fill via SetI2cDeviceEventDeviceDescripton
-      // ^ can probably do from a map->event handler
-
+      // TODO: Fill the event within the model, this is a placeholder
+      sensors_event_t event;
+      WS_DEBUG_PRINTLN("Getting data from BME280...");
+      drv->GetSensorEvent(drv->_sensors[i], &event);
       // log event
+      // TODO: We should log when we fill the event message?
+      WS_DEBUG_PRINT("Temperature: ");
+      WS_DEBUG_PRINTLN(event.temperature);
       // send even stream (either publish or to ws_sd)
     }
+    cur_time = millis();
+    drv->SetSensorPeriodPrv(cur_time);
   }
 }
