@@ -468,6 +468,34 @@ public:
     return false;
   }
 
+private:
+  // Lambda function type for all GetEventX() function calls
+  using fnGetEvent = std::function<bool(sensors_event_t *)>;
+
+  // Maps SensorType to function calls
+  std::map<wippersnapper_sensor_SensorType, fnGetEvent> eventHandlers = {
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+       [this](sensors_event_t *event) -> bool {
+         return this->GetEventAmbientTemp(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+       [this](sensors_event_t *event) -> bool {
+         return this->GetEventAmbientTempF(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE,
+       [this](sensors_event_t *event) -> bool {
+         return this->GetEventPressure(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY,
+       [this](sensors_event_t *event) -> bool {
+         return this->GetEventRelativeHumidity(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE,
+       [this](sensors_event_t *event) -> bool {
+         return this->GetEventAltitude(event);
+       }},
+  };
+
 protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus
   bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
