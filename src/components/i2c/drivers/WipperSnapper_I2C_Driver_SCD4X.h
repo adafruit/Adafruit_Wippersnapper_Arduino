@@ -52,7 +52,7 @@ public:
   /*******************************************************************************/
   bool begin() {
     _scd = new SensirionI2cScd4x();
-    _scd->begin(*_i2c);
+    _scd->begin(*_i2c, _sensorAddress);
 
     // stop previously started measurement
     if (_scd->stopPeriodicMeasurement())
@@ -78,7 +78,7 @@ public:
     delay(100);
 
     // Check if data is ready
-    error = _scd->getDataReadyFlag(isDataReady);
+    error = _scd->getDataReadyStatus(isDataReady);
     if (error || !isDataReady)
       return false;
 
