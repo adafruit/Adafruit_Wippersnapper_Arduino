@@ -332,6 +332,25 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   return true;
 }
 
+/********************************************************************************/
+/*!
+    @brief    Enables a MUX channel on the appropriate I2C bus.
+    @param    mux_channel
+                Desired MUX channel to enable
+    @param    is_alt_bus
+                True if an alternative I2C bus is being used, False otherwise.
+*/
+/********************************************************************************/
+void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
+  if (is_alt_bus) {
+    _i2c_bus_alt->ClearMuxChannel(); // sanity-check, may not be required
+    _i2c_bus_alt->SelectMuxChannel(mux_channel);
+    return;
+  }
+  _i2c_bus_default->ClearMuxChannel(); // sanity-check, may not be required
+  _i2c_bus_default->SelectMuxChannel(mux_channel);
+}
+
 void I2cController::update() {
   if (_i2c_drivers.size() == 0)
     return; // bail out if no drivers exist
@@ -349,36 +368,20 @@ void I2cController::update() {
     // Everything looks OK, let's attempt to read the sensors
     _i2c_model->ClearI2cDeviceEvent();
 
-    // Is the driver on the mux?
-    uint32_t mux_channel = drv->GetMuxChannel();
-    if (mux_channel != 0xFFFF) {
-      // Enable the bus on the mux channel
-      if (drv->HasAltI2CBus()) {
-        WS_DEBUG_PRINT(
-            "[i2c] Alt. Bus, MUX CH#: "); // TODO: Debug print, remove in PR
-        WS_DEBUG_PRINTLN(mux_channel)     // TODO: Debug print, remove in PR
-        _i2c_bus_alt->ClearMuxChannel();  // sanity-check
-        _i2c_bus_alt->SelectMuxChannel(mux_channel);
-      } else {
-        WS_DEBUG_PRINT(
-            "[i2c] Reg. Bus, MUX CH#: ");    // TODO: Debug print, remove in PR
-        WS_DEBUG_PRINTLN(mux_channel)        // TODO: Debug print, remove in PR
-        _i2c_bus_default->ClearMuxChannel(); // sanity-check
-        _i2c_bus_default->SelectMuxChannel(mux_channel);
-      }
+    // If we have an I2C Mux attached, configure it
+    if (drv->HasMux()) {
+      uint32_t mux_channel = drv->GetMuxChannel();
+      ConfigureMuxChannel(mux_channel, drv->HasAltI2CBus());
     }
 
     // Read the driver's sensors
     for (size_t i = 0; i < sensor_count; i++) {
-      // TODO: Fill the event within the model, this is a placeholder
       sensors_event_t event;
-      WS_DEBUG_PRINTLN("Getting data from BME280...");
+      // Call the driver's handler function for the SensorType
       drv->GetSensorEvent(drv->_sensors[i], &event);
-      // log event
-      // TODO: We should log when we fill the event message?
-      WS_DEBUG_PRINT("Temperature: ");
-      WS_DEBUG_PRINTLN(event.temperature);
-      // send even stream (either publish or to ws_sd)
+      // Fill the I2cDeviceEvent's sensor_event array submsg.
+      _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
+      // TODO: Send event into a stream (either publish or to ws_sd)
     }
     cur_time = millis();
     drv->SetSensorPeriodPrv(cur_time);

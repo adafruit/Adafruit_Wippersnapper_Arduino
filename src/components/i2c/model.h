@@ -15,6 +15,9 @@
 #ifndef WS_I2C_MODEL_H
 #define WS_I2C_MODEL_H
 #include "Wippersnapper_V2.h"
+#include <Adafruit_Sensor.h>
+#define MAX_DEVICE_EVENTS                                                      \
+  15 ///< Maximum number of SensorEvents within I2cDeviceEvent
 
 /**************************************************************************/
 /*!
@@ -42,6 +45,8 @@ public:
                                          uint32_t addr_device,
                                          uint32_t addr_mux,
                                          uint32_t mux_channel);
+  bool AddI2cDeviceSensorEvent(sensors_event_t &event,
+                               wippersnapper_sensor_SensorType sensor_type);
 
 private:
   wippersnapper_i2c_I2cBusScan _msg_i2c_bus_scan;

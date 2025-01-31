@@ -77,12 +77,48 @@ public:
   /*******************************************************************************/
   virtual ~drvBase() {}
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the name of the driver.
+      @returns  The driver's name.
+  */
+  /*******************************************************************************/
+  const char *GetDrvName() { return _name; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Set if the I2C driver has an alternative I2C bus.
+      @param    has_alt_i2c_bus
+                True if the I2C driver requests to use an alternative I2C bus,
+                False otherwise.
+  */
+  /*******************************************************************************/
   void EnableAltI2CBus() { _has_alt_i2c_bus = true; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks if the I2C driver uses an alternative I2C bus.
+      @returns  True if the I2C driver uses an alternative I2C bus, False
+                otherwise.
+  */
+  /*******************************************************************************/
   bool HasAltI2CBus() { return _has_alt_i2c_bus; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the I2C MUX channel connected to the I2C device.
+      @returns  The desired MUX channel.
+  */
+  /*******************************************************************************/
   uint32_t GetMuxChannel() { return _i2c_mux_channel; }
 
-  const char *GetDrvName() { return _name; }
+  /*******************************************************************************/
+  /*!
+      @brief    Checks if the I2C driver is attached to an I2C MUX.
+      @returns  True if the I2C driver uses an I2C MUX, False otherwise.
+  */
+  /*******************************************************************************/
+  bool HasMux() { return _i2c_mux_channel != NO_MUX_CH; }
 
   /*******************************************************************************/
   /*!
@@ -513,7 +549,6 @@ protected:
   char _name[15];            ///< The device's name.
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
-
-  size_t _sensors_count; ///< Number of sensors on the device.
+  size_t _sensors_count;     ///< Number of sensors on the device.
 };
 #endif // DRV_BASE_H
