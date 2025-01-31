@@ -51,7 +51,7 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _scd = new SensirionI2CScd4x();
+    _scd = new SensirionI2cScd4x();
     _scd->begin(*_i2c);
 
     // stop previously started measurement
