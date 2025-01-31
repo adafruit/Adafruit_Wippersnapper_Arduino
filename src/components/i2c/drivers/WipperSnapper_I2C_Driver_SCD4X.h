@@ -145,7 +145,7 @@ public:
   }
 
 protected:
-  SensirionI2CScd4x *_scd; ///< SCD4x driver object
+  SensirionI2cScd4x *_scd; ///< SCD4x driver object
   uint16_t _co2;           ///< SCD4x co2 reading
   float _temperature;      ///< SCD4x temperature reading
   float _humidity;         ///< SCD4x humidity reading
