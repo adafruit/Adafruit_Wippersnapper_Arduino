@@ -18,7 +18,7 @@
 #define WipperSnapper_I2C_Driver_SCD4X_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <SensirionI2CScd4x.h>
+#include <SensirionI2cScd4x.h>
 #include <Wire.h>
 
 /**************************************************************************/
