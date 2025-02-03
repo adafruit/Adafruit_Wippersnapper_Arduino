@@ -47,6 +47,8 @@ public:
                                          uint32_t mux_channel);
   bool AddI2cDeviceSensorEvent(sensors_event_t &event,
                                wippersnapper_sensor_SensorType sensor_type);
+  bool EncodeI2cDeviceEvent();
+  wippersnapper_i2c_I2cDeviceEvent *GetI2cDeviceEvent();
 
 private:
   wippersnapper_i2c_I2cBusScan _msg_i2c_bus_scan;

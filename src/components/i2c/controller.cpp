@@ -291,14 +291,16 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
             ->i2c_device_sensor_types_count);
     drv->SetSensorPeriod(
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
+    if (did_set_mux_ch)
+      drv->SetMuxAddress(device_descriptor.i2c_mux_address);
+    if (use_alt_bus)
+      drv->EnableAltI2CBus();
 
     if (drv->begin()) {
       _i2c_drivers.push_back(drv);
-      WS_DEBUG_PRINTLN("[i2c] I2C driver added to controller: ");
+      WS_DEBUG_PRINTLN(
+          "[i2c] I2C driver initialized and added to controller: ");
       WS_DEBUG_PRINTLN(device_name);
-
-      if (use_alt_bus)
-        drv->EnableAltI2CBus();
 
       // If we're using a MUX, clear the channel for any subsequent bus
       // operations that may not involve the MUX
@@ -360,13 +362,11 @@ void I2cController::update() {
     size_t sensor_count = drv->GetEnabledSensorCnt();
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
+
     // Did driver's period elapse yet?
     ulong cur_time = millis();
     if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
       continue; // bail out if the period hasn't elapsed yet
-
-    // Everything looks OK, let's attempt to read the sensors
-    _i2c_model->ClearI2cDeviceEvent();
 
     // If we have an I2C Mux attached, configure it
     if (drv->HasMux()) {
@@ -375,14 +375,30 @@ void I2cController::update() {
     }
 
     // Read the driver's sensors
+    _i2c_model->ClearI2cDeviceEvent();
     for (size_t i = 0; i < sensor_count; i++) {
       sensors_event_t event;
       // Call the driver's handler function for the SensorType
       drv->GetSensorEvent(drv->_sensors[i], &event);
       // Fill the I2cDeviceEvent's sensor_event array submsg.
       _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
-      // TODO: Send event into a stream (either publish or to ws_sd)
     }
+
+    // Fill and encode the DeviceEvent's description fields
+    // TODO: Using default? Why? Do we not store scl/sda?
+    _i2c_model->SetI2cDeviceEventDeviceDescripton(
+        "default", "default", (uint32_t)drv->GetAddress(), drv->GetMuxAddress(),
+        drv->GetMuxChannel());
+    _i2c_model->EncodeI2cDeviceEvent();
+    // TODO: Decide how to handle the DeviceEvent message
+    if (WsV2._sdCardV2->isModeOffline()) {
+      WsV2._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent());
+    } else {
+      // TODO: Implement!
+      WS_DEBUG_PRINTLN(
+          "[i2c] MQTT Publish I2cDeviceEvent not yet implemented!");
+    }
+
     cur_time = millis();
     drv->SetSensorPeriodPrv(cur_time);
   }

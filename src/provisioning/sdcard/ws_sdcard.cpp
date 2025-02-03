@@ -782,77 +782,77 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
     return "UNSPECIFIED";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER:
-    return "ACCELEROMETER";
+    return "m/s/s";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD:
-    return "MAGNETIC_FIELD";
+    return "µT";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION:
-    return "ORIENTATION";
+    return "\xB0";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE:
-    return "GYROSCOPE";
+    return "rad/s";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
-    return "LIGHT";
+    return "none";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
-    return "PRESSURE";
+    return "hPa";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY:
-    return "PROXIMITY";
+    return "none";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY:
-    return "GRAVITY";
+    return "m/s^2";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION:
-    return "LINEAR_ACCELERATION";
+    return "m/s^2";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR:
-    return "ROTATION_VECTOR";
+    return "rad";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-    return "RELATIVE_HUMIDITY";
+    return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-    return "AMBIENT_TEMPERATURE";
+    return (const char*)"\xB0" "C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-    return "OBJECT_TEMPERATURE";
+    return (const char*)"\xB0" "C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
-    return "VOLTAGE";
+    return "V";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
-    return "CURRENT";
+    return "mA";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR:
-    return "COLOR";
+    return "none";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
-    return "RAW";
+    return "none";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
-    return "PM10_STD";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
-    return "PM25_STD";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
-    return "PM100_STD";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV:
-    return "PM10_ENV";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV:
-    return "PM25_ENV";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV:
-    return "PM100_ENV";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
-    return "CO2";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-    return "GAS_RESISTANCE";
+    return "\u03A9";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
-    return "ALTITUDE";
+    return "m";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX:
-    return "LUX";
+    return "lux";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
-    return "ECO2";
+    return "ppm";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
-    return "UNITLESS_PERCENT";
+    return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-    return "AMBIENT_TEMPERATURE_FAHRENHEIT";
+    return (const char*)"\xB0" "F";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-    return "OBJECT_TEMPERATURE_FAHRENHEIT";
+    return (const char*)"\xB0" "F";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
-    return "VOC_INDEX";
+    return "VOC";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
-    return "NOX_INDEX";
+    return "NOX";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
-    return "TVOC";
+    return "ppb";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES:
-    return "BYTES";
+    return "bytes";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN:
-    return "BOOLEAN";
+    return "none";
   default:
     return "UNKNOWN";
   }
@@ -1004,6 +1004,7 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
     wippersnapper_ds18x20_Ds18x20Event *event_msg) {
   JsonDocument doc;
   // Iterate over the event message's sensor events
+  // TODO: Standardize this Event with I2C
   for (int i = 0; i < event_msg->sensor_events_count; i++) {
     uint32_t timestamp = GetTimestamp();
     doc["timestamp"] = timestamp;
@@ -1013,6 +1014,36 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
     LogJSONDoc(doc);
   }
   return true;
+}
+
+bool ws_sdcard::LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
+    JsonDocument doc;
+    // Pull the DeviceDescriptor out
+    wippersnapper_i2c_I2cDeviceDescriptor descriptor = msg_device_event->i2c_device_description;
+
+    char device_address[5];
+    sprintf(device_address, "0x%02X", descriptor.i2c_device_address);
+    doc["i2c_address"] = device_address;
+
+    // Using I2C MUX?
+    if (descriptor.i2c_mux_address != 0x00) {
+        char mux_address[5];
+        sprintf(device_address, "0x%02X", descriptor.i2c_mux_address);
+        doc["i2c_mux_addr"] = mux_address;
+        doc["i2c_mux_ch"] = descriptor.i2c_mux_channel;
+    }
+
+    uint32_t timestamp = GetTimestamp();
+    pb_size_t events = msg_device_event->i2c_device_events_count;
+
+    for (pb_size_t i = 0; i < events; i++) {
+        doc["timestamp"] = timestamp;
+        // TODO: Check the value type before assigning
+        doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
+        doc["si_unit"] = SensorTypeToString(msg_device_event->i2c_device_events[i].type);
+        LogJSONDoc(doc);
+    }
+    return true;
 }
 
 #ifdef OFFLINE_MODE_DEBUG

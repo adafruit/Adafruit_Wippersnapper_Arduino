@@ -42,6 +42,7 @@ public:
   drvBase(TwoWire *i2c, uint16_t address, const char *driver_name) {
     _i2c = i2c;
     _address = address;
+    _i2c_mux_addr = 0x0;
     _i2c_mux_channel = NO_MUX_CH;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
@@ -64,6 +65,7 @@ public:
           const char *driver_name) {
     _i2c = i2c;
     _address = address;
+    _i2c_mux_addr = 0x0;
     _i2c_mux_channel = mux_channel;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
@@ -84,6 +86,18 @@ public:
   */
   /*******************************************************************************/
   const char *GetDrvName() { return _name; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the I2C device's address.
+      @returns  The I2C device's unique i2c address.
+  */
+  /*******************************************************************************/
+  uint16_t GetAddress() { return _address; }
+
+  uint32_t GetMuxAddress() { return _i2c_mux_addr; }
+
+  void SetMuxAddress(uint32_t mux_address) { _i2c_mux_addr = mux_address; }
 
   /*******************************************************************************/
   /*!
@@ -194,14 +208,6 @@ public:
   */
   /*******************************************************************************/
   ulong GetSensorPeriodPrv() { return _sensor_period_prv; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the I2C device's address.
-      @returns  The I2C device's unique i2c address.
-  */
-  /*******************************************************************************/
-  uint16_t GetAddress() { return _address; }
 
   /*******************************************************************************/
   /*!
@@ -545,6 +551,7 @@ protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus
   bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
   uint16_t _address;         ///< The device's I2C address.
+  uint32_t _i2c_mux_addr;    ///< The I2C MUX address, if applicable.
   uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
   char _name[15];            ///< The device's name.
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.

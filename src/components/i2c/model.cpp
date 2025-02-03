@@ -156,51 +156,38 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
 float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
                                sensors_event_t *event) {
   float value = 0.0;
-  // TODO: Remove the debug prints in the final version, the serial stream
-  // should print it out instead
   switch (sensor_type) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
     value = event->temperature;
-    WS_DEBUG_PRINT("Ambient Temp: ");
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-    WS_DEBUG_PRINT("Object Temp: ");
     value = event->temperature;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-    WS_DEBUG_PRINT("Relative Humidity: ");
     value = event->relative_humidity;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
-    WS_DEBUG_PRINT("Pressure: ");
     value = event->pressure;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
-    WS_DEBUG_PRINT("Voltage: ");
     value = event->voltage;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
-    WS_DEBUG_PRINT("Current: ");
     value = event->current;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
-    WS_DEBUG_PRINT("CO2: ");
     value = event->CO2;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
-    WS_DEBUG_PRINT("eCO2: ");
     value = event->eCO2;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
-    WS_DEBUG_PRINT("TVOC: ");
     value = event->tvoc;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
-    WS_DEBUG_PRINT("VOC Index: ");
     value = event->voc_index;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
-    WS_DEBUG_PRINT("NOx Index: ");
     value = event->nox_index;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
@@ -213,22 +200,18 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
     value = event->pm100_std;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-    WS_DEBUG_PRINT("Gas Resistance: ");
     value = event->gas_resistance;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
-    WS_DEBUG_PRINT("Altitude: ");
     value = event->altitude;
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
-    WS_DEBUG_PRINT("Unitless Percent: ");
     value = event->unitless_percent;
     break;
   default:
     value = 0.0;
     break;
   }
-  WS_DEBUG_PRINTLN(value);
   return value;
 }
 
@@ -236,9 +219,6 @@ bool I2cModel::AddI2cDeviceSensorEvent(
     sensors_event_t &event, wippersnapper_sensor_SensorType sensor_type) {
   if (_msg_i2c_device_event.i2c_device_events_count >= MAX_DEVICE_EVENTS)
     return false; // Maximum amount of events reached
-
-  WS_DEBUG_PRINT("NEW Sensor Event, #: ");
-  WS_DEBUG_PRINTLN(_msg_i2c_device_event.i2c_device_events_count);
 
   _msg_i2c_device_event
       .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
@@ -250,4 +230,32 @@ bool I2cModel::AddI2cDeviceSensorEvent(
 
   _msg_i2c_device_event.i2c_device_events_count++;
   return true;
+}
+
+/***************************************************************************/
+/*!
+    @brief    Encodes an I2cDeviceEvent message.
+    @returns  True if the message was encoded successfully, False otherwise.
+*/
+/***************************************************************************/
+bool I2cModel::EncodeI2cDeviceEvent() {
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, wippersnapper_i2c_I2cDeviceEvent_fields,
+                           &_msg_i2c_device_event))
+    return false;
+
+  uint8_t buf[sz_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  return pb_encode(&msg_stream, wippersnapper_i2c_I2cDeviceEvent_fields,
+                   &_msg_i2c_device_event);
+}
+
+/**********************************************************************/
+/*!
+    @brief    Returns a pointer to the I2cDeviceEvent message.
+    @returns  Pointer to the I2cDeviceEvent message.
+*/
+/**********************************************************************/
+wippersnapper_i2c_I2cDeviceEvent *I2cModel::GetI2cDeviceEvent() {
+  return &_msg_i2c_device_event;
 }
