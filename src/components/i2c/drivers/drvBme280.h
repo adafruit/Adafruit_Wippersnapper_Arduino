@@ -43,7 +43,6 @@ public:
   /*******************************************************************************/
   drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    // TODO: Can we just use the default constructo for these?
     _i2c = i2c;
     _address = sensorAddress;
     _i2c_mux_channel = mux_channel;

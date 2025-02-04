@@ -21,6 +21,7 @@
 #include "drivers/drvBase.h" ///< Base driver class
 #include "drivers/drvBME280.h"
 #include "drivers/drvAdt7410.h"
+#include "drivers/drvAhtx0.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
