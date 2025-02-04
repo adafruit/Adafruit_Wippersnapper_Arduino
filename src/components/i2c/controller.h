@@ -32,6 +32,10 @@
 #include "drivers/drvHts221.h"
 #include "drivers/drvHtu21d.h"
 #include "drivers/drvIna219.h"
+#include "drivers/drvLc709203f.h"
+#include "drivers/drvLps22hb.h"
+#include "drivers/drvLps25hb.h"
+#include "drivers/drvLps3xhw.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
