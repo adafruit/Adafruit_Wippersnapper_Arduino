@@ -27,7 +27,13 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvBme280(i2c, addr, mux_channel, driver_name);
-     }}};
+     }},
+    {"adt7410",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvAdt7410(i2c, addr, mux_channel, driver_name);
+     }},
+};
 
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
                                uint16_t addr, uint32_t i2c_mux_channel,
@@ -109,15 +115,6 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
     return false;
   }
-
-  // TODO: Remove in PR, debug information only!
-  WS_DEBUG_PRINTLN("[i2c] I2cDeviceAddedorReplaced Message Contents:");
-  WS_DEBUG_PRINT("\t Bus Status: ")
-  WS_DEBUG_PRINTLN(
-      _i2c_model->GetMsgI2cDeviceAddedOrReplaced()->i2c_bus_status);
-  WS_DEBUG_PRINT("\t Device Status: ")
-  WS_DEBUG_PRINTLN(
-      _i2c_model->GetMsgI2cDeviceAddedOrReplaced()->i2c_device_status);
 
   if (WsV2._sdCardV2->isModeOffline())
     return true; // Back out if we're in offline mode
@@ -234,15 +231,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // Mux case #2 - We are creating a new driver that USES THE MUX via
   // I2cDeviceAddorReplace message
   if (device_descriptor.i2c_mux_address != 0x00) {
-    // TODO: Remove all debug prints for PR build
-    WS_DEBUG_PRINTLN("[i2c] Device requests a MUX channel!");
     uint32_t mux_channel = device_descriptor.i2c_mux_channel;
     if (use_alt_bus) {
       if (_i2c_bus_alt->HasMux()) {
-        WS_DEBUG_PRINT("[i2c] Selecting MUX ch# ");
-        WS_DEBUG_PRINTLN(mux_channel);
         _i2c_bus_alt->SelectMuxChannel(mux_channel);
-        WS_DEBUG_PRINTLN("[i2c] MUX channel selected!");
+        WS_DEBUG_PRINT("[i2c] Selected MUX CH: ");
+        WS_DEBUG_PRINTLN(mux_channel);
         did_set_mux_ch = true;
       } else {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
@@ -254,10 +248,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       }
     } else {
       if (_i2c_bus_default->HasMux()) {
-        WS_DEBUG_PRINT("[i2c] Selecting MUX ch# ");
-        WS_DEBUG_PRINTLN(mux_channel);
         _i2c_bus_default->SelectMuxChannel(mux_channel);
-        WS_DEBUG_PRINTLN("[i2c] MUX channel selected!");
+        WS_DEBUG_PRINT("[i2c] Selected MUX CH: ");
+        WS_DEBUG_PRINTLN(mux_channel);
         did_set_mux_ch = true;
       } else {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
@@ -356,6 +349,12 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
   _i2c_bus_default->SelectMuxChannel(mux_channel);
 }
 
+/***********************************************************************/
+/*!
+    @brief    Handles polling, reading, and logger for i2c devices
+              attached to the I2C controller.
+*/
+/***********************************************************************/
 void I2cController::update() {
   if (_i2c_drivers.size() == 0)
     return; // bail out if no drivers exist
@@ -371,12 +370,10 @@ void I2cController::update() {
     if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
       continue; // bail out if the period hasn't elapsed yet
 
-    // If we have an I2C Mux attached, configure it
-    uint32_t mux_channel = 0xFFFF;
-    if (drv->HasMux()) {
-      mux_channel = drv->GetMuxChannel();
+    // Optionally configure the I2C MUX
+    uint32_t mux_channel = drv->GetMuxChannel();
+    if (drv->HasMux())
       ConfigureMuxChannel(mux_channel, drv->HasAltI2CBus());
-    }
 
     // Read the driver's sensors
     _i2c_model->ClearI2cDeviceEvent();
