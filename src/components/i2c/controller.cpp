@@ -369,8 +369,9 @@ void I2cController::update() {
       continue; // bail out if the period hasn't elapsed yet
 
     // If we have an I2C Mux attached, configure it
+    uint32_t mux_channel = 0xFFFF;
     if (drv->HasMux()) {
-      uint32_t mux_channel = drv->GetMuxChannel();
+      mux_channel = drv->GetMuxChannel();
       ConfigureMuxChannel(mux_channel, drv->HasAltI2CBus());
     }
 
@@ -385,14 +386,25 @@ void I2cController::update() {
     }
 
     // Fill and encode the DeviceEvent's description fields
-    // TODO: Using default? Why? Do we not store scl/sda?
+    char scl_pin[8] = "default";
+    char sda_pin[8] = "default";
+    if (drv->HasAltI2CBus()) {
+      strcpy(scl_pin, "alt");
+      strcpy(sda_pin, "alt");
+    }
+
     _i2c_model->SetI2cDeviceEventDeviceDescripton(
-        "default", "default", (uint32_t)drv->GetAddress(), drv->GetMuxAddress(),
-        drv->GetMuxChannel());
+        scl_pin, sda_pin, (uint32_t)drv->GetAddress(), drv->GetMuxAddress(),
+        mux_channel);
     _i2c_model->EncodeI2cDeviceEvent();
-    // TODO: Decide how to handle the DeviceEvent message
+
+    // Handle the DeviceEvent message
     if (WsV2._sdCardV2->isModeOffline()) {
-      WsV2._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent());
+      if (!WsV2._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
+        WS_DEBUG_PRINTLN(
+            "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
+        // TODO: Add Status Pixel signaling around this
+      }
     } else {
       // TODO: Implement!
       WS_DEBUG_PRINTLN(

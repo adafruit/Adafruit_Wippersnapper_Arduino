@@ -804,9 +804,9 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
     return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-    return (const char*)"\xB0" "C";
+    return "\xB0""C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-    return (const char*)"\xB0" "C";
+    return "\xB0""C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
     return "V";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
@@ -840,9 +840,9 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
     return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-    return (const char*)"\xB0" "F";
+    return "\xB0""F";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-    return (const char*)"\xB0" "F";
+    return "\xB0""F";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
     return "VOC";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
@@ -858,6 +858,19 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief  Builds a JSON document for a sensor event.
+    @param  doc
+            The JSON document to populate.
+    @param  pin
+            The GPIO pin number.
+    @param  value
+            The sensor value.
+    @param  read_type
+            The sensor type.
+*/
+/**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                              wippersnapper_sensor_SensorType read_type) {
   char pin_name[12];
@@ -868,6 +881,19 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
+/**************************************************************************/
+/*!
+    @brief  Builds a JSON document for a sensor event.
+    @param  doc
+            The JSON document to populate.
+    @param  pin
+            The GPIO pin number.
+    @param  value
+            The sensor value.
+    @param  read_type
+            The sensor type.
+*/
+/**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
                              wippersnapper_sensor_SensorType read_type) {
   char pin_name[12];
@@ -878,6 +904,19 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
+/**************************************************************************/
+/*!
+    @brief  Builds a JSON document for a sensor event.
+    @param  doc
+            The JSON document to populate.
+    @param  pin
+            The GPIO pin number.
+    @param  value
+            The sensor value.
+    @param  read_type
+            The sensor type.
+*/
+/**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                              wippersnapper_sensor_SensorType read_type) {
   char pin_name[12];
@@ -888,6 +927,14 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
   doc["si_unit"] = SensorTypeToString(read_type);
 }
 
+/**************************************************************************/
+/*!
+    @brief  Logs a JSON document to the SD card.
+    @param  doc
+            The JSON document to log.
+    @returns True if the document was successfully logged, False otherwise.
+*/
+/**************************************************************************/
 bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   size_t szJson;
   // Serialize the JSON document
@@ -908,8 +955,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   serializeJson(doc, Serial);
   Serial.print("\n");
 #else
-  szJson = serializeJson(doc, Serial); // TODO: Add buffering here, too?
-  Serial.print("\n");                  // JSONL format specifier
+  szJson = serializeJson(doc, Serial);
+  Serial.print("\n");                  // Required JSONL format specifier
 #endif
   _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
 
@@ -1016,32 +1063,36 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Logs an I2C sensor event to the SD card.
+    @param  msg_device_event
+            The I2cDeviceEvent message to log.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+/**************************************************************************/
 bool ws_sdcard::LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
     JsonDocument doc;
     // Pull the DeviceDescriptor out
     wippersnapper_i2c_I2cDeviceDescriptor descriptor = msg_device_event->i2c_device_description;
-
-    char device_address[5];
-    sprintf(device_address, "0x%02X", descriptor.i2c_device_address);
-    doc["i2c_address"] = device_address;
+    char hex_addr[5];
+    snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.i2c_device_address);
+    doc["i2c_address"] = hex_addr;
 
     // Using I2C MUX?
     if (descriptor.i2c_mux_address != 0x00) {
-        char mux_address[5];
-        sprintf(device_address, "0x%02X", descriptor.i2c_mux_address);
-        doc["i2c_mux_addr"] = mux_address;
+        snprintf(hex_addr, sizeof(hex_addr), "0x%02X", descriptor.i2c_mux_address);
+        doc["i2c_mux_addr"] = hex_addr;
         doc["i2c_mux_ch"] = descriptor.i2c_mux_channel;
     }
 
-    uint32_t timestamp = GetTimestamp();
-    pb_size_t events = msg_device_event->i2c_device_events_count;
-
-    for (pb_size_t i = 0; i < events; i++) {
-        doc["timestamp"] = timestamp;
-        // TODO: Check the value type before assigning
+    // Log each event
+    for (pb_size_t i = 0; i < msg_device_event->i2c_device_events_count; i++) {
+        doc["timestamp"] = GetTimestamp();
         doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
         doc["si_unit"] = SensorTypeToString(msg_device_event->i2c_device_events[i].type);
-        LogJSONDoc(doc);
+        if (!LogJSONDoc(doc))
+            return false;
     }
     return true;
 }
