@@ -82,7 +82,38 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvBmp280(i2c, addr, mux_channel, driver_name);
-     }}};
+     }},
+    {"dps310",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvDps310(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ds2484",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvDs2484(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ens160",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvEns160(i2c, addr, mux_channel, driver_name);
+     }},
+    {"hts221",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHts221(i2c, addr, mux_channel, driver_name);
+     }},
+    {"htu21d",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHtu21d(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina219",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna219(i2c, addr, mux_channel, driver_name);
+     }},
+};
 
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
                                uint16_t addr, uint32_t i2c_mux_channel,

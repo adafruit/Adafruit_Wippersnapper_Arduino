@@ -39,7 +39,8 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvBme680(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvBme680(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -61,7 +62,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
+  bool begin() override {
     _bme = new Adafruit_BME680(_i2c);
 
     // attempt to initialize BME680
@@ -72,16 +73,16 @@ public:
     // defaults from
     // https://github.com/adafruit/Adafruit_BME680/blob/master/examples/bme680test/bme680test.ino
     if (!_bme->setTemperatureOversampling(BME680_OS_8X))
-        return false;
+      return false;
     if (!_bme->setHumidityOversampling(BME680_OS_2X))
-        return false;
+      return false;
     if (!_bme->setPressureOversampling(BME680_OS_4X))
-        return false;
+      return false;
     if (!_bme->setIIRFilterSize(BME680_FILTER_SIZE_3))
-        return false;
+      return false;
     // 320*C for 150 ms
     if ((!_bme->setGasHeater(320, 150)))
-        return false;
+      return false;
 
     return true;
   }

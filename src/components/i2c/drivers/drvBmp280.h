@@ -39,7 +39,8 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvBmp280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvBmp280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -61,7 +62,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
+  bool begin() override {
     _bmp = new Adafruit_BMP280(_i2c);
     // attempt to initialize BMP280
     if (!_bmp->begin(_address))

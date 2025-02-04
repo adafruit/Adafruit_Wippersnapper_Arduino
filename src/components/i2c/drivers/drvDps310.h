@@ -1,44 +1,43 @@
 /*!
- * @file drvBmp3xx.h
+ * @file drvDps310.h
  *
- * Device driver for a BMP3XX precision pressure sensor breakout.
+ * Device driver the DPS310 barometric pressure sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2023 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2021-2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef DRV_BMP3XX_H
-#define DRV_BMP3XX_H
+#ifndef DRV_DPS310_H
+#define DRV_DPS310_H
 
 #include "drvBase.h"
-#include <Adafruit_BMP3XX.h>
-
-#define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
+#include <Adafruit_DPS310.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the BMP3XX temperature
-            and pressure sensor.
+    @brief  Class that provides a sensor driver for the DPS310 barometric
+            pressure sensor.
 */
 /**************************************************************************/
-class drvBmp3xx : public drvBase {
+class drvDps310 : public drvBase {
+
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an BMP3XX sensor.
+      @brief    Constructor for a DPS310 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvBmp3xx(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+  drvDps310(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
@@ -50,31 +49,31 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an BMP3XX sensor.
+      @brief    Destructor for an DPS310 sensor.
   */
   /*******************************************************************************/
-  ~drvBmp3xx() { delete _bmp3xx; }
+  ~drvDps310() { delete _dps310; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the BMP3XX sensor and begins I2C.
+      @brief    Initializes the DPS310 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() override {
-    _bmp3xx = new Adafruit_BMP3XX();
-    // attempt to initialize BMP3XX
-    if (!_bmp3xx->begin_I2C(_address, _i2c))
+    // initialize DPS310
+    _dps310 = new Adafruit_DPS310();
+    if (!_dps310->begin_I2C((uint8_t)_address, _i2c))
       return false;
 
-    // Set up oversampling and filter initialization
-    if (!_bmp3xx->setTemperatureOversampling(BMP3_OVERSAMPLING_8X))
+    // init OK, perform sensor configuration
+    _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
+    _dps_temp = _dps310->getTemperatureSensor();
+    if (_dps_temp == NULL)
       return false;
-    if (!_bmp3xx->setPressureOversampling(BMP3_OVERSAMPLING_4X))
-      return false;
-    if (!_bmp3xx->setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3))
-      return false;
-    if (!_bmp3xx->setOutputDataRate(BMP3_ODR_50_HZ))
+    _dps_pressure = _dps310->getPressureSensor();
+    if (_dps_pressure == NULL)
       return false;
 
     return true;
@@ -82,7 +81,7 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the BMP3XX's current temperature.
+      @brief    Gets the DPS310's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -90,46 +89,36 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_bmp3xx->performReading())
+    if (!_dps310->temperatureAvailable())
       return false;
-    tempEvent->temperature = _bmp3xx->temperature;
+
+    _dps_temp->getEvent(tempEvent);
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a pressure sensor and converts
-                the reading into the expected SI unit.
+      @brief    Gets the DPS310's pressure reading.
       @param    pressureEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the sensor event was obtained successfully, False
+      @returns  True if the pressure was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!_bmp3xx->performReading())
+    if (!_dps310->pressureAvailable())
       return false;
-    pressureEvent->pressure = _bmp3xx->pressure / 100.0F;
-    return true;
-  }
 
-  /*******************************************************************************/
-  /*!
-      @brief    Reads a the BMP3XX's altitude sensor into an event.
-      @param    altitudeEvent
-                Pointer to an adafruit sensor event.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!_bmp3xx->performReading())
-      return false;
-    altitudeEvent->altitude = _bmp3xx->readAltitude(SEALEVELPRESSURE_HPA);
+    _dps_pressure->getEvent(pressureEvent);
     return true;
   }
 
 protected:
-  Adafruit_BMP3XX *_bmp3xx; ///< BMP3XX  object
+  Adafruit_DPS310 *_dps310; ///< DPS310 driver object
+  Adafruit_Sensor *_dps_temp =
+      NULL; ///< Holds data for the DPS310's temperature sensor
+  Adafruit_Sensor *_dps_pressure =
+      NULL; ///< Holds data for the DPS310's pressure sensor
 };
-#endif // drvBmp3xx
+
+#endif // drvDps310
