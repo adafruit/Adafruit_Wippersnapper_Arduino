@@ -132,6 +132,31 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvLps25hb(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ltr329",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLtr329_Ltr303(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ltr303",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLtr329_Ltr303(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ltr390",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLtr390(i2c, addr, mux_channel, driver_name);
+     }},
+    {"max17048",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMax1704x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"mcp3421",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvMax1704x(i2c, addr, mux_channel, driver_name);
      }}};
 
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
