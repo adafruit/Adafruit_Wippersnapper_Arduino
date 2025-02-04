@@ -52,6 +52,36 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvAhtx0(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bh1750",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBh1750(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bme680",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBme680(i2c, addr, mux_channel, driver_name);
+     }},
+    {"BMP280",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp3xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp388",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp3xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp390",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp3xx(i2c, addr, mux_channel, driver_name);
+     }},
+    {"bmp280",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBmp280(i2c, addr, mux_channel, driver_name);
      }}};
 
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
