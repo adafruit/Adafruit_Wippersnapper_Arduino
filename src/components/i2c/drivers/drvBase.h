@@ -47,6 +47,8 @@ public:
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
     _has_alt_i2c_bus = false;
+    strcpy(_pin_scl, "default");
+    strcpy(_pin_sda, "default");
   }
 
   /*******************************************************************************/
@@ -70,6 +72,8 @@ public:
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
     _has_alt_i2c_bus = false;
+    strcpy(_pin_scl, "default");
+    strcpy(_pin_sda, "default");
   }
 
   /*******************************************************************************/
@@ -107,7 +111,14 @@ public:
                 False otherwise.
   */
   /*******************************************************************************/
-  void EnableAltI2CBus() { _has_alt_i2c_bus = true; }
+  void EnableAltI2CBus(char *scl_pin, char *sda_pin) {
+    strcpy(_pin_scl, scl_pin);
+    strcpy(_pin_sda, sda_pin);
+    _has_alt_i2c_bus = true;
+  }
+
+  const char *GetPinSCL() { return _pin_scl; }
+  const char *GetPinSDA() { return _pin_sda; }
 
   /*******************************************************************************/
   /*!
@@ -554,6 +565,8 @@ protected:
   uint32_t _i2c_mux_addr;    ///< The I2C MUX address, if applicable.
   uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
   char _name[15];            ///< The device's name.
+  char _pin_scl[8];          ///< The device's SCL pin.
+  char _pin_sda[8];          ///< The device's SDA pin.
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.

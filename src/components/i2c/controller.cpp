@@ -294,7 +294,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     if (did_set_mux_ch)
       drv->SetMuxAddress(device_descriptor.i2c_mux_address);
     if (use_alt_bus)
-      drv->EnableAltI2CBus();
+      drv->EnableAltI2CBus(_i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                               ->i2c_device_description.i2c_bus_scl,
+                           _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                               ->i2c_device_description.i2c_bus_sda);
 
     if (drv->begin()) {
       _i2c_drivers.push_back(drv);
@@ -385,17 +388,10 @@ void I2cController::update() {
       _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
     }
 
-    // Fill and encode the DeviceEvent's description fields
-    char scl_pin[8] = "default";
-    char sda_pin[8] = "default";
-    if (drv->HasAltI2CBus()) {
-      strcpy(scl_pin, "alt");
-      strcpy(sda_pin, "alt");
-    }
-
+    // Configure the DeviceEvent's DeviceDescription sub-msg
     _i2c_model->SetI2cDeviceEventDeviceDescripton(
-        scl_pin, sda_pin, (uint32_t)drv->GetAddress(), drv->GetMuxAddress(),
-        mux_channel);
+        drv->GetPinSCL(), drv->GetPinSDA(), (uint32_t)drv->GetAddress(),
+        drv->GetMuxAddress(), mux_channel);
     _i2c_model->EncodeI2cDeviceEvent();
 
     // Handle the DeviceEvent message
