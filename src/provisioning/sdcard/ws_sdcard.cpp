@@ -102,8 +102,11 @@ bool ws_sdcard::InitDS1307() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitDS3231() {
+  WS_DEBUG_PRINTLN("Begin DS3231 init");
   _rtc_ds3231 = new RTC_DS3231();
-  if (!_rtc_ds3231->begin()) {
+  WS_DEBUG_PRINTLN("begin() call no wire object");
+  if (!_rtc_ds3231->begin(&Wire)) {
+    WS_DEBUG_PRINTLN("Trying wire1...");
     if (!_rtc_ds3231->begin(&Wire1)) {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS3231 RTC");
       delete _rtc_ds3231;
@@ -643,11 +646,11 @@ bool ws_sdcard::parseConfigFile() {
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
   WS_DEBUG_PRINT("RTC Type: ");
   WS_DEBUG_PRINTLN(json_rtc);
-  // TODO: PCF8523 won't init the RTC here! NEEDFIX
-/*   if (!ConfigureRTC(json_rtc)) {
+   // TODO: PCF8523 won't init the RTC here! NEEDFIX
+   if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;
-  } */
+  }
 #else
   WS_DEBUG_PRINTLN("[SD] Did not configure RTC for Wokwi...");
 #endif
@@ -804,9 +807,9 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
     return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-    return "\xB0""C";
+    return "C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-    return "\xB0""C";
+    return "C";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
     return "V";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
@@ -840,9 +843,9 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
     return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-    return "\xB0""F";
+    return "F";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-    return "\xB0""F";
+    return "F";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
     return "VOC";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:

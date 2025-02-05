@@ -397,17 +397,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _ltr329->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ltr329);
     WS_DEBUG_PRINTLN("LTR329/303 Initialized Successfully!");
-  } else if (strcmp("nau7802", msgDeviceInitReq->i2c_device_name) == 0) {
-    _nau7802 = new WipperSnapper_I2C_Driver_NAU7802(this->_i2c, i2cAddress);
-    if (!_nau7802->begin()) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to initialize NAU7802");
-      _busStatusResponse =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
-      return false;
-    }
-    _nau7802->configureDriver(msgDeviceInitReq);
-    drivers.push_back(_nau7802);
-    WS_DEBUG_PRINTLN("NAU7802 Initialized Successfully!");
   } else if (strcmp("sgp30", msgDeviceInitReq->i2c_device_name) == 0) {
     _sgp30 = new WipperSnapper_I2C_Driver_SGP30(this->_i2c, i2cAddress);
     if (!_sgp30->begin()) {
@@ -475,17 +464,6 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _mpl115a2->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mpl115a2);
     WS_DEBUG_PRINTLN("MPL115A2 Initialized Successfully!");
-  } else if (strcmp("mprls", msgDeviceInitReq->i2c_device_name) == 0) {
-    _mprls = new WipperSnapper_I2C_Driver_MPRLS(this->_i2c, i2cAddress);
-    if (!_mprls->begin()) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MPRLS!");
-      _busStatusResponse =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
-      return false;
-    }
-    _mprls->configureDriver(msgDeviceInitReq);
-    drivers.push_back(_mprls);
-    WS_DEBUG_PRINTLN("MPRLS Initialized Successfully!");
   } else if (strcmp("ms8607", msgDeviceInitReq->i2c_device_name) == 0) {
     _ms8607 = new WipperSnapper_I2C_Driver_MS8607(this->_i2c, i2cAddress);
     if (!_ms8607->begin()) {
