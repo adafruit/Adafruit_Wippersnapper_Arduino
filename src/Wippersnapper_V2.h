@@ -165,7 +165,7 @@ public:
   Wippersnapper_V2();
   virtual ~Wippersnapper_V2();
 
-  void provisionV2();
+  void provision();
 
   // Global flags for the status led
   bool
@@ -204,7 +204,7 @@ public:
   void PollCheckinResponse();
 
   // run() loop
-  ws_status_t runV2();
+  ws_status_t run();
   void processPacketsV2();
 
   // Networking helpers

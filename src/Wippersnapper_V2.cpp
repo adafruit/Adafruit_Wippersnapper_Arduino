@@ -88,7 +88,7 @@ Wippersnapper_V2::~Wippersnapper_V2() {}
               configuration and Adafruit IO credentials.
 */
 /**************************************************************************/
-void Wippersnapper_V2::provisionV2() {
+void Wippersnapper_V2::provision() {
   // Obtain device's MAC address
   getMacAddr();
 
@@ -1294,7 +1294,7 @@ void Wippersnapper_V2::connect() {
     @returns  Network status, as ws_status_t.
 */
 /**************************************************************************/
-ws_status_t Wippersnapper_V2::runV2() {
+ws_status_t Wippersnapper_V2::run() {
   WsV2.feedWDTV2();
   if (!WsV2._sdCardV2->isModeOffline()) {
     // Handle networking functions
