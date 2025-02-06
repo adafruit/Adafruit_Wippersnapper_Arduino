@@ -59,6 +59,11 @@
 #include "drivers/drvTmp117.h"
 #include "drivers/drvTsl2591.h"
 #include "drivers/drvVeml7700.h"
+#include "drivers/drvVl53l0x.h"
+#include "drivers/drvVl53l1x.h"
+#include "drivers/drvVl53l4cd.h"
+#include "drivers/drvVl53l4cx.h"
+#include "drivers/drvVl6180x.h"
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 

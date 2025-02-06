@@ -1,41 +1,42 @@
 /*!
- * @file drvVeml7700.h
+ * @file drvVl53l0x.h
  *
- * Device driver for the VEML7700 digital luminosity (light) sensor.
+ * Device driver for the VL53L0X ToF sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2022 for Adafruit Industries.
+ * Copyright (c) 2022 afp316 https://github.com/afp316
+ * Modified (c) by Tyeth Gundry https://github.com/tyeth
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef DRV_VEML770_H
-#define DRV_VEML770_H
+#ifndef DRV_VL53L0X_H
+#define DRV_VL53L0X_H
 
 #include "drvBase.h"
-#include <Adafruit_VEML7700.h>
+#include <Adafruit_VL53L0X.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for a VEML7700 sensor.
+    @brief  Class that provides a driver interface for a VL53L0X sensor.
 */
 /**************************************************************************/
-class drvVeml7700 : public drvBase {
+class drvVl53l0x : public drvBase {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a VEML7700 sensor.
+      @brief    Constructor for a VL53L0X sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
-                The 7-bit I2C address of the sensor.
+                7-bit device address.
   */
   /*******************************************************************************/
-  drvVeml7700(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-              const char *driver_name)
+  drvVl53l0x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -46,43 +47,49 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an VEML7700 sensor.
+      @brief    Destructor for an VL53L0X sensor.
   */
   /*******************************************************************************/
-  ~drvVeml7700() { delete _veml; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Initializes the VEML7700 sensor and begins I2C.
-      @returns  True if initialized successfully, False otherwise.
-  */
-  /*******************************************************************************/
-  bool begin() override {
-    _veml = new Adafruit_VEML7700();
-    // Attempt to initialize and configure VEML7700
-    return _veml->begin(_i2c);
+  ~drvVl53l0x() {
+    // Called when a VL53L0X component is deleted.
+    delete _vl53l0x;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Performs a light sensor read using the Adafruit
-                Unified Sensor API. Always uses VEML_LUX_AUTO,
-                controlling sensor integration time and gain.
-      @param    lightEvent
-                Light sensor reading, in lux.
-      @returns  True if the sensor event was obtained successfully, False
+      @brief    Initializes the VL53L0X sensor and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool begin() {
+    _vl53l0x = new Adafruit_VL53L0X();
+    bool isInit =
+        _vl53l0x->begin((uint8_t)_address, false, _i2c,
+                        Adafruit_VL53L0X::VL53L0X_SENSE_HIGH_ACCURACY);
+    return isInit;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the VL53L0X's current proximity.
+      @param    proximityEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventLight(sensors_event_t *lightEvent) {
-    // Get sensor event populated in lux via AUTO integration and gain
-    lightEvent->light = _veml->readLux(VEML_LUX_AUTO);
-
+  bool getEventProximity(sensors_event_t *proximityEvent) {
+    u_int16_t proximityMM = _vl53l0x->readRange();
+    if (proximityMM == 0xffff) {
+      proximityEvent->data[0] = NAN;
+    } else {
+      proximityEvent->data[0] = proximityMM;
+    }
     return true;
   }
 
 protected:
-  Adafruit_VEML7700 *_veml; ///< Pointer to VEML7700 light sensor object
+  Adafruit_VL53L0X *_vl53l0x; ///< Pointer to VL53L0X temperature sensor object
 };
 
-#endif // drvVeml7700
+#endif // drvVl53l0x
