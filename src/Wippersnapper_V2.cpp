@@ -90,7 +90,7 @@ Wippersnapper_V2::~Wippersnapper_V2() {}
 /**************************************************************************/
 void Wippersnapper_V2::provisionV2() {
   // Obtain device's MAC address
-  getMacAddrV2();
+  getMacAddr();
 
   // Initialize the status LED for signaling FS errors
   initStatusLED();
@@ -143,13 +143,13 @@ void Wippersnapper_V2::provisionV2() {
 #elif defined(USE_LITTLEFS)
   _littleFSV2->parseSecrets();
 #else
-  check_valid_ssidV2(); // non-fs-backed, sets global credentials within network
+  check_valid_ssid(); // non-fs-backed, sets global credentials within network
                         // iface
 #endif
   // Set the status pixel's brightness
   setStatusLEDBrightness(WsV2._configV2.status_pixel_brightness);
   // Set device's wireless credentials
-  set_ssid_passV2();
+  set_ssid_pass();
 
 #ifdef USE_DISPLAY
   WsV2._ui_helper->set_label_status("");
@@ -162,7 +162,7 @@ void Wippersnapper_V2::provisionV2() {
     @brief    Disconnects from Adafruit IO+ Wippersnapper_V2.
 */
 /**************************************************************************/
-void Wippersnapper_V2::disconnectV2() { _disconnectV2(); }
+void Wippersnapper_V2::disconnect() { _disconnect(); }
 
 // Concrete class definition for abstract classes
 
@@ -171,8 +171,8 @@ void Wippersnapper_V2::disconnectV2() { _disconnectV2(); }
     @brief    Connects to wireless network.
 */
 /****************************************************************************/
-void Wippersnapper_V2::_connectV2() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::_connectV2");
+void Wippersnapper_V2::_connect() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::_connect()");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -181,8 +181,8 @@ void Wippersnapper_V2::_connectV2() {
     @brief    Disconnect Wippersnapper MQTT session and network.
 */
 /****************************************************************************/
-void Wippersnapper_V2::_disconnectV2() {
-  WS_DEBUG_PRINTLN("WIppersnapper_V2::_disconnectV2");
+void Wippersnapper_V2::_disconnect() {
+  WS_DEBUG_PRINTLN("WIppersnapper_V2::_disconnect");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -192,8 +192,8 @@ void Wippersnapper_V2::_disconnectV2() {
               MAC address.
 */
 /****************************************************************************/
-void Wippersnapper_V2::getMacAddrV2() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::getMacAddrV2");
+void Wippersnapper_V2::getMacAddr() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::getMacAddr");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -203,8 +203,8 @@ void Wippersnapper_V2::getMacAddrV2() {
     @return   int32_t RSSI value, 0 to 255, in dB
 */
 /****************************************************************************/
-int32_t Wippersnapper_V2::getRSSIV2() {
-  WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSIV2");
+int32_t Wippersnapper_V2::getRSSI() {
+  WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSI");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return 0;
 }
@@ -216,8 +216,8 @@ int32_t Wippersnapper_V2::getRSSIV2() {
               A unique client identifier string.
 */
 /****************************************************************************/
-void Wippersnapper_V2::setupMQTTClientV2(const char * /*clientID*/) {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::setupMQTTClientV2");
+void Wippersnapper_V2::setupMQTTClient(const char * /*clientID*/) {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::setupMQTTClient");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -227,8 +227,8 @@ void Wippersnapper_V2::setupMQTTClientV2(const char * /*clientID*/) {
     @returns  Network status as ws_status_t.
 */
 /****************************************************************************/
-ws_status_t Wippersnapper_V2::networkStatusV2() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::networkStatusV2");
+ws_status_t Wippersnapper_V2::networkStatus() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::networkStatus");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
 }
@@ -242,9 +242,9 @@ ws_status_t Wippersnapper_V2::networkStatusV2() {
               Your wireless network's password.
 */
 /****************************************************************************/
-void Wippersnapper_V2::set_ssid_passV2(const char * /*ssid*/,
+void Wippersnapper_V2::set_ssid_pass(const char * /*ssid*/,
                                        const char * /*ssidPassword*/) {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_passV2");
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -254,8 +254,8 @@ void Wippersnapper_V2::set_ssid_passV2(const char * /*ssid*/,
               secrets.json configuration file.
 */
 /****************************************************************************/
-void Wippersnapper_V2::set_ssid_passV2() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_passV2");
+void Wippersnapper_V2::set_ssid_pass() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -265,8 +265,8 @@ void Wippersnapper_V2::set_ssid_passV2() {
 @returns True if `_network_ssid` is found, False otherwise.
 */
 /***********************************************************/
-bool Wippersnapper_V2::check_valid_ssidV2() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::check_valid_ssidV2");
+bool Wippersnapper_V2::check_valid_ssid() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::check_valid_ssid");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return false;
 }
@@ -278,8 +278,8 @@ bool Wippersnapper_V2::check_valid_ssidV2() {
               not avaliable.
 */
 /****************************************************************************/
-void Wippersnapper_V2::set_user_keyV2() {
-  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_user_keyV2");
+void Wippersnapper_V2::set_user_key() {
+  WS_DEBUG_PRINTLN("Wippersnapper_V2::set_user_key");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
@@ -573,7 +573,7 @@ void cbThrottleTopicV2(char *throttleData, uint16_t len) {
               False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_V2::generateDeviceUIDV2() {
+bool Wippersnapper_V2::generateDeviceUID() {
   // Generate device unique identifier
   // Set machine_name
   WsV2._boardIdV2 = BOARD_ID;
@@ -624,7 +624,7 @@ bool Wippersnapper_V2::generateDeviceUIDV2() {
                 False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_V2::generateWSTopicsV2() {
+bool Wippersnapper_V2::generateWSTopics() {
   WS_DEBUG_PRINTLN("Pre-calculating topic lengths...");
   // Calculate length of strings that are are dynamic within the secrets file
   size_t lenUser = strlen(WsV2._configV2.aio_user);
@@ -768,7 +768,7 @@ void Wippersnapper_V2::runNetFSMV2() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_CHECK_NETWORK:
-      if (networkStatusV2() == WS_NET_CONNECTED) {
+      if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
 #ifdef USE_DISPLAY
         if (WsV2._ui_helper->getLoadingState())
@@ -789,7 +789,7 @@ void Wippersnapper_V2::runNetFSMV2() {
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
-      if (!check_valid_ssidV2()) {
+      if (!check_valid_ssid()) {
 #ifdef USE_DISPLAY
         WsV2._ui_helper->show_scr_error("ERROR",
                                         "Unable to find WiFi network listed in "
@@ -810,15 +810,15 @@ void Wippersnapper_V2::runNetFSMV2() {
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         feedWDTV2();
-        _connectV2();
+        _connect();
         feedWDTV2();
         // did we connect?
-        if (networkStatusV2() == WS_NET_CONNECTED)
+        if (networkStatus() == WS_NET_CONNECTED)
           break;
         maxAttempts--;
       }
       // Validate connection
-      if (networkStatusV2() != WS_NET_CONNECTED) {
+      if (networkStatus() != WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
 #ifdef USE_DISPLAY
         WsV2._ui_helper->show_scr_error(
@@ -846,7 +846,7 @@ void Wippersnapper_V2::runNetFSMV2() {
         WS_DEBUG_PRINTLN(")");
         WS_PRINTER.flush();
         WS_DEBUG_PRINT("WiFi Status: ");
-        WS_DEBUG_PRINTLN(networkStatusV2());
+        WS_DEBUG_PRINTLN(networkStatus());
         WS_PRINTER.flush();
         feedWDTV2();
         statusLEDBlink(WS_LED_STATUS_MQTT_CONNECTING);
@@ -1098,7 +1098,7 @@ void Wippersnapper_V2::pingBrokerV2() {
     }
     _prv_pingV2 = millis();
     WS_DEBUG_PRINT("WiFi RSSI: ");
-    WS_DEBUG_PRINTLN(getRSSIV2());
+    WS_DEBUG_PRINTLN(getRSSI());
   }
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlinkV2 + STATUS_LED_KAT_BLINK_TIME)) {
@@ -1150,7 +1150,7 @@ void Wippersnapper_V2::enableWDTV2(int timeoutMS) {
 /*******************************************************/
 void Wippersnapper_V2::processPacketsV2() {
   // runNetFSMV2(); // NOTE: Removed for now, causes error with virtual
-  // _connectV2 method when caused with WsV2 object in another file.
+  // _connect() method when caused with WsV2 object in another file.
   WsV2.feedWDTV2();
   // Process all incoming packets from Wippersnapper_V2 MQTT Broker
   WsV2._mqttV2->processPackets(10);
@@ -1194,7 +1194,7 @@ void printDeviceInfoV2() {
     @brief    Connects to Adafruit IO+ Wippersnapper_V2 broker.
 */
 /**************************************************************************/
-void Wippersnapper_V2::connectV2() {
+void Wippersnapper_V2::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
   printDeviceInfoV2();
@@ -1204,7 +1204,7 @@ void Wippersnapper_V2::connectV2() {
 
   // Generate device identifier
   WS_DEBUG_PRINTLN("Generating device UID...");
-  if (!generateDeviceUIDV2()) {
+  if (!generateDeviceUID()) {
     haltErrorV2("Unable to generate Device UID");
   }
   WS_DEBUG_PRINTLN("Device UID generated successfully!");
@@ -1244,11 +1244,11 @@ void Wippersnapper_V2::connectV2() {
 
   // Configures an Adafruit Arduino MQTT object
   WS_DEBUG_PRINTLN("Setting up MQTT client...");
-  setupMQTTClientV2(_device_uidV2);
+  setupMQTTClient(_device_uidV2);
   WS_DEBUG_PRINTLN("Set up MQTT client successfully!");
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
-  if (!generateWSTopicsV2()) {
+  if (!generateWSTopics()) {
     haltErrorV2("Unable to allocate space for MQTT topics");
   }
   WS_DEBUG_PRINTLN("Generated device's MQTT topics successfully!");

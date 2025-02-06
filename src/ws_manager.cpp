@@ -29,7 +29,7 @@ Wippersnapper_Manager::~Wippersnapper_Manager() {
 void Wippersnapper_Manager::connect() {
   if (_api_version == 2) {
     WS_DEBUG_PRINTLN("api v2 instance::connect()");
-    ws_instance_v2->connectV2();
+    ws_instance_v2->connect();
   } else if (_api_version == 1) {
     WS_DEBUG_PRINTLN("api v1 instance::connect()");
     // ws_instance->connect();

@@ -2,7 +2,7 @@
  * @file ws_wifi_esp8266.h
  *
  * This is a driver for using the ESP8266's network interface
- *  with Wippersnapper.
+ *  with Wippersnapper_V2.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -22,7 +22,7 @@
 #include "Adafruit_MQTT_Client.h"
 #include "ESP8266WiFi.h"
 #include "ESP8266WiFiMulti.h"
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 
 /* NOTE - Projects that require "Secure MQTT" (TLS/SSL) also require a new
  * SSL certificate every year. If adding Secure MQTT to your ESP8266 project is
@@ -37,7 +37,7 @@
 // static const char *fingerprint PROGMEM =  "4E C1 52 73 24 A8 36 D6 7A 4C 67
 // C7 91 0C 0A 22 B9 2D 5B CA";
 
-extern Wippersnapper WS;
+extern Wippersnapper_V2 WsV2;
 
 /******************************************************************************/
 /*!
@@ -45,7 +45,7 @@ extern Wippersnapper WS;
    interface.
 */
 /******************************************************************************/
-class ws_wifi_esp8266 : public Wippersnapper {
+class ws_wifi_esp8266 : public Wippersnapper_V2 {
 
 public:
   /**************************************************************************/
@@ -61,7 +61,7 @@ public:
           Wireless Network password
   */
   /**************************************************************************/
-  ws_wifi_esp8266() : Wippersnapper() {
+  ws_wifi_esp8266() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
     _wifi_client = new WiFiClient;
@@ -142,12 +142,12 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WS._isWiFiMulti) {
+      if (WS._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
+            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
@@ -178,7 +178,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WS._macAddr, mac, sizeof(mac));
+    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
   }
 
   /********************************************************/
@@ -201,11 +201,11 @@ public:
     // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
     // new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url,
     // WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
-    if (WS._config.io_port == 8883)
-      WS._config.io_port = 1883;
-    WS._mqtt = new Adafruit_MQTT_Client(
-        _wifi_client, WS._config.aio_url, WS._config.io_port, clientID,
-        WS._config.aio_user, WS._config.aio_key);
+    if (WsV2._configV2.io_port == 8883)
+      WsV2._configV2.io_port = 1883;
+    WsV2._mqttV2 = new Adafruit_MQTT_Client(
+        _wifi_client, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
+        WsV2._configV2.aio_user, WsV2._configV2.aio_key);
   }
 
   /********************************************************/
@@ -229,7 +229,7 @@ public:
 
   /*******************************************************************/
   /*!
-  @brief  Returns the type of network connection used by Wippersnapper
+  @brief  Returns the type of network connection used by Wippersnapper_V2
   @return "ESP8266"
   */
   /*******************************************************************/
@@ -246,13 +246,13 @@ protected:
   @brief  Establishes a connection with the wireless network.
   */
   /**************************************************************************/
-  void _connect() {
+  void _connect()() {
 
     if (WiFi.status() == WL_CONNECTED)
       return;
 
     if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID;
+      _statusV2 = WS_SSID_INVALID;
     } else {
       WiFi.setAutoReconnect(false);
       // Attempt connection
@@ -261,17 +261,17 @@ protected:
       // ESP8266 MUST be in STA mode to avoid device acting as client/server
       WiFi.mode(WIFI_STA);
       WiFi.begin(_ssid, _pass);
-      _status = WS_NET_DISCONNECTED;
+      _statusV2 = WS_NET_DISCONNECTED;
       delay(100);
 
-      if (WS._isWiFiMulti) {
+      if (WS._isWiFiMultiV2) {
         // multi network mode
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          if (strlen(WS._multiNetworks[i].ssid) > 0 &&
-              (_wifiMulti.existsAP(WS._multiNetworks[i].ssid) == false)) {
+          if (strlen(WsV2._multiNetworksV2[i].ssid) > 0 &&
+              (_wifiMulti.existsAP(WsV2._multiNetworksV2[i].ssid) == false)) {
             // doesn't exist, add it
-            _wifiMulti.addAP(WS._multiNetworks[i].ssid,
-                             WS._multiNetworks[i].pass);
+            _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
+                             WsV2._multiNetworksV2[i].pass);
           }
         }
         // add default network
@@ -286,9 +286,9 @@ protected:
           yield();
         }
         if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
+          _statusV2 = WS_NET_CONNECTED;
         } else {
-          _status = WS_NET_DISCONNECTED;
+          _statusV2 = WS_NET_DISCONNECTED;
         }
       } else {
         // single network mode
@@ -301,12 +301,12 @@ protected:
           yield();
         }
         if (WiFi.status() == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
+          _statusV2 = WS_NET_CONNECTED;
         } else {
-          _status = WS_NET_DISCONNECTED;
+          _statusV2 = WS_NET_DISCONNECTED;
         }
       }
-      WS.feedWDT();
+      WsV2.feedWDT();
     }
   }
 

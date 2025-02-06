@@ -3,8 +3,8 @@
 
 //#include "adapters/wifi/ws_wifi_esp32.h"
 //typedef ws_wifi_esp32 ws_adapter_wifi;
-#include "adapters/wifi/ws_wifi_esp32_v2.h"
-typedef ws_wifi_esp32_v2 ws_adapter_wifi_v2;
+#include "adapters/wifi/ws_wifi_esp32.h"
+typedef ws_wifi_esp32 ws_adapter_wifi_v2;
 
 /****************************************************************************/
 /*!

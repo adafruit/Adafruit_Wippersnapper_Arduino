@@ -176,25 +176,25 @@ public:
       STATUS_PIXEL_BRIGHTNESS_DEFAULT; ///< Global status pixel's brightness
                                        ///< (from 0.0 to 1.0)
 
-  virtual void set_user_keyV2();
-  virtual void set_ssid_passV2(const char *ssid, const char *ssidPassword);
-  virtual void set_ssid_passV2();
-  virtual bool check_valid_ssidV2();
+  virtual void set_user_key();
+  virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
+  virtual void set_ssid_pass();
+  virtual bool check_valid_ssid();
 
-  virtual void _connectV2();
-  virtual void _disconnectV2();
-  void connectV2();
-  void disconnectV2();
+  virtual void _connect();
+  virtual void _disconnect();
+  void connect();
+  void disconnect();
 
-  virtual void getMacAddrV2();
-  virtual int32_t getRSSIV2();
-  virtual void setupMQTTClientV2(const char *clientID);
+  virtual void getMacAddr();
+  virtual int32_t getRSSI();
+  virtual void setupMQTTClient(const char *clientID);
 
-  virtual ws_status_t networkStatusV2();
+  virtual ws_status_t networkStatus();
 
   // Generators for device UID and MQTT topics
-  bool generateDeviceUIDV2();
-  bool generateWSTopicsV2();
+  bool generateDeviceUID();
+  bool generateWSTopics();
 
   // High-level MQTT Publish
   bool PublishSignal(pb_size_t which_payload, void *payload);

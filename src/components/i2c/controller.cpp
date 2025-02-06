@@ -19,8 +19,6 @@ using FnCreateI2CDriver =
     std::function<drvBase *(TwoWire *, uint16_t, uint32_t, const char *)>;
 
 // Map of sensor names to lambda functions that create an I2C device driver
-// NOTE: This list is NOT comprehensive, it's a  subset for now
-// to assess the feasibility of this approach.
 static const std::unordered_map<std::string, FnCreateI2CDriver> I2cFactory = {
     {"bme280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -326,14 +324,12 @@ static const std::unordered_map<std::string, FnCreateI2CDriver> I2cFactory = {
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
                                uint16_t addr, uint32_t i2c_mux_channel,
                                wippersnapper_i2c_I2cDeviceStatus &status) {
-  status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
   auto it = I2cFactory.find(driver_name);
   if (it == I2cFactory.end()) {
     status =
         wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
     return nullptr;
   }
-
   status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
   // Call the lambda to create the driver
   return it->second(i2c, addr, i2c_mux_channel, driver_name);

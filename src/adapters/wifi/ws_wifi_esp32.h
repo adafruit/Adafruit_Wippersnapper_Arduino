@@ -1,5 +1,5 @@
 /*!
- * @file ws_wifi_esp32.h
+ * @file Wippersnapper_ESP32_V2.h
  *
  * This is a driver for using the ESP32's network interface
  * with Adafruit IO Wippersnapper.
@@ -18,7 +18,7 @@
 #define WS_WIFI_ESP32_H
 
 #ifdef ARDUINO_ARCH_ESP32
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
@@ -27,14 +27,14 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern Wippersnapper WS;
+extern Wippersnapper_V2 WsV2;
 
 /****************************************************************************/
 /*!
     @brief  Class for using the ESP32 network interface.
 */
 /****************************************************************************/
-class ws_wifi_esp32 : public Wippersnapper {
+class ws_wifi_esp32 : public Wippersnapper_V2 {
 
 public:
   /**************************************************************************/
@@ -42,7 +42,7 @@ public:
   @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
   /**************************************************************************/
-  ws_wifi_esp32() : Wippersnapper() {
+  ws_wifi_esp32() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
   }
@@ -55,17 +55,17 @@ public:
   ws_wifi_esp32(const char *aioUsername, const char *aioKey,
                       const char *netSSID, const char *netPass,
                       const char *brokerURL, uint16_t brokerPort)
-      : Wippersnapper() {
+      : Wippersnapper_V2() {
     _ssid = netSSID;
     _pass = netPass;
 
     // Move credentials to the config struct
-    strncpy(WS._config.network.ssid, _ssid, sizeof(WS._config.network.ssid));
-    strncpy(WS._config.network.pass, _pass, sizeof(WS._config.network.pass));
-    strncpy(WS._config.aio_key, aioKey, sizeof(WS._config.aio_key));
-    strncpy(WS._config.aio_user, aioUsername, sizeof(WS._config.aio_user));
-    strncpy(WS._config.aio_url, brokerURL, sizeof(WS._config.aio_url));
-    WS._config.io_port = brokerPort;
+    strncpy(WsV2._configV2.network.ssid, _ssid, sizeof(WsV2._configV2.network.ssid));
+    strncpy(WsV2._configV2.network.pass, _pass, sizeof(WsV2._configV2.network.pass));
+    strncpy(WsV2._configV2.aio_key, aioKey, sizeof(WsV2._configV2.aio_key));
+    strncpy(WsV2._configV2.aio_user, aioUsername, sizeof(WsV2._configV2.aio_user));
+    strncpy(WsV2._configV2.aio_url, brokerURL, sizeof(WsV2._configV2.aio_url));
+    WsV2._configV2.io_port = brokerPort;
   }
 
   /**************************************************************************/
@@ -107,8 +107,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._config.network.ssid;
-    _pass = WS._config.network.pass;
+    _ssid = WsV2._configV2.network.ssid;
+    _pass = WsV2._configV2.network.pass;
   }
 
   /***********************************************************/
@@ -140,12 +140,12 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WS._isWiFiMulti) {
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
+            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
@@ -176,7 +176,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0};
     Network.macAddress(mac);
-    memcpy(WS._macAddr, mac, sizeof(mac));
+    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
   }
 
   /********************************************************/
@@ -195,23 +195,23 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0 ||
-        strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
+    if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client_secure = new NetworkClientSecure();
       _mqtt_client_secure->setCACert(
-          strcmp(WS._config.aio_url, "io.adafruit.com") == 0
+          strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
-      WS._mqtt = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WS._config.aio_url, WS._config.io_port, clientID,
-          WS._config.aio_user, WS._config.aio_key);
+      WsV2._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
+          WsV2._configV2.aio_user, WsV2._configV2.aio_key);
     } else {
       // Insecure connections require a NetworkClient object rather than a
       // NetworkClientSecure object
       _mqtt_client_insecure = new NetworkClient();
-      WS._mqtt = new Adafruit_MQTT_Client(
-          _mqtt_client_insecure, WS._config.aio_url, WS._config.io_port,
-          clientID, WS._config.aio_user, WS._config.aio_key);
+      WsV2._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
+          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
     }
   }
 
@@ -319,12 +319,12 @@ protected:
       return;
 
     if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID;
+      _statusV2 = WS_SSID_INVALID;
     } else {
       WiFi.setAutoReconnect(false);
       _disconnect();
       delay(100);
-      if (WS._isWiFiMulti) {
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         _wifiMulti.APlistClean();
         _wifiMulti.setAllowOpenAP(false);
@@ -332,24 +332,24 @@ protected:
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          if (strlen(WS._multiNetworks[i].ssid) > 0) {
-            _wifiMulti.addAP(WS._multiNetworks[i].ssid,
-                             WS._multiNetworks[i].pass);
+          if (strlen(WsV2._multiNetworksV2[i].ssid) > 0) {
+            _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
+                             WsV2._multiNetworksV2[i].pass);
           }
         }
         if (_wifiMulti.run(20000) == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
+          _statusV2 = WS_NET_CONNECTED;
         } else {
-          _status = WS_NET_DISCONNECTED;
+          _statusV2 = WS_NET_DISCONNECTED;
         }
       } else {
         // single network mode
         WiFi.begin(_ssid, _pass);
-        _status = WS_NET_DISCONNECTED;
-        WS.feedWDT();
+        _statusV2 = WS_NET_DISCONNECTED;
+        WsV2.feedWDTV2();
         delay(5000);
       }
-      WS.feedWDT();
+      WsV2.feedWDTV2();
     }
   }
 

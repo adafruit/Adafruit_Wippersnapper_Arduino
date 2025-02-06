@@ -22,21 +22,21 @@
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
-extern Wippersnapper WS;
+extern Wippersnapper_V2 WsV2;
 
 /****************************************************************************/
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
 /****************************************************************************/
-class ws_wifi_pico : public Wippersnapper {
+class ws_wifi_pico : public Wippersnapper_V2 {
 
 public:
   /**************************************************************************/
@@ -44,7 +44,7 @@ public:
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
   /**************************************************************************/
-  ws_wifi_pico() : Wippersnapper() {
+  ws_wifi_pico() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
   }
@@ -88,8 +88,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._config.network.ssid;
-    _pass = WS._config.network.pass;
+    _ssid = WsV2._configV2.network.ssid;
+    _pass = WsV2._configV2.network.pass;
   }
 
   /***********************************************************/
@@ -121,12 +121,12 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WS._isWiFiMulti) {
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WS._multiNetworks[j].ssid, WiFi.SSID(i)) == 0) {
+          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i)) == 0) {
             WS_DEBUG_PRINT("SSID (");
-            WS_DEBUG_PRINT(WS._multiNetworks[j].ssid);
+            WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
             WS_DEBUG_PRINTLN(WiFi.RSSI(i));
             return true;
@@ -157,7 +157,7 @@ public:
   void getMacAddr() {
     uint8_t mac[6] = {0};
     WiFi.macAddress(mac);
-    memcpy(WS._macAddr, mac, sizeof(mac));
+    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
   }
 
   /********************************************************/
@@ -176,21 +176,21 @@ public:
   */
   /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    if (strcmp(WS._config.aio_url, "io.adafruit.com") == 0 ||
-        strcmp(WS._config.aio_url, "io.adafruit.us") == 0) {
+    if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
+        strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
       _mqtt_client_secure = new WiFiClientSecure();
       _mqtt_client_secure->setCACert(
-          strcmp(WS._config.aio_url, "io.adafruit.com") == 0
+          strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
-      WS._mqtt = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WS._config.aio_url, WS._config.io_port, clientID,
-          WS._config.aio_user, WS._config.aio_key);
+      WsV2._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
+          WsV2._configV2.aio_user, WsV2._configV2.aio_key);
     } else {
       _mqtt_client_insecure = new WiFiClient();
-      WS._mqtt = new Adafruit_MQTT_Client(
-          _mqtt_client_insecure, WS._config.aio_url, WS._config.io_port,
-          clientID, WS._config.aio_user, WS._config.aio_key);
+      WsV2._mqttV2 = new Adafruit_MQTT_Client(
+          _mqtt_client_insecure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
+          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
     }
   }
 
@@ -298,54 +298,54 @@ protected:
       return;
 
     WiFi.mode(WIFI_STA);
-    WS.feedWDT();
+    WsV2.feedWDTV2();
     WiFi.setTimeout(20000);
-    WS.feedWDT();
+    WsV2.feedWDTV2();
 
     if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID;
+      _statusV2 = WS_SSID_INVALID;
     } else {
       _disconnect();
       delay(5000);
-      WS.feedWDT();
-      if (WS._isWiFiMulti) {
+      WsV2.feedWDTV2();
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         _wifiMulti.clearAPList();
         // add default network
         _wifiMulti.addAP(_ssid, _pass);
         // add array of alternative networks
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
-          _wifiMulti.addAP(WS._multiNetworks[i].ssid,
-                           WS._multiNetworks[i].pass);
+          _wifiMulti.addAP(WsV2._multiNetworksV2[i].ssid,
+                           WsV2._multiNetworksV2[i].pass);
         }
-        WS.feedWDT();
+        WsV2.feedWDTV2();
         if (_wifiMulti.run(10000) == WL_CONNECTED) {
-          WS.feedWDT();
-          _status = WS_NET_CONNECTED;
+          WsV2.feedWDTV2();
+          _statusV2 = WS_NET_CONNECTED;
           return;
         }
-        WS.feedWDT();
+        WsV2.feedWDTV2();
       } else {
         WiFi.begin(_ssid, _pass);
 
         // Use the macro to retry the status check until connected / timed out
         int lastResult;
-        RETRY_FUNCTION_UNTIL_TIMEOUT(
+/*         RETRY_FUNCTION_UNTIL_TIMEOUT(
             []() -> int { return WiFi.status(); }, // Function call each cycle
             int,                                   // return type
             lastResult, // return variable (unused here)
             [](int status) { return status == WL_CONNECTED; }, // check
             PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
-            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries
+            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries */
 
         if (lastResult == WL_CONNECTED) {
-          _status = WS_NET_CONNECTED;
+          _statusV2 = WS_NET_CONNECTED;
           // wait 2seconds for connection to stabilize
-          WS_DELAY_WITH_WDT(2000);
+          // WS_DELAY_WITH_WDT(2000);
           return;
         }
       }
-      _status = WS_NET_DISCONNECTED;
+      _statusV2 = WS_NET_DISCONNECTED;
     }
   }
 
@@ -355,12 +355,12 @@ protected:
   */
   /**************************************************************************/
   void _disconnect() {
-    WS.feedWDT();
+    WsV2.feedWDTV2();
     WiFi.disconnect();
     delay(5000);
-    WS.feedWDT();
+    WsV2.feedWDTV2();
   }
 };
 
-#endif // ARDUINO_ARCH_RP2040
 #endif // RASPBERRY_PI_PICO_W
+#endif // WS_WIFI_PICO_H
