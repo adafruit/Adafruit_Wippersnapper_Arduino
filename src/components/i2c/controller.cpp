@@ -21,8 +21,7 @@ using FnCreateI2CDriver =
 // Map of sensor names to lambda functions that create an I2C device driver
 // NOTE: This list is NOT comprehensive, it's a  subset for now
 // to assess the feasibility of this approach.
-// TODO: Implement as hash table, unsorted_map instead
-static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
+static const std::unordered_map<std::string, FnCreateI2CDriver> I2cFactory = {
     {"bme280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
