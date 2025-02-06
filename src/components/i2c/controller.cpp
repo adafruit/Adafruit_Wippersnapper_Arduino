@@ -187,7 +187,25 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvPct2075(i2c, addr, mux_channel, driver_name);
-     }}};
+     }},
+    {"pmsa003i",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvPm25(i2c, addr, mux_channel, driver_name);
+     }},
+    {"scd40",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvScd4x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"scd30",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvScd30(i2c, addr, mux_channel, driver_name);
+     }},
+};
+
+
 
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
                                uint16_t addr, uint32_t i2c_mux_channel,

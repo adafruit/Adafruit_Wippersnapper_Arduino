@@ -46,6 +46,9 @@
 #include "drivers/drvMs8607.h"
 #include "drivers/drvNau7802.h"
 #include "drivers/drvPct2075.h"
+#include "drivers/drvPm25.h"
+#include "drivers/drvScd4x.h"
+#include "drivers/drvScd30.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
