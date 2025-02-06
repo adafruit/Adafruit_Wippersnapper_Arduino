@@ -48,22 +48,22 @@ Wippersnapper_V2::Wippersnapper_V2() {
 
   // Init. component classes
   // LEDC (ESP32-ONLY)
-#ifdef ARDUINO_ARCH_ESP32
+/* #ifdef ARDUINO_ARCH_ESP32
   WsV2._ledcV2 = new ws_ledc();
-#endif
+#endif */
 
   // PWM (Arch-specific implementations)
-#ifdef ARDUINO_ARCH_ESP32
+/* #ifdef ARDUINO_ARCH_ESP32
   WsV2._pwmComponentV2 = new ws_pwm(WsV2._ledcV2);
 #else
   WsV2._pwmComponentV2 = new ws_pwm();
-#endif
+#endif */
 
   // Servo
-  WsV2._servoComponentV2 = new ws_servo();
+  // WsV2._servoComponentV2 = new ws_servo();
 
   // UART
-  WsV2._uartComponentV2 = new ws_uart();
+  //WsV2._uartComponentV2 = new ws_uart();
 
   // Initialize model classes
   WsV2.sensorModel = new SensorModel();
@@ -1233,10 +1233,10 @@ void Wippersnapper_V2::connectV2() {
     WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
                      "and running app...");
     // Set the status LED to green to indicate successful configuration
-    setStatusLEDColor(0x00A300, WS.status_pixel_brightness);
+    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
     delay(100);
     // Set the status LED to off during app runtime
-    setStatusLEDColor(0x000000, WS.status_pixel_brightness);
+    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2);
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");
@@ -1273,10 +1273,10 @@ void Wippersnapper_V2::connectV2() {
   PollCheckinResponse();
 
   // Set the status LED to green to indicate successful configuration
-  setStatusLEDColor(0x00A300, WS.status_pixel_brightness);
+  setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
   delay(100);
   // Set the status LED to off during app runtime
-  setStatusLEDColor(0x000000, WS.status_pixel_brightness);
+  setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2);
 
 // switch to monitor screen
 #ifdef USE_DISPLAY

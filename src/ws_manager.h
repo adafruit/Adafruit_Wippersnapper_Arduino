@@ -1,8 +1,8 @@
 #ifndef WIPPERSNAPPER_MANAGER_H
 #define WIPPERSNAPPER_MANAGER_H
 
-#include "adapters/wifi/ws_wifi_esp32.h"
-typedef ws_wifi_esp32 ws_adapter_wifi;
+//#include "adapters/wifi/ws_wifi_esp32.h"
+//typedef ws_wifi_esp32 ws_adapter_wifi;
 #include "adapters/wifi/ws_wifi_esp32_v2.h"
 typedef ws_wifi_esp32_v2 ws_adapter_wifi_v2;
 
@@ -27,7 +27,7 @@ public:
   void run();
 
 protected:
-  ws_adapter_wifi *ws_instance;      ///< Instance of Wippersnapper API v1
+  //ws_adapter_wifi *ws_instance;      ///< Instance of Wippersnapper API v1
   ws_adapter_wifi_v2 *ws_instance_v2; ///< Instance of Wippersnapper API v2
 private:
   int _api_version;

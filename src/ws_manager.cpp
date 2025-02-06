@@ -5,7 +5,7 @@
     @brief    Constructor for Wippersnapper_Manager
 */
 /**************************************************************************/
-Wippersnapper_Manager::Wippersnapper_Manager() : ws_instance(nullptr) {}
+Wippersnapper_Manager::Wippersnapper_Manager() : ws_instance_v2(nullptr) {}
 
 /**************************************************************************/
 /*!
@@ -13,9 +13,9 @@ Wippersnapper_Manager::Wippersnapper_Manager() : ws_instance(nullptr) {}
 */
 /**************************************************************************/
 Wippersnapper_Manager::~Wippersnapper_Manager() {
-  if (ws_instance) {
+/*   if (ws_instance) {
     delete ws_instance;
-  }
+  } */
   if (ws_instance_v2) {
     delete ws_instance_v2;
   }
@@ -32,7 +32,7 @@ void Wippersnapper_Manager::connect() {
     ws_instance_v2->connectV2();
   } else if (_api_version == 1) {
     WS_DEBUG_PRINTLN("api v1 instance::connect()");
-    ws_instance->connect();
+    // ws_instance->connect();
   } else {
     WS_DEBUG_PRINTLN("Error: Could not call connect(), unknown API version!");
   }
@@ -49,7 +49,7 @@ void Wippersnapper_Manager::provision() {
     ws_instance_v2->provisionV2();
   } else if (_api_version == 1) {
     WS_DEBUG_PRINTLN("api v1 instance::provision()");
-    ws_instance->provision();
+    //ws_instance->provision();
   } else {
     WS_DEBUG_PRINTLN("Error: Could not call provision(), unknown API version!");
   }
@@ -72,7 +72,7 @@ void Wippersnapper_Manager::checkAPIVersion(int pinNum) {
     ws_instance_v2 = new ws_adapter_wifi_v2();
     _api_version = 2;
   } else { // API version 1 if D12 is low
-    ws_instance = new ws_adapter_wifi();
+    // ws_instance = new ws_adapter_wifi();
     _api_version = 1;
   }
 }
@@ -86,7 +86,7 @@ void Wippersnapper_Manager::run() {
   if (_api_version == 2) {
     ws_instance_v2->runV2();
   } else if (_api_version == 1) {
-    ws_instance->run();
+    // ws_instance->run();
   } else {
     WS_DEBUG_PRINTLN("Error: Could not call run(), unknown API version!");
   }

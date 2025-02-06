@@ -15,7 +15,7 @@
 #ifndef DRV_VL6180X_H
 #define DRV_VL6180X_H
 
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 #include "drvBase.h"
 #include <Adafruit_VL6180X.h>
 

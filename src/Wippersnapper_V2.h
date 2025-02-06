@@ -21,6 +21,37 @@
 // Debug Flags
 // #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
 
+#define WS_DEBUG          ///< Define to enable debugging to serial terminal
+#define WS_PRINTER Serial ///< Where debug messages will be printed
+
+// Define actual debug output functions when necessary.
+#ifdef WS_DEBUG
+#define WS_DEBUG_PRINT(...)                                                    \
+  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
+#define WS_DEBUG_PRINTLN(...)                                                  \
+  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+#else
+#define WS_DEBUG_PRINT(...)                                                    \
+  {} ///< Prints debug output
+#define WS_DEBUG_PRINTLN(...)                                                  \
+  {} ///< Prints line from debug output.
+#endif
+
+#define WS_DELAY_WITH_WDT(timeout)                                             \
+  {                                                                            \
+    unsigned long start = millis();                                            \
+    while (millis() - start < timeout) {                                       \
+      delay(10);                                                               \
+      yield();                                                                 \
+      feedWDT();                                                               \
+      if (millis() < start) {                                                  \
+        start = millis(); /* if rollover */                                    \
+      }                                                                        \
+    }                                                                          \
+  } ///< Delay function
+
 // Cpp STD
 #include <functional>
 #include <map>
@@ -64,14 +95,13 @@
 #include "components/sensor/model.h"
 
 // Components (API v1)
-#include "components/analogIO/Wippersnapper_AnalogIO.h"
-#include "components/pixels/ws_pixels.h"
-#include "components/pwm/ws_pwm.h"
-#include "components/servo/ws_servo.h"
-#include "components/uart/ws_uart.h"
-#ifdef ARDUINO_ARCH_ESP32
-#include "components/ledc/ws_ledc.h"
-#endif
+// #include "components/pixels/ws_pixels.h"
+// #include "components/pwm/ws_pwm.h"
+// #include "components/servo/ws_servo.h"
+// #include "components/uart/ws_uart.h"
+// #ifdef ARDUINO_ARCH_ESP32
+// #include "components/ledc/ws_ledc.h"
+// #endif
 // Display
 #ifdef USE_DISPLAY
 #include "display/ws_display_driver.h"
@@ -96,8 +126,9 @@
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
 
+
+
 // Forward declarations (API v1)
-class Wippersnapper_AnalogIO;
 class Wippersnapper_FS_V2;
 class WipperSnapper_LittleFS_V2;
 class ws_sdcard;
@@ -105,14 +136,14 @@ class ws_sdcard;
 class ws_display_driver;
 class ws_display_ui_helper;
 #endif
-#ifdef ARDUINO_ARCH_ESP32
-class ws_ledc;
-#endif
+// #ifdef ARDUINO_ARCH_ESP32
+//class ws_ledc;
+// #endif
 class WipperSnapper_Component_I2C;
-class ws_servo;
-class ws_pwm;
-class ws_pixels;
-class ws_uart;
+// class ws_servo;
+// class ws_pwm;
+// class ws_pixels;
+// class ws_uart;
 
 // Forward declarations (API v2)
 class CheckinModel;
@@ -197,7 +228,6 @@ public:
 
   // TODO: We really should look at making these static definitions, not dynamic
   // to free up space on the heap
-  Wippersnapper_AnalogIO *_analogIOV2; ///< Instance of analog io class
   Wippersnapper_FS_V2 *_fileSystemV2;  ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS_V2
       *_littleFSV2;     ///< Instance of LittleFS Filesystem (non-native USB)
@@ -207,10 +237,10 @@ public:
   ws_display_ui_helper *_ui_helperV2 =
       nullptr; ///< Instance of display UI helper class
 #endif
-  ws_pixels *_ws_pixelsComponentV2; ///< ptr to instance of ws_pixels class
-  ws_pwm *_pwmComponentV2;          ///< Instance of pwm class
-  ws_servo *_servoComponentV2;      ///< Instance of servo class
-  ws_uart *_uartComponentV2;        ///< Instance of UART class
+  // ws_pixels *_ws_pixelsComponentV2; ///< ptr to instance of ws_pixels class
+  // ws_pwm *_pwmComponentV2;          ///< Instance of pwm class
+  // ws_servo *_servoComponentV2;      ///< Instance of servo class
+  // ws_uart *_uartComponentV2;        ///< Instance of UART class
 
   // API v2 Components
   CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
@@ -243,9 +273,9 @@ public:
                             milliseconds. */
 
 // enable LEDC if esp32
-#ifdef ARDUINO_ARCH_ESP32
-  ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
-#endif
+//#ifdef ARDUINO_ARCH_ESP32
+  //ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
+//#endif
   bool got_checkin_response; ///< True if a checkin response was received, False
                              ///< otherwise.
   std::vector<std::vector<uint8_t>>
@@ -280,8 +310,6 @@ protected:
   const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
   char *_device_uidV2;     /*!< Unique device identifier  */
 
-  wippersnapper_signal_v1_CreateSignalRequest
-      _outgoingSignalMsgV2; /*!< Outgoing signal message from device */
 };
 extern Wippersnapper_V2 WsV2; ///< Global member variable for callbacks
 

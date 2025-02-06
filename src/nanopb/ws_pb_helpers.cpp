@@ -14,7 +14,7 @@
  */
 
 #include "ws_pb_helpers.h"
-#include "../Wippersnapper.h"
+#include "../Wippersnapper_V2.h"
 
 // *****************************************************************************
 /*!
