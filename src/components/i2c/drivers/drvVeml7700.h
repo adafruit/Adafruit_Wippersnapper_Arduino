@@ -1,42 +1,41 @@
 /*!
- * @file drvMprls.h
+ * @file drvVeml7700.h
  *
- * Device driver for a MPRLS precision pressure sensor breakout.
+ * Device driver for the VEML7700 digital luminosity (light) sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2023 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2022 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
-
-#ifndef DRV_MPRLS_H
-#define DRV_MPRLS_H
+#ifndef WipperSnapper_I2C_Driver_VEML7700_H
+#define WipperSnapper_I2C_Driver_VEML7700_H
 
 #include "drvBase.h"
-#include <Adafruit_MPRLS.h>
+#include <Adafruit_VEML7700.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the MPRLS sensor.
+    @brief  Class that provides a driver interface for a VEML7700 sensor.
 */
 /**************************************************************************/
-class drvMprls : public drvBase {
-
+class drvVeml7700 : public drvBase {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an MPRLS sensor.
+      @brief    Constructor for a VEML7700 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
-                7-bit device address.
+                The 7-bit I2C address of the sensor.
   */
   /*******************************************************************************/
-  drvMprls(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvVeml7700(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -47,40 +46,43 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an MPRLS sensor.
+      @brief    Destructor for an VEML7700 sensor.
   */
   /*******************************************************************************/
-  ~drvMprls() { delete _mprls; }
+  ~drvVeml7700() { delete _veml; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the MPRLS sensor and begins I2C.
+      @brief    Initializes the VEML7700 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() override {
-    _mprls = new Adafruit_MPRLS();
-    // attempt to initialize MPRLS
-    return _mprls->begin(_address, _i2c);
+    _veml = new Adafruit_VEML7700();
+    // Attempt to initialize and configure VEML7700
+    return _veml->begin(_i2c);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a pressure sensor and converts
-                the reading into the expected SI unit.
-      @param    pressureEvent
-                Pointer to an Adafruit_Sensor event.
+      @brief    Performs a light sensor read using the Adafruit
+                Unified Sensor API. Always uses VEML_LUX_AUTO,
+                controlling sensor integration time and gain.
+      @param    lightEvent
+                Light sensor reading, in lux.
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventPressure(sensors_event_t *pressureEvent) {
-    pressureEvent->pressure = _mprls->readPressure();
-    return pressureEvent->pressure != NAN;
+  bool getEventLight(sensors_event_t *lightEvent) {
+    // Get sensor event populated in lux via AUTO integration and gain
+    lightEvent->light = _veml->readLux(VEML_LUX_AUTO);
+
+    return true;
   }
 
 protected:
-  Adafruit_MPRLS *_mprls; ///< MPRLS  object
+  Adafruit_VEML7700 *_veml; ///< Pointer to VEML7700 light sensor object
 };
 
-#endif // drvMprls
+#endif // drvVeml7700

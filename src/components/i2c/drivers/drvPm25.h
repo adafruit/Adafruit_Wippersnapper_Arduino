@@ -52,7 +52,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
+  bool begin() override {
     _pm25 = new Adafruit_PM25AQI();
     // Wait one second for sensor to boot up!
     delay(1000);

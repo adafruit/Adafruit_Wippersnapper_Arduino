@@ -203,9 +203,101 @@ static std::map<std::string, FnCreateI2CDriver> I2cFactory = {
         const char *driver_name) -> drvBase * {
        return new drvScd30(i2c, addr, mux_channel, driver_name);
      }},
-};
-
-
+    {"sgp40",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSgp40(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sht3x",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSht3x, addr, mux_channel, driver_name);
+     }},
+    {"sht30_shell",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSht3x, addr, mux_channel, driver_name);
+     }},
+    {"sht30_mesh",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSht3x, addr, mux_channel, driver_name);
+     }},
+    {"sht40",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSht4x, addr, mux_channel, driver_name);
+     }},
+    {"sht41",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSht4x, addr, mux_channel, driver_name);
+     }},
+    {"sht45",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSht4x, addr, mux_channel, driver_name);
+     }},
+    {"sen5x",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen5x, addr, mux_channel, driver_name);
+     }},
+    {"sen55",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen5x, addr, mux_channel, driver_name);
+     }},
+    {"sen54",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen5x, addr, mux_channel, driver_name);
+     }},
+    {"sen50",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen5x, addr, mux_channel, driver_name);
+     }},
+    {"shtc3",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvShtc3, addr, mux_channel, driver_name);
+     }},
+    {"si7021",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSi7021, addr, mux_channel, driver_name);
+     }},
+    {"stemma_soil",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen5x, addr, mux_channel, driver_name);
+     }},
+    {"tmp117",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvTmp117, addr, mux_channel, driver_name);
+     }},
+    {"tsl2591",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvTsl2591, addr, mux_channel, driver_name);
+     }},
+    {"veml7700",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVeml7700, addr, mux_channel, driver_name);
+     }},
+    {"vncl4020",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVncl4020, addr, mux_channel, driver_name);
+     }},
+    {"vncl4040",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVncl4040, addr, mux_channel, driver_name);
+     }}};
 
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
                                uint16_t addr, uint32_t i2c_mux_channel,

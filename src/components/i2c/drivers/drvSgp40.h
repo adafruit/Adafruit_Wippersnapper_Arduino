@@ -1,7 +1,7 @@
 /*!
- * @file drvMprls.h
+ * @file drvSgp40.h
  *
- * Device driver for a MPRLS precision pressure sensor breakout.
+ * Device driver for the SGP40 VOC/gas sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,30 +13,31 @@
  *
  */
 
-#ifndef DRV_MPRLS_H
-#define DRV_MPRLS_H
+#ifndef DRV_SGP40_H
+#define DRV_SGP40_H
 
 #include "drvBase.h"
-#include <Adafruit_MPRLS.h>
+#include <Adafruit_SGP40.h>
+#include <Wire.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the MPRLS sensor.
+    @brief  Class that provides a driver interface for the SGP40 sensor.
 */
 /**************************************************************************/
-class drvMprls : public drvBase {
-
+class drvSgp40 : public drvBase {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an MPRLS sensor.
+      @brief    Constructor for a SGP40 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvMprls(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvSgp40(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+           const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -47,40 +48,51 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an MPRLS sensor.
-  */
-  /*******************************************************************************/
-  ~drvMprls() { delete _mprls; }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Initializes the MPRLS sensor and begins I2C.
+      @brief    Initializes the SGP40 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() override {
-    _mprls = new Adafruit_MPRLS();
-    // attempt to initialize MPRLS
-    return _mprls->begin(_address, _i2c);
+    _sgp40 = new Adafruit_SGP40();
+    if (!_sgp40->begin(_i2c)) {
+      return false;
+    }
+
+    // TODO: update to use setCalibration() and pass in temp/humidity
+
+    return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a pressure sensor and converts
-                the reading into the expected SI unit.
-      @param    pressureEvent
+      @brief    Gets the sensor's current raw unprocessed value.
+      @param    rawEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the sensor event was obtained successfully, False
+      @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventPressure(sensors_event_t *pressureEvent) {
-    pressureEvent->pressure = _mprls->readPressure();
-    return pressureEvent->pressure != NAN;
+  bool getEventRaw(sensors_event_t *rawEvent) {
+    rawEvent->data[0] = (float)_sgp40->measureRaw();
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SGP40's current VOC reading.
+      @param    vocIndexEvent
+                  Adafruit Sensor event for VOC Index (1-500, 100 is normal)
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
+    vocIndexEvent->voc_index = (float)_sgp40->measureVocIndex();
+    return true;
   }
 
 protected:
-  Adafruit_MPRLS *_mprls; ///< MPRLS  object
+  Adafruit_SGP40 *_sgp40; ///< SEN5X driver object
 };
 
-#endif // drvMprls
+#endif // WipperSnapper_I2C_Driver_SEN5X

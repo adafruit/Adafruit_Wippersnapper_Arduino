@@ -1,42 +1,46 @@
 /*!
- * @file drvScd30.h
+ * @file drvSht4x.h
  *
- * Device driver for the SCD30 CO2, Temperature, and Humidity sensor.
+ * Device driver for the SHT4X Temperature and Humidity Sensor
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2021 for Adafruit Industries.
+ * Copyright (c) Marni Brewster 2022 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry 2022. Original code by Marni,
+ * rewritten to use driver by Sensirion, help from Brent Rubell.
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef DRV_SCD30_H
-#define DRV_SCD30_H
+#ifndef DRV_SHT4X_H
+#define DRV_SHT4X_H
 
 #include "drvBase.h"
-#include <Adafruit_SCD30.h>
+#include <SHTSensor.h>
+#include <Wire.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for the SCD30 sensor.
+    @brief  Class that provides a driver interface for the SHT4X sensor.
 */
 /**************************************************************************/
-class drvScd30 : public drvBase {
+class drvSht4x : public drvBase {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a SCD30 sensor.
+      @brief    Constructor for a SHT4X sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvScd30(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvSht4x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+           const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -47,18 +51,24 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the SCD30 sensor and begins I2C.
+      @brief    Initializes the SHT4X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() override {
-    _scd = new Adafruit_SCD30();
-    return _scd->begin((uint8_t)_address, _i2c);
+    _sht4x = new SHTSensor(SHTSensor::SHT4X);
+    if (!_sht4x->init(*_i2c))
+      return false;
+
+    // configure SHT4x sensor
+    _sht4x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
+
+    return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the SCD30's current temperature.
+      @brief    Gets the SHT4X's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -66,21 +76,16 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // check if sensor is enabled and data is available
-    if (!_scd->dataReady())
+    // populate temp and humidity objects with fresh data
+    if (!_sht4x->readSample())
       return false;
-
-    // attempt to get temperature data
-    sensors_event_t humidEvent;
-    if (!_scd->getEvent(&humidEvent, tempEvent))
-      return false;
-
+    tempEvent->temperature = _sht4x->getTemperature();
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the SCD30's current relative humidity reading.
+      @brief    Gets the SHT4X's current relative humidity reading.
       @param    humidEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the humidity was obtained successfully, False
@@ -88,38 +93,15 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    // check if sensor is enabled and data is available
-    if (!_scd->dataReady())
+    // populate temp and humidity objects with fresh data
+    if (!_sht4x->readSample())
       return false;
-
-    // attempt to get temperature data
-    sensors_event_t tempEvent;
-    if (!_scd->getEvent(humidEvent, &tempEvent))
-      return false;
-
-    return true;
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Gets the SCD30's current CO2 reading.
-      @param    co2Event
-                  Adafruit Sensor event for CO2
-      @returns  True if the sensor value was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
-  bool getEventCO2(sensors_event_t *co2Event) {
-    // check if sensor is enabled and data is available
-    if (!_scd->dataReady())
-      return false;
-
-    co2Event->CO2 = _scd->CO2;
+    humidEvent->relative_humidity = _sht4x->getHumidity();
     return true;
   }
 
 protected:
-  Adafruit_SCD30 *_scd; ///< SCD30 driver object
+  SHTSensor *_sht4x; ///< SHT4X object
 };
 
-#endif // drvScd30
+#endif // drvSht4x

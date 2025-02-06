@@ -1,7 +1,7 @@
 /*!
- * @file drvMprls.h
+ * @file drvTmp117.h
  *
- * Device driver for a MPRLS precision pressure sensor breakout.
+ * Device driver for the TMP117 Temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -12,31 +12,30 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-
-#ifndef DRV_MPRLS_H
-#define DRV_MPRLS_H
+#ifndef DRV_TMP117_H
+#define DRV_TMP117_H
 
 #include "drvBase.h"
-#include <Adafruit_MPRLS.h>
+#include <Adafruit_TMP117.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the MPRLS sensor.
+    @brief  Class that provides a driver interface for a TMP117 sensor.
 */
 /**************************************************************************/
-class drvMprls : public drvBase {
-
+class drvTmp117 : public drvBase {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an MPRLS sensor.
+      @brief    Constructor for a TMP117 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvMprls(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvTmp117(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -47,40 +46,40 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an MPRLS sensor.
+      @brief    Destructor for an TMP117 sensor.
   */
   /*******************************************************************************/
-  ~drvMprls() { delete _mprls; }
+  ~drvTmp117() {
+    // Called when a TMP117 component is deleted.
+    delete _tmp117;
+  }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the MPRLS sensor and begins I2C.
+      @brief    Initializes the TMP117 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
   bool begin() override {
-    _mprls = new Adafruit_MPRLS();
-    // attempt to initialize MPRLS
-    return _mprls->begin(_address, _i2c);
+    _tmp117 = new Adafruit_TMP117();
+    return _tmp117->begin((uint8_t)_address, _i2c);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a pressure sensor and converts
-                the reading into the expected SI unit.
-      @param    pressureEvent
+      @brief    Gets the TMP117's current temperature.
+      @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the sensor event was obtained successfully, False
+      @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventPressure(sensors_event_t *pressureEvent) {
-    pressureEvent->pressure = _mprls->readPressure();
-    return pressureEvent->pressure != NAN;
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+    return _tmp117->getEvent(tempEvent);
   }
 
 protected:
-  Adafruit_MPRLS *_mprls; ///< MPRLS  object
+  Adafruit_TMP117 *_tmp117; ///< Pointer to TMP117 temperature sensor object
 };
 
-#endif // drvMprls
+#endif // drvTmp117

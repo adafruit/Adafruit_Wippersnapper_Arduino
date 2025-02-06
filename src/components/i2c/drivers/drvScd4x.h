@@ -53,7 +53,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
+  bool begin() override {
     _scd = new SensirionI2CScd4x();
     _scd->begin(*_i2c);
 

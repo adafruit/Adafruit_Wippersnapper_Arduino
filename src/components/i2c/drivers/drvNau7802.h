@@ -59,7 +59,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() { return _nau7802->begin(_i2c) && configure_nau7802(); }
+  bool begin() override { return _nau7802->begin(_i2c) && configure_nau7802(); }
 
   /*******************************************************************************/
   /*!

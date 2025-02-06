@@ -47,8 +47,20 @@
 #include "drivers/drvNau7802.h"
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
-#include "drivers/drvScd4x.h"
 #include "drivers/drvScd30.h"
+#include "drivers/drvScd4x.h"
+#include "drivers/drvSen5x.h"
+#include "drivers/drvSgp40.h"
+#include "drivers/drvSht3x.h"
+#include "drivers/drvSht4x.h"
+#include "drivers/drvShtc3.h"
+#include "drivers/drvSi7021.h"
+#include "drivers/drvStemmaSoil.h"
+#include "drivers/drvTmp117.h"
+#include "drivers/drvTsl2591.h"
+#include "drivers/drvVeml7700.h"
+#include "drivers/drvVncl4020.h"
+#include "drivers/drvVncl4040.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration

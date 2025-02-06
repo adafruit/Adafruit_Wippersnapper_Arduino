@@ -1,72 +1,69 @@
 /*!
- * @file drvPct2075.h
+ * @file drvStemmaSoil.h
  *
- * Device driver for the PCT2075 Temperature sensor.
+ * Device driver for the STEMMA Soil Sensor
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2023 for Adafruit Industries.
+ * Copyright (c) Marcus Wu 2022
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef DRV_PCT2075_H
-#define DRV_PCT2075_H
+
+#ifndef DRV_STEMMA_SOIL_H
+#define DRV_STEMMA_SOIL_H
 
 #include "drvBase.h"
-#include <Adafruit_PCT2075.h>
+#include <Adafruit_seesaw.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for a PCT2075 sensor.
+    @brief  Class that provides a driver interface for the STEMMA soil sensor.
 */
 /**************************************************************************/
-class drvPct2075 : public drvBase {
+class drvStemmaSoil : public drvBase {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a PCT2075 sensor.
+      @brief    Constructor for a STEMMA soil sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvPct2075(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvStemmaSoil(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+                const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
     _i2c_mux_channel = mux_channel;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
+    _seesaw = new Adafruit_seesaw(_i2c);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an PCT2075 sensor.
+      @brief    Destructor for a STEMMA soil sensor.
   */
   /*******************************************************************************/
-  ~drvPct2075() {
-    // Called when a PCT2075 component is deleted.
-    delete _pct2075;
-  }
+  ~drvStemmaSoil() { _seesaw = nullptr; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the PCT2075 sensor and begins I2C.
+      @brief    Initializes the soil sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() override {
-    _pct2075 = new Adafruit_PCT2075();
-    return _pct2075->begin((uint8_t)_address, _i2c);
-  }
+  bool begin() override { return _seesaw->begin(_address); }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the PCT2075's current temperature.
+      @brief    Gets the sensor's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -74,12 +71,36 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _pct2075->getTemperature();
+    tempEvent->temperature = _seesaw->getTemp();
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the sensor's current moisture sensor capacitance value.
+      @param    rawEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the temperature was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventRaw(sensors_event_t *rawEvent) {
+    uint16_t touchData = _seesaw->touchRead(0);
+
+    // seesaw->touchRead() will return 65535 on a read error. See more at
+    // https://github.com/adafruit/Adafruit_Seesaw/blob/master/Adafruit_seesaw.cpp
+    if (touchData == 65535) {
+      rawEvent->data[0] = NAN;
+    } else {
+      // TODO: Update this should we add a capacitive moisture type to
+      // adafruit_sensor
+      rawEvent->data[0] = (float)touchData;
+    }
     return true;
   }
 
 protected:
-  Adafruit_PCT2075 *_pct2075; ///< Pointer to PCT2075 temperature sensor object
+  Adafruit_seesaw *_seesaw = nullptr; ///< Seesaw object
 };
 
-#endif // drvPct2075
+#endif // DRV_STEMMA_SOIL_H
