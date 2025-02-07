@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_FS_V2.cpp
+ * @file Wippersnapper_FS.cpp
  *
  * Wippersnapper TinyUSB Filesystem Driver
  *
@@ -29,7 +29,7 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) || \
     defined(ARDUINO_RASPBERRY_PI_PICO) || \
     defined(ARDUINO_RASPBERRY_PI_PICO_2)
-#include "Wippersnapper_FS_V2.h"
+#include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
 // - EXTERNAL_FLASH_USE_QSPI
@@ -94,7 +94,7 @@ FRESULT format_fs_fat12(void) {
     @brief    Initializes USB-MSC and the QSPI flash filesystem.
 */
 /**************************************************************************/
-Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
+Wippersnapper_FS::Wippersnapper_FS() {
   // Detach USB device during init.
   TinyUSBDevice.detach();
   // Wait for detach
@@ -158,7 +158,7 @@ Wippersnapper_FS_V2::Wippersnapper_FS_V2() {
     @brief    Filesystem destructor
 */
 /************************************************************/
-Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {
+Wippersnapper_FS::~Wippersnapper_FS() {
   // Unmount filesystem
   wipperFatFs_v2.end();
 }
@@ -169,7 +169,7 @@ Wippersnapper_FS_V2::~Wippersnapper_FS_V2() {
               config.json file.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::GetSDCSPin() { 
+void Wippersnapper_FS::GetSDCSPin() { 
   File32 file_cfg;
   DeserializationError error;
   // Attempt to open and deserialize the config.json file
@@ -230,7 +230,7 @@ bool disableMacOSIndexing() {
     @return   True if filesystem initialized correctly, false otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_FS_V2::writeFSContents() {
+bool Wippersnapper_FS::writeFSContents() {
   // If CircuitPython was previously installed - erase CircuitPython's default
   // filesystem
   eraseCPFS();
@@ -260,7 +260,7 @@ bool Wippersnapper_FS_V2::writeFSContents() {
     @brief    Initializes the USB MSC device.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::initUSBMSC() {
+void Wippersnapper_FS::initUSBMSC() {
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
   usb_msc_v2.setID("Adafruit", "External Flash", "1.0");
@@ -290,7 +290,7 @@ void Wippersnapper_FS_V2::initUSBMSC() {
     @returns  True if secrets.json file exists, False otherwise.
 */
 /**************************************************************************/
-bool Wippersnapper_FS_V2::getSecretsFile() {
+bool Wippersnapper_FS::getSecretsFile() {
   // Does secrets.json file exist?
   return wipperFatFs_v2.exists("/secrets.json");
 }
@@ -300,7 +300,7 @@ bool Wippersnapper_FS_V2::getSecretsFile() {
     @brief    Erases the default CircuitPython filesystem if it exists.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::eraseCPFS() {
+void Wippersnapper_FS::eraseCPFS() {
   if (wipperFatFs_v2.exists("/boot_out.txt")) {
     wipperFatFs_v2.remove("/boot_out.txt");
     wipperFatFs_v2.remove("/code.py");
@@ -314,7 +314,7 @@ void Wippersnapper_FS_V2::eraseCPFS() {
     @brief    Erases the existing "wipper_boot_out.txt" file from the FS.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::eraseBootFile() {
+void Wippersnapper_FS::eraseBootFile() {
   // overwrite previous boot_out file on each boot
   if (wipperFatFs_v2.exists("/wipper_boot_out.txt"))
     wipperFatFs_v2.remove("/wipper_boot_out.txt");
@@ -325,7 +325,7 @@ void Wippersnapper_FS_V2::eraseBootFile() {
     @brief    Creates or overwrites `wipper_boot_out.txt` file to FS.
 */
 /**************************************************************************/
-bool Wippersnapper_FS_V2::createBootFile() {
+bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   char sMAC[18] = {0};
 
@@ -369,7 +369,7 @@ bool Wippersnapper_FS_V2::createBootFile() {
     @brief    Creates a default secrets.json file on the filesystem.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::createSecretsFile() {
+void Wippersnapper_FS::createSecretsFile() {
   // Open file for writing
   File32 secretsFile = wipperFatFs_v2.open("/secrets.json", FILE_WRITE);
 
@@ -399,7 +399,7 @@ void Wippersnapper_FS_V2::createSecretsFile() {
     @brief    Parses a secrets.json file on the flash filesystem.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::parseSecrets() {
+void Wippersnapper_FS::parseSecrets() {
   // Attempt to open the secrets.json file for reading
   File32 secretsFile = wipperFatFs_v2.open("/secrets.json");
   if (!secretsFile) {
@@ -516,7 +516,7 @@ void Wippersnapper_FS_V2::parseSecrets() {
                 PROGMEM string.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::writeToBootOut(PGM_P str) {
+void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
   File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
   if (!bootFile)
@@ -533,7 +533,7 @@ void Wippersnapper_FS_V2::writeToBootOut(PGM_P str) {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::fsHalt(String msg) {
+void Wippersnapper_FS::fsHalt(String msg) {
   TinyUSBDevice.attach();
   delay(500);
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
@@ -551,7 +551,7 @@ void Wippersnapper_FS_V2::fsHalt(String msg) {
     @brief    Creates a default display_config.json file on the filesystem.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::createDisplayConfig() {
+void Wippersnapper_FS::createDisplayConfig() {
   // Open file for writing
   File32 displayFile = wipperFatFs_v2.open("/display_config.json", FILE_WRITE);
 
@@ -587,7 +587,7 @@ void Wippersnapper_FS_V2::createDisplayConfig() {
                 displayConfig struct to populate.
 */
 /**************************************************************************/
-void Wippersnapper_FS_V2::parseDisplayConfig(displayConfig &dispCfg) {
+void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   // Check if display_config.json file exists, if not, generate it
   if (!wipperFatFs_v2.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");

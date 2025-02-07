@@ -26,10 +26,10 @@ class Wippersnapper_V2;
     @brief  Class that handles WipperSnapper's LittleFS filesystem.
 */
 /***************************************************************************/
-class WipperSnapper_LittleFS_V2 {
+class WipperSnapper_LittleFS {
 public:
-  WipperSnapper_LittleFS_V2();
-  ~WipperSnapper_LittleFS_V2();
+  WipperSnapper_LittleFS();
+  ~WipperSnapper_LittleFS();
   void parseSecrets();
   void fsHalt(String msg,
               ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);

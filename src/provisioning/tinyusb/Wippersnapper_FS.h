@@ -39,10 +39,10 @@ void qspi_msc_flush_cb_v2(void);
                 and storage.
 */
 /***************************************************************************/
-class Wippersnapper_FS_V2 {
+class Wippersnapper_FS {
 public:
-  Wippersnapper_FS_V2();
-  ~Wippersnapper_FS_V2();
+  Wippersnapper_FS();
+  ~Wippersnapper_FS();
 
   void initUSBMSC();
 

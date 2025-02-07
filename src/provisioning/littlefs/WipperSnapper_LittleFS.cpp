@@ -19,7 +19,7 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32_DEV) ||    \
     defined(ESP32_DEV)
-#include "WipperSnapper_LittleFS_V2.h"
+#include "WipperSnapper_LittleFS.h"
 
 /**************************************************************************/
 /*!
@@ -27,7 +27,7 @@
               filesystem.
 */
 /**************************************************************************/
-WipperSnapper_LittleFS_V2::WipperSnapper_LittleFS_V2() {
+WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
     fsHalt("ERROR: Failure initializing LittleFS!",
@@ -40,7 +40,7 @@ WipperSnapper_LittleFS_V2::WipperSnapper_LittleFS_V2() {
     @brief    Destructor for LittleFS
 */
 /**************************************************************************/
-WipperSnapper_LittleFS_V2::~WipperSnapper_LittleFS_V2() { LittleFS.end(); }
+WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
 
 /**************************************************************************/
 /*!
@@ -48,7 +48,7 @@ WipperSnapper_LittleFS_V2::~WipperSnapper_LittleFS_V2() { LittleFS.end(); }
               on the LittleFS filesystem.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS_V2::parseSecrets() {
+void WipperSnapper_LittleFS::parseSecrets() {
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
     fsHalt("ERROR: No secrets.json found on filesystem - did you upload "
@@ -144,7 +144,7 @@ void WipperSnapper_LittleFS_V2::parseSecrets() {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS_V2::fsHalt(String msg,
+void WipperSnapper_LittleFS::fsHalt(String msg,
                                        ws_led_status_t status_state) {
   statusLEDSolid(status_state);
   while (1) {
@@ -161,7 +161,7 @@ void WipperSnapper_LittleFS_V2::fsHalt(String msg,
               config.json file.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS_V2::GetSDCSPin() {
+void WipperSnapper_LittleFS::GetSDCSPin() {
   // Attempt to open and deserialize the config.json file
   File file_cfg = LittleFS.open("/config.json");
   if (!file_cfg)

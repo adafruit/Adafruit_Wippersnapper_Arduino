@@ -95,14 +95,6 @@
 #include "components/i2c/controller.h"
 #include "components/sensor/model.h"
 
-// Components (API v1)
-// #include "components/pixels/ws_pixels.h"
-// #include "components/pwm/ws_pwm.h"
-// #include "components/servo/ws_servo.h"
-// #include "components/uart/ws_uart.h"
-// #ifdef ARDUINO_ARCH_ESP32
-// #include "components/ledc/ws_ledc.h"
-// #endif
 // Display
 #ifdef USE_DISPLAY
 #include "display/ws_display_driver.h"
@@ -112,14 +104,14 @@
 #include "provisioning/ConfigJson.h"
 #include "provisioning/sdcard/ws_sdcard.h"
 #if defined(USE_TINYUSB)
-#include "provisioning/tinyusb/Wippersnapper_FS_V2.h"
+#include "provisioning/tinyusb/Wippersnapper_FS.h"
 #endif
 #if defined(USE_LITTLEFS)
-#include "provisioning/littlefs/WipperSnapper_LittleFS_V2.h"
+#include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.1" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-alpha.1" ///< WipperSnapper app. version (semver-formatted)
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
@@ -130,8 +122,8 @@
 
 
 // Forward declarations (API v1)
-class Wippersnapper_FS_V2;
-class WipperSnapper_LittleFS_V2;
+class Wippersnapper_FS;
+class WipperSnapper_LittleFS;
 class ws_sdcard;
 #ifdef USE_DISPLAY
 class ws_display_driver;
@@ -229,8 +221,8 @@ public:
 
   // TODO: We really should look at making these static definitions, not dynamic
   // to free up space on the heap
-  Wippersnapper_FS_V2 *_fileSystemV2;  ///< Instance of Filesystem (native USB)
-  WipperSnapper_LittleFS_V2
+  Wippersnapper_FS *_fileSystemV2;  ///< Instance of Filesystem (native USB)
+  WipperSnapper_LittleFS
       *_littleFSV2;     ///< Instance of LittleFS Filesystem (non-native USB)
   ws_sdcard *_sdCardV2; ///< Instance of SD card class
 #ifdef USE_DISPLAY
