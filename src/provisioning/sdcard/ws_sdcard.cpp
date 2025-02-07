@@ -219,16 +219,38 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
 /**************************************************************************/
 wippersnapper_sensor_SensorType
 ws_sdcard::ParseSensorType(const char *sensor_type) {
-  if (strcmp(sensor_type, "PIN_VALUE") == 0) {
+  if (strcmp(sensor_type, "raw") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
-  } else if (strcmp(sensor_type, "VOLTAGE") == 0) {
+  } else if (strcmp(sensor_type, "voltage") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+  } else if (strcmp(sensor_type, "current") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT;
   } else if (strcmp(sensor_type, "object-temp-fahrenheit") == 0) {
     WS_DEBUG_PRINTLN("Found object-temp-fahrenheit");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT;
   } else if (strcmp(sensor_type, "object-temp") == 0) {
     WS_DEBUG_PRINTLN("Found object-temp");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
+  } else if (strcmp(sensor_type, "ambient-temp") == 0) {
+    WS_DEBUG_PRINTLN("Found ambient temp");
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+  } else if (strcmp(sensor_type, "ambient-temp-fahrenheit") == 0) {
+    WS_DEBUG_PRINTLN("Found ambient temp fahrenheit");
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+  } else if (strcmp(sensor_type, "accelerometer") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER;
+  } else if (strcmp(sensor_type, "magnetic-field") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD;
+  } else if (strcmp(sensor_type, "orientation") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION;
+  } else if (strcmp(sensor_type, "gyroscope") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE;
+  } else if (strcmp(sensor_type, "gravity") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY;
+  } else if (strcmp(sensor_type, "linear-acceleration") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION;
+  } else if (strcmp(sensor_type, "rotation-vector") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR;
   } else if (strcmp(sensor_type, "altitude") == 0) {
     WS_DEBUG_PRINTLN("Found altitude");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE;
@@ -238,11 +260,46 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   } else if (strcmp(sensor_type, "pressure") == 0) {
     WS_DEBUG_PRINTLN("Found pressure");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
-  } else if (strcmp(sensor_type, "ambient-temp") == 0) {
-    WS_DEBUG_PRINTLN("Found ambient temp");
-    return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+  } else if (strcmp(sensor_type, "light") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT;
+  } else if (strcmp(sensor_type, "lux") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX;
+  } else if (strcmp(sensor_type, "proximity") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY;
+  } else if (strcmp(sensor_type, "pm10-std") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD;
+  } else if (strcmp(sensor_type, "pm25-std") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD;
+  } else if (strcmp(sensor_type, "pm100-std") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD;
+  } else if (strcmp(sensor_type, "pm10-env") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV;
+  } else if (strcmp(sensor_type, "pm25-env") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV;
+  } else if (strcmp(sensor_type, "pm100-env") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV;
+  } else if (strcmp(sensor_type, "co2") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2;
+  } else if (strcmp(sensor_type, "eco2") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2;
+  } else if (strcmp(sensor_type, "gas-resistance") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE;
+  } else if (strcmp(sensor_type, "voc-index") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX;
+  } else if (strcmp(sensor_type, "nox-index") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX;
+  } else if (strcmp(sensor_type, "tvoc") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC;
+  } else if (strcmp(sensor_type, "color") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR;
+  } else if (strcmp(sensor_type, "unitless-percent") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT;
+  } else if (strcmp(sensor_type, "bytes") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES;
+  } else if (strcmp(sensor_type, "boolean") == 0) {
+    return wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN;
   } else {
-    WS_DEBUG_PRINT("Found unspecified sensortype - ");
+    WS_DEBUG_PRINT("[SD] ERROR: Found unspecified SensorType - ");
     WS_DEBUG_PRINTLN(sensor_type);
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED;
   }
