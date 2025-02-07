@@ -55,8 +55,8 @@
 // Cpp STD
 #include <functional>
 #include <map>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // Nanopb dependencies
@@ -119,9 +119,7 @@
 #define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
 
-
-
-// Forward declarations (API v1)
+// Forward declarations
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
 class ws_sdcard;
@@ -129,16 +127,6 @@ class ws_sdcard;
 class ws_display_driver;
 class ws_display_ui_helper;
 #endif
-// #ifdef ARDUINO_ARCH_ESP32
-//class ws_ledc;
-// #endif
-class WipperSnapper_Component_I2C;
-// class ws_servo;
-// class ws_pwm;
-// class ws_pixels;
-// class ws_uart;
-
-// Forward declarations (API v2)
 class CheckinModel;
 class SensorModel;
 class DigitalIOController;
@@ -206,6 +194,7 @@ public:
   // WDT helpers
   void enableWDTV2(int timeoutMS = 0);
   void feedWDTV2();
+  void BlinkKATStatus();
 
   // Error handling helpers
   void
@@ -221,7 +210,7 @@ public:
 
   // TODO: We really should look at making these static definitions, not dynamic
   // to free up space on the heap
-  Wippersnapper_FS *_fileSystemV2;  ///< Instance of Filesystem (native USB)
+  Wippersnapper_FS *_fileSystemV2; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFSV2;     ///< Instance of LittleFS Filesystem (non-native USB)
   ws_sdcard *_sdCardV2; ///< Instance of SD card class
@@ -265,10 +254,10 @@ public:
   int throttleTimeV2;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
 
-// enable LEDC if esp32
-//#ifdef ARDUINO_ARCH_ESP32
-  //ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
-//#endif
+  // enable LEDC if esp32
+  // #ifdef ARDUINO_ARCH_ESP32
+  // ws_ledc *_ledcV2 = nullptr; ///< Pointer to LEDC object
+  // #endif
   bool got_checkin_response; ///< True if a checkin response was received, False
                              ///< otherwise.
   std::vector<std::vector<uint8_t>>
@@ -302,7 +291,6 @@ protected:
   // Device information
   const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
   char *_device_uidV2;     /*!< Unique device identifier  */
-
 };
 extern Wippersnapper_V2 WsV2; ///< Global member variable for callbacks
 

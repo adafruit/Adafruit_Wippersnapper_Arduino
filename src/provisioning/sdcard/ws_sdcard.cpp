@@ -26,7 +26,7 @@ ws_sdcard::ws_sdcard()
   _sz_cur_log_file = 0;
 
   if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
-    is_mode_offline = false;
+    return;
 
   if (!_sd.begin(_sd_spi_cfg)) {
     WS_DEBUG_PRINTLN(
@@ -34,11 +34,12 @@ ws_sdcard::ws_sdcard()
         "card!\nIs the card "
         "correctly inserted?\nIs there a wiring/soldering problem\n");
     is_mode_offline = false;
-  } else {
-    // Card initialized - calculate file limits
-    is_mode_offline = true;
-    calculateFileLimits();
+    return;
   }
+  // Card initialized - calculate file limits
+  is_mode_offline = true;
+  calculateFileLimits();
+
 }
 
 /**************************************************************************/

@@ -46,25 +46,6 @@ Wippersnapper_V2::Wippersnapper_V2() {
   _subscribeError = 0;
   _subscribeThrottle = 0;
 
-  // Init. component classes
-  // LEDC (ESP32-ONLY)
-/* #ifdef ARDUINO_ARCH_ESP32
-  WsV2._ledcV2 = new ws_ledc();
-#endif */
-
-  // PWM (Arch-specific implementations)
-/* #ifdef ARDUINO_ARCH_ESP32
-  WsV2._pwmComponentV2 = new ws_pwm(WsV2._ledcV2);
-#else
-  WsV2._pwmComponentV2 = new ws_pwm();
-#endif */
-
-  // Servo
-  // WsV2._servoComponentV2 = new ws_servo();
-
-  // UART
-  //WsV2._uartComponentV2 = new ws_uart();
-
   // Initialize model classes
   WsV2.sensorModel = new SensorModel();
 
@@ -104,7 +85,6 @@ void Wippersnapper_V2::provision() {
 
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
-  WS_DEBUG_PRINTLN("Getting SD CS Pin...");
   _fileSystemV2->GetSDCSPin();
 #elif defined(USE_LITTLEFS)
   _littleFSV2->GetSDCSPin();
@@ -113,8 +93,14 @@ void Wippersnapper_V2::provision() {
 #endif
   WsV2._sdCardV2 = new ws_sdcard();
   if (WsV2._sdCardV2->isSDCardInitialized()) {
-    WS_DEBUG_PRINTLN("SD Card Initialized!");
-    return;
+    return; // SD card initialized, cede control back to loop()
+  } else {
+#ifdef BUILD_OFFLINE_ONLY
+    haltErrorV2("SD initialization failed.\nDo not reformat the card!\nIs the "
+                "card correctly inserted?\nIs there a wiring/soldering "
+                "problem\nIs the config.json file malformed?");
+#endif
+    // SD card not initialized, so just continue with online-mode provisioning
   }
 
 #ifdef USE_DISPLAY
@@ -144,7 +130,7 @@ void Wippersnapper_V2::provision() {
   _littleFSV2->parseSecrets();
 #else
   check_valid_ssid(); // non-fs-backed, sets global credentials within network
-                        // iface
+                      // iface
 #endif
   // Set the status pixel's brightness
   setStatusLEDBrightness(WsV2._configV2.status_pixel_brightness);
@@ -243,7 +229,7 @@ ws_status_t Wippersnapper_V2::networkStatus() {
 */
 /****************************************************************************/
 void Wippersnapper_V2::set_ssid_pass(const char * /*ssid*/,
-                                       const char * /*ssidPassword*/) {
+                                     const char * /*ssidPassword*/) {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
@@ -455,29 +441,26 @@ void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
 }
 
+/**************************************************************************/
+/*!
+    @brief    Decodes and parses a buffer containing configuration
+              messages from the SD card.
+*/
+/**************************************************************************/
 void callDecodeB2D() {
-  WS_DEBUG_PRINTLN("\n[App] Parsing Offline Configuration Messages...");
-  WS_DEBUG_PRINT("[debug] Total Messages: ");
-  WS_DEBUG_PRINTLN(WsV2._sharedConfigBuffers.size());
-
   for (size_t i = 0; i < WsV2._sharedConfigBuffers.size(); i++) {
     wippersnapper_signal_BrokerToDevice msg_signal =
         wippersnapper_signal_BrokerToDevice_init_default;
     // Configure the payload callback
     msg_signal.cb_payload.funcs.decode = cbDecodeBrokerToDevice;
-    // TDOO: This can be cleaned up, get the buffer
     const std::vector<uint8_t> &buffer = WsV2._sharedConfigBuffers[i];
-    WS_DEBUG_PRINTLN("Creating istream...");
     pb_istream_t istream = pb_istream_from_buffer(buffer.data(), buffer.size());
     // Decode the message
-    WS_DEBUG_PRINT("Decoding BrokerToDevice message #");
-    WS_DEBUG_PRINTLN(i);
     if (!pb_decode(&istream, wippersnapper_signal_BrokerToDevice_fields,
                    &msg_signal)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to decode BrokerToDevice message!");
       continue; // Skip this message and move on!
     }
-    WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
   }
 }
 
@@ -1091,8 +1074,14 @@ void Wippersnapper_V2::pingBrokerV2() {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
     if (WsV2._mqttV2->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
+      #ifdef USE_DISPLAY
+      WsV2._ui_helper->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
+      #endif
     } else {
       WS_DEBUG_PRINTLN("FAILURE! Running network FSM...");
+      #ifdef USE_DISPLAY
+      WsV2._ui_helper->add_text_to_terminal("[NET] EROR: Failed to send KeepAlive ping!\n");
+      #endif
       WsV2._mqttV2->disconnect();
       runNetFSMV2();
     }
@@ -1100,12 +1089,18 @@ void Wippersnapper_V2::pingBrokerV2() {
     WS_DEBUG_PRINT("WiFi RSSI: ");
     WS_DEBUG_PRINTLN(getRSSI());
   }
-  // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
+  // Blink the status LED to indicate that the device is still alive
+  BlinkKATStatus();
+}
+
+/**************************************************************************/
+/*!
+    @brief  Blinks the status LED every STATUS_LED_KAT_BLINK_TIME
+            milliseconds to indicate that the device is still alive.
+*/
+/**************************************************************************/
+void Wippersnapper_V2::BlinkKATStatus() {
   if (millis() > (_prvKATBlinkV2 + STATUS_LED_KAT_BLINK_TIME)) {
-    WS_DEBUG_PRINTLN("STATUS LED BLINK KAT");
-#ifdef USE_DISPLAY
-    WsV2._ui_helper->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
-#endif
     statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlinkV2 = millis();
   }
@@ -1220,13 +1215,11 @@ void Wippersnapper_V2::connect() {
 #endif
     // Parse the JSON file
     if (!WsV2._sdCardV2->parseConfigFile())
-      haltErrorV2("Failed to parse incoming JSON file");
+      haltErrorV2("Failed to parse config.json!");
     WS_DEBUG_PRINTLN("[Offline] Attempting to configure hardware...");
 #ifndef OFFLINE_MODE_DEBUG
-    // Create a new file to store the json log
-    if (!WsV2._sdCardV2->CreateNewLogFile()) {
-      haltErrorV2("Unable to create log file");
-    }
+    if (!WsV2._sdCardV2->CreateNewLogFile())
+      haltErrorV2("Unable to create new .log file on SD card!");
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
@@ -1234,7 +1227,7 @@ void Wippersnapper_V2::connect() {
                      "and running app...");
     // Set the status LED to green to indicate successful configuration
     setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
-    delay(100);
+    delay(1000);
     // Set the status LED to off during app runtime
     setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2);
     return;
@@ -1302,6 +1295,8 @@ ws_status_t Wippersnapper_V2::run() {
     pingBrokerV2();
     // Process all incoming packets from Wippersnapper_V2 MQTT Broker
     WsV2._mqttV2->processPackets(10);
+  } else {
+    BlinkKATStatus(); // Offline Mode - Blink every KAT interval
   }
 
   // Process all digital events

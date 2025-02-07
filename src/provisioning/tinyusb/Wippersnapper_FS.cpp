@@ -189,10 +189,6 @@ void Wippersnapper_FS::GetSDCSPin() {
   // Parse config.json and save the SD CS pin
   JsonObject exportedFromDevice = WsV2._config_doc["exportedFromDevice"];
   WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
-  if (WsV2.pin_sd_cs == 255) {
-    file_cfg.close();
-    fsHalt("ERROR: Could not find required sd_cs_pin in config.json!");
-  }
   file_cfg.close();
 }
 
@@ -544,6 +540,25 @@ void Wippersnapper_FS::fsHalt(String msg) {
     yield();
   }
 }
+
+/**************************************************************************/
+/*!
+    @brief    Halts execution and blinks the status LEDs yellow.
+    @param    msg
+                Error message to print to serial console.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
+    TinyUSBDevice.attach();
+    delay(500);
+    statusLEDSolid(ledStatusColor);
+    while (1) {
+      WS_DEBUG_PRINT("Execution Halted: ");
+      WS_DEBUG_PRINTLN(msg.c_str());
+      delay(5000);
+      yield();
+    }
+  }
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 /**************************************************************************/
