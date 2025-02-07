@@ -1225,11 +1225,10 @@ void Wippersnapper_V2::connect() {
     callDecodeB2D();
     WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
                      "and running app...");
-    // Set the status LED to green to indicate successful configuration
-    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
-    delay(1000);
-    // Set the status LED to off during app runtime
-    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2);
+    // Blink status LED to green to indicate successful configuration
+    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2 * 255.0);
+    delay(500);
+    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2 * 255.0);
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");

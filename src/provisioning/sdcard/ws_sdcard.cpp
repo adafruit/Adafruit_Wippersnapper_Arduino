@@ -24,6 +24,7 @@ ws_sdcard::ws_sdcard()
   is_mode_offline = false;
   _use_test_data = false;
   _sz_cur_log_file = 0;
+  _sd_cur_log_files = 0;
 
   if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
     return;
@@ -639,6 +640,9 @@ bool ws_sdcard::parseConfigFile() {
   CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
           exportedFromDevice["totalAnalogPins"] | 0,
           exportedFromDevice["referenceVoltage"] | 0.0);
+  WS_DEBUG_PRINT("status LED brightness: ");
+  int exportedFromDevice_statusLEDBrightness = exportedFromDevice["statusLEDBrightness"];
+  WS_DEBUG_PRINTLN(exportedFromDevice_statusLEDBrightness);
   setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
 
  WS_DEBUG_PRINTLN("Configuring RTC...");
@@ -647,7 +651,6 @@ bool ws_sdcard::parseConfigFile() {
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
   WS_DEBUG_PRINT("RTC Type: ");
   WS_DEBUG_PRINTLN(json_rtc);
-   // TODO: PCF8523 won't init the RTC here! NEEDFIX
    if (!ConfigureRTC(json_rtc)) {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;

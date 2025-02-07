@@ -493,6 +493,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[i2c] Creating a new MUX driver obj");
     if (use_alt_bus) {
       if (!_i2c_bus_alt->HasMux()) {
+        WS_DEBUG_PRINT("[i2c] Adding MUX to alternate bus...");
         _i2c_bus_alt->AddMuxToBus(device_descriptor.i2c_mux_address,
                                   device_name);
       } else {
