@@ -55,9 +55,8 @@
 // Cpp STD
 #include <functional>
 #include <map>
-#include <string>
-#include <unordered_map>
 #include <vector>
+#include <string>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>

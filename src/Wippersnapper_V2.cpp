@@ -1074,14 +1074,15 @@ void Wippersnapper_V2::pingBrokerV2() {
     WS_DEBUG_PRINT("Sending MQTT PING: ");
     if (WsV2._mqttV2->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
-      #ifdef USE_DISPLAY
+#ifdef USE_DISPLAY
       WsV2._ui_helper->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
-      #endif
+#endif
     } else {
       WS_DEBUG_PRINTLN("FAILURE! Running network FSM...");
-      #ifdef USE_DISPLAY
-      WsV2._ui_helper->add_text_to_terminal("[NET] EROR: Failed to send KeepAlive ping!\n");
-      #endif
+#ifdef USE_DISPLAY
+      WsV2._ui_helper->add_text_to_terminal(
+          "[NET] EROR: Failed to send KeepAlive ping!\n");
+#endif
       WsV2._mqttV2->disconnect();
       runNetFSMV2();
     }

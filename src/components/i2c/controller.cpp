@@ -19,7 +19,7 @@ using FnCreateI2CDriver =
     std::function<drvBase *(TwoWire *, uint16_t, uint32_t, const char *)>;
 
 // Map of sensor names to lambda functions that create an I2C device driver
-static const std::unordered_map<std::string, FnCreateI2CDriver> I2cFactory = {
+static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
     {"bme280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -504,7 +504,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         WS_DEBUG_PRINT("[i2c] Adding MUX to default bus...");
         _i2c_bus_default->AddMuxToBus(device_descriptor.i2c_mux_address,
                                       device_name);
-        WS_DEBUG_PRINTLN("added!");
       } else {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Mux specified but not created");
       }
