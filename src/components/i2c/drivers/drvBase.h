@@ -229,7 +229,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventCO2(sensors_event_t *co2Event) { return false; };
+  virtual bool getEventCO2(sensors_event_t *co2Event) { return false; };
 
   /*******************************************************************************/
   /*!
@@ -240,7 +240,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventECO2(sensors_event_t *eco2Event) { return false; }
+  virtual bool getEventECO2(sensors_event_t *eco2Event) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -251,7 +251,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventTVOC(sensors_event_t *tvocEvent) { return false; }
+  virtual bool getEventTVOC(sensors_event_t *tvocEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -263,7 +263,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
+  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -275,7 +275,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventRelativeHumidity(sensors_event_t *humidEvent) {
+  virtual bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     return false;
   }
 
@@ -289,7 +289,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPressure(sensors_event_t *pressureEvent) {
+  virtual bool getEventPressure(sensors_event_t *pressureEvent) {
     return false;
   }
 
@@ -303,7 +303,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventAltitude(sensors_event_t *altitudeEvent) {
+  virtual bool getEventAltitude(sensors_event_t *altitudeEvent) {
     return false;
   }
 
@@ -317,7 +317,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventObjectTemp(sensors_event_t *objectTempEvent) {
+  virtual bool getEventObjectTemp(sensors_event_t *objectTempEvent) {
     return false;
   }
 
@@ -333,7 +333,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventLight(sensors_event_t *lightEvent) { return false; }
+  virtual bool getEventLight(sensors_event_t *lightEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -345,7 +345,19 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
+  virtual bool getEventPM10_STD(sensors_event_t *pm10StdEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm10 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm10EnvEvent
+                pm10 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM10_Env(sensors_event_t *pm10EnvEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -357,7 +369,19 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPM25_STD(sensors_event_t *pm25StdEvent) { return false; }
+  virtual bool getEventPM25_STD(sensors_event_t *pm25StdEvent) { return false; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm25 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm25EnvEvent
+                pm25 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM25_Env(sensors_event_t *pm25EnvEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -369,7 +393,21 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventPM100_STD(sensors_event_t *pm100StdEvent) {
+  virtual bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
+    return false;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Reads a object pm100 env. sensor and
+                converts the reading into the expected SI unit.
+      @param    pm100EnvEvent
+                pm100 env. sensor reading, in ppm.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  virtual bool getEventPM100_Env(sensors_event_t *pm100EnvEvent) {
     return false;
   }
 
@@ -383,7 +421,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
+  virtual bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
     return false;
   }
 
@@ -397,7 +435,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventVoltage(sensors_event_t *voltageEvent) { return false; }
+  virtual bool getEventVoltage(sensors_event_t *voltageEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -409,7 +447,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventCurrent(sensors_event_t *currentEvent) { return false; }
+  virtual bool getEventCurrent(sensors_event_t *currentEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -420,12 +458,12 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventRaw(sensors_event_t *rawEvent) { return false; }
+  virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
 
   /*******************************************************************************/
   /*!
       @brief    Helper function to obtain a sensor's ambient temperature value
-                in °F. Requires `GetEventAmbientTemp()` to be fully
+                in °F. Requires `getEventAmbientTemp()` to be fully
                 implemented by a driver.
       @param    AmbientTempFEvent
                 The ambient temperature value, in °F.
@@ -433,9 +471,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
+  virtual bool getEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
     // obtain ambient temp. in °C
-    if (!GetEventAmbientTemp(AmbientTempFEvent))
+    if (!getEventAmbientTemp(AmbientTempFEvent))
       return false;
     // convert event from °C to °F
     AmbientTempFEvent->temperature =
@@ -446,7 +484,7 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Helper function to obtain a sensor's object temperature value
-                in °F. Requires `GetEventObjectTemp()` to be fully
+                in °F. Requires `getEventObjectTemp()` to be fully
                 implemented by a driver.
       @param    objectTempFEvent
                 The object temperature value, in °F.
@@ -454,9 +492,9 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventObjectTempF(sensors_event_t *objectTempFEvent) {
+  virtual bool getEventObjectTempF(sensors_event_t *objectTempFEvent) {
     // obtain ambient temp. in °C
-    if (!GetEventObjectTemp(objectTempFEvent))
+    if (!getEventObjectTemp(objectTempFEvent))
       return false;
     // convert event from °C to °F
     objectTempFEvent->temperature =
@@ -477,7 +515,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventGasResistance(sensors_event_t *gasEvent) {
+  virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
     return false;
   }
 
@@ -491,7 +529,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventNOxIndex(sensors_event_t *gasEvent) { return false; }
+  virtual bool getEventNOxIndex(sensors_event_t *gasEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -503,7 +541,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventVOCIndex(sensors_event_t *gasEvent) { return false; }
+  virtual bool getEventVOCIndex(sensors_event_t *gasEvent) { return false; }
 
   /*******************************************************************************/
   /*!
@@ -515,7 +553,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  virtual bool GetEventProximity(sensors_event_t *proximityEvent) {
+  virtual bool getEventProximity(sensors_event_t *proximityEvent) {
     return false;
   }
 
@@ -533,27 +571,110 @@ public:
 
   // Maps SensorType to function calls
   std::map<wippersnapper_sensor_SensorType, fnGetEvent> SensorEventHandlers = {
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED,
        [this](sensors_event_t *event) -> bool {
-         return this->GetEventAmbientTemp(event);
+         return this->getEventRaw(event);
        }},
-      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT,
        [this](sensors_event_t *event) -> bool {
-         return this->GetEventAmbientTempF(event);
+         return this->getEventLight(event);
        }},
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE,
        [this](sensors_event_t *event) -> bool {
-         return this->GetEventPressure(event);
+         return this->getEventPressure(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventProximity(event);
        }},
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY,
        [this](sensors_event_t *event) -> bool {
-         return this->GetEventRelativeHumidity(event);
+         return this->getEventRelativeHumidity(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventAmbientTemp(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventObjectTemp(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventVoltage(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventCurrent(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventRaw(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM10_STD(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM25_STD(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM100_STD(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM10_Env(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM25_Env(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventPM100_Env(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventCO2(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventGasResistance(event);
        }},
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE,
        [this](sensors_event_t *event) -> bool {
-         return this->GetEventAltitude(event);
+         return this->getEventAltitude(event);
        }},
-  };
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventECO2(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventUnitlessPercent(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventAmbientTempF(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventObjectTempF(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventVOCIndex(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventNOxIndex(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventTVOC(event);
+       }}};
 
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< Sensors attached to the device.

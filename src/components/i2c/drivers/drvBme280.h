@@ -93,7 +93,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool GetEventAmbientTemp(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     return _bme_temp->getEvent(tempEvent);
   }
 
@@ -106,7 +106,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool GetEventRelativeHumidity(sensors_event_t *humidEvent) {
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     return _bme_humidity->getEvent(humidEvent);
   }
 
@@ -120,7 +120,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool GetEventPressure(sensors_event_t *pressureEvent) {
+  bool getEventPressure(sensors_event_t *pressureEvent) {
     return _bme_pressure->getEvent(pressureEvent);
   }
 
@@ -133,7 +133,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool GetEventAltitude(sensors_event_t *altitudeEvent) {
+  bool getEventAltitude(sensors_event_t *altitudeEvent) {
     altitudeEvent->altitude = _bme->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
