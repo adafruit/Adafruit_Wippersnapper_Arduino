@@ -17,6 +17,7 @@
 #ifndef DRV_SCD4X_H
 #define DRV_SCD4X_H
 
+#include "Wippersnapper_V2.h"
 #include "drvBase.h"
 #include <SensirionI2CScd4x.h>
 #include <Wire.h>
@@ -38,7 +39,8 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  drvScd4x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvScd4x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+           const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -58,12 +60,16 @@ public:
     _scd->begin(*_i2c);
 
     // stop previously started measurement
-    if (_scd->stopPeriodicMeasurement())
+    if (_scd->stopPeriodicMeasurement()) {
+      WS_DEBUG_PRINTLN("Unable to L63");
       return false;
+    }
 
     // start measurements
-    if (_scd->startPeriodicMeasurement())
+    if (_scd->startPeriodicMeasurement()) {
+      WS_DEBUG_PRINTLN("Unable to L69");
       return false;
+    }
 
     return true;
   }
@@ -82,13 +88,15 @@ public:
 
     // Check if data is ready
     error = _scd->getDataReadyFlag(isDataReady);
-    if (error || !isDataReady)
+    if (error || !isDataReady) {
       return false;
+    }
 
     // Read SCD4x measurement
     error = _scd->readMeasurement(_co2, _temperature, _humidity);
-    if (error || _co2 == 0)
+    if (error || _co2 == 0) {
       return false;
+    }
 
     return true;
   }
@@ -104,9 +112,7 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // read all sensor measurements
-    if (!readSensorMeasurements())
-      return false;
-
+    readSensorMeasurements();
     tempEvent->temperature = _temperature;
     return true;
   }
@@ -122,9 +128,7 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // read all sensor measurements
-    if (!readSensorMeasurements())
-      return false;
-
+    readSensorMeasurements();
     humidEvent->relative_humidity = _humidity;
     return true;
   }
@@ -140,9 +144,7 @@ public:
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
     // read all sensor measurements
-    if (!readSensorMeasurements())
-      return false;
-
+    readSensorMeasurements();
     co2Event->CO2 = (float)_co2;
     return true;
   }
