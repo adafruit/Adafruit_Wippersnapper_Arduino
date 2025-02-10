@@ -15,7 +15,6 @@
 
 #ifndef DRV_BASE_H
 #define DRV_BASE_H
-#include "Wippersnapper_V2.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <protos/i2c.pb.h>
@@ -566,7 +565,6 @@ public:
     return it->second(sensors_event);
   }
 
-  // private:
   //  Lambda function type for all GetEventX() function calls
   using fnGetEvent = std::function<bool(sensors_event_t *)>;
 

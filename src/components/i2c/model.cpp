@@ -217,6 +217,9 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
     value = event->unitless_percent;
     break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
+    value = event->light;
+    break;
   default:
     value = 0.0;
     break;

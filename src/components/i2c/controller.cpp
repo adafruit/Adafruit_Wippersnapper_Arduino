@@ -60,6 +60,11 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
         const char *driver_name) -> drvBase * {
        return new drvBme680(i2c, addr, mux_channel, driver_name);
      }},
+    {"bme688",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvBme680(i2c, addr, mux_channel, driver_name);
+     }},
     {"BMP280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -191,6 +196,11 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
        return new drvPm25(i2c, addr, mux_channel, driver_name);
      }},
     {"scd40",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvScd4x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"scd41",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvScd4x(i2c, addr, mux_channel, driver_name);
@@ -470,7 +480,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   if (strcmp(device_descriptor.i2c_bus_scl, "default") != 0) {
     WS_DEBUG_PRINTLN("[i2c] Non-default I2C bus specified!");
     if (_i2c_bus_alt == nullptr) {
-      WS_DEBUG_PRINT("[i2c] Initializing alternative i2c bus...");
+      WS_DEBUG_PRINTLN("[i2c] Initializing alternative i2c bus...");
       _i2c_bus_alt = new I2cHardware();
       _i2c_bus_alt->InitBus(false, device_descriptor.i2c_bus_sda,
                             device_descriptor.i2c_bus_scl);
@@ -595,6 +605,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver failed to initialize!");
       device_status =
           wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
+      // TODO: In offline mode, turn red and HALT
       if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
         return false;
       return true;
@@ -603,6 +614,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
     device_status =
         wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
+    // TODO: In offline mode, turn red and HALT
     if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
       return false;
     return true;

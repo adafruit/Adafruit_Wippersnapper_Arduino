@@ -15,7 +15,7 @@
 
 #ifndef DRV_DPS310_H
 #define DRV_DPS310_H
-
+#include "Wippersnapper_V2.h"
 #include "drvBase.h"
 #include <Adafruit_DPS310.h>
 
@@ -63,19 +63,26 @@ public:
   bool begin() override {
     // initialize DPS310
     _dps310 = new Adafruit_DPS310();
-    if (!_dps310->begin_I2C((uint8_t)_address, _i2c))
-      return false;
+    if (!_dps310->begin_I2C((uint8_t)_address, _i2c)) {
+        WS_DEBUG_PRINTLN("DPS310 not found");
+        return false;
+    }
 
     // init OK, perform sensor configuration
     _dps310->configureTemperature(DPS310_64HZ, DPS310_64SAMPLES);
     _dps310->configurePressure(DPS310_64HZ, DPS310_64SAMPLES);
     _dps_temp = _dps310->getTemperatureSensor();
-    if (_dps_temp == NULL)
-      return false;
+    if (_dps_temp == NULL) {
+        WS_DEBUG_PRINTLN("Temperature sensor not found");
+        return false;
+    }
     _dps_pressure = _dps310->getPressureSensor();
-    if (_dps_pressure == NULL)
-      return false;
-
+    if (_dps_pressure == NULL) {
+        WS_DEBUG_PRINTLN("Pressure sensor not found");
+        return false;
+    }
+    // Wait for the first reading to complete
+    delay(1000);
     return true;
   }
 
@@ -89,8 +96,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_dps310->temperatureAvailable())
-      return false;
+    if (!_dps310->temperatureAvailable()) {
+        WS_DEBUG_PRINTLN("Temperature not available");
+        return false;
+    }
 
     _dps_temp->getEvent(tempEvent);
     return true;
@@ -106,8 +115,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!_dps310->pressureAvailable())
-      return false;
+    if (!_dps310->pressureAvailable()) {
+        WS_DEBUG_PRINTLN("Pressure not available");
+        return false;
+    }
 
     _dps_pressure->getEvent(pressureEvent);
     return true;
