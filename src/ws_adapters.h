@@ -43,7 +43,7 @@ typedef ws_wifi_ninafw ws_adapter_wifi;
 /**
  * The following are adapters for use without networking functionality.
 */
-#elif defined(RASPBERRY_PI_PICO) || defined(RASPBERRY_PI_PICO_2)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_2) || defined(ARDUINO_RASPBERRY_PI_PICO)
 #include "adapters/offline/ws_offline_pico.h"
 typedef ws_offline_pico ws_adapter_offline;
 #else

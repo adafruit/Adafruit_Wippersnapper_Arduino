@@ -83,11 +83,11 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus->begin(pin_sda, pin_scl);
   _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_RP2040)
-  _i2c = &WIRE;
-  _i2c->begin();
+  _bus = &WIRE;
+  _bus->begin();
 #elif defined(ARDUINO_ARCH_SAM)
-  _i2c = new TwoWire(&PERIPH_WIRE, pin_sda, pin_scl);
-  _i2c->begin();
+  _bus = new TwoWire(&PERIPH_WIRE, pin_sda, pin_scl);
+  _bus->begin();
 #else
 #error "I2C bus implementation not supported by this platform!"
 #endif

@@ -185,11 +185,11 @@ void setStatusLEDColor(uint32_t color) {
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
   digitalWrite(STATUS_LED_PIN, color > 0);
 #else
-  if (color != BLACK)
+/*   if (color != BLACK)
     WsV2._pwmComponent->writeDutyCycle(
         STATUS_LED_PIN, map(WsV2.status_pixel_brightnessV2, 0.0, 1.0, 0, 1023));
   else
-    WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+    WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); */
 #endif
 #endif
 }
@@ -247,9 +247,9 @@ void setStatusLEDColor(uint32_t color, int brightness) {
   if (color != BLACK) {
     // re-map for pixel as a LED
     int pulseWidth = map(brightness, 0, 255, 0, 1023);
-    WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
+    // WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, pulseWidth);
   } else {
-    WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+    // WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
   }
 #endif
 #endif

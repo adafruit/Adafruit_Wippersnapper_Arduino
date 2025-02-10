@@ -605,7 +605,18 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver failed to initialize!");
       device_status =
           wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
-      // TODO: In offline mode, turn red and HALT
+
+      if (WsV2._sdCardV2->isModeOffline()) {
+        WS_DEBUG_PRINTLN("[i2c] Driver failed to initialize!\n\tDid you set "
+                         "the correct value for i2cDeviceName?\n\tDid you set "
+                         "the correct value for"
+                         "i2cDeviceAddress?");
+        while (
+            1) { // Keep the WIPPER drive open to allow user to edit config.json
+          WsV2.feedWDTV2();
+          delay(500);
+        }
+      }
       if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
         return false;
       return true;
@@ -614,7 +625,19 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
     device_status =
         wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
-    // TODO: In offline mode, turn red and HALT
+
+    if (WsV2._sdCardV2->isModeOffline()) {
+      WS_DEBUG_PRINTLN("[i2c] Driver failed to initialize!\n\tDid you set "
+                       "the correct value for i2cDeviceName?\n\tDid you set "
+                       "the correct value for"
+                       "i2cDeviceAddress?");
+      while (
+          1) { // Keep the WIPPER drive open to allow user to edit config.json
+        WsV2.feedWDTV2();
+        delay(500);
+      }
+    }
+
     if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
       return false;
     return true;

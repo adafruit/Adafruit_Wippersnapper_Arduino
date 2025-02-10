@@ -118,6 +118,24 @@ bool ws_sdcard::InitDS3231() {
     _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
   return true;
 }
+/*
+void scanI2C() {
+    byte error, address;
+    int devices = 0;
+    Wire.begin();
+    Serial.println("Scanning I2C bus...");
+    for(address = 1; address < 127; address++) {
+      Wire.beginTransmission(address);
+      error = Wire.endTransmission();
+      if (error == 0) {
+        Serial.print("Device found at address 0x");
+        if (address < 16) Serial.print("0");
+        Serial.println(address, HEX);
+        devices++;
+      }
+    }
+    if (devices == 0) Serial.println("No I2C devices found");
+  } */
 
 /**************************************************************************/
 /*!
@@ -127,9 +145,17 @@ bool ws_sdcard::InitDS3231() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitPCF8523() {
+  // pinMode(PIN_I2C_POWER, INPUT);
+  // delay(1);
+  // bool polarity = digitalRead(PIN_I2C_POWER);
+  // pinMode(PIN_I2C_POWER, OUTPUT);
+  // digitalWrite(PIN_I2C_POWER, !polarity);
+
+  // scanI2C();
+
   _rtc_pcf8523 = new RTC_PCF8523();
   Serial.println("Begin PCF init");
-  if (!_rtc_pcf8523->begin()) {
+  if (!_rtc_pcf8523->begin(&Wire)) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE");
     if (!_rtc_pcf8523->begin(&Wire1)) {
@@ -140,8 +166,10 @@ bool ws_sdcard::InitPCF8523() {
     }
   }
   Serial.println("End PCF init");
-  if (_rtc_pcf8523->lostPower())
+  if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+  _rtc_pcf8523->start();
   return true;
 }
 
@@ -170,16 +198,12 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
   // Initialize the RTC based on the rtc_type
   if (strcmp(rtc_type, "DS1307") == 0) {
     did_init = InitDS1307();
-    WS_DEBUG_PRINTLN("[SD] Enabled DS1307 RTC");
   } else if (strcmp(rtc_type, "DS3231") == 0) {
     did_init = InitDS3231();
-    WS_DEBUG_PRINTLN("[SD] Enabled DS3231 RTC");
   } else if (strcmp(rtc_type, "PCF8523") == 0) {
     did_init = InitPCF8523();
-    WS_DEBUG_PRINTLN("[SD] Enabled PCF8523 RTC");
   } else if (strcmp(rtc_type, "SOFT_RTC") == 0) {
     did_init = InitSoftRTC();
-    WS_DEBUG_PRINTLN("[SD] Enabled software RTC");
   } else {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Unknown RTC type found in JSON string!");
