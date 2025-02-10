@@ -15,7 +15,7 @@
 
 #ifndef DRV_BASE_H
 #define DRV_BASE_H
-
+#include "Wippersnapper_V2.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <protos/i2c.pb.h>
@@ -473,8 +473,9 @@ public:
   /*******************************************************************************/
   virtual bool getEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
     // obtain ambient temp. in °C
-    if (!getEventAmbientTemp(AmbientTempFEvent))
+    if (!getEventAmbientTemp(AmbientTempFEvent)) {
       return false;
+    }
     // convert event from °C to °F
     AmbientTempFEvent->temperature =
         (AmbientTempFEvent->temperature * 9.0) / 5.0 + 32;

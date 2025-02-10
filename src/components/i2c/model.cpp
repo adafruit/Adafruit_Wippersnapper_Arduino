@@ -160,8 +160,17 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
     value = event->temperature;
     break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+    value = event->temperature;
+    break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
     value = event->temperature;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+    value = event->temperature;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
+    value = event->data[0];
     break;
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
     value = event->relative_humidity;

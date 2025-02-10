@@ -208,7 +208,6 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
   WsV2.analogio_controller->SetRefVoltage(ref_voltage);
 }
 
-// TODO: This could be a switch/map/or something mucccch cleaner...
 /**************************************************************************/
 /*!
     @brief  Parses a sensor type from the JSON configuration file.
@@ -226,16 +225,12 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   } else if (strcmp(sensor_type, "current") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT;
   } else if (strcmp(sensor_type, "object-temp-fahrenheit") == 0) {
-    WS_DEBUG_PRINTLN("Found object-temp-fahrenheit");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT;
   } else if (strcmp(sensor_type, "object-temp") == 0) {
-    WS_DEBUG_PRINTLN("Found object-temp");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
   } else if (strcmp(sensor_type, "ambient-temp") == 0) {
-    WS_DEBUG_PRINTLN("Found ambient temp");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
   } else if (strcmp(sensor_type, "ambient-temp-fahrenheit") == 0) {
-    WS_DEBUG_PRINTLN("Found ambient temp fahrenheit");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
   } else if (strcmp(sensor_type, "accelerometer") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER;
@@ -252,13 +247,10 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   } else if (strcmp(sensor_type, "rotation-vector") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR;
   } else if (strcmp(sensor_type, "altitude") == 0) {
-    WS_DEBUG_PRINTLN("Found altitude");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE;
-  } else if (strcmp(sensor_type, "humidity") == 0) {
-    WS_DEBUG_PRINTLN("Found humidity");
+  } else if (strcmp(sensor_type, "relative-humidity") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
   } else if (strcmp(sensor_type, "pressure") == 0) {
-    WS_DEBUG_PRINTLN("Found pressure");
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
   } else if (strcmp(sensor_type, "light") == 0) {
     return wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT;
