@@ -33,20 +33,19 @@ public:
   ~I2cHardware();
   void InitBus(bool is_default, const char *sda = nullptr,
                const char *scl = nullptr);
-  TwoWire *GetBus() { return _bus; }
-  wippersnapper_i2c_I2cBusStatus GetBusStatus() { return _bus_status; }
+  TwoWire *GetBus();
+  wippersnapper_i2c_I2cBusStatus GetBusStatus();
   // MUX
   bool AddMuxToBus(uint32_t address_register, const char *name);
   void SelectMuxChannel(uint32_t channel);
-  bool HasMux() { return _has_mux; }
+  bool HasMux();
   void ClearMuxChannel();
-
 private:
   void TogglePowerPin();
-  wippersnapper_i2c_I2cBusStatus _bus_status;
-  TwoWire *_bus = nullptr;
-  bool _has_mux;
-  uint32_t _mux_address_register;
-  int _mux_max_channels;
+  wippersnapper_i2c_I2cBusStatus _bus_status; ///< I2C bus status
+  TwoWire *_bus = nullptr;                    ///< I2C bus
+  bool _has_mux;                             ///< Is a MUX present on the bus?
+  uint32_t _mux_address_register;           ///< I2C address for the MUX
+  int _mux_max_channels;                   ///< Maximum possible number of MUX channels
 };
 #endif // WS_I2C_HARDWARE_H

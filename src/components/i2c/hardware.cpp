@@ -1,8 +1,35 @@
 #include "hardware.h"
 
+/***********************************************************************/
+/*!
+    @brief  I2C hardware class constructor
+*/
+/***********************************************************************/
 I2cHardware::I2cHardware() { _has_mux = false; }
+
+/***********************************************************************/
+/*!
+    @brief  I2C hardware class destructor
+*/
+/***********************************************************************/
 I2cHardware::~I2cHardware() { _has_mux = false; }
 
+/***********************************************************************/
+/*!
+    @brief  Returns the I2C bus' status.
+    @returns  The I2C bus status, as a wippersnapper_i2c_I2cBusStatus.
+*/
+/***********************************************************************/
+wippersnapper_i2c_I2cBusStatus I2cHardware::GetBusStatus() {
+  return _bus_status;
+}
+
+/***********************************************************************/
+/*!
+    @brief  Optionally turns on the I2C bus, used for hardware with
+            a power control pin for the I2C bus.
+*/
+/***********************************************************************/
 void I2cHardware::TogglePowerPin() {
 #if defined(PIN_I2C_POWER)
   // turn on the I2C power by setting pin to opposite of 'rest state'
@@ -22,6 +49,18 @@ void I2cHardware::TogglePowerPin() {
 #endif
 }
 
+/***********************************************************************/
+/*!
+    @brief  Initializes an I2C bus.
+    @param    is_default
+                True if the default I2C bus is being used,
+                False if an alternative I2C bus is being used.
+    @param    sda
+                The desired SDA pin.
+    @param    scl
+                The desired SCL pin.
+*/
+/***********************************************************************/
 void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   uint8_t pin_sda, pin_scl;
   if (!is_default && (sda == nullptr || scl == nullptr)) {
@@ -95,9 +134,30 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Returns a pointer to the I2C bus.
+    @returns  Pointer to the I2C bus.
+*/
+/***********************************************************************/
+TwoWire *I2cHardware::GetBus() { return _bus; }
+
+/***********************************************************************/
+/*!
+    @brief  Adds a MUX to the I2C bus.
+    @param    address_register
+                The MUX's address register.
+    @param    name
+                The MUX's name.
+    @returns  True if the MUX was successfully added to the bus,
+              False otherwise.
+*/
+/***********************************************************************/
 bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
   if (strcmp(name, "pca9546") == 0) {
     _mux_max_channels = 4; // PCA9546 supports 4 channels
+  } else if (strcmp(name, "pca9548") == 0) {
+    _mux_max_channels = 4; // PCA9548 supports 4 channels
   } else {
     WS_DEBUG_PRINTLN(
         "ERROR: No mux type found"); // DEBUG ONLY, REMOVE FOR PROD!
@@ -111,6 +171,11 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Clears the enabled MUX channel.
+*/
+/***********************************************************************/
 void I2cHardware::ClearMuxChannel() {
   if (!_has_mux)
     return;
@@ -122,6 +187,13 @@ void I2cHardware::ClearMuxChannel() {
   _bus->endTransmission();
 }
 
+/***********************************************************************/
+/*!
+    @brief  Enables a specific channel on a MUX.
+    @param    channel
+                The desired MUX channel to enable.
+*/
+/***********************************************************************/
 void I2cHardware::SelectMuxChannel(uint32_t channel) {
   if (channel > _mux_max_channels - 1)
     return;
@@ -129,3 +201,11 @@ void I2cHardware::SelectMuxChannel(uint32_t channel) {
   _bus->write(1 << channel);
   _bus->endTransmission();
 }
+
+/***********************************************************************/
+/*!
+    @brief  Returns if a MUX is present on the I2C bus.
+    @returns  True if a MUX is present on the bus, False otherwise.
+*/
+/***********************************************************************/
+bool I2cHardware::HasMux() { return _has_mux; }

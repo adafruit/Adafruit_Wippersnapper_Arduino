@@ -32,6 +32,10 @@ public:
                 The I2C interface.
       @param    sensorAddress
                 The 7-bit I2C address of the sensor.
+      @param    mux_channel
+                The I2C multiplexer channel.
+      @param    driver_name
+                The name of the driver.
   */
   /*******************************************************************************/
   drvVeml7700(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,

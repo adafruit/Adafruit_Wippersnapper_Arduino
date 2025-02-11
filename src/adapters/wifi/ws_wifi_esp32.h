@@ -50,20 +50,35 @@ public:
   /**************************************************************************/
   /*!
   @brief  Overload for ESP32 devices without filesystem-backed provisioning.
+    @param  aioUsername
+                Adafruit IO username.
+    @param  aioKey
+                Adafruit IO key.
+    @param  netSSID
+                WiFi network's SSID.
+    @param  netPass
+                WiFi network's password.
+    @param  brokerURL
+                Adafruit IO broker URL.
+    @param  brokerPort
+                Adafruit IO broker port.
   */
   /**************************************************************************/
   ws_wifi_esp32(const char *aioUsername, const char *aioKey,
-                      const char *netSSID, const char *netPass,
-                      const char *brokerURL, uint16_t brokerPort)
+                const char *netSSID, const char *netPass, const char *brokerURL,
+                uint16_t brokerPort)
       : Wippersnapper_V2() {
     _ssid = netSSID;
     _pass = netPass;
 
     // Move credentials to the config struct
-    strncpy(WsV2._configV2.network.ssid, _ssid, sizeof(WsV2._configV2.network.ssid));
-    strncpy(WsV2._configV2.network.pass, _pass, sizeof(WsV2._configV2.network.pass));
+    strncpy(WsV2._configV2.network.ssid, _ssid,
+            sizeof(WsV2._configV2.network.ssid));
+    strncpy(WsV2._configV2.network.pass, _pass,
+            sizeof(WsV2._configV2.network.pass));
     strncpy(WsV2._configV2.aio_key, aioKey, sizeof(WsV2._configV2.aio_key));
-    strncpy(WsV2._configV2.aio_user, aioUsername, sizeof(WsV2._configV2.aio_user));
+    strncpy(WsV2._configV2.aio_user, aioUsername,
+            sizeof(WsV2._configV2.aio_user));
     strncpy(WsV2._configV2.aio_url, brokerURL, sizeof(WsV2._configV2.aio_url));
     WsV2._configV2.io_port = brokerPort;
   }
@@ -143,7 +158,8 @@ public:
       if (WsV2._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
-          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) == 0) {
+          if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
+              0) {
             WS_DEBUG_PRINT("SSID (");
             WS_DEBUG_PRINT(WsV2._multiNetworksV2[j].ssid);
             WS_DEBUG_PRINT(") found! RSSI: ");
@@ -203,8 +219,8 @@ public:
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
       WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
-          WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
+          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
     } else {
       // Insecure connections require a NetworkClient object rather than a
       // NetworkClientSecure object

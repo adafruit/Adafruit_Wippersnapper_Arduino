@@ -59,6 +59,8 @@ wippersnapper_i2c_I2cDeviceRemove *I2cModel::GetI2cDeviceRemoveMsg() {
 /***************************************************************************/
 /*!
     @brief    Decodes a I2cDeviceAddReplace message from an input stream.
+    @param   stream
+                A pointer to the pb_istream_t stream.
     @returns  True if the stream was decoded successfully, False otherwise.
 */
 /***************************************************************************/
@@ -140,6 +142,21 @@ void I2cModel::ClearI2cDeviceEvent() {
   _msg_i2c_device_event.i2c_device_events_count = 0;
 }
 
+/**********************************************************************/
+/*!
+    @brief    Sets the I2cDeviceEvent message's device description.
+    @param    bus_scl
+                The SCL bus.
+    @param    bus_sda
+                The SDA bus.
+    @param    addr_device
+                The device address.
+    @param    addr_mux
+                The MUX address.
+    @param    mux_channel
+                The MUX channel.
+*/
+/**********************************************************************/
 void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
                                                  const char *bus_sda,
                                                  uint32_t addr_device,
@@ -153,6 +170,16 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
   _msg_i2c_device_event.i2c_device_description.i2c_mux_channel = mux_channel;
 }
 
+/***************************************************************************/
+/*!
+    @brief    Returns the numeric event value mapped to a sensor event.
+    @param    sensor_type
+                The SensorType.
+    @param    event
+                The sensors_event_t event.
+    @returns  The value of the SensorType.
+*/
+/***************************************************************************/
 float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
                                sensors_event_t *event) {
   float value = 0.0;
@@ -227,6 +254,16 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
   return value;
 }
 
+/***************************************************************************/
+/*!
+    @brief    Adds a SensorEvent to the I2cDeviceEvent message.
+    @param    event
+                The sensors_event_t event.
+    @param    sensor_type
+                The SensorType.
+    @returns  True if the SensorEvent was added successfully, False otherwise.
+*/
+/***************************************************************************/
 bool I2cModel::AddI2cDeviceSensorEvent(
     sensors_event_t &event, wippersnapper_sensor_SensorType sensor_type) {
   if (_msg_i2c_device_event.i2c_device_events_count >= MAX_DEVICE_EVENTS)

@@ -55,8 +55,8 @@
 // Cpp STD
 #include <functional>
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
@@ -231,8 +231,8 @@ public:
   AnalogIOController *analogio_controller =
       nullptr; ///< Instance of AnalogIO controller
   DS18X20Controller *_ds18x20_controller =
-      nullptr; ///< Instance of DS18X20 controller
-  I2cController *_i2c_controller = nullptr;
+      nullptr;                              ///< Instance of DS18X20 controller
+  I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
@@ -261,8 +261,8 @@ public:
                              ///< otherwise.
   std::vector<std::vector<uint8_t>>
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
-  JsonDocument _config_doc;
-  uint8_t pin_sd_cs; ///< SD card chip select pin
+  JsonDocument _config_doc; ///< Storage for the config.json file
+  uint8_t pin_sd_cs;        ///< SD card chip select pin
 private:
   void _initV2();
 

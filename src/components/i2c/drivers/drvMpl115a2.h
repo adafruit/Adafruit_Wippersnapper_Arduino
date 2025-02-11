@@ -35,6 +35,10 @@ public:
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
+      @param    mux_channel
+                The I2C multiplexer channel.
+      @param    driver_name
+                The name of the driver.
   */
   /*******************************************************************************/
   drvMpl115a2(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,

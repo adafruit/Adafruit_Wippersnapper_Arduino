@@ -331,6 +331,22 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
        return new drvVl6180x(i2c, addr, mux_channel, driver_name);
      }}};
 
+/***********************************************************************/
+/*!
+    @brief  Creates an I2C driver by name
+    @param    driver_name
+                The name of the I2C driver.
+    @param    i2c
+                The I2C bus.
+    @param    addr
+                The I2C device address.
+    @param    i2c_mux_channel
+                The I2C MUX channel.
+    @param    status
+                The I2cDeviceStatus message.
+    @returns  A pointer to the I2C driver.
+*/
+/***********************************************************************/
 drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
                                uint16_t addr, uint32_t i2c_mux_channel,
                                wippersnapper_i2c_I2cDeviceStatus &status) {
@@ -499,7 +515,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   // Mux case #1 - We are creating a mux via I2cDeviceAddorReplace message
   // TODO: Refactor
-  if ((strcmp(device_name, "pca9546") == 0)) {
+  if ((strcmp(device_name, "pca9546") == 0) ||
+      (strcmp(device_name, "pca9548") == 0)) {
     WS_DEBUG_PRINTLN("[i2c] Creating a new MUX driver obj");
     if (use_alt_bus) {
       if (!_i2c_bus_alt->HasMux()) {
@@ -715,10 +732,10 @@ void I2cController::update() {
       if (!WsV2._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
-        // TODO: Add Status Pixel signaling around this
+        statusLEDSolid(WS_LED_STATUS_FS_WRITE);
       }
     } else {
-      // TODO: Implement!
+      // TODO: This needs to be implemented for online mode
       WS_DEBUG_PRINTLN(
           "[i2c] MQTT Publish I2cDeviceEvent not yet implemented!");
     }

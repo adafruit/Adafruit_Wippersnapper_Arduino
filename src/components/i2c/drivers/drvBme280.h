@@ -39,6 +39,10 @@ public:
                 7-bit device address.
       @param    mux_channel
                 The I2C MUX channel, if applicable.
+      @param    mux_channel
+                The I2C multiplexer channel.
+      @param    driver_name
+                The name of the driver.
   */
   /*******************************************************************************/
   drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)

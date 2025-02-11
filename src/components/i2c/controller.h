@@ -82,18 +82,18 @@ public:
   I2cController();
   ~I2cController();
   void update();
-  // Routing
-  bool Handle_I2cBusScan(pb_istream_t *stream);
+  // Routing //
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
+  // TODO: These are for Online mode
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
-  // Publishing
+  // bool Handle_I2cBusScan(pb_istream_t *stream);
+  // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
       const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
       const wippersnapper_i2c_I2cDeviceStatus &device_status);
-  // Helpers
+  // Helpers //
   bool IsBusStatusOK(bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
-
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object
   I2cHardware *_i2c_bus_default;       ///< Pointer to the default I2C bus

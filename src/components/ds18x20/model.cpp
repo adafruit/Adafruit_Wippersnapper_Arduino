@@ -154,6 +154,8 @@ bool DS18X20Model::EncodeDs18x20Event() {
 /*************************************************************************/
 /*!
     @brief  Initializes the Ds18x20Event message.
+    @param  ow_pin_name
+            The OneWire bus pin name.
 */
 /*************************************************************************/
 void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
