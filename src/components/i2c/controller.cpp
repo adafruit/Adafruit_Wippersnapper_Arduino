@@ -726,9 +726,12 @@ void I2cController::update() {
     // Read the driver's sensors
     _i2c_model->ClearI2cDeviceEvent();
     for (size_t i = 0; i < sensor_count; i++) {
-      sensors_event_t event;
-      // Call the driver's handler function for the SensorType
-      drv->GetSensorEvent(drv->_sensors[i], &event);
+      sensors_event_t event = {0};
+      // Attempt to call driver's read handler function
+      if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
+        continue;
+      }
       // Fill the I2cDeviceEvent's sensor_event array submsg.
       _i2c_model->AddI2cDeviceSensorEvent(event, drv->_sensors[i]);
     }
