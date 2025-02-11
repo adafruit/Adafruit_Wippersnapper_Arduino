@@ -1032,7 +1032,7 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
 /**************************************************************************/
 bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   size_t szJson;
-  // Serialize the JSON document
+
 #ifndef OFFLINE_MODE_DEBUG
   File32 file;
   file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
@@ -1046,6 +1046,9 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
       doc, file);           // Serialize the JSON to the file in 64-byte chunks
   bufferedFile.print("\n"); // JSONL format specifier
   bufferedFile.flush();     // Send the remaining bytes
+  file.close();
+  // Update log file's size
+  _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
   // print the doc to the serial
   serializeJson(doc, Serial);
   Serial.print("\n");
@@ -1053,15 +1056,13 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   szJson = serializeJson(doc, Serial);
   Serial.print("\n"); // Required JSONL format specifier
 #endif
-  _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
 
+  // Do we need a new log file?
   if (_sz_cur_log_file >= _max_sz_log_file) {
     WS_DEBUG_PRINTLN(
         "[SD] NOTE: Log file has exceeded maximum size! Attempting to "
         "create a new file...");
-    if (!CreateNewLogFile())
-      return false;
-    return false;
+    return CreateNewLogFile();
   }
 
   return true;
