@@ -34,8 +34,10 @@
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  { WS_PRINTER.println(__VA_ARGS__); } /**< Print debug message with newline   \
-                                        */
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+  } /**< Print debug message with newline                                      \
+     */
 #define WS_DEBUG_PRINTHEX(...)                                                 \
   {                                                                            \
     WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
@@ -251,7 +253,7 @@ public:
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
-  char sUIDV2[13];        /*!< Unique network iface identifier */
+  char sUIDV2[13];        /*!< Unique hardware identifier */
   const char *_boardIdV2; /*!< Adafruit IO+ board string */
   Adafruit_MQTT *_mqttV2; /*!< Reference to Adafruit_MQTT, _mqtt. */
 

@@ -3,8 +3,13 @@ import sys
 import json
 
 # load json file from provided path
-with open(sys.argv[1], 'r') as f:
-    json_data = json.load(f)
+try:
+    with open(sys.argv[1], 'r') as f:
+        json_data = json.load(f)
+except FileNotFoundError as e:
+    print("Error: JSON file not found, exiting...")
+    exit(1)
+
 if not json_data:
     print("Error: JSON file did not contain any data or path didn't match exactly, exiting...")
     exit(1)

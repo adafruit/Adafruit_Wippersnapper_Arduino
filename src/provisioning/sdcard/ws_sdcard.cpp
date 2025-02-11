@@ -49,7 +49,7 @@ ws_sdcard::ws_sdcard()
 /**************************************************************************/
 ws_sdcard::~ws_sdcard() {
   if (is_mode_offline) {
-    _sd.end(); // Close the SD card
+    _sd.end(); // Close the SD card interface
   }
   is_mode_offline = false;
 }
@@ -181,6 +181,7 @@ bool ws_sdcard::InitPCF8523() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitSoftRTC() {
+  // NOTE: RTC_Soft always returns void
   _rtc_soft->begin(DateTime(F(__DATE__), F(__TIME__)));
   return true;
 }
@@ -360,7 +361,7 @@ bool ws_sdcard::ParseDigitalIOAdd(
   strcpy(msg_DigitalIOAdd.pin_name, pin);
 
   if (period == 0.0) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Digital pin period not found!");
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid pin period!");
     return false;
   }
   msg_DigitalIOAdd.period = period;
@@ -662,24 +663,17 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 bool ws_sdcard::parseConfigFile() {
   DeserializationError error;
   JsonDocument doc;
-
   delay(5000);
-  // TODO: THIS IS JUST FOR DEBUG Testing, remove for PR review
-  WS_DEBUG_PRINT("SD card capacity: ");
-  WS_DEBUG_PRINTLN(_sd_capacity);
-  WS_DEBUG_PRINT("Maximum number of log files: ");
-  WS_DEBUG_PRINTLN(_sd_max_num_log_files);
-  WS_DEBUG_PRINT("Maximum size of log file: ");
-  WS_DEBUG_PRINTLN(_max_sz_log_file);
 
+  // Parse configuration data
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
-  doc = WsV2._config_doc; // Use the config document from the filesystem
+  doc = WsV2._config_doc;
 #else
   // Use test data rather than data from the filesystem
   if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
-    WS_DEBUG_PRINT(_serialInput);
+    WS_DEBUG_PRINTLN(_serialInput);
     error = deserializeJson(doc, _serialInput.c_str(), MAX_LEN_CFG_JSON);
   } else {
     WS_DEBUG_PRINTLN("[SD] Parsing Test Data...");
@@ -700,7 +694,7 @@ bool ws_sdcard::parseConfigFile() {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
   }
-  WS_DEBUG_PRINTLN("[SD] JSON checksum OK!");
+  WS_DEBUG_PRINTLN("[SD] Checksum OK!");
 
   // Begin parsing the JSON document
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
@@ -722,7 +716,7 @@ bool ws_sdcard::parseConfigFile() {
 
   WS_DEBUG_PRINTLN("Parsing exportedFromDevice object...");
 
-  // We don't talk to IO here, perform an "offline" device check-in
+  // We don't talk to IO here, mock an "offline" device check-in
   CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
           exportedFromDevice["totalAnalogPins"] | 0,
           exportedFromDevice["referenceVoltage"] | 0.0);
@@ -733,7 +727,6 @@ bool ws_sdcard::parseConfigFile() {
   setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
 
   WS_DEBUG_PRINTLN("Configuring RTC...");
-
 #ifndef OFFLINE_MODE_WOKWI
   const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
   WS_DEBUG_PRINT("RTC Type: ");
@@ -742,8 +735,6 @@ bool ws_sdcard::parseConfigFile() {
     WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
     return false;
   }
-#else
-  WS_DEBUG_PRINTLN("[SD] Did not configure RTC for Wokwi...");
 #endif
 
   WS_DEBUG_PRINTLN("Parsing components array...");
@@ -873,7 +864,7 @@ uint32_t ws_sdcard::GetTimestamp() {
     @returns A string representation of the SensorType enum.
 */
 /**************************************************************************/
-const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
+const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   switch (sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
     return "UNSPECIFIED";
@@ -969,12 +960,10 @@ const char *SensorTypeToString(wippersnapper_sensor_SensorType sensorType) {
 /**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                              wippersnapper_sensor_SensorType read_type) {
-  char pin_name[12];
-  sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin_name;
+  doc["pin"] = "A" + String(pin);
   doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
 /**************************************************************************/
@@ -992,12 +981,10 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
 /**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
                              wippersnapper_sensor_SensorType read_type) {
-  char pin_name[12];
-  sprintf(pin_name, "A%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin_name;
+  doc["pin"] = "A" + String(pin);
   doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
 /**************************************************************************/
@@ -1015,12 +1002,10 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
 /**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                              wippersnapper_sensor_SensorType read_type) {
-  char pin_name[12];
-  sprintf(pin_name, "D%d", pin);
   doc["timestamp"] = GetTimestamp();
-  doc["pin"] = pin_name;
+  doc["pin"] = "D" + String(pin);
   doc["value"] = value;
-  doc["si_unit"] = SensorTypeToString(read_type);
+  doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
 /**************************************************************************/
@@ -1154,7 +1139,7 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
     doc["timestamp"] = timestamp;
     doc["pin"] = event_msg->onewire_pin;
     doc["value"] = event_msg->sensor_events[i].value.float_value;
-    doc["si_unit"] = SensorTypeToString(event_msg->sensor_events[i].type);
+    doc["si_unit"] = SensorTypeToSIUnit(event_msg->sensor_events[i].type);
     LogJSONDoc(doc);
   }
   return true;
@@ -1190,7 +1175,7 @@ bool ws_sdcard::LogI2cDeviceEvent(
     doc["timestamp"] = GetTimestamp();
     doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
     doc["si_unit"] =
-        SensorTypeToString(msg_device_event->i2c_device_events[i].type);
+        SensorTypeToSIUnit(msg_device_event->i2c_device_events[i].type);
     if (!LogJSONDoc(doc))
       return false;
   }
@@ -1286,25 +1271,13 @@ void ws_sdcard::waitForSerialConfig() {
         char c = Serial.read();
         _serialInput += c;
         if (_serialInput.endsWith("\\n")) {
-          WS_DEBUG_PRINTLN("[SD] End of JSON string detected!");
           break;
         }
       }
     }
   }
-  // Trim the newline
+  // Remove the newline
   _serialInput.trim();
-
-  // Print out the received JSON string
-  // TODO: REMOVE this for the PR
-  WS_DEBUG_PRINT("[SD][Debug] JSON string received!");
-  if (_use_test_data) {
-    WS_DEBUG_PRINTLN("[from json test data]");
-    WS_DEBUG_PRINTLN(json_test_data);
-  } else {
-    WS_DEBUG_PRINTLN(_serialInput);
-  }
-
   WS_DEBUG_PRINTLN("[SD] JSON string received!");
 }
 #endif

@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -185,21 +185,15 @@ bool AnalogIOController::EncodePublishPinEvent(
   }
 
   // Publish the AnalogIO message to the broker
-  if (!WsV2._sdCardV2->isModeOffline()) {
-    WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
-    if (!WsV2.PublishSignal(
-            wippersnapper_signal_DeviceToBroker_analogio_event_tag,
-            _analogio_model->GetAnalogIOEvent())) {
-      WS_DEBUG_PRINTLN(
-          "ERROR: Unable to publish analogio voltage event message, "
-          "moving onto the next pin!");
-      return false;
-    }
-    WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
-  } else {
-
-    // TODO: Log out this data by calling a logging function in sdcard class
+  WS_DEBUG_PRINTLN("Publishing AnalogIOEvent message to broker...");
+  if (!WsV2.PublishSignal(
+          wippersnapper_signal_DeviceToBroker_analogio_event_tag,
+          _analogio_model->GetAnalogIOEvent())) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish analogio voltage event message, "
+                     "moving onto the next pin!");
+    return false;
   }
+  WS_DEBUG_PRINTLN("Published AnalogIOEvent message to broker!")
 
   return true;
 }

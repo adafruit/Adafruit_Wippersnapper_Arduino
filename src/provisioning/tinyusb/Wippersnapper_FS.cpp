@@ -67,9 +67,12 @@ Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 FRESULT format_fs_fat12(void) {
   FATFS elmchamFatfs_v2;
   uint8_t workbuf_v2[4096];
+  FRESULT r;
 
   // make filesystem
-  FRESULT r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf_v2, sizeof(workbuf_v2));
+  r = f_mkfs("", FM_FAT | FM_SFD, 0, workbuf_v2, sizeof(workbuf_v2));
+  if (r != FR_OK)
+    return r;
 
   // mount to set disk label
   r = f_mount(&elmchamFatfs_v2, "0:", 1);
@@ -82,7 +85,9 @@ FRESULT format_fs_fat12(void) {
     return r;
 
   // unmount fs
-  f_unmount("0:");
+  r = f_unmount("0:");
+  if (r != FR_OK)
+    return r;
 
   // sync to make sure all data is written to flash
   flash_v2.syncBlocks();
