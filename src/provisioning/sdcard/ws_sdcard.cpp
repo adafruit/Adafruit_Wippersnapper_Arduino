@@ -623,6 +623,7 @@ bool ws_sdcard::CreateNewLogFile() {
           sizeof(log_filename_buffer) - 1);
   log_filename_buffer[sizeof(log_filename_buffer) - 1] = '\0';
   _log_filename = log_filename_buffer;
+  _sz_cur_log_file = 0; // Reset the current log file size
 
   // Attempt to create the new log file
   if (!file.open(_log_filename, O_RDWR | O_CREAT | O_AT_END))
@@ -1048,7 +1049,7 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   bufferedFile.flush();     // Send the remaining bytes
   file.close();
   // Update log file's size
-  _sz_cur_log_file = szJson + 2; // +2 bytes for "\n"
+  _sz_cur_log_file += (szJson + 2); // +2 for newline
   // print the doc to the serial
   serializeJson(doc, Serial);
   Serial.print("\n");
