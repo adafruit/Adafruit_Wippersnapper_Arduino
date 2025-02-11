@@ -152,8 +152,11 @@ public:
   }
 
 protected:
-  sensors_event_t _temp_event, _pressure_event;
-  ulong _last_read;
+  sensors_event_t _temp_event = {
+      0}; ///< DPS310 sensor event for temperature readings
+  sensors_event_t
+      _pressure_event;      ///< DPS310 sensor event for pressure readings
+  ulong _last_read;         ///< Last time the sensor was read
   Adafruit_DPS310 *_dps310; ///< DPS310 driver object
   Adafruit_Sensor *_dps_temp =
       NULL; ///< Holds data for the DPS310's temperature sensor

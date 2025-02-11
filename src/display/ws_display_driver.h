@@ -51,6 +51,6 @@ private:
   uint8_t
       _displayRotationMode; ///< Display rotation (mode, not number in degrees)
 };
-extern Wippersnapper WS;
+extern Wippersnapper WS; ///< Global Wippersnapper instance
 
 #endif // WIPPERSNAPPER_DISPLAY_H

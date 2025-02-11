@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -27,7 +27,7 @@
 #include "WiFiMulti.h"
 #include <NetworkClient.h>
 #include <NetworkClientSecure.h>
-extern Wippersnapper_V2 WsV2;
+extern Wippersnapper_V2 WsV2; ///< Wippersnapper client instance
 
 /****************************************************************************/
 /*!

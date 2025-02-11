@@ -9,10 +9,9 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
+ * @copyright Copyright (c) Brent Rubell 2020-2024 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
- *
  */
 
 #ifndef WIPPERSNAPPER_V2_H
@@ -20,29 +19,41 @@
 
 // Debug Flags
 // #DEBUG_PROFILE 1 ///< Enable debug output for function profiling
-
-#define WS_DEBUG          ///< Define to enable debugging to serial terminal
-#define WS_PRINTER Serial ///< Where debug messages will be printed
+// Debug Flags
+#define WS_DEBUG          /**< Define to enable debugging to serial terminal */
+#define WS_PRINTER Serial /**< Where debug messages will be printed */
 
 /**************************************************************************/
 /*!
-    @brief Debug print macros
+    @brief  Debug print macros for WipperSnapper debugging output
+    @details These macros provide debug output functionality when WS_DEBUG is
+   defined
 */
 /**************************************************************************/
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
+  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+  { WS_PRINTER.println(__VA_ARGS__); } /**< Print debug message with newline   \
+                                        */
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
+  } /**< Print debug message in hexadecimal */
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} ///< Prints debug output
+  {} /**< Debug print */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} ///< Prints line from debug output.
+  {} /**< Debug println */
 #endif
 
+/**************************************************************************/
+/*!
+    @brief  delay() function for use with a watchdog timer
+    @param  timeout
+            Delay duration in milliseconds
+*/
+/**************************************************************************/
 #define WS_DELAY_WITH_WDT(timeout)                                             \
   {                                                                            \
     unsigned long start = millis();                                            \
@@ -51,10 +62,10 @@
       yield();                                                                 \
       feedWDT();                                                               \
       if (millis() < start) {                                                  \
-        start = millis(); /* if rollover */                                    \
+        start = millis();                                                      \
       }                                                                        \
     }                                                                          \
-  } ///< Delay function
+  }
 
 // Cpp STD
 #include <functional>

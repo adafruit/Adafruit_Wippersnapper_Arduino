@@ -27,7 +27,7 @@
 #define SPIWIFI                                                                \
   SPI /*!< Instance of SPI interface used by an external uBlox module. */
 
-extern Wippersnapper WS;
+extern Wippersnapper WS; ///< Global Wippersnapper instance
 /****************************************************************************/
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
