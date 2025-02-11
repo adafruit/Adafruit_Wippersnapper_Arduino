@@ -1,5 +1,5 @@
 /*!
- * @file Wippersnapper_ESP32_V2.h
+ * @file ws_wifi_esp32.h
  *
  * This is a driver for using the ESP32's network interface
  * with Adafruit IO Wippersnapper.

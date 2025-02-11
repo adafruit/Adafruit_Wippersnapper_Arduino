@@ -39,13 +39,12 @@ public:
                 7-bit device address.
       @param    mux_channel
                 The I2C MUX channel, if applicable.
-      @param    mux_channel
-                The I2C multiplexer channel.
       @param    driver_name
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -72,7 +71,7 @@ public:
     // attempt to initialize BME280
     if (!_bme->begin(_address, _i2c))
       return false;
-    
+
     // Configure sensors
     _bme_temp = _bme->getTemperatureSensor();
     if (_bme_temp == NULL)

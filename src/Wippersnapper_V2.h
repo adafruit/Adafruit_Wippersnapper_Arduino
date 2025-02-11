@@ -24,7 +24,11 @@
 #define WS_DEBUG          ///< Define to enable debugging to serial terminal
 #define WS_PRINTER Serial ///< Where debug messages will be printed
 
-// Define actual debug output functions when necessary.
+/**************************************************************************/
+/*!
+    @brief Debug print macros
+*/
+/**************************************************************************/
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.

@@ -36,6 +36,8 @@ public:
                 The I2C hardware interface, default is Wire.
       @param    address
                 The I2C sensor's unique address.
+      @param    driver_name
+                The name of the driver.
   */
   /*******************************************************************************/
   drvBase(TwoWire *i2c, uint16_t address, const char *driver_name) {
@@ -60,6 +62,8 @@ public:
       @param    mux_channel
                 An optional channel number used to address a device on a I2C
      MUX.
+      @param    driver_name
+                The name of the driver.
   */
   /*******************************************************************************/
   drvBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel,
@@ -98,16 +102,30 @@ public:
   /*******************************************************************************/
   uint16_t GetAddress() { return _address; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the I2C MUX address.
+      @returns  The I2C MUX address.
+  */
+  /*******************************************************************************/
   uint32_t GetMuxAddress() { return _i2c_mux_addr; }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Sets the I2C MUX address.
+      @param    mux_address
+                The I2C MUX address.
+  */
+  /*******************************************************************************/
   void SetMuxAddress(uint32_t mux_address) { _i2c_mux_addr = mux_address; }
 
   /*******************************************************************************/
   /*!
       @brief    Set if the I2C driver has an alternative I2C bus.
-      @param    has_alt_i2c_bus
-                True if the I2C driver requests to use an alternative I2C bus,
-                False otherwise.
+      @param   scl_pin
+                The SCL pin for the alternative I2C bus.
+      @param   sda_pin
+                The SDA pin for the alternative I2C bus.
   */
   /*******************************************************************************/
   void EnableAltI2CBus(char *scl_pin, char *sda_pin) {
@@ -116,7 +134,20 @@ public:
     _has_alt_i2c_bus = true;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SCL pin for the alternative I2C bus.
+      @returns  The SCL pin for the alternative I2C bus.
+  */
+  /*******************************************************************************/
   const char *GetPinSCL() { return _pin_scl; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the SDA pin for the alternative I2C bus.
+      @returns  The SDA pin for the alternative I2C bus.
+  */
+  /*******************************************************************************/
   const char *GetPinSDA() { return _pin_sda; }
 
   /*******************************************************************************/
@@ -147,10 +178,10 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Configures an i2c device's sensors.
-      @param    sensors
+      @param    sensor_types
                 Pointer to an array of SensorType objects.
-      @param    count
-                The number of active sensors on the device.
+      @param    sensor_types_count
+                The number of active sensors to read from the device.
   */
   /*******************************************************************************/
   void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
@@ -320,6 +351,13 @@ public:
     return false;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Base implementation - Selects a MUX channel for use with the
+                I2C device.
+      @param    channel
+                The MUX channel to select.
+  */
   virtual void SelectMUXChannel(uint8_t channel) { return; }
 
   /*******************************************************************************/
@@ -557,6 +595,17 @@ public:
     return false;
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief   Reads a sensor's event from the i2c driver.
+      @param   sensor_type
+                The sensor type to read.
+      @param    sensors_event
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
   bool GetSensorEvent(wippersnapper_sensor_SensorType sensor_type,
                       sensors_event_t *sensors_event) {
     auto it = SensorEventHandlers.find(sensor_type);
@@ -565,7 +614,14 @@ public:
     return it->second(sensors_event);
   }
 
-  //  Lambda function type for all GetEventX() function calls
+  /*******************************************************************************/
+  /*!
+      @brief    Function type for sensor event handlers
+      @param    sensors_event_t*
+                Pointer to the sensor event structure to be filled
+      @returns  True if event was successfully read, False otherwise
+  */
+  /*******************************************************************************/
   using fnGetEvent = std::function<bool(sensors_event_t *)>;
 
   // Maps SensorType to function calls
@@ -673,7 +729,7 @@ public:
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC,
        [this](sensors_event_t *event) -> bool {
          return this->getEventTVOC(event);
-       }}};
+       }}}; ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< Sensors attached to the device.

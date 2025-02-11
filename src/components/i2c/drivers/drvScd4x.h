@@ -1,5 +1,5 @@
 /*!
- * @file WipperSnapper_I2C_Driver_SCD4x.h
+ * @file drvScd4x.h
  *
  * Device driver for the SCD4X CO2, Temperature, and Humidity sensor.
  *

@@ -14,7 +14,19 @@
  */
 #include "controller.h"
 
-// lambda function to create drvBase driver
+/*******************************************************************************/
+/*!
+    @brief    lambda function to create a drvBase driver instance
+      @param    i2c
+                  The I2C interface.
+      @param    addr
+                  7-bit device address.
+      @param    mux_channel
+                  The I2C multiplexer channel.
+      @param    driver_name
+                  The name of the driver.
+*/
+/*******************************************************************************/
 using FnCreateI2CDriver =
     std::function<drvBase *(TwoWire *, uint16_t, uint32_t, const char *)>;
 
@@ -329,7 +341,7 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVl6180x(i2c, addr, mux_channel, driver_name);
-     }}};
+     }}}; ///< I2C driver factory
 
 /***********************************************************************/
 /*!
