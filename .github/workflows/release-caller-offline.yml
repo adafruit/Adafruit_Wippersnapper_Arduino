@@ -222,8 +222,8 @@ jobs:
       - name: clang
         run: python3 ci/run-clang-format.py -r -e "ci/*" -e "bin/*" -e src/nanopb -e src/protos -e src/pb.h -e src/provisioning/tinyusb  src/
 
-  release-wippersnapper:
-    name: Release WipperSnapper
+  release-wippersnapper-offline:
+    name: Release WipperSnapper Offline
     runs-on: ubuntu-latest
     if: github.event.release.target_commitish == 'offline-mode' # Runs only if release is from offline-mode
     needs: merge-job-build-files
