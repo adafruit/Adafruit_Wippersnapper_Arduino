@@ -154,7 +154,6 @@ bool ws_sdcard::InitPCF8523() {
   // scanI2C();
 
   _rtc_pcf8523 = new RTC_PCF8523();
-  Serial.println("Begin PCF init");
   if (!_rtc_pcf8523->begin(&Wire)) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE");
@@ -165,7 +164,6 @@ bool ws_sdcard::InitPCF8523() {
       return false;
     }
   }
-  Serial.println("End PCF init");
   if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
