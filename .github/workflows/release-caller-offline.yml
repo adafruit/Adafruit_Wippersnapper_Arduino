@@ -115,13 +115,13 @@ jobs:
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
   build-rp2040:
-    name: 🏗️RP2040
+    name: 🏗️RP2040, RP2350
     runs-on: ubuntu-latest
     if: github.event.release.target_commitish == 'offline-mode' # Runs only if release is from offline-mode
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb"]
+        arduino-platform: ["pico_rp2040_tinyusb", "pico_rp2350_tinyusb"]
     steps:
       - uses: actions/setup-python@v5
         with:
