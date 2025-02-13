@@ -104,7 +104,7 @@
 #endif
 
 // Components (API v2)
-#include "components/analogio/controller.h"
+#include "components/analogIO/controller.h"
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
