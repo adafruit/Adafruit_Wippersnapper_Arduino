@@ -40,7 +40,7 @@
 #include "drivers/drvLtr390.h"
 #include "drivers/drvMax1704x.h"
 #include "drivers/drvMcp3421.h"
-#include "drivers/drvMcp9808.h"
+#include "drivers/drvMCP9808.h"
 #include "drivers/drvMpl115a2.h"
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
