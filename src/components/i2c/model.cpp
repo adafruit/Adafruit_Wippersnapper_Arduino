@@ -31,6 +31,99 @@ I2cModel::I2cModel() {
   _msg_i2c_device_event = wippersnapper_i2c_I2cDeviceEvent_init_default;
 }
 
+/***********************************************************************/
+/*!
+    @brief  I2C destructor
+*/
+/***********************************************************************/
+I2cModel::~I2cModel() {
+    // nothing to add here!
+}
+
+/***************************************************************************/
+/*!
+    @brief    Returns the numeric event value mapped to a sensor event.
+    @param    sensor_type
+                The SensorType.
+    @param    event
+                The sensors_event_t event.
+    @returns  The value of the SensorType.
+*/
+/***************************************************************************/
+float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
+    sensors_event_t *event) {
+float value = 0.0;
+switch (sensor_type) {
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+value = event->temperature;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+value = event->temperature;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+value = event->temperature;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+value = event->temperature;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
+value = event->data[0];
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+value = event->relative_humidity;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
+value = event->pressure;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
+value = event->voltage;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
+value = event->current;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
+value = event->CO2;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
+value = event->eCO2;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
+value = event->tvoc;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
+value = event->voc_index;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
+value = event->nox_index;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
+value = event->pm10_std;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
+value = event->pm25_std;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
+value = event->pm100_std;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+value = event->gas_resistance;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
+value = event->altitude;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+value = event->unitless_percent;
+break;
+case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
+value = event->light;
+break;
+default:
+value = 0.0;
+break;
+}
+return value;
+}
+
 /****************************************************************************/
 /*!
     @brief  Decodes a I2cDeviceRemove message from an input stream.
@@ -168,90 +261,6 @@ void I2cModel::SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
   _msg_i2c_device_event.i2c_device_description.i2c_device_address = addr_device;
   _msg_i2c_device_event.i2c_device_description.i2c_mux_address = addr_mux;
   _msg_i2c_device_event.i2c_device_description.i2c_mux_channel = mux_channel;
-}
-
-/***************************************************************************/
-/*!
-    @brief    Returns the numeric event value mapped to a sensor event.
-    @param    sensor_type
-                The SensorType.
-    @param    event
-                The sensors_event_t event.
-    @returns  The value of the SensorType.
-*/
-/***************************************************************************/
-float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
-                               sensors_event_t *event) {
-  float value = 0.0;
-  switch (sensor_type) {
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-    value = event->temperature;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-    value = event->temperature;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-    value = event->temperature;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-    value = event->temperature;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
-    value = event->data[0];
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
-    value = event->relative_humidity;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
-    value = event->pressure;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
-    value = event->voltage;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
-    value = event->current;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
-    value = event->CO2;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
-    value = event->eCO2;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
-    value = event->tvoc;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
-    value = event->voc_index;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
-    value = event->nox_index;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
-    value = event->pm10_std;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
-    value = event->pm25_std;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
-    value = event->pm100_std;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
-    value = event->gas_resistance;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
-    value = event->altitude;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
-    value = event->unitless_percent;
-    break;
-  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
-    value = event->light;
-    break;
-  default:
-    value = 0.0;
-    break;
-  }
-  return value;
 }
 
 /***************************************************************************/

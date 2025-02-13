@@ -161,6 +161,7 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
   } else {
     return false;
   }
+
   _mux_address_register = address_register;
   _has_mux = true;
   // Put MUX in back into its default state cuz we don't know if we're about to
