@@ -60,7 +60,7 @@ public:
   /*******************************************************************************/
   bool begin() override {
     _scd = new SensirionI2cScd4x();
-    _scd->begin(*_i2c, _sensorAddress);
+    _scd->begin(*_i2c, _address);
 
     // stop previously started measurement
     if (_scd->stopPeriodicMeasurement()) {
