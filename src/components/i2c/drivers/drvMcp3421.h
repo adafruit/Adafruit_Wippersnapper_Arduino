@@ -15,7 +15,6 @@
 #ifndef DRV_MCP3421_H
 #define DRV_MCP3421_H
 
-#include "Wippersnapper_V2.h"
 #include "drvBase.h"
 #include <Adafruit_MCP3421.h>
 

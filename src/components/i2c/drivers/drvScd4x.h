@@ -17,7 +17,6 @@
 #ifndef DRV_SCD4X_H
 #define DRV_SCD4X_H
 
-#include "Wippersnapper_V2.h"
 #include "drvBase.h"
 #include <SensirionI2CScd4x.h>
 #include <Wire.h>
