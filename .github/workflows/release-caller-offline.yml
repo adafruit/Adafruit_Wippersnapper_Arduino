@@ -59,7 +59,6 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --quiet --branch 0.4.0 --depth 1 https://github.com/Sensirion/arduino-i2c-scd4x.git /home/runner/Arduino/libraries/Sensirion_I2C_SCD4x
           git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
           git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
@@ -145,7 +144,6 @@ jobs:
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --quiet --branch 0.4.0 --depth 1 https://github.com/Sensirion/arduino-i2c-scd4x.git /home/runner/Arduino/libraries/Sensirion_I2C_SCD4x
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
