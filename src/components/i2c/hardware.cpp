@@ -159,8 +159,6 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
   } else if (strcmp(name, "pca9548") == 0) {
     _mux_max_channels = 4; // PCA9548 supports 4 channels
   } else {
-    WS_DEBUG_PRINTLN(
-        "ERROR: No mux type found"); // DEBUG ONLY, REMOVE FOR PROD!
     return false;
   }
   _mux_address_register = address_register;

@@ -58,7 +58,7 @@ void ws_sdcard::calculateFileLimits() {
   // Calculate the maximum number of log files that can be stored on the SD card
   csd_t csd;
   if (!_sd.card()->readCSD(&csd)) {
-    WS_DEBUG_PRINTLN("Runtime Error: Could not read sdcard information");
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Could not read card information");
     return;
   }
 
@@ -105,9 +105,7 @@ bool ws_sdcard::InitDS1307() {
 bool ws_sdcard::InitDS3231() {
   WS_DEBUG_PRINTLN("Begin DS3231 init");
   _rtc_ds3231 = new RTC_DS3231();
-  WS_DEBUG_PRINTLN("begin() call no wire object");
   if (!_rtc_ds3231->begin(&Wire)) {
-    WS_DEBUG_PRINTLN("Trying wire1...");
     if (!_rtc_ds3231->begin(&Wire1)) {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS3231 RTC");
       delete _rtc_ds3231;
@@ -118,24 +116,6 @@ bool ws_sdcard::InitDS3231() {
     _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
   return true;
 }
-/*
-void scanI2C() {
-    byte error, address;
-    int devices = 0;
-    Wire.begin();
-    Serial.println("Scanning I2C bus...");
-    for(address = 1; address < 127; address++) {
-      Wire.beginTransmission(address);
-      error = Wire.endTransmission();
-      if (error == 0) {
-        Serial.print("Device found at address 0x");
-        if (address < 16) Serial.print("0");
-        Serial.println(address, HEX);
-        devices++;
-      }
-    }
-    if (devices == 0) Serial.println("No I2C devices found");
-  } */
 
 /**************************************************************************/
 /*!
@@ -145,14 +125,6 @@ void scanI2C() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitPCF8523() {
-  // pinMode(PIN_I2C_POWER, INPUT);
-  // delay(1);
-  // bool polarity = digitalRead(PIN_I2C_POWER);
-  // pinMode(PIN_I2C_POWER, OUTPUT);
-  // digitalWrite(PIN_I2C_POWER, !polarity);
-
-  // scanI2C();
-
   _rtc_pcf8523 = new RTC_PCF8523();
   if (!_rtc_pcf8523->begin(&Wire)) {
     WS_DEBUG_PRINTLN(
@@ -193,23 +165,17 @@ bool ws_sdcard::InitSoftRTC() {
 */
 /**************************************************************************/
 bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
-  bool did_init = false;
-  // Initialize the RTC based on the rtc_type
   if (strcmp(rtc_type, "DS1307") == 0) {
-    did_init = InitDS1307();
+    return InitDS1307();
   } else if (strcmp(rtc_type, "DS3231") == 0) {
-    did_init = InitDS3231();
+    return InitDS3231();
   } else if (strcmp(rtc_type, "PCF8523") == 0) {
-    did_init = InitPCF8523();
+    return InitPCF8523();
   } else if (strcmp(rtc_type, "SOFT_RTC") == 0) {
-    did_init = InitSoftRTC();
-  } else {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Unknown RTC type found in JSON string!");
-    did_init = false;
+    return InitSoftRTC();
   }
-
-  return did_init;
+  WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown RTC type found in JSON string!");
+  return false;
 }
 
 /**************************************************************************/
@@ -236,7 +202,7 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
     @brief  Parses a sensor type from the JSON configuration file.
     @param  sensor_type
             The sensor type to parse.
-    @returns The parsed sensor type.
+    @returns The corresponding SensorType
 */
 /**************************************************************************/
 wippersnapper_sensor_SensorType
@@ -353,7 +319,6 @@ bool ws_sdcard::ParseDigitalIOAdd(
     wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd, const char *pin,
     float period, bool value, const char *sample_mode, const char *direction,
     const char *pull) {
-  bool rc = true;
   if (!ValidateJSONKey(pin, "[SD] Parsing Error: Digital pin name not found!"))
     return false;
   strcpy(msg_DigitalIOAdd.pin_name, pin);
@@ -397,13 +362,13 @@ bool ws_sdcard::ParseDigitalIOAdd(
   } else if (strcmp(direction, "OUTPUT") == 0) {
     WS_DEBUG_PRINTLN(
         "[SD] Error - Can not set OUTPUT direction in offline mode!");
-    rc = false;
+    return false;
   } else {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown direction found: " +
                      String(direction));
-    rc = false;
+    return false;
   }
-  return rc;
+  return true;
 }
 
 /**************************************************************************/
@@ -478,9 +443,6 @@ bool ws_sdcard::ParseDS18X20Add(
     return false;
   }
   msg_DS18X20Add.sensor_types_count = num_sensors;
-
-  WS_DEBUG_PRINT("[SD] msg_DS18X20Add.sensor_types_count: ");
-  WS_DEBUG_PRINTLN(msg_DS18X20Add.sensor_types_count);
 
   // Parse the first sensor type
   if (strcmp(sensor_type_1, UNKNOWN_VALUE) == 0) {

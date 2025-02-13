@@ -84,7 +84,7 @@ public:
   void update();
   // Routing //
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
-  // TODO: These are for Online mode
+  // TODO [Online]: These are for Online mode and not yet implemented
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
   // bool Handle_I2cBusScan(pb_istream_t *stream);
   // Publishing //
@@ -93,6 +93,7 @@ public:
       const wippersnapper_i2c_I2cDeviceStatus &device_status);
   // Helpers //
   bool IsBusStatusOK(bool is_alt_bus);
+  bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object

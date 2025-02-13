@@ -16,21 +16,22 @@
 
 /*******************************************************************************/
 /*!
-    @brief    lambda function to create a drvBase driver instance
+    @brief     Lambda function to create a drvBase driver instance
       @param    i2c
-                  The I2C interface.
+                  The desired I2C interface.
       @param    addr
-                  7-bit device address.
+                  The desired i2c device address.
       @param    mux_channel
-                  The I2C multiplexer channel.
+                  The desired I2C multiplexer channel.
       @param    driver_name
-                  The name of the driver.
+                  The i2c driver's name.
 */
 /*******************************************************************************/
 using FnCreateI2CDriver =
     std::function<drvBase *(TwoWire *, uint16_t, uint32_t, const char *)>;
 
-// Map of sensor names to lambda functions that create an I2C device driver
+// Factory for creating a new I2C drivers
+// NOTE: When you add a new driver, make sure to add it to the factory!
 static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
     {"bme280",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -359,7 +360,7 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
     @returns  A pointer to the I2C driver.
 */
 /***********************************************************************/
-drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
+drvBase *CreateI2CDriverByName(const char *driver_name, TwoWire *i2c,
                                uint16_t addr, uint32_t i2c_mux_channel,
                                wippersnapper_i2c_I2cDeviceStatus &status) {
   auto it = I2cFactory.find(driver_name);
@@ -368,8 +369,8 @@ drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
         wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
     return nullptr;
   }
+
   status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
-  // Call the lambda to create the driver
   return it->second(i2c, addr, i2c_mux_channel, driver_name);
 }
 
@@ -381,9 +382,9 @@ drvBase *createI2CDriverByName(const char *driver_name, TwoWire *i2c,
 I2cController::I2cController() {
   _i2c_bus_alt = nullptr;
   _i2c_model = new I2cModel();
-  // Initialize a default I2C bus
+  // Initialize the default I2C bus
   _i2c_bus_default = new I2cHardware();
-  _i2c_bus_default->InitBus(true);
+  _i2c_bus_default->InitBus(is_default = true);
 }
 
 /***********************************************************************/
@@ -401,20 +402,22 @@ I2cController::~I2cController() {
 
 /*************************************************************************/
 /*!
-    @brief    Returns the status of the I2C bus
+    @brief    Returns if the I2C bus has been created successfully.
     @param    is_alt_bus
               True if the alt. I2C bus is being queried, False otherwise.
-    @returns  True if the I2C bus is operational, False otherwise.
+    @returns  True if the I2C bus has already been created, False otherwise.
 */
 /*************************************************************************/
 bool I2cController::IsBusStatusOK(bool is_alt_bus) {
+  bool is_ok = false;
   if (is_alt_bus) {
-    return (_i2c_bus_alt->GetBusStatus() ==
-            wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS);
+    is_ok = (_i2c_bus_alt->GetBusStatus() ==
+             wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS);
+  } else {
+    is_ok = (_i2c_bus_default->GetBusStatus() ==
+             wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS);
   }
-
-  return (_i2c_bus_default->GetBusStatus() ==
-          wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS);
+  return is_ok;
 }
 
 /***********************************************************************/
@@ -468,9 +471,47 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
     return false;
   }
 
-  // TODO: Implement the rest of this function
+  // TODO [Online]: Implement the rest of this function
   WS_DEBUG_PRINTLN("[i2c] I2cDeviceRemove message not yet implemented!");
 
+  return true;
+}
+
+/***********************************************************************/
+/*!
+    @brief    Attempts to initialize a MUX on the bus.
+    @param    name
+                The name of the MUX to initialize, used to set number
+                of channels.
+    @param    address
+                The MUX's I2C address.
+    @param    is_alt_bus
+                True if the alternative I2C bus is being used, False
+                otherwise.
+    @returns  True if the MUX was successfully initialized, False
+                otherwise.
+*/
+/***********************************************************************/
+bool I2cController::InitMux(const char *name, uint32_t address,
+                            bool is_alt_bus) {
+  if ((strcmp(name, "pca9546") != 0) || (strcmp(name, "pca9548") != 0))
+    return false; // bail out, mux not specified as a device_name
+
+  WS_DEBUG_PRINTLN("[i2c] Creating new MUX...");
+  if (is_alt_bus) {
+    if (!_i2c_bus_alt->HasMux()) {
+      if (!_i2c_bus_alt->AddMuxToBus(address, name)) {
+        return false;
+      }
+    }
+  } else {
+    if (!_i2c_bus_default->HasMux()) {
+      if (!_i2c_bus_default->AddMuxToBus(address, name)) {
+        return false;
+      }
+    }
+  }
+  // TODO [Online]: Publish back out to IO here!
   return true;
 }
 
@@ -493,16 +534,18 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         "[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
     return false;
   }
+
   wippersnapper_i2c_I2cDeviceStatus device_status =
       wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_UNSPECIFIED;
-  wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
+  // Parse out device name and descriptor
   char device_name[15];
   strcpy(device_name,
          _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_name);
+  wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
+      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
-  // TODO: Handle Replace messages by implementing a Remove handler first...then
-  // proceed to adding a new device
+  // TODO [Online]: Handle Replace messages by implementing the Remove handler
+  // first...then proceed to adding a new device
 
   // Does the device's descriptor specify a different i2c bus?
   if (strcmp(device_descriptor.i2c_bus_scl, "default") != 0) {
@@ -518,68 +561,37 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   // Before we do anything on the bus - was the bus initialized correctly?
   if (!IsBusStatusOK(use_alt_bus)) {
-    WsV2.haltErrorV2("[i2c] I2C bus is stuck or not operational, reset the board!", WS_LED_STATUS_ERROR_RUNTIME, false);
-    if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
+    WS_DEBUG_PRINTLN(
+        "[i2c] I2C bus is stuck or not operational, reset the board!");
+    if (WsV2._sdCardV2->isModeOffline()) {
+      WsV2.haltErrorV2(" ", WS_LED_STATUS_ERROR_RUNTIME,
+                       false); // doesn't return, halts
+    }
+    if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish message to IO!");
       return false;
+    }
     return true;
   }
 
-  // Mux case #1 - We are creating a mux via I2cDeviceAddorReplace message
-  if ((strcmp(device_name, "pca9546") == 0) ||
-      (strcmp(device_name, "pca9548") == 0)) {
-    WS_DEBUG_PRINTLN("[i2c] Creating a new MUX driver obj");
-    if (use_alt_bus) {
-      if (!_i2c_bus_alt->HasMux()) {
-        WS_DEBUG_PRINT("[i2c] Adding MUX to alternate bus...");
-        _i2c_bus_alt->AddMuxToBus(device_descriptor.i2c_mux_address,
-                                  device_name);
-      } else {
-        WsV2.haltErrorV2("[i2c] Unable to initialize I2C MUX!", WS_LED_STATUS_ERROR_RUNTIME, false);
-      }
-    } else {
-      if (!_i2c_bus_default->HasMux()) {
-        WS_DEBUG_PRINT("[i2c] Adding MUX to default bus...");
-        _i2c_bus_default->AddMuxToBus(device_descriptor.i2c_mux_address,
-                                      device_name);
-      } else {
-        WsV2.haltErrorV2("[i2c] Unable to initialize I2C MUX!", WS_LED_STATUS_ERROR_RUNTIME, false);
-      }
-    }
-    // TODO: Publish back out to IO instead of blindly returning true
-    return true;
+  // I2C MUX (Case #1) - We are creating an I2C mux via the
+  // I2cDeviceAddorReplace message
+  if (!InitMux(device_name, device_descriptor.i2c_mux_address, use_alt_bus)) {
+    // TODO [Online]: Publish back out to IO here!
+    WsV2.haltErrorV2("[i2c] Failed to initialize MUX driver!",
+                     WS_LED_STATUS_ERROR_RUNTIME, false);
   }
 
   // Mux case #2 - We are creating a new driver that USES THE MUX via
   // I2cDeviceAddorReplace message
   if (device_descriptor.i2c_mux_address != 0x00) {
-    uint32_t mux_channel = device_descriptor.i2c_mux_channel;
-    if (use_alt_bus) {
-      if (_i2c_bus_alt->HasMux()) {
-        _i2c_bus_alt->SelectMuxChannel(mux_channel);
-        WS_DEBUG_PRINT("[i2c] Selected MUX CH: ");
-        WS_DEBUG_PRINTLN(mux_channel);
-        did_set_mux_ch = true;
-      } else {
-        WsV2.haltErrorV2("[i2c] Device requires a MUX but MUX not present within config.json!", WS_LED_STATUS_ERROR_RUNTIME, false);
-        // TODO: Online mode needs the below implemented
-        // device_status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
-        // PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
-        return false;
-      }
-    } else {
-      if (_i2c_bus_default->HasMux()) {
-        _i2c_bus_default->SelectMuxChannel(mux_channel);
-        WS_DEBUG_PRINT("[i2c] Selected MUX CH: ");
-        WS_DEBUG_PRINTLN(mux_channel);
-        did_set_mux_ch = true;
-      } else {
-        WsV2.haltErrorV2("[i2c] Device requires a MUX but MUX not present within config.json!", WS_LED_STATUS_ERROR_RUNTIME, false);
-        // TODO: Online mode needs the below implemented
-        // device_status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
-        // PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
-        return false;
-      }
+    if (!_i2c_bus_alt->HasMux() || !_i2c_bus_default->HasMux()) {
+      WsV2.haltErrorV2("[i2c] Device requires a MUX but MUX not present "
+                       "within config.json!",
+                       WS_LED_STATUS_ERROR_RUNTIME, false);
     }
+    ConfigureMuxChannel(device_descriptor.i2c_mux_channel, use_alt_bus);
+    did_set_mux_ch = true;
   }
 
   WS_DEBUG_PRINTLN("Creating a new I2C driver obj");
@@ -590,7 +602,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     bus = _i2c_bus_default->GetBus();
   }
 
-  drvBase *drv = createI2CDriverByName(
+  drvBase *drv = CreateI2CDriverByName(
       device_name, bus, device_descriptor.i2c_device_address,
       device_descriptor.i2c_mux_channel, device_status);
 
@@ -677,11 +689,11 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 /********************************************************************************/
 void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
   if (is_alt_bus) {
-    _i2c_bus_alt->ClearMuxChannel(); // sanity-check, may not be required
+    _i2c_bus_alt->ClearMuxChannel(); // sanity-check
     _i2c_bus_alt->SelectMuxChannel(mux_channel);
     return;
   }
-  _i2c_bus_default->ClearMuxChannel(); // sanity-check, may not be required
+  _i2c_bus_default->ClearMuxChannel(); // sanity-check
   _i2c_bus_default->SelectMuxChannel(mux_channel);
 }
 
