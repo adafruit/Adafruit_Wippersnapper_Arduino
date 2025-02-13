@@ -518,15 +518,13 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   // Before we do anything on the bus - was the bus initialized correctly?
   if (!IsBusStatusOK(use_alt_bus)) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus is not operational or stuck, please "
-                     "restart device!");
+    WsV2.haltErrorV2("[i2c] I2C bus is stuck or not operational, reset the board!", WS_LED_STATUS_ERROR_RUNTIME, false);
     if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
       return false;
     return true;
   }
 
   // Mux case #1 - We are creating a mux via I2cDeviceAddorReplace message
-  // TODO: Refactor
   if ((strcmp(device_name, "pca9546") == 0) ||
       (strcmp(device_name, "pca9548") == 0)) {
     WS_DEBUG_PRINTLN("[i2c] Creating a new MUX driver obj");
@@ -536,7 +534,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         _i2c_bus_alt->AddMuxToBus(device_descriptor.i2c_mux_address,
                                   device_name);
       } else {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Mux specified but not created");
+        WsV2.haltErrorV2("[i2c] Unable to initialize I2C MUX!", WS_LED_STATUS_ERROR_RUNTIME, false);
       }
     } else {
       if (!_i2c_bus_default->HasMux()) {
@@ -544,7 +542,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         _i2c_bus_default->AddMuxToBus(device_descriptor.i2c_mux_address,
                                       device_name);
       } else {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Mux specified but not created");
+        WsV2.haltErrorV2("[i2c] Unable to initialize I2C MUX!", WS_LED_STATUS_ERROR_RUNTIME, false);
       }
     }
     // TODO: Publish back out to IO instead of blindly returning true
@@ -562,11 +560,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         WS_DEBUG_PRINTLN(mux_channel);
         did_set_mux_ch = true;
       } else {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
-                         "been initialized first");
-        device_status =
-            wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
-        PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
+        WsV2.haltErrorV2("[i2c] Device requires a MUX but MUX not present within config.json!", WS_LED_STATUS_ERROR_RUNTIME, false);
+        // TODO: Online mode needs the below implemented
+        // device_status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
+        // PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
         return false;
       }
     } else {
@@ -576,11 +573,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         WS_DEBUG_PRINTLN(mux_channel);
         did_set_mux_ch = true;
       } else {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Device requests a MUX but MUX has not "
-                         "been initialized first");
-        device_status =
-            wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
-        PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
+        WsV2.haltErrorV2("[i2c] Device requires a MUX but MUX not present within config.json!", WS_LED_STATUS_ERROR_RUNTIME, false);
+        // TODO: Online mode needs the below implemented
+        // device_status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
+        // PublishI2cDeviceAddedorReplaced(device_descriptor, device_status);
         return false;
       }
     }
@@ -636,15 +632,11 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
           wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_INIT;
 
       if (WsV2._sdCardV2->isModeOffline()) {
-        WS_DEBUG_PRINTLN("[i2c] Driver failed to initialize!\n\tDid you set "
+        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
                          "the correct value for i2cDeviceName?\n\tDid you set "
                          "the correct value for"
-                         "i2cDeviceAddress?");
-        while (
-            1) { // Keep the WIPPER drive open to allow user to edit config.json
-          WsV2.feedWDTV2();
-          delay(500);
-        }
+                         "i2cDeviceAddress?",
+                         WS_LED_STATUS_ERROR_RUNTIME, false);
       }
       if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))
         return false;
@@ -656,15 +648,11 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_FAIL_UNSUPPORTED_SENSOR;
 
     if (WsV2._sdCardV2->isModeOffline()) {
-      WS_DEBUG_PRINTLN("[i2c] Driver failed to initialize!\n\tDid you set "
+      WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
                        "the correct value for i2cDeviceName?\n\tDid you set "
                        "the correct value for"
-                       "i2cDeviceAddress?");
-      while (
-          1) { // Keep the WIPPER drive open to allow user to edit config.json
-        WsV2.feedWDTV2();
-        delay(500);
-      }
+                       "i2cDeviceAddress?",
+                       WS_LED_STATUS_ERROR_RUNTIME, false);
     }
 
     if (!PublishI2cDeviceAddedorReplaced(device_descriptor, device_status))

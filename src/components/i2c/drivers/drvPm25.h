@@ -16,6 +16,7 @@
 #ifndef DRV_PM25_H
 #define DRV_PM25_H
 
+#include "Wippersnapper_V2.h"
 #include "drvBase.h"
 #include <Adafruit_PM25AQI.h>
 #include <Wire.h>
@@ -41,7 +42,8 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvPm25(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvPm25(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+          const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -58,8 +60,8 @@ public:
   /*******************************************************************************/
   bool begin() override {
     _pm25 = new Adafruit_PM25AQI();
-    // Wait one second for sensor to boot up!
-    delay(1000);
+    // Wait three seconds for the sensor to boot up!
+    delay(3000);
     return _pm25->begin_I2C(_i2c);
   }
 
@@ -74,10 +76,14 @@ public:
   /*******************************************************************************/
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
     PM25_AQI_Data data;
-    if (!_pm25->read(&data))
+    if (!_pm25->read(&data)) {
+      WS_DEBUG_PRINTLN("Failed to read PM10STD data");
       return false; // couldn't read data
+    }
 
     pm10StdEvent->pm10_std = (float)data.pm10_standard;
+    WS_DEBUG_PRINT("PM10STD: ");
+    WS_DEBUG_PRINTLN(pm10StdEvent->pm10_std);
     return true;
   }
 
@@ -92,10 +98,13 @@ public:
   /*******************************************************************************/
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
     PM25_AQI_Data data;
-    if (!_pm25->read(&data))
+    if (!_pm25->read(&data)) {
+      WS_DEBUG_PRINTLN("Failed to read PM25STD data");
       return false; // couldn't read data
-
+    }
     pm25StdEvent->pm25_std = (float)data.pm25_standard;
+    WS_DEBUG_PRINT("PM25STD: ");
+    WS_DEBUG_PRINTLN(pm25StdEvent->pm25_std);
     return true;
   }
 
@@ -110,10 +119,14 @@ public:
   /*******************************************************************************/
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
     PM25_AQI_Data data;
-    if (!_pm25->read(&data))
+    if (!_pm25->read(&data)) {
+      WS_DEBUG_PRINTLN("Failed to read PM100STD data");
       return false; // couldn't read data
+    }
 
     pm100StdEvent->pm100_std = (float)data.pm100_standard;
+    WS_DEBUG_PRINT("PM100STD: ");
+    WS_DEBUG_PRINTLN(pm100StdEvent->pm100_std);
     return true;
   }
 

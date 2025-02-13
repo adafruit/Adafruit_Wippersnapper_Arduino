@@ -876,22 +876,36 @@ void Wippersnapper_V2::runNetFSMV2() {
               The desired error to print to serial.
     @param    ledStatusColor
               The desired color to blink.
+    @param    reboot
+              If true, the device will reboot after the WDT bites.
+              If false, the device will not allow the WDT to bite and
+              instead hang indefinitely, holding the WIPPER drive open
 */
 /**************************************************************************/
-void Wippersnapper_V2::haltErrorV2(String error,
-                                   ws_led_status_t ledStatusColor) {
+void Wippersnapper_V2::haltErrorV2(String error, ws_led_status_t ledStatusColor,
+                                   bool reboot) {
+  WS_DEBUG_PRINT("ERROR ");
+  if (reboot) {
+    WS_DEBUG_PRINT("[RESET]: ");
+  } else {
+    WS_DEBUG_PRINT("[HANG]: ");
+  }
+  WS_DEBUG_PRINTLN(error);
+  statusLEDSolid(ledStatusColor);
   for (;;) {
-    WS_DEBUG_PRINT("ERROR [WDT RESET]: ");
-    WS_DEBUG_PRINTLN(error);
-    // let the WDT fail out and reset!
-    statusLEDSolid(ledStatusColor);
+    if (!reboot) {
+      WsV2.feedWDTV2(); // Feed the WDT indefinitely to hold the WIPPER drive
+                        // open
+    } else {
+// Let the WDT fail out and reset!
 #ifndef ARDUINO_ARCH_ESP8266
-    delay(1000);
+      delay(1000);
 #else
-    // Calls to delay() and yield() feed the ESP8266's
-    // hardware and software watchdog timers, delayMicroseconds does not.
-    delayMicroseconds(1000000);
+      // Calls to delay() and yield() feed the ESP8266's
+      // hardware and software watchdog timers, delayMicroseconds does not.
+      delayMicroseconds(1000000);
 #endif
+    }
   }
 }
 
