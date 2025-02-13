@@ -20,7 +20,7 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
-#include "drivers/drvBME280.h"
+#include "drivers/drvBme280.h"
 #include "drivers/drvBase.h" ///< Base driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme680.h"
