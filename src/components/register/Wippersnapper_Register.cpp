@@ -56,8 +56,11 @@ bool Wippersnapper::encodePubRegistrationReq() {
     return _status;
 
   // pubish message
-  WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
-  WS_DEBUG_PRINTLN("Published!");
+  if (!WS.publish(WS._topic_description, _message_buffer, _message_len, 1)){
+    WS_DEBUG_PRINTLN("ERROR: Unable to publish registration message");
+  } else {
+    WS_DEBUG_PRINTLN("Published! (Registration)");
+  }
   WS._boardStatus = WS_BOARD_DEF_SENT;
 
   return _status;
@@ -153,10 +156,15 @@ void Wippersnapper::decodeRegistrationResp(char *data, uint16_t len) {
     }
 
     // Publish message
-    WS.publish(_topic_description_status_complete, _message_buffer,
-               _message_len, 1);
-    WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
-
+    if (WS.publish(_topic_description_status_complete, _message_buffer,
+                   _message_len, 1))
+    {
+      WS_DEBUG_PRINTLN("Completed registration process, configuration next!");
+    }
+    else
+    {
+      WS_DEBUG_PRINTLN("ERROR: Unable to publish registration complete message");
+    }
   } else {
     WS._boardStatus = WS_BOARD_DEF_INVALID;
   }

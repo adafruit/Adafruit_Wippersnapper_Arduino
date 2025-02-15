@@ -276,8 +276,11 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
                             &_outgoingSignalMsg);
 
         WS_DEBUG_PRINT("Publishing pinEvent...");
-        WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-        WS_DEBUG_PRINTLN("Published!");
+        if (!WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1)){
+          WS_DEBUG_PRINTLN("ERROR: Unable to publish DigitalIO pinEvent");
+        } else {
+          WS_DEBUG_PRINTLN("Published! (DigitalIO PinEvent)");
+        }
 
         // reset the digital pin
         _digital_input_pins[i].prvPeriod = curTime;
@@ -315,8 +318,14 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
               &msgSz, wippersnapper_signal_v1_CreateSignalRequest_fields,
               &_outgoingSignalMsg);
           WS_DEBUG_PRINT("Publishing pinEvent...");
-          WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1);
-          WS_DEBUG_PRINTLN("Published!");
+          if (!WS.publish(WS._topic_signal_device, WS._buffer_outgoing, msgSz, 1))
+          {
+            WS_DEBUG_PRINTLN("ERROR: Unable to publish DigitalIO pinEvent");
+          }
+          else
+          {
+            WS_DEBUG_PRINTLN("Published! (DigitalIO PinEvent)");
+          }
 
           // set the pin value in the digital pin object for comparison on next
           // run
