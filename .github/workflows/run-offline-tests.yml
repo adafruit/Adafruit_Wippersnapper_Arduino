@@ -28,8 +28,8 @@ jobs:
         uses: wokwi/wokwi-ci-server-action@v1
       - name: Install Wokwi CLI
         run: curl -L https://wokwi.com/ci/install.sh | sh
-      - name: Install platformIO libraries
-        run: pio lib install
+      - name: Install PIO Libraries for esp32dev target
+        run: pio pkg install --environment=esp32dev
       - name: Build PlatformIO Project
         run: platformio run --environment esp32dev
       - name: Move new build file to test folder
