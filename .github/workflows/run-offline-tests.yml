@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2024
+# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2024-2025
 #
 # SPDX-License-Identifier: MIT
-name: WipperSnapper Tests
+name: WipperSnapper Tests for Offline Mode
 
 on:
   pull_request:

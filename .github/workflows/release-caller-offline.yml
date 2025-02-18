@@ -216,6 +216,10 @@ jobs:
           path: ci
       - name: pre-install
         run: bash ci/actions_install.sh
+      - name: tree
+        run: tree
+      - name: ls
+        run: ls
       - name: clang
         run: python3 ci/run-clang-format.py -r -e "ci/*" -e "bin/*" -e src/nanopb -e src/protos -e src/pb.h -e src/provisioning/tinyusb  src/
 
