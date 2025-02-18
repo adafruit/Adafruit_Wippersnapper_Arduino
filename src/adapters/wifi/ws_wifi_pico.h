@@ -184,8 +184,8 @@ public:
               ? _aio_root_ca_prod
               : _aio_root_ca_staging);
       WsV2._mqttV2 = new Adafruit_MQTT_Client(
-          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
-          WsV2._configV2.aio_user, WsV2._configV2.aio_key);
+          _mqtt_client_secure, WsV2._configV2.aio_url, WsV2._configV2.io_port,
+          clientID, WsV2._configV2.aio_user, WsV2._configV2.aio_key);
     } else {
       _mqtt_client_insecure = new WiFiClient();
       WsV2._mqttV2 = new Adafruit_MQTT_Client(
@@ -330,13 +330,13 @@ protected:
 
         // Use the macro to retry the status check until connected / timed out
         int lastResult;
-/*         RETRY_FUNCTION_UNTIL_TIMEOUT(
-            []() -> int { return WiFi.status(); }, // Function call each cycle
-            int,                                   // return type
-            lastResult, // return variable (unused here)
-            [](int status) { return status == WL_CONNECTED; }, // check
-            PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
-            PICO_CONNECT_RETRY_DELAY_MS); // interval between retries */
+        /*         RETRY_FUNCTION_UNTIL_TIMEOUT(
+                    []() -> int { return WiFi.status(); }, // Function call each
+           cycle int,                                   // return type
+                    lastResult, // return variable (unused here)
+                    [](int status) { return status == WL_CONNECTED; }, // check
+                    PICO_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
+                    PICO_CONNECT_RETRY_DELAY_MS); // interval between retries */
 
         if (lastResult == WL_CONNECTED) {
           _statusV2 = WS_NET_CONNECTED;

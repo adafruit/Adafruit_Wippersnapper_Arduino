@@ -636,10 +636,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   }
   // Configure the driver
   drv->EnableSensorReads(
-    _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
-    _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types_count);
+      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
+      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types_count);
   drv->SetSensorPeriod(
-    _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
+      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
   if (!drv->begin()) {
     if (WsV2._sdCardV2->isModeOffline()) {
       WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "

@@ -213,8 +213,9 @@ public:
   void BlinkKATStatus();
 
   // Error handling helpers
-  void
-  haltErrorV2(String error, ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME, bool reboot = true);
+  void haltErrorV2(String error,
+                   ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME,
+                   bool reboot = true);
   void errorWriteHangV2(String error);
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode

@@ -38,7 +38,8 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvPct2075(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvPct2075(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;

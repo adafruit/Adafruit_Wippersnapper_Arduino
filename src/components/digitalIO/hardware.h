@@ -31,6 +31,7 @@ public:
   bool GetValue(uint8_t pin_name);
   void deinit(uint8_t pin_name);
   bool IsStatusLEDPin(uint8_t pin_name);
+
 private:
 };
 #endif // WS_DIGITALIO_HARDWARE_H

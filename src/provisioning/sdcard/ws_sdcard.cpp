@@ -174,7 +174,8 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
   } else if (strcmp(rtc_type, "SOFT_RTC") == 0) {
     return InitSoftRTC();
   }
-  WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown RTC type found in JSON string!");
+  WS_DEBUG_PRINTLN(
+      "[SD] Runtime Error: Unknown RTC type found in JSON string!");
   return false;
 }
 

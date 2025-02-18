@@ -50,7 +50,7 @@ public:
   */
   /**************************************************************************/
   ws_wifi_ninafw(const char *aioUsername, const char *aioKey,
-                         const char *netSSID, const char *netPass)
+                 const char *netSSID, const char *netPass)
       : Wippersnapper() {
     _ssid = netSSID;
     _pass = netPass;

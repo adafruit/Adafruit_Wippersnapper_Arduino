@@ -70,7 +70,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
   if (doc.containsKey("network_type_wifi")) {
     // set default network config
-    convertFromJson(doc["network_type_wifi"], WS._config.network);
+    convertFromJson(doc["network_type_wifi"], WsV2._configV2.network);
 
     if (!doc["network_type_wifi"].containsKey("alternative_networks")) {
       // do nothing extra, we already have the only network
@@ -97,13 +97,13 @@ void WipperSnapper_LittleFS::parseSecrets() {
           WS_DEBUG_PRINTLN(altnetworks[i]["network_ssid"].as<const char *>());
           break;
         }
-        convertFromJson(altnetworks[i], WS._multiNetworks[i]);
+        convertFromJson(altnetworks[i], WsV2._multiNetworksV2[i]);
         WS_DEBUG_PRINT("Added SSID: ");
-        WS_DEBUG_PRINTLN(WS._multiNetworks[i].ssid);
+        WS_DEBUG_PRINTLN(WsV2._multiNetworksV2[i].ssid);
         WS_DEBUG_PRINT("PASS: ");
-        WS_DEBUG_PRINTLN(WS._multiNetworks[i].pass);
+        WS_DEBUG_PRINTLN(WsV2._multiNetworksV2[i].pass);
       }
-      WS._isWiFiMulti = true;
+      WsV2._isWiFiMultiV2 = true;
     } else {
       fsHalt("ERROR: Unrecognised value type for "
              "network_type_wifi.alternative_networks in secrets.json!");
@@ -113,18 +113,18 @@ void WipperSnapper_LittleFS::parseSecrets() {
   }
 
   // Extract a config struct from the JSON document
-  WS._config = doc.as<secretsConfig>();
+  WsV2._configV2 = doc.as<secretsConfig>();
 
   // Validate the config struct is not filled with default values
-  if (strcmp(WS._config.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
-      strcmp(WS._config.aio_key, "YOUR_IO_KEY_HERE") == 0) {
+  if (strcmp(WsV2._configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
+      strcmp(WsV2._configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
     fsHalt(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
   }
 
-  if (strcmp(WS._config.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
-      strcmp(WS._config.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
+  if (strcmp(WsV2._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
+      strcmp(WsV2._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
     fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
            "change network_ssid and network_password to match your Adafruit IO "
            "credentials!\n");
@@ -144,8 +144,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::fsHalt(String msg,
-                                       ws_led_status_t status_state) {
+void WipperSnapper_LittleFS::fsHalt(String msg, ws_led_status_t status_state) {
   statusLEDSolid(status_state);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");

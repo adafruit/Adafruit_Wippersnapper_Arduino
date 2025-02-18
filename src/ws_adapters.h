@@ -17,7 +17,7 @@
 #define WS_ADAPTERS_H
 /**
  * The following are adapters for use with WiFi modules.
-*/
+ */
 // Adafruit AirLift (ESP32) networking adapter
 #if defined(ADAFRUIT_METRO_M4_EXPRESS) ||                                      \
     defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) ||   \
@@ -42,7 +42,7 @@ typedef ws_wifi_pico ws_adapter_wifi;
 typedef ws_wifi_ninafw ws_adapter_wifi;
 /**
  * The following are adapters for use without networking functionality.
-*/
+ */
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2) || defined(ARDUINO_RASPBERRY_PI_PICO)
 #include "adapters/offline/ws_offline_pico.h"
 typedef ws_offline_pico ws_adapter_offline;

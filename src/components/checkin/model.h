@@ -30,7 +30,7 @@ public:
   void CreateCheckinRequest(const char *hardware_uid,
                             const char *firmware_version);
   bool EncodeCheckinRequest();
-  wippersnapper_checkin_CheckinRequest* getCheckinRequest();
+  wippersnapper_checkin_CheckinRequest *getCheckinRequest();
   // Response Message
   bool DecodeCheckinResponse(pb_istream_t *stream);
   void ParseCheckinResponse();

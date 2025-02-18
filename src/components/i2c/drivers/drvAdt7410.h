@@ -38,7 +38,8 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvAdt7410(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvAdt7410(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -63,7 +64,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() override{
+  bool begin() override {
     _ADT7410 = new Adafruit_ADT7410();
     return _ADT7410->begin((uint8_t)_address, _i2c);
   }

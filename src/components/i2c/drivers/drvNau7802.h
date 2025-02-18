@@ -41,7 +41,8 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvNau7802(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvNau7802(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -99,7 +100,8 @@ public:
       // WS_DEBUG_PRINTLN("Failed to calibrate internal offset, retrying!");
       delay(1000);
     }
-    // WS_DEBUG_PRINTLN("ERROR: Failed to calibrate internal offset of NAU7802.");
+    // WS_DEBUG_PRINTLN("ERROR: Failed to calibrate internal offset of
+    // NAU7802.");
     return false;
   }
 
@@ -132,7 +134,7 @@ public:
     // Wait for the sensor to be ready
     while (!_nau7802->available()) {
       if (millis() - start > NAU7802_TIMEOUT_MS) {
-        //WS_DEBUG_PRINTLN("NAU7802 data not available");
+        // WS_DEBUG_PRINTLN("NAU7802 data not available");
         return false;
       }
     }

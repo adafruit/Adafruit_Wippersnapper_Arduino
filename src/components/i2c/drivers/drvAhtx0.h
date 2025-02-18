@@ -41,7 +41,8 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvAhtx0(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel, const char* driver_name)
+  drvAhtx0(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+           const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -73,10 +74,10 @@ public:
     // initialize sensors
     _aht_temp = _aht->getTemperatureSensor();
     if (_aht_temp == NULL)
-        return false;
+      return false;
     _aht_humidity = _aht->getHumiditySensor();
     if (_aht_humidity == NULL)
-        return false;
+      return false;
 
     return true;
   }

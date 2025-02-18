@@ -20,9 +20,9 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
-#include "drivers/drvBme280.h"
 #include "drivers/drvBase.h" ///< Base driver class
 #include "drivers/drvBh1750.h"
+#include "drivers/drvBme280.h"
 #include "drivers/drvBme680.h"
 #include "drivers/drvBmp280.h"
 #include "drivers/drvBmp3xx.h"
@@ -38,9 +38,9 @@
 #include "drivers/drvLps3xhw.h"
 #include "drivers/drvLtr329_Ltr303.h"
 #include "drivers/drvLtr390.h"
+#include "drivers/drvMCP9808.h"
 #include "drivers/drvMax1704x.h"
 #include "drivers/drvMcp3421.h"
-#include "drivers/drvMCP9808.h"
 #include "drivers/drvMpl115a2.h"
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
@@ -95,6 +95,7 @@ public:
   bool IsBusStatusOK(bool is_alt_bus);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
+
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object
   I2cHardware *_i2c_bus_default;       ///< Pointer to the default I2C bus

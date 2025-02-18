@@ -27,6 +27,7 @@ class SensorModel {
 public:
   SensorModel();
   ~SensorModel();
+
 private:
   wippersnapper_sensor_SensorEvent _msg_sensor_event; ///< SensorEvent message
 };

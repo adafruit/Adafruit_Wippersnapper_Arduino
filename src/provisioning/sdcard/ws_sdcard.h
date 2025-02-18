@@ -14,10 +14,10 @@
  */
 #ifndef WS_SDCARD_H
 #define WS_SDCARD_H
-#include "Wippersnapper_V2.h"
 #include "RTClib.h"
 #include "SdFat.h"
 #include "StreamUtils.h"
+#include "Wippersnapper_V2.h"
 #include "sdios.h"
 
 #if defined(ARDUINO_FEATHER_ESP32) ||                                          \
@@ -62,6 +62,7 @@ public:
                               wippersnapper_sensor_SensorType read_type);
   bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
   bool LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
+
 private:
   void calculateFileLimits();
   bool ValidateChecksum(JsonDocument &doc);
@@ -85,7 +86,9 @@ private:
                        const char *pin, int resolution, float period,
                        int num_sensors, const char *sensor_type_1,
                        const char *sensor_type_2);
-  bool ParseI2cDeviceAddReplace(JsonObject &component, wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);
+  bool ParseI2cDeviceAddReplace(
+      JsonObject &component,
+      wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
