@@ -35,7 +35,7 @@ jobs:
       - name: Move new build file to test folder
         run: cp .pio/build/esp32dev/firmware.elf tests/bin/offline/firmware.elf
       - name: Run Wokwi Tests
-        run: pytest tests/${{ matrix.test }}.py --junitxml=report.xml -v
+        run: pytest tests/test_offline.py --junitxml=report.xml -v
         env:
           WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
       - name: Publish Wokwi Test Results
