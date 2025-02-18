@@ -129,7 +129,7 @@ CheckinModel::getCheckinResponse() {
 */
 /***********************************************************************/
 wippersnapper_checkin_CheckinRequest *CheckinModel::getCheckinRequest() {
-    return &_CheckinRequest;
+  return &_CheckinRequest;
 }
 
 /***********************************************************************/
