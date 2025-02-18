@@ -81,8 +81,9 @@ void initStatusLED() {
 #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
   analogWrite(STATUS_LED_PIN, 255);
 #elif defined(ARDUINO_ARCH_ESP32)
-  //WsV2._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ, LEDC_TIMER_12_BIT);
-  //WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0); // turn OFF
+  // WsV2._pwmComponent->attach(STATUS_LED_PIN, LEDC_BASE_FREQ,
+  // LEDC_TIMER_12_BIT); WsV2._pwmComponent->writeDutyCycle(STATUS_LED_PIN, 0);
+  // // turn OFF
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
   digitalWrite(STATUS_LED_PIN, 0);
 #else
