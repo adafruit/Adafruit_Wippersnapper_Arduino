@@ -900,7 +900,7 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES:
     return "bytes";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN:
-    return "none";
+    return "boolean";
   default:
     return "UNKNOWN";
   }
