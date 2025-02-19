@@ -137,7 +137,7 @@ public:
   }
 
 protected:
-  Adafruit_LPS28 *_lps28; ///< LPS28DFW  object
+  Adafruit_LPS28 *_lps28 = nullptr; ///< LPS28DFW  object
   Adafruit_Sensor *_temp =
       NULL; ///< Ptr to an adafruit_sensor representing the temperature
   Adafruit_Sensor *_pressure =
