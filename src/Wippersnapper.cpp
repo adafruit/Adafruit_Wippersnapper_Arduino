@@ -2364,7 +2364,7 @@ void Wippersnapper::runNetFSM() {
   while (fsmNetwork != FSM_NET_CONNECTED) {
     switch (fsmNetwork) {
     case FSM_NET_CHECK_MQTT:
-      if (WS._mqtt->connected()) {
+      if (WS._mqtt->connected() && networkStatus() == WS_NET_CONNECTED) {
         // WS_DEBUG_PRINTLN("Connected to Adafruit IO!");
         fsmNetwork = FSM_NET_CONNECTED;
         return;
@@ -2659,18 +2659,26 @@ bool Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
   // method when caused with WS object in another file.
   WS.feedWDT();
   if (!WS._mqtt->publish(topic, payload, bLen, qos)) {
-    if (WS._mqtt->connected()) {
+    WS_DEBUG_PRINTLN("FAILED!");
+    WS_DEBUG_PRINT("Mqtt connected: ");
+    WS_DEBUG_PRINTLN(WS._mqtt->connected());
+    WS_DEBUG_PRINT("Network status: ");
+    WS_DEBUG_PRINTLN(networkStatus());
+    if (WS._mqtt->connected() && networkStatus() == WS_NET_CONNECTED) {
       WS_DEBUG_PRINTLN("Failed to publish MQTT message, retrying!");
     } else {
-      WS_DEBUG_PRINTLN("MQTT Disconnected! Running network FSM then publish...");
+      WS_DEBUG_PRINTLN("MQTT connection broken! Running network FSM then publish...");
       WS._mqtt->disconnect();
+      WS_DEBUG_PRINTLN("MQTT forcibly disconnected. Running Network FSM...");
       runNetFSM();
     }
     WS.feedWDT();
+    WS_DEBUG_PRINTLN("Retrying publish...");
     if (!WS._mqtt->publish(topic, payload, bLen, qos)) {
       WS_DEBUG_PRINTLN("Failed to publish MQTT message!");
       return false;
     }
+    WS_DEBUG_PRINTLN("MQTT message published successfully!");
   }
   return true;
 }
