@@ -71,6 +71,10 @@ public:
       WS_DEBUG_PRINTLN("Failed to set averaging");
       return false;
     }
+    if (!_lps28->setFullScaleMode(false)) {
+      WS_DEBUG_PRINTLN("Failed to set 4060hPa max mode");
+      return false;
+    }
 
     return true;
   }
