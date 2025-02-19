@@ -63,10 +63,16 @@ public:
       return false;
 
     // Set up sample rate and filter initialization
-    _lps28->setDataRate(LPS28_ODR_ONESHOT);
-    _lps28->setAveraging(LPS28_AVG_512);
+    if (!_lps28->setDataRate(LPS28_ODR_ONESHOT)) {
+      WS_DEBUG_PRINTLN("Failed to set data rate");
+      return false;
+    }
+    if (!_lps28->setAveraging(LPS28_AVG_512)) {
+      WS_DEBUG_PRINTLN("Failed to set averaging");
+      return false;
+    }
 
-    return readSensor();
+    return true;
   }
 
   /*******************************************************************************/
