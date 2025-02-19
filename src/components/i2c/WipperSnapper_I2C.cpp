@@ -709,7 +709,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _lps25hb->configureDriver(msgDeviceInitReq);
     drivers.push_back(_lps25hb);
     WS_DEBUG_PRINTLN("LPS25HB Sensor Initialized Successfully!");
-  } else if (strcmp("lps28hb", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("lps28dfw", msgDeviceInitReq->i2c_device_name) == 0) {
     _lps28hb = new WipperSnapper_I2C_Driver_LPS28DFW(this->_i2c, i2cAddress);
     if (!_lps28hb->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize LPS28DFW Sensor!");
