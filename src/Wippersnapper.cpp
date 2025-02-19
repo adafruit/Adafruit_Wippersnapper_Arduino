@@ -558,7 +558,7 @@ void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       msgi2cResponse);
   WS_DEBUG_PRINT("Publishing Message: I2CResponse...");
-  if (!WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
+  if (!WS.publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
                          msgSz, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish I2C Response!");
   } else {
@@ -995,7 +995,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResponse_fields,
                         &msgServoResp);
     WS_DEBUG_PRINT("-> Servo Attach Response...");
-    WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
+    WS.publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
                       1);
     WS_DEBUG_PRINTLN("Published!");
   } else if (field->tag ==
@@ -1161,7 +1161,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PWMResponse_fields,
                         &msgPWMResponse);
     WS_DEBUG_PRINT("PUBLISHING: PWM Attach Response...");
-    if (!WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing,
+    if (!WS.publish(WS._topic_signal_pwm_device, WS._buffer_outgoing,
                            msgSz, 1)) {
       WS_DEBUG_PRINTLN("ERROR: Failed to publish PWM Attach Response!");
       return false;
@@ -1571,7 +1571,7 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_UARTResponse_fields,
                         &msgUARTResponse);
     WS_DEBUG_PRINT("PUBLISHING: UART Attach Response...");
-    if (!WS._mqtt->publish(WS._topic_signal_uart_device, WS._buffer_outgoing,
+    if (!WS.publish(WS._topic_signal_uart_device, WS._buffer_outgoing,
                            msgSz, 1)) {
       WS_DEBUG_PRINTLN("ERROR: Failed to publish UART Attach Response!");
       return false;
@@ -2653,14 +2653,26 @@ void Wippersnapper::processPackets() {
             The Quality of Service to publish with.
 */
 /*******************************************************/
-void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
+bool Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
                             uint8_t qos) {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
   WS.feedWDT();
   if (!WS._mqtt->publish(topic, payload, bLen, qos)) {
-    WS_DEBUG_PRINTLN("Failed to publish MQTT message!");
+    if (WS._mqtt->connected()) {
+      WS_DEBUG_PRINTLN("Failed to publish MQTT message, retrying!");
+    } else {
+      WS_DEBUG_PRINTLN("MQTT Disconnected! Running network FSM then publish...");
+      WS._mqtt->disconnect();
+      runNetFSM();
+    }
+    WS.feedWDT();
+    if (!WS._mqtt->publish(topic, payload, bLen, qos)) {
+      WS_DEBUG_PRINTLN("Failed to publish MQTT message!");
+      return false;
+    }
   }
+  return true;
 }
 
 /**************************************************************/

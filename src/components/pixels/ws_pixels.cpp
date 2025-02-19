@@ -182,7 +182,7 @@ void ws_pixels::publishAddStrandResponse(bool is_success,
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PixelsResponse_fields,
                       &msgInitResp);
   WS_DEBUG_PRINT("-> wippersnapper_signal_v1_PixelsResponse...");
-  WS._mqtt->publish(WS._topic_signal_pixels_device, WS._buffer_outgoing, msgSz,
+  WS.publish(WS._topic_signal_pixels_device, WS._buffer_outgoing, msgSz,
                     1);
   WS_DEBUG_PRINTLN("Published!");
 }
