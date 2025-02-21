@@ -161,11 +161,11 @@ public:
   }
 
 protected:
-  Adafruit_SCD30 *_scd = nullptr; ///< SCD30 driver object
-  ulong _lastRead = 0;            ///< Last time the sensor was read
-  sensors_event_t _temperature;   ///< Temperature
-  sensors_event_t _humidity;      ///< Relative Humidity
-  sensors_event_t _CO2;           ///< CO2
+  Adafruit_SCD30 *_scd = nullptr;     ///< SCD30 driver object
+  ulong _lastRead = 0ul;              ///< Last time the sensor was read
+  sensors_event_t _temperature = {0}; ///< Temperature
+  sensors_event_t _humidity = {0};    ///< Relative Humidity
+  sensors_event_t _CO2 = {0};         ///< CO2
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD30

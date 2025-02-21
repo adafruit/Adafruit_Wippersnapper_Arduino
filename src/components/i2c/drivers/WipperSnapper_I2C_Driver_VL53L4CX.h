@@ -129,7 +129,7 @@ public:
   */
   /*******************************************************************************/
   bool getProximity(sensors_event_t *proximityEvent, int whichObject = 0) {
-    VL53L4CX_MultiRangingData_t MultiRangingData;
+    VL53L4CX_MultiRangingData_t MultiRangingData = {0};
     VL53L4CX_MultiRangingData_t *pMultiRangingData = &MultiRangingData;
     uint8_t NewDataReady = 0;
     int status;
