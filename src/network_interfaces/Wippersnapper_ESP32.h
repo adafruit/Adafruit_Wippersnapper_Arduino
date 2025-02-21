@@ -211,7 +211,8 @@ public:
   @return ws_status_t
   */
   /********************************************************/
-  ws_status_t networkStatus() {
+  ws_status_t networkStatus() override {
+    WS_DEBUG_PRINTLN("ESP NetStatus");
     switch (WiFi.status()) {
     case WL_CONNECTED:
       return WS_NET_CONNECTED;
