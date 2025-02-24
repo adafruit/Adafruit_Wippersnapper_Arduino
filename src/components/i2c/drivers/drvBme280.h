@@ -46,11 +46,7 @@ public:
   drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    _i2c = i2c;
-    _address = sensorAddress;
-    _i2c_mux_channel = mux_channel;
-    strncpy(_name, driver_name, sizeof(_name) - 1);
-    _name[sizeof(_name) - 1] = '\0';
+    // Initialization handled by drvBase constructor
   }
 
   /*******************************************************************************/

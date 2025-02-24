@@ -36,29 +36,6 @@ public:
                 The I2C hardware interface, default is Wire.
       @param    address
                 The I2C sensor's unique address.
-      @param    driver_name
-                The name of the driver.
-  */
-  /*******************************************************************************/
-  drvBase(TwoWire *i2c, uint16_t address, const char *driver_name) {
-    _i2c = i2c;
-    _address = address;
-    _i2c_mux_addr = 0x0;
-    _i2c_mux_channel = NO_MUX_CH;
-    strncpy(_name, driver_name, sizeof(_name) - 1);
-    _name[sizeof(_name) - 1] = '\0';
-    _has_alt_i2c_bus = false;
-    strcpy(_pin_scl, "default");
-    strcpy(_pin_sda, "default");
-  }
-
-  /*******************************************************************************/
-  /*!
-      @brief    Instanciates an I2C sensor.
-      @param    i2c
-                The I2C hardware interface, default is Wire.
-      @param    address
-                The I2C sensor's unique address.
       @param    mux_channel
                 An optional channel number used to address a device on a I2C
      MUX.
