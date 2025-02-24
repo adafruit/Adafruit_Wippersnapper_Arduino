@@ -75,6 +75,8 @@ private:
   bool InitDS3231();
   bool InitPCF8523();
   bool InitSoftRTC();
+  void TickSoftRTC();
+  uint32_t GetSoftRTCTime();
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
   bool ParseDigitalIOAdd(wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd,
                          const char *pin, float period, bool value,
@@ -117,8 +119,9 @@ private:
   RTC_DS3231 *_rtc_ds3231 = nullptr;   ///< DS3231 RTC object
   RTC_DS1307 *_rtc_ds1307 = nullptr;   ///< DS1307 RTC object
   RTC_PCF8523 *_rtc_pcf8523 = nullptr; ///< PCF8523 RTC object
-  RTC_Millis *_rtc_soft = nullptr;     ///< Software RTC object
-  bool _use_test_data; ///< True if sample data is being used for testing
+  bool _is_soft_rtc; ///< True if a "soft rtc" is being used, False otherwise
+  uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
+  bool _use_test_data;        ///< True if sample data is being used for testing
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H

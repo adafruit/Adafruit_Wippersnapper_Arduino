@@ -23,6 +23,7 @@ ws_sdcard::ws_sdcard()
     : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
   is_mode_offline = false;
   _use_test_data = false;
+  _is_soft_rtc = false;
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
@@ -145,16 +146,32 @@ bool ws_sdcard::InitPCF8523() {
 
 /**************************************************************************/
 /*!
-    @brief    Initializes a software RTC.
-    @returns  True if the RTC was successfully initialized, False
+    @brief    Initializes a "soft" RTC for devices without a physical
+              RTC module attached.
+    @returns  True if the soft RTC was successfully initialized, False
               otherwise.
 */
 /**************************************************************************/
 bool ws_sdcard::InitSoftRTC() {
-  // NOTE: RTC_Soft always returns void
-  _rtc_soft->begin(DateTime(F(__DATE__), F(__TIME__)));
-  return true;
+  _is_soft_rtc = true;
+  _soft_rtc_counter = 0;
+  return _is_soft_rtc;
 }
+
+/**************************************************************************/
+/*!
+    @brief    Increments the "soft" RTC.
+*/
+/**************************************************************************/
+void ws_sdcard::TickSoftRTC() { _soft_rtc_counter++; }
+
+/**************************************************************************/
+/*!
+    @brief    Returns the current timestamp from the RTC.
+    @returns  The current timestamp from the RTC.
+*/
+/**************************************************************************/
+uint32_t ws_sdcard::GetSoftRTCTime() { return _soft_rtc_counter; }
 
 /**************************************************************************/
 /*!
@@ -171,11 +188,11 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
     return InitDS3231();
   } else if (strcmp(rtc_type, "PCF8523") == 0) {
     return InitPCF8523();
-  } else if (strcmp(rtc_type, "SOFT_RTC") == 0) {
+  } else if (strcmp(rtc_type, "SOFT") == 0) {
     return InitSoftRTC();
-  }
-  WS_DEBUG_PRINTLN(
-      "[SD] Runtime Error: Unknown RTC type found in JSON string!");
+  } else
+    WS_DEBUG_PRINTLN(
+        "[SD] Runtime Error: Unknown RTC type found in JSON string!");
   return false;
 }
 
@@ -577,9 +594,12 @@ bool ws_sdcard::CreateNewLogFile() {
     return false;
   }
 
-  File32 file;
+  String logFilename;
   // Generate a name for the new log file using the RTC's timestamp
-  String logFilename = "log_" + String(GetTimestamp()) + ".log";
+  if (!_is_soft_rtc)
+    logFilename = "log_" + String(GetTimestamp()) + ".log";
+  else
+    logFilename = "log_" + String(millis()) + ".log";
   static char log_filename_buffer[256];
   strncpy(log_filename_buffer, logFilename.c_str(),
           sizeof(log_filename_buffer) - 1);
@@ -587,7 +607,8 @@ bool ws_sdcard::CreateNewLogFile() {
   _log_filename = log_filename_buffer;
   _sz_cur_log_file = 0; // Reset the current log file size
 
-  // Attempt to create the new log file
+  // Attempt to create a new log file
+  File32 file;
   if (!file.open(_log_filename, O_RDWR | O_CREAT | O_AT_END))
     return false;
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
@@ -689,7 +710,7 @@ bool ws_sdcard::parseConfigFile() {
 
   WS_DEBUG_PRINTLN("Configuring RTC...");
 #ifndef OFFLINE_MODE_WOKWI
-  const char *json_rtc = exportedFromDevice["rtc"] | "SOFT_RTC";
+  const char *json_rtc = exportedFromDevice["rtc"] | "SOFT";
   WS_DEBUG_PRINT("RTC Type: ");
   WS_DEBUG_PRINTLN(json_rtc);
   if (!ConfigureRTC(json_rtc)) {
@@ -808,8 +829,11 @@ uint32_t ws_sdcard::GetTimestamp() {
     now = _rtc_ds1307->now();
   else if (_rtc_pcf8523 != nullptr)
     now = _rtc_pcf8523->now();
-  else if (_rtc_soft != nullptr) {
-    now = _rtc_soft->now();
+  else if (_is_soft_rtc) {
+    uint32_t cur_time = GetSoftRTCTime();
+    TickSoftRTC();
+    return cur_time; // early-return as we are not converting this "soft rtc" to
+                     // unixtime
   } else { // we're either using a simulator or have undefined behavior
     return 0;
   }
