@@ -11,12 +11,10 @@
 
 #include "ws_adapters.h"
 ws_adapter_offline wipper;
-
 #define WS_DEBUG // Enable debug output!
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) delay(10);
   wipper.provision();
   wipper.connect();
 }
