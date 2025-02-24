@@ -5,7 +5,7 @@ name: WipperSnapper Release Workflow for "Offline Mode" Alpha Feature
 on:
   push:
     branches:
-      - test-offline-release
+      - migrate-api-v2
     secrets:
       GH_REPO_TOKEN:
         required: true
