@@ -76,17 +76,18 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 
   // Assign I2C bus pins
   if (is_default) {
+#ifndef ARDUINO_ARCH_RP2040
     pin_sda = SDA;
     pin_scl = SCL;
+#else
+    // RP2040 BSP uses a different naming scheme than Espressif for I2C pins
+    pin_sda = PIN_WIRE0_SDA;
+    pin_scl = PIN_WIRE0_SCL;
+#endif
   } else {
     pin_sda = atoi(sda);
     pin_scl = atoi(scl);
   }
-
-  WS_DEBUG_PRINT("I2C Bus SDA: ");
-  WS_DEBUG_PRINTLN(pin_sda);
-  WS_DEBUG_PRINT("I2C Bus SCL: ");
-  WS_DEBUG_PRINTLN(pin_scl);
 
   // Enable pullups
   pinMode(pin_scl, INPUT_PULLUP);
@@ -123,6 +124,8 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus->setClock(50000);
 #elif defined(ARDUINO_ARCH_RP2040)
   _bus = &WIRE;
+  _bus->setSDA(pin_sda);
+  _bus->setSCL(pin_scl);
   _bus->begin();
 #elif defined(ARDUINO_ARCH_SAM)
   _bus = new TwoWire(&PERIPH_WIRE, pin_sda, pin_scl);
