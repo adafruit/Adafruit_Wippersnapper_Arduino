@@ -18,7 +18,8 @@
 
 #if defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
-    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER)
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) || \
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350)
 
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
