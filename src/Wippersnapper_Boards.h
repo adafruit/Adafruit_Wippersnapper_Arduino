@@ -202,6 +202,12 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER)
+#define BOARD_ID "feather-rp2040-adalogger"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

@@ -26,9 +26,10 @@
     defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
-    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) || \
-    defined(ARDUINO_RASPBERRY_PI_PICO) || \
-    defined(ARDUINO_RASPBERRY_PI_PICO_2)
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
+    defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -174,7 +175,7 @@ Wippersnapper_FS::~Wippersnapper_FS() {
               config.json file.
 */
 /**************************************************************************/
-void Wippersnapper_FS::GetSDCSPin() { 
+void Wippersnapper_FS::GetSDCSPin() {
   File32 file_cfg;
   DeserializationError error;
   // Attempt to open and deserialize the config.json file
@@ -554,16 +555,16 @@ void Wippersnapper_FS::fsHalt(String msg) {
 */
 /**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
-    TinyUSBDevice.attach();
-    delay(500);
-    statusLEDSolid(ledStatusColor);
-    while (1) {
-      WS_DEBUG_PRINT("Execution Halted: ");
-      WS_DEBUG_PRINTLN(msg.c_str());
-      delay(5000);
-      yield();
-    }
+  TinyUSBDevice.attach();
+  delay(500);
+  statusLEDSolid(ledStatusColor);
+  while (1) {
+    WS_DEBUG_PRINT("Execution Halted: ");
+    WS_DEBUG_PRINTLN(msg.c_str());
+    delay(5000);
+    yield();
   }
+}
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 /**************************************************************************/

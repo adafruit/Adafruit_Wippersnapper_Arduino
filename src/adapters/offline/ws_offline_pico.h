@@ -16,7 +16,9 @@
 #ifndef WS_OFFLINE_PICO
 #define WS_OFFLINE_PICO
 
-#if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_2)
+#if defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER)
 
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
@@ -170,5 +172,5 @@ protected:
   }
 };
 
-#endif // RASPBERRY_PI_PICO_W
-#endif // WS_NONET_PICO_H
+#endif // RASPBERRY_PI_PICO
+#endif // WS_OFFLINE_PICO

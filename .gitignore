@@ -55,6 +55,12 @@ tests/__pycache__/
 # These sometimes contain credentials, don't commit them!
 src/Wippersnapper_demo_wokwi.ino
 data/
+examples/Wippersnapper_demo_offline/.theia/
+examples/Wippersnapper_demo_offline/.vscode/
+examples/Wippersnapper_demo_offline/build/
 
 # Test results
 report.xml
+
+# VSCode settings
+.vscode/settings.json
