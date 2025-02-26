@@ -97,8 +97,7 @@ public:
   */
   /********************************************************/
   void getMacAddr() {
-    WS_DEBUG_PRINTLN("[ws_offline_pico] Error: getMacAddr() is not supported "
-                     "in this implementation!");
+    // Do Nothing
   }
 
   /********************************************************/
