@@ -177,7 +177,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["pico_rp2040_tinyusb", "pico_rp2350_tinyusb"]
+        arduino-platform: ["pico_rp2040_tinyusb", "pico_rp2350_tinyusb", "feather_rp2040_adalogger_tinyusb"]
     steps:
       - uses: actions/setup-python@v5
         with:
