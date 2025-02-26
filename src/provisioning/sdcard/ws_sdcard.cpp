@@ -20,7 +20,11 @@
 */
 /**************************************************************************/
 ws_sdcard::ws_sdcard()
+#ifdef SD_USE_SPI_1
+    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
+#else
     : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
+#endif
   is_mode_offline = false;
   _use_test_data = false;
   _is_soft_rtc = false;
@@ -38,6 +42,7 @@ ws_sdcard::ws_sdcard()
     is_mode_offline = false;
     return;
   }
+
   // Card initialized - calculate file limits
   is_mode_offline = true;
   calculateFileLimits();

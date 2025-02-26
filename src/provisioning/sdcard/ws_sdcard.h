@@ -25,6 +25,9 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2)
 #define SPI_SD_CLOCK                                                           \
   SD_SCK_MHZ(25) ///< For ESP32/Pico silicon rev 3.0, we clock at 25MHz
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER)
+#define SPI_SD_CLOCK                                                           \
+  SD_SCK_MHZ(16) ///< For the RP2040 adalogger, we clock at 16MHz
 #else
 #define SPI_SD_CLOCK SD_SCK_MHZ(50) ///< Default SPI clock speed
 #endif
