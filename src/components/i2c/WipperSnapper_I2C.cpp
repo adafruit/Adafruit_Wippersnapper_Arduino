@@ -181,7 +181,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
       // NOTE: ESP-IDF appears to handle this "behind the scenes" by
       // resetting/clearing the bus. The user should be prompted to
-      // perform a bus scan again. This is a workaround for the ESP32s2 in v3.1.x
+      // perform a bus scan again. Workaround for ESP32-S2 in v3.1.x
       if (current_failed_count > 5 || addresses_failed_count > 100) {
         WS_DEBUG_PRINTLN("ESP_ERR_TIMEOUT: Too many bus hangs");
         break;
