@@ -18,6 +18,7 @@
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
 // #include "SdFat.h"
+#include "SdFat_Adafruit_Fork.h"
 // using f_mkfs() for formatting
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
