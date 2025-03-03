@@ -64,7 +64,7 @@ void I2cHardware::TogglePowerPin() {
 void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   uint8_t pin_sda, pin_scl;
   if (!is_default && (sda == nullptr || scl == nullptr)) {
-    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_WIRING;
+    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
     return;
   }
 // Some development boards define a pin that controls power
@@ -111,7 +111,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
     _bus = new TwoWire(0);
   } else {
     _bus = new TwoWire(1);
-    Wire1.setPins(pin_sda, pin_scl);
+    _bus->setPins(pin_sda, pin_scl);
   }
   if (!_bus->begin(pin_sda, pin_scl)) {
     _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_HANG;
@@ -159,8 +159,8 @@ TwoWire *I2cHardware::GetBus() { return _bus; }
 bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
   if (strcmp(name, "pca9546") == 0) {
     _mux_max_channels = 4; // PCA9546 supports 4 channels
-  } else if (strcmp(name, "pca9548") == 0) {
-    _mux_max_channels = 4; // PCA9548 supports 4 channels
+  } else if (strcmp(name, "pca9548") == 0 || strcmp(name, "tca9548a") == 0) {
+    _mux_max_channels = 8; // PCA9548 supports 8 channels
   } else {
     return false;
   }
