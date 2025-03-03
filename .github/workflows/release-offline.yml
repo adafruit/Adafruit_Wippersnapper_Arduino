@@ -10,10 +10,10 @@ on:
       types: [published]
       branches:
         - offline-mode
-    secrets:
-      GH_REPO_TOKEN:
-        required: true
-
+    workflow_call:
+        secrets:
+            GH_REPO_TOKEN:
+            required: true
 jobs:
   clang:
     name: 🔎 Clang
