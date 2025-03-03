@@ -910,7 +910,7 @@ bool WipperSnapper_Component_I2C::encodePublishI2CDeviceEventMsg(
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       msgi2cResponse);
   WS_DEBUG_PRINT("PUBLISHING -> I2C Device Sensor Event Message...");
-  if (!WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
+  if (!WS.publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
                          msgSz, 1)) {
     WS_DEBUG_PRINTLN("ERROR: MQTT Publish failed!");
     return false;
