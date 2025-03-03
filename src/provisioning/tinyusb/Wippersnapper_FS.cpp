@@ -543,7 +543,16 @@ void Wippersnapper_FS::createDisplayConfig() {
   delay(2500); // give FS some time to write the file
 }
 
-void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
+bool Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg, bool forceRecreate) {
+  if (forceRecreate) {
+    if (wipperFatFs.exists("/display_config.json")) {
+      wipperFatFs.remove("/display_config.json");
+    }
+#ifdef ARDUINO_FUNHOUSE_ESP32S2
+    createDisplayConfig();
+#endif
+  }
+  
   // Check if display_config.json file exists, if not, generate it
   if (!wipperFatFs.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
@@ -556,6 +565,9 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   // Attempt to open file for JSON parsing
   File32 file = wipperFatFs.open("/display_config.json", FILE_READ);
   if (!file) {
+    if (!forceRecreate && parseDisplayConfig(dispCfg, true)) {
+      return true;
+    }
     fsHalt("FATAL ERROR: Unable to open display_config.json for parsing");
   }
 
@@ -563,6 +575,9 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file);
   if (error) {
+    if (!forceRecreate && parseDisplayConfig(dispCfg, true)) {
+      return true;
+    }
     fsHalt(String("FATAL ERROR: Unable to parse display_config.json - "
                   "deserializeJson() failed with code") +
            error.c_str());
@@ -571,6 +586,7 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   file.close();
   // Extract a displayConfig struct from the JSON document
   dispCfg = doc.as<displayConfig>();
+  return true;
 }
 #endif // ARDUINO_FUNHOUSE_ESP32S2
 
