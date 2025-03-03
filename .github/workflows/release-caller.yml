@@ -6,6 +6,8 @@ name: WipperSnapper Release Workflow
 on:
   release:
     types: [published]
+    branches-ignore:
+      - offline-mode
     secrets:
       GH_REPO_TOKEN:
         required: true
