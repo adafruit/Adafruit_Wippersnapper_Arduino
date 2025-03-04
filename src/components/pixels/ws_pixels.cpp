@@ -243,6 +243,7 @@ bool ws_pixels::addStrand(
       releaseStatusLED(); // release it!
 
     // Create a new strand of NeoPixels
+    WS_DEBUG_PRINTLN("Setting up new NeoPixel Strand...");
     strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
         pixelsCreateReqMsg->pixels_num, strands[strandIdx].pinNeoPixel,
         getNeoPixelStrandOrder(pixelsCreateReqMsg->pixels_ordering));

@@ -99,9 +99,16 @@ void initStatusLED() {
 */
 /****************************************************************************/
 void releaseStatusLED() {
+WS_DEBUG_PRINTLN("Releasing status LED");
 #ifdef USE_STATUS_NEOPIXEL
+  WS_DEBUG_PRINTLN("Deinit the RMT...");
+  //Deinit the RMT
+  statusPixel->updateLength(0);
+  statusPixel->show();
+  WS_DEBUG_PRINTLN("Deleting the statusPixel");
   delete statusPixel; // Deallocate Adafruit_NeoPixel object, set data pin back
                       // to INPUT.
+  statusPixel = nullptr;
   WS.lockStatusNeoPixel = false; // unlock
 #endif
 

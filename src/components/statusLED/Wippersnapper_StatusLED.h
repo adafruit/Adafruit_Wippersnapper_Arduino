@@ -17,6 +17,7 @@
 #define WIPPERSNAPPER_STATUSLED_H
 #include <Adafruit_DotStar.h>
 #include <Adafruit_NeoPixel.h>
+#include "esp32-hal-rmt.h"
 
 // Use LEDC for ESP32 arch so we can PWM
 #ifdef ARDUINO_ARCH_ESP32
