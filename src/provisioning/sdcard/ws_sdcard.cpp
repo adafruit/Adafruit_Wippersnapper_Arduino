@@ -1108,11 +1108,11 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE:
     return "rad/s";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
-    return "none";
+    return "none (Light)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
     return "hPa";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY:
-    return "none";
+    return "none (Prox)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY:
     return "m/s^2";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION:
@@ -1122,31 +1122,31 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
     return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
-    return "C";
+    return "C (Ambiant)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
-    return "C";
+    return "C (Object)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
     return "V";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
     return "mA";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR:
-    return "none";
+    return "none (Color)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
-    return "none";
+    return "none (Raw)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
-    return "ppm";
+    return "ppm (PM1.0 Std)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
-    return "ppm";
+    return "ppm (PM2.5 Std)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
-    return "ppm";
+    return "ppm (PM10.0 Std)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV:
-    return "ppm";
+    return "ppm (PM1.0 Env)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV:
-    return "ppm";
+    return "ppm (PM2.5 Env)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV:
-    return "ppm";
+    return "ppm (PM10.0 Env)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
-    return "ppm";
+    return "ppm (CO2)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
     return "\u03A9";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
@@ -1154,19 +1154,19 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX:
     return "lux";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
-    return "ppm";
+    return "ppm (eCO2)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
     return "\x25";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
-    return "F";
+    return "F (Ambient)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
-    return "F";
+    return "F (Object)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
-    return "VOC";
+    return "VOC Index";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
-    return "NOX";
+    return "NOX Index";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
-    return "ppb";
+    return "ppb (TVOC)";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES:
     return "bytes";
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN:
