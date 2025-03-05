@@ -116,10 +116,16 @@ public:
     }
 
     // Read SCD4x measurement
-    uint16_t error = _scd->readMeasurement(_co2, _temperature, _humidity);
-    if (error != 0 || _co2 == 0) {
+    uint16_t co2 = 0;
+    float temperature = 0;
+    float humidity = 0;
+    int16_t error = _scd->readMeasurement(co2, temperature, humidity);
+    if (error != 0 || co2 == 0) {
       return false;
     }
+    _CO2.CO2 = co2;
+    _temperature.temperature = temperature;
+    _humidity.relative_humidity = humidity;
     _lastRead = millis();
     return true;
   }
@@ -139,7 +145,7 @@ public:
       return false;
     }
 
-    tempEvent->temperature = _temperature;
+    tempEvent = &_temperature;
     return true;
   }
 
@@ -158,7 +164,7 @@ public:
       return false;
     }
 
-    humidEvent->relative_humidity = _humidity;
+    humidEvent = &_humidity;
     return true;
   }
 
@@ -177,16 +183,16 @@ public:
       return false;
     }
 
-    co2Event->CO2 = (float)_co2;
+    co2Event = &_CO2;
     return true;
   }
 
 protected:
-  SensirionI2cScd4x *_scd = nullptr; ///< SCD4x driver object
-  uint16_t _co2 = 0;                 ///< SCD4x co2 reading
-  float _temperature;        ///< SCD4x temperature reading
-  float _humidity;           ///< SCD4x humidity reading
-  ulong _lastRead;               ///< Last time the sensor was read
+  SensirionI2cScd4x *_scd = nullptr;  ///< SCD4x driver object
+  sensors_event_t _temperature = {0}; ///< Temperature
+  sensors_event_t _humidity = {0};    ///< Relative Humidity
+  sensors_event_t _CO2 = {0};         ///< CO2
+  ulong _lastRead = 0;                ///< Last time the sensor was read
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD4X_H
