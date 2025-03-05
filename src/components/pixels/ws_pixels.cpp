@@ -64,12 +64,24 @@ int16_t ws_pixels::allocateStrand() {
 */
 /**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
-
   // delete the pixel object
-  if (strands[strandIdx].neoPixelPtr != nullptr)
+  if (strands[strandIdx].neoPixelPtr != nullptr) {
+    // Fill with "off"
+    strands[strandIdx].neoPixelPtr->clear();
+    strands[strandIdx].neoPixelPtr->show();
+#ifdef ARDUINO_ARCH_ESP32
+    // Clear the pin used for RMT
+    strands[strandIdx].neoPixelPtr->updateLength(0);
+    strands[strandIdx].neoPixelPtr->show();
+#endif
+    // Delete the NeoPixel object
     delete strands[strandIdx].neoPixelPtr;
-  if ((strands[strandIdx].dotStarPtr != nullptr))
+  } else if ((strands[strandIdx].dotStarPtr != nullptr)) {
+    // Fill with "off"
+    strands[strandIdx].dotStarPtr->clear();
+    strands[strandIdx].dotStarPtr->show();
     delete strands[strandIdx].dotStarPtr;
+  }
 
   // re-initialize status pixel (if pixel was prvsly used)
   if (strands[strandIdx].pinNeoPixel == getStatusNeoPixelPin() ||

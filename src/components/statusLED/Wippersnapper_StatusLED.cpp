@@ -51,6 +51,7 @@ void initStatusLED() {
     statusPixel = new Adafruit_NeoPixel(
         STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
     statusPixel->begin();
+    statusPixel->clear();
     statusPixel->show(); // turn OFF all pixels
     WS.lockStatusNeoPixel = true;
   }
@@ -69,6 +70,7 @@ void initStatusLED() {
                              STATUS_DOTSTAR_PIN_CLK, STATUS_DOTSTAR_COLOR_ORDER)
 #endif
     statusPixelDotStar->begin();
+    statusPixelDotStar->clear();
     statusPixelDotStar->show(); // turn OFF all pixels
     WS.lockStatusDotStar = true;
   }
@@ -99,16 +101,15 @@ void initStatusLED() {
 */
 /****************************************************************************/
 void releaseStatusLED() {
-WS_DEBUG_PRINTLN("Releasing status LED");
+  WS_DEBUG_PRINTLN("Releasing status LED");
 #ifdef USE_STATUS_NEOPIXEL
-  WS_DEBUG_PRINTLN("Deinit the RMT...");
-  //Deinit the RMT
+#ifdef ARDUINO_ARCH_ESP32
+  // Release the rmtPin for use by other peripherals
   statusPixel->updateLength(0);
   statusPixel->show();
-  WS_DEBUG_PRINTLN("Deleting the statusPixel");
-  delete statusPixel; // Deallocate Adafruit_NeoPixel object, set data pin back
-                      // to INPUT.
-  statusPixel = nullptr;
+#endif
+  // Dealloc. NeoPixel object
+  delete statusPixel;
   WS.lockStatusNeoPixel = false; // unlock
 #endif
 
