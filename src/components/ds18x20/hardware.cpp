@@ -19,14 +19,17 @@
     @brief  DS18X20Hardware constructor
     @param  onewire_pin
             The OneWire bus pin to use.
+    @param  sensor_num
+            Unique identifier for the sensor driver.
 */
 /***********************************************************************/
-DS18X20Hardware::DS18X20Hardware(uint8_t onewire_pin) : _drv_therm(_ow) {
+DS18X20Hardware::DS18X20Hardware(uint8_t onewire_pin, int sensor_num)
+    : _drv_therm(_ow) {
   is_read_temp_c = false;
   is_read_temp_f = false;
+  _sensor_num = sensor_num;
   // Initialize the OneWire bus object
   _onewire_pin = onewire_pin;
-  new (&_ow) OneWireNg_CurrentPlatform(onewire_pin, false);
 }
 
 /***********************************************************************/
@@ -39,13 +42,40 @@ DS18X20Hardware::~DS18X20Hardware() {
           INPUT); // Set the pin to hi-z and release it for other uses
 }
 
-/***********************************************************************/
+/****************************************************************************/
 /*!
-    @brief  Get the sensor's ID
-    @returns True if the sensor was successfully identified, False otherwise.
+    @brief  Initializes the DS18X20 sensor driver and verifies that the
+            sensor is present on the OneWire bus.
+    @returns True if the sensor was successfully initialized, False
+             otherwise.
 */
-/***********************************************************************/
+/****************************************************************************/
 bool DS18X20Hardware::GetSensor() {
+// Initialize the DS18X20 driver
+#ifdef ARDUINO_ARCH_RP2040
+  // RP2040 is special - it uses the PIO's rather than the standard bitbang
+  // implementation In this implementation, we select the PIO instance based on
+  // driver identifier
+
+  // NOTE: We are only going to allow *up to* 7 DS18x20 sensors on RP2040
+  // because the status pixel requires a PIO SM to be allocated prior.
+  int pio_num;
+  if (_sensor_num <= 4) {
+    // drivers 0 thru 3 are handled by PIO0/SM0..4
+    new (&_ow) OneWireNg_CurrentPlatform(_onewire_pin, false, 0);
+  } else if (_sensor_num <= 7) {
+    // drivers 5 thru 8 are handled by PIO1/SM1..4
+    new (&_ow) OneWireNg_CurrentPlatform(_onewire_pin, false, 1);
+  } else {
+    WS_DEBUG_PRINTLN(
+        "[ds18x20] ERROR: You may only add up to 7 sensors on RP2040!");
+    return false;
+  }
+#else
+  // Initialize the standard bit-banged DS18X20 driver object
+  new (&_ow) OneWireNg_CurrentPlatform(_onewire_pin, false);
+#endif
+
   OneWireNg::ErrorCode ec = _ow->readSingleId(_sensorId);
   return ec == OneWireNg::EC_SUCCESS;
 }

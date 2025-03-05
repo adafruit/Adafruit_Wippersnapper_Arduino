@@ -20,6 +20,12 @@
 #include "drivers/DSTherm.h"
 #include "utils/Placeholder.h"
 
+#if defined(ARDUINO_ARCH_RP2040)
+#define CONFIG_RP2040_PIO_DRIVER ///< Enable the OneWireNg_PicoRP2040PIO driver
+#define CONFIG_RP2040_PIOSM_NUM_USED                                           \
+  1 ///< 4 drivers handled by PIO1, 4 drivers handled by PIO2
+#endif
+
 /**************************************************************************/
 /*!
     @brief  Interface for interacting with the's DallasTemp
@@ -28,7 +34,7 @@
 /**************************************************************************/
 class DS18X20Hardware {
 public:
-  DS18X20Hardware(uint8_t onewire_pin);
+  DS18X20Hardware(uint8_t onewire_pin, int sensor_num);
   ~DS18X20Hardware();
   uint8_t GetOneWirePin();
   void SetResolution(int resolution);
@@ -55,6 +61,7 @@ private:
   uint8_t
       _onewire_pin; ///< Pin utilized by the OneWire bus, used for addressing
   char _onewire_pin_name[5]; ///< Name of the OneWire bus pin
+  int _sensor_num;
   float _period;     ///< The desired period to read the sensor, in seconds
   float _prv_period; ///< Last time the sensor was polled, in seconds
 };
