@@ -2502,11 +2502,11 @@ void Wippersnapper::runNetFSM() {
 */
 /**************************************************************************/
 void Wippersnapper::haltError(String error, ws_led_status_t ledStatusColor,
-                              uint8_t seconds_until_reboot) {
+                              int seconds_until_reboot) {
 #ifdef ARDUINO_ARCH_ESP8266
-  uint16_t wdt_timeout_ms = 3200;
+  int wdt_timeout_ms = 3200;
 #else
-  uint16_t wdt_timeout_ms = 5000;
+  int wdt_timeout_ms = 5000;
 #endif
   int seconds_until_wdt_enable =
       seconds_until_reboot - (int)(wdt_timeout_ms / 1000);
