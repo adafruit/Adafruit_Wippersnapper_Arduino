@@ -42,9 +42,6 @@ public:
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
-    _lastRead = 0;
-    _temperature = 20.0;
-    _humidity = 50.0;
   }
 
   /*******************************************************************************/
@@ -192,7 +189,7 @@ protected:
   sensors_event_t _temperature = {0}; ///< Temperature
   sensors_event_t _humidity = {0};    ///< Relative Humidity
   sensors_event_t _CO2 = {0};         ///< CO2
-  ulong _lastRead = 0;                ///< Last time the sensor was read
+  ulong _lastRead = 0uL;              ///< Last time the sensor was read
 };
 
 #endif // WipperSnapper_I2C_Driver_SCD4X_H
