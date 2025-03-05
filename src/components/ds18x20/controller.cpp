@@ -19,14 +19,20 @@
     @brief  DS18X20Controller constructor
 */
 /***********************************************************************/
-DS18X20Controller::DS18X20Controller() { _DS18X20_model = new DS18X20Model(); }
+DS18X20Controller::DS18X20Controller() {
+  _num_drivers = 0;
+  _DS18X20_model = new DS18X20Model();
+}
 
 /***********************************************************************/
 /*!
     @brief  DS18X20Controller destructor
 */
 /***********************************************************************/
-DS18X20Controller::~DS18X20Controller() { delete _DS18X20_model; }
+DS18X20Controller::~DS18X20Controller() {
+  _num_drivers = 0;
+  delete _DS18X20_model;
+}
 
 /***********************************************************************/
 /*!
@@ -59,7 +65,8 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   uint8_t pin_name = atoi(_DS18X20_model->GetDS18x20AddMsg()->onewire_pin + 1);
 
   // Initialize the DS18X20Hardware object
-  auto new_dsx_driver = std::make_unique<DS18X20Hardware>(pin_name);
+  auto new_dsx_driver =
+      std::make_unique<DS18X20Hardware>(pin_name, _num_drivers);
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
   bool is_initialized = new_dsx_driver->GetSensor();
 
@@ -95,8 +102,10 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     }
 
     // If the sensor was successfully initialized, add it to the controller
-    if (is_initialized == true)
+    if (is_initialized == true) {
       _DS18X20_pins.push_back(std::move(new_dsx_driver));
+      _num_drivers++;
+    }
 
     // Print out the details
     WS_DEBUG_PRINTLN("[ds18x] New Sensor Added!");
@@ -172,6 +181,7 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
     }
   }
   WS_DEBUG_PRINTLN("Removed!");
+  _num_drivers--;
   return true;
 }
 

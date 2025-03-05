@@ -41,6 +41,7 @@ public:
 private:
   DS18X20Model *_DS18X20_model; ///< ds18x20 model
   std::vector<std::unique_ptr<DS18X20Hardware>> _DS18X20_pins;
+  int _num_drivers;
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_DS18X20_CONTROLLER_H
