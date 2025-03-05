@@ -558,7 +558,7 @@ void publishI2CResponse(wippersnapper_signal_v1_I2CResponse *msgi2cResponse) {
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_I2CResponse_fields,
                       msgi2cResponse);
   WS_DEBUG_PRINT("Publishing Message: I2CResponse...");
-  if (!WS._mqtt->publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
+  if (!WS.publish(WS._topic_signal_i2c_device, WS._buffer_outgoing,
                          msgSz, 1)) {
     WS_DEBUG_PRINTLN("ERROR: Failed to publish I2C Response!");
   } else {
@@ -995,9 +995,16 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_ServoResponse_fields,
                         &msgServoResp);
     WS_DEBUG_PRINT("-> Servo Attach Response...");
-    WS._mqtt->publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
-                      1);
-    WS_DEBUG_PRINTLN("Published!");
+    if (!WS.publish(WS._topic_signal_servo_device, WS._buffer_outgoing, msgSz,
+                           1))
+    {
+      WS_DEBUG_PRINTLN("ERROR: Failed to publish Servo Attach Response!");
+      return false;
+    }
+    else
+    {
+      WS_DEBUG_PRINTLN("Published!");
+    }
   } else if (field->tag ==
              wippersnapper_signal_v1_ServoRequest_servo_write_tag) {
     WS_DEBUG_PRINTLN("GOT: Servo Write");
@@ -1161,12 +1168,12 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_PWMResponse_fields,
                         &msgPWMResponse);
     WS_DEBUG_PRINT("PUBLISHING: PWM Attach Response...");
-    if (!WS._mqtt->publish(WS._topic_signal_pwm_device, WS._buffer_outgoing,
+    if (!WS.publish(WS._topic_signal_pwm_device, WS._buffer_outgoing,
                            msgSz, 1)) {
       WS_DEBUG_PRINTLN("ERROR: Failed to publish PWM Attach Response!");
       return false;
     }
-    WS_DEBUG_PRINTLN("Published!");
+    WS_DEBUG_PRINTLN("Published! (PWM Attach Response)");
 
 #ifdef USE_DISPLAY
     char buffer[100];
@@ -1571,12 +1578,12 @@ bool cbDecodeUARTMessage(pb_istream_t *stream, const pb_field_t *field,
     pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_UARTResponse_fields,
                         &msgUARTResponse);
     WS_DEBUG_PRINT("PUBLISHING: UART Attach Response...");
-    if (!WS._mqtt->publish(WS._topic_signal_uart_device, WS._buffer_outgoing,
+    if (!WS.publish(WS._topic_signal_uart_device, WS._buffer_outgoing,
                            msgSz, 1)) {
       WS_DEBUG_PRINTLN("ERROR: Failed to publish UART Attach Response!");
       return false;
     }
-    WS_DEBUG_PRINTLN("Published!");
+    WS_DEBUG_PRINTLN("Published! (UART Device Attached)");
 
   } else if (field->tag ==
              wippersnapper_signal_v1_UARTRequest_req_uart_device_detach_tag) {
@@ -2653,14 +2660,40 @@ void Wippersnapper::processPackets() {
             The Quality of Service to publish with.
 */
 /*******************************************************/
-void Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
+bool Wippersnapper::publish(const char *topic, uint8_t *payload, uint16_t bLen,
                             uint8_t qos) {
   // runNetFSM(); // NOTE: Removed for now, causes error with virtual _connect
   // method when caused with WS object in another file.
+#ifdef ARDUINO_ARCH_ESP32
+// print stack and heap usage
+  WS_DEBUG_PRINT("\nFree Heap: ");
+  WS_DEBUG_PRINTLN(ESP.getFreeHeap());
+  WS_DEBUG_PRINT("Min Free Heap: ");
+  WS_DEBUG_PRINTLN(ESP.getMinFreeHeap());
+  WS_DEBUG_PRINT("Max Alloc Heap: ");
+  WS_DEBUG_PRINTLN(ESP.getMaxAllocHeap());
+  WS_DEBUG_PRINT("Heap Size: ");
+  WS_DEBUG_PRINTLN(ESP.getHeapSize());
+  WS_DEBUG_PRINT("Free Stack: ");
+  WS_DEBUG_PRINTLN(uxTaskGetStackHighWaterMark(NULL));
+#endif
   WS.feedWDT();
-  if (!WS._mqtt->publish(topic, payload, bLen, qos)) {
-    WS_DEBUG_PRINTLN("Failed to publish MQTT message!");
+  bool response = WS._mqtt->publish(topic, payload, bLen, qos);
+  if (!response) {
+    WS_DEBUG_PRINTLN("Failed to publish MQTT message (t: ");
+    WS_DEBUG_PRINT(topic);
+    WS_DEBUG_PRINT(" q: ");
+    WS_DEBUG_PRINT(qos);
+    WS_DEBUG_PRINT(" l: ");
+    WS_DEBUG_PRINT(bLen);
+    WS_DEBUG_PRINT(" hex: ");
+    for (uint16_t i = 0; i < bLen; i++) {
+      WS_DEBUG_PRINTHEX(payload[i]);
+      WS_DEBUG_PRINT(" ");
+    }
+    WS_DEBUG_PRINTLN(")\n");
   }
+  return response;
 }
 
 /**************************************************************/
@@ -2861,8 +2894,15 @@ void Wippersnapper::publishPinConfigComplete() {
 
   // Publish message
   WS_DEBUG_PRINTLN("Publishing to pin config complete...");
-  WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
-             _message_len, 1);
+  if (WS.publish(WS._topic_device_pin_config_complete, _message_buffer,
+                 _message_len, 1))
+  {
+    WS_DEBUG_PRINTLN("Published! (pin config complete)");
+  }
+  else
+  {
+    WS_DEBUG_PRINTLN("Failed to publish! (pin config complete)");
+  }
 }
 
 /**************************************************************************/
