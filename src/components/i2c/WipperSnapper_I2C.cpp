@@ -1083,8 +1083,8 @@ void WipperSnapper_Component_I2C::update() {
       // Number of events which occured for this driver
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 
-      // Event struct
-      sensors_event_t event;
+      // Event struct - zero-initialise on each iteration
+      sensors_event_t event = {0};
 
       // AMBIENT_TEMPERATURE sensor (°C)
       sensorEventRead(
