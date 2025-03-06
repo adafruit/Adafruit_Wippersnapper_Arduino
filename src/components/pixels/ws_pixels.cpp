@@ -69,11 +69,6 @@ void ws_pixels::deallocateStrand(int16_t strandIdx) {
     // Fill with "off"
     strands[strandIdx].neoPixelPtr->clear();
     strands[strandIdx].neoPixelPtr->show();
-#ifdef ARDUINO_ARCH_ESP32
-    // Clear the pin used for RMT
-    strands[strandIdx].neoPixelPtr->updateLength(0);
-    strands[strandIdx].neoPixelPtr->show();
-#endif
     // Delete the NeoPixel object
     delete strands[strandIdx].neoPixelPtr;
   } else if ((strands[strandIdx].dotStarPtr != nullptr)) {

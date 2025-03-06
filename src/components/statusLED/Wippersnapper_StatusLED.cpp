@@ -103,14 +103,10 @@ void initStatusLED() {
 void releaseStatusLED() {
   WS_DEBUG_PRINTLN("Releasing status LED");
 #ifdef USE_STATUS_NEOPIXEL
-#ifdef ARDUINO_ARCH_ESP32
-  // Release the rmtPin for use by other peripherals
-  statusPixel->updateLength(0);
-  statusPixel->show();
-#endif
-  // Dealloc. NeoPixel object
+  // Deallocate Adafruit_NeoPixel object, set data pin back to INPUT,
+  // and unlock pixel for use by pixels component
   delete statusPixel;
-  WS.lockStatusNeoPixel = false; // unlock
+  WS.lockStatusNeoPixel = false;
 #endif
 
 #ifdef USE_STATUS_DOTSTAR
