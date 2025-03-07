@@ -17,11 +17,7 @@
 
 #include "Adafruit_SPIFlash.h"
 #include "Adafruit_TinyUSB.h"
-#ifdef ARDUINO_ARCH_RP2040
 #include "SdFat_Adafruit_Fork.h"
-#else
-#include "SdFat.h"
-#endif
 // using f_mkfs() for formatting
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
