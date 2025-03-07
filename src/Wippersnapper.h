@@ -312,7 +312,7 @@ public:
   // Error handling helpers
   void haltError(String error,
                  ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME,
-                 uint8_t seconds_until_reboot = 25);
+                 int seconds_until_reboot = 25);
   void errorWriteHang(String error);
 
   // MQTT topic callbacks //

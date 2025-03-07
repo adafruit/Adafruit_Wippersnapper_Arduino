@@ -71,7 +71,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    PM25_AQI_Data data;
+    PM25_AQI_Data data = {0};
     if (!_pm25->read(&data))
       return false; // couldn't read data
 
@@ -89,7 +89,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    PM25_AQI_Data data;
+    PM25_AQI_Data data = {0};
     if (!_pm25->read(&data))
       return false; // couldn't read data
 
@@ -107,7 +107,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    PM25_AQI_Data data;
+    PM25_AQI_Data data = {0};
     if (!_pm25->read(&data))
       return false; // couldn't read data
 
@@ -116,7 +116,7 @@ public:
   }
 
 protected:
-  Adafruit_PM25AQI *_pm25; ///< PM25 driver object
+  Adafruit_PM25AQI *_pm25 = nullptr; ///< PM25 driver object
 };
 
 #endif // WipperSnapper_I2C_Driver_PM25
