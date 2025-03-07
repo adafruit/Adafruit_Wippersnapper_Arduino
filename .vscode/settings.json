@@ -5,5 +5,7 @@
     },
     "C_Cpp.dimInactiveRegions": true,
     "dotnet.defaultSolution": "disable",
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "C_Cpp.clang_format_fallbackStyle": "Google",
+    "C_Cpp.clang_format_style": "file"
 }
