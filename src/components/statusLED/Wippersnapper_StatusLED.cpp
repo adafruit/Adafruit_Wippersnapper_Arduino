@@ -51,6 +51,7 @@ void initStatusLED() {
     statusPixel = new Adafruit_NeoPixel(
         STATUS_NEOPIXEL_NUM, STATUS_NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
     statusPixel->begin();
+    statusPixel->clear();
     statusPixel->show(); // turn OFF all pixels
     WS.lockStatusNeoPixel = true;
   }
@@ -69,6 +70,7 @@ void initStatusLED() {
                              STATUS_DOTSTAR_PIN_CLK, STATUS_DOTSTAR_COLOR_ORDER)
 #endif
     statusPixelDotStar->begin();
+    statusPixelDotStar->clear();
     statusPixelDotStar->show(); // turn OFF all pixels
     WS.lockStatusDotStar = true;
   }
@@ -99,10 +101,12 @@ void initStatusLED() {
 */
 /****************************************************************************/
 void releaseStatusLED() {
+  WS_DEBUG_PRINTLN("Releasing status LED");
 #ifdef USE_STATUS_NEOPIXEL
-  delete statusPixel; // Deallocate Adafruit_NeoPixel object, set data pin back
-                      // to INPUT.
-  WS.lockStatusNeoPixel = false; // unlock
+  // Deallocate Adafruit_NeoPixel object, set data pin back to INPUT,
+  // and unlock pixel for use by pixels component
+  delete statusPixel;
+  WS.lockStatusNeoPixel = false;
 #endif
 
 #ifdef USE_STATUS_DOTSTAR

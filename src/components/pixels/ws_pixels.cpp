@@ -64,12 +64,19 @@ int16_t ws_pixels::allocateStrand() {
 */
 /**************************************************************************/
 void ws_pixels::deallocateStrand(int16_t strandIdx) {
-
   // delete the pixel object
-  if (strands[strandIdx].neoPixelPtr != nullptr)
+  if (strands[strandIdx].neoPixelPtr != nullptr) {
+    // Fill with "off"
+    strands[strandIdx].neoPixelPtr->clear();
+    strands[strandIdx].neoPixelPtr->show();
+    // Delete the NeoPixel object
     delete strands[strandIdx].neoPixelPtr;
-  if ((strands[strandIdx].dotStarPtr != nullptr))
+  } else if ((strands[strandIdx].dotStarPtr != nullptr)) {
+    // Fill with "off"
+    strands[strandIdx].dotStarPtr->clear();
+    strands[strandIdx].dotStarPtr->show();
     delete strands[strandIdx].dotStarPtr;
+  }
 
   // re-initialize status pixel (if pixel was prvsly used)
   if (strands[strandIdx].pinNeoPixel == getStatusNeoPixelPin() ||
@@ -243,6 +250,7 @@ bool ws_pixels::addStrand(
       releaseStatusLED(); // release it!
 
     // Create a new strand of NeoPixels
+    WS_DEBUG_PRINTLN("Setting up new NeoPixel Strand...");
     strands[strandIdx].neoPixelPtr = new Adafruit_NeoPixel(
         pixelsCreateReqMsg->pixels_num, strands[strandIdx].pinNeoPixel,
         getNeoPixelStrandOrder(pixelsCreateReqMsg->pixels_ordering));
