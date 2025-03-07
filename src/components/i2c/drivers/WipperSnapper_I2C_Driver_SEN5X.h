@@ -275,15 +275,15 @@ public:
 
 protected:
   SensirionI2CSen5x *_sen = nullptr; ///< SEN5X driver object
-  float _massConcentrationPm1p0; ///< PM1.0 mass concentration
-  float _massConcentrationPm2p5; ///< PM2.5 mass concentration
-  float _massConcentrationPm4p0; ///< PM4.0 mass concentration
-  float _massConcentrationPm10p0; ///< PM10.0 mass concentration
-  float _ambientHumidity; ///< Ambient humidity
-  float _ambientTemperature; ///< Ambient temperature
-  float _vocIndex; ///< VOC index
-  float _noxIndex; ///< NOx index
-  ulong _lastRead = 0uL; ///< Last time the sensor was read
+  float _massConcentrationPm1p0;     ///< PM1.0 mass concentration
+  float _massConcentrationPm2p5;     ///< PM2.5 mass concentration
+  float _massConcentrationPm4p0;     ///< PM4.0 mass concentration
+  float _massConcentrationPm10p0;    ///< PM10.0 mass concentration
+  float _ambientHumidity;            ///< Ambient humidity
+  float _ambientTemperature;         ///< Ambient temperature
+  float _vocIndex;                   ///< VOC index
+  float _noxIndex;                   ///< NOx index
+  ulong _lastRead = 0uL;             ///< Last time the sensor was read
 };
 
 #endif // WipperSnapper_I2C_Driver_SEN5X
