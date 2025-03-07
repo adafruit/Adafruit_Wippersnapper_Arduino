@@ -72,7 +72,8 @@ public:
       @brief    Checks if sensor was read within last 1s, or is the first read.
       @returns  True if the sensor was recently read, False otherwise.
   */
-  bool hasBeenReadInLastSecond() {
+  /*******************************************************************************/
+  bool HasBeenReadInLastSecond() {
     return _lastRead != 0 && millis() - _lastRead < 1000;
   }
 
@@ -82,18 +83,16 @@ public:
       @returns  True if the sensor is ready, False otherwise.
   */
   /*******************************************************************************/
-  bool isSensorReady() {
+  bool IsSensorReady() {
     bool isDataReady = false;
-    uint16_t error = _scd->getDataReadyStatus(isDataReady);
-    if (error != 0 || !isDataReady) {
-      // failed, one more quick attempt
-      delay(100);
-      error = _scd->getDataReadyStatus(isDataReady);
-      if (error != 0 || !isDataReady) {
-        return false;
+    for (int i = 0; i < 2; i++) {
+      uint16_t error = _scd->getDataReadyStatus(isDataReady);
+      if (error == 0 && isDataReady) {
+        return true;
       }
+      delay(100);
     }
-    return true;
+    return false;
   }
 
   /*******************************************************************************/
@@ -102,13 +101,13 @@ public:
       @returns  True if the sensor was read successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool readSensorData() {
+  bool ReadSensorData() {
     // dont read sensor more than once per second
-    if (hasBeenReadInLastSecond()) {
+    if (HasBeenReadInLastSecond()) {
       return true;
     }
 
-    if (!isSensorReady()) {
+    if (!IsSensorReady()) {
       return false;
     }
 
@@ -138,7 +137,7 @@ public:
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // read all sensor measurements
-    if (!readSensorData()) {
+    if (!ReadSensorData()) {
       return false;
     }
 
@@ -157,7 +156,7 @@ public:
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // read all sensor measurements
-    if (!readSensorData()) {
+    if (!ReadSensorData()) {
       return false;
     }
 
@@ -176,7 +175,7 @@ public:
   /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
     // read all sensor measurements
-    if (!readSensorData()) {
+    if (!ReadSensorData()) {
       return false;
     }
 

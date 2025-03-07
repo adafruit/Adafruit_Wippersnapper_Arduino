@@ -81,7 +81,7 @@ public:
       @brief    Checks if sensor was read within last 1s, or is the first read.
       @returns  True if the sensor was recently read, False otherwise.
   */
-  bool hasBeenReadInLastSecond() {
+  bool HasBeenReadInLastSecond() {
     return _lastRead != 0 && millis() - _lastRead < 1000;
   }
 
@@ -91,18 +91,16 @@ public:
       @returns  True if the sensor is ready, False otherwise.
   */
   /*******************************************************************************/
-  bool isSensorReady() {
+  bool IsSensorReady() {
     bool isDataReady = false;
-    uint16_t error = _sen->readDataReady(isDataReady);
-    if (error != 0 || !isDataReady) {
-      // failed, one more quick attempt
-      delay(100);
-      error = _sen->readDataReady(isDataReady);
-      if (error != 0 || !isDataReady) {
-        return false;
+    for (int i = 0; i < 2; i++) {
+      uint16_t error = _sen->readDataReady(isDataReady);
+      if (error == 0 && isDataReady) {
+        return true;
       }
+      delay(100);
     }
-    return true;
+    return false;
   }
 
   /*******************************************************************************/
@@ -111,13 +109,13 @@ public:
       @returns  True if the sensor was read successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool readSensorData() {
+  bool ReadSensorData() {
     // dont read sensor more than once per second
-    if (hasBeenReadInLastSecond()) {
+    if (HasBeenReadInLastSecond()) {
       return true;
     }
 
-    if (!isSensorReady()) {
+    if (!IsSensorReady()) {
       return false;
     }
 
@@ -142,7 +140,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!readSensorData() || _ambientTemperature == NAN) {
+    if (!ReadSensorData() || _ambientTemperature == NAN) {
       return false;
     }
     tempEvent->temperature = _ambientTemperature;
@@ -159,7 +157,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    if (!readSensorData() || _ambientHumidity == NAN) {
+    if (!ReadSensorData() || _ambientHumidity == NAN) {
       return false;
     }
     humidEvent->relative_humidity = _ambientHumidity;
@@ -179,7 +177,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
-    if (!readSensorData() || _noxIndex == NAN) {
+    if (!ReadSensorData() || _noxIndex == NAN) {
       return false;
     }
     noxIndexEvent->nox_index = _noxIndex;
@@ -196,7 +194,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
-    if (!readSensorData() || _vocIndex == NAN) {
+    if (!ReadSensorData() || _vocIndex == NAN) {
       return false;
     }
     vocIndexEvent->voc_index = _vocIndex;
@@ -213,7 +211,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
-    if (!readSensorData() || _massConcentrationPm1p0 == NAN ||
+    if (!ReadSensorData() || _massConcentrationPm1p0 == NAN ||
         _massConcentrationPm1p0 == OVERFLOW_SEN55) {
       return false;
     }
@@ -231,7 +229,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
-    if (!readSensorData() || _massConcentrationPm2p5 == NAN ||
+    if (!ReadSensorData() || _massConcentrationPm2p5 == NAN ||
         _massConcentrationPm2p5 == OVERFLOW_SEN55) {
       return false;
     }
@@ -249,7 +247,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM40_STD(sensors_event_t *pm40StdEvent) {
-    if (!readSensorData() || _massConcentrationPm4p0 == NAN ||
+    if (!ReadSensorData() || _massConcentrationPm4p0 == NAN ||
         _massConcentrationPm4p0 == OVERFLOW_SEN55) {
       return false;
     }
@@ -267,7 +265,7 @@ public:
   */
   /*******************************************************************************/
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
-    if (!readSensorData() || _massConcentrationPm10p0 == NAN ||
+    if (!ReadSensorData() || _massConcentrationPm10p0 == NAN ||
         _massConcentrationPm10p0 == OVERFLOW_SEN55) {
       return false;
     }
@@ -277,9 +275,14 @@ public:
 
 protected:
   SensirionI2CSen5x *_sen = nullptr; ///< SEN5X driver object
-  float _massConcentrationPm1p0, _massConcentrationPm2p5,
-      _massConcentrationPm4p0, _massConcentrationPm10p0, _ambientHumidity,
-      _ambientTemperature, _vocIndex, _noxIndex; ///< Sensor values
+  float _massConcentrationPm1p0; ///< PM1.0 mass concentration
+  float _massConcentrationPm2p5; ///< PM2.5 mass concentration
+  float _massConcentrationPm4p0; ///< PM4.0 mass concentration
+  float _massConcentrationPm10p0; ///< PM10.0 mass concentration
+  float _ambientHumidity; ///< Ambient humidity
+  float _ambientTemperature; ///< Ambient temperature
+  float _vocIndex; ///< VOC index
+  float _noxIndex; ///< NOx index
   ulong _lastRead = 0uL; ///< Last time the sensor was read
 };
 
