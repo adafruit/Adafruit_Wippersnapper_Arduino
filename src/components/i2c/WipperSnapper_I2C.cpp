@@ -171,14 +171,14 @@ WipperSnapper_Component_I2C::scanAddresses() {
     else if (endTransmissionRC == 3) {
       // NOTE: The printf below is commented out for performance, this is the
       // default case and should typically be hit if the address is not found.
-      // WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of data!");
+      WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of data!");
       continue;
     } else if (endTransmissionRC == 2) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of address!");
       scanResp.bus_response =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
       continue;
-    } else if (endTransmissionRC == 3) {
+    } else if (endTransmissionRC == 1) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: data too long to fit in transmit buffer!");
       scanResp.bus_response =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
