@@ -156,8 +156,11 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
   // those that respond.
+  uint8_t addresses_failed_count = 0, current_failed_count = 0;
   WS_DEBUG_PRINTLN("EXEC: I2C Scan");
   for (address = 0x08; address < 0x7F; address++) {
+  start_scan:
+    current_failed_count = 0;
     _i2c->beginTransmission(address);
     endTransmissionRC = _i2c->endTransmission();
 
@@ -165,13 +168,25 @@ WipperSnapper_Component_I2C::scanAddresses() {
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
     // https://github.com/espressif/arduino-esp32/blob/master/libraries/Wire/src/Wire.cpp
     if (endTransmissionRC == 5) {
-      WS_DEBUG_PRINTLN("ESP_ERR_TIMEOUT: I2C Bus Busy");
+      addresses_failed_count++;
+      current_failed_count++;
+      WS_DEBUG_PRINT("ESP_ERR_TIMEOUT: I2C Bus Busy - (Address: 0x");
+      WS_DEBUG_PRINT(address, HEX);
+      WS_DEBUG_PRINT(" - Error Count: ");
+      WS_DEBUG_PRINT(current_failed_count);
+      WS_DEBUG_PRINT(" of ");
+      WS_DEBUG_PRINT(addresses_failed_count);
+      WS_DEBUG_PRINT(")");
       scanResp.bus_response =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
       // NOTE: ESP-IDF appears to handle this "behind the scenes" by
       // resetting/clearing the bus. The user should be prompted to
-      // perform a bus scan again.
-      break;
+      // perform a bus scan again. This is a workaround for the ESP32s2 in v3.1.x
+      if (current_failed_count > 5 || addresses_failed_count > 100) {
+        WS_DEBUG_PRINTLN("ESP_ERR_TIMEOUT: Too many bus hangs");
+        break;
+      }
+      goto start_scan;
     } else if (endTransmissionRC == 7) {
       WS_DEBUG_PRINT("I2C_ESP_ERR: SDA/SCL shorted, requests queued: ");
       WS_DEBUG_PRINTLN(endTransmissionRC);
