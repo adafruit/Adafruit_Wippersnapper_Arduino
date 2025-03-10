@@ -156,8 +156,6 @@ WipperSnapper_Component_I2C::scanAddresses() {
   // those that respond.
   WS_DEBUG_PRINTLN("EXEC: I2C Scan");
   for (uint8_t address = 1; address < 127; ++address) {
-    WS_DEBUG_PRINT("Address: 0x");
-    WS_DEBUG_PRINTLN(address);
     _i2c->beginTransmission(address);
     uint8_t endTransmissionRC = _i2c->endTransmission();
 
@@ -170,24 +168,35 @@ WipperSnapper_Component_I2C::scanAddresses() {
     }
 #if defined(ARDUINO_ARCH_ESP32)
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
-    else if (endTransmissionRC == 1) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: data too long to fit in transmit buffer!");
+    else if (endTransmissionRC == 3) {
+      // NOTE: The printf below is commented out for performance, this is the
+      // default case and should typically be hit if the address is not found.
+      // WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of data!");
       continue;
     } else if (endTransmissionRC == 2) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of address!");
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
       continue;
     } else if (endTransmissionRC == 3) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of data!");
+      WS_DEBUG_PRINTLN("[i2c] ERROR: data too long to fit in transmit buffer!");
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
       continue;
     } else if (endTransmissionRC == 4) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Other error!");
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Unspecified bus error occured!");
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
       continue;
     } else if (endTransmissionRC == 5) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: I2C Bus has timed out!");
-      scanResp.bus_response = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
       continue;
     } else {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unknown error!");
+      WS_DEBUG_PRINTLN("[i2c] ERROR: An unknown bus error has occured!");
+      scanResp.bus_response =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
       continue;
     }
 #endif
