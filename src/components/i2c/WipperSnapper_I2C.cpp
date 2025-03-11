@@ -82,7 +82,6 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     } else {
       _isInit = true; // if the peripheral was configured incorrectly
     }
-    _i2c->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
     _i2c = new TwoWire();
     _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
@@ -162,7 +161,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
     uint8_t endTransmissionRC = _i2c->endTransmission();
 
     if (endTransmissionRC == 0) {
-      WS_DEBUG_PRINT("[i2c] Found Device");
+      WS_DEBUG_PRINTLN("[i2c] Found Device!");
       scanResp.addresses_found[scanResp.addresses_found_count] =
           (uint32_t)address;
       scanResp.addresses_found_count++;
@@ -170,34 +169,26 @@ WipperSnapper_Component_I2C::scanAddresses() {
 #if defined(ARDUINO_ARCH_ESP32)
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
     else if (endTransmissionRC == 3) {
-      // NOTE: The printf below is commented out for performance, this is the
-      // default case and should typically be hit if the address is not found.
-      WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of data!");
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
       continue;
     } else if (endTransmissionRC == 2) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: received NACK on transmit of address!");
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: NACK on transmit of address!");
       continue;
     } else if (endTransmissionRC == 1) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: data too long to fit in transmit buffer!");
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: data too long to fit in xmit buffer!");
       continue;
     } else if (endTransmissionRC == 4) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unspecified bus error occured!");
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unspecified bus error occured!");
       continue;
     } else if (endTransmissionRC == 5) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: I2C Bus has timed out!");
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
       continue;
     } else {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: An unknown bus error has occured!");
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSPECIFIED;
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unknown bus error has occured!");
       continue;
     }
 #endif
