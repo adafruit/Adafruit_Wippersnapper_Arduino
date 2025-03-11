@@ -82,7 +82,6 @@ WipperSnapper_Component_I2C::WipperSnapper_Component_I2C(
     } else {
       _isInit = true; // if the peripheral was configured incorrectly
     }
-    _i2c->setClock(50000);
 #elif defined(ARDUINO_ARCH_ESP8266)
     _i2c = new TwoWire();
     _i2c->begin(msgInitRequest->i2c_pin_sda, msgInitRequest->i2c_pin_scl);
@@ -143,8 +142,6 @@ wippersnapper_i2c_v1_BusResponse WipperSnapper_Component_I2C::getBusStatus() {
 /************************************************************************/
 wippersnapper_i2c_v1_I2CBusScanResponse
 WipperSnapper_Component_I2C::scanAddresses() {
-  uint8_t endTransmissionRC;
-  uint16_t address;
   wippersnapper_i2c_v1_I2CBusScanResponse scanResp =
       wippersnapper_i2c_v1_I2CBusScanResponse_init_zero;
 
@@ -156,37 +153,45 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
   // those that respond.
-  WS_DEBUG_PRINTLN("EXEC: I2C Scan");
-  for (address = 0x08; address < 0x7F; address++) {
+  WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
+  for (uint8_t address = 1; address < 127; ++address) {
+    WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
+    WS_DEBUG_PRINTLN(address, HEX);
     _i2c->beginTransmission(address);
-    endTransmissionRC = _i2c->endTransmission();
+    uint8_t endTransmissionRC = _i2c->endTransmission();
 
-#if defined(ARDUINO_ARCH_ESP32)
-    // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
-    // https://github.com/espressif/arduino-esp32/blob/master/libraries/Wire/src/Wire.cpp
-    if (endTransmissionRC == 5) {
-      WS_DEBUG_PRINTLN("ESP_ERR_TIMEOUT: I2C Bus Busy");
-      scanResp.bus_response =
-          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_ERROR_HANG;
-      // NOTE: ESP-IDF appears to handle this "behind the scenes" by
-      // resetting/clearing the bus. The user should be prompted to
-      // perform a bus scan again.
-      break;
-    } else if (endTransmissionRC == 7) {
-      WS_DEBUG_PRINT("I2C_ESP_ERR: SDA/SCL shorted, requests queued: ");
-      WS_DEBUG_PRINTLN(endTransmissionRC);
-      break;
-    }
-#endif
-
-    // Found device!
     if (endTransmissionRC == 0) {
-      WS_DEBUG_PRINT("Found I2C Device at 0x");
-      WS_DEBUG_PRINTLN(address);
+      WS_DEBUG_PRINTLN("[i2c] Found Device!");
       scanResp.addresses_found[scanResp.addresses_found_count] =
           (uint32_t)address;
       scanResp.addresses_found_count++;
     }
+#if defined(ARDUINO_ARCH_ESP32)
+    // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
+    else if (endTransmissionRC == 3) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
+      continue;
+    } else if (endTransmissionRC == 2) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: NACK on transmit of address!");
+      continue;
+    } else if (endTransmissionRC == 1) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: data too long to fit in xmit buffer!");
+      continue;
+    } else if (endTransmissionRC == 4) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unspecified bus error occured!");
+      continue;
+    } else if (endTransmissionRC == 5) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
+      continue;
+    } else {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unknown bus error has occured!");
+      continue;
+    }
+#endif
   }
 
 #ifndef ARDUINO_ARCH_ESP32
@@ -195,8 +200,9 @@ WipperSnapper_Component_I2C::scanAddresses() {
   WS.feedWDT();
 #endif
 
-  WS_DEBUG_PRINT("I2C Devices Found: ")
-  WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
+  WS_DEBUG_PRINT("[i2c] Scan Complete! Found: ")
+  WS_DEBUG_PRINT(scanResp.addresses_found_count);
+  WS_DEBUG_PRINTLN(" Devices on bus.");
 
   scanResp.bus_response = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   return scanResp;
