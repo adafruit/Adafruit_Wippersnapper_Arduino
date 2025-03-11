@@ -154,14 +154,15 @@ WipperSnapper_Component_I2C::scanAddresses() {
 
   // Scan all I2C addresses between 0x08 and 0x7F inclusive and return a list of
   // those that respond.
-  WS_DEBUG_PRINTLN("EXEC: I2C Scan");
+  WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
   for (uint8_t address = 1; address < 127; ++address) {
+    WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
+    WS_DEBUG_PRINTLN(address, HEX);
     _i2c->beginTransmission(address);
     uint8_t endTransmissionRC = _i2c->endTransmission();
 
     if (endTransmissionRC == 0) {
-      WS_DEBUG_PRINT("Found I2C Device at 0x");
-      WS_DEBUG_PRINTLN(address);
+      WS_DEBUG_PRINT("[i2c] Found Device");
       scanResp.addresses_found[scanResp.addresses_found_count] =
           (uint32_t)address;
       scanResp.addresses_found_count++;
@@ -208,8 +209,9 @@ WipperSnapper_Component_I2C::scanAddresses() {
   WS.feedWDT();
 #endif
 
-  WS_DEBUG_PRINT("I2C Devices Found: ")
-  WS_DEBUG_PRINTLN(scanResp.addresses_found_count);
+  WS_DEBUG_PRINT("[i2c] Scan Complete! Found: ")
+  WS_DEBUG_PRINT(scanResp.addresses_found_count);
+  WS_DEBUG_PRINTLN(" Devices on bus.");
 
   scanResp.bus_response = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
   return scanResp;
