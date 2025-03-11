@@ -530,6 +530,12 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   }
   // Trigger a bus scan on the default I2C bus
   _i2c_model->ClearI2cBusScanned();
+  // TODO: Mux Check
+  // Linear Scan I2C Bus 1  TODO
+  // Linear Scan Alt. I2C Bus TODO
+  // If Muxes are present, scan them TODO
+  // Scan I2C Port 1 for Muxes TODO
+  // Scan I2C Port 2 for Muxes TODO
 }
 
 /***********************************************************************/
