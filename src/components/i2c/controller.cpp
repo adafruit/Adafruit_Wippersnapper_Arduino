@@ -513,6 +513,27 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 
 /***********************************************************************/
 /*!
+    @brief   Configures the MUX channel on the bus.
+    @param   stream
+                Pointer to the pb_istream
+    @returns True if the I2C bus was successfully scanned and the
+             I2cBusScan message was published to IO, False otherwise.
+*/
+/***********************************************************************/
+bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
+  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceAddOrReplace message...");
+  // Attempt to decode an I2cBusScan message
+  if (!_i2c_model->DecodeI2cBusScan(stream)) {
+    WS_DEBUG_PRINTLN(
+        "[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
+    return false;
+  }
+  // Trigger a bus scan on the default I2C bus
+  _i2c_model->ClearI2cBusScanned();
+}
+
+/***********************************************************************/
+/*!
     @brief    Implements handling for a I2cDeviceAddOrReplace message
     @param    stream
                 A pointer to the pb_istream_t stream.

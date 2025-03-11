@@ -18,6 +18,7 @@
 #include <Adafruit_Sensor.h>
 #define MAX_DEVICE_EVENTS                                                      \
   15 ///< Maximum number of SensorEvents within I2cDeviceEvent
+#define MAX_I2C_SCAN_DEVICES 120 ///< Maximum number of devices found on the bus
 
 /**************************************************************************/
 /*!
@@ -29,16 +30,28 @@ class I2cModel {
 public:
   I2cModel();
   ~I2cModel();
+  // Decoders
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
-  wippersnapper_i2c_I2cDeviceRemove *GetI2cDeviceRemoveMsg();
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
-  wippersnapper_i2c_I2cDeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
+  bool DecodeI2cBusScan(pb_istream_t *stream);
+  // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
       wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description,
       wippersnapper_i2c_I2cBusStatus i2c_bus_status,
       wippersnapper_i2c_I2cDeviceStatus i2c_device_status);
+  bool EncodeI2cDeviceEvent();
+  // Getters
+  wippersnapper_i2c_I2cDeviceRemove *GetI2cDeviceRemoveMsg();
+  wippersnapper_i2c_I2cDeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
   wippersnapper_i2c_I2cDeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
-  // Device Event Message API
+  wippersnapper_i2c_I2cDeviceEvent *GetI2cDeviceEvent();
+  wippersnapper_i2c_I2cBusScan *GetI2cBusScanMsg();
+  // I2cBusScanned Message API
+  void ClearI2cBusScanned();
+  bool AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
+                          uint32_t addr_device, uint32_t addr_mux,
+                          uint32_t mux_channel);
+  // DeviceEvent Message API
   void ClearI2cDeviceEvent();
   void SetI2cDeviceEventDeviceDescripton(const char *bus_scl,
                                          const char *bus_sda,
@@ -47,8 +60,6 @@ public:
                                          uint32_t mux_channel);
   bool AddI2cDeviceSensorEvent(sensors_event_t &event,
                                wippersnapper_sensor_SensorType sensor_type);
-  bool EncodeI2cDeviceEvent();
-  wippersnapper_i2c_I2cDeviceEvent *GetI2cDeviceEvent();
 
 private:
   wippersnapper_i2c_I2cBusScan _msg_i2c_bus_scan;

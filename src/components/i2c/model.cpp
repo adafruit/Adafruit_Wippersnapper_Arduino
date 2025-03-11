@@ -151,6 +151,82 @@ wippersnapper_i2c_I2cDeviceRemove *I2cModel::GetI2cDeviceRemoveMsg() {
 
 /***************************************************************************/
 /*!
+    @brief    Decodes a I2cBusScan message from an input stream.
+    @param    stream
+                A pointer to the pb_istream_t stream.
+    @returns  True if the I2cBusScan message was decoded successfully, False
+              otherwise.
+*/
+/***************************************************************************/
+bool I2cModel::DecodeI2cBusScan(pb_istream_t *stream) {
+  _msg_i2c_bus_scan = wippersnapper_i2c_I2cBusScan_init_default;
+  return pb_decode(stream, wippersnapper_i2c_I2cBusScan_fields,
+                   &_msg_i2c_bus_scan);
+}
+
+/**********************************************************************/
+/*!
+    @brief    Returns a pointer to the I2cBusScan message.
+    @returns  Pointer to the I2cBusScan message.
+*/
+/**********************************************************************/
+wippersnapper_i2c_I2cBusScan *I2cModel::GetI2cBusScanMsg() {
+  return &_msg_i2c_bus_scan;
+}
+
+/**********************************************************************/
+/*!
+    @brief    Clears the I2cBusScanned message.
+*/
+/**********************************************************************/
+void I2cModel::ClearI2cBusScanned() {
+  _msg_i2c_bus_scanned = wippersnapper_i2c_I2cBusScanned_init_zero;
+  _msg_i2c_bus_scanned.i2c_bus_found_devices_count = 0; // zero-out the count
+}
+
+/***************************************************************************************************/
+/*!
+    @brief    Adds a device to the I2cBusScanned message.
+    @param    bus_scl
+                The device's SCL pin.
+    @param    bus_sda
+                The device's SDA pin.
+    @param    addr_device
+                The device's i2c address.
+    @param    addr_mux
+                Optional MUX address.
+    @param    mux_channel
+                Optional MUX channel
+    @returns  True if the device was added to the bus scan, False otherwise.
+*/
+/***************************************************************************************************/
+bool I2cModel::AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
+                                  uint32_t addr_device, uint32_t addr_mux,
+                                  uint32_t mux_channel) {
+  pb_size_t idx_device = _msg_i2c_bus_scanned.i2c_bus_found_devices_count;
+  if (idx_device >= MAX_I2C_SCAN_DEVICES)
+    return false;
+  // Fill I2cDeviceDescriptor
+  strcpy(_msg_i2c_bus_scanned.i2c_bus_found_devices[idx_device].i2c_bus_scl,
+         bus_scl);
+  strcpy(_msg_i2c_bus_scanned.i2c_bus_found_devices[idx_device].i2c_bus_sda,
+         bus_sda);
+  _msg_i2c_bus_scanned.i2c_bus_found_devices[idx_device].i2c_device_address =
+      addr_device;
+  // Optionally fill MUX info
+  if (_msg_i2c_bus_scanned.i2c_bus_found_devices[idx_device].i2c_mux_address !=
+      0xFFFF) {
+    _msg_i2c_bus_scanned.i2c_bus_found_devices[idx_device].i2c_mux_address =
+        addr_mux;
+    _msg_i2c_bus_scanned.i2c_bus_found_devices[idx_device].i2c_mux_channel =
+        mux_channel;
+  }
+  _msg_i2c_bus_scanned.i2c_bus_found_devices_count++;
+  return true;
+}
+
+/***************************************************************************/
+/*!
     @brief    Decodes a I2cDeviceAddReplace message from an input stream.
     @param   stream
                 A pointer to the pb_istream_t stream.

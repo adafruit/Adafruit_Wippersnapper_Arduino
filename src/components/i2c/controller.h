@@ -85,8 +85,8 @@ public:
   // Routing //
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
   // TODO [Online]: These are for Online mode and not yet implemented
+  bool Handle_I2cBusScan(pb_istream_t *stream);
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
-  // bool Handle_I2cBusScan(pb_istream_t *stream);
   // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
       const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,

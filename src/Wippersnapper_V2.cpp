@@ -395,6 +395,13 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_i2c_bus_scan_tag:
+    WS_DEBUG_PRINTLN("-> I2C Bus Scan Message Type");
+    if (!WsV2._i2c_controller->Handle_I2cBusScan(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to add/replace I2C device!");
+      return false;
+    }
+    break;
   case wippersnapper_signal_BrokerToDevice_i2c_device_remove_tag:
     WS_DEBUG_PRINTLN("-> I2C Device Remove Message Type");
     if (!WsV2._i2c_controller->Handle_I2cDeviceRemove(stream)) {
