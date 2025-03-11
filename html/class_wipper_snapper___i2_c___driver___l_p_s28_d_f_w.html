@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Adafruit Library: WipperSnapper_I2C_Driver_SCD4X Class Reference</title>
+<title>Adafruit Library: WipperSnapper_I2C_Driver_LPS28DFW Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,52 +61,47 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
-<a href="class_wipper_snapper___i2_c___driver___s_c_d4_x-members.html">List of all members</a>  </div>
+<a href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">WipperSnapper_I2C_Driver_SCD4X Class Reference</div>  </div>
+<div class="title">WipperSnapper_I2C_Driver_LPS28DFW Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Class that provides a driver interface for the SCD40 sensor.  
- <a href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#details">More...</a></p>
+<p>Class that provides a sensor driver for the LPS28DFW temperature and pressure sensor.  
+ <a href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="_wipper_snapper___i2_c___driver___s_c_d4_x_8h_source.html">WipperSnapper_I2C_Driver_SCD4X.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="_wipper_snapper___i2_c___driver___l_p_s28_d_f_w_8h_source.html">WipperSnapper_I2C_Driver_LPS28DFW.h</a>&gt;</code></p>
 <div class="dynheader">
-Inheritance diagram for WipperSnapper_I2C_Driver_SCD4X:</div>
+Inheritance diagram for WipperSnapper_I2C_Driver_LPS28DFW:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="class_wipper_snapper___i2_c___driver___s_c_d4_x.png" usemap="#WipperSnapper_5FI2C_5FDriver_5FSCD4X_map" alt=""/>
-  <map id="WipperSnapper_5FI2C_5FDriver_5FSCD4X_map" name="WipperSnapper_5FI2C_5FDriver_5FSCD4X_map">
-<area href="class_wipper_snapper___i2_c___driver.html" title="Base class for I2C Drivers. " alt="WipperSnapper_I2C_Driver" shape="rect" coords="0,0,218,24"/>
+  <img src="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.png" usemap="#WipperSnapper_5FI2C_5FDriver_5FLPS28DFW_map" alt=""/>
+  <map id="WipperSnapper_5FI2C_5FDriver_5FLPS28DFW_map" name="WipperSnapper_5FI2C_5FDriver_5FLPS28DFW_map">
+<area href="class_wipper_snapper___i2_c___driver.html" title="Base class for I2C Drivers. " alt="WipperSnapper_I2C_Driver" shape="rect" coords="0,0,241,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa920aa4ff9f2a2c8b421273ca11b40c9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#aa920aa4ff9f2a2c8b421273ca11b40c9">WipperSnapper_I2C_Driver_SCD4X</a> (TwoWire *i2c, uint16_t sensorAddress)</td></tr>
-<tr class="memdesc:aa920aa4ff9f2a2c8b421273ca11b40c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for a SCD40 sensor.  <a href="#aa920aa4ff9f2a2c8b421273ca11b40c9">More...</a><br /></td></tr>
-<tr class="separator:aa920aa4ff9f2a2c8b421273ca11b40c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2952d397728ae5b6b70869d9ebd49502"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a2952d397728ae5b6b70869d9ebd49502">begin</a> ()</td></tr>
-<tr class="memdesc:a2952d397728ae5b6b70869d9ebd49502"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the SCD40 sensor and begins I2C.  <a href="#a2952d397728ae5b6b70869d9ebd49502">More...</a><br /></td></tr>
-<tr class="separator:a2952d397728ae5b6b70869d9ebd49502"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09fef6f80ed6a26c927a990287ec2ef4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a09fef6f80ed6a26c927a990287ec2ef4">HasBeenReadInLastSecond</a> ()</td></tr>
-<tr class="memdesc:a09fef6f80ed6a26c927a990287ec2ef4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if sensor was read within last 1s, or is the first read.  <a href="#a09fef6f80ed6a26c927a990287ec2ef4">More...</a><br /></td></tr>
-<tr class="separator:a09fef6f80ed6a26c927a990287ec2ef4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3cd3886773d5a9e1d4818da03988e163"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a3cd3886773d5a9e1d4818da03988e163">IsSensorReady</a> ()</td></tr>
-<tr class="memdesc:a3cd3886773d5a9e1d4818da03988e163"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the sensor is ready to be read.  <a href="#a3cd3886773d5a9e1d4818da03988e163">More...</a><br /></td></tr>
-<tr class="separator:a3cd3886773d5a9e1d4818da03988e163"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac26aca2b805443ecd06698eced28ce0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#aac26aca2b805443ecd06698eced28ce0">ReadSensorData</a> ()</td></tr>
-<tr class="memdesc:aac26aca2b805443ecd06698eced28ce0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the sensor.  <a href="#aac26aca2b805443ecd06698eced28ce0">More...</a><br /></td></tr>
-<tr class="separator:aac26aca2b805443ecd06698eced28ce0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0080a44575de0f6722fba8b96aff18f0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a0080a44575de0f6722fba8b96aff18f0">getEventAmbientTemp</a> (sensors_event_t *tempEvent)</td></tr>
-<tr class="memdesc:a0080a44575de0f6722fba8b96aff18f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the SCD40's current temperature.  <a href="#a0080a44575de0f6722fba8b96aff18f0">More...</a><br /></td></tr>
-<tr class="separator:a0080a44575de0f6722fba8b96aff18f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f8f51b9ba4fc6dd763cc07d6d4024fa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a4f8f51b9ba4fc6dd763cc07d6d4024fa">getEventRelativeHumidity</a> (sensors_event_t *humidEvent)</td></tr>
-<tr class="memdesc:a4f8f51b9ba4fc6dd763cc07d6d4024fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the SCD40's current relative humidity reading.  <a href="#a4f8f51b9ba4fc6dd763cc07d6d4024fa">More...</a><br /></td></tr>
-<tr class="separator:a4f8f51b9ba4fc6dd763cc07d6d4024fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d0901b433474c60198e697f328ea0be"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a4d0901b433474c60198e697f328ea0be">getEventCO2</a> (sensors_event_t *co2Event)</td></tr>
-<tr class="memdesc:a4d0901b433474c60198e697f328ea0be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the SCD40's current CO2 reading.  <a href="#a4d0901b433474c60198e697f328ea0be">More...</a><br /></td></tr>
-<tr class="separator:a4d0901b433474c60198e697f328ea0be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1bb3b18f1e99e6090dd161f9119b1d0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#ab1bb3b18f1e99e6090dd161f9119b1d0">WipperSnapper_I2C_Driver_LPS28DFW</a> (TwoWire *i2c, uint16_t sensorAddress)</td></tr>
+<tr class="memdesc:ab1bb3b18f1e99e6090dd161f9119b1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for an LPS28DFW sensor.  <a href="#ab1bb3b18f1e99e6090dd161f9119b1d0">More...</a><br /></td></tr>
+<tr class="separator:ab1bb3b18f1e99e6090dd161f9119b1d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb09c177e70a7734eb9f3ddce2235d00"><td class="memItemLeft" align="right" valign="top"><a id="adb09c177e70a7734eb9f3ddce2235d00"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#adb09c177e70a7734eb9f3ddce2235d00">~WipperSnapper_I2C_Driver_LPS28DFW</a> ()</td></tr>
+<tr class="memdesc:adb09c177e70a7734eb9f3ddce2235d00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for an LPS28DFW sensor. <br /></td></tr>
+<tr class="separator:adb09c177e70a7734eb9f3ddce2235d00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bd6cdbe39cf12811dca20bebc3f629d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#a1bd6cdbe39cf12811dca20bebc3f629d">begin</a> ()</td></tr>
+<tr class="memdesc:a1bd6cdbe39cf12811dca20bebc3f629d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the LPS28DFW sensor and begins I2C.  <a href="#a1bd6cdbe39cf12811dca20bebc3f629d">More...</a><br /></td></tr>
+<tr class="separator:a1bd6cdbe39cf12811dca20bebc3f629d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a5b0acc0655da9086e095a509bfe446"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#a8a5b0acc0655da9086e095a509bfe446">readSensor</a> ()</td></tr>
+<tr class="memdesc:a8a5b0acc0655da9086e095a509bfe446"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the sensor and stores the data in the object.  <a href="#a8a5b0acc0655da9086e095a509bfe446">More...</a><br /></td></tr>
+<tr class="separator:a8a5b0acc0655da9086e095a509bfe446"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2f1559ca5a96a13679162fa09bcb76c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#ac2f1559ca5a96a13679162fa09bcb76c">getEventAmbientTemp</a> (sensors_event_t *tempEvent)</td></tr>
+<tr class="memdesc:ac2f1559ca5a96a13679162fa09bcb76c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the LPS28DFW's current temperature.  <a href="#ac2f1559ca5a96a13679162fa09bcb76c">More...</a><br /></td></tr>
+<tr class="separator:ac2f1559ca5a96a13679162fa09bcb76c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeca932bb6fedce70e587838fa7368f90"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#aeca932bb6fedce70e587838fa7368f90">getEventPressure</a> (sensors_event_t *pressureEvent)</td></tr>
+<tr class="memdesc:aeca932bb6fedce70e587838fa7368f90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads a pressure sensor and converts the reading into the expected SI unit.  <a href="#aeca932bb6fedce70e587838fa7368f90">More...</a><br /></td></tr>
+<tr class="separator:aeca932bb6fedce70e587838fa7368f90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_wipper_snapper___i2_c___driver"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_wipper_snapper___i2_c___driver')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_wipper_snapper___i2_c___driver.html">WipperSnapper_I2C_Driver</a></td></tr>
 <tr class="memitem:a30b911b9c628a709810653e7c073b509 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a30b911b9c628a709810653e7c073b509">WipperSnapper_I2C_Driver</a> (TwoWire *i2c, uint16_t sensorAddress)</td></tr>
 <tr class="memdesc:a30b911b9c628a709810653e7c073b509 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instanciates an I2C sensor.  <a href="class_wipper_snapper___i2_c___driver.html#a30b911b9c628a709810653e7c073b509">More...</a><br /></td></tr>
@@ -136,6 +131,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:a18cd7e458e4d2e605f3812be47221407 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a18cd7e458e4d2e605f3812be47221407">setSensorCO2PeriodPrv</a> (long period)</td></tr>
 <tr class="memdesc:a18cd7e458e4d2e605f3812be47221407 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the co2 sensor was queried.  <a href="class_wipper_snapper___i2_c___driver.html#a18cd7e458e4d2e605f3812be47221407">More...</a><br /></td></tr>
 <tr class="separator:a18cd7e458e4d2e605f3812be47221407 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7575cd2c725d2cb6d5ac683bbc7b8cda inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7575cd2c725d2cb6d5ac683bbc7b8cda">getEventCO2</a> (sensors_event_t *co2Event)</td></tr>
+<tr class="memdesc:a7575cd2c725d2cb6d5ac683bbc7b8cda inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a sensor's CO2 value.  <a href="class_wipper_snapper___i2_c___driver.html#a7575cd2c725d2cb6d5ac683bbc7b8cda">More...</a><br /></td></tr>
+<tr class="separator:a7575cd2c725d2cb6d5ac683bbc7b8cda inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d468033ce512f2978808a10facf41de inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a4d468033ce512f2978808a10facf41de">getSensorECO2Period</a> ()</td></tr>
 <tr class="memdesc:a4d468033ce512f2978808a10facf41de inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the eCO2 sensor's period, if set.  <a href="class_wipper_snapper___i2_c___driver.html#a4d468033ce512f2978808a10facf41de">More...</a><br /></td></tr>
 <tr class="separator:a4d468033ce512f2978808a10facf41de inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,6 +176,9 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:a2e7ad656d5562af7ce05a8f61fba4a78 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a2e7ad656d5562af7ce05a8f61fba4a78">setSensorRelativeHumidityPeriodPrv</a> (long periodPrv)</td></tr>
 <tr class="memdesc:a2e7ad656d5562af7ce05a8f61fba4a78 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the temperature sensor was queried.  <a href="class_wipper_snapper___i2_c___driver.html#a2e7ad656d5562af7ce05a8f61fba4a78">More...</a><br /></td></tr>
 <tr class="separator:a2e7ad656d5562af7ce05a8f61fba4a78 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64254b7895801dc14e8d792e7d997f0f inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a64254b7895801dc14e8d792e7d997f0f">getEventRelativeHumidity</a> (sensors_event_t *humidEvent)</td></tr>
+<tr class="memdesc:a64254b7895801dc14e8d792e7d997f0f inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a humidity sensor and converts the reading into the expected SI unit.  <a href="class_wipper_snapper___i2_c___driver.html#a64254b7895801dc14e8d792e7d997f0f">More...</a><br /></td></tr>
+<tr class="separator:a64254b7895801dc14e8d792e7d997f0f inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25d6dbc4b11efc716bdcad9da0036093 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a25d6dbc4b11efc716bdcad9da0036093">getSensorPressurePeriod</a> ()</td></tr>
 <tr class="memdesc:a25d6dbc4b11efc716bdcad9da0036093 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the pressure sensor's period, if set.  <a href="class_wipper_snapper___i2_c___driver.html#a25d6dbc4b11efc716bdcad9da0036093">More...</a><br /></td></tr>
 <tr class="separator:a25d6dbc4b11efc716bdcad9da0036093 inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -187,9 +188,6 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memitem:a03e7c58c3d449921894d103e4ae03dff inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a03e7c58c3d449921894d103e4ae03dff">setSensorPressurePeriodPrv</a> (long period)</td></tr>
 <tr class="memdesc:a03e7c58c3d449921894d103e4ae03dff inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a timestamp for when the pressure sensor was queried.  <a href="class_wipper_snapper___i2_c___driver.html#a03e7c58c3d449921894d103e4ae03dff">More...</a><br /></td></tr>
 <tr class="separator:a03e7c58c3d449921894d103e4ae03dff inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a2da3fae0d97872416c24066720276d inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7a2da3fae0d97872416c24066720276d">getEventPressure</a> (sensors_event_t *pressureEvent)</td></tr>
-<tr class="memdesc:a7a2da3fae0d97872416c24066720276d inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Reads a pressure sensor and converts the reading into the expected SI unit.  <a href="class_wipper_snapper___i2_c___driver.html#a7a2da3fae0d97872416c24066720276d">More...</a><br /></td></tr>
-<tr class="separator:a7a2da3fae0d97872416c24066720276d inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a455cfe493e63106ae2e7d663c4c74dee inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top">virtual long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a455cfe493e63106ae2e7d663c4c74dee">getSensorAltitudePeriod</a> ()</td></tr>
 <tr class="memdesc:a455cfe493e63106ae2e7d663c4c74dee inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base implementation - Returns the Altitude sensor's period, if set.  <a href="class_wipper_snapper___i2_c___driver.html#a455cfe493e63106ae2e7d663c4c74dee">More...</a><br /></td></tr>
 <tr class="separator:a455cfe493e63106ae2e7d663c4c74dee inherit pub_methods_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -403,26 +401,16 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a97061cad3a8bff0dc6bc0b7254ec06d5"><td class="memItemLeft" align="right" valign="top"><a id="a97061cad3a8bff0dc6bc0b7254ec06d5"></a>
-SensirionI2cScd4x *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a97061cad3a8bff0dc6bc0b7254ec06d5">_scd</a> = nullptr</td></tr>
-<tr class="memdesc:a97061cad3a8bff0dc6bc0b7254ec06d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">SCD4x driver object. <br /></td></tr>
-<tr class="separator:a97061cad3a8bff0dc6bc0b7254ec06d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a4b3d2a145da7a151952e1a9f60e42a"><td class="memItemLeft" align="right" valign="top"><a id="a2a4b3d2a145da7a151952e1a9f60e42a"></a>
-sensors_event_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a2a4b3d2a145da7a151952e1a9f60e42a">_temperature</a> = {0}</td></tr>
-<tr class="memdesc:a2a4b3d2a145da7a151952e1a9f60e42a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Temperature. <br /></td></tr>
-<tr class="separator:a2a4b3d2a145da7a151952e1a9f60e42a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e33310bbc9d8b11f73c76ff7a7d917d"><td class="memItemLeft" align="right" valign="top"><a id="a8e33310bbc9d8b11f73c76ff7a7d917d"></a>
-sensors_event_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a8e33310bbc9d8b11f73c76ff7a7d917d">_humidity</a> = {0}</td></tr>
-<tr class="memdesc:a8e33310bbc9d8b11f73c76ff7a7d917d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Relative Humidity. <br /></td></tr>
-<tr class="separator:a8e33310bbc9d8b11f73c76ff7a7d917d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70bfa65d3aadfeafb35a470c4c05fc2a"><td class="memItemLeft" align="right" valign="top"><a id="a70bfa65d3aadfeafb35a470c4c05fc2a"></a>
-sensors_event_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#a70bfa65d3aadfeafb35a470c4c05fc2a">_CO2</a> = {0}</td></tr>
-<tr class="memdesc:a70bfa65d3aadfeafb35a470c4c05fc2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">CO2. <br /></td></tr>
-<tr class="separator:a70bfa65d3aadfeafb35a470c4c05fc2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7d5bb61b42a08d871b950555fd1882b"><td class="memItemLeft" align="right" valign="top"><a id="ab7d5bb61b42a08d871b950555fd1882b"></a>
-ulong&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_c_d4_x.html#ab7d5bb61b42a08d871b950555fd1882b">_lastRead</a> = 0uL</td></tr>
-<tr class="memdesc:ab7d5bb61b42a08d871b950555fd1882b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last time the sensor was read. <br /></td></tr>
-<tr class="separator:ab7d5bb61b42a08d871b950555fd1882b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dd77c460fe1d243e0a694b22d98d687"><td class="memItemLeft" align="right" valign="top"><a id="a2dd77c460fe1d243e0a694b22d98d687"></a>
+Adafruit_LPS28 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#a2dd77c460fe1d243e0a694b22d98d687">_lps28</a> = nullptr</td></tr>
+<tr class="memdesc:a2dd77c460fe1d243e0a694b22d98d687"><td class="mdescLeft">&#160;</td><td class="mdescRight">LPS28DFW object. <br /></td></tr>
+<tr class="separator:a2dd77c460fe1d243e0a694b22d98d687"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc5b876c78b8590b17d4fff9f2af6d3f"><td class="memItemLeft" align="right" valign="top">Adafruit_Sensor *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#abc5b876c78b8590b17d4fff9f2af6d3f">_temp</a></td></tr>
+<tr class="memdesc:abc5b876c78b8590b17d4fff9f2af6d3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ptr to an adafruit_sensor representing the temperature.  <a href="#abc5b876c78b8590b17d4fff9f2af6d3f">More...</a><br /></td></tr>
+<tr class="separator:abc5b876c78b8590b17d4fff9f2af6d3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dfc6a0cb7a1b43c05902b4aa85b458d"><td class="memItemLeft" align="right" valign="top">Adafruit_Sensor *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___l_p_s28_d_f_w.html#a2dfc6a0cb7a1b43c05902b4aa85b458d">_pressure</a></td></tr>
+<tr class="memdesc:a2dfc6a0cb7a1b43c05902b4aa85b458d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ptr to an adafruit_sensor representing the pressure.  <a href="#a2dfc6a0cb7a1b43c05902b4aa85b458d">More...</a><br /></td></tr>
+<tr class="separator:a2dfc6a0cb7a1b43c05902b4aa85b458d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_wipper_snapper___i2_c___driver"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_wipper_snapper___i2_c___driver')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_wipper_snapper___i2_c___driver.html">WipperSnapper_I2C_Driver</a></td></tr>
 <tr class="memitem:a7800f657301fd3d4b3babad46d95c91f inherit pro_attribs_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top"><a id="a7800f657301fd3d4b3babad46d95c91f"></a>
 TwoWire *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7800f657301fd3d4b3babad46d95c91f">_i2c</a></td></tr>
@@ -546,10 +534,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="separator:ac5d96502d2260a9b16cfd9a8949aec86 inherit pro_attribs_class_wipper_snapper___i2_c___driver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Class that provides a driver interface for the SCD40 sensor. </p>
+<div class="textblock"><p>Class that provides a sensor driver for the LPS28DFW temperature and pressure sensor. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aa920aa4ff9f2a2c8b421273ca11b40c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa920aa4ff9f2a2c8b421273ca11b40c9">&#9670;&nbsp;</a></span>WipperSnapper_I2C_Driver_SCD4X()</h2>
+<a id="ab1bb3b18f1e99e6090dd161f9119b1d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1bb3b18f1e99e6090dd161f9119b1d0">&#9670;&nbsp;</a></span>WipperSnapper_I2C_Driver_LPS28DFW()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -558,7 +546,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">WipperSnapper_I2C_Driver_SCD4X::WipperSnapper_I2C_Driver_SCD4X </td>
+          <td class="memname">WipperSnapper_I2C_Driver_LPS28DFW::WipperSnapper_I2C_Driver_LPS28DFW </td>
           <td>(</td>
           <td class="paramtype">TwoWire *&#160;</td>
           <td class="paramname"><em>i2c</em>, </td>
@@ -582,7 +570,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Constructor for a SCD40 sensor. </p>
+<p>Constructor for an LPS28DFW sensor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">i2c</td><td>The I2C interface. </td></tr>
@@ -594,8 +582,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a2952d397728ae5b6b70869d9ebd49502"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2952d397728ae5b6b70869d9ebd49502">&#9670;&nbsp;</a></span>begin()</h2>
+<a id="a1bd6cdbe39cf12811dca20bebc3f629d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1bd6cdbe39cf12811dca20bebc3f629d">&#9670;&nbsp;</a></span>begin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -604,7 +592,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver_SCD4X::begin </td>
+          <td class="memname">bool WipperSnapper_I2C_Driver_LPS28DFW::begin </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -617,13 +605,13 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Initializes the SCD40 sensor and begins I2C. </p>
+<p>Initializes the LPS28DFW sensor and begins I2C. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if initialized successfully, False otherwise. </dd></dl>
 
 </div>
 </div>
-<a id="a09fef6f80ed6a26c927a990287ec2ef4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09fef6f80ed6a26c927a990287ec2ef4">&#9670;&nbsp;</a></span>HasBeenReadInLastSecond()</h2>
+<a id="a8a5b0acc0655da9086e095a509bfe446"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a5b0acc0655da9086e095a509bfe446">&#9670;&nbsp;</a></span>readSensor()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -632,7 +620,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver_SCD4X::HasBeenReadInLastSecond </td>
+          <td class="memname">bool WipperSnapper_I2C_Driver_LPS28DFW::readSensor </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -645,69 +633,13 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Checks if sensor was read within last 1s, or is the first read. </p>
-<dl class="section return"><dt>Returns</dt><dd>True if the sensor was recently read, False otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="a3cd3886773d5a9e1d4818da03988e163"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3cd3886773d5a9e1d4818da03988e163">&#9670;&nbsp;</a></span>IsSensorReady()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver_SCD4X::IsSensorReady </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Checks if the sensor is ready to be read. </p>
-<dl class="section return"><dt>Returns</dt><dd>True if the sensor is ready, False otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="aac26aca2b805443ecd06698eced28ce0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac26aca2b805443ecd06698eced28ce0">&#9670;&nbsp;</a></span>ReadSensorData()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver_SCD4X::ReadSensorData </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Reads the sensor. </p>
+<p>Reads the sensor and stores the data in the object. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if the sensor was read successfully, False otherwise. </dd></dl>
 
 </div>
 </div>
-<a id="a0080a44575de0f6722fba8b96aff18f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0080a44575de0f6722fba8b96aff18f0">&#9670;&nbsp;</a></span>getEventAmbientTemp()</h2>
+<a id="ac2f1559ca5a96a13679162fa09bcb76c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2f1559ca5a96a13679162fa09bcb76c">&#9670;&nbsp;</a></span>getEventAmbientTemp()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -716,7 +648,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver_SCD4X::getEventAmbientTemp </td>
+          <td class="memname">bool WipperSnapper_I2C_Driver_LPS28DFW::getEventAmbientTemp </td>
           <td>(</td>
           <td class="paramtype">sensors_event_t *&#160;</td>
           <td class="paramname"><em>tempEvent</em></td><td>)</td>
@@ -730,7 +662,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Gets the SCD40's current temperature. </p>
+<p>Gets the LPS28DFW's current temperature. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">tempEvent</td><td>Pointer to an Adafruit_Sensor event. </td></tr>
@@ -743,8 +675,8 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a id="a4f8f51b9ba4fc6dd763cc07d6d4024fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f8f51b9ba4fc6dd763cc07d6d4024fa">&#9670;&nbsp;</a></span>getEventRelativeHumidity()</h2>
+<a id="aeca932bb6fedce70e587838fa7368f90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeca932bb6fedce70e587838fa7368f90">&#9670;&nbsp;</a></span>getEventPressure()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -753,10 +685,10 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver_SCD4X::getEventRelativeHumidity </td>
+          <td class="memname">bool WipperSnapper_I2C_Driver_LPS28DFW::getEventPressure </td>
           <td>(</td>
           <td class="paramtype">sensors_event_t *&#160;</td>
-          <td class="paramname"><em>humidEvent</em></td><td>)</td>
+          <td class="paramname"><em>pressureEvent</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -767,21 +699,22 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 </table>
 </div><div class="memdoc">
 
-<p>Gets the SCD40's current relative humidity reading. </p>
+<p>Reads a pressure sensor and converts the reading into the expected SI unit. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">humidEvent</td><td>Pointer to an Adafruit_Sensor event. </td></tr>
+    <tr><td class="paramname">pressureEvent</td><td>Pointer to an Adafruit_Sensor event. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the humidity was obtained successfully, False otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor event was obtained successfully, False otherwise. </dd></dl>
 
-<p>Reimplemented from <a class="el" href="class_wipper_snapper___i2_c___driver.html#a64254b7895801dc14e8d792e7d997f0f">WipperSnapper_I2C_Driver</a>.</p>
+<p>Reimplemented from <a class="el" href="class_wipper_snapper___i2_c___driver.html#a7a2da3fae0d97872416c24066720276d">WipperSnapper_I2C_Driver</a>.</p>
 
 </div>
 </div>
-<a id="a4d0901b433474c60198e697f328ea0be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d0901b433474c60198e697f328ea0be">&#9670;&nbsp;</a></span>getEventCO2()</h2>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="abc5b876c78b8590b17d4fff9f2af6d3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc5b876c78b8590b17d4fff9f2af6d3f">&#9670;&nbsp;</a></span>_temp</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -790,35 +723,46 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool WipperSnapper_I2C_Driver_SCD4X::getEventCO2 </td>
-          <td>(</td>
-          <td class="paramtype">sensors_event_t *&#160;</td>
-          <td class="paramname"><em>co2Event</em></td><td>)</td>
-          <td></td>
+          <td class="memname">Adafruit_Sensor* WipperSnapper_I2C_Driver_LPS28DFW::_temp</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      NULL</div></div><!-- fragment -->
+<p>Ptr to an adafruit_sensor representing the temperature. </p>
 
-<p>Gets the SCD40's current CO2 reading. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">co2Event</td><td>Adafruit Sensor event for CO2 </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the sensor value was obtained successfully, False otherwise. </dd></dl>
+</div>
+</div>
+<a id="a2dfc6a0cb7a1b43c05902b4aa85b458d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2dfc6a0cb7a1b43c05902b4aa85b458d">&#9670;&nbsp;</a></span>_pressure</h2>
 
-<p>Reimplemented from <a class="el" href="class_wipper_snapper___i2_c___driver.html#a7575cd2c725d2cb6d5ac683bbc7b8cda">WipperSnapper_I2C_Driver</a>.</p>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Adafruit_Sensor* WipperSnapper_I2C_Driver_LPS28DFW::_pressure</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div><div class="line">      NULL</div></div><!-- fragment -->
+<p>Ptr to an adafruit_sensor representing the pressure. </p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>src/components/i2c/drivers/<a class="el" href="_wipper_snapper___i2_c___driver___s_c_d4_x_8h_source.html">WipperSnapper_I2C_Driver_SCD4X.h</a></li>
+<li>src/components/i2c/drivers/<a class="el" href="_wipper_snapper___i2_c___driver___l_p_s28_d_f_w_8h_source.html">WipperSnapper_I2C_Driver_LPS28DFW.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -89,6 +89,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3f9b9eca2742a40fe057ba6594f50f80"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a3f9b9eca2742a40fe057ba6594f50f80">begin</a> ()</td></tr>
 <tr class="memdesc:a3f9b9eca2742a40fe057ba6594f50f80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the SEN6X sensor and begins I2C.  <a href="#a3f9b9eca2742a40fe057ba6594f50f80">More...</a><br /></td></tr>
 <tr class="separator:a3f9b9eca2742a40fe057ba6594f50f80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a663d6b68e98efb1a7d7a58a4dd56f499"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a663d6b68e98efb1a7d7a58a4dd56f499">HasBeenReadInLastSecond</a> ()</td></tr>
+<tr class="memdesc:a663d6b68e98efb1a7d7a58a4dd56f499"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if sensor was read within last 1s, or is the first read.  <a href="#a663d6b68e98efb1a7d7a58a4dd56f499">More...</a><br /></td></tr>
+<tr class="separator:a663d6b68e98efb1a7d7a58a4dd56f499"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a030620bd43047019ab1c2f7b1ac68362"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a030620bd43047019ab1c2f7b1ac68362">IsSensorReady</a> ()</td></tr>
+<tr class="memdesc:a030620bd43047019ab1c2f7b1ac68362"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the sensor is ready to be read.  <a href="#a030620bd43047019ab1c2f7b1ac68362">More...</a><br /></td></tr>
+<tr class="separator:a030620bd43047019ab1c2f7b1ac68362"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a059bae8d87e67dc0a6daaf7d2802aa61"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a059bae8d87e67dc0a6daaf7d2802aa61">ReadSensorData</a> ()</td></tr>
+<tr class="memdesc:a059bae8d87e67dc0a6daaf7d2802aa61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the sensor.  <a href="#a059bae8d87e67dc0a6daaf7d2802aa61">More...</a><br /></td></tr>
+<tr class="separator:a059bae8d87e67dc0a6daaf7d2802aa61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0de4e3490e60c4ddbcf7cd79dc1265c5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a0de4e3490e60c4ddbcf7cd79dc1265c5">getEventAmbientTemp</a> (sensors_event_t *tempEvent)</td></tr>
 <tr class="memdesc:a0de4e3490e60c4ddbcf7cd79dc1265c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the SEN6X's current temperature.  <a href="#a0de4e3490e60c4ddbcf7cd79dc1265c5">More...</a><br /></td></tr>
 <tr class="separator:a0de4e3490e60c4ddbcf7cd79dc1265c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -398,9 +407,49 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a4fff95dbd373356a0b0d846ddfa5e9d6"><td class="memItemLeft" align="right" valign="top"><a id="a4fff95dbd373356a0b0d846ddfa5e9d6"></a>
-SensirionI2cSen66 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a4fff95dbd373356a0b0d846ddfa5e9d6">_sen</a></td></tr>
+SensirionI2cSen66 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a4fff95dbd373356a0b0d846ddfa5e9d6">_sen</a> = nullptr</td></tr>
 <tr class="memdesc:a4fff95dbd373356a0b0d846ddfa5e9d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">SEN6X driver object. <br /></td></tr>
 <tr class="separator:a4fff95dbd373356a0b0d846ddfa5e9d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf87ed2f028ead1acc53df893aa04890"><td class="memItemLeft" align="right" valign="top"><a id="acf87ed2f028ead1acc53df893aa04890"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#acf87ed2f028ead1acc53df893aa04890">_massConcentrationPm1p0</a></td></tr>
+<tr class="memdesc:acf87ed2f028ead1acc53df893aa04890"><td class="mdescLeft">&#160;</td><td class="mdescRight">PM1.0 mass concentration. <br /></td></tr>
+<tr class="separator:acf87ed2f028ead1acc53df893aa04890"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8764640e6cdec826e735d8658112104b"><td class="memItemLeft" align="right" valign="top"><a id="a8764640e6cdec826e735d8658112104b"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a8764640e6cdec826e735d8658112104b">_massConcentrationPm2p5</a></td></tr>
+<tr class="memdesc:a8764640e6cdec826e735d8658112104b"><td class="mdescLeft">&#160;</td><td class="mdescRight">PM2.5 mass concentration. <br /></td></tr>
+<tr class="separator:a8764640e6cdec826e735d8658112104b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12834975ae62b7184cf7219b6ca2cd95"><td class="memItemLeft" align="right" valign="top"><a id="a12834975ae62b7184cf7219b6ca2cd95"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a12834975ae62b7184cf7219b6ca2cd95">_massConcentrationPm4p0</a></td></tr>
+<tr class="memdesc:a12834975ae62b7184cf7219b6ca2cd95"><td class="mdescLeft">&#160;</td><td class="mdescRight">PM4.0 mass concentration. <br /></td></tr>
+<tr class="separator:a12834975ae62b7184cf7219b6ca2cd95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09ff3ab11103430e6d18574bdea8a8d5"><td class="memItemLeft" align="right" valign="top"><a id="a09ff3ab11103430e6d18574bdea8a8d5"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a09ff3ab11103430e6d18574bdea8a8d5">_massConcentrationPm10p0</a></td></tr>
+<tr class="memdesc:a09ff3ab11103430e6d18574bdea8a8d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">PM10.0 mass concentration. <br /></td></tr>
+<tr class="separator:a09ff3ab11103430e6d18574bdea8a8d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a905736a3b940c2936825d4123a0cf573"><td class="memItemLeft" align="right" valign="top"><a id="a905736a3b940c2936825d4123a0cf573"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a905736a3b940c2936825d4123a0cf573">_ambientHumidity</a></td></tr>
+<tr class="memdesc:a905736a3b940c2936825d4123a0cf573"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ambient humidity. <br /></td></tr>
+<tr class="separator:a905736a3b940c2936825d4123a0cf573"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67c0cc12d5ca837f6a3100ee5c820914"><td class="memItemLeft" align="right" valign="top"><a id="a67c0cc12d5ca837f6a3100ee5c820914"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a67c0cc12d5ca837f6a3100ee5c820914">_ambientTemperature</a></td></tr>
+<tr class="memdesc:a67c0cc12d5ca837f6a3100ee5c820914"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ambient temperature. <br /></td></tr>
+<tr class="separator:a67c0cc12d5ca837f6a3100ee5c820914"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93393ab71d7f61850ae0a3608b591c34"><td class="memItemLeft" align="right" valign="top"><a id="a93393ab71d7f61850ae0a3608b591c34"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a93393ab71d7f61850ae0a3608b591c34">_vocIndex</a></td></tr>
+<tr class="memdesc:a93393ab71d7f61850ae0a3608b591c34"><td class="mdescLeft">&#160;</td><td class="mdescRight">VOC index. <br /></td></tr>
+<tr class="separator:a93393ab71d7f61850ae0a3608b591c34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a2a1dca430666e1eaa8814a303d369e"><td class="memItemLeft" align="right" valign="top"><a id="a1a2a1dca430666e1eaa8814a303d369e"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a1a2a1dca430666e1eaa8814a303d369e">_noxIndex</a></td></tr>
+<tr class="memdesc:a1a2a1dca430666e1eaa8814a303d369e"><td class="mdescLeft">&#160;</td><td class="mdescRight">NOx index. <br /></td></tr>
+<tr class="separator:a1a2a1dca430666e1eaa8814a303d369e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61a9c38e450b1dd0d409fb5255449fbf"><td class="memItemLeft" align="right" valign="top"><a id="a61a9c38e450b1dd0d409fb5255449fbf"></a>
+uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#a61a9c38e450b1dd0d409fb5255449fbf">_co2</a></td></tr>
+<tr class="memdesc:a61a9c38e450b1dd0d409fb5255449fbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">CO2 value. <br /></td></tr>
+<tr class="separator:a61a9c38e450b1dd0d409fb5255449fbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc10ebd104ee0768ca2ed5b70cf60944"><td class="memItemLeft" align="right" valign="top"><a id="abc10ebd104ee0768ca2ed5b70cf60944"></a>
+ulong&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver___s_e_n6_x.html#abc10ebd104ee0768ca2ed5b70cf60944">_lastRead</a></td></tr>
+<tr class="memdesc:abc10ebd104ee0768ca2ed5b70cf60944"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last time the sensor was read. <br /></td></tr>
+<tr class="separator:abc10ebd104ee0768ca2ed5b70cf60944"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_wipper_snapper___i2_c___driver"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_wipper_snapper___i2_c___driver')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_wipper_snapper___i2_c___driver.html">WipperSnapper_I2C_Driver</a></td></tr>
 <tr class="memitem:a7800f657301fd3d4b3babad46d95c91f inherit pro_attribs_class_wipper_snapper___i2_c___driver"><td class="memItemLeft" align="right" valign="top"><a id="a7800f657301fd3d4b3babad46d95c91f"></a>
 TwoWire *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___i2_c___driver.html#a7800f657301fd3d4b3babad46d95c91f">_i2c</a></td></tr>
@@ -597,6 +646,90 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 <p>Initializes the SEN6X sensor and begins I2C. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if initialized successfully, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a663d6b68e98efb1a7d7a58a4dd56f499"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a663d6b68e98efb1a7d7a58a4dd56f499">&#9670;&nbsp;</a></span>HasBeenReadInLastSecond()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_I2C_Driver_SEN6X::HasBeenReadInLastSecond </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if sensor was read within last 1s, or is the first read. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor was recently read, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a030620bd43047019ab1c2f7b1ac68362"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a030620bd43047019ab1c2f7b1ac68362">&#9670;&nbsp;</a></span>IsSensorReady()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_I2C_Driver_SEN6X::IsSensorReady </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if the sensor is ready to be read. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor is ready, False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a059bae8d87e67dc0a6daaf7d2802aa61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a059bae8d87e67dc0a6daaf7d2802aa61">&#9670;&nbsp;</a></span>ReadSensorData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_I2C_Driver_SEN6X::ReadSensorData </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reads the sensor. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if the sensor was read successfully, False otherwise. </dd></dl>
 
 </div>
 </div>
