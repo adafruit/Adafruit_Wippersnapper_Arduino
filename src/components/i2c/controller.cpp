@@ -522,40 +522,77 @@ bool I2cController::InitMux(const char *name, uint32_t address,
 /***********************************************************************/
 bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceAddOrReplace message...");
-  // Attempt to decode an I2cBusScan message
+  // Attempt to decode I2cBusScan message
   if (!_i2c_model->DecodeI2cBusScan(stream)) {
-    WS_DEBUG_PRINTLN(
-        "[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cBusScan message!");
     return false;
   }
 
   _i2c_model->ClearI2cBusScanned();
-  wippersnapper_i2c_I2cBusScanned* scan_results = _i2c_model->GetI2cBusScannedMsg();
+  wippersnapper_i2c_I2cBusScanned *scan_results =
+      _i2c_model->GetI2cBusScannedMsg();
+  bool scan_success = false;
 
+  // TODO: Refactor, case 1 and case 2 are functionally VERY similar - can be
+  // combined
+
+  // Case 1: Scan the default I2C bus
   if (_i2c_model->GetI2cBusScanMsg()->scan_default_bus) {
-    if (! IsBusStatusOK()) {
-        WS_DEBUG_PRINTLN("[i2c] Default I2C bus is stuck or not operational, reset the board!");
-        return false;
+    // Was the default bus initialized correctly and ready to scan?
+    if (IsBusStatusOK()) {
+      if (_i2c_bus_default->ScanBus(scan_results)) {
+        scan_success = true;
+      } else {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan default I2C bus!");
+        scan_success = false;
+      }
+    } else {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Default I2C bus state is stuck, please "
+                       "reset the board!");
+      scan_success = false;
     }
-    // Linearly scan the default i2c bus
-    if (!_i2c_bus_default->ScanBus(scan_results)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to scan default I2C bus!");
-        return false;
+    if (scan_success) {
+      WS_DEBUG_PRINTLN("[i2c] Scanned default I2C bus successfully!");
     }
-    // TODO: Encode message
-    // TODO: Print out the message (to verify)
-    // Future TODO: Publish scan results out to IO
-    // Return
-    return true;
+    // TODO: Print out what was scanned? or do this at the end
   }
 
+  // Case 2: Scan the alternative I2C bus
+  if (_i2c_model->GetI2cBusScanMsg()->scan_alt_bus) {
+    // Is the alt bus initialized?
+    if (_i2c_bus_alt == nullptr) {
+      WS_DEBUG_PRINTLN("[i2c] Initializing alt. i2c bus...");
+      _i2c_bus_alt = new I2cHardware();
+      _i2c_bus_alt->InitBus(
+          false,
+          _i2c_model->GetI2cBusScanMsg()->i2c_alt_bus_descriptor.i2c_bus_sda,
+          _i2c_model->GetI2cBusScanMsg()->i2c_alt_bus_descriptor.i2c_bus_sda);
+    }
+    // Was the default bus initialized correctly and ready to scan?
+    if (IsBusStatusOK(true)) {
+      if (_i2c_bus_alt->ScanBus(scan_results)) {
+        scan_success = true;
+      } else {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan alt. I2C bus!");
+        scan_success = false;
+      }
+    } else {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: alt. I2C bus state is stuck, please "
+                       "reset the board!");
+      scan_success = false;
+    }
+    if (scan_success) {
+      WS_DEBUG_PRINTLN("[i2c] Scanned alt. I2C bus successfully!");
+    }
+    // TODO: Print out what was scanned? or do this at the end
+  }
 
+  // TODO If Muxes are present, scan them
+  // TODO Scan I2C Port 1 for Muxes
+  // TODO Scan I2C Port 2 for Muxes
 
-  // TODO Linear Scan Alt. I2C Bus 
-  // TODO: Check if alt i2c bus ha been initialized yet, call init. directly if not
-  // TODO If Muxes are present, scan them 
-  // TODO Scan I2C Port 1 for Muxes 
-  // TODO Scan I2C Port 2 for Muxes 
+  // TODO: Take scan_success into account here
+  return true;
 }
 
 /***********************************************************************/

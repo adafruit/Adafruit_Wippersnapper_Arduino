@@ -139,71 +139,84 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
 }
 
-bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned* scan_results) {
+bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
   if (!scan_results)
-      return false;
+    return false;
 
-    // TODO: WS object needs to be added for this to work?
-/*     #ifndef ARDUINO_ARCH_ESP32
-      // Set I2C WDT timeout to catch I2C hangs, SAMD-specific
-      WS.enableWDT(I2C_WDT_TIMEOUT_MS);
+  // TODO: WS object needs to be added for this to work?
+  /*     #ifndef ARDUINO_ARCH_ESP32
+        // Set I2C WDT timeout to catch I2C hangs, SAMD-specific
+        WS.enableWDT(I2C_WDT_TIMEOUT_MS);
+        WS.feedWDT();
+      #endif */
+
+  // Get the SDA and SCL pins from the bus
+  char i2c_bus_scl[15] = {0}, i2c_bus_sda[15] = {0};
+  snprintf(i2c_bus_scl, sizeof(i2c_bus_scl), "D%u", _bus_scl);
+  snprintf(i2c_bus_sda, sizeof(i2c_bus_sda), "D%u", _bus_sda);
+
+  // Perform a bus scan
+  WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
+  for (uint8_t address = 1; address < 127; ++address) {
+    WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
+    WS_DEBUG_PRINTLN(address, HEX);
+    _bus->beginTransmission(address);
+    uint8_t endTransmissionRC = _bus->endTransmission();
+
+    if (endTransmissionRC == 0) {
+      WS_DEBUG_PRINTLN("[i2c] Found Device!");
+      scan_results
+          ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+          .i2c_device_address = address;
+      scan_results
+          ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+          .i2c_mux_address = 0xFFFF; // Tell user that device is not on a mux
+      strcpy(
+          scan_results
+              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+              .i2c_bus_sda,
+          i2c_bus_sda);
+      strcpy(
+          scan_results
+              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+              .i2c_bus_scl,
+          i2c_bus_scl);
+      scan_results->i2c_bus_found_devices_count++;
+    }
+#if defined(ARDUINO_ARCH_ESP32)
+    // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
+    else if (endTransmissionRC == 3) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
+      continue;
+    } else if (endTransmissionRC == 2) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: NACK on transmit of address!");
+      continue;
+    } else if (endTransmissionRC == 1) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: data too long to fit in xmit buffer!");
+      continue;
+    } else if (endTransmissionRC == 4) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unspecified bus error occured!");
+      continue;
+    } else if (endTransmissionRC == 5) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
+      continue;
+#endif // ARDUINO_ARCH_ESP32
+    } else {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unknown bus error has occured!");
+      continue;
+    }
+  }
+
+  /*   #ifndef ARDUINO_ARCH_ESP32
+      // re-enable WipperSnapper SAMD WDT global timeout
+      WS.enableWDT(WS_WDT_TIMEOUT);
       WS.feedWDT();
     #endif */
-
-    // Get the SDA and SCL pins from the bus
-    char i2c_bus_scl[15] = {0}, i2c_bus_sda[15] = {0};
-    snprintf(i2c_bus_scl, sizeof(i2c_bus_scl), "D%u", _bus_scl);
-    snprintf(i2c_bus_sda, sizeof(i2c_bus_sda), "D%u", _bus_sda);
-
-    // Perform a bus scan
-    WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
-    for (uint8_t address = 1; address < 127; ++address) {
-      WS_DEBUG_PRINT("[i2c] Scanning Address: 0x");
-      WS_DEBUG_PRINTLN(address, HEX);
-      _bus->beginTransmission(address);
-      uint8_t endTransmissionRC = _bus->endTransmission();
-
-      if (endTransmissionRC == 0) {
-        WS_DEBUG_PRINTLN("[i2c] Found Device!");
-        scan_results->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count].i2c_device_address = address;
-        scan_results->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count].i2c_mux_address = 0xFFFF; // Tell user that device is not on a mux
-        strcpy(scan_results->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count].i2c_bus_sda, i2c_bus_sda);
-        strcpy(scan_results->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count].i2c_bus_scl, i2c_bus_scl);
-        scan_results->i2c_bus_found_devices_count++;
-      }
-  #if defined(ARDUINO_ARCH_ESP32)
-      // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
-      else if (endTransmissionRC == 3) {
-        WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
-        continue;
-      } else if (endTransmissionRC == 2) {
-        WS_DEBUG_PRINTLN(
-            "[i2c] Did not find device: NACK on transmit of address!");
-        continue;
-      } else if (endTransmissionRC == 1) {
-        WS_DEBUG_PRINTLN(
-            "[i2c] Did not find device: data too long to fit in xmit buffer!");
-        continue;
-      } else if (endTransmissionRC == 4) {
-        WS_DEBUG_PRINTLN(
-            "[i2c] Did not find device: Unspecified bus error occured!");
-        continue;
-      } else if (endTransmissionRC == 5) {
-        WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
-        continue;
-      #endif // ARDUINO_ARCH_ESP32
-      } else {
-        WS_DEBUG_PRINTLN(
-            "[i2c] Did not find device: Unknown bus error has occured!");
-        continue;
-      }
-    }
-  
-/*   #ifndef ARDUINO_ARCH_ESP32
-    // re-enable WipperSnapper SAMD WDT global timeout
-    WS.enableWDT(WS_WDT_TIMEOUT);
-    WS.feedWDT();
-  #endif */
+  return true; // TODO: Change this!
 }
 
 /***********************************************************************/

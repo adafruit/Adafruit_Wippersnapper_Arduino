@@ -21,7 +21,7 @@
 /***********************************************************************/
 I2cModel::I2cModel() {
   _msg_i2c_bus_scan = wippersnapper_i2c_I2cBusScan_init_default;
-  _msg_i2c_bus_scanned = wippersnapper_i2c_I2cBusScan_init_default;
+  _msg_i2c_bus_scanned = wippersnapper_i2c_I2cBusScanned_init_default;
   _msg_i2c_device_add_replace =
       wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
   _msg_i2c_device_added_replaced =
@@ -170,8 +170,8 @@ bool I2cModel::DecodeI2cBusScan(pb_istream_t *stream) {
     @returns  Pointer to a I2cBusScan message.
 */
 /**********************************************************************/
-wippersnapper_i2c_I2cBusScan *GetI2cBusScanMsg() {
-    return &_msg_i2c_bus_scan;
+wippersnapper_i2c_I2cBusScan *I2cModel::GetI2cBusScanMsg() {
+  return &_msg_i2c_bus_scan;
 }
 
 /**********************************************************************/
