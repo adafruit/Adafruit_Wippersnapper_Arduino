@@ -531,17 +531,24 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
 
   _i2c_model->ClearI2cBusScanned();
   wippersnapper_i2c_I2cBusScanned* scan_results = _i2c_model->GetI2cBusScannedMsg();
-  
-  // Check default i2c bus status 
-  if (! IsBusStatusOK()) {
-    WS_DEBUG_PRINTLN("[i2c] Default I2C bus is stuck or not operational, reset the board!");
-    return false;
+
+  if (_i2c_model->GetI2cBusScanMsg()->scan_default_bus) {
+    if (! IsBusStatusOK()) {
+        WS_DEBUG_PRINTLN("[i2c] Default I2C bus is stuck or not operational, reset the board!");
+        return false;
+    }
+    // Linearly scan the default i2c bus
+    if (!_i2c_bus_default->ScanBus(scan_results)) {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to scan default I2C bus!");
+        return false;
+    }
+    // TODO: Encode message
+    // TODO: Print out the message (to verify)
+    // Future TODO: Publish scan results out to IO
+    // Return
+    return true;
   }
-  // Linearly scan the default i2c bus
-  if (!_i2c_bus_default->ScanBus(scan_results)) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to scan default I2C bus!");
-    return false;
-  }
+
 
 
   // TODO Linear Scan Alt. I2C Bus 

@@ -9,6 +9,12 @@
 PB_BIND(wippersnapper_i2c_I2cDeviceDescriptor, wippersnapper_i2c_I2cDeviceDescriptor, AUTO)
 
 
+PB_BIND(wippersnapper_i2c_I2cMuxDescriptor, wippersnapper_i2c_I2cMuxDescriptor, AUTO)
+
+
+PB_BIND(wippersnapper_i2c_I2cBusDescriptor, wippersnapper_i2c_I2cBusDescriptor, AUTO)
+
+
 PB_BIND(wippersnapper_i2c_I2cBusScan, wippersnapper_i2c_I2cBusScan, AUTO)
 
 

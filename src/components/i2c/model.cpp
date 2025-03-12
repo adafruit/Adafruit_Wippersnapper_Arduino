@@ -166,6 +166,16 @@ bool I2cModel::DecodeI2cBusScan(pb_istream_t *stream) {
 
 /**********************************************************************/
 /*!
+    @brief    Returns a pointer to the I2cBusScan message.
+    @returns  Pointer to a I2cBusScan message.
+*/
+/**********************************************************************/
+wippersnapper_i2c_I2cBusScan *GetI2cBusScanMsg() {
+    return &_msg_i2c_bus_scan;
+}
+
+/**********************************************************************/
+/*!
     @brief    Returns a pointer to the I2cBusScanned message.
     @returns  Pointer to a I2cBusScanned message.
 */
