@@ -92,7 +92,7 @@ public:
       const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
       const wippersnapper_i2c_I2cDeviceStatus &device_status);
   // Helpers //
-  bool IsBusStatusOK(bool is_alt_bus);
+  bool IsBusStatusOK(bool is_alt_bus=false);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
 

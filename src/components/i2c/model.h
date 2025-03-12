@@ -45,7 +45,7 @@ public:
   wippersnapper_i2c_I2cDeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
   wippersnapper_i2c_I2cDeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   wippersnapper_i2c_I2cDeviceEvent *GetI2cDeviceEvent();
-  wippersnapper_i2c_I2cBusScan *GetI2cBusScanMsg();
+  wippersnapper_i2c_I2cBusScanned *GetI2cBusScannedMsg();
   // I2cBusScanned Message API
   void ClearI2cBusScanned();
   bool AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,

@@ -528,14 +528,27 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
         "[i2c] ERROR: Unable to decode I2cDeviceAddOrReplace message!");
     return false;
   }
-  // Trigger a bus scan on the default I2C bus
+
   _i2c_model->ClearI2cBusScanned();
-  // TODO: Mux Check
-  // Linear Scan I2C Bus 1  TODO
-  // Linear Scan Alt. I2C Bus TODO
-  // If Muxes are present, scan them TODO
-  // Scan I2C Port 1 for Muxes TODO
-  // Scan I2C Port 2 for Muxes TODO
+  wippersnapper_i2c_I2cBusScanned* scan_results = _i2c_model->GetI2cBusScannedMsg();
+  
+  // Check default i2c bus status 
+  if (! IsBusStatusOK()) {
+    WS_DEBUG_PRINTLN("[i2c] Default I2C bus is stuck or not operational, reset the board!");
+    return false;
+  }
+  // Linearly scan the default i2c bus
+  if (!_i2c_bus_default->ScanBus(scan_results)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to scan default I2C bus!");
+    return false;
+  }
+
+
+  // TODO Linear Scan Alt. I2C Bus 
+  // TODO: Check if alt i2c bus ha been initialized yet, call init. directly if not
+  // TODO If Muxes are present, scan them 
+  // TODO Scan I2C Port 1 for Muxes 
+  // TODO Scan I2C Port 2 for Muxes 
 }
 
 /***********************************************************************/
