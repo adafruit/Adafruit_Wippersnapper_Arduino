@@ -587,7 +587,11 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
     // TODO: Print out what was scanned? or do this at the end
   }
 
-  // TODO If Muxes are present, scan them
+  // Case 3: Do we have a MUX on the default bus?
+  if (_i2c_model->GetI2cBusScanMsg()->i2c_mux_descriptors_count > 0) {
+    // Iterate through the MUX descriptors, scanning each MUX
+  }
+
   // TODO Scan I2C Port 1 for Muxes
   // TODO Scan I2C Port 2 for Muxes
 

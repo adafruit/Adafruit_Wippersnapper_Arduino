@@ -151,6 +151,7 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
       #endif */
 
   // Get the SDA and SCL pins from the bus
+  // TODO: Abstract this?
   char i2c_bus_scl[15] = {0}, i2c_bus_sda[15] = {0};
   snprintf(i2c_bus_scl, sizeof(i2c_bus_scl), "D%u", _bus_scl);
   snprintf(i2c_bus_sda, sizeof(i2c_bus_sda), "D%u", _bus_sda);
@@ -165,6 +166,7 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
 
     if (endTransmissionRC == 0) {
       WS_DEBUG_PRINTLN("[i2c] Found Device!");
+      // TODO: Abstract this? Allow for mux flags to be set here, too
       scan_results
           ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
           .i2c_device_address = address;
@@ -293,3 +295,20 @@ void I2cHardware::SelectMuxChannel(uint32_t channel) {
 */
 /***********************************************************************/
 bool I2cHardware::HasMux() { return _has_mux; }
+
+bool I2cHardware::ScanMux(wippersnapper_i2c_I2cBusScanned* scan_results) {
+    if (!HasMux()) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: No MUX present on the bus!");
+      return false;
+    }
+
+    for (uint8_t ch = 0; ch < _mux_max_channels; ch++) {
+      SelectMuxChannel(ch);
+      WS_DEBUG_PRINT("[i2c] Scanning MUX Channel: ");
+      WS_DEBUG_PRINTLN(ch);
+      if (!ScanBus(scan_results)) {
+        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan MUX channel!");
+        return false;
+      }
+    }
+}
