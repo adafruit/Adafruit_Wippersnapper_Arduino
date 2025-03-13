@@ -406,7 +406,7 @@ I2cController::~I2cController() {
 */
 /***********************************************************************/
 bool I2cController::RemoveDriver(uint32_t address) {
-  for (drvBase* driver : _i2c_drivers) {
+  for (drvBase *driver : _i2c_drivers) {
     if (driver == nullptr)
       continue;
 
@@ -414,7 +414,8 @@ bool I2cController::RemoveDriver(uint32_t address) {
       continue;
 
     delete driver;
-    _i2c_drivers.erase(std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver));
+    _i2c_drivers.erase(
+        std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver));
     return true;
   }
   return false;
@@ -504,6 +505,8 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
     return false;
   }
 
+  bool did_remove = true;
+
   // Check for default bus
   if (strlen(msgRemove->i2c_device_description.i2c_bus_scl) == 0 &&
       strlen(msgRemove->i2c_device_description.i2c_bus_sda) == 0) {
@@ -511,21 +514,53 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
     if (!_i2c_bus_default->HasMux()) {
       // TODO: Implement remove, straightforward
       if (!RemoveDriver(msgRemove->i2c_device_description.i2c_device_address)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to remove i2c device from default bus!");
-        return false;
+        WS_DEBUG_PRINTLN(
+            "[i2c] ERROR: Failed to remove i2c device from default bus!");
+        did_remove = false;
       }
     } else {
       // Bus has a I2C MUX attached
       // Case 1: Is the I2C device connected to a MUX?
-      if (msgRemove->i2c_device_description.i2c_mux_address != 0xFFFF && msgRemove->i2c_device_description.i2c_mux_channel >= 0) {
+      if (msgRemove->i2c_device_description.i2c_mux_address != 0xFFFF &&
+          msgRemove->i2c_device_description.i2c_mux_channel >= 0) {
         // TODO: Remove the device from the mux's channel and delete the driver
+        _i2c_bus_default->SelectMuxChannel(
+            msgRemove->i2c_device_description.i2c_mux_channel);
+        if (!RemoveDriver(
+                msgRemove->i2c_device_description.i2c_device_address)) {
+          WS_DEBUG_PRINTLN(
+              "[i2c] ERROR: Failed to remove i2c device from default bus!");
+          did_remove = false;
+        }
       }
       // Case 2: Is the I2C device a MUX?
-      if (msgRemove->i2c_device_description.i2c_device_address == msgRemove->i2c_device_description.i2c_mux_address) {
-        // TODO: Remove the MUX from the i2c bus
+      if (msgRemove->i2c_device_description.i2c_device_address ==
+          msgRemove->i2c_device_description.i2c_mux_address) {
+        // TODO: Scan the mux to see what drivers are attached?
+        wippersnapper_i2c_I2cBusScanned scan_results;
+        _i2c_bus_default->ScanMux(&scan_results);
+        // DEBUG - TODO REMOVE - Print out the scan results
+        for (int i = 0; i < scan_results.i2c_bus_found_devices_count; i++) {
+          WS_DEBUG_PRINT("[i2c] Found device at address: ");
+          WS_DEBUG_PRINT(
+              scan_results.i2c_bus_found_devices[i].i2c_device_address, HEX);
+          WS_DEBUG_PRINT(" on mux channel #: ");
+          WS_DEBUG_PRINTLN(
+              scan_results.i2c_bus_found_devices[i].i2c_mux_channel);
+          // Select the channel and remove the device
+          _i2c_bus_default->SelectMuxChannel(
+              scan_results.i2c_bus_found_devices[i].i2c_mux_channel);
+          RemoveDriver(
+              scan_results.i2c_bus_found_devices[i].i2c_device_address);
+        }
+        _i2c_bus_default->RemoveMux();
       }
     }
   }
+
+  // TODO: Check for Alt. I2C Bus
+
+  // Publush with did_remove to the response
 
   return true;
 }

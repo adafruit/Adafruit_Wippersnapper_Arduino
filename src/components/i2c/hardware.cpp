@@ -273,6 +273,13 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
   return true;
 }
 
+void I2cHardware::RemoveMux() {
+  ClearMuxChannel();
+  _has_mux = false;
+  _mux_address_register = 0;
+  _mux_max_channels = 0;
+}
+
 /***********************************************************************/
 /*!
     @brief  Clears the enabled MUX channel.

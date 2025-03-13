@@ -41,9 +41,10 @@ public:
   bool ScanBus(wippersnapper_i2c_I2cBusScanned* scan_results);
   // MUX
   bool AddMuxToBus(uint32_t address_register, const char *name);
-  void SelectMuxChannel(uint32_t channel);
+  void RemoveMux();
   bool HasMux();
   void ClearMuxChannel();
+  void SelectMuxChannel(uint32_t channel);
   bool ScanMux(wippersnapper_i2c_I2cBusScanned* scan_results);
 private:
   void TogglePowerPin();
