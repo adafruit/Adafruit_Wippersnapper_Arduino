@@ -104,8 +104,7 @@ typedef struct _wippersnapper_i2c_I2cDeviceRemove {
 typedef struct _wippersnapper_i2c_I2cDeviceRemoved {
     bool has_i2c_device_description;
     wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description; /* * The I2c device's address and metadata. */
-    wippersnapper_i2c_I2cBusStatus i2c_bus_status; /* * The I2c bus' status. * */
-    wippersnapper_i2c_I2cDeviceStatus i2c_device_status; /* * The I2c device's status. * */
+    bool did_remove; /* * True if the I2C device was successfully removed from the controller, False otherwise. * */
 } wippersnapper_i2c_I2cDeviceRemoved;
 
 /* *
@@ -144,8 +143,6 @@ extern "C" {
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_i2c_device_status_ENUMTYPE wippersnapper_i2c_I2cDeviceStatus
 
 
-#define wippersnapper_i2c_I2cDeviceRemoved_i2c_bus_status_ENUMTYPE wippersnapper_i2c_I2cBusStatus
-#define wippersnapper_i2c_I2cDeviceRemoved_i2c_device_status_ENUMTYPE wippersnapper_i2c_I2cDeviceStatus
 
 
 
@@ -157,7 +154,7 @@ extern "C" {
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, "", 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}}
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, _wippersnapper_i2c_I2cBusStatus_MIN, _wippersnapper_i2c_I2cDeviceStatus_MIN}
 #define wippersnapper_i2c_I2cDeviceRemove_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default}
-#define wippersnapper_i2c_I2cDeviceRemoved_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, _wippersnapper_i2c_I2cBusStatus_MIN, _wippersnapper_i2c_I2cDeviceStatus_MIN}
+#define wippersnapper_i2c_I2cDeviceRemoved_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, 0}
 #define wippersnapper_i2c_I2cDeviceEvent_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, 0, {wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default}}
 #define wippersnapper_i2c_I2cDeviceDescriptor_init_zero {"", "", 0, 0, 0}
 #define wippersnapper_i2c_I2cBusDescriptor_init_zero {"", ""}
@@ -166,7 +163,7 @@ extern "C" {
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, "", 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}}
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, _wippersnapper_i2c_I2cBusStatus_MIN, _wippersnapper_i2c_I2cDeviceStatus_MIN}
 #define wippersnapper_i2c_I2cDeviceRemove_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero}
-#define wippersnapper_i2c_I2cDeviceRemoved_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, _wippersnapper_i2c_I2cBusStatus_MIN, _wippersnapper_i2c_I2cDeviceStatus_MIN}
+#define wippersnapper_i2c_I2cDeviceRemoved_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, 0}
 #define wippersnapper_i2c_I2cDeviceEvent_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, 0, {wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -193,8 +190,7 @@ extern "C" {
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_i2c_device_status_tag 3
 #define wippersnapper_i2c_I2cDeviceRemove_i2c_device_description_tag 1
 #define wippersnapper_i2c_I2cDeviceRemoved_i2c_device_description_tag 1
-#define wippersnapper_i2c_I2cDeviceRemoved_i2c_bus_status_tag 2
-#define wippersnapper_i2c_I2cDeviceRemoved_i2c_device_status_tag 3
+#define wippersnapper_i2c_I2cDeviceRemoved_did_remove_tag 2
 #define wippersnapper_i2c_I2cDeviceEvent_i2c_device_description_tag 1
 #define wippersnapper_i2c_I2cDeviceEvent_i2c_device_events_tag 2
 
@@ -256,8 +252,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1)
 
 #define wippersnapper_i2c_I2cDeviceRemoved_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1) \
-X(a, STATIC,   SINGULAR, UENUM,    i2c_bus_status,    2) \
-X(a, STATIC,   SINGULAR, UENUM,    i2c_device_status,   3)
+X(a, STATIC,   SINGULAR, BOOL,     did_remove,        2)
 #define wippersnapper_i2c_I2cDeviceRemoved_CALLBACK NULL
 #define wippersnapper_i2c_I2cDeviceRemoved_DEFAULT NULL
 #define wippersnapper_i2c_I2cDeviceRemoved_i2c_device_description_MSGTYPE wippersnapper_i2c_I2cDeviceDescriptor
@@ -300,7 +295,7 @@ extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceEvent_msg;
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_size 56
 #define wippersnapper_i2c_I2cDeviceDescriptor_size 50
 #define wippersnapper_i2c_I2cDeviceRemove_size   52
-#define wippersnapper_i2c_I2cDeviceRemoved_size  56
+#define wippersnapper_i2c_I2cDeviceRemoved_size  54
 #if defined(wippersnapper_sensor_SensorEvent_size)
 #define wippersnapper_i2c_I2cDeviceEvent_size    (142 + 15*wippersnapper_sensor_SensorEvent_size)
 #endif
