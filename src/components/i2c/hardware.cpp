@@ -2,12 +2,28 @@
 
 /***********************************************************************/
 /*!
-    @brief  I2C hardware class constructor
+    @brief  Default I2C bus hardware class constructor
 */
 /***********************************************************************/
 I2cHardware::I2cHardware() {
   _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
   _has_mux = false;
+  InitBus(true); // Init default bus
+}
+
+/***********************************************************************/
+/*!
+    @brief  I2C hardware class constructor for an alternative bus.
+    @param    sda
+                The desired SDA pin.
+    @param    scl
+                The desired SCL pin.
+*/
+/***********************************************************************/
+I2cHardware::I2cHardware(const char *sda, const char *scl) {
+  _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
+  _has_mux = false;
+  InitBus(false, sda, scl); // Init alt. bus
 }
 
 /***********************************************************************/
@@ -296,19 +312,20 @@ void I2cHardware::SelectMuxChannel(uint32_t channel) {
 /***********************************************************************/
 bool I2cHardware::HasMux() { return _has_mux; }
 
-bool I2cHardware::ScanMux(wippersnapper_i2c_I2cBusScanned* scan_results) {
-    if (!HasMux()) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: No MUX present on the bus!");
+bool I2cHardware::ScanMux(wippersnapper_i2c_I2cBusScanned *scan_results) {
+  if (!HasMux()) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: No MUX present on the bus!");
+    return false;
+  }
+
+  for (uint8_t ch = 0; ch < _mux_max_channels; ch++) {
+    SelectMuxChannel(ch);
+    WS_DEBUG_PRINT("[i2c] Scanning MUX Channel # ");
+    WS_DEBUG_PRINTLN(ch);
+    if (!ScanBus(scan_results)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan MUX channel!");
       return false;
     }
-
-    for (uint8_t ch = 0; ch < _mux_max_channels; ch++) {
-      SelectMuxChannel(ch);
-      WS_DEBUG_PRINT("[i2c] Scanning MUX Channel: ");
-      WS_DEBUG_PRINTLN(ch);
-      if (!ScanBus(scan_results)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan MUX channel!");
-        return false;
-      }
-    }
+  }
+  return true;
 }

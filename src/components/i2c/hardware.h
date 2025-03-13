@@ -32,6 +32,7 @@
 class I2cHardware {
 public:
   I2cHardware();
+  I2cHardware(const char *sda, const char *scl);
   ~I2cHardware();
   void InitBus(bool is_default, const char *sda = nullptr,
                const char *scl = nullptr);
