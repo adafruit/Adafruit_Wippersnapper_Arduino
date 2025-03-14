@@ -145,6 +145,20 @@ protected:
       NULL; ///< Ptr to an adafruit_sensor representing the pressure
   Adafruit_Sensor *_bme_humidity =
       NULL; ///< Ptr to an adafruit_sensor representing the humidity
+  uint16_t potential_addresses[2] = {
+      0x76, 0x77}; ///< BME280 I2C addresses, used for auto-config
+  wippersnapper_sensor_SensorType sensor_types[5] = {
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE,
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY,
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE}; ///< Let's store
+                                                             ///< the sensor
+                                                             ///< types for the
+                                                             ///< specific
+                                                             ///< driver within
+                                                             ///< the driver
+                                                             ///< itself!
 };
 
 #endif // drvBme280

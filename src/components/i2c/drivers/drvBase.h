@@ -593,6 +593,26 @@ public:
 
   /*******************************************************************************/
   /*!
+      @brief    Checks if an address found during an i2c scan belongs to the
+                  sensor.
+      @param    scan_address
+                  The desired address to check, from an i2c scan
+      @returns  True if the address belongs to the sensor, False otherwise
+  */
+  /*******************************************************************************/
+  bool IsPotentialAddress(uint16_t scan_address) {
+    for (uint8_t i = 0;
+         i < sizeof(_potential_addresses) / sizeof(_potential_addresses[0]);
+         i++) {
+      if (scan_address == _potential_addresses[i]) {
+        return true;
+      }
+    }
+    return false; // nothing found
+  }
+
+  /*******************************************************************************/
+  /*!
       @brief    Function type for sensor event handlers
       @param    sensors_event_t*
                 Pointer to the sensor event structure to be filled
@@ -712,16 +732,18 @@ public:
       _sensors[15]; ///< Sensors attached to the device.
 
 protected:
-  TwoWire *_i2c;             ///< Pointer to the I2C bus
-  bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
-  uint16_t _address;         ///< The device's I2C address.
-  uint32_t _i2c_mux_addr;    ///< The I2C MUX address, if applicable.
-  uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
-  char _name[15];            ///< The device's name.
-  char _pin_scl[8];          ///< The device's SCL pin.
-  char _pin_sda[8];          ///< The device's SDA pin.
-  ulong _sensor_period;      ///< The sensor's period, in milliseconds.
-  ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
-  size_t _sensors_count;     ///< Number of sensors on the device.
+  TwoWire *_i2c;         ///< Pointer to the I2C bus
+  bool _has_alt_i2c_bus; ///< True if the device is on an alternate I2C bus
+  uint16_t _address;     ///< The device's I2C address.
+  uint16_t _potential_addresses[2]; ///< Potential I2C addresses for the device,
+                                    ///< stored on the device driver
+  uint32_t _i2c_mux_addr;           ///< The I2C MUX address, if applicable.
+  uint32_t _i2c_mux_channel;        ///< The I2C MUX channel, if applicable.
+  char _name[15];                   ///< The device's name.
+  char _pin_scl[8];                 ///< The device's SCL pin.
+  char _pin_sda[8];                 ///< The device's SDA pin.
+  ulong _sensor_period;             ///< The sensor's period, in milliseconds.
+  ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
+  size_t _sensors_count;    ///< Number of sensors on the device.
 };
 #endif // DRV_BASE_H
