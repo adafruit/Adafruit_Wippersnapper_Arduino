@@ -134,9 +134,12 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
 */
 /****************************************************************************/
 bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
+  WS_DEBUG_PRINTLN("[i2c] Set _msg_i2c_device_remove...");
   _msg_i2c_device_remove = wippersnapper_i2c_I2cDeviceRemove_init_default;
-  return pb_decode(stream, wippersnapper_i2c_I2cDeviceRemove_fields,
-                   &_msg_i2c_device_remove);
+  bool is_success = false;
+  is_success = pb_decode(stream, wippersnapper_i2c_I2cDeviceRemove_fields, &_msg_i2c_device_remove);
+  WS_DEBUG_PRINT("is_success: "); WS_DEBUG_PRINTLN(is_success);
+  return is_success;
 }
 
 /**********************************************************************/

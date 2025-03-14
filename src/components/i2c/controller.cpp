@@ -487,7 +487,7 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
 bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
   // Attempt to decode an I2cDeviceRemove message
   WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceRemove message...");
-  if (!_i2c_model->DecodeI2cDeviceRemove(stream)) {
+  if (! _i2c_model->DecodeI2cDeviceRemove(stream)) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cDeviceRemove message!");
     return false;
   }
@@ -624,6 +624,9 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   // Case 1: Scan the default I2C bus
   if (_i2c_model->GetI2cBusScanMsg()->scan_default_bus) {
     // Was the default bus initialized correctly and ready to scan?
+    WS_DEBUG_PRINT("Bus State: ");
+    WS_DEBUG_PRINTLN(_i2c_bus_default->GetBusStatus());
+    WS_DEBUG_PRINTLN(IsBusStatusOK());
     if (IsBusStatusOK()) {
       if (!_i2c_bus_default->ScanBus(scan_results)) {
         WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to scan default I2C bus!");
@@ -890,6 +893,7 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
 */
 /***********************************************************************/
 void I2cController::update() {
+  //WS_DEBUG_PRINTLN("[i2c] Updating I2C controller...");
   if (_i2c_drivers.size() == 0)
     return; // bail out if no drivers exist
 
@@ -901,11 +905,13 @@ void I2cController::update() {
 
     // Did driver's period elapse yet?
     ulong cur_time = millis();
-    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
+    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod()) {
       continue; // bail out if the period hasn't elapsed yet
+    }
 
     // Optionally configure the I2C MUX
     uint32_t mux_channel = drv->GetMuxChannel();
+    WS_DEBUG_PRINTLN(mux_channel);
     if (drv->HasMux())
       ConfigureMuxChannel(mux_channel, drv->HasAltI2CBus());
 
