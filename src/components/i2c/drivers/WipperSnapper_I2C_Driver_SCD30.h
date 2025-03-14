@@ -95,7 +95,7 @@ public:
       return false;
     }
 
-    if (_scd->getEvent(&_humidity, &_temperature)) {
+    if (!_scd->getEvent(&_humidity, &_temperature)) {
       return false;
     }
     _CO2.CO2 = _scd->CO2;
@@ -118,7 +118,7 @@ public:
       return false;
     }
 
-    tempEvent = &_temperature;
+    *tempEvent = _temperature;
     return true;
   }
 
@@ -137,7 +137,7 @@ public:
       return false;
     }
 
-    humidEvent = &_humidity;
+    *humidEvent = _humidity;
     return true;
   }
 
@@ -156,7 +156,7 @@ public:
       return false;
     }
 
-    co2Event = &_CO2;
+    *co2Event = _CO2;
     return true;
   }
 
