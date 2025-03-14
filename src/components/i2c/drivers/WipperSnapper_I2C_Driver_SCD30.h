@@ -95,7 +95,7 @@ public:
       return false;
     }
 
-    if (_scd->getEvent(&_humidity, &_temperature)) {
+    if (!_scd->getEvent(&_humidity, &_temperature)) {
       return false;
     }
     _CO2.CO2 = _scd->CO2;
