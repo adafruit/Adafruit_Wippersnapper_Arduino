@@ -91,6 +91,7 @@ void Wippersnapper_V2::provision() {
 #elif defined(OFFLINE_MODE_WOKWI)
   WsV2.pin_sd_cs = 15;
 #endif
+
   WsV2._sdCardV2 = new ws_sdcard();
   if (WsV2._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()

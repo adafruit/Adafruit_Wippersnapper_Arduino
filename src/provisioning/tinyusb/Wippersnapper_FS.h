@@ -62,6 +62,7 @@ public:
   void CreateDisplayCfg();
 #endif
   // config.json
+  void CreateFileConfig();
   void FindPinSDCS();
 private:
   bool _is_secrets_file_empty = false;

@@ -289,17 +289,6 @@ void Wippersnapper_FS::InitUsbMsc() {
 
 /**************************************************************************/
 /*!
-    @brief    Checks if secrets.json file exists on the flash filesystem.
-    @returns  True if secrets.json file exists, False otherwise.
-*/
-/**************************************************************************/
-bool Wippersnapper_FS::GetFileSecrets() {
-  // Does secrets.json file exist?
-  return wipperFatFs_v2.exists("/secrets.json");
-}
-
-/**************************************************************************/
-/*!
     @brief    Erases the default CircuitPython filesystem if it exists.
 */
 /**************************************************************************/
@@ -365,6 +354,50 @@ bool Wippersnapper_FS::CreateFileBoot() {
     bootFile.close();
   }
   return is_success;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Creates a default `config.json` file on the filesystem.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::CreateFileConfig() {
+  if (wipperFatFs_v2.exists("/config.json"))
+    return;
+
+  // Open file for writing
+  File32 FileCfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
+  if (!FileCfg) {
+    HaltFilesystem("ERROR: Could not create the config.json file for writing!");
+  }
+
+  // Serialize the JSON object
+  JsonDocument doc;
+  JsonObject exportedFromDevice = doc["exportedFromDevice"].to<JsonObject>();
+  exportedFromDevice["sd_cs_pin"] = 0;
+  exportedFromDevice["referenceVoltage"] = 0;
+  exportedFromDevice["totalGPIOPins"] = 0;
+  exportedFromDevice["totalAnalogPins"] = 0;
+  exportedFromDevice["statusLEDBrightness"] = 0.3;
+  JsonArray components = doc["components"].to<JsonArray>();
+  doc.shrinkToFit();
+  // Write to file
+  serializeJsonPretty(doc, FileCfg);
+  // Flush and close file
+  FileCfg.flush();
+  FileCfg.close();
+  delay(2500);
+}
+
+/**************************************************************************/
+/*!
+    @brief    Checks if secrets.json file exists on the flash filesystem.
+    @returns  True if secrets.json file exists, False otherwise.
+*/
+/**************************************************************************/
+bool Wippersnapper_FS::GetFileSecrets() {
+    // Does secrets.json file exist?
+    return wipperFatFs_v2.exists("/secrets.json");
 }
 
 /**************************************************************************/
