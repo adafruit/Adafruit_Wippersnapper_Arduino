@@ -19,8 +19,9 @@
 #include "Adafruit_TinyUSB.h"
 #include "SdFat.h"
 // using f_mkfs() for formatting
-#include "fatfs/diskio.h"
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
+#include "fatfs/diskio.h"
+
 
 #include "Wippersnapper_V2.h"
 

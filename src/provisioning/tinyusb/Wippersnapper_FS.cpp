@@ -427,6 +427,7 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   FileCfg.flush();
   FileCfg.close();
   delay(2500);
+  return true;
 }
 
 /**************************************************************************/
