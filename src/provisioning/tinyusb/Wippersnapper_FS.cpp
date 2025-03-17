@@ -29,7 +29,7 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
-    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) || \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
     defined(ARDUINO_ADAFRUIT_METRO_RP2350)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
@@ -154,9 +154,10 @@ Wippersnapper_FS::Wippersnapper_FS() {
         "Please edit it to reflect your Adafruit IO and network credentials. "
         "When you're done, press RESET on the board.");
 #endif
-    HaltFilesystem("The settings.json file on the WIPPER drive contains default "
-           "values\n. Using a text editor, edit it to reflect your Adafruit IO "
-           "and WiFi credentials. Then, reset the board.");
+    HaltFilesystem(
+        "The settings.json file on the WIPPER drive contains default "
+        "values\n. Using a text editor, edit it to reflect your Adafruit IO "
+        "and WiFi credentials. Then, reset the board.");
   }
 }
 
@@ -176,7 +177,7 @@ Wippersnapper_FS::~Wippersnapper_FS() {
               config.json file.
 */
 /**************************************************************************/
-void Wippersnapper_FS::FindPinSDCS() {
+void Wippersnapper_FS::GetPinSDCS() {
   File32 file_cfg;
   DeserializationError error;
   // Attempt to open and deserialize the config.json file
@@ -374,7 +375,7 @@ void Wippersnapper_FS::CreateFileConfig() {
   // Serialize the JSON object
   JsonDocument doc;
   JsonObject exportedFromDevice = doc["exportedFromDevice"].to<JsonObject>();
-  exportedFromDevice["sd_cs_pin"] = 0;
+  exportedFromDevice["sd_cs_pin"] = 255;
   exportedFromDevice["referenceVoltage"] = 0;
   exportedFromDevice["totalGPIOPins"] = 0;
   exportedFromDevice["totalAnalogPins"] = 0;
@@ -391,13 +392,52 @@ void Wippersnapper_FS::CreateFileConfig() {
 
 /**************************************************************************/
 /*!
+    @brief    Adds the SD CS pin to the `config.json` file.
+    @param    pin
+                The Chip Select pin to add to the `config.json` file.
+*/
+/**************************************************************************/
+bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
+  // Open file for reading
+  File32 FileCfg = wipperFatFs_v2.open("/config.json", FILE_READ);
+  if (!FileCfg) {
+    HaltFilesystem("ERROR: Could not open the config.json file for reading!");
+    return false;
+  }
+  // Parse the JSON
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, FileCfg);
+  FileCfg.close();
+  if (error) {
+    WS_DEBUG_PRINT("deserializeJson() failed: ");
+    WS_DEBUG_PRINTLN(error.c_str());
+    return false;
+  }
+
+  // Modify sd_cs_pin
+  doc["exportedFromDevice"]["sd_cs_pin"] = pin;
+
+  // Write the modified JSON back to the file
+  FileCfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
+  if (!FileCfg) {
+    WS_DEBUG_PRINTLN("Failed to open config file for writing");
+    return false;
+  }
+  serializeJson(doc, FileCfg);
+  FileCfg.flush();
+  FileCfg.close();
+  delay(2500);
+}
+
+/**************************************************************************/
+/*!
     @brief    Checks if secrets.json file exists on the flash filesystem.
     @returns  True if secrets.json file exists, False otherwise.
 */
 /**************************************************************************/
 bool Wippersnapper_FS::GetFileSecrets() {
-    // Does secrets.json file exist?
-    return wipperFatFs_v2.exists("/secrets.json");
+  // Does secrets.json file exist?
+  return wipperFatFs_v2.exists("/secrets.json");
 }
 
 /**************************************************************************/
@@ -447,8 +487,8 @@ void Wippersnapper_FS::ParseFileSecrets() {
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
     HaltFilesystem(String("ERROR: Unable to parse secrets.json file - "
-                  "deserializeJson() failed with code") +
-           error.c_str());
+                          "deserializeJson() failed with code") +
+                   error.c_str());
   }
 
   if (doc.containsKey("network_type_wifi")) {
@@ -469,8 +509,9 @@ void Wippersnapper_FS::ParseFileSecrets() {
       WS_DEBUG_PRINT("Network count: ");
       WS_DEBUG_PRINTLN(altNetworkCount);
       if (altNetworkCount == 0) {
-        HaltFilesystem("ERROR: No alternative network entries found under "
-               "network_type_wifi.alternative_networks in secrets.json!");
+        HaltFilesystem(
+            "ERROR: No alternative network entries found under "
+            "network_type_wifi.alternative_networks in secrets.json!");
       }
       // check if over 3, warn user and take first three
       for (int i = 0; i < altNetworkCount; i++) {
@@ -489,7 +530,7 @@ void Wippersnapper_FS::ParseFileSecrets() {
       WsV2._isWiFiMultiV2 = true;
     } else {
       HaltFilesystem("ERROR: Unrecognised value type for "
-             "network_type_wifi.alternative_networks in secrets.json!");
+                     "network_type_wifi.alternative_networks in secrets.json!");
     }
   } else {
     HaltFilesystem("ERROR: Could not find network_type_wifi in secrets.json!");
@@ -519,8 +560,8 @@ void Wippersnapper_FS::ParseFileSecrets() {
   if (strcmp(WsV2._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(WsV2._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
     WriteFileBoot("ERROR: Invalid network credentials in secrets.json! TO "
-                   "FIX: Please change network_ssid and network_password to "
-                   "match your Adafruit IO credentials!\n");
+                  "FIX: Please change network_ssid and network_password to "
+                  "match your Adafruit IO credentials!\n");
 #ifdef USE_DISPLAY
     WsV2._ui_helper->show_scr_error(
         "INVALID NETWORK",
@@ -528,9 +569,10 @@ void Wippersnapper_FS::ParseFileSecrets() {
         "are invalid, please change it to match your WiFi credentials. Then, "
         "press RESET.");
 #endif
-    HaltFilesystem("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
-           "change network_ssid and network_password to match your Adafruit IO "
-           "credentials!");
+    HaltFilesystem(
+        "ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
+        "change network_ssid and network_password to match your Adafruit IO "
+        "credentials!");
   }
 
   WriteFileBoot("Secrets Contents\n");
@@ -588,7 +630,8 @@ void Wippersnapper_FS::HaltFilesystem(String msg) {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void Wippersnapper_FS::HaltFilesystem(String msg, ws_led_status_t ledStatusColor) {
+void Wippersnapper_FS::HaltFilesystem(String msg,
+                                      ws_led_status_t ledStatusColor) {
   TinyUSBDevice.attach();
   delay(500);
   statusLEDSolid(ledStatusColor);
@@ -625,8 +668,9 @@ void Wippersnapper_FS::CreateDisplayCfg() {
   // Create and fill JSON document from displayConfig
   JsonDocument doc;
   if (!doc.set(displayConfig)) {
-    HaltFilesystem("ERROR: Unable to set displayConfig, no space in arduinoJSON "
-           "document!");
+    HaltFilesystem(
+        "ERROR: Unable to set displayConfig, no space in arduinoJSON "
+        "document!");
   }
   // Write the file out to the filesystem
   serializeJsonPretty(doc, displayFile);
@@ -648,14 +692,15 @@ void Wippersnapper_FS::ParseFileDisplayCfg(displayConfig &dispCfg) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
     CreateDisplayCfg(); // generate a default display_config.json for
-                           // FunHouse
+                        // FunHouse
 #endif
   }
 
   // Attempt to open file for JSON parsing
   File32 file = wipperFatFs_v2.open("/display_config.json", FILE_READ);
   if (!file) {
-    HaltFilesystem("FATAL ERROR: Unable to open display_config.json for parsing");
+    HaltFilesystem(
+        "FATAL ERROR: Unable to open display_config.json for parsing");
   }
 
   // Attempt to deserialize the file's json document
@@ -663,8 +708,8 @@ void Wippersnapper_FS::ParseFileDisplayCfg(displayConfig &dispCfg) {
   DeserializationError error = deserializeJson(doc, file);
   if (error) {
     HaltFilesystem(String("FATAL ERROR: Unable to parse display_config.json - "
-                  "deserializeJson() failed with code") +
-           error.c_str());
+                          "deserializeJson() failed with code") +
+                   error.c_str());
   }
   // Close the file, we're done with it
   file.close();

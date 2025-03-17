@@ -85,9 +85,9 @@ void Wippersnapper_V2::provision() {
 
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
-  _fileSystemV2->FindPinSDCS();
+  _fileSystemV2->GetPinSDCS();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2->FindPinSDCS();
+  _littleFSV2->GetPinSDCS();
 #elif defined(OFFLINE_MODE_WOKWI)
   WsV2.pin_sd_cs = 15;
 #endif

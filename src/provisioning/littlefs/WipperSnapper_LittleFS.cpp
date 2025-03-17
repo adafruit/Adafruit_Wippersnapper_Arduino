@@ -31,7 +31,7 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
     HaltFilesystem("ERROR: Failure initializing LittleFS!",
-           WS_LED_STATUS_WAITING_FOR_REG_MSG);
+                   WS_LED_STATUS_WAITING_FOR_REG_MSG);
   }
 }
 
@@ -51,8 +51,9 @@ WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
 void WipperSnapper_LittleFS::ParseFileSecrets() {
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
-    HaltFilesystem("ERROR: No secrets.json found on filesystem - did you upload "
-           "credentials?");
+    HaltFilesystem(
+        "ERROR: No secrets.json found on filesystem - did you upload "
+        "credentials?");
   }
 
   // Attempt to open secrets.json file for reading
@@ -66,7 +67,7 @@ void WipperSnapper_LittleFS::ParseFileSecrets() {
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
     HaltFilesystem(String("ERROR: deserializeJson() failed with code ") +
-           error.c_str());
+                   error.c_str());
   }
   if (doc.containsKey("network_type_wifi")) {
     // set default network config
@@ -86,8 +87,9 @@ void WipperSnapper_LittleFS::ParseFileSecrets() {
       WS_DEBUG_PRINT("Network count: ");
       WS_DEBUG_PRINTLN(altNetworkCount);
       if (altNetworkCount == 0) {
-        HaltFilesystem("ERROR: No alternative network entries found under "
-               "network_type_wifi.alternative_networks in secrets.json!");
+        HaltFilesystem(
+            "ERROR: No alternative network entries found under "
+            "network_type_wifi.alternative_networks in secrets.json!");
       }
       // check if over 3, warn user and take first three
       for (int i = 0; i < altNetworkCount; i++) {
@@ -106,7 +108,7 @@ void WipperSnapper_LittleFS::ParseFileSecrets() {
       WsV2._isWiFiMultiV2 = true;
     } else {
       HaltFilesystem("ERROR: Unrecognised value type for "
-             "network_type_wifi.alternative_networks in secrets.json!");
+                     "network_type_wifi.alternative_networks in secrets.json!");
     }
   } else {
     HaltFilesystem("ERROR: Could not find network_type_wifi in secrets.json!");
@@ -125,9 +127,10 @@ void WipperSnapper_LittleFS::ParseFileSecrets() {
 
   if (strcmp(WsV2._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(WsV2._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    HaltFilesystem("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
-           "change network_ssid and network_password to match your Adafruit IO "
-           "credentials!\n");
+    HaltFilesystem(
+        "ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
+        "change network_ssid and network_password to match your Adafruit IO "
+        "credentials!\n");
   }
 
   // Close the file
@@ -144,7 +147,8 @@ void WipperSnapper_LittleFS::ParseFileSecrets() {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::HaltFilesystem(String msg, ws_led_status_t status_state) {
+void WipperSnapper_LittleFS::HaltFilesystem(String msg,
+                                            ws_led_status_t status_state) {
   statusLEDSolid(status_state);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
@@ -160,7 +164,7 @@ void WipperSnapper_LittleFS::HaltFilesystem(String msg, ws_led_status_t status_s
               config.json file.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::FindPinSDCS() {
+void WipperSnapper_LittleFS::GetPinSDCS() {
   // Attempt to open and deserialize the config.json file
   File file_cfg = LittleFS.open("/config.json");
   if (!file_cfg)

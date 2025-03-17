@@ -50,24 +50,26 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  WsV2._fileSystemV2.
-
   bool did_init = false;
-  // Does the config file specify an SD card CS pin?
+  // Case 1: Try to initialize the SD card with the pin from the config file
   if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
     did_init = InitSdCard(WsV2.pin_sd_cs);
   }
-  // Fallback! to a default SD card CS pin value, within ws_adapters.h
+
+  // Case 2: Try to initialize the SD card with the default pin (within
+  // ws_adapters.h)
   if (!did_init) {
-    did_init = InitSdCard(SD_CS_PIN);
-    // Save the default pin to the config file for reuse
-    // TODO
+    if (InitSdCard(SD_CS_PIN)) {
+      // Attempt to update configuration with the working default pin
+      did_init = WsV2._fileSystemV2->AddSDCSPinToFileConfig(SD_CS_PIN);
+    }
   }
 
+  // If sd initialized - configure the sd card
+  if (did_init)
+    ConfigureSDCard();
+
   is_mode_offline = did_init;
-  // Card initialized - calculate file limits
-  if (is_mode_offline)
-    calculateFileLimits();
 }
 
 /**************************************************************************/
@@ -82,7 +84,7 @@ ws_sdcard::~ws_sdcard() {
   is_mode_offline = false;
 }
 
-void ws_sdcard::calculateFileLimits() {
+void ws_sdcard::ConfigureSDCard() {
   // Calculate the maximum number of log files that can be stored on the SD card
   csd_t csd;
   if (!_sd.card()->readCSD(&csd)) {

@@ -32,8 +32,9 @@
 #define SPI_SD_CLOCK SD_SCK_MHZ(50) ///< Default SPI clock speed
 #endif
 
-#define SD_FAT_TYPE 3           ///< SD type (3 = FAT16/FAT32 and exFAT)
-#define SD_CS_CFG_NOT_FOUND 255     ///< Error code if CS pin not found in config.json file
+#define SD_FAT_TYPE 3 ///< SD type (3 = FAT16/FAT32 and exFAT)
+#define SD_CS_CFG_NOT_FOUND                                                    \
+  255 ///< Error code if CS pin not found in config.json file
 #define UNKNOWN_VALUE "unknown" ///< Default unknown JSON field value
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 #define MAX_LEN_CFG_JSON                                                       \
@@ -68,7 +69,7 @@ public:
   bool LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
 
 private:
-  void calculateFileLimits();
+  void ConfigureSDCard();
   bool ValidateChecksum(JsonDocument &doc);
   bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
