@@ -85,9 +85,9 @@ void Wippersnapper_V2::provision() {
 
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
-  _fileSystemV2->GetSDCSPin();
+  _fileSystemV2->FindPinSDCS();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2->GetSDCSPin();
+  _littleFSV2->FindPinSDCS();
 #elif defined(OFFLINE_MODE_WOKWI)
   WsV2.pin_sd_cs = 15;
 #endif
@@ -106,7 +106,7 @@ void Wippersnapper_V2::provision() {
 #ifdef USE_DISPLAY
   // Initialize the display
   displayConfig config;
-  WsV2._fileSystemV2->parseDisplayConfig(config);
+  WsV2._fileSystemV2->ParseFileDisplayCfg(config);
   WsV2._display = new ws_display_driver(config);
   // Begin display
   if (!WsV2._display->begin()) {
@@ -125,9 +125,9 @@ void Wippersnapper_V2::provision() {
 #endif
 
 #ifdef USE_TINYUSB
-  _fileSystemV2->parseSecrets();
+  _fileSystemV2->ParseFileSecrets();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2->parseSecrets();
+  _littleFSV2->ParseFileSecrets();
 #else
   check_valid_ssid(); // non-fs-backed, sets global credentials within network
                       // iface
@@ -714,7 +714,7 @@ void Wippersnapper_V2::errorWriteHangV2(String error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
-  _fileSystemV2->writeToBootOut(error.c_str());
+  _fileSystemV2->WriteFileBoot(error.c_str());
   TinyUSBDevice.attach();
   delay(500);
 #endif

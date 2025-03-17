@@ -30,7 +30,7 @@
 WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
-    fsHalt("ERROR: Failure initializing LittleFS!",
+    HaltFilesystem("ERROR: Failure initializing LittleFS!",
            WS_LED_STATUS_WAITING_FOR_REG_MSG);
   }
 }
@@ -48,24 +48,24 @@ WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
               on the LittleFS filesystem.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::parseSecrets() {
+void WipperSnapper_LittleFS::ParseFileSecrets() {
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
-    fsHalt("ERROR: No secrets.json found on filesystem - did you upload "
+    HaltFilesystem("ERROR: No secrets.json found on filesystem - did you upload "
            "credentials?");
   }
 
   // Attempt to open secrets.json file for reading
   File secretsFile = LittleFS.open("/secrets.json", "r");
   if (!secretsFile) {
-    fsHalt("ERROR: Could not open secrets.json file for reading!");
+    HaltFilesystem("ERROR: Could not open secrets.json file for reading!");
   }
 
   // Attempt to deserialize the file's JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    fsHalt(String("ERROR: deserializeJson() failed with code ") +
+    HaltFilesystem(String("ERROR: deserializeJson() failed with code ") +
            error.c_str());
   }
   if (doc.containsKey("network_type_wifi")) {
@@ -86,7 +86,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
       WS_DEBUG_PRINT("Network count: ");
       WS_DEBUG_PRINTLN(altNetworkCount);
       if (altNetworkCount == 0) {
-        fsHalt("ERROR: No alternative network entries found under "
+        HaltFilesystem("ERROR: No alternative network entries found under "
                "network_type_wifi.alternative_networks in secrets.json!");
       }
       // check if over 3, warn user and take first three
@@ -105,11 +105,11 @@ void WipperSnapper_LittleFS::parseSecrets() {
       }
       WsV2._isWiFiMultiV2 = true;
     } else {
-      fsHalt("ERROR: Unrecognised value type for "
+      HaltFilesystem("ERROR: Unrecognised value type for "
              "network_type_wifi.alternative_networks in secrets.json!");
     }
   } else {
-    fsHalt("ERROR: Could not find network_type_wifi in secrets.json!");
+    HaltFilesystem("ERROR: Could not find network_type_wifi in secrets.json!");
   }
 
   // Extract a config struct from the JSON document
@@ -118,14 +118,14 @@ void WipperSnapper_LittleFS::parseSecrets() {
   // Validate the config struct is not filled with default values
   if (strcmp(WsV2._configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
       strcmp(WsV2._configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
-    fsHalt(
+    HaltFilesystem(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
   }
 
   if (strcmp(WsV2._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(WsV2._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
+    HaltFilesystem("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
            "change network_ssid and network_password to match your Adafruit IO "
            "credentials!\n");
   }
@@ -144,7 +144,7 @@ void WipperSnapper_LittleFS::parseSecrets() {
                 Error message to print to serial console.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::fsHalt(String msg, ws_led_status_t status_state) {
+void WipperSnapper_LittleFS::HaltFilesystem(String msg, ws_led_status_t status_state) {
   statusLEDSolid(status_state);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
@@ -160,7 +160,7 @@ void WipperSnapper_LittleFS::fsHalt(String msg, ws_led_status_t status_state) {
               config.json file.
 */
 /**************************************************************************/
-void WipperSnapper_LittleFS::GetSDCSPin() {
+void WipperSnapper_LittleFS::FindPinSDCS() {
   // Attempt to open and deserialize the config.json file
   File file_cfg = LittleFS.open("/config.json");
   if (!file_cfg)

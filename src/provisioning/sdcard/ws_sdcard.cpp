@@ -16,36 +16,58 @@
 
 /**************************************************************************/
 /*!
-    @brief    Constructs an instance of the Wippersnapper SD card class.
+    @brief    Initializes the SD card.
+    @param    pin_cs
+              The chip select pin for the SD card.
+    @returns  True if the SD card was successfully initialized, False
+              otherwise.
 */
 /**************************************************************************/
-ws_sdcard::ws_sdcard()
+bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
 #ifdef SD_USE_SPI_1
-    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
+  SdSpiConfig sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1);
 #else
-    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
+  SdSpiConfig sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK);
 #endif
-  is_mode_offline = false;
-  _use_test_data = false;
-  _is_soft_rtc = false;
-  _sz_cur_log_file = 0;
-  _sd_cur_log_files = 0;
-
-  if (WsV2.pin_sd_cs == PIN_SD_CS_ERROR)
-    return;
-
   if (!_sd.begin(_sd_spi_cfg)) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: SD initialization failed.\nDo not reformat the "
         "card!\nIs the card "
         "correctly inserted?\nIs there a wiring/soldering problem\n");
-    is_mode_offline = false;
-    return;
+    return false;
+  }
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Constructs an instance of the Wippersnapper SD card class.
+*/
+/**************************************************************************/
+ws_sdcard::ws_sdcard() {
+  _use_test_data = false;
+  _is_soft_rtc = false;
+  _sz_cur_log_file = 0;
+  _sd_cur_log_files = 0;
+
+  WsV2._fileSystemV2.
+
+  bool did_init = false;
+  // Does the config file specify an SD card CS pin?
+  if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
+    did_init = InitSdCard(WsV2.pin_sd_cs);
+  }
+  // Fallback! to a default SD card CS pin value, within ws_adapters.h
+  if (!did_init) {
+    did_init = InitSdCard(SD_CS_PIN);
+    // Save the default pin to the config file for reuse
+    // TODO
   }
 
+  is_mode_offline = did_init;
   // Card initialized - calculate file limits
-  is_mode_offline = true;
-  calculateFileLimits();
+  if (is_mode_offline)
+    calculateFileLimits();
 }
 
 /**************************************************************************/

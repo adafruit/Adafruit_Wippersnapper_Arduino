@@ -33,7 +33,7 @@
 #endif
 
 #define SD_FAT_TYPE 3           ///< SD type (3 = FAT16/FAT32 and exFAT)
-#define PIN_SD_CS_ERROR 255     ///< Error code for invalid SD card CS pin
+#define SD_CS_CFG_NOT_FOUND 255     ///< Error code if CS pin not found in config.json file
 #define UNKNOWN_VALUE "unknown" ///< Default unknown JSON field value
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 #define MAX_LEN_CFG_JSON                                                       \
@@ -52,6 +52,7 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
+  bool InitSdCard(uint8_t pin_cs);
   bool isSDCardInitialized() { return is_mode_offline; }
   bool parseConfigFile();
   bool CreateNewLogFile();
