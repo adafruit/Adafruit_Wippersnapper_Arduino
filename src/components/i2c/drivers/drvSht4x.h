@@ -18,9 +18,8 @@
 #ifndef DRV_SHT4X_H
 #define DRV_SHT4X_H
 
+#include "Adafruit_SHT4x.h"
 #include "drvBase.h"
-#include <SHTSensor.h>
-#include <Wire.h>
 
 /**************************************************************************/
 /*!
@@ -56,12 +55,12 @@ public:
   */
   /*******************************************************************************/
   bool begin() override {
-    _sht4x = new SHTSensor(SHTSensor::SHT4X);
-    if (!_sht4x->init(*_i2c))
+    _sht4x = new Adafruit_SHT4x();
+    if (!_sht4x->begin())
       return false;
 
-    // configure SHT4x sensor
-    _sht4x->setAccuracy(SHTSensor::SHT_ACCURACY_HIGH);
+    _sht4x->setPrecision(SHT4X_HIGH_PRECISION);
+    _sht4x->setHeater(SHT4X_NO_HEATER);
 
     return true;
   }
@@ -76,10 +75,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    // populate temp and humidity objects with fresh data
-    if (!_sht4x->readSample())
-      return false;
-    tempEvent->temperature = _sht4x->getTemperature();
+    sensors_event_t humid;
+    _sht4x->getEvent(&humid, tempEvent);
     return true;
   }
 
@@ -93,15 +90,12 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    // populate temp and humidity objects with fresh data
-    if (!_sht4x->readSample())
-      return false;
-    humidEvent->relative_humidity = _sht4x->getHumidity();
+    sensors_event_t temp;
+    _sht4x->getEvent(humidEvent, &temp);
     return true;
   }
 
 protected:
-  SHTSensor *_sht4x; ///< SHT4X object
+  Adafruit_SHT4x *_sht4x; ///< SHT4X object
 };
-
 #endif // drvSht4x
