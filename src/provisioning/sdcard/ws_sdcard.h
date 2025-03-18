@@ -107,8 +107,6 @@ private:
   bool LogJSONDoc(JsonDocument &doc);
   bool AddSignalMessageToSharedBuffer(
       wippersnapper_signal_BrokerToDevice &msg_signal);
-
-  SdSpiConfig _sd_spi_cfg; ///< SPI configuration for the SD card
   SdFat _sd;               ///< SD object from Adafruit SDFat library
   size_t _sd_capacity;     ///< Capacity of the SD card, in Bytes
   size_t _sz_cur_log_file; ///< Size of the current log file, in Bytes

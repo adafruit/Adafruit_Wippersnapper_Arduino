@@ -25,9 +25,9 @@
 /**************************************************************************/
 bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
 #ifdef SD_USE_SPI_1
-  SdSpiConfig sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1);
+  SdSpiConfig _sd_spi_cfg(pin_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1);
 #else
-  SdSpiConfig sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK);
+  SdSpiConfig _sd_spi_cfg(pin_cs, DEDICATED_SPI, SPI_SD_CLOCK);
 #endif
   if (!_sd.begin(_sd_spi_cfg)) {
     WS_DEBUG_PRINTLN(
@@ -50,9 +50,12 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
+  // delay(6000); //TODO: ENable for debugging the ctor
   bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
   if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
+    WS_DEBUG_PRINTLN(
+        "Attempting to initialize SD card with pin from config file");
     did_init = InitSdCard(WsV2.pin_sd_cs);
   }
 
@@ -60,7 +63,7 @@ ws_sdcard::ws_sdcard() {
   // ws_adapters.h)
   if (!did_init) {
     if (InitSdCard(SD_CS_PIN)) {
-      // Attempt to update configuration with the working default pin
+      // Attempt to update the config file with the default pin
       did_init = WsV2._fileSystemV2->AddSDCSPinToFileConfig(SD_CS_PIN);
     }
   }

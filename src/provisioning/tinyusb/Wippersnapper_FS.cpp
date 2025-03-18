@@ -256,6 +256,8 @@ bool Wippersnapper_FS::MakeDefaultFilesystem() {
     CreateFileSecrets();
     _is_secrets_file_empty = true;
   }
+
+  CreateFileConfig();
   return true;
 }
 
@@ -409,21 +411,22 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   DeserializationError error = deserializeJson(doc, FileCfg);
   FileCfg.close();
   if (error) {
-    WS_DEBUG_PRINT("deserializeJson() failed: ");
-    WS_DEBUG_PRINTLN(error.c_str());
+    HaltFilesystem(
+        "ERROR: Unable to parse config.json file - deserializeJson() failed!");
     return false;
   }
 
   // Modify sd_cs_pin
   doc["exportedFromDevice"]["sd_cs_pin"] = pin;
-
-  // Write the modified JSON back to the file
+  // Delete the existing file first
+  wipperFatFs_v2.remove("/config.json");
+  // Write the updated JSON back to the file
   FileCfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!FileCfg) {
-    WS_DEBUG_PRINTLN("Failed to open config file for writing");
+    HaltFilesystem("ERROR: Could not open the config.json file for writing!");
     return false;
   }
-  serializeJson(doc, FileCfg);
+  serializeJsonPretty(doc, FileCfg);
   FileCfg.flush();
   FileCfg.close();
   delay(2500);
