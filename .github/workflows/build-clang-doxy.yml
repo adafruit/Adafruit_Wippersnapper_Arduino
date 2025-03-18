@@ -522,7 +522,6 @@ jobs:
         run: |
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet https://github.com/brentru/Adafruit_SPIFlash.git /home/runner/Arduino/libraries/Adafruit_SPIFlash
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Download stable Nanopb
         id: download-nanopb
