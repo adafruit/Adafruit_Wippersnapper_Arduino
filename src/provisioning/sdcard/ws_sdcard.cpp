@@ -668,20 +668,52 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
 
 /**************************************************************************/
 /*!
+    @brief  Parses the exportedFromDevice object from the JSON configuration
+            file.
+    @param  doc
+            The JSON document to parse.
+    @returns True if the exportedFromDevice object was successfully parsed,
+             False otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
+  JsonObject exportedFromDevice = doc["exportedFromDevice"];
+  if (exportedFromDevice.isNull()) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Runtime Error: exportedFromDevice not found in config file!");
+    return false;
+  }
+
+  // Mocks the device check-in
+  CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
+          exportedFromDevice["totalAnalogPins"] | 0,
+          exportedFromDevice["referenceVoltage"] | 0.0);
+  setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
+
+  // Configures RTC
+  const char *rtc_type = exportedFromDevice["rtc"] | "SOFT";
+  if (!ConfigureRTC(rtc_type)) {
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure a RTC!");
+    return false;
+  }
+  return true;
+}
+
+/**************************************************************************/
+/*!
     @brief  Searches for and parses the JSON configuration file and sets up
             the hardware accordingly.
     @returns True if the JSON file was successfully parsed and the hardware
              was successfully configured. False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::parseConfigFile() {
+bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
   JsonDocument doc;
-  delay(5000);
 
-  // Parse configuration data
+  // Deserialize config.json
 #ifndef OFFLINE_MODE_DEBUG
-  WS_DEBUG_PRINTLN("[SD] Parsing config.json...");
+  WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
   doc = WsV2._config_doc;
 #else
   // Use test data rather than data from the filesystem
@@ -694,8 +726,7 @@ bool ws_sdcard::parseConfigFile() {
     error = deserializeJson(doc, json_test_data, MAX_LEN_CFG_JSON);
   }
 #endif
-  // It is not possible to continue running in offline mode without a valid
-  // config file
+
   if (error) {
     WS_DEBUG_PRINT("[SD] Runtime Error: Unable to deserialize config.json");
     WS_DEBUG_PRINTLN("\nError Code: " + String(error.c_str()));
@@ -710,48 +741,18 @@ bool ws_sdcard::parseConfigFile() {
   }
   WS_DEBUG_PRINTLN("[SD] Checksum OK!");
 
-  // Begin parsing the JSON document
-  JsonObject exportedFromDevice = doc["exportedFromDevice"];
-  if (exportedFromDevice.isNull()) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Required exportedFromDevice not "
-                     "found in config file!");
+  // Attempt to parse the exportedFromDevice object
+  if (!ParseExportedFromDevice(doc))
     return false;
-  }
 
+  // TODO WED: Break this entire structure out into separate functions
   WS_DEBUG_PRINTLN("Parsing components array...");
-  // TODO: It gets stuck here because we reformated how components works,
-  // try possibly adding another component like a button and then troubleshoot
   JsonArray components_ar = doc["components"].as<JsonArray>();
   if (components_ar.isNull()) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Required components array not found!");
     return false;
   }
-
-  WS_DEBUG_PRINTLN("Parsing exportedFromDevice object...");
-
-  // We don't talk to IO here, mock an "offline" device check-in
-  CheckIn(exportedFromDevice["totalGPIOPins"] | 0,
-          exportedFromDevice["totalAnalogPins"] | 0,
-          exportedFromDevice["referenceVoltage"] | 0.0);
-  WS_DEBUG_PRINT("status LED brightness: ");
-  int exportedFromDevice_statusLEDBrightness =
-      exportedFromDevice["statusLEDBrightness"];
-  WS_DEBUG_PRINTLN(exportedFromDevice_statusLEDBrightness);
-  setStatusLEDBrightness(exportedFromDevice["statusLEDBrightness"] | 0.3);
-
-  WS_DEBUG_PRINTLN("Configuring RTC...");
-#ifndef OFFLINE_MODE_WOKWI
-  const char *json_rtc = exportedFromDevice["rtc"] | "SOFT";
-  WS_DEBUG_PRINT("RTC Type: ");
-  WS_DEBUG_PRINTLN(json_rtc);
-  if (!ConfigureRTC(json_rtc)) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure RTC!");
-    return false;
-  }
-#endif
-
-  WS_DEBUG_PRINTLN("Parsing components array...");
 
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {

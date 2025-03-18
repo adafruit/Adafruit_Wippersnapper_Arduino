@@ -1223,14 +1223,14 @@ void Wippersnapper_V2::connect() {
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
-  if (WsV2._sdCardV2->isModeOffline() == true) {
+  if (WsV2._sdCardV2->isModeOffline()) {
     WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
 // If debug mode, wait for serial config
 #ifdef OFFLINE_MODE_DEBUG
     WsV2._sdCardV2->waitForSerialConfig();
 #endif
     // Parse the JSON file
-    if (!WsV2._sdCardV2->parseConfigFile())
+    if (!WsV2._sdCardV2->ParseFileConfig())
       haltErrorV2("Failed to parse config.json!");
     WS_DEBUG_PRINTLN("[Offline] Attempting to configure hardware...");
 #ifndef OFFLINE_MODE_DEBUG

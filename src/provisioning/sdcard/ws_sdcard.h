@@ -55,7 +55,7 @@ public:
   ~ws_sdcard();
   bool InitSdCard(uint8_t pin_cs);
   bool isSDCardInitialized() { return is_mode_offline; }
-  bool parseConfigFile();
+  bool ParseFileConfig();
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
   void waitForSerialConfig();
@@ -69,6 +69,7 @@ public:
   bool LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
 
 private:
+  bool ParseExportedFromDevice(JsonDocument &doc);
   void ConfigureSDCard();
   bool ValidateChecksum(JsonDocument &doc);
   bool ValidateJSONKey(const char *key, const char *error_msg);
