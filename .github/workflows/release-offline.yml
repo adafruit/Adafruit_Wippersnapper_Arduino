@@ -210,7 +210,6 @@ jobs:
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --quiet --branch fix-for-pico https://github.com/brentru/SdFat.git /home/runner/Arduino/libraries/SdFat_-_Adafruit_Fork/
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
