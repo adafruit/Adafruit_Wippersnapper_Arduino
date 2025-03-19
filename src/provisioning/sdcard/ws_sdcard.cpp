@@ -760,6 +760,8 @@ bool ws_sdcard::ParseFileConfig() {
   // Perform an I2C scan: log components to a member struct of i2c controller
   // then, for the case where the non-empty components[] exists, check the log of components
   // against the array TODO 
+  WsV2._i2c_controller->ScanI2cBus(true);
+
 
   if (components.size() != 0) {
     WS_DEBUG_PRINTLN("[SD] Configuration file contains components")
