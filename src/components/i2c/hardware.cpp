@@ -63,7 +63,9 @@ void I2cHardware::TogglePowerPin() {
 /***********************************************************************/
 void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   uint8_t pin_sda, pin_scl;
-  if (!is_default && (sda == nullptr || scl == nullptr)) {
+  strcpy(_sda, sda);
+  strcpy(_scl, scl);
+  if (!is_default && (_sda == nullptr || _scl == nullptr)) {
     _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
     return;
   }
@@ -85,8 +87,8 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
     pin_scl = PIN_WIRE0_SCL;
 #endif
   } else {
-    pin_sda = atoi(sda);
-    pin_scl = atoi(scl);
+    pin_sda = atoi(_sda);
+    pin_scl = atoi(_scl);
   }
 
   // Enable pullups
@@ -144,6 +146,88 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 */
 /***********************************************************************/
 TwoWire *I2cHardware::GetBus() { return _bus; }
+
+/***********************************************************************/
+/*!
+    @brief  Scans the I2C bus for devices.
+    @param    scan_results
+                The results of the I2C bus scan.
+    @returns  True if the bus was successfully scanned, False otherwise.
+*/
+/***********************************************************************/
+bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
+  if (!scan_results)
+    return false;
+
+  // TODO: WS object needs to be added for this to work?
+  /*     #ifndef ARDUINO_ARCH_ESP32
+        // Set I2C WDT timeout to catch I2C hangs, SAMD-specific
+        WS.enableWDT(I2C_WDT_TIMEOUT_MS);
+        WS.feedWDT();
+      #endif */
+
+  // Perform a bus scan
+  WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
+  for (uint8_t address = 1; address < 127; ++address) {
+    WS_DEBUG_PRINT("[i2c] 0x");
+    WS_DEBUG_PRINTLN(address, HEX);
+    _bus->beginTransmission(address);
+    uint8_t endTransmissionRC = _bus->endTransmission();
+
+    if (endTransmissionRC == 0) {
+      WS_DEBUG_PRINTLN("[i2c] Found Device!");
+      scan_results
+          ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+          .i2c_device_address = address;
+      strcpy(
+          scan_results
+              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+              .i2c_bus_sda,
+          _sda);
+      strcpy(
+          scan_results
+              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+              .i2c_bus_scl,
+          _scl);
+      scan_results->i2c_bus_found_devices_count++;
+    }
+#if defined(ARDUINO_ARCH_ESP32)
+    // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
+    else if (endTransmissionRC == 3) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
+      return false;
+    } else if (endTransmissionRC == 2) {
+      // WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of
+      // address!");
+      continue;
+    } else if (endTransmissionRC == 1) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: data too long to fit in xmit buffer!");
+      return false;
+    } else if (endTransmissionRC == 4) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unspecified bus error occured!");
+      return false;
+    } else if (endTransmissionRC == 5) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
+      continue;
+    }
+#endif // ARDUINO_ARCH_ESP32
+    else {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unknown bus error has occured!");
+      continue;
+    }
+  }
+
+    // TODO: Re-enable this?
+  /*   #ifndef ARDUINO_ARCH_ESP32
+      // re-enable WipperSnapper SAMD WDT global timeout
+      WS.enableWDT(WS_WDT_TIMEOUT);
+      WS.feedWDT();
+    #endif */
+  return true;
+}
 
 /***********************************************************************/
 /*!
