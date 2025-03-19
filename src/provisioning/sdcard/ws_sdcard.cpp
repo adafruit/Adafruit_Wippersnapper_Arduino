@@ -50,7 +50,7 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  // delay(6000); //TODO: ENable for debugging the ctor
+  // delay(6000); //TODO: Must enable this delay to debugging the ctor, serial won't open otherwise
   bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
   if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
@@ -747,11 +747,25 @@ bool ws_sdcard::ParseFileConfig() {
 
   // TODO WED: Break this entire structure out into separate functions
   WS_DEBUG_PRINTLN("Parsing components array...");
-  JsonArray components_ar = doc["components"].as<JsonArray>();
-  if (components_ar.isNull()) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Required components array not found!");
+  JsonArray components = doc["components"].as<JsonArray>();
+
+  // Does the components array exist?
+  // Note: While we auto-create this on-boot, its possible the user may have deleted it
+  // TODO: Ensure this does not return false before the size() check, it might!
+  if (components.isNull()) {
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Configuration file missing components[] array!");
     return false;
+  }
+
+  // Perform an I2C scan: log components to a member struct of i2c controller
+  // then, for the case where the non-empty components[] exists, check the log of components
+  // against the array TODO 
+
+  if (components.size() != 0) {
+    WS_DEBUG_PRINTLN("[SD] Configuration file contains components")
+  }  else {
+    WS_DEBUG_PRINTLN("[SD] Empty components array detected, let's scan!");
+    // TODO: Call i2c scan and autoconfig
   }
 
   // Parse each component from JSON->PB and push into a shared buffer
