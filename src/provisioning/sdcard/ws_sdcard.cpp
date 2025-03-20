@@ -784,15 +784,20 @@ bool ws_sdcard::ParseFileConfig() {
                          String(addr_device));
         // TODO: Do not add it to the components list, remove it from the JSON
         // doc Print out the scan results
+        // TODO: Waiting on L's feedback around if I should remove it
+        // totally...or just skip it
         WS_DEBUG_PRINTLN("[SD] I2C scan results:");
         WsV2._i2c_controller->PrintScanResults();
+        WsV2._i2c_controller->AddScanResultsToConfig();
       }
     }
   } else {
     // Empty components array
     WS_DEBUG_PRINTLN("[SD] Empty components array, adding all devices found in "
                      "I2C scan to the JSON doc...");
-    // TODO: Add all devices found in the I2C scan to the JSON doc
+    WS_DEBUG_PRINTLN("[SD] I2C scan results:");
+    WsV2._i2c_controller->PrintScanResults();
+    WsV2._i2c_controller->AddScanResultsToConfig();
   }
   WS_DEBUG_PRINTLN("[SD] I2C scan and JSON doc comparison complete!");
 

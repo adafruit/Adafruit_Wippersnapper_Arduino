@@ -725,6 +725,16 @@ void I2cController::PrintScanResults() {
   }
 }
 
+bool I2cController::AddScanResultsToConfig() {
+  if (_scan_results.i2c_bus_found_devices_count == 0)
+    return false;
+
+  for (pb_size_t i = 0; i < _scan_results.i2c_bus_found_devices_count; i++) {
+    WsV2._fileSystemV2->AddI2CDeviceToConfig(_scan_results.i2c_bus_found_devices[i].i2c_device_address);
+  }
+  return true;
+}
+
 /********************************************************************************/
 /*!
     @brief    Enables a MUX channel on the appropriate I2C bus.

@@ -98,6 +98,7 @@ public:
   bool ScanI2cBus(bool default_bus);
   bool IsDeviceScanned(uint32_t address);
   void PrintScanResults();
+  bool AddScanResultsToConfig();
 
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object

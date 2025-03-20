@@ -22,7 +22,6 @@
 #include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
 
-
 #include "Wippersnapper_V2.h"
 
 // forward decl.
@@ -66,6 +65,7 @@ public:
   void CreateFileConfig();
   bool AddSDCSPinToFileConfig(uint8_t pin);
   void GetPinSDCS();
+  bool AddI2CDeviceToConfig(uint32_t address);
 
 private:
   bool _is_secrets_file_empty = false;

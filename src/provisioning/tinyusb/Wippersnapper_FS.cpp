@@ -369,8 +369,8 @@ void Wippersnapper_FS::CreateFileConfig() {
     return;
 
   // Open file for writing
-  File32 FileCfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
-  if (!FileCfg) {
+  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
+  if (!file_cfg) {
     HaltFilesystem("ERROR: Could not create the config.json file for writing!");
   }
 
@@ -385,10 +385,10 @@ void Wippersnapper_FS::CreateFileConfig() {
   JsonArray components = doc["components"].to<JsonArray>();
   doc.shrinkToFit();
   // Write to file
-  serializeJsonPretty(doc, FileCfg);
+  serializeJsonPretty(doc, file_cfg);
   // Flush and close file
-  FileCfg.flush();
-  FileCfg.close();
+  file_cfg.flush();
+  file_cfg.close();
   delay(2500);
 }
 
@@ -401,15 +401,15 @@ void Wippersnapper_FS::CreateFileConfig() {
 /**************************************************************************/
 bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   // Open file for reading
-  File32 FileCfg = wipperFatFs_v2.open("/config.json", FILE_READ);
-  if (!FileCfg) {
+  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
+  if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for reading!");
     return false;
   }
   // Parse the JSON
   JsonDocument doc;
-  DeserializationError error = deserializeJson(doc, FileCfg);
-  FileCfg.close();
+  DeserializationError error = deserializeJson(doc, file_cfg);
+  file_cfg.close();
   if (error) {
     HaltFilesystem(
         "ERROR: Unable to parse config.json file - deserializeJson() failed!");
@@ -421,15 +421,55 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   // Delete the existing file first
   wipperFatFs_v2.remove("/config.json");
   // Write the updated JSON back to the file
-  FileCfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
-  if (!FileCfg) {
+  file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
+  if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for writing!");
     return false;
   }
-  serializeJsonPretty(doc, FileCfg);
-  FileCfg.flush();
-  FileCfg.close();
-  delay(2500);
+  serializeJsonPretty(doc, file_cfg);
+  file_cfg.flush();
+  file_cfg.close();
+  delay(2500); // TODO: Do we need this?
+  return true;
+}
+
+bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) {
+  JsonDocument doc;
+  DeserializationError error;
+  // Load the config.json file into memory
+  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
+  if (!file_cfg) {
+    HaltFilesystem("ERROR: Could not open the config.json file for reading!");
+    return false;
+  }
+  error = deserializeJson(doc, file_cfg);
+  if (error) {
+    HaltFilesystem(
+        "ERROR: Unable to parse config.json file - deserializeJson() failed!");
+    return false;
+  }
+  file_cfg.flush();
+  file_cfg.close();
+  delay(2500); // TODO: Do we need this?
+
+  // Append the new JSON object to the config.json file
+  JsonObject components = doc["components"].add<JsonObject>();
+  components["name"] = "UNKNOWN";
+  components["componentAPI"] = "i2c";
+  components["i2cDeviceName"] = "UNKNOWN";
+  components["period"] = 30;
+  char buffer[6];
+  sprintf(buffer, "0x%02X", (unsigned int)address);
+  components["i2cDeviceAddress"] = buffer;
+  JsonArray components_i2cDeviceSensorTypes =
+      components["i2cDeviceSensorTypes"].to<JsonArray>();
+
+  // Serialize and write it back to the file!
+  file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
+  serializeJsonPretty(doc, file_cfg);
+  file_cfg.flush();
+  file_cfg.close();
+  delay(2500); // TODO: Do we need this?
   return true;
 }
 
