@@ -50,7 +50,8 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  delay(6000); //TODO: Must enable this delay to debugging the ctor, serial won't open otherwise
+  delay(6000); // TODO: Must enable this delay to debugging the ctor, serial
+               // won't open otherwise
   bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
   if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
@@ -751,19 +752,21 @@ bool ws_sdcard::ParseFileConfig() {
   JsonArray components = doc["components"].as<JsonArray>();
 
   // Does the components array exist?
-  // Note: While we auto-create this on-boot, its possible the user may have deleted it
+  // Note: While we auto-create this on-boot, its possible the user may have
+  // deleted it
   // TODO: Ensure this does not return false before the size() check, it might!
   if (components.isNull()) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Configuration file missing components[] array!");
+    WS_DEBUG_PRINTLN(
+        "[SD] Runtime Error: Configuration file missing components[] array!");
     return false;
   }
 
   // Perform an I2C scan: log components to a member struct of i2c controller
-  // then, for the case where the non-empty components[] exists, check the log of components
-  // against the array TODO 
-   WS_DEBUG_PRINTLN("[SD] Scanning I2C bus for devices...");
-   WsV2._i2c_controller->ScanI2cBus(true);
-   WS_DEBUG_PRINTLN("[SD] I2C scan complete, found devices: ");
+  // then, for the case where the non-empty components[] exists, check the log
+  // of components against the array TODO
+  WS_DEBUG_PRINTLN("[SD] Scanning I2C bus for devices...");
+  WsV2._i2c_controller->ScanI2cBus(true);
+  WS_DEBUG_PRINTLN("[SD] I2C scan complete, found devices: ");
 
   // TODO: Refactor this out
   WS_DEBUG_PRINTLN("[SD] Checking for components in the configuration file...");
@@ -771,18 +774,24 @@ bool ws_sdcard::ParseFileConfig() {
     WS_DEBUG_PRINTLN("[SD] Configuration file contains components")
     for (JsonObject component : doc["components"].as<JsonArray>()) {
       const char *addr_device = component["i2cDeviceAddress"] | "0x00";
-      if (WsV2._i2c_controller->IsDeviceScanned(component["i2cDeviceAddress"])) {
-        WS_DEBUG_PRINTLN("[SD] Device found during I2C scan: " + String(addr_device));
-        // TODO: Add it to the JSON doc
-        // TODO: Use defaults for other things
+      uint32_t addr_hex = HexStrToInt(component["i2cDeviceAddress"]);
+      if (WsV2._i2c_controller->IsDeviceScanned(addr_hex)) {
+        WS_DEBUG_PRINTLN("[SD] Device in Config File found during I2C scan: " +
+                         String(addr_device));
+        // do nothing - possibly just remove this!
       } else {
-        WS_DEBUG_PRINTLN("[SD] Device not found during I2C scan: " + String(addr_device));
-        // TODO: Do not add it to the components list, remove it from the JSON doc
+        WS_DEBUG_PRINTLN("[SD] Device not found during I2C scan: " +
+                         String(addr_device));
+        // TODO: Do not add it to the components list, remove it from the JSON
+        // doc Print out the scan results
+        WS_DEBUG_PRINTLN("[SD] I2C scan results:");
+        WsV2._i2c_controller->PrintScanResults();
       }
     }
   } else {
     // Empty components array
-    WS_DEBUG_PRINTLN("[SD] Empty components array, adding all devices found in I2C scan to the JSON doc...");
+    WS_DEBUG_PRINTLN("[SD] Empty components array, adding all devices found in "
+                     "I2C scan to the JSON doc...");
     // TODO: Add all devices found in the I2C scan to the JSON doc
   }
   WS_DEBUG_PRINTLN("[SD] I2C scan and JSON doc comparison complete!");

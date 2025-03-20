@@ -62,80 +62,80 @@ void I2cHardware::TogglePowerPin() {
 */
 /***********************************************************************/
 void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
-    uint8_t pin_sda, pin_scl;
-/*     if (!is_default && (sda == nullptr || scl == nullptr)) {
-      _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
-      return;
-    } */
-  // Some development boards define a pin that controls power
-  // to the i2c bus. If the pin is defined, turn the power to the i2c bus on.
-  #if defined(PIN_I2C_POWER) || defined(TFT_I2C_POWER) ||                        \
-      defined(NEOPIXEL_I2C_POWER)
-    TogglePowerPin();
-  #endif
-  
-    // Assign I2C bus pins
-    if (is_default) {
-  #ifndef ARDUINO_ARCH_RP2040
-      pin_sda = SDA;
-      pin_scl = SCL;
-  #else
-      // RP2040 BSP uses a different naming scheme than Espressif for I2C pins
-      pin_sda = PIN_WIRE0_SDA;
-      pin_scl = PIN_WIRE0_SCL;
-  #endif
-    } else {
-      pin_sda = atoi(sda);
-      pin_scl = atoi(scl);
-    }
-  
-    // Enable pullups
-    pinMode(pin_scl, INPUT_PULLUP);
-    pinMode(pin_sda, INPUT_PULLUP);
-    delay(150);
-  
-    // Is the bus stuck LOW?
-    if (digitalRead(pin_scl) == 0 || digitalRead(pin_sda) == 0) {
-      _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_PULLUPS;
-      return;
-    }
-  
-    // Reset bus to a high-impedance state
-    pinMode(pin_scl, INPUT);
-    pinMode(pin_sda, INPUT);
-  
-  // Initialize bus
-  // NOTE: Each platform has a slightly different bus initialization routine
-  #ifdef ARDUINO_ARCH_ESP32
-    if (is_default) {
-      _bus = new TwoWire(0);
-    } else {
-      _bus = new TwoWire(1);
-      _bus->setPins(pin_sda, pin_scl);
-    }
-    if (!_bus->begin(pin_sda, pin_scl)) {
-      _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_HANG;
-      return;
-    }
-    _bus->setClock(50000);
-  #elif defined(ARDUINO_ARCH_ESP8266)
-    _bus = new TwoWire();
-    _bus->begin(pin_sda, pin_scl);
-    _bus->setClock(50000);
-  #elif defined(ARDUINO_ARCH_RP2040)
-    _bus = &WIRE;
-    _bus->setSDA(pin_sda);
-    _bus->setSCL(pin_scl);
-    _bus->begin();
-  #elif defined(ARDUINO_ARCH_SAM)
-    _bus = new TwoWire(&PERIPH_WIRE, pin_sda, pin_scl);
-    _bus->begin();
-  #else
-  #error "I2C bus implementation not supported by this platform!"
-  #endif
-  
-    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
+  uint8_t pin_sda, pin_scl;
+  /*     if (!is_default && (sda == nullptr || scl == nullptr)) {
+        _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
+        return;
+      } */
+// Some development boards define a pin that controls power
+// to the i2c bus. If the pin is defined, turn the power to the i2c bus on.
+#if defined(PIN_I2C_POWER) || defined(TFT_I2C_POWER) ||                        \
+    defined(NEOPIXEL_I2C_POWER)
+  TogglePowerPin();
+#endif
+
+  // Assign I2C bus pins
+  if (is_default) {
+#ifndef ARDUINO_ARCH_RP2040
+    pin_sda = SDA;
+    pin_scl = SCL;
+#else
+    // RP2040 BSP uses a different naming scheme than Espressif for I2C pins
+    pin_sda = PIN_WIRE0_SDA;
+    pin_scl = PIN_WIRE0_SCL;
+#endif
+  } else {
+    pin_sda = atoi(sda);
+    pin_scl = atoi(scl);
   }
+
+  // Enable pullups
+  pinMode(pin_scl, INPUT_PULLUP);
+  pinMode(pin_sda, INPUT_PULLUP);
+  delay(150);
+
+  // Is the bus stuck LOW?
+  if (digitalRead(pin_scl) == 0 || digitalRead(pin_sda) == 0) {
+    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_PULLUPS;
+    return;
+  }
+
+  // Reset bus to a high-impedance state
+  pinMode(pin_scl, INPUT);
+  pinMode(pin_sda, INPUT);
+
+// Initialize bus
+// NOTE: Each platform has a slightly different bus initialization routine
+#ifdef ARDUINO_ARCH_ESP32
+  if (is_default) {
+    _bus = new TwoWire(0);
+  } else {
+    _bus = new TwoWire(1);
+    _bus->setPins(pin_sda, pin_scl);
+  }
+  if (!_bus->begin(pin_sda, pin_scl)) {
+    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_ERROR_HANG;
+    return;
+  }
+  _bus->setClock(50000);
+#elif defined(ARDUINO_ARCH_ESP8266)
+  _bus = new TwoWire();
+  _bus->begin(pin_sda, pin_scl);
+  _bus->setClock(50000);
+#elif defined(ARDUINO_ARCH_RP2040)
+  _bus = &WIRE;
+  _bus->setSDA(pin_sda);
+  _bus->setSCL(pin_scl);
+  _bus->begin();
+#elif defined(ARDUINO_ARCH_SAM)
+  _bus = new TwoWire(&PERIPH_WIRE, pin_sda, pin_scl);
+  _bus->begin();
+#else
+#error "I2C bus implementation not supported by this platform!"
+#endif
+
+  _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
+}
 
 /***********************************************************************/
 /*!
@@ -163,6 +163,11 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
         WS.enableWDT(I2C_WDT_TIMEOUT_MS);
         WS.feedWDT();
       #endif */
+  WS_DEBUG_PRINT("Bus Status: ");
+  WS_DEBUG_PRINTLN(_bus_status);
+  InitBus(true);
+  WS_DEBUG_PRINT("L169 Bus Status: ");
+  WS_DEBUG_PRINTLN(_bus_status);
 
   // Perform a bus scan
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
@@ -212,13 +217,13 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     }
 #endif // ARDUINO_ARCH_ESP32
     else {
-      WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: Unknown bus error has occured!");
+      // WS_DEBUG_PRINTLN("[i2c] Did not find device: Unknown bus error has
+      // occured!");
       continue;
     }
   }
 
-    // TODO: Re-enable this?
+  // TODO: Re-enable this?
   /*   #ifndef ARDUINO_ARCH_ESP32
       // re-enable WipperSnapper SAMD WDT global timeout
       WS.enableWDT(WS_WDT_TIMEOUT);

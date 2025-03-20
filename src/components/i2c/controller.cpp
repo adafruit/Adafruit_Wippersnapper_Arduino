@@ -686,9 +686,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 */
 /***********************************************************************/
 bool I2cController::ScanI2cBus(bool default_bus = true) {
-    if (! default_bus)
-      return _i2c_bus_alt->ScanBus(&_scan_results);
-    return _i2c_bus_default->ScanBus(&_scan_results);
+  _scan_results = wippersnapper_i2c_I2cBusScanned_init_zero;
+  if (!default_bus)
+    return _i2c_bus_alt->ScanBus(&_scan_results);
+  return _i2c_bus_default->ScanBus(&_scan_results);
 }
 
 /***********************************************************************/
@@ -701,15 +702,27 @@ bool I2cController::ScanI2cBus(bool default_bus = true) {
 */
 /***********************************************************************/
 bool I2cController::IsDeviceScanned(uint32_t address) {
-    pb_size_t num_found_devices = _scan_results.i2c_bus_found_devices_count;
-    if (num_found_devices == 0)
-        return false; // no devices found on bus, or scan was not performed
+  pb_size_t num_found_devices = _scan_results.i2c_bus_found_devices_count;
+  WS_DEBUG_PRINT("[i2c] # of Scanned Devices: ");
+  WS_DEBUG_PRINTLN(num_found_devices);
+  if (num_found_devices == 0)
+    return false; // no devices found on bus, or scan was not performed
 
-    for (pb_size_t i; i < num_found_devices; i++) {
-        if (_scan_results.i2c_bus_found_devices[i].i2c_device_address == address)
-            return true; // device found on bus!
-    }
-    return false; // exhausted all scanned devices, didn't find it
+  for (pb_size_t i; i < num_found_devices; i++) {
+    if (_scan_results.i2c_bus_found_devices[i].i2c_device_address == address)
+      return true; // device found on bus!
+  }
+  return false; // exhausted all scanned devices, didn't find it
+}
+
+void I2cController::PrintScanResults() {
+  WS_DEBUG_PRINT("[i2c] # of Scanned Devices: ");
+  WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices_count);
+  for (pb_size_t i = 0; i < _scan_results.i2c_bus_found_devices_count; i++) {
+    WS_DEBUG_PRINT("[i2c] Device found at address: ");
+    WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices[i].i2c_device_address,
+                     HEX);
+  }
 }
 
 /********************************************************************************/
