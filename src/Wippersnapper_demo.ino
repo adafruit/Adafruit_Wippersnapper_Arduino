@@ -16,8 +16,6 @@ ws_adapter_offline wipper;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial)
-    delay(10);
   wipper.provision();
   wipper.connect();
 }

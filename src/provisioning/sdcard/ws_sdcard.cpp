@@ -50,7 +50,7 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  // delay(6000); //TODO: Must enable this delay to debugging the ctor, serial won't open otherwise
+  delay(6000); //TODO: Must enable this delay to debugging the ctor, serial won't open otherwise
   bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
   if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
@@ -710,6 +710,7 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
   JsonDocument doc;
+  // delay(5000);
 
   // Deserialize config.json
 #ifndef OFFLINE_MODE_DEBUG
@@ -762,13 +763,27 @@ bool ws_sdcard::ParseFileConfig() {
   // against the array TODO 
   WsV2._i2c_controller->ScanI2cBus(true);
 
-
+  // TODO: Refactor this out
   if (components.size() != 0) {
     WS_DEBUG_PRINTLN("[SD] Configuration file contains components")
-  }  else {
-    WS_DEBUG_PRINTLN("[SD] Empty components array detected, let's scan!");
-    // TODO: Call i2c scan and autoconfig
+    for (JsonObject component : doc["components"].as<JsonArray>()) {
+      const char *addr_device = component["i2cDeviceAddress"] | "0x00";
+      if (WsV2._i2c_controller->IsDeviceScanned(component["i2cDeviceAddress"])) {
+        WS_DEBUG_PRINTLN("[SD] Device found during I2C scan: " + String(addr_device));
+        // TODO: Add it to the JSON doc
+        // TODO: Use defaults for other things
+      } else {
+        WS_DEBUG_PRINTLN("[SD] Device not found during I2C scan: " + String(addr_device));
+        // TODO: Do not add it to the components list, remove it from the JSON doc
+      }
+    }
+  } else {
+    // Empty components array
+    WS_DEBUG_PRINTLN("[SD] Empty components array, adding all devices found in I2C scan to the JSON doc...");
+    // TODO: Add all devices found in the I2C scan to the JSON doc
   }
+
+  // TODO: Now, split this routine out
 
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
