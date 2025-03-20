@@ -761,9 +761,12 @@ bool ws_sdcard::ParseFileConfig() {
   // Perform an I2C scan: log components to a member struct of i2c controller
   // then, for the case where the non-empty components[] exists, check the log of components
   // against the array TODO 
-  WsV2._i2c_controller->ScanI2cBus(true);
+   WS_DEBUG_PRINTLN("[SD] Scanning I2C bus for devices...");
+   WsV2._i2c_controller->ScanI2cBus(true);
+   WS_DEBUG_PRINTLN("[SD] I2C scan complete, found devices: ");
 
   // TODO: Refactor this out
+  WS_DEBUG_PRINTLN("[SD] Checking for components in the configuration file...");
   if (components.size() != 0) {
     WS_DEBUG_PRINTLN("[SD] Configuration file contains components")
     for (JsonObject component : doc["components"].as<JsonArray>()) {
@@ -782,6 +785,7 @@ bool ws_sdcard::ParseFileConfig() {
     WS_DEBUG_PRINTLN("[SD] Empty components array, adding all devices found in I2C scan to the JSON doc...");
     // TODO: Add all devices found in the I2C scan to the JSON doc
   }
+  WS_DEBUG_PRINTLN("[SD] I2C scan and JSON doc comparison complete!");
 
   // TODO: Now, split this routine out
 

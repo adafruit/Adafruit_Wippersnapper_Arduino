@@ -687,8 +687,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 /***********************************************************************/
 bool I2cController::ScanI2cBus(bool default_bus = true) {
     if (! default_bus)
-        return _i2c_bus_default->ScanBus(&_scan_results);
-    return _i2c_bus_alt->ScanBus(&_scan_results);
+      return _i2c_bus_alt->ScanBus(&_scan_results);
+    return _i2c_bus_default->ScanBus(&_scan_results);
 }
 
 /***********************************************************************/
