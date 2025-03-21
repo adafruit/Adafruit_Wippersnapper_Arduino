@@ -32,7 +32,7 @@ struct displayConfig;
 int32_t qspi_msc_write_cb_v2(uint32_t lba, uint8_t *buffer, uint32_t bufsize);
 int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize);
 void qspi_msc_flush_cb_v2(void);
-
+bool msc_ready_callback(void);
 /***************************************************************************/
 /*!
     @brief  Class that handles Wippersnapper's optional filesystem commands
@@ -49,6 +49,8 @@ public:
   void HaltFilesystem(String msg);
   void HaltFilesystem(String msg, ws_led_status_t ledStatusColor);
   void EraseCircuitPythonFS();
+  void USBDetach();
+  void USBAttach();
   // boot.txt
   bool CreateFileBoot();
   void WriteFileBoot(PGM_P str);

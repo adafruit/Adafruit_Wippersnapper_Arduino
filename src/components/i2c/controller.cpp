@@ -732,6 +732,12 @@ bool I2cController::AddScanResultsToConfig() {
   for (pb_size_t i = 0; i < _scan_results.i2c_bus_found_devices_count; i++) {
     WsV2._fileSystemV2->AddI2CDeviceToConfig(_scan_results.i2c_bus_found_devices[i].i2c_device_address);
   }
+  // TODO: Not entirely sure we need this
+  // AND the callback, to-test!
+  WsV2._fileSystemV2->USBAttach();
+  delay(500);
+  WsV2._fileSystemV2->USBDetach();
+  delay(500);
   return true;
 }
 

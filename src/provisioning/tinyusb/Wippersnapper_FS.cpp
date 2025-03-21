@@ -58,6 +58,7 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
+static bool _fs_changed = false;
 
 /**************************************************************************/
 /*!
@@ -102,6 +103,7 @@ FRESULT format_fs_fat12(void) {
 */
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
+  _fs_changed = false;
   // Detach USB device during init.
   TinyUSBDevice.detach();
   // Wait for detach
@@ -280,6 +282,10 @@ void Wippersnapper_FS::InitUsbMsc() {
   // MSC is ready for read/write
   usb_msc_v2.setUnitReady(true);
 
+  // Set callback when MSC ready
+  _fs_changed = false;
+  usb_msc_v2.setReadyCallback(0, msc_ready_callback);
+
   // init MSC
   usb_msc_v2.begin();
 
@@ -418,8 +424,6 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
 
   // Modify sd_cs_pin
   doc["exportedFromDevice"]["sd_cs_pin"] = pin;
-  // Delete the existing file first
-  wipperFatFs_v2.remove("/config.json");
   // Write the updated JSON back to the file
   file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
@@ -429,7 +433,8 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   serializeJsonPretty(doc, file_cfg);
   file_cfg.flush();
   file_cfg.close();
-  delay(2500); // TODO: Do we need this?
+  // sync w/flash
+  flash_v2.syncBlocks();
   return true;
 }
 
@@ -443,14 +448,12 @@ bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) {
     return false;
   }
   error = deserializeJson(doc, file_cfg);
+  file_cfg.close();
   if (error) {
     HaltFilesystem(
         "ERROR: Unable to parse config.json file - deserializeJson() failed!");
     return false;
   }
-  file_cfg.flush();
-  file_cfg.close();
-  delay(2500); // TODO: Do we need this?
 
   // Append the new JSON object to the config.json file
   JsonObject components = doc["components"].add<JsonObject>();
@@ -469,7 +472,6 @@ bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) {
   serializeJsonPretty(doc, file_cfg);
   file_cfg.flush();
   file_cfg.close();
-  delay(2500); // TODO: Do we need this?
   return true;
 }
 
@@ -687,6 +689,25 @@ void Wippersnapper_FS::HaltFilesystem(String msg,
   }
 }
 
+
+/**************************************************************************/
+/*!
+    @brief    Detaches the USB device.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::USBDetach() {
+  TinyUSBDevice.detach();
+}
+
+/**************************************************************************/
+/*!
+    @brief    Attaches the USB device.
+*/
+/**************************************************************************/
+void Wippersnapper_FS::USBAttach() {
+  TinyUSBDevice.attach();
+}
+
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 /**************************************************************************/
 /*!
@@ -801,6 +822,20 @@ int32_t qspi_msc_write_cb_v2(uint32_t lba, uint8_t *buffer, uint32_t bufsize) {
   // already include 4K sector caching internally. We don't need to cache it,
   // yahhhh!!
   return flash_v2.writeBlocks(lba, buffer, bufsize / 512) ? bufsize : -1;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Callback invoked when the host sends a Test Unit Ready command.
+    @returns True if the host can read/write the LUN.
+*/
+/**************************************************************************/
+bool msc_ready_callback(void) {
+  // if fs has changed, mark unit as not ready temporarily
+  // to force PC to flush cache
+  bool ret = !_fs_changed;
+  _fs_changed = false;
+  return ret;
 }
 
 /***************************************************************************/
