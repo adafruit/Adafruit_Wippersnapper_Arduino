@@ -689,24 +689,21 @@ void Wippersnapper_FS::HaltFilesystem(String msg,
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief    Detaches a TinyUSB device.
+    NOTE: Be careful about the order which this function is called!
+*/
+/**************************************************************************/
+void Wippersnapper_FS::USBDetach() { TinyUSBDevice.detach(); }
 
 /**************************************************************************/
 /*!
-    @brief    Detaches the USB device.
+    @brief    Attaches a TinyUSB USB device.
+    NOTE: Be careful about the order which this function is called!
 */
 /**************************************************************************/
-void Wippersnapper_FS::USBDetach() {
-  TinyUSBDevice.detach();
-}
-
-/**************************************************************************/
-/*!
-    @brief    Attaches the USB device.
-*/
-/**************************************************************************/
-void Wippersnapper_FS::USBAttach() {
-  TinyUSBDevice.attach();
-}
+void Wippersnapper_FS::USBAttach() { TinyUSBDevice.attach(); }
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 /**************************************************************************/

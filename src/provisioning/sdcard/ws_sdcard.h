@@ -72,7 +72,6 @@ private:
   bool ParseExportedFromDevice(JsonDocument &doc);
   void ConfigureSDCard();
   bool ValidateChecksum(JsonDocument &doc);
-  bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
                float ref_voltage);
   bool ConfigureRTC(const char *rtc_type);
@@ -84,16 +83,13 @@ private:
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
-  bool ParseDigitalIOAdd(wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd,
-                         const char *pin, float period, bool value,
-                         const char *sample_mode, const char *direction,
-                         const char *pull);
-  bool ParseAnalogIOAdd(wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd,
-                        const char *pin, float period, const char *mode);
-  bool ParseDS18X20Add(wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add,
-                       const char *pin, int resolution, float period,
-                       int num_sensors, const char *sensor_type_1,
-                       const char *sensor_type_2);
+  bool
+  ParseDigitalIOAdd(JsonObject &component,
+                    wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd);
+  bool ParseAnalogIOAdd(JsonObject &component,
+                        wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd);
+  bool ParseDS18xAdd(JsonObject &component,
+                     wippersnapper_ds18x20_Ds18x20Add &msg_ds18x20_add);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
       wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);
