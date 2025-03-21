@@ -424,6 +424,7 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
 
   // Modify sd_cs_pin
   doc["exportedFromDevice"]["sd_cs_pin"] = pin;
+  doc.shrinkToFit();
   // Write the updated JSON back to the file
   file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
@@ -442,11 +443,13 @@ bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) {
   JsonDocument doc;
   DeserializationError error;
   // Load the config.json file into memory
+  WS_DEBUG_PRINTLN("Opening config.json file for reading...");
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
   if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for reading!");
     return false;
   }
+  WS_DEBUG_PRINTLN("Parsing config.json file...");
   error = deserializeJson(doc, file_cfg);
   file_cfg.close();
   if (error) {
@@ -456,7 +459,9 @@ bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) {
   }
 
   // Append the new JSON object to the config.json file
-  JsonObject components = doc["components"].add<JsonObject>();
+  WS_DEBUG_PRINTLN("Appending new I2C device to config.json...");
+  // TODO: we are experiencing a crash when returning, is this due to writing the file?
+/*   JsonObject components = doc["components"].add<JsonObject>();
   components["name"] = "UNKNOWN";
   components["componentAPI"] = "i2c";
   components["i2cDeviceName"] = "UNKNOWN";
@@ -465,13 +470,28 @@ bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) {
   sprintf(buffer, "0x%02X", (unsigned int)address);
   components["i2cDeviceAddress"] = buffer;
   JsonArray components_i2cDeviceSensorTypes =
-      components["i2cDeviceSensorTypes"].to<JsonArray>();
+      components["i2cDeviceSensorTypes"].to<JsonArray>(); */
 
   // Serialize and write it back to the file!
+  WS_DEBUG_PRINTLN("Writing new I2C device to config.json...");
   file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
-  serializeJsonPretty(doc, file_cfg);
+  // Add error checking for serialization
+  size_t bytesWritten = serializeJsonPretty(doc, file_cfg);
+  if (bytesWritten == 0) {
+    WS_DEBUG_PRINTLN("ERROR - Failed to write to config.json");
+    file_cfg.close();
+    return false;
+  }
   file_cfg.flush();
   file_cfg.close();
+  delay(500); // arbitrary delay TODO remove
+  WS_DEBUG_PRINTLN("New I2C device added to config.json!");
+  WS_DEBUG_PRINTLN("Detaching TinyUSB...");
+  TinyUSBDevice.detach();
+  delay(500);
+  WS_DEBUG_PRINTLN("Re-attaching TinyUSB...");
+  TinyUSBDevice.attach();
+  delay(500);
   return true;
 }
 

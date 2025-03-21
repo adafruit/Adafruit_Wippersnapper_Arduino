@@ -718,13 +718,9 @@ bool ws_sdcard::ParseFileConfig() {
       } else {
         WS_DEBUG_PRINTLN("[SD] Device not found during I2C scan: " +
                          String(addr_device));
-        // TODO: Do not add it to the components list, remove it from the JSON
-        // doc Print out the scan results
-        // TODO: Waiting on L's feedback around if I should remove it
-        // totally...or just skip it
+        // TODO: Just log this, do not remove from config or anything!
         WS_DEBUG_PRINTLN("[SD] I2C scan results:");
         WsV2._i2c_controller->PrintScanResults();
-        WsV2._i2c_controller->AddScanResultsToConfig();
       }
     }
   } else {

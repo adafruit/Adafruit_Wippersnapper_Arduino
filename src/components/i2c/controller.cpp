@@ -384,7 +384,6 @@ I2cController::I2cController() {
   _i2c_model = new I2cModel();
   // Initialize the default I2C bus
   _i2c_bus_default = new I2cHardware();
-  _i2c_bus_default->InitBus(true);
 }
 
 /***********************************************************************/
@@ -686,6 +685,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 */
 /***********************************************************************/
 bool I2cController::ScanI2cBus(bool default_bus = true) {
+  _i2c_bus_default->InitBus(default_bus);
   _scan_results = wippersnapper_i2c_I2cBusScanned_init_zero;
   if (!default_bus)
     return _i2c_bus_alt->ScanBus(&_scan_results);
@@ -726,18 +726,27 @@ void I2cController::PrintScanResults() {
 }
 
 bool I2cController::AddScanResultsToConfig() {
+  WS_DEBUG_PRINT("[i2c] # of Scanned Devices: ");
+  WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices_count);
   if (_scan_results.i2c_bus_found_devices_count == 0)
     return false;
 
   for (pb_size_t i = 0; i < _scan_results.i2c_bus_found_devices_count; i++) {
+    WS_DEBUG_PRINT("[i2c] Adding device to config: ");
+    WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices[i].i2c_device_address,
+                     HEX);
     WsV2._fileSystemV2->AddI2CDeviceToConfig(_scan_results.i2c_bus_found_devices[i].i2c_device_address);
+    WS_DEBUG_PRINTLN("[i2c] ...added!");
   }
   // TODO: Not entirely sure we need this
   // AND the callback, to-test!
-  WsV2._fileSystemV2->USBAttach();
-  delay(500);
+/*   WS_DEBUG_PRINTLN("[i2c] Detaching FS...");
   WsV2._fileSystemV2->USBDetach();
   delay(500);
+  WS_DEBUG_PRINTLN("[i2c] Attaching FS...");
+  WsV2._fileSystemV2->USBAttach();
+  delay(500);
+  WS_DEBUG_PRINTLN("[i2c] FS Attached..."); */
   return true;
 }
 

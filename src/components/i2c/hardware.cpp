@@ -63,10 +63,12 @@ void I2cHardware::TogglePowerPin() {
 /***********************************************************************/
 void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   uint8_t pin_sda, pin_scl;
-  /*     if (!is_default && (sda == nullptr || scl == nullptr)) {
-        _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
-        return;
-      } */
+  WS_DEBUG_PRINT("is_default: ");
+  WS_DEBUG_PRINTLN(is_default);
+  if (!is_default && (sda == nullptr || scl == nullptr)) {
+    _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
+    return;
+  }
 // Some development boards define a pin that controls power
 // to the i2c bus. If the pin is defined, turn the power to the i2c bus on.
 #if defined(PIN_I2C_POWER) || defined(TFT_I2C_POWER) ||                        \
@@ -81,6 +83,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
     pin_scl = SCL;
 #else
     // RP2040 BSP uses a different naming scheme than Espressif for I2C pins
+    WS_DEBUG_PRINTLN("[i2c] Using RP2040 I2C pins...");
     pin_sda = PIN_WIRE0_SDA;
     pin_scl = PIN_WIRE0_SCL;
 #endif
@@ -127,6 +130,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus->setSDA(pin_sda);
   _bus->setSCL(pin_scl);
   _bus->begin();
+  WS_DEBUG_PRINTLN("[i2c] RP2040 I2C bus initialized!");
 #elif defined(ARDUINO_ARCH_SAM)
   _bus = new TwoWire(&PERIPH_WIRE, pin_sda, pin_scl);
   _bus->begin();
@@ -134,6 +138,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 #error "I2C bus implementation not supported by this platform!"
 #endif
 
+  WS_DEBUG_PRINTLN("[i2c] I2C bus initialized!");
   _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
 }
 
@@ -156,6 +161,11 @@ TwoWire *I2cHardware::GetBus() { return _bus; }
 bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
   if (!scan_results)
     return false;
+  
+  if (! _bus) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus not initialized!");
+    return false;
+  }
 
   // TODO: WS object needs to be added for this to work?
   /*     #ifndef ARDUINO_ARCH_ESP32
@@ -165,24 +175,24 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
       #endif */
   WS_DEBUG_PRINT("Bus Status: ");
   WS_DEBUG_PRINTLN(_bus_status);
-  InitBus(true);
-  WS_DEBUG_PRINT("L169 Bus Status: ");
-  WS_DEBUG_PRINTLN(_bus_status);
 
   // Perform a bus scan
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
-  for (uint8_t address = 1; address < 127; ++address) {
+  for (uint8_t address = 1; address < 127; address++) {
     WS_DEBUG_PRINT("[i2c] 0x");
     WS_DEBUG_PRINTLN(address, HEX);
     _bus->beginTransmission(address);
     uint8_t endTransmissionRC = _bus->endTransmission();
+    WS_DEBUG_PRINT("[i2c] endTransmissionRC: ");
+    WS_DEBUG_PRINTLN(endTransmissionRC);
 
     if (endTransmissionRC == 0) {
       WS_DEBUG_PRINTLN("[i2c] Found Device!");
       scan_results
           ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
           .i2c_device_address = address;
-      strcpy(
+      // NOTE: This is disabled because _sda and _scl are not saved, we should be doing this!
+/*       strcpy(
           scan_results
               ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
               .i2c_bus_sda,
@@ -191,7 +201,7 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
           scan_results
               ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
               .i2c_bus_scl,
-          _scl);
+          _scl); */
       scan_results->i2c_bus_found_devices_count++;
     }
 #if defined(ARDUINO_ARCH_ESP32)
