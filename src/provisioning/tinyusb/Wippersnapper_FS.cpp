@@ -199,6 +199,7 @@ void Wippersnapper_FS::GetPinSDCS() {
   // Parse config.json and save the SD CS pin
   JsonObject exportedFromDevice = WsV2._config_doc["exportedFromDevice"];
   WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
+  file_cfg.flush();
   file_cfg.close();
 }
 
@@ -225,6 +226,7 @@ bool disableMacOSIndexing() {
     return false;
   writeFile.close();
 
+  refreshMassStorage();
   return true;
 }
 
@@ -358,6 +360,7 @@ bool Wippersnapper_FS::CreateFileBoot() {
 
     bootFile.flush();
     bootFile.close();
+    refreshMassStorage();
     is_success = true;
   } else {
     bootFile.close();
@@ -395,6 +398,7 @@ void Wippersnapper_FS::CreateFileConfig() {
   // Flush and close file
   file_cfg.flush();
   file_cfg.close();
+  refreshMassStorage();
   delay(2500);
 }
 
@@ -403,97 +407,73 @@ void Wippersnapper_FS::CreateFileConfig() {
     @brief    Adds the SD CS pin to the `config.json` file.
     @param    pin
                 The Chip Select pin to add to the `config.json` file.
+    @returns  True if the pin was successfully added, False otherwise.
 */
 /**************************************************************************/
 bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
-  // Open file for reading
-  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
-  if (!file_cfg) {
-    HaltFilesystem("ERROR: Could not open the config.json file for reading!");
+  if (!wipperFatFs_v2.exists("/config.json")) {
+    HaltFilesystem("ERROR: Could not find expected config.json file on the "
+                   "WIPPER volume!");
     return false;
   }
-  // Parse the JSON
+
+  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
+  if (!file_cfg) {
+    WS_DEBUG_PRINTLN("ERROR: Could not open the config.json file for reading!");
+    return false;
+  }
+
+  // Parse the JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file_cfg);
   file_cfg.close();
   if (error) {
-    HaltFilesystem(
+    WS_DEBUG_PRINT("JSON parse error: ");
+    WS_DEBUG_PRINTLN(error.c_str());
+    WS_DEBUG_PRINTLN(
         "ERROR: Unable to parse config.json file - deserializeJson() failed!");
     return false;
   }
 
-  // Modify sd_cs_pin
   doc["exportedFromDevice"]["sd_cs_pin"] = pin;
   doc.shrinkToFit();
-  // Write the updated JSON back to the file
+
+  // Remove the old config.json file
+  wipperFatFs_v2.remove("/config.json");
+  flash_v2.syncBlocks();
+  wipperFatFs_v2.cacheClear();
+
+  // Write the updated doc back to new config.json file
   file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for writing!");
     return false;
   }
   serializeJsonPretty(doc, file_cfg);
+
+  // Flush and sync file
+  // TODO: Not sure if this is actually doing anything on RP2040, need to test
+  // in isolation
   file_cfg.flush();
-  file_cfg.close();
-  // sync w/flash
   flash_v2.syncBlocks();
-  return true;
-}
-
-bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) {
-  JsonDocument doc;
-  DeserializationError error;
-  // Load the config.json file into memory
-  WS_DEBUG_PRINTLN("Opening config.json file for reading...");
-  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
-  if (!file_cfg) {
-    HaltFilesystem("ERROR: Could not open the config.json file for reading!");
-    return false;
-  }
-  WS_DEBUG_PRINTLN("Parsing config.json file...");
-  error = deserializeJson(doc, file_cfg);
   file_cfg.close();
-  if (error) {
-    HaltFilesystem(
-        "ERROR: Unable to parse config.json file - deserializeJson() failed!");
-    return false;
-  }
 
-  // Append the new JSON object to the config.json file
-  WS_DEBUG_PRINTLN("Appending new I2C device to config.json...");
-  // TODO: we are experiencing a crash when returning, is this due to writing the file?
-/*   JsonObject components = doc["components"].add<JsonObject>();
-  components["name"] = "UNKNOWN";
-  components["componentAPI"] = "i2c";
-  components["i2cDeviceName"] = "UNKNOWN";
-  components["period"] = 30;
-  char buffer[6];
-  sprintf(buffer, "0x%02X", (unsigned int)address);
-  components["i2cDeviceAddress"] = buffer;
-  JsonArray components_i2cDeviceSensorTypes =
-      components["i2cDeviceSensorTypes"].to<JsonArray>(); */
+  // Force cache clear and sync
+  // TODO: Not sure if this is actually doing anything on RP2040, need to test
+  // in isolation
+  flash_v2.syncBlocks();
+  wipperFatFs_v2.cacheClear();
+  refreshMassStorage();
 
-  // Serialize and write it back to the file!
-  WS_DEBUG_PRINTLN("Writing new I2C device to config.json...");
-  file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
-  // Add error checking for serialization
-  size_t bytesWritten = serializeJsonPretty(doc, file_cfg);
-  if (bytesWritten == 0) {
-    WS_DEBUG_PRINTLN("ERROR - Failed to write to config.json");
-    file_cfg.close();
-    return false;
-  }
-  file_cfg.flush();
-  file_cfg.close();
-  delay(500); // arbitrary delay TODO remove
-  WS_DEBUG_PRINTLN("New I2C device added to config.json!");
-  WS_DEBUG_PRINTLN("Detaching TinyUSB...");
   TinyUSBDevice.detach();
-  delay(500);
-  WS_DEBUG_PRINTLN("Re-attaching TinyUSB...");
+  delay(150);
   TinyUSBDevice.attach();
-  delay(500);
+  delay(1500);
+
   return true;
 }
+
+bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) { return true; }
 
 /**************************************************************************/
 /*!
@@ -533,6 +513,7 @@ void Wippersnapper_FS::CreateFileSecrets() {
   // Flush and close file
   secretsFile.flush();
   secretsFile.close();
+  refreshMassStorage();
   delay(2500);
 }
 
@@ -651,6 +632,7 @@ void Wippersnapper_FS::ParseFileSecrets() {
 
   // Close secrets.json file
   secretsFile.close();
+  refreshMassStorage();
 }
 
 /**************************************************************************/
@@ -668,6 +650,7 @@ void Wippersnapper_FS::WriteFileBoot(PGM_P str) {
   bootFile.print(str);
   bootFile.flush();
   bootFile.close();
+  refreshMassStorage();
 }
 
 /**************************************************************************/
@@ -709,22 +692,6 @@ void Wippersnapper_FS::HaltFilesystem(String msg,
   }
 }
 
-/**************************************************************************/
-/*!
-    @brief    Detaches a TinyUSB device.
-    NOTE: Be careful about the order which this function is called!
-*/
-/**************************************************************************/
-void Wippersnapper_FS::USBDetach() { TinyUSBDevice.detach(); }
-
-/**************************************************************************/
-/*!
-    @brief    Attaches a TinyUSB USB device.
-    NOTE: Be careful about the order which this function is called!
-*/
-/**************************************************************************/
-void Wippersnapper_FS::USBAttach() { TinyUSBDevice.attach(); }
-
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 /**************************************************************************/
 /*!
@@ -758,7 +725,7 @@ void Wippersnapper_FS::CreateDisplayCfg() {
   serializeJsonPretty(doc, displayFile);
   displayFile.flush();
   displayFile.close();
-  delay(2500); // give FS some time to write the file
+  refreshMassStorage();
 }
 
 /**************************************************************************/
@@ -795,6 +762,7 @@ void Wippersnapper_FS::ParseFileDisplayCfg(displayConfig &dispCfg) {
   }
   // Close the file, we're done with it
   file.close();
+  refreshMassStorage();
   // Extract a displayConfig struct from the JSON document
   dispCfg = doc.as<displayConfig>();
 }
@@ -855,6 +823,8 @@ bool msc_ready_callback(void) {
   return ret;
 }
 
+void refreshMassStorage(void) { _fs_changed = true; }
+
 /***************************************************************************/
 /*!
     @brief  Callback invoked when WRITE10 command is completed (status
@@ -866,6 +836,7 @@ void qspi_msc_flush_cb_v2(void) {
   flash_v2.syncBlocks();
   // clear file system's cache to force refresh
   wipperFatFs_v2.cacheClear();
+  _fs_changed = true;
 }
 
 //--------------------------------------------------------------------+
