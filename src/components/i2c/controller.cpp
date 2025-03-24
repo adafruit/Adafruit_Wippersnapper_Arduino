@@ -715,6 +715,12 @@ bool I2cController::IsDeviceScanned(uint32_t address) {
   return false; // exhausted all scanned devices, didn't find it
 }
 
+uint32_t I2cController::GetScanDeviceAddress(int index) {
+  if (index < 0 || index >= _scan_results.i2c_bus_found_devices_count)
+    return 0;
+  return _scan_results.i2c_bus_found_devices[index].i2c_device_address;
+}
+
 void I2cController::PrintScanResults() {
   WS_DEBUG_PRINT("[i2c] # of Scanned Devices: ");
   WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices_count);
@@ -723,31 +729,6 @@ void I2cController::PrintScanResults() {
     WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices[i].i2c_device_address,
                      HEX);
   }
-}
-
-bool I2cController::AddScanResultsToConfig() {
-  WS_DEBUG_PRINT("[i2c] # of Scanned Devices: ");
-  WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices_count);
-  if (_scan_results.i2c_bus_found_devices_count == 0)
-    return false;
-
-  for (pb_size_t i = 0; i < _scan_results.i2c_bus_found_devices_count; i++) {
-    WS_DEBUG_PRINT("[i2c] Adding device to config: ");
-    WS_DEBUG_PRINTLN(_scan_results.i2c_bus_found_devices[i].i2c_device_address,
-                     HEX);
-    WsV2._fileSystemV2->AddI2CDeviceToConfig(_scan_results.i2c_bus_found_devices[i].i2c_device_address);
-    WS_DEBUG_PRINTLN("[i2c] ...added!");
-  }
-  // TODO: Not entirely sure we need this
-  // AND the callback, to-test!
-/*   WS_DEBUG_PRINTLN("[i2c] Detaching FS...");
-  WsV2._fileSystemV2->USBDetach();
-  delay(500);
-  WS_DEBUG_PRINTLN("[i2c] Attaching FS...");
-  WsV2._fileSystemV2->USBAttach();
-  delay(500);
-  WS_DEBUG_PRINTLN("[i2c] FS Attached..."); */
-  return true;
 }
 
 /********************************************************************************/

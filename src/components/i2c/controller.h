@@ -67,6 +67,9 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
+#define SCAN_DEVICE                                                            \
+  "UNKNOWN_SCAN" ///< Name for I2C devices found by an i2c scan
+
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
 class I2cHardware;      ///< Forward declaration
@@ -98,7 +101,7 @@ public:
   bool ScanI2cBus(bool default_bus);
   bool IsDeviceScanned(uint32_t address);
   void PrintScanResults();
-  bool AddScanResultsToConfig();
+  uint32_t GetScanDeviceAddress(int index);
 
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object

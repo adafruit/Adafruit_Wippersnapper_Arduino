@@ -683,7 +683,6 @@ bool ws_sdcard::ParseFileConfig() {
   if (!ParseExportedFromDevice(doc))
     return false;
 
-  // TODO WED: Break this entire structure out into separate functions
   WS_DEBUG_PRINTLN("Parsing components array...");
   JsonArray components = doc["components"].as<JsonArray>();
 
@@ -718,18 +717,54 @@ bool ws_sdcard::ParseFileConfig() {
       } else {
         WS_DEBUG_PRINTLN("[SD] Device not found during I2C scan: " +
                          String(addr_device));
-        // TODO: Just log this, do not remove from config or anything!
         WS_DEBUG_PRINTLN("[SD] I2C scan results:");
         WsV2._i2c_controller->PrintScanResults();
+        // TODO: Just log this, do not remove from config or anything!
       }
     }
   } else {
     // Empty components array
     WS_DEBUG_PRINTLN("[SD] Empty components array, adding all devices found in "
                      "I2C scan to the JSON doc...");
-    WS_DEBUG_PRINTLN("[SD] I2C scan results:");
+    WS_DEBUG_PRINTLN("[SD] I2C scan results: ");
     WsV2._i2c_controller->PrintScanResults();
-    WsV2._i2c_controller->AddScanResultsToConfig();
+    // TODO: This is only using the first device found in the scan, we should
+    // make this dynamic once it works properly Add each device found in the I2C
+    // scan to the shared buffer
+    WS_DEBUG_PRINTLN("[SD] Configuring I2C Device PB...");
+    wippersnapper_signal_BrokerToDevice msg_signal =
+        wippersnapper_signal_BrokerToDevice_init_default;
+    wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
+        wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+    msg_signal.which_payload =
+        wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
+    // TODO: The index is hardcoded to 0 here, this should be dynamic
+    WS_DEBUG_PRINT("[SD] Adding I2C device at address: ");
+    msg_i2c_add_replace.i2c_device_description.i2c_device_address =
+        WsV2._i2c_controller->GetScanDeviceAddress(0);
+    WS_DEBUG_PRINTLN(
+        msg_i2c_add_replace.i2c_device_description.i2c_device_address, HEX);
+    // TODO: Detect UNKNOWN_SCAN_DEVICEs in controller
+    strcpy(msg_i2c_add_replace.i2c_device_name, "UNKNOWN_SCAN");
+    // TODO: Maybe create a default i2c period
+    msg_i2c_add_replace.i2c_device_period = 30.0;
+    /*
+    // TODO: Do we need to fill these? Probably not! Or not yet
+    msg_i2c_add_replace.has_i2c_device_description = true;
+    strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_scl, "default");
+    strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_sda, "default");
+    msg_i2c_add_replace.i2c_device_description.i2c_mux_address = 0x00;
+    msg_i2c_add_replace.i2c_device_description.i2c_mux_channel = 0xFFFF;
+    */
+    // TODO: Do we need to add the i2c_device_sensor_types?
+    msg_signal.payload.i2c_device_add_replace = msg_i2c_add_replace;
+    WS_DEBUG_PRINTLN("[SD] Adding I2C device to shared buffer...");
+    if (!AddSignalMessageToSharedBuffer(msg_signal)) {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
+                       "to shared buffer!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[SD] I2C device added to shared buffer!");
   }
   WS_DEBUG_PRINTLN("[SD] I2C scan and JSON doc comparison complete!");
 
@@ -755,40 +790,39 @@ bool ws_sdcard::ParseFileConfig() {
           wippersnapper_digitalio_DigitalIOAdd_init_default;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
-      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
       if (!ParseDigitalIOAdd(component, msg_DigitalIOAdd)) {
         WS_DEBUG_PRINT(
             "[SD] Runtime Error: Unable to parse component, DigitalIO Pin: ");
         WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
+      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
     } else if (strcmp(component_api_type, "analogio") == 0) {
       WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
       wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
           wippersnapper_analogio_AnalogIOAdd_init_default;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_analogio_add_tag;
-      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
-
       if (!ParseAnalogIOAdd(component, msg_AnalogIOAdd)) {
         WS_DEBUG_PRINTLN(
             "[SD] Runtime Error: Unable to parse AnalogIO Component, Pin: ");
         WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
+      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
     } else if (strcmp(component_api_type, "ds18x20") == 0) {
       WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
       wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
           wippersnapper_ds18x20_Ds18x20Add_init_default;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
-      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
       if (!ParseDS18xAdd(component, msg_DS18X20Add)) {
         WS_DEBUG_PRINT(
             "[SD] Runtime Error: Unable to parse DS18X20 Component on pin: ");
         WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
         return false;
       }
+      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
       // Configure the I2cDeviceAddOrReplace message
@@ -796,12 +830,12 @@ bool ws_sdcard::ParseFileConfig() {
           wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
       msg_signal_b2d.which_payload =
           wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
-      msg_signal_b2d.payload.i2c_device_add_replace = msg_i2c_add_replace;
       // Parse into the I2cDeviceAddOrReplace message
       if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
         WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
         return false;
       }
+      msg_signal_b2d.payload.i2c_device_add_replace = msg_i2c_add_replace;
     } else {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
                        String(component_api_type));
