@@ -344,6 +344,23 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
        return new drvVl6180x(i2c, addr, mux_channel, driver_name);
      }}}; ///< I2C driver factory
 
+static const std::map<const char *, std::vector<uint16_t>>
+    map_address_to_driver = {
+        {"aht20", {0x38}}, {"bme280", {0x76, 0x77}}, {"bme680", {0x76, 0x77}}};
+
+std::vector<const char *> getDriversForAddress(uint16_t addr) {
+  std::vector<const char *> result;
+
+  for (const auto &[driver, addresses] : map_address_to_driver) {
+    for (uint16_t address : addresses) {
+      if (address == addr) {
+        result.push_back(driver);
+      }
+    }
+  }
+  return result;
+}
+
 /***********************************************************************/
 /*!
     @brief  Creates an I2C driver by name
@@ -607,17 +624,51 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     bus = _i2c_bus_default->GetBus();
   }
 
-  drvBase *drv = CreateI2CDriverByName(
-      device_name, bus, device_descriptor.i2c_device_address,
-      device_descriptor.i2c_mux_channel, device_status);
-  if (drv == nullptr) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
-    if (WsV2._sdCardV2->isModeOffline()) {
-      WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
-                       "the correct value for i2cDeviceName?\n\tDid you set "
-                       "the correct value for"
-                       "i2cDeviceAddress?",
-                       WS_LED_STATUS_ERROR_RUNTIME, false);
+  drvBase *drv = nullptr;
+  if (strcmp(device_name, SCAN_DEVICE) == 0) {
+    // Get all possible driver candidates for this address
+    WS_DEBUG_PRINT("Getting drivers for address: ");
+    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
+    std::vector<const char *> candidate_drivers =
+        getDriversForAddress(device_descriptor.i2c_device_address);
+
+        // Print out all the candidates
+    for (const char *driverName : candidate_drivers) {
+      WS_DEBUG_PRINT("[i2c] Found a candidate driver: ");
+      WS_DEBUG_PRINTLN(driverName);
+    }
+
+    // Check/probe each candidate to see if it communicates
+    for (const char *driverName : candidate_drivers) {
+      drv = CreateI2CDriverByName(
+          driverName, bus, device_descriptor.i2c_device_address,
+          device_descriptor.i2c_mux_channel, device_status);
+      if (!drv->begin()) {
+        delete drv;
+        drv = nullptr;
+      } else {
+        WS_DEBUG_PRINT("[i2c] Device initialized: ");
+        WS_DEBUG_PRINTLN(driverName);
+        // TOdO: NOTE THAT WE MAY DOUBLE_INIT BELOW!!! AND CRASH
+        break;
+      }
+    }
+  } else {
+    WS_DEBUG_PRINTLN("Device was defined in config file, initializing...");
+    // TODO: Add more debug window here
+    drv = CreateI2CDriverByName(
+        device_name, bus, device_descriptor.i2c_device_address,
+        device_descriptor.i2c_mux_channel, device_status);
+    if (drv == nullptr) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] ERROR: I2C driver type not found or unsupported!");
+      if (WsV2._sdCardV2->isModeOffline()) {
+        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+                         "the correct value for i2cDeviceName?\n\tDid you set "
+                         "the correct value for"
+                         "i2cDeviceAddress?",
+                         WS_LED_STATUS_ERROR_RUNTIME, false);
+      }
     }
   }
 

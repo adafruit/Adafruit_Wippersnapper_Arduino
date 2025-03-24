@@ -74,6 +74,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
