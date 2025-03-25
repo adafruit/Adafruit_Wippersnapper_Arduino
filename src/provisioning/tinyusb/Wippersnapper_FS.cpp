@@ -473,8 +473,104 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   return true;
 }
 
-bool Wippersnapper_FS::AddI2CDeviceToConfig(uint32_t address) { return true; }
+// TODO: Add an inclusion for "i2cDeviceSensorTypes"
+/********************************************************************************/
+/*!
+    @brief    Adds an I2C device to the `config.json` file.
+    @param    address
+                The I2C device's address.
+    @param    period
+                The period at which the device should be polled.
+    @param    driver_name
+                The name of the driver.
+    @returns  True if the device was successfully added, False otherwise.
+*/
+/********************************************************************************/
+bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address, float period,
+                                                char *driver_name) {
+  if (!wipperFatFs_v2.exists("/config.json")) {
+    HaltFilesystem("ERROR: Could not find expected config.json file on the "
+                   "WIPPER volume!");
+    return false;
+  }
 
+  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
+  if (!file_cfg) {
+    WS_DEBUG_PRINTLN("ERROR: Could not open the config.json file for reading!");
+    return false;
+  }
+
+  // Parse the JSON document
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, file_cfg);
+  file_cfg.close();
+  if (error) {
+    WS_DEBUG_PRINT("JSON parse error: ");
+    WS_DEBUG_PRINTLN(error.c_str());
+    WS_DEBUG_PRINTLN(
+        "ERROR: Unable to parse config.json file - deserializeJson() failed!");
+    return false;
+  }
+
+  JsonObject new_component = doc["components"].add<JsonObject>();
+  new_component["name"] = driver_name;
+  new_component["componentAPI"] = "i2c";
+  new_component["i2cdevicei2cDeviceName"] = driver_name;
+  new_component["period"] = period;
+  // convert address to string
+  char address_str[10];
+  sprintf(address_str, "0x%02X", address);
+  new_component["i2cDeviceAddress"] = address_str;
+
+  // Handle the sensor types
+  // TODO: This is un-implemented because I'm unsure how to go from type->string
+  // representation without adding significant overhead...
+  /*
+  JsonArray new_component_types =
+  new_component["i2cDeviceSensorTypes"].to<JsonArray>();
+  new_component_types[0]["type"] = "relative-humidity";
+  new_component_types[1]["type"] = "ambient-temp";
+  new_component_types[2]["type"] = "ambient-temp-fahrenheit";
+  new_component_types[3]["type"] = "pressure";
+  new_component_types[4]["type"] = "altitude";
+  */
+
+  doc.shrinkToFit();
+
+  // Remove the existing config.json file
+  wipperFatFs_v2.remove("/config.json");
+  flash_v2.syncBlocks();
+  wipperFatFs_v2.cacheClear();
+
+  // Write the updated doc back to new config.json file
+  file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
+  if (!file_cfg) {
+    HaltFilesystem("ERROR: Could not open the config.json file for writing!");
+    return false;
+  }
+  serializeJsonPretty(doc, file_cfg);
+
+  // Flush and sync file
+  // TODO: Not sure if this is actually doing anything on RP2040, need to test
+  // in isolation
+  file_cfg.flush();
+  flash_v2.syncBlocks();
+  file_cfg.close();
+
+  // Force cache clear and sync
+  // TODO: Not sure if this is actually doing anything on RP2040, need to test
+  // in isolation
+  flash_v2.syncBlocks();
+  wipperFatFs_v2.cacheClear();
+  refreshMassStorage();
+
+  TinyUSBDevice.detach();
+  delay(150);
+  TinyUSBDevice.attach();
+  delay(1500);
+
+  return true;
+}
 /**************************************************************************/
 /*!
     @brief    Checks if secrets.json file exists on the flash filesystem.

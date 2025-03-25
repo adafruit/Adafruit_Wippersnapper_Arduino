@@ -64,9 +64,9 @@ public:
 #endif
   // config.json
   void CreateFileConfig();
-  bool AddSDCSPinToFileConfig(uint8_t pin);
   void GetPinSDCS();
-  bool AddI2CDeviceToConfig(uint32_t address);
+  bool AddSDCSPinToFileConfig(uint8_t pin);
+  bool AddI2cDeviceToFileConfig(uint32_t address, float period, char *driver_name);
 
 private:
   bool _is_secrets_file_empty = false;

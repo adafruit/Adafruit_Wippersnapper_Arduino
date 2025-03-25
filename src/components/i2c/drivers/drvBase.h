@@ -19,7 +19,8 @@
 #include <Arduino.h>
 #include <protos/i2c.pb.h>
 
-#define NO_MUX_CH 0xFFFF; ///< No MUX channel specified
+#define NO_MUX_CH 0xFFFF;          ///< No MUX channel specified
+#define DEFAULT_SENSOR_PERIOD 30.0 ///< Default sensor period, in seconds
 
 /**************************************************************************/
 /*!
@@ -161,8 +162,15 @@ public:
                 The number of active sensors to read from the device.
   */
   /*******************************************************************************/
-  void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
-                         size_t sensor_types_count) {
+  void SetSensorTypes(bool use_default_types = false,
+                      wippersnapper_sensor_SensorType *sensor_types = nullptr,
+                      size_t sensor_types_count = 0) {
+    if (use_default_types) {
+      sensor_types = _default_sensor_types;
+      // set sensor_types_count to # of elements within _default_sensor_types
+      sensor_types_count =
+          sizeof(_default_sensor_types) / sizeof(_default_sensor_types[0]);
+    }
     _sensors_count = sensor_types_count;
     for (size_t i = 0; i < _sensors_count; i++) {
       _sensors[i] = sensor_types[i];
@@ -193,11 +201,10 @@ public:
                 seconds.
   */
   /*******************************************************************************/
-  void SetSensorPeriod(float period) {
-    if (period < 0) {
-      _sensor_period = 0;
-      return;
-    }
+  void SetPeriod(float period = DEFAULT_SENSOR_PERIOD) {
+    if (period < 0)
+      _sensor_period = DEFAULT_SENSOR_PERIOD;
+
     _sensor_period = (unsigned long)(period * 1000.0f);
   }
 
@@ -218,6 +225,14 @@ public:
   */
   /*******************************************************************************/
   ulong GetSensorPeriod() { return _sensor_period; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the sensor's types
+      @returns  A pointer to an array of SensorTypes.
+  */
+  /*******************************************************************************/
+  wippersnapper_sensor_SensorType *GetSensorTypes() { return _sensors; }
 
   /*******************************************************************************/
   /*!
@@ -593,26 +608,6 @@ public:
 
   /*******************************************************************************/
   /*!
-      @brief    Checks if an address found during an i2c scan belongs to the
-                  sensor.
-      @param    scan_address
-                  The desired address to check, from an i2c scan
-      @returns  True if the address belongs to the sensor, False otherwise
-  */
-  /*******************************************************************************/
-  bool IsPotentialAddress(uint16_t scan_address) {
-    for (uint8_t i = 0;
-         i < sizeof(_potential_addresses) / sizeof(_potential_addresses[0]);
-         i++) {
-      if (scan_address == _potential_addresses[i]) {
-        return true;
-      }
-    }
-    return false; // nothing found
-  }
-
-  /*******************************************************************************/
-  /*!
       @brief    Function type for sensor event handlers
       @param    sensors_event_t*
                 Pointer to the sensor event structure to be filled
@@ -732,18 +727,18 @@ public:
       _sensors[15]; ///< Sensors attached to the device.
 
 protected:
-  TwoWire *_i2c;         ///< Pointer to the I2C bus
-  bool _has_alt_i2c_bus; ///< True if the device is on an alternate I2C bus
-  uint16_t _address;     ///< The device's I2C address.
-  uint16_t _potential_addresses[2]; ///< Potential I2C addresses for the device,
-                                    ///< stored on the device driver
-  uint32_t _i2c_mux_addr;           ///< The I2C MUX address, if applicable.
-  uint32_t _i2c_mux_channel;        ///< The I2C MUX channel, if applicable.
-  char _name[15];                   ///< The device's name.
-  char _pin_scl[8];                 ///< The device's SCL pin.
-  char _pin_sda[8];                 ///< The device's SDA pin.
-  ulong _sensor_period;             ///< The sensor's period, in milliseconds.
-  ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.
-  size_t _sensors_count;    ///< Number of sensors on the device.
+  TwoWire *_i2c;             ///< Pointer to the I2C bus
+  bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
+  uint16_t _address;         ///< The device's I2C address.
+  uint32_t _i2c_mux_addr;    ///< The I2C MUX address, if applicable.
+  uint32_t _i2c_mux_channel; ///< The I2C MUX channel, if applicable.
+  char _name[15];            ///< The device's name.
+  char _pin_scl[8];          ///< The device's SCL pin.
+  char _pin_sda[8];          ///< The device's SDA pin.
+  ulong _sensor_period;      ///< The sensor's period, in milliseconds.
+  ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
+  size_t _sensors_count;     ///< Number of sensors on the device.
+  wippersnapper_sensor_SensorType
+      _default_sensor_types[1]; ///< Default sensor types
 };
 #endif // DRV_BASE_H

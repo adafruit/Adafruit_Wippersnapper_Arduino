@@ -626,42 +626,56 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   drvBase *drv = nullptr;
   if (strcmp(device_name, SCAN_DEVICE) == 0) {
+    WS_DEBUG_PRINTLN("Attempting to autoconfig device found in scan...");
     // Get all possible driver candidates for this address
     WS_DEBUG_PRINT("Getting drivers for address: ");
     WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
     std::vector<const char *> candidate_drivers =
         getDriversForAddress(device_descriptor.i2c_device_address);
 
-        // Print out all the candidates
+    // Probe each candidate to see if it communicates
     for (const char *driverName : candidate_drivers) {
-      WS_DEBUG_PRINT("[i2c] Found a candidate driver: ");
+      WS_DEBUG_PRINT("[i2c] Attempting to initialize driver: ");
       WS_DEBUG_PRINTLN(driverName);
-    }
-
-    // Check/probe each candidate to see if it communicates
-    for (const char *driverName : candidate_drivers) {
       drv = CreateI2CDriverByName(
           driverName, bus, device_descriptor.i2c_device_address,
           device_descriptor.i2c_mux_channel, device_status);
+      // Probe the driver to check if it communicates its init. sequence
+      // properly
       if (!drv->begin()) {
         delete drv;
         drv = nullptr;
       } else {
-        WS_DEBUG_PRINT("[i2c] Device initialized: ");
+        WS_DEBUG_PRINT("[i2c] Driver successfully initialized: ");
         WS_DEBUG_PRINTLN(driverName);
-        // TOdO: NOTE THAT WE MAY DOUBLE_INIT BELOW!!! AND CRASH
+        drv->SetSensorTypes(true);
+        drv->SetPeriod(0);
+        // TODO: Add driver information to FS
         break;
       }
     }
   } else {
     WS_DEBUG_PRINTLN("Device was defined in config file, initializing...");
-    // TODO: Add more debug window here
-    drv = CreateI2CDriverByName(
-        device_name, bus, device_descriptor.i2c_device_address,
-        device_descriptor.i2c_mux_channel, device_status);
-    if (drv == nullptr) {
-      WS_DEBUG_PRINTLN(
-          "[i2c] ERROR: I2C driver type not found or unsupported!");
+    if (did_set_mux_ch) {
+      drv->SetMuxAddress(device_descriptor.i2c_mux_address);
+      WS_DEBUG_PRINTLN("[i2c] Set driver to use MUX");
+    }
+    if (use_alt_bus) {
+      drv->EnableAltI2CBus(_i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                               ->i2c_device_description.i2c_bus_scl,
+                           _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                               ->i2c_device_description.i2c_bus_sda);
+      WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
+    }
+    // Configure the driver
+    drv->SetSensorTypes(
+        false,
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+            ->i2c_device_sensor_types_count);
+    drv->SetPeriod(
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
+    if (!drv->begin()) {
       if (WsV2._sdCardV2->isModeOffline()) {
         WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
                          "the correct value for i2cDeviceName?\n\tDid you set "
@@ -671,35 +685,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       }
     }
   }
-
-  // Attempt to initialize the driver
-  if (did_set_mux_ch) {
-    drv->SetMuxAddress(device_descriptor.i2c_mux_address);
-    WS_DEBUG_PRINTLN("[i2c] Set driver to use MUX");
-  }
-  if (use_alt_bus) {
-    drv->EnableAltI2CBus(_i2c_model->GetI2cDeviceAddOrReplaceMsg()
-                             ->i2c_device_description.i2c_bus_scl,
-                         _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-                             ->i2c_device_description.i2c_bus_sda);
-    WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
-  }
-  // Configure the driver
-  drv->EnableSensorReads(
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types_count);
-  drv->SetSensorPeriod(
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
-  if (!drv->begin()) {
-    if (WsV2._sdCardV2->isModeOffline()) {
-      WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
-                       "the correct value for i2cDeviceName?\n\tDid you set "
-                       "the correct value for"
-                       "i2cDeviceAddress?",
-                       WS_LED_STATUS_ERROR_RUNTIME, false);
-    }
-  }
-
   _i2c_drivers.push_back(drv);
   WS_DEBUG_PRINTLN("[i2c] Driver initialized and added to controller: ");
   WS_DEBUG_PRINTLN(device_name);
