@@ -104,6 +104,13 @@ public:
     return _pressure->getEvent(pressureEvent);
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 3;
+    _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+    _default_sensor_types[1] = wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+    _default_sensor_types[2] = wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
+  }
+
 protected:
   Adafruit_LPS25 *_lps25; ///< LPS25HB  object
   Adafruit_Sensor *_temp =

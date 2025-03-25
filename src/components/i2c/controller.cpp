@@ -361,6 +361,17 @@ static const std::map<const char *, std::vector<uint16_t>>
                              {"hts2221", {0x5F}},
                              {"htu21d", {0x40}},
                              {"ina219", {0x40, 0x41, 0x44, 0x45}},
+                             {"lc709203f", {0x0B}},
+                             {"lps22hb", {0x5C, 0x5D}},
+                             {"lps25hb", {0x5C, 0x5D}},
+                             {"ltr303", {0x29}},
+                             {"ltr390", {0x53}},
+                             {"max17048", {0x38}},
+                             {"mcp3421", {0x68}},
+                             {"mcp9808", {0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F}},
+                             {"mpl115a2", {0x60}},
+                             {"mprls", {0x18}},
+                             {"ms8607", {0x40, 0x76}},
                             };
 
 std::vector<const char *> GetDriversForAddress(uint16_t addr) {

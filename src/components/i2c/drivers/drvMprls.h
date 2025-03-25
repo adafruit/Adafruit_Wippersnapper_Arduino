@@ -80,6 +80,11 @@ public:
     return pressureEvent->pressure != NAN;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 1;
+    _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
+  }
+
 protected:
   Adafruit_MPRLS *_mprls; ///< MPRLS  object
 };
