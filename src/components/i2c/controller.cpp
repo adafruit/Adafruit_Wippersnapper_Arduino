@@ -651,6 +651,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         drv->SetSensorTypes(true);
         drv->SetPeriod(0);
         // TODO: Add driver information to FS
+        WsV2._fileSystemV2->AddI2cDeviceToFileConfig(
+            device_descriptor.i2c_device_address, driverName);
         break;
       }
     }
