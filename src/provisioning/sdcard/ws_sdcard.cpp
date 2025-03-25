@@ -748,14 +748,12 @@ bool ws_sdcard::ParseFileConfig() {
     strcpy(msg_i2c_add_replace.i2c_device_name, "UNKNOWN_SCAN");
     // TODO: Maybe create a default i2c period
     msg_i2c_add_replace.i2c_device_period = 30.0;
-    /*
     // TODO: Do we need to fill these? Probably not! Or not yet
     msg_i2c_add_replace.has_i2c_device_description = true;
     strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_scl, "default");
     strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_sda, "default");
     msg_i2c_add_replace.i2c_device_description.i2c_mux_address = 0x00;
     msg_i2c_add_replace.i2c_device_description.i2c_mux_channel = 0xFFFF;
-    */
     // TODO: Do we need to add the i2c_device_sensor_types?
     msg_signal.payload.i2c_device_add_replace = msg_i2c_add_replace;
     WS_DEBUG_PRINTLN("[SD] Adding I2C device to shared buffer...");

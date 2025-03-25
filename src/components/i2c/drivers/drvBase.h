@@ -166,7 +166,6 @@ public:
                       wippersnapper_sensor_SensorType *sensor_types = nullptr,
                       size_t sensor_types_count = 0) {
     if (use_default_types) {
-      sensor_types = _default_sensor_types;
       // set sensor_types_count to # of elements within _default_sensor_types
       sensor_types_count =
           sizeof(_default_sensor_types) / sizeof(_default_sensor_types[0]);

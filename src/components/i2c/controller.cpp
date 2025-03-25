@@ -648,11 +648,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       } else {
         WS_DEBUG_PRINT("[i2c] Driver successfully initialized: ");
         WS_DEBUG_PRINTLN(driverName);
+        // set device_name to driverName
+        strcpy(device_name, driverName);
         drv->SetSensorTypes(true);
         drv->SetPeriod(0);
         // TODO: Add driver information to FS
-        WsV2._fileSystemV2->AddI2cDeviceToFileConfig(
-            device_descriptor.i2c_device_address, driverName);
+        // WsV2._fileSystemV2->AddI2cDeviceToFileConfig(device_descriptor.i2c_device_address, driverName);
         break;
       }
     }
@@ -688,7 +689,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     }
   }
   _i2c_drivers.push_back(drv);
-  WS_DEBUG_PRINTLN("[i2c] Driver initialized and added to controller: ");
+  WS_DEBUG_PRINT("[i2c] Driver initialized and added to controller: ");
   WS_DEBUG_PRINTLN(device_name);
 
   // If we're using a MUX, clear the channel for any subsequent bus
