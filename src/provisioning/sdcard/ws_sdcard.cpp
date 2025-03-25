@@ -731,38 +731,40 @@ bool ws_sdcard::ParseFileConfig() {
     // TODO: This is only using the first device found in the scan, we should
     // make this dynamic once it works properly Add each device found in the I2C
     // scan to the shared buffer
-    WS_DEBUG_PRINTLN("[SD] Configuring I2C Device PB...");
-    wippersnapper_signal_BrokerToDevice msg_signal =
-        wippersnapper_signal_BrokerToDevice_init_default;
-    wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
-        wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
-    msg_signal.which_payload =
-        wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
-    // TODO: The index is hardcoded to 0 here, this should be dynamic
-    WS_DEBUG_PRINT("[SD] Adding I2C device at address: ");
-    msg_i2c_add_replace.i2c_device_description.i2c_device_address =
-        WsV2._i2c_controller->GetScanDeviceAddress(0);
-    WS_DEBUG_PRINTLN(
-        msg_i2c_add_replace.i2c_device_description.i2c_device_address, HEX);
-    // TODO: Detect UNKNOWN_SCAN_DEVICEs in controller
-    strcpy(msg_i2c_add_replace.i2c_device_name, "UNKNOWN_SCAN");
-    // TODO: Maybe create a default i2c period
-    msg_i2c_add_replace.i2c_device_period = 30.0;
-    // TODO: Do we need to fill these? Probably not! Or not yet
-    msg_i2c_add_replace.has_i2c_device_description = true;
-    strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_scl, "default");
-    strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_sda, "default");
-    msg_i2c_add_replace.i2c_device_description.i2c_mux_address = 0x00;
-    msg_i2c_add_replace.i2c_device_description.i2c_mux_channel = 0xFFFF;
-    // TODO: Do we need to add the i2c_device_sensor_types?
-    msg_signal.payload.i2c_device_add_replace = msg_i2c_add_replace;
-    WS_DEBUG_PRINTLN("[SD] Adding I2C device to shared buffer...");
-    if (!AddSignalMessageToSharedBuffer(msg_signal)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
-                       "to shared buffer!");
-      return false;
+    for (size_t i = 0; i < WsV2._i2c_controller->GetScanDeviceCount(); i++) {
+      WS_DEBUG_PRINTLN("[SD] Configuring I2C Device PB...");
+      wippersnapper_signal_BrokerToDevice msg_signal =
+          wippersnapper_signal_BrokerToDevice_init_default;
+      wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
+          wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+      msg_signal.which_payload =
+          wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
+      // TODO: The index is hardcoded to 0 here, this should be dynamic
+      WS_DEBUG_PRINT("[SD] Adding I2C device at address: ");
+      msg_i2c_add_replace.i2c_device_description.i2c_device_address =
+          WsV2._i2c_controller->GetScanDeviceAddress(i);
+      WS_DEBUG_PRINTLN(
+          msg_i2c_add_replace.i2c_device_description.i2c_device_address, HEX);
+      // TODO: Detect UNKNOWN_SCAN_DEVICEs in controller
+      strcpy(msg_i2c_add_replace.i2c_device_name, "UNKNOWN_SCAN");
+      // TODO: Maybe create a default i2c period
+      msg_i2c_add_replace.i2c_device_period = 30.0;
+      // TODO: Do we need to fill these? Probably not! Or not yet
+      msg_i2c_add_replace.has_i2c_device_description = true;
+      strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_scl, "default");
+      strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_sda, "default");
+      msg_i2c_add_replace.i2c_device_description.i2c_mux_address = 0x00;
+      msg_i2c_add_replace.i2c_device_description.i2c_mux_channel = 0xFFFF;
+      // TODO: Do we need to add the i2c_device_sensor_types?
+      msg_signal.payload.i2c_device_add_replace = msg_i2c_add_replace;
+      WS_DEBUG_PRINTLN("[SD] Adding I2C device to shared buffer...");
+      if (!AddSignalMessageToSharedBuffer(msg_signal)) {
+        WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
+                         "to shared buffer!");
+        return false;
+      }
+      WS_DEBUG_PRINTLN("[SD] I2C device added to shared buffer!");
     }
-    WS_DEBUG_PRINTLN("[SD] I2C device added to shared buffer!");
   }
   WS_DEBUG_PRINTLN("[SD] I2C scan and JSON doc comparison complete!");
 

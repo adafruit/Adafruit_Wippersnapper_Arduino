@@ -486,7 +486,8 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
     @returns  True if the device was successfully added, False otherwise.
 */
 /********************************************************************************/
-bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address, const char *driver_name) {
+bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
+                                                const char *driver_name) {
   if (!wipperFatFs_v2.exists("/config.json")) {
     HaltFilesystem("ERROR: Could not find expected config.json file on the "
                    "WIPPER volume!");

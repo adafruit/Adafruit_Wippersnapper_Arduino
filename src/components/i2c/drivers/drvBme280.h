@@ -137,6 +137,15 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 5;
+    _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+    _default_sensor_types[1] = wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+    _default_sensor_types[2] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+    _default_sensor_types[3] = wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
+    _default_sensor_types[4] = wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE;
+  }
+
 protected:
   Adafruit_BME280 *_bme; ///< BME280  object
   Adafruit_Sensor *_bme_temp =
@@ -145,20 +154,6 @@ protected:
       NULL; ///< Ptr to an adafruit_sensor representing the pressure
   Adafruit_Sensor *_bme_humidity =
       NULL; ///< Ptr to an adafruit_sensor representing the humidity
-  uint16_t potential_addresses[2] = {
-      0x76, 0x77}; ///< BME280 I2C addresses, used for auto-config
-  wippersnapper_sensor_SensorType sensor_types[5] = {
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE,
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY,
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE}; ///< Let's store
-                                                             ///< the sensor
-                                                             ///< types for the
-                                                             ///< specific
-                                                             ///< driver within
-                                                             ///< the driver
-                                                             ///< itself!
 };
 
 #endif // drvBme280

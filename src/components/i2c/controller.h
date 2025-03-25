@@ -102,7 +102,7 @@ public:
   bool IsDeviceScanned(uint32_t address);
   void PrintScanResults();
   uint32_t GetScanDeviceAddress(int index);
-
+  size_t GetScanDeviceCount();
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object
   I2cHardware *_i2c_bus_default;       ///< Pointer to the default I2C bus

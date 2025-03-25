@@ -55,6 +55,7 @@ public:
     _has_alt_i2c_bus = false;
     strcpy(_pin_scl, "default");
     strcpy(_pin_sda, "default");
+    _default_sensor_types_count = 0;
   }
 
   /*******************************************************************************/
@@ -166,15 +167,29 @@ public:
                       wippersnapper_sensor_SensorType *sensor_types = nullptr,
                       size_t sensor_types_count = 0) {
     if (use_default_types) {
-      // set sensor_types_count to # of elements within _default_sensor_types
-      sensor_types_count =
-          sizeof(_default_sensor_types) / sizeof(_default_sensor_types[0]);
-    }
-    _sensors_count = sensor_types_count;
-    for (size_t i = 0; i < _sensors_count; i++) {
-      _sensors[i] = sensor_types[i];
+      // Configure the driver's sensor types with values from the driver
+      // NOTE: This is used only for auto-configured sensors
+      ConfigureDefaultSensorTypes();
+      _sensors_count = _default_sensor_types_count;
+      // load sensor_types with default sensor types
+      for (size_t i = 0; i < _sensors_count; i++) {
+        _sensors[i] = _default_sensor_types[i];
+      }
+    } else {
+      // Load the driver's sensor types with user-defined sensor types
+      _sensors_count = sensor_types_count;
+      for (size_t i = 0; i < _sensors_count; i++) {
+        _sensors[i] = sensor_types[i];
+      }
     }
   }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Configures a driver with the default SensorType(s) for the
+                device.
+  /*******************************************************************************/
+  virtual void ConfigureDefaultSensorTypes() { return; }
 
   /*******************************************************************************/
   /*!
@@ -738,6 +753,7 @@ protected:
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.
   wippersnapper_sensor_SensorType
-      _default_sensor_types[1]; ///< Default sensor types
+      _default_sensor_types[15]; ///< Default sensor types
+  size_t _default_sensor_types_count;
 };
 #endif // DRV_BASE_H

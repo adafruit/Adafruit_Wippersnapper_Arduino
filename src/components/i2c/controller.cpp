@@ -345,10 +345,25 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      }}}; ///< I2C driver factory
 
 static const std::map<const char *, std::vector<uint16_t>>
-    map_address_to_driver = {
-        {"aht20", {0x38}}, {"bme280", {0x76, 0x77}}, {"bme680", {0x76, 0x77}}};
+    map_address_to_driver = {{"aht20", {0x38}},
+                             {"bme280", {0x76, 0x77}},
+                             {"bme680", {0x76, 0x77}},
+                             {"sht3x", {0x44, 0x45}},
+                             {"adt7410", {0x48, 0x49, 0x4A, 0x4B}},
+                             {"sht3x", {0x44, 0x45}},
+                             {"bh1750", {0x23, 0x5c}},
+                             {"bmp280", {0x76, 0x77}},
+                             {"bmp388", {0x76, 0x77}},
+                             {"bmp390", {0x76, 0x77}},
+                             {"dps310", {0x76, 0x77}},
+                             {"ds2484", {0x18}},
+                             {"ens160", {0x52, 0x53}},
+                             {"hts2221", {0x5F}},
+                             {"htu21d", {0x40}},
+                             {"ina219", {0x40, 0x41, 0x44, 0x45}},
+                            };
 
-std::vector<const char *> getDriversForAddress(uint16_t addr) {
+std::vector<const char *> GetDriversForAddress(uint16_t addr) {
   std::vector<const char *> result;
 
   for (const auto &[driver, addresses] : map_address_to_driver) {
@@ -631,7 +646,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINT("Getting drivers for address: ");
     WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
     std::vector<const char *> candidate_drivers =
-        getDriversForAddress(device_descriptor.i2c_device_address);
+        GetDriversForAddress(device_descriptor.i2c_device_address);
 
     // Probe each candidate to see if it communicates
     for (const char *driverName : candidate_drivers) {
@@ -653,7 +668,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         drv->SetSensorTypes(true);
         drv->SetPeriod(0);
         // TODO: Add driver information to FS
-        // WsV2._fileSystemV2->AddI2cDeviceToFileConfig(device_descriptor.i2c_device_address, driverName);
+        // WsV2._fileSystemV2->AddI2cDeviceToFileConfig(device_descriptor.i2c_device_address,
+        // driverName);
         break;
       }
     }
@@ -758,6 +774,10 @@ uint32_t I2cController::GetScanDeviceAddress(int index) {
   if (index < 0 || index >= _scan_results.i2c_bus_found_devices_count)
     return 0;
   return _scan_results.i2c_bus_found_devices[index].i2c_device_address;
+}
+
+size_t I2cController::GetScanDeviceCount() {
+  return _scan_results.i2c_bus_found_devices_count;
 }
 
 void I2cController::PrintScanResults() {
