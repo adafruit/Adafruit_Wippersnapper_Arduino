@@ -564,11 +564,6 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
   wipperFatFs_v2.cacheClear();
   refreshMassStorage();
 
-  TinyUSBDevice.detach();
-  delay(150);
-  TinyUSBDevice.attach();
-  delay(1500);
-
   return true;
 }
 /**************************************************************************/
