@@ -417,13 +417,12 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
     return false;
   }
 
+  // Load the config file from the FS into memory
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
   if (!file_cfg) {
     WS_DEBUG_PRINTLN("ERROR: Could not open the config.json file for reading!");
     return false;
   }
-
-  // Parse the JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file_cfg);
   file_cfg.close();
@@ -435,15 +434,16 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
     return false;
   }
 
+  // Modify the in-memory JSON doc.
   doc["exportedFromDevice"]["sd_cs_pin"] = pin;
   doc.shrinkToFit();
 
-  // Remove the old config.json file
+  // Remove the existing config file from the filesystem
   wipperFatFs_v2.remove("/config.json");
   flash_v2.syncBlocks();
   wipperFatFs_v2.cacheClear();
 
-  // Write the updated doc back to new config.json file
+  // Write the in-memory JSON doc to the filesystem
   file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for writing!");
@@ -451,29 +451,18 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   }
   serializeJsonPretty(doc, file_cfg);
 
-  // Flush and sync file
+  // Attempt to clear the cache and sync the FS
   // TODO: Not sure if this is actually doing anything on RP2040, need to test
   // in isolation
+  file_cfg.close();
   file_cfg.flush();
   flash_v2.syncBlocks();
-  file_cfg.close();
-
-  // Force cache clear and sync
-  // TODO: Not sure if this is actually doing anything on RP2040, need to test
-  // in isolation
-  flash_v2.syncBlocks();
-  wipperFatFs_v2.cacheClear();
   refreshMassStorage();
-
-  TinyUSBDevice.detach();
-  delay(150);
-  TinyUSBDevice.attach();
-  delay(1500);
+  delay(1000);
 
   return true;
 }
 
-// TODO: Add an inclusion for "i2cDeviceSensorTypes"
 /********************************************************************************/
 /*!
     @brief    Adds an I2C device to the `config.json` file.
@@ -494,13 +483,12 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
     return false;
   }
 
+  // Load the config file into memory
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
   if (!file_cfg) {
     WS_DEBUG_PRINTLN("ERROR: Could not open the config.json file for reading!");
     return false;
   }
-
-  // Parse the JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file_cfg);
   file_cfg.close();
@@ -512,37 +500,26 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
     return false;
   }
 
+  // Append to components array on the in-memory config file
   JsonObject new_component = doc["components"].add<JsonObject>();
   new_component["name"] = driver_name;
   new_component["componentAPI"] = "i2c";
   new_component["i2cdevicei2cDeviceName"] = driver_name;
   new_component["period"] = 30;
-  // convert address to string
   char address_str[10];
   sprintf(address_str, "0x%02X", address);
   new_component["i2cDeviceAddress"] = address_str;
-
   // Handle the sensor types
-  // TODO: This is un-implemented because I'm unsure how to go from type->string
+  // TODO: This is unimplemented because I'm unsure how to go from type->string
   // representation without adding significant overhead...
-  /*
-  JsonArray new_component_types =
-  new_component["i2cDeviceSensorTypes"].to<JsonArray>();
-  new_component_types[0]["type"] = "relative-humidity";
-  new_component_types[1]["type"] = "ambient-temp";
-  new_component_types[2]["type"] = "ambient-temp-fahrenheit";
-  new_component_types[3]["type"] = "pressure";
-  new_component_types[4]["type"] = "altitude";
-  */
-
   doc.shrinkToFit();
 
-  // Remove the existing config.json file
+  // Remove the existing config file from the filesystem
   wipperFatFs_v2.remove("/config.json");
   flash_v2.syncBlocks();
   wipperFatFs_v2.cacheClear();
 
-  // Write the updated doc back to new config.json file
+  // Write the doc back to the filesystem
   file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for writing!");
@@ -550,18 +527,12 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
   }
   serializeJsonPretty(doc, file_cfg);
 
-  // Flush and sync file
+  // Attempt to clear the cache and sync the FS
   // TODO: Not sure if this is actually doing anything on RP2040, need to test
   // in isolation
+  file_cfg.close();
   file_cfg.flush();
   flash_v2.syncBlocks();
-  file_cfg.close();
-
-  // Force cache clear and sync
-  // TODO: Not sure if this is actually doing anything on RP2040, need to test
-  // in isolation
-  flash_v2.syncBlocks();
-  wipperFatFs_v2.cacheClear();
   refreshMassStorage();
 
   return true;
