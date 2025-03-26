@@ -344,69 +344,81 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
        return new drvVl6180x(i2c, addr, mux_channel, driver_name);
      }}}; ///< I2C driver factory
 
-static const std::map<const char *, std::vector<uint16_t>>
-    map_address_to_driver = {
-        {"aht20", {0x38}},
-        {"bme280", {0x76, 0x77}},
-        {"bme680", {0x76, 0x77}},
-        {"adt7410", {0x48, 0x49, 0x4A, 0x4B}},
-        {"sht3x", {0x44, 0x45}},
-        {"bh1750", {0x23, 0x5c}},
-        {"bmp280", {0x76, 0x77}},
-        {"bmp388", {0x76, 0x77}},
-        {"bmp390", {0x76, 0x77}},
-        {"dps310", {0x76, 0x77}},
-        {"ds2484", {0x18}},
-        {"ens160", {0x52, 0x53}},
-        {"hts2221", {0x5F}},
-        {"htu21d", {0x40}},
-        {"ina219", {0x40, 0x41, 0x44, 0x45}},
-        {"lc709203f", {0x0B}},
-        {"lps22hb", {0x5C, 0x5D}},
-        {"lps25hb", {0x5C, 0x5D}},
-        {"ltr303", {0x29}},
-        {"ltr390", {0x53}},
-        {"max17048", {0x38}},
-        {"mcp3421", {0x68}},
-        {"mcp9808", {0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F}},
-        {"mpl115a2", {0x60}},
-        {"mprls", {0x18}},
-        {"ms8607", {0x40, 0x76}},
-        {"nau7802", {0x2A}},
-        {"pct2075",
-         {0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x70, 0x71, 0x72,
-          0x73, 0x74, 0x75, 0x76, 0x77, 0x28, 0x29}},
-        {"pmsa003i", {0x12}},
-        {"scd30", {0x61}},
-        {"scd40", {0x62}},
-        {"sen50", {0x69}},
-        {"sgp40", {0x59}},
-        {"sht4x", {0x44}},
-        {"shtc3", {0x70}},
-        {"si7021", {0x40}},
-        {"stemma_soil", {0x40}},
-        {"tmp117", {0x48, 0x49, 0x4A, 0x4B}},
-        {"tsl2591", {0x29, 0x39, 0x49}},
-        {"veml7700", {0x29}},
-        {"vl53l1x", {0x29}},
-        {"vl53l4cd", {0x29}},
-        {"vl53l4cx", {0x29}},
-        {"vl6180x", {0x29}},
-        {"vncl4020", {0x13}},
-        {"vncl4040", {0x60}},
-};
+static const std::unordered_map<uint16_t, std::vector<const char *>>
+    map_address_to_drivers = {
+        {0x0B, {"lc709203f"}},
+        {0x12, {"pmsa003i"}},
+        {0x13, {"vncl4020"}},
+        {0x18, {"ds2484", "mcp9808", "mprls"}},
+        {0x19, {"mcp9808"}},
+        {0x1A, {"mcp9808"}},
+        {0x1B, {"mcp9808"}},
+        {0x1C, {"mcp9808"}},
+        {0x1D, {"mcp9808"}},
+        {0x1E, {"mcp9808"}},
+        {0x1F, {"mcp9808"}},
+        {0x23, {"bh1750"}},
+        {0x28, {"pct2075"}},
+        {0x29,
+         {"ltr303", "pct2075", "tsl2591", "veml7700", "vl53l1x", "vl53l4cd",
+          "vl53l4cx", "vl6180x"}},
+        {0x2A, {"nau7802"}},
+        {0x38, {"aht20", "max17048"}},
+        {0x39, {"tsl2591"}},
+        {0x40, {"htu21d", "ina219", "ms8607", "si7021", "stemma_soil"}},
+        {0x41, {"ina219"}},
+        {0x44, {"sht3x", "sht4x"}},
+        {0x45, {"sht3x"}},
+        {0x48, {"adt7410", "pct2075", "tmp117"}},
+        {0x49, {"adt7410", "pct2075", "tmp117", "tsl2591"}},
+        {0x4A, {"adt7410", "pct2075", "tmp117"}},
+        {0x4B, {"adt7410", "pct2075", "tmp117"}},
+        {0x4C, {"pct2075"}},
+        {0x4D, {"pct2075"}},
+        {0x4E, {"pct2075"}},
+        {0x4F, {"pct2075"}},
+        {0x52, {"ens160"}},
+        {0x53, {"ens160", "ltr390"}},
+        {0x59, {"sgp40"}},
+        {0x5C, {"bh1750", "lps22hb", "lps25hb"}},
+        {0x5D, {"lps22hb", "lps25hb"}},
+        {0x5F, {"hts2221"}},
+        {0x60, {"mpl115a2", "vncl4040"}},
+        {0x61, {"scd30"}},
+        {0x62, {"scd40"}},
+        {0x68, {"mcp3421"}},
+        {0x69, {"sen50"}},
+        {0x70, {"pct2075", "shtc3"}},
+        {0x71, {"pct2075"}},
+        {0x72, {"pct2075"}},
+        {0x73, {"pct2075"}},
+        {0x74, {"pct2075"}},
+        {0x75, {"pct2075"}},
+        {0x76,
+         {"bme280", "bme680", "bmp280", "bmp388", "bmp390", "dps310", "ms8607",
+          "pct2075"}},
+        {0x77,
+         {"bme280", "bme680", "bmp280", "bmp388", "bmp390", "dps310",
+          "pct2075"}}}; ///< I2C address to driver map
 
+/***********************************************************************/
+/*!
+    @brief  Obtains possible candidate drivers for a given I2C address.
+    @param    addr
+                The desired I2C address.
+    @returns  A vector of pointers to candidate drivers.
+*/
+/***********************************************************************/
 std::vector<const char *> GetDriversForAddress(uint16_t addr) {
-  std::vector<const char *> result;
+  std::vector<const char *> candidates;
+  std::unordered_map<uint16_t, std::vector<const char *>>::const_iterator
+      candidate = map_address_to_drivers.find(addr);
 
-  for (const auto &[driver, addresses] : map_address_to_driver) {
-    for (uint16_t address : addresses) {
-      if (address == addr) {
-        result.push_back(driver);
-      }
-    }
+  if (candidate != map_address_to_drivers.end()) {
+    candidates = candidate->second;
   }
-  return result;
+
+  return candidates;
 }
 
 /***********************************************************************/
@@ -676,14 +688,14 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   if (strcmp(device_name, SCAN_DEVICE) == 0) {
     WS_DEBUG_PRINTLN("Attempting to autoconfig device found in scan...");
     // Get all possible driver candidates for this address
-    WS_DEBUG_PRINT("Getting drivers for address: ");
+    WS_DEBUG_PRINT("[i2c] Obtaining driver candidates @ 0x");
     WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
     std::vector<const char *> candidate_drivers =
         GetDriversForAddress(device_descriptor.i2c_device_address);
 
     // Probe each candidate to see if it communicates
     for (const char *driverName : candidate_drivers) {
-      WS_DEBUG_PRINT("[i2c] Attempting to initialize driver: ");
+      WS_DEBUG_PRINT("[i2c] Attempting to initialize candidate: ");
       WS_DEBUG_PRINTLN(driverName);
       drv = CreateI2CDriverByName(
           driverName, bus, device_descriptor.i2c_device_address,
@@ -694,13 +706,14 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         delete drv;
         drv = nullptr;
       } else {
-        WS_DEBUG_PRINT("[i2c] Driver successfully initialized: ");
+        WS_DEBUG_PRINT("[i2c] Successfully initialized candidate: ");
         WS_DEBUG_PRINTLN(driverName);
         // set device_name to driverName
         strcpy(device_name, driverName);
+        // Use the "default" types from the sensor driver
         drv->SetSensorTypes(true);
-        drv->SetPeriod(0);
-        // TODO: Add driver information to FS
+        drv->SetPeriod(DEFAULT_SENSOR_PERIOD);
+        // TODO: Add driver information to FS so it persists
         // WsV2._fileSystemV2->AddI2cDeviceToFileConfig(device_descriptor.i2c_device_address,
         // driverName);
         break;
@@ -736,10 +749,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
                          WS_LED_STATUS_ERROR_RUNTIME, false);
       }
     }
+    WS_DEBUG_PRINTLN("[i2c] Driver successfully initialized!");
   }
   _i2c_drivers.push_back(drv);
-  WS_DEBUG_PRINT("[i2c] Driver initialized and added to controller: ");
-  WS_DEBUG_PRINTLN(device_name);
 
   // If we're using a MUX, clear the channel for any subsequent bus
   // operations that may not involve the MUX

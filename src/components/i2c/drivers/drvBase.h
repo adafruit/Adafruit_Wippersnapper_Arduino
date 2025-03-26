@@ -215,10 +215,9 @@ public:
                 seconds.
   */
   /*******************************************************************************/
-  void SetPeriod(float period = DEFAULT_SENSOR_PERIOD) {
+  void SetPeriod(float period) {
     if (period < 0)
       _sensor_period = DEFAULT_SENSOR_PERIOD;
-
     _sensor_period = (unsigned long)(period * 1000.0f);
   }
 
@@ -754,6 +753,6 @@ protected:
   size_t _sensors_count;     ///< Number of sensors on the device.
   wippersnapper_sensor_SensorType
       _default_sensor_types[15]; ///< Default sensor types
-  size_t _default_sensor_types_count;
+  size_t _default_sensor_types_count; ///< Number of default sensor types
 };
 #endif // DRV_BASE_H
