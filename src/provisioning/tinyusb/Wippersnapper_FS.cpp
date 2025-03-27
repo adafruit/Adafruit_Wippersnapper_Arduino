@@ -475,8 +475,9 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
     @returns  True if the device was successfully added, False otherwise.
 */
 /********************************************************************************/
-bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
-                                                const char *driver_name) {
+bool Wippersnapper_FS::AddI2cDeviceToFileConfig(
+    uint32_t address, const char *driver_name, const char **sensor_type_strings,
+    size_t sensor_types_count) {
   if (!wipperFatFs_v2.exists("/config.json")) {
     HaltFilesystem("ERROR: Could not find expected config.json file on the "
                    "WIPPER volume!");
@@ -504,14 +505,16 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
   JsonObject new_component = doc["components"].add<JsonObject>();
   new_component["name"] = driver_name;
   new_component["componentAPI"] = "i2c";
-  new_component["i2cdevicei2cDeviceName"] = driver_name;
+  new_component["i2cDeviceName"] = driver_name;
   new_component["period"] = 30;
-  char address_str[10];
+  char address_str[6];
   sprintf(address_str, "0x%02X", address);
   new_component["i2cDeviceAddress"] = address_str;
-  // Handle the sensor types
-  // TODO: This is unimplemented because I'm unsure how to go from type->string
-  // representation without adding significant overhead...
+  JsonArray new_component_sensor_types =
+      new_component["i2cDeviceSensorTypes"].to<JsonArray>();
+  for (size_t i = 0; i < sensor_types_count; i++) {
+    new_component_sensor_types[i]["type"] = sensor_type_strings[i];
+  }
   doc.shrinkToFit();
 
   // Remove the existing config file from the filesystem
@@ -525,7 +528,9 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
     HaltFilesystem("ERROR: Could not open the config.json file for writing!");
     return false;
   }
-  serializeJsonPretty(doc, file_cfg);
+  size_t bytes_written = serializeJsonPretty(doc, file_cfg);
+  WS_DEBUG_PRINT("Bytes written to config.json: ");
+  WS_DEBUG_PRINTLN(bytes_written);
 
   // Attempt to clear the cache and sync the FS
   // TODO: Not sure if this is actually doing anything on RP2040, need to test
@@ -534,6 +539,8 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(uint32_t address,
   file_cfg.flush();
   flash_v2.syncBlocks();
   refreshMassStorage();
+
+  // Query the file size on disk
 
   return true;
 }

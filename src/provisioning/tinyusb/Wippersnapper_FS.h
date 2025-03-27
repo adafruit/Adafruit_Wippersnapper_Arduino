@@ -66,7 +66,7 @@ public:
   void CreateFileConfig();
   void GetPinSDCS();
   bool AddSDCSPinToFileConfig(uint8_t pin);
-  bool AddI2cDeviceToFileConfig(uint32_t address, const char *driver_name);
+  bool AddI2cDeviceToFileConfig(uint32_t address, const char *driver_name, const char **sensor_type_strings = nullptr, size_t sensor_types_count = 0);
 
 private:
   bool _is_secrets_file_empty = false;

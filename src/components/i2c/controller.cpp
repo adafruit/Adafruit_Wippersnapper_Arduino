@@ -713,9 +713,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         // Use the "default" types from the sensor driver
         drv->SetSensorTypes(true);
         drv->SetPeriod(DEFAULT_SENSOR_PERIOD);
-        // TODO: Add driver information to FS so it persists
-        // WsV2._fileSystemV2->AddI2cDeviceToFileConfig(device_descriptor.i2c_device_address,
-        // driverName);
+        // Add driver information to config file so it persists
+        WsV2._fileSystemV2->AddI2cDeviceToFileConfig(
+            device_descriptor.i2c_device_address, driverName,
+            drv->GetSensorTypeStrings(), drv->GetNumSensorTypes());
         break;
       }
     }
@@ -866,7 +867,7 @@ void I2cController::update() {
 
   for (auto *drv : _i2c_drivers) {
     // Does this driver have any enabled sensors?
-    size_t sensor_count = drv->GetEnabledSensorCnt();
+    size_t sensor_count = drv->GetNumSensorTypes();
     if (sensor_count == 0)
       continue; // bail out if driver has no sensors enabled
 
