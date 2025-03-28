@@ -40,6 +40,9 @@
 #define MAX_LEN_CFG_JSON                                                       \
   4096 ///< Maximum length of the configuration JSON file, in Bytes
 
+// auto-config
+#define UNKNOWN_DRIVER_NAME "UNKNOWN_SCAN" ///< Default unknown driver name
+
 // forward decl.
 class Wippersnapper_V2;
 
@@ -93,6 +96,10 @@ private:
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
       wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);
+  bool AddI2cScanResultsToBuffer();
+  void ParseI2cAddScanned(
+      wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add_scanned,
+      size_t scan_result_idx);
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,

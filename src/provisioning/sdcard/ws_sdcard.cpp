@@ -511,6 +511,44 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   return true;
 }
 
+void ws_sdcard::ParseI2cAddScanned(
+    wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add_scanned,
+    size_t scan_result_idx) {
+  uint32_t addr_device =
+      WsV2._i2c_controller->GetScanDeviceAddress(scan_result_idx);
+  msg_i2c_add_scanned.i2c_device_description.i2c_device_address = addr_device;
+  strcpy(msg_i2c_add_scanned.i2c_device_name, UNKNOWN_DRIVER_NAME);
+  msg_i2c_add_scanned.i2c_device_period = DEFAULT_SENSOR_PERIOD;
+  msg_i2c_add_scanned.has_i2c_device_description = true;
+  strcpy(msg_i2c_add_scanned.i2c_device_description.i2c_bus_scl, "default");
+  strcpy(msg_i2c_add_scanned.i2c_device_description.i2c_bus_sda, "default");
+  msg_i2c_add_scanned.i2c_device_description.i2c_mux_address = 0x00;
+  msg_i2c_add_scanned.i2c_device_description.i2c_mux_channel = 0xFFFF;
+}
+
+bool ws_sdcard::AddI2cScanResultsToBuffer() {
+  for (size_t i = 0; i < WsV2._i2c_controller->GetScanDeviceCount(); i++) {
+    // Build the PB message
+    wippersnapper_signal_BrokerToDevice msg_signal =
+        wippersnapper_signal_BrokerToDevice_init_default;
+    wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
+        wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+    msg_signal.which_payload =
+        wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
+    ParseI2cAddScanned(msg_i2c_add_replace, i);
+    msg_signal.payload.i2c_device_add_replace = msg_i2c_add_replace;
+
+    if (!AddSignalMessageToSharedBuffer(msg_signal)) {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
+                       "to shared buffer!");
+      return false;
+    }
+    WS_DEBUG_PRINT("[SD] Added I2C Device to shared buffer: 0x");
+    WS_DEBUG_PRINT(WsV2._i2c_controller->GetScanDeviceAddress(i), HEX);
+  }
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief  Pushes a signal message to the shared buffer.
@@ -685,28 +723,29 @@ bool ws_sdcard::ParseFileConfig() {
 
   WS_DEBUG_PRINTLN("Parsing components array...");
   JsonArray components = doc["components"].as<JsonArray>();
-
-  // Does the components array exist?
-  // Note: While we auto-create this on-boot, its possible the user may have
-  // deleted it
-  // TODO: Ensure this does not return false before the size() check, it might!
   if (components.isNull()) {
+    // Though rare, it is possible that a user could get the hardware in this
+    // state
     WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Configuration file missing components[] array!");
+        "[SD] Runtime Error: File missing a required components[] "
+        "array.\nPlease delete the config.json file and reboot your board!");
     return false;
   }
+  bool is_components_empty = components.size() == 0;
 
-  // Perform an I2C scan: log components to a member struct of i2c controller
-  // then, for the case where the non-empty components[] exists, check the log
-  // of components against the array TODO
-  WS_DEBUG_PRINTLN("[SD] Scanning I2C bus for devices...");
+  // Perform an I2C scan: log components to a member struct of i2c controllerf
+  // TODO: Should this be here? Within WS.app? Somewhere else?
+  WS_DEBUG_PRINT("[SD] Scanning I2C bus for devices...");
   WsV2._i2c_controller->ScanI2cBus(true);
-  WS_DEBUG_PRINTLN("[SD] I2C scan complete, found devices: ");
+  WS_DEBUG_PRINTLN("OK!");
+  WS_DEBUG_PRINTLN("[SD] I2C scan results: ");
+  WsV2._i2c_controller->PrintScanResults();
 
   // TODO: Refactor this out
   WS_DEBUG_PRINTLN("[SD] Checking for components in the configuration file...");
-  if (components.size() != 0) {
-    WS_DEBUG_PRINTLN("[SD] Configuration file contains components")
+  if (!is_components_empty) {
+    // TODO: Do we even need this pathway?
+    WS_DEBUG_PRINTLN("[SD] Configuration file contains components");
     for (JsonObject component : doc["components"].as<JsonArray>()) {
       const char *addr_device = component["i2cDeviceAddress"] | "0x00";
       uint32_t addr_hex = HexStrToInt(component["i2cDeviceAddress"]);
@@ -717,59 +756,22 @@ bool ws_sdcard::ParseFileConfig() {
       } else {
         WS_DEBUG_PRINTLN("[SD] Device not found during I2C scan: " +
                          String(addr_device));
-        WS_DEBUG_PRINTLN("[SD] I2C scan results:");
-        WsV2._i2c_controller->PrintScanResults();
         // TODO: Just log this, do not remove from config or anything!
       }
     }
   } else {
-    // Empty components array
-    WS_DEBUG_PRINTLN("[SD] Empty components array, adding all devices found in "
-                     "I2C scan to the JSON doc...");
-    WS_DEBUG_PRINTLN("[SD] I2C scan results: ");
-    WsV2._i2c_controller->PrintScanResults();
-    // TODO: This is only using the first device found in the scan, we should
-    // make this dynamic once it works properly Add each device found in the I2C
-    // scan to the shared buffer
-    for (size_t i = 0; i < WsV2._i2c_controller->GetScanDeviceCount(); i++) {
-      WS_DEBUG_PRINTLN("[SD] Configuring I2C Device PB...");
-      wippersnapper_signal_BrokerToDevice msg_signal =
-          wippersnapper_signal_BrokerToDevice_init_default;
-      wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
-          wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
-      msg_signal.which_payload =
-          wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
-      // TODO: The index is hardcoded to 0 here, this should be dynamic
-      WS_DEBUG_PRINT("[SD] Adding I2C device at address: ");
-      msg_i2c_add_replace.i2c_device_description.i2c_device_address =
-          WsV2._i2c_controller->GetScanDeviceAddress(i);
-      WS_DEBUG_PRINTLN(
-          msg_i2c_add_replace.i2c_device_description.i2c_device_address, HEX);
-      // TODO: Detect UNKNOWN_SCAN_DEVICEs in controller
-      strcpy(msg_i2c_add_replace.i2c_device_name, "UNKNOWN_SCAN");
-      // TODO: Maybe create a default i2c period
-      msg_i2c_add_replace.i2c_device_period = 30.0;
-      // TODO: Do we need to fill these? Probably not! Or not yet
-      msg_i2c_add_replace.has_i2c_device_description = true;
-      strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_scl, "default");
-      strcpy(msg_i2c_add_replace.i2c_device_description.i2c_bus_sda, "default");
-      msg_i2c_add_replace.i2c_device_description.i2c_mux_address = 0x00;
-      msg_i2c_add_replace.i2c_device_description.i2c_mux_channel = 0xFFFF;
-      // TODO: Do we need to add the i2c_device_sensor_types?
-      msg_signal.payload.i2c_device_add_replace = msg_i2c_add_replace;
-      WS_DEBUG_PRINTLN("[SD] Adding I2C device to shared buffer...");
-      if (!AddSignalMessageToSharedBuffer(msg_signal)) {
-        WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
-                         "to shared buffer!");
-        return false;
-      }
-      WS_DEBUG_PRINTLN("[SD] I2C device added to shared buffer!");
+    WS_DEBUG_PRINTLN(
+        "[SD] Empty components array found, adding scan results to buffer...");
+    if (!AddI2cScanResultsToBuffer()) {
+      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add I2C scan results to "
+                       "shared buffer!");
+      return false;
     }
+    WS_DEBUG_PRINTLN("[SD] I2C scan results added to the shared buffer!");
   }
-  WS_DEBUG_PRINTLN("[SD] I2C scan and JSON doc comparison complete!");
 
   // TODO: Now, split this routine out
-
+  WS_DEBUG_PRINTLN("[SD] Parsing components[]...");
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
     wippersnapper_signal_BrokerToDevice msg_signal_b2d =
