@@ -99,10 +99,11 @@ public:
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
   bool ScanI2cBus(bool default_bus);
-  bool IsDeviceScanned(uint32_t address);
+  bool WasDeviceScanned(uint32_t address);
   void PrintScanResults();
   uint32_t GetScanDeviceAddress(int index);
   size_t GetScanDeviceCount();
+
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object
   I2cHardware *_i2c_bus_default;       ///< Pointer to the default I2C bus

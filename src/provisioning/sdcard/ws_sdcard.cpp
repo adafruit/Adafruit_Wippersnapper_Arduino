@@ -492,6 +492,12 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
   msg_i2c_add.i2c_device_description.i2c_device_address =
       HexStrToInt(addr_device);
+  if (!WsV2._i2c_controller->WasDeviceScanned(
+          msg_i2c_add.i2c_device_description.i2c_device_address)) {
+    WS_DEBUG_PRINT("[SD] WARNING - I2C Device (");
+    WS_DEBUG_PRINT(msg_i2c_add.i2c_device_description.i2c_device_address, HEX);
+    WS_DEBUG_PRINTLN(") not found in scan!");
+  }
 
   const char *addr_mux = component["i2cMuxAddress"] | "0x00";
   msg_i2c_add.i2c_device_description.i2c_mux_address = HexStrToInt(addr_mux);
@@ -731,46 +737,7 @@ bool ws_sdcard::ParseFileConfig() {
         "array.\nPlease delete the config.json file and reboot your board!");
     return false;
   }
-  bool is_components_empty = components.size() == 0;
 
-  // Perform an I2C scan: log components to a member struct of i2c controllerf
-  // TODO: Should this be here? Within WS.app? Somewhere else?
-  WS_DEBUG_PRINT("[SD] Scanning I2C bus for devices...");
-  WsV2._i2c_controller->ScanI2cBus(true);
-  WS_DEBUG_PRINTLN("OK!");
-  WS_DEBUG_PRINTLN("[SD] I2C scan results: ");
-  WsV2._i2c_controller->PrintScanResults();
-
-  // TODO: Refactor this out
-  WS_DEBUG_PRINTLN("[SD] Checking for components in the configuration file...");
-  if (!is_components_empty) {
-    // TODO: Do we even need this pathway?
-    WS_DEBUG_PRINTLN("[SD] Configuration file contains components");
-    for (JsonObject component : doc["components"].as<JsonArray>()) {
-      const char *addr_device = component["i2cDeviceAddress"] | "0x00";
-      uint32_t addr_hex = HexStrToInt(component["i2cDeviceAddress"]);
-      if (WsV2._i2c_controller->IsDeviceScanned(addr_hex)) {
-        WS_DEBUG_PRINTLN("[SD] Device in Config File found during I2C scan: " +
-                         String(addr_device));
-        // do nothing - possibly just remove this!
-      } else {
-        WS_DEBUG_PRINTLN("[SD] Device not found during I2C scan: " +
-                         String(addr_device));
-        // TODO: Just log this, do not remove from config or anything!
-      }
-    }
-  } else {
-    WS_DEBUG_PRINTLN(
-        "[SD] Empty components array found, adding scan results to buffer...");
-    if (!AddI2cScanResultsToBuffer()) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add I2C scan results to "
-                       "shared buffer!");
-      return false;
-    }
-    WS_DEBUG_PRINTLN("[SD] I2C scan results added to the shared buffer!");
-  }
-
-  // TODO: Now, split this routine out
   WS_DEBUG_PRINTLN("[SD] Parsing components[]...");
   // Parse each component from JSON->PB and push into a shared buffer
   for (JsonObject component : doc["components"].as<JsonArray>()) {
@@ -851,6 +818,14 @@ bool ws_sdcard::ParseFileConfig() {
       return false;
     }
   }
+
+  // Add results of I2C scan to the shared buffer
+  if (!AddI2cScanResultsToBuffer()) {
+    WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add I2C scan results to "
+                     "shared buffer!");
+    return false;
+  }
+
   return true;
 }
 

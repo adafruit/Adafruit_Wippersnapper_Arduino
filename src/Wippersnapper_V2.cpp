@@ -1224,22 +1224,26 @@ void Wippersnapper_V2::connect() {
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
   if (WsV2._sdCardV2->isModeOffline()) {
-    WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
+    WS_DEBUG_PRINTLN("[APP] Running device configuration...");
 // If debug mode, wait for serial config
 #ifdef OFFLINE_MODE_DEBUG
     WsV2._sdCardV2->waitForSerialConfig();
 #endif
+    WS_DEBUG_PRINTLN("[APP] Performing I2C Autoscan...");
+    WsV2._i2c_controller->ScanI2cBus(true);
+    WS_DEBUG_PRINTLN("[APP] Scan results: ");
+    WsV2._i2c_controller->PrintScanResults();
     // Parse the JSON file
     if (!WsV2._sdCardV2->ParseFileConfig())
       haltErrorV2("Failed to parse config.json!");
-    WS_DEBUG_PRINTLN("[Offline] Attempting to configure hardware...");
+    WS_DEBUG_PRINTLN("[APP] Attempting to configure hardware...");
 #ifndef OFFLINE_MODE_DEBUG
     if (!WsV2._sdCardV2->CreateNewLogFile())
       haltErrorV2("Unable to create new .log file on SD card!");
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
-    WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
+    WS_DEBUG_PRINTLN("[APP] Hardware configured, skipping network setup "
                      "and running app...");
     // Blink status LED to green to indicate successful configuration
     setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2 * 255.0);

@@ -723,7 +723,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       }
     }
   } else {
-    WS_DEBUG_PRINTLN("[i2c]Device was defined in message or config file.");
+    WS_DEBUG_PRINTLN("[i2c] Device was defined in message or config file.");
     if (did_set_mux_ch) {
       drv->SetMuxAddress(device_descriptor.i2c_mux_address);
     }
@@ -807,7 +807,7 @@ bool I2cController::ScanI2cBus(bool default_bus = true) {
     @returns  True if the device is on the bus, False otherwise.
 */
 /***********************************************************************/
-bool I2cController::IsDeviceScanned(uint32_t address) {
+bool I2cController::WasDeviceScanned(uint32_t address) {
   pb_size_t num_found_devices = _scan_results.i2c_bus_found_devices_count;
   WS_DEBUG_PRINT("[i2c] # of Scanned Devices: ");
   WS_DEBUG_PRINTLN(num_found_devices);
