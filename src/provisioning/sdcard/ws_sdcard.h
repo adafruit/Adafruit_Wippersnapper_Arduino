@@ -86,6 +86,7 @@ private:
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
+  bool ParseComponents(JsonArray &components);
   bool
   ParseDigitalIOAdd(JsonObject &component,
                     wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd);

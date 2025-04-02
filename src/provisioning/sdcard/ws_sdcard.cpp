@@ -31,7 +31,7 @@ bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
 #endif
   if (!_sd.begin(_sd_spi_cfg)) {
     WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: SD initialization failed.\nDo not reformat the "
+        "[SD] Error: SD initialization failed.\nDo not reformat the "
         "card!\nIs the card "
         "correctly inserted?\nIs there a wiring/soldering problem\n");
     return false;
@@ -92,7 +92,7 @@ void ws_sdcard::ConfigureSDCard() {
   // Calculate the maximum number of log files that can be stored on the SD card
   csd_t csd;
   if (!_sd.card()->readCSD(&csd)) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Could not read card information");
+    WS_DEBUG_PRINTLN("[SD] Error: Could not read card information");
     return;
   }
 
@@ -119,7 +119,7 @@ bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
   if (!_rtc_ds1307->begin()) {
     if (!_rtc_ds1307->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS1307 RTC");
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC");
       delete _rtc_ds1307;
       return false;
     }
@@ -141,7 +141,7 @@ bool ws_sdcard::InitDS3231() {
   _rtc_ds3231 = new RTC_DS3231();
   if (!_rtc_ds3231->begin(&Wire)) {
     if (!_rtc_ds3231->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS3231 RTC");
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC");
       delete _rtc_ds3231;
       return false;
     }
@@ -161,11 +161,9 @@ bool ws_sdcard::InitDS3231() {
 bool ws_sdcard::InitPCF8523() {
   _rtc_pcf8523 = new RTC_PCF8523();
   if (!_rtc_pcf8523->begin(&Wire)) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE");
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE");
     if (!_rtc_pcf8523->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN(
-          "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE1");
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE1");
       delete _rtc_pcf8523;
       return false;
     }
@@ -224,8 +222,7 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
   } else if (strcmp(rtc_type, "SOFT") == 0) {
     return InitSoftRTC();
   } else
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Unknown RTC type found in JSON string!");
+    WS_DEBUG_PRINTLN("[SD] Error: Unknown RTC type found in JSON string!");
   return false;
 }
 
@@ -545,7 +542,7 @@ bool ws_sdcard::AddI2cScanResultsToBuffer() {
     msg_signal.payload.i2c_device_add_replace = msg_i2c_add_replace;
 
     if (!AddSignalMessageToSharedBuffer(msg_signal)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
+      WS_DEBUG_PRINTLN("[SD] Error: Unable to add signal message(s) "
                        "to shared buffer!");
       return false;
     }
@@ -575,7 +572,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
   if (!pb_get_encoded_size(&tempBufSz,
                            wippersnapper_signal_BrokerToDevice_fields,
                            &msg_signal)) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to get signal message size!");
+    WS_DEBUG_PRINTLN("[SD] Error: Unable to get signal message size!");
     return false;
   }
 
@@ -584,8 +581,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
   pb_ostream_t ostream = pb_ostream_from_buffer(tempBuf.data(), tempBuf.size());
   if (!ws_pb_encode(&ostream, wippersnapper_signal_BrokerToDevice_fields,
                     &msg_signal)) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Unable to encode D2B signal message!");
+    WS_DEBUG_PRINTLN("[SD] Error: Unable to encode D2B signal message!");
     return false;
   }
   WsV2._sharedConfigBuffers.push_back(std::move(tempBuf));
@@ -602,7 +598,7 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
 /**************************************************************************/
 bool ws_sdcard::CreateNewLogFile() {
   if (_sd_cur_log_files >= _sd_max_num_log_files) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Maximum number of log files for SD "
+    WS_DEBUG_PRINTLN("[SD] Error: Maximum number of log files for SD "
                      "card capacity reached!");
     return false;
   }
@@ -661,7 +657,7 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
   JsonObject exportedFromDevice = doc["exportedFromDevice"];
   if (exportedFromDevice.isNull()) {
     WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: exportedFromDevice not found in config file!");
+        "[SD] Error: exportedFromDevice not found in config file!");
     return false;
   }
 
@@ -674,7 +670,7 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
   // Configures RTC
   const char *rtc_type = exportedFromDevice["rtc"] | "SOFT";
   if (!ConfigureRTC(rtc_type)) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to to configure a RTC!");
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to to configure a RTC!");
     return false;
   }
   return true;
@@ -691,7 +687,6 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
   JsonDocument doc;
-  // delay(5000);
 
   // Deserialize config.json
 #ifndef OFFLINE_MODE_DEBUG
@@ -710,120 +705,118 @@ bool ws_sdcard::ParseFileConfig() {
 #endif
 
   if (error) {
-    WS_DEBUG_PRINT("[SD] Runtime Error: Unable to deserialize config.json");
+    WS_DEBUG_PRINT("[SD] Error: Unable to deserialize config.json");
     WS_DEBUG_PRINTLN("\nError Code: " + String(error.c_str()));
     return false;
   }
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
 
-  // Check config.json file's integrity
   if (!ValidateChecksum(doc)) {
     WS_DEBUG_PRINTLN("[SD] Checksum mismatch, file has been modified from its "
                      "original state!");
   }
-  WS_DEBUG_PRINTLN("[SD] Checksum OK!");
 
-  // Attempt to parse the exportedFromDevice object
   if (!ParseExportedFromDevice(doc))
     return false;
 
   WS_DEBUG_PRINTLN("Parsing components array...");
   JsonArray components = doc["components"].as<JsonArray>();
-  if (components.isNull()) {
-    // Though rare, it is possible that a user could get the hardware in this
-    // state
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: File missing a required components[] "
-        "array.\nPlease delete the config.json file and reboot your board!");
+  if (!ParseComponents(components)) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to parse components[]!");
     return false;
-  }
-
-  WS_DEBUG_PRINTLN("[SD] Parsing components[]...");
-  // Parse each component from JSON->PB and push into a shared buffer
-  for (JsonObject component : doc["components"].as<JsonArray>()) {
-    wippersnapper_signal_BrokerToDevice msg_signal_b2d =
-        wippersnapper_signal_BrokerToDevice_init_default;
-
-    // Parse the component API type
-    const char *component_api_type = component["componentAPI"];
-    if (component_api_type == nullptr) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Component missing API type!");
-      return false;
-    }
-
-    // Determine the component type and parse it into a PB message
-    if (strcmp(component_api_type, "digitalio") == 0) {
-      WS_DEBUG_PRINTLN(
-          "[SD] DigitalIO component found, decoding JSON to PB...");
-      wippersnapper_digitalio_DigitalIOAdd msg_DigitalIOAdd =
-          wippersnapper_digitalio_DigitalIOAdd_init_default;
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
-      if (!ParseDigitalIOAdd(component, msg_DigitalIOAdd)) {
-        WS_DEBUG_PRINT(
-            "[SD] Runtime Error: Unable to parse component, DigitalIO Pin: ");
-        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
-        return false;
-      }
-      msg_signal_b2d.payload.digitalio_add = msg_DigitalIOAdd;
-    } else if (strcmp(component_api_type, "analogio") == 0) {
-      WS_DEBUG_PRINTLN("[SD] AnalogIO component found, decoding JSON to PB...");
-      wippersnapper_analogio_AnalogIOAdd msg_AnalogIOAdd =
-          wippersnapper_analogio_AnalogIOAdd_init_default;
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_analogio_add_tag;
-      if (!ParseAnalogIOAdd(component, msg_AnalogIOAdd)) {
-        WS_DEBUG_PRINTLN(
-            "[SD] Runtime Error: Unable to parse AnalogIO Component, Pin: ");
-        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
-        return false;
-      }
-      msg_signal_b2d.payload.analogio_add = msg_AnalogIOAdd;
-    } else if (strcmp(component_api_type, "ds18x20") == 0) {
-      WS_DEBUG_PRINTLN("[SD] Ds18x20 component found, decoding JSON to PB...");
-      wippersnapper_ds18x20_Ds18x20Add msg_DS18X20Add =
-          wippersnapper_ds18x20_Ds18x20Add_init_default;
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
-      if (!ParseDS18xAdd(component, msg_DS18X20Add)) {
-        WS_DEBUG_PRINT(
-            "[SD] Runtime Error: Unable to parse DS18X20 Component on pin: ");
-        WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
-        return false;
-      }
-      msg_signal_b2d.payload.ds18x20_add = msg_DS18X20Add;
-    } else if (strcmp(component_api_type, "i2c") == 0) {
-      WS_DEBUG_PRINTLN("[SD] I2C component found, decoding JSON to PB...");
-      // Configure the I2cDeviceAddOrReplace message
-      wippersnapper_i2c_I2cDeviceAddOrReplace msg_i2c_add_replace =
-          wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
-      msg_signal_b2d.which_payload =
-          wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
-      // Parse into the I2cDeviceAddOrReplace message
-      if (!ParseI2cDeviceAddReplace(component, msg_i2c_add_replace)) {
-        WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to parse I2C Component");
-        return false;
-      }
-      msg_signal_b2d.payload.i2c_device_add_replace = msg_i2c_add_replace;
-    } else {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unknown Component API Type: " +
-                       String(component_api_type));
-      return false;
-    }
-
-    // App handles the signal messages, in-order
-    if (!AddSignalMessageToSharedBuffer(msg_signal_b2d)) {
-      WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add signal message(s) "
-                       "to shared buffer!");
-      return false;
-    }
   }
 
   // Add results of I2C scan to the shared buffer
   if (!AddI2cScanResultsToBuffer()) {
-    WS_DEBUG_PRINTLN("[SD] Runtime Error: Unable to add I2C scan results to "
+    WS_DEBUG_PRINTLN("[SD] Error: Unable to add I2C scan results to "
                      "shared buffer!");
     return false;
+  }
+
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Parses the components array from the JSON configuration file.
+    @param  doc
+            The JSON document to parse.
+    @returns True if the components array was successfully parsed, False
+             otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::ParseComponents(JsonArray &components) {
+  if (components.isNull()) {
+    WS_DEBUG_PRINTLN("[SD] Error: File missing required components[] array");
+    return false;
+  }
+
+  for (JsonObject component : components) {
+    const char *component_api_type = component["componentAPI"];
+    if (!component_api_type) {
+      WS_DEBUG_PRINT("[SD] Error: Missing componentAPI field, skipping..");
+      continue;
+    }
+
+    bool success = false;
+    wippersnapper_signal_BrokerToDevice msg_signal_b2d =
+        wippersnapper_signal_BrokerToDevice_init_default;
+    if (strcmp(component_api_type, "digitalio") == 0) {
+      WS_DEBUG_PRINTLN("[SD] DigitalIO component found");
+      wippersnapper_digitalio_DigitalIOAdd msg_add =
+          wippersnapper_digitalio_DigitalIOAdd_init_default;
+      success = ParseDigitalIOAdd(component, msg_add);
+      if (success) {
+        msg_signal_b2d.payload.digitalio_add = msg_add;
+        msg_signal_b2d.which_payload =
+            wippersnapper_signal_BrokerToDevice_digitalio_add_tag;
+      }
+    } else if (strcmp(component_api_type, "analogio") == 0) {
+      WS_DEBUG_PRINTLN("[SD] AnalogIO component found");
+      wippersnapper_analogio_AnalogIOAdd msg_add =
+          wippersnapper_analogio_AnalogIOAdd_init_default;
+      success = ParseAnalogIOAdd(component, msg_add);
+      if (success) {
+        msg_signal_b2d.which_payload =
+            wippersnapper_signal_BrokerToDevice_analogio_add_tag;
+        msg_signal_b2d.payload.analogio_add = msg_add;
+      }
+    } else if (strcmp(component_api_type, "ds18x20") == 0) {
+      WS_DEBUG_PRINTLN("[SD] Ds18x20 component found");
+      wippersnapper_ds18x20_Ds18x20Add msg_add =
+          wippersnapper_ds18x20_Ds18x20Add_init_default;
+      success = ParseDS18xAdd(component, msg_add);
+      if (success) {
+        msg_signal_b2d.which_payload =
+            wippersnapper_signal_BrokerToDevice_ds18x20_add_tag;
+        msg_signal_b2d.payload.ds18x20_add = msg_add;
+      }
+    } else if (strcmp(component_api_type, "i2c") == 0) {
+      WS_DEBUG_PRINTLN("[SD] I2C component found");
+      wippersnapper_i2c_I2cDeviceAddOrReplace msg_add =
+          wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+      success = ParseI2cDeviceAddReplace(component, msg_add);
+      if (success) {
+        msg_signal_b2d.which_payload =
+            wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
+        msg_signal_b2d.payload.i2c_device_add_replace = msg_add;
+      }
+    } else {
+      WS_DEBUG_PRINTLN("[SD] Error: Unknown Component API: " +
+                       String(component_api_type));
+      continue;
+    }
+
+    if (!success) {
+      WS_DEBUG_PRINT("[SD] Error: Unable to parse component: ");
+      WS_DEBUG_PRINTLN(component["pinName"] | UNKNOWN_VALUE);
+      continue;
+    }
+
+    if (!AddSignalMessageToSharedBuffer(msg_signal_b2d)) {
+      WS_DEBUG_PRINTLN("[SD] Error: Unable to add message to shared buffer");
+      return false;
+    }
   }
 
   return true;
@@ -1022,8 +1015,7 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   File32 file;
   file = _sd.open(_log_filename, O_RDWR | O_CREAT | O_AT_END);
   if (!file) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Runtime Error: Unable to open log file for writing!");
+    WS_DEBUG_PRINTLN("[SD] Error: Unable to open log file for writing!");
     return false;
   }
   BufferingPrint bufferedFile(file, 64); // Add buffering to the file
