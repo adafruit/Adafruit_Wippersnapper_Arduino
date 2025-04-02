@@ -688,12 +688,12 @@ bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
   JsonDocument doc;
 
-  // Deserialize config.json
+  // Deserialize config file
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
   doc = WsV2._config_doc;
 #else
-  // Use test data rather than data from the filesystem
+  // Use test data, not data from the filesystem
   if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");
     WS_DEBUG_PRINTLN(_serialInput);
@@ -719,14 +719,13 @@ bool ws_sdcard::ParseFileConfig() {
   if (!ParseExportedFromDevice(doc))
     return false;
 
-  WS_DEBUG_PRINTLN("Parsing components array...");
   JsonArray components = doc["components"].as<JsonArray>();
   if (!ParseComponents(components)) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to parse components[]!");
     return false;
   }
 
-  // Add results of I2C scan to the shared buffer
+  // Add the results of I2C scan to the shared buffer
   if (!AddI2cScanResultsToBuffer()) {
     WS_DEBUG_PRINTLN("[SD] Error: Unable to add I2C scan results to "
                      "shared buffer!");
