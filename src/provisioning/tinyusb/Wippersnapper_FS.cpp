@@ -294,8 +294,10 @@ void Wippersnapper_FS::InitUsbMsc() {
   // If already enumerated, additional class driverr begin() e.g msc, hid, midi
   // won't take effect until re-enumeration
   // Attach MSC and wait for enumeration
+  //#ifndef BUILD_OFFLINE_ONLY
   TinyUSBDevice.attach();
   delay(500);
+  //#endif
 }
 
 /**************************************************************************/
@@ -377,29 +379,20 @@ void Wippersnapper_FS::CreateFileConfig() {
   if (wipperFatFs_v2.exists("/config.json"))
     return;
 
-  // Open file for writing
+  // Create file
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
     HaltFilesystem("ERROR: Could not create the config.json file for writing!");
   }
-
-  // Serialize the JSON object
-  JsonDocument doc;
-  JsonObject exportedFromDevice = doc["exportedFromDevice"].to<JsonObject>();
+  file_cfg.flush();
+  file_cfg.close();
+  JsonObject exportedFromDevice = _doc_cfg["exportedFromDevice"].to<JsonObject>();
   exportedFromDevice["sd_cs_pin"] = 255;
   exportedFromDevice["referenceVoltage"] = 0;
   exportedFromDevice["totalGPIOPins"] = 0;
   exportedFromDevice["totalAnalogPins"] = 0;
   exportedFromDevice["statusLEDBrightness"] = 0.3;
-  JsonArray components = doc["components"].to<JsonArray>();
-  doc.shrinkToFit();
-  // Write to file
-  serializeJsonPretty(doc, file_cfg);
-  // Flush and close file
-  file_cfg.flush();
-  file_cfg.close();
-  refreshMassStorage();
-  delay(2500);
+  JsonArray components = _doc_cfg["components"].to<JsonArray>();
 }
 
 /**************************************************************************/
@@ -411,55 +404,8 @@ void Wippersnapper_FS::CreateFileConfig() {
 */
 /**************************************************************************/
 bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
-  if (!wipperFatFs_v2.exists("/config.json")) {
-    HaltFilesystem("ERROR: Could not find expected config.json file on the "
-                   "WIPPER volume!");
-    return false;
-  }
-
-  // Load the config file from the FS into memory
-  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
-  if (!file_cfg) {
-    WS_DEBUG_PRINTLN("ERROR: Could not open the config.json file for reading!");
-    return false;
-  }
-  JsonDocument doc;
-  DeserializationError error = deserializeJson(doc, file_cfg);
-  file_cfg.close();
-  if (error) {
-    WS_DEBUG_PRINT("JSON parse error: ");
-    WS_DEBUG_PRINTLN(error.c_str());
-    WS_DEBUG_PRINTLN(
-        "ERROR: Unable to parse config.json file - deserializeJson() failed!");
-    return false;
-  }
-
-  // Modify the in-memory JSON doc.
-  doc["exportedFromDevice"]["sd_cs_pin"] = pin;
-  doc.shrinkToFit();
-
-  // Remove the existing config file from the filesystem
-  wipperFatFs_v2.remove("/config.json");
-  flash_v2.syncBlocks();
-  wipperFatFs_v2.cacheClear();
-
-  // Write the in-memory JSON doc to the filesystem
-  file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
-  if (!file_cfg) {
-    HaltFilesystem("ERROR: Could not open the config.json file for writing!");
-    return false;
-  }
-  serializeJsonPretty(doc, file_cfg);
-
-  // Attempt to clear the cache and sync the FS
-  // TODO: Not sure if this is actually doing anything on RP2040, need to test
-  // in isolation
-  file_cfg.close();
-  file_cfg.flush();
-  flash_v2.syncBlocks();
-  refreshMassStorage();
-  delay(1000);
-
+  // Modify the in-memory JSON doc
+  _doc_cfg["exportedFromDevice"]["sd_cs_pin"] = pin;
   return true;
 }
 
@@ -478,31 +424,8 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
 bool Wippersnapper_FS::AddI2cDeviceToFileConfig(
     uint32_t address, const char *driver_name, const char **sensor_type_strings,
     size_t sensor_types_count) {
-  if (!wipperFatFs_v2.exists("/config.json")) {
-    HaltFilesystem("ERROR: Could not find expected config.json file on the "
-                   "WIPPER volume!");
-    return false;
-  }
-
-  // Load the config file into memory
-  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
-  if (!file_cfg) {
-    WS_DEBUG_PRINTLN("ERROR: Could not open the config.json file for reading!");
-    return false;
-  }
-  JsonDocument doc;
-  DeserializationError error = deserializeJson(doc, file_cfg);
-  file_cfg.close();
-  if (error) {
-    WS_DEBUG_PRINT("JSON parse error: ");
-    WS_DEBUG_PRINTLN(error.c_str());
-    WS_DEBUG_PRINTLN(
-        "ERROR: Unable to parse config.json file - deserializeJson() failed!");
-    return false;
-  }
-
-  // Append to components array on the in-memory config file
-  JsonObject new_component = doc["components"].add<JsonObject>();
+  // Write to components[] to the in-memory config document
+  JsonObject new_component = _doc_cfg["components"].add<JsonObject>();
   new_component["name"] = driver_name;
   new_component["componentAPI"] = "i2c";
   new_component["i2cDeviceName"] = driver_name;
@@ -515,20 +438,18 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(
   for (size_t i = 0; i < sensor_types_count; i++) {
     new_component_sensor_types[i]["type"] = sensor_type_strings[i];
   }
-  doc.shrinkToFit();
+  return true;
+}
 
-  // Remove the existing config file from the filesystem
-  wipperFatFs_v2.remove("/config.json");
-  flash_v2.syncBlocks();
-  wipperFatFs_v2.cacheClear();
-
+bool Wippersnapper_FS::WriteFileConfig() {
   // Write the doc back to the filesystem
-  file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
+  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for writing!");
     return false;
   }
-  size_t bytes_written = serializeJsonPretty(doc, file_cfg);
+  _doc_cfg.shrinkToFit();
+  size_t bytes_written = serializeJsonPretty(_doc_cfg, file_cfg);
   WS_DEBUG_PRINT("Bytes written to config.json: ");
   WS_DEBUG_PRINTLN(bytes_written);
 
@@ -539,11 +460,11 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(
   file_cfg.flush();
   flash_v2.syncBlocks();
   refreshMassStorage();
-
-  // Query the file size on disk
-
+  TinyUSBDevice.attach();
+  delay(2500);
   return true;
 }
+
 /**************************************************************************/
 /*!
     @brief    Checks if secrets.json file exists on the flash filesystem.

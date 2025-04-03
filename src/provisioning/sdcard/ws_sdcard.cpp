@@ -50,7 +50,7 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  delay(6000); // TODO: Must enable this delay to debugging the ctor, serial
+  //delay(1500); // TODO: Must enable this delay to debugging the ctor, serial
                // won't open otherwise
   bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
