@@ -376,16 +376,7 @@ bool Wippersnapper_FS::CreateFileBoot() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::CreateFileConfig() {
-  if (wipperFatFs_v2.exists("/config.json"))
-    return;
-
-  // Create file
-  File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
-  if (!file_cfg) {
-    HaltFilesystem("ERROR: Could not create the config.json file for writing!");
-  }
-  file_cfg.flush();
-  file_cfg.close();
+  // Create a default configConfig structure
   JsonObject exportedFromDevice = _doc_cfg["exportedFromDevice"].to<JsonObject>();
   exportedFromDevice["sd_cs_pin"] = 255;
   exportedFromDevice["referenceVoltage"] = 0;

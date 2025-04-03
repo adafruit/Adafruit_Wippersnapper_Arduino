@@ -676,6 +676,7 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
   return true;
 }
 
+
 /**************************************************************************/
 /*!
     @brief  Searches for and parses the JSON configuration file and sets up
@@ -686,12 +687,13 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 /**************************************************************************/
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
-  JsonDocument doc;
+  //JsonDocument doc;
 
   // Deserialize config file
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
-  doc = WsV2._config_doc;
+  delay(5000);
+  JsonDocument& doc = WsV2._fileSystemV2->GetDocCfg();
 #else
   // Use test data, not data from the filesystem
   if (!_use_test_data) {
@@ -702,13 +704,31 @@ bool ws_sdcard::ParseFileConfig() {
     WS_DEBUG_PRINTLN("[SD] Parsing Test Data...");
     error = deserializeJson(doc, json_test_data, MAX_LEN_CFG_JSON);
   }
-#endif
-
   if (error) {
     WS_DEBUG_PRINT("[SD] Error: Unable to deserialize config.json");
     WS_DEBUG_PRINTLN("\nError Code: " + String(error.c_str()));
     return false;
   }
+#endif
+
+  // Dump what doc looks like to serial
+  String jsonStr;
+  serializeJsonPretty(doc, jsonStr);
+  WS_DEBUG_PRINTLN("[SD] Deserialized JSON:");
+  WS_DEBUG_PRINTLN("========================================");
+  WS_DEBUG_PRINTLN(jsonStr);
+  WS_DEBUG_PRINTLN("========================================");
+
+  // query document size
+  size_t doc_size = measureJson(doc);
+  WS_DEBUG_PRINT("[SD] Document size: "); 
+  WS_DEBUG_PRINTLN(doc_size);
+
+  if (doc.isNull()) {
+    WS_DEBUG_PRINTLN("[SD] Error: Document is null!");
+    return false;
+  }
+
   WS_DEBUG_PRINTLN("[SD] Successfully deserialized JSON config file!");
 
   if (!ValidateChecksum(doc)) {

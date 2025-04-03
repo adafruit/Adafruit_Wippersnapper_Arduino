@@ -78,14 +78,14 @@ void Wippersnapper_V2::provision() {
 
 // Initialize the filesystem
 #ifdef USE_TINYUSB
-  _fileSystemV2 = new Wippersnapper_FS();
+  WsV2._fileSystemV2 = new Wippersnapper_FS();
 #elif defined(USE_LITTLEFS)
   _littleFSV2 = new WipperSnapper_LittleFS();
 #endif
 
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
-  _fileSystemV2->GetPinSDCS();
+  WsV2._fileSystemV2->GetPinSDCS();
 #elif defined(USE_LITTLEFS)
   _littleFSV2->GetPinSDCS();
 #elif defined(OFFLINE_MODE_WOKWI)
@@ -126,7 +126,7 @@ void Wippersnapper_V2::provision() {
 #endif
 
 #ifdef USE_TINYUSB
-  _fileSystemV2->ParseFileSecrets();
+  WsV2._fileSystemV2->ParseFileSecrets();
 #elif defined(USE_LITTLEFS)
   _littleFSV2->ParseFileSecrets();
 #else
@@ -715,7 +715,7 @@ void Wippersnapper_V2::errorWriteHangV2(String error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
-  _fileSystemV2->WriteFileBoot(error.c_str());
+  WsV2._fileSystemV2->WriteFileBoot(error.c_str());
   TinyUSBDevice.attach();
   delay(500);
 #endif
@@ -1243,7 +1243,7 @@ void Wippersnapper_V2::connect() {
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
-    _fileSystemV2->WriteFileConfig();
+    WsV2._fileSystemV2->WriteFileConfig();
     WS_DEBUG_PRINTLN("[APP] Hardware configured, skipping network setup "
                      "and running app...");
     // Blink status LED to green to indicate successful configuration
