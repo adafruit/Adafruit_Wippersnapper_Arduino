@@ -376,6 +376,12 @@ bool Wippersnapper_FS::CreateFileBoot() {
 */
 /**************************************************************************/
 void Wippersnapper_FS::CreateFileConfig() {
+    // debugging only, remove normally
+    // check existence of config file and delete it
+    if (wipperFatFs_v2.exists("/config.json")) {
+        wipperFatFs_v2.remove("/config.json");
+        delay(500); // prob not required
+    }
   // Create a default configConfig structure
   JsonObject exportedFromDevice = _doc_cfg["exportedFromDevice"].to<JsonObject>();
   exportedFromDevice["sd_cs_pin"] = 255;
@@ -424,6 +430,7 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(
   char address_str[6];
   sprintf(address_str, "0x%02X", address);
   new_component["i2cDeviceAddress"] = address_str;
+  new_component["use"] = "auto";
   JsonArray new_component_sensor_types =
       new_component["i2cDeviceSensorTypes"].to<JsonArray>();
   for (size_t i = 0; i < sensor_types_count; i++) {

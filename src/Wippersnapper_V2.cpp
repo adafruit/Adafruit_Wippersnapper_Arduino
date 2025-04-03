@@ -1246,6 +1246,7 @@ void Wippersnapper_V2::connect() {
     WsV2._fileSystemV2->WriteFileConfig();
     WS_DEBUG_PRINTLN("[APP] Hardware configured, skipping network setup "
                      "and running app...");
+    delay(900000);
     // Blink status LED to green to indicate successful configuration
     setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2 * 255.0);
     delay(500);

@@ -547,7 +547,7 @@ bool ws_sdcard::AddI2cScanResultsToBuffer() {
       return false;
     }
     WS_DEBUG_PRINT("[SD] Added I2C Device to shared buffer: 0x");
-    WS_DEBUG_PRINT(WsV2._i2c_controller->GetScanDeviceAddress(i), HEX);
+    WS_DEBUG_PRINTLN(WsV2._i2c_controller->GetScanDeviceAddress(i), HEX);
   }
   return true;
 }
@@ -777,6 +777,9 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
       continue;
     }
 
+
+    
+
     bool success = false;
     wippersnapper_signal_BrokerToDevice msg_signal_b2d =
         wippersnapper_signal_BrokerToDevice_init_default;
@@ -811,7 +814,34 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
         msg_signal_b2d.payload.ds18x20_add = msg_add;
       }
     } else if (strcmp(component_api_type, "i2c") == 0) {
-      WS_DEBUG_PRINTLN("[SD] I2C component found");
+      WS_DEBUG_PRINTLN("[SD] I2C component found in cfg");
+
+
+      const char *use = component["use"];
+      if (use == nullptr) {
+        WS_DEBUG_PRINT("[SD] Error: Missing use field, skipping..");
+        continue;
+      }
+
+      // Case #1 - If use is "no", do not attempt to initialize this component
+      if (strcmp(use, "no") == 0) {
+        WS_DEBUG_PRINT("[SD] use=no, skipping init.");
+        continue;
+      }
+
+      // For "auto", only proceed if device was found in scan
+      if (strcmp(use, "auto") == 0) {
+        // For I2C devices, check scan results
+        if (component["i2cDeviceAddress"] != nullptr) {
+          if (!WsV2._i2c_controller->WasDeviceScanned(HexStrToInt(component["i2cDeviceAddress"]))) {
+            WS_DEBUG_PRINT("[SD] use=autoI2C device not found in scan results, skipping init.");
+            continue;
+          }
+          WS_DEBUG_PRINT("[SD] use=auto I2C device found in scan results, initializing...");
+        }
+      }
+
+      // Init for use=yes || use=auto
       wippersnapper_i2c_I2cDeviceAddOrReplace msg_add =
           wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
       success = ParseI2cDeviceAddReplace(component, msg_add);
