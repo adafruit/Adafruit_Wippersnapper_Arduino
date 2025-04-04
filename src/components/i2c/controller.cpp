@@ -616,6 +616,40 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
+  // Before we do anything, check if a driver has been already initialized with
+  // the device_descriptor if so, we log and skip
+  bool did_init_already = false;
+  for (auto &driver : _i2c_drivers) {
+    // Do they share the same address?
+    if (driver->GetAddress() == device_descriptor.i2c_device_address) {
+      // Okay - do they sit on different i2c buses?
+      bool is_driver_bus_alt = driver->HasAltI2CBus();
+      bool is_device_bus_alt =
+          (strcmp(device_descriptor.i2c_bus_scl, "default") != 0) ||
+          (strcmp(device_descriptor.i2c_bus_sda, "default") != 0);
+
+      // Bus descriptors do not match, we haven't initialized this candidate
+      if (is_driver_bus_alt != is_device_bus_alt)
+        continue;
+
+      // What about the MUX?
+      if (driver->HasMux() &&
+          driver->GetMuxAddress() == device_descriptor.i2c_mux_address) {
+        if (driver->GetMuxChannel() != device_descriptor.i2c_mux_channel) {
+          continue;
+        }
+      }
+      WS_DEBUG_PRINTLN("[i2c] Descriptor already initialized...");
+      did_init_already = true;
+      break;
+    }
+  }
+
+  if (did_init_already) {
+    WS_DEBUG_PRINTLN("[i2c] Device already initialized, skipping...");
+    return false;
+  }
+
   // TODO [Online]: Handle Replace messages by implementing the Remove handler
   // first...then proceed to adding a new device
 

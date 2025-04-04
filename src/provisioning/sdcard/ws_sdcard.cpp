@@ -50,8 +50,8 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  //delay(1500); // TODO: Must enable this delay to debugging the ctor, serial
-               // won't open otherwise
+  // delay(1500); // TODO: Must enable this delay to debugging the ctor, serial
+  //  won't open otherwise
   bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
   if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
@@ -676,7 +676,6 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
   return true;
 }
 
-
 /**************************************************************************/
 /*!
     @brief  Searches for and parses the JSON configuration file and sets up
@@ -687,13 +686,13 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 /**************************************************************************/
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
-  //JsonDocument doc;
+  // JsonDocument doc;
 
   // Deserialize config file
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
   delay(5000);
-  JsonDocument& doc = WsV2._fileSystemV2->GetDocCfg();
+  JsonDocument &doc = WsV2._fileSystemV2->GetDocCfg();
 #else
   // Use test data, not data from the filesystem
   if (!_use_test_data) {
@@ -721,7 +720,7 @@ bool ws_sdcard::ParseFileConfig() {
 
   // query document size
   size_t doc_size = measureJson(doc);
-  WS_DEBUG_PRINT("[SD] Document size: "); 
+  WS_DEBUG_PRINT("[SD] Document size: ");
   WS_DEBUG_PRINTLN(doc_size);
 
   if (doc.isNull()) {
@@ -777,9 +776,6 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
       continue;
     }
 
-
-    
-
     bool success = false;
     wippersnapper_signal_BrokerToDevice msg_signal_b2d =
         wippersnapper_signal_BrokerToDevice_init_default;
@@ -816,7 +812,6 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found in cfg");
 
-
       const char *use = component["use"];
       if (use == nullptr) {
         WS_DEBUG_PRINT("[SD] Error: Missing use field, skipping..");
@@ -825,7 +820,7 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
 
       // Case #1 - If use is "no", do not attempt to initialize this component
       if (strcmp(use, "no") == 0) {
-        WS_DEBUG_PRINT("[SD] use=no, skipping init.");
+        WS_DEBUG_PRINTLN("[SD] Component marked use=no, skipping..");
         continue;
       }
 
@@ -833,11 +828,15 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
       if (strcmp(use, "auto") == 0) {
         // For I2C devices, check scan results
         if (component["i2cDeviceAddress"] != nullptr) {
-          if (!WsV2._i2c_controller->WasDeviceScanned(HexStrToInt(component["i2cDeviceAddress"]))) {
-            WS_DEBUG_PRINT("[SD] use=autoI2C device not found in scan results, skipping init.");
+          if (!WsV2._i2c_controller->WasDeviceScanned(
+                  HexStrToInt(component["i2cDeviceAddress"]))) {
+            WS_DEBUG_PRINT(
+                "[SD] auto component not found in scan, skipping init.");
+            // TODO: We need to initialize this device with autoconfig instead?
             continue;
           }
-          WS_DEBUG_PRINT("[SD] use=auto I2C device found in scan results, initializing...");
+          WS_DEBUG_PRINT("[SD] auto component found in scan, initializing from "
+                         "cfg. file.");
         }
       }
 
