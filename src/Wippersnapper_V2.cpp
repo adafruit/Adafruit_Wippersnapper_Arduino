@@ -1246,9 +1246,10 @@ void Wippersnapper_V2::connect() {
     WsV2._fileSystemV2->WriteFileConfig();
     WS_DEBUG_PRINTLN("[APP] Hardware configured!");
     // Blink status LED to green to indicate successful configuration
-    // TODO: Why isn't this working??
     //setStatusLEDColor(0x00A300, 0.5 * 255.0);
-    //delay(500);
+    setStatusLEDColor(0x00A300, 150);
+    delay(500);
+    setStatusLEDColor(0x000000, 150);
     //setStatusLEDColor(0x000000, 0.5 * 255.0);
     WS_DEBUG_PRINTLN("[APP] begin loop");
     return;

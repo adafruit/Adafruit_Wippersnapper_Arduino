@@ -372,17 +372,41 @@ bool Wippersnapper_FS::CreateFileBoot() {
 
 /**************************************************************************/
 /*!
-    @brief    Creates a default `config.json` file on the filesystem.
+    @brief    Creates a default config document in memory.
 */
 /**************************************************************************/
 void Wippersnapper_FS::CreateFileConfig() {
-    // debugging only, remove normally
-    // check existence of config file and delete it
-    if (wipperFatFs_v2.exists("/config.json")) {
-        wipperFatFs_v2.remove("/config.json");
-        delay(500); // prob not required
+  // Load config.json into memory, if it already exists on the FS
+  if (wipperFatFs_v2.exists("/config.json")) {
+    File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
+    if (file_cfg) {
+      DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
+      file_cfg.close();
+
+      if (error)
+        HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
+
+      // Check if the config.json file has the required keys
+      if (! _doc_cfg.containsKey("exportedFromDevice")) {
+          // Build exportedFromDevice object
+          JsonObject exportedFromDevice = _doc_cfg["exportedFromDevice"].to<JsonObject>();
+          exportedFromDevice["sd_cs_pin"] = 255;
+          exportedFromDevice["referenceVoltage"] = 0;
+          exportedFromDevice["totalGPIOPins"] = 0;
+          exportedFromDevice["totalAnalogPins"] = 0;
+          exportedFromDevice["statusLEDBrightness"] = 0.3;
+      }
+
+      if (! _doc_cfg.containsKey("components")) {
+          // Build components array
+          _doc_cfg["components"].to<JsonArray>();
+      }
+      return;
     }
-  // Create a default configConfig structure
+  }
+
+  // Create a default configConfig structure in a new doc
+  _doc_cfg.clear();
   JsonObject exportedFromDevice = _doc_cfg["exportedFromDevice"].to<JsonObject>();
   exportedFromDevice["sd_cs_pin"] = 255;
   exportedFromDevice["referenceVoltage"] = 0;
@@ -415,13 +439,12 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
                 The period at which the device should be polled.
     @param    driver_name
                 The name of the driver.
-    @returns  True if the device was successfully added, False otherwise.
 */
 /********************************************************************************/
-bool Wippersnapper_FS::AddI2cDeviceToFileConfig(
+void Wippersnapper_FS::AddI2cDeviceToFileConfig(
     uint32_t address, const char *driver_name, const char **sensor_type_strings,
     size_t sensor_types_count) {
-  // Write to components[] to the in-memory config document
+  // Write to components[] on the in-memory config document
   JsonObject new_component = _doc_cfg["components"].add<JsonObject>();
   new_component["name"] = driver_name;
   new_component["componentAPI"] = "i2c";
@@ -436,11 +459,16 @@ bool Wippersnapper_FS::AddI2cDeviceToFileConfig(
   for (size_t i = 0; i < sensor_types_count; i++) {
     new_component_sensor_types[i]["type"] = sensor_type_strings[i];
   }
-  return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief    Writes the in-memory config document to the filesystem.
+    @returns  True if the file was successfully written, False otherwise.
+*/
+/**************************************************************************/
 bool Wippersnapper_FS::WriteFileConfig() {
-  // Write the doc back to the filesystem
+  // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
     HaltFilesystem("ERROR: Could not open the config.json file for writing!");
@@ -458,6 +486,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   // NOTE: This is required to ensure the filesystem is sync'd between host and device
   TinyUSBDevice.attach();
   delay(2500);
+  // TODO: This is debug, we can remove it!
   WS_DEBUG_PRINT("Bytes written to config.json: ");
   WS_DEBUG_PRINTLN(bytes_written);
   return true;
