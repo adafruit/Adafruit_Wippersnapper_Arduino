@@ -50,6 +50,7 @@
 #include "drivers/drvScd30.h"
 #include "drivers/drvScd4x.h"
 #include "drivers/drvSen5x.h"
+#include "drivers/drvSgp30.h"
 #include "drivers/drvSgp40.h"
 #include "drivers/drvSht3x.h"
 #include "drivers/drvSht4x.h"
