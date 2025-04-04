@@ -391,6 +391,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _ina219->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ina219);
     WS_DEBUG_PRINTLN("INA219 Initialized Successfully!");
+  } else if (strcmp("ina260", msgDeviceInitReq->i2c_device_name) == 0) {
+    _ina260 = new WipperSnapper_I2C_Driver_INA260(this->_i2c, i2cAddress);
+    if (!_ina260->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize INA260");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _ina260->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_ina260);
+    WS_DEBUG_PRINTLN("INA260 Initialized Successfully!");
   } else if (strcmp("ltr390", msgDeviceInitReq->i2c_device_name) == 0) {
     _ltr390 = new WipperSnapper_I2C_Driver_LTR390(this->_i2c, i2cAddress);
     if (!_ltr390->begin()) {
