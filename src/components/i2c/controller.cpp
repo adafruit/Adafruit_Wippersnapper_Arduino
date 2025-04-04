@@ -618,6 +618,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   // Before we do anything, check if a driver has been already initialized with
   // the device_descriptor if so, we log and skip
+  // TODO: Break this out into a new func.
   bool did_init_already = false;
   for (auto &driver : _i2c_drivers) {
     // Do they share the same address?

@@ -1244,13 +1244,13 @@ void Wippersnapper_V2::connect() {
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
     WsV2._fileSystemV2->WriteFileConfig();
-    WS_DEBUG_PRINTLN("[APP] Hardware configured, skipping network setup "
-                     "and running app...");
-    delay(900000);
+    WS_DEBUG_PRINTLN("[APP] Hardware configured!");
     // Blink status LED to green to indicate successful configuration
-    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2 * 255.0);
-    delay(500);
-    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2 * 255.0);
+    // TODO: Why isn't this working??
+    //setStatusLEDColor(0x00A300, 0.5 * 255.0);
+    //delay(500);
+    //setStatusLEDColor(0x000000, 0.5 * 255.0);
+    WS_DEBUG_PRINTLN("[APP] begin loop");
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");

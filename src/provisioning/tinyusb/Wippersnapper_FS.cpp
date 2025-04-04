@@ -294,10 +294,10 @@ void Wippersnapper_FS::InitUsbMsc() {
   // If already enumerated, additional class driverr begin() e.g msc, hid, midi
   // won't take effect until re-enumeration
   // Attach MSC and wait for enumeration
-  //#ifndef BUILD_OFFLINE_ONLY
+  #ifndef BUILD_OFFLINE_ONLY
   TinyUSBDevice.attach();
   delay(500);
-  //#endif
+  #endif
 }
 
 /**************************************************************************/
@@ -448,18 +448,18 @@ bool Wippersnapper_FS::WriteFileConfig() {
   }
   _doc_cfg.shrinkToFit();
   size_t bytes_written = serializeJsonPretty(_doc_cfg, file_cfg);
-  WS_DEBUG_PRINT("Bytes written to config.json: ");
-  WS_DEBUG_PRINTLN(bytes_written);
 
   // Attempt to clear the cache and sync the FS
-  // TODO: Not sure if this is actually doing anything on RP2040, need to test
-  // in isolation
   file_cfg.close();
   file_cfg.flush();
   flash_v2.syncBlocks();
   refreshMassStorage();
+  // Re-attach USB-MSC with updated filesystem
+  // NOTE: This is required to ensure the filesystem is sync'd between host and device
   TinyUSBDevice.attach();
   delay(2500);
+  WS_DEBUG_PRINT("Bytes written to config.json: ");
+  WS_DEBUG_PRINTLN(bytes_written);
   return true;
 }
 
