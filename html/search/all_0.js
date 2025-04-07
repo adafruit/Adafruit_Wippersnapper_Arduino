@@ -74,6 +74,7 @@ var searchData=
   ['_5fi2cport0',['_i2cPort0',['../class_wippersnapper.html#a49b38b1658fc237f07405e8e8e107bb1',1,'Wippersnapper']]],
   ['_5fi2cport1',['_i2cPort1',['../class_wippersnapper.html#a30b2c43029ed0de402f50a9f2c1e7930',1,'Wippersnapper']]],
   ['_5fina219',['_ina219',['../class_wipper_snapper___i2_c___driver___i_n_a219.html#a2271c66fde0d3993c486f10c71968097',1,'WipperSnapper_I2C_Driver_INA219']]],
+  ['_5fina260',['_ina260',['../class_wipper_snapper___i2_c___driver___i_n_a260.html#a035b1cc7072f2e4f317e8022afc84460',1,'WipperSnapper_I2C_Driver_INA260']]],
   ['_5fincomingsignalmsg',['_incomingSignalMsg',['../class_wippersnapper.html#acb987fecbdafe073df8432d5a25da694',1,'Wippersnapper']]],
   ['_5fisi2cport0init',['_isI2CPort0Init',['../class_wippersnapper.html#a6386fe27a2b8f17d6dadcd5e18ebe4f7',1,'Wippersnapper']]],
   ['_5fisi2cport1init',['_isI2CPort1Init',['../class_wippersnapper.html#a486962cdb0c74670b8888497695b3987',1,'Wippersnapper']]],

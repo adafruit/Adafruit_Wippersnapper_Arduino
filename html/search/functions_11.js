@@ -21,6 +21,7 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fhtu21d',['WipperSnapper_I2C_Driver_HTU21D',['../class_wipper_snapper___i2_c___driver___h_t_u21_d.html#aded845cb80d802ff19f7cfbdaf2a3de4',1,'WipperSnapper_I2C_Driver_HTU21D']]],
   ['wippersnapper_5fi2c_5fdriver_5fhtu31d',['WipperSnapper_I2C_Driver_HTU31D',['../class_wipper_snapper___i2_c___driver___h_t_u31_d.html#ad89ad8287c4058f1a5ea660b01868edc',1,'WipperSnapper_I2C_Driver_HTU31D']]],
   ['wippersnapper_5fi2c_5fdriver_5fina219',['WipperSnapper_I2C_Driver_INA219',['../class_wipper_snapper___i2_c___driver___i_n_a219.html#accb758a78b58386d3c31f5fbcb8b988a',1,'WipperSnapper_I2C_Driver_INA219']]],
+  ['wippersnapper_5fi2c_5fdriver_5fina260',['WipperSnapper_I2C_Driver_INA260',['../class_wipper_snapper___i2_c___driver___i_n_a260.html#aac66b6e8405f8f71f7ecaf5c1fa43d76',1,'WipperSnapper_I2C_Driver_INA260']]],
   ['wippersnapper_5fi2c_5fdriver_5flc709203f',['WipperSnapper_I2C_Driver_LC709203F',['../class_wipper_snapper___i2_c___driver___l_c709203_f.html#acbdaa9a3b17e6c905adbc0cb9544a865',1,'WipperSnapper_I2C_Driver_LC709203F']]],
   ['wippersnapper_5fi2c_5fdriver_5flps22hb',['WipperSnapper_I2C_Driver_LPS22HB',['../class_wipper_snapper___i2_c___driver___l_p_s22_h_b.html#a6678e3ae5b3571957fad35e197b968fc',1,'WipperSnapper_I2C_Driver_LPS22HB']]],
   ['wippersnapper_5fi2c_5fdriver_5flps25hb',['WipperSnapper_I2C_Driver_LPS25HB',['../class_wipper_snapper___i2_c___driver___l_p_s25_h_b.html#aabdfce0bf02892964ebb4b8467e6ccb6',1,'WipperSnapper_I2C_Driver_LPS25HB']]],
