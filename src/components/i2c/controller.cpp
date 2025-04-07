@@ -647,8 +647,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   }
 
   if (did_init_already) {
-    WS_DEBUG_PRINTLN("[i2c] Device already initialized, skipping...");
-    return false;
+    WS_DEBUG_PRINTLN("[i2c] Device already initialized, ignoring...");
+    return true;
   }
 
   // TODO [Online]: Handle Replace messages by implementing the Remove handler

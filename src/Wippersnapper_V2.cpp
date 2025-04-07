@@ -1243,14 +1243,15 @@ void Wippersnapper_V2::connect() {
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
+
     WsV2._fileSystemV2->WriteFileConfig();
     WS_DEBUG_PRINTLN("[APP] Hardware configured!");
     // Blink status LED to green to indicate successful configuration
-    //setStatusLEDColor(0x00A300, 0.5 * 255.0);
-    setStatusLEDColor(0x00A300, 150);
-    delay(500);
-    setStatusLEDColor(0x000000, 150);
-    //setStatusLEDColor(0x000000, 0.5 * 255.0);
+    // setStatusLEDColor(0x00A300, 0.5 * 255.0);
+    // setStatusLEDColor(0x00A300, 150);
+    // delay(500);
+    // setStatusLEDColor(0x000000, 150);
+    // setStatusLEDColor(0x000000, 0.5 * 255.0);
     WS_DEBUG_PRINTLN("[APP] begin loop");
     return;
   } else {

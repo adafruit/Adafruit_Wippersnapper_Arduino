@@ -50,7 +50,7 @@ ws_sdcard::ws_sdcard() {
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  // delay(1500); // TODO: Must enable this delay to debugging the ctor, serial
+  delay(4000); // TODO: Must enable this delay to debugging the ctor, serial
   //  won't open otherwise
   bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
@@ -686,12 +686,9 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 /**************************************************************************/
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
-  // JsonDocument doc;
 
-  // Deserialize config file
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
-  delay(5000);
   JsonDocument &doc = WsV2._fileSystemV2->GetDocCfg();
 #else
   // Use test data, not data from the filesystem

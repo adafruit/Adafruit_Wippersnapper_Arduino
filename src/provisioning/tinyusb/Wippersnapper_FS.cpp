@@ -291,13 +291,13 @@ void Wippersnapper_FS::InitUsbMsc() {
   // init MSC
   usb_msc_v2.begin();
 
-  // If already enumerated, additional class driverr begin() e.g msc, hid, midi
-  // won't take effect until re-enumeration
-  // Attach MSC and wait for enumeration
-  #ifndef BUILD_OFFLINE_ONLY
+// If already enumerated, additional class driverr begin() e.g msc, hid, midi
+// won't take effect until re-enumeration
+// Attach MSC and wait for enumeration
+#ifndef BUILD_OFFLINE_ONLY
   TinyUSBDevice.attach();
   delay(500);
-  #endif
+#endif
 }
 
 /**************************************************************************/
@@ -381,25 +381,28 @@ void Wippersnapper_FS::CreateFileConfig() {
     File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
     if (file_cfg) {
       DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
-      file_cfg.close();
-
       if (error)
         HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
+      // Remove config from the filesystem
+      file_cfg.close();
+      wipperFatFs_v2.remove("/config.json");
+      flash_v2.syncBlocks();
 
       // Check if the config.json file has the required keys
-      if (! _doc_cfg.containsKey("exportedFromDevice")) {
-          // Build exportedFromDevice object
-          JsonObject exportedFromDevice = _doc_cfg["exportedFromDevice"].to<JsonObject>();
-          exportedFromDevice["sd_cs_pin"] = 255;
-          exportedFromDevice["referenceVoltage"] = 0;
-          exportedFromDevice["totalGPIOPins"] = 0;
-          exportedFromDevice["totalAnalogPins"] = 0;
-          exportedFromDevice["statusLEDBrightness"] = 0.3;
+      if (!_doc_cfg.containsKey("exportedFromDevice")) {
+        // Build exportedFromDevice object
+        JsonObject exportedFromDevice =
+            _doc_cfg["exportedFromDevice"].to<JsonObject>();
+        exportedFromDevice["sd_cs_pin"] = 255;
+        exportedFromDevice["referenceVoltage"] = 0;
+        exportedFromDevice["totalGPIOPins"] = 0;
+        exportedFromDevice["totalAnalogPins"] = 0;
+        exportedFromDevice["statusLEDBrightness"] = 0.3;
       }
 
-      if (! _doc_cfg.containsKey("components")) {
-          // Build components array
-          _doc_cfg["components"].to<JsonArray>();
+      if (!_doc_cfg.containsKey("components")) {
+        // Build components array
+        _doc_cfg["components"].to<JsonArray>();
       }
       return;
     }
@@ -407,7 +410,8 @@ void Wippersnapper_FS::CreateFileConfig() {
 
   // Create a default configConfig structure in a new doc
   _doc_cfg.clear();
-  JsonObject exportedFromDevice = _doc_cfg["exportedFromDevice"].to<JsonObject>();
+  JsonObject exportedFromDevice =
+      _doc_cfg["exportedFromDevice"].to<JsonObject>();
   exportedFromDevice["sd_cs_pin"] = 255;
   exportedFromDevice["referenceVoltage"] = 0;
   exportedFromDevice["totalGPIOPins"] = 0;
@@ -471,7 +475,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
-    HaltFilesystem("ERROR: Could not open the config.json file for writing!");
+    HaltFilesystem("Could not create the config file!");
     return false;
   }
   _doc_cfg.shrinkToFit();
@@ -483,7 +487,8 @@ bool Wippersnapper_FS::WriteFileConfig() {
   flash_v2.syncBlocks();
   refreshMassStorage();
   // Re-attach USB-MSC with updated filesystem
-  // NOTE: This is required to ensure the filesystem is sync'd between host and device
+  // NOTE: This is required to ensure the filesystem is sync'd between host and
+  // device
   TinyUSBDevice.attach();
   delay(2500);
   // TODO: This is debug, we can remove it!
