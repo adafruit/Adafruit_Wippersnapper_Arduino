@@ -531,6 +531,21 @@ void ws_sdcard::ParseI2cAddScanned(
 
 bool ws_sdcard::AddI2cScanResultsToBuffer() {
   for (size_t i = 0; i < WsV2._i2c_controller->GetScanDeviceCount(); i++) {
+
+    // Was this address already provided by the config file?
+    bool skip_device = false;
+    for (size_t j = 0; j < _cfg_i2c_addresses.size(); j++) {
+        if (_cfg_i2c_addresses[j] == WsV2._i2c_controller->GetScanDeviceAddress(i)) {
+            skip_device = true;
+            break;
+        }
+    }
+
+    if (skip_device) {
+      WS_DEBUG_PRINTLN("[SD] Skipping I2C device - already in config file");
+      continue;
+    }
+
     // Build the PB message
     wippersnapper_signal_BrokerToDevice msg_signal =
         wippersnapper_signal_BrokerToDevice_init_default;
@@ -808,35 +823,6 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
       }
     } else if (strcmp(component_api_type, "i2c") == 0) {
       WS_DEBUG_PRINTLN("[SD] I2C component found in cfg");
-
-      const char *use = component["use"];
-      if (use == nullptr) {
-        WS_DEBUG_PRINT("[SD] Error: Missing use field, skipping..");
-        continue;
-      }
-
-      // Case #1 - If use is "no", do not attempt to initialize this component
-      if (strcmp(use, "no") == 0) {
-        WS_DEBUG_PRINTLN("[SD] Component marked use=no, skipping..");
-        continue;
-      }
-
-      // For "auto", only proceed if device was found in scan
-      if (strcmp(use, "auto") == 0) {
-        // For I2C devices, check scan results
-        if (component["i2cDeviceAddress"] != nullptr) {
-          if (!WsV2._i2c_controller->WasDeviceScanned(
-                  HexStrToInt(component["i2cDeviceAddress"]))) {
-            WS_DEBUG_PRINT(
-                "[SD] auto component not found in scan, skipping init.");
-            // TODO: We need to initialize this device with autoconfig instead?
-            continue;
-          }
-          WS_DEBUG_PRINT("[SD] auto component found in scan, initializing from "
-                         "cfg. file.");
-        }
-      }
-
       // Init for use=yes || use=auto
       wippersnapper_i2c_I2cDeviceAddOrReplace msg_add =
           wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
@@ -845,6 +831,7 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
         msg_signal_b2d.which_payload =
             wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
         msg_signal_b2d.payload.i2c_device_add_replace = msg_add;
+        _cfg_i2c_addresses.push_back(msg_add.i2c_device_description.i2c_device_address);
       }
     } else {
       WS_DEBUG_PRINTLN("[SD] Error: Unknown Component API: " +

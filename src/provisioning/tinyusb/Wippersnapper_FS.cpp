@@ -457,7 +457,6 @@ void Wippersnapper_FS::AddI2cDeviceToFileConfig(
   char address_str[6];
   sprintf(address_str, "0x%02X", address);
   new_component["i2cDeviceAddress"] = address_str;
-  new_component["use"] = "auto";
   JsonArray new_component_sensor_types =
       new_component["i2cDeviceSensorTypes"].to<JsonArray>();
   for (size_t i = 0; i < sensor_types_count; i++) {

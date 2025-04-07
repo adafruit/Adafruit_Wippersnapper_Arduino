@@ -130,6 +130,7 @@ private:
   bool _is_soft_rtc; ///< True if a "soft rtc" is being used, False otherwise
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
+  std::vector<uint32_t> _cfg_i2c_addresses;
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H
