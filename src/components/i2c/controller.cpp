@@ -701,6 +701,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     if (_i2c_bus_alt->HasMux() || _i2c_bus_default->HasMux()) {
       WS_DEBUG_PRINT("[i2c] Configuring MUX channel: ");
       WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_channel);
+      WS_DEBUG_PRINT("[i2c] use_alt_bus: ");
+      WS_DEBUG_PRINTLN(use_alt_bus);
       ConfigureMuxChannel(device_descriptor.i2c_mux_channel, use_alt_bus);
       did_set_mux_ch = true;
     } else {
@@ -710,12 +712,13 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     }
   }
 
-  WS_DEBUG_PRINTLN("Creating a new I2C driver");
   // Assign I2C bus
   TwoWire *bus = nullptr;
   if (use_alt_bus) {
+    WS_DEBUG_PRINTLN("[i2c] Using alt. I2C bus...");
     bus = _i2c_bus_alt->GetBus();
   } else {
+    WS_DEBUG_PRINTLN("[i2c] Using default I2C bus...");
     bus = _i2c_bus_default->GetBus();
   }
 
@@ -757,27 +760,35 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       }
     }
   } else {
-    WS_DEBUG_PRINTLN("[i2c] Device was defined in message or config file.");
-    if (did_set_mux_ch) {
-      drv->SetMuxAddress(device_descriptor.i2c_mux_address);
+    WS_DEBUG_PRINTLN("[i2c] Device in message/cfg file.");
+    // Create new driver
+    WS_DEBUG_PRINT("[i2c] Creating driver: ");
+    WS_DEBUG_PRINTLN(device_name);
+    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
+    WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_channel);
+    WS_DEBUG_PRINTLN(device_status);
+
+    drv = CreateI2CDriverByName(
+        device_name, bus, device_descriptor.i2c_device_address,
+        device_descriptor.i2c_mux_channel, device_status);
+    if (drv == nullptr) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
     }
+
+    // Configure MUX and bus
+    if (did_set_mux_ch) {
+      WS_DEBUG_PRINT("Configuring driver's MUX address: ");
+      WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_address);
+      drv->SetMuxAddress(device_descriptor.i2c_mux_address);
+      WS_DEBUG_PRINTLN("[i2c] Set driver to use MUX");
+    }
+
     if (use_alt_bus) {
       drv->EnableAltI2CBus(_i2c_model->GetI2cDeviceAddOrReplaceMsg()
                                ->i2c_device_description.i2c_bus_scl,
                            _i2c_model->GetI2cDeviceAddOrReplaceMsg()
                                ->i2c_device_description.i2c_bus_sda);
-    }
-    drv = CreateI2CDriverByName(
-        device_name, bus, device_descriptor.i2c_device_address,
-        device_descriptor.i2c_mux_channel, device_status);
-    if (!drv->begin()) {
-      if (WsV2._sdCardV2->isModeOffline()) {
-        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
-                         "the correct value for i2cDeviceName?\n\tDid you set "
-                         "the correct value for"
-                         "i2cDeviceAddress?",
-                         WS_LED_STATUS_ERROR_RUNTIME, false);
-      }
+      WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
     }
     // Configure the driver
     drv->SetSensorTypes(
@@ -788,6 +799,16 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
     drv->SetPeriod(
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
+
+    if (!drv->begin()) {
+      if (WsV2._sdCardV2->isModeOffline()) {
+        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+                         "the correct value for i2cDeviceName?\n\tDid you set "
+                         "the correct value for"
+                         "i2cDeviceAddress?",
+                         WS_LED_STATUS_ERROR_RUNTIME, false);
+      }
+    }
     WS_DEBUG_PRINTLN("[i2c] Driver successfully initialized!");
   }
   // Add the initialized driver

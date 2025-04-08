@@ -183,9 +183,9 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     uint8_t endTransmissionRC = _bus->endTransmission();
 
     if (endTransmissionRC == 0) {
-      WS_DEBUG_PRINTLN("[i2c] Found Device at ");
+      WS_DEBUG_PRINT("[i2c] Found Device at ");
       WS_DEBUG_PRINT("0x");
-      WS_DEBUG_PRINT(address, HEX);
+      WS_DEBUG_PRINTLN(address, HEX);
       scan_results
           ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
           .i2c_device_address = address;

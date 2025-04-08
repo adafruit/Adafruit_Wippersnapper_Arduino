@@ -294,10 +294,10 @@ void Wippersnapper_FS::InitUsbMsc() {
 // If already enumerated, additional class driverr begin() e.g msc, hid, midi
 // won't take effect until re-enumeration
 // Attach MSC and wait for enumeration
-#ifndef BUILD_OFFLINE_ONLY
+//#ifndef BUILD_OFFLINE_ONLY
   TinyUSBDevice.attach();
   delay(500);
-#endif
+//#endif
 }
 
 /**************************************************************************/
@@ -488,7 +488,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   // Re-attach USB-MSC with updated filesystem
   // NOTE: This is required to ensure the filesystem is sync'd between host and
   // device
-  TinyUSBDevice.attach();
+  // TinyUSBDevice.attach();
   delay(2500);
   // TODO: This is debug, we can remove it!
   WS_DEBUG_PRINT("Bytes written to config.json: ");

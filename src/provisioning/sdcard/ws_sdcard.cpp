@@ -126,6 +126,7 @@ bool ws_sdcard::InitDS1307() {
   }
   if (!_rtc_ds1307->isrunning())
     _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  _cfg_i2c_addresses.push_back(0x68); // Disable auto-config for DS1307
   return true;
 }
 
@@ -148,6 +149,7 @@ bool ws_sdcard::InitDS3231() {
   }
   if (_rtc_ds3231->lostPower())
     _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  _cfg_i2c_addresses.push_back(0x68); // Disable auto-config for DS3231
   return true;
 }
 
@@ -172,6 +174,7 @@ bool ws_sdcard::InitPCF8523() {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
   _rtc_pcf8523->start();
+  _cfg_i2c_addresses.push_back(0x68); // Disable auto-config for DS3231
   return true;
 }
 
@@ -489,11 +492,16 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   const char *addr_device = component["i2cDeviceAddress"] | "0x00";
   msg_i2c_add.i2c_device_description.i2c_device_address =
       HexStrToInt(addr_device);
-  if (!WsV2._i2c_controller->WasDeviceScanned(
-          msg_i2c_add.i2c_device_description.i2c_device_address)) {
-    WS_DEBUG_PRINT("[SD] WARNING - I2C Device (");
-    WS_DEBUG_PRINT(msg_i2c_add.i2c_device_description.i2c_device_address, HEX);
-    WS_DEBUG_PRINTLN(") not found in scan!");
+
+  // MUXes, Seesaw, special devices should have an auto-init flag set to false
+  const char *is_auto = component["autoInit"] | "true";
+  WS_DEBUG_PRINT("[SD] Found autoInit = ");
+  WS_DEBUG_PRINTLN(is_auto);
+  if (strcmp(is_auto, "false") == 0) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Found autoInit = false, do not initialize this address");
+    _cfg_i2c_addresses.push_back(
+        msg_i2c_add.i2c_device_description.i2c_device_address);
   }
 
   const char *addr_mux = component["i2cMuxAddress"] | "0x00";
@@ -535,10 +543,11 @@ bool ws_sdcard::AddI2cScanResultsToBuffer() {
     // Was this address already provided by the config file?
     bool skip_device = false;
     for (size_t j = 0; j < _cfg_i2c_addresses.size(); j++) {
-        if (_cfg_i2c_addresses[j] == WsV2._i2c_controller->GetScanDeviceAddress(i)) {
-            skip_device = true;
-            break;
-        }
+      if (_cfg_i2c_addresses[j] ==
+          WsV2._i2c_controller->GetScanDeviceAddress(i)) {
+        skip_device = true;
+        break;
+      }
     }
 
     if (skip_device) {
@@ -722,17 +731,10 @@ bool ws_sdcard::ParseFileConfig() {
   }
 #endif
 
-  // Dump what doc looks like to serial
-  String jsonStr;
-  serializeJsonPretty(doc, jsonStr);
-  WS_DEBUG_PRINTLN("[SD] Deserialized JSON:");
-  WS_DEBUG_PRINTLN("========================================");
-  WS_DEBUG_PRINTLN(jsonStr);
-  WS_DEBUG_PRINTLN("========================================");
-
-  // query document size
+  // Get JSON document size
+  // TODO: Remove, this is DEBUG ONLY
   size_t doc_size = measureJson(doc);
-  WS_DEBUG_PRINT("[SD] Document size: ");
+  WS_DEBUG_PRINT("[DBG | SD] Document size: ");
   WS_DEBUG_PRINTLN(doc_size);
 
   if (doc.isNull()) {
@@ -831,7 +833,8 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
         msg_signal_b2d.which_payload =
             wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag;
         msg_signal_b2d.payload.i2c_device_add_replace = msg_add;
-        _cfg_i2c_addresses.push_back(msg_add.i2c_device_description.i2c_device_address);
+        _cfg_i2c_addresses.push_back(
+            msg_add.i2c_device_description.i2c_device_address);
       }
     } else {
       WS_DEBUG_PRINTLN("[SD] Error: Unknown Component API: " +
