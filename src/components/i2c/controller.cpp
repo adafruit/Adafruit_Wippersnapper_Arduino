@@ -572,15 +572,19 @@ bool I2cController::InitMux(const char *name, uint32_t address,
                             bool is_alt_bus) {
   if (is_alt_bus) {
     if (!_i2c_bus_alt->HasMux()) {
+      WS_DEBUG_PRINTLN("[i2c] Initializing MUX driver on alt bus...");
       if (!_i2c_bus_alt->AddMuxToBus(address, name)) {
         return false;
       }
+      WS_DEBUG_PRINTLN("OK!");
     }
   } else {
     if (!_i2c_bus_default->HasMux()) {
+      WS_DEBUG_PRINTLN("[i2c] Initializing MUX driver on default bus...");
       if (!_i2c_bus_default->AddMuxToBus(address, name)) {
         return false;
       }
+      WS_DEBUG_PRINTLN("OK!");
     }
   }
   // TODO [Online]: Publish back out to IO here!
@@ -911,6 +915,7 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
     _i2c_bus_alt->SelectMuxChannel(mux_channel);
     return;
   }
+  WS_DEBUG_PRINTLN("[i2c] ConfigureMuxChannel() normal bus");
   _i2c_bus_default->ClearMuxChannel(); // sanity-check
   _i2c_bus_default->SelectMuxChannel(mux_channel);
 }
