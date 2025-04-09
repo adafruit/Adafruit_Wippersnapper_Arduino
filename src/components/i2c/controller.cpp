@@ -581,6 +581,8 @@ bool I2cController::InitMux(const char *name, uint32_t address,
   } else {
     if (!_i2c_bus_default->HasMux()) {
       WS_DEBUG_PRINTLN("[i2c] Initializing MUX driver on default bus...");
+      WS_DEBUG_PRINT("[i2c] addr: ");
+      WS_DEBUG_PRINT(address, HEX);
       if (!_i2c_bus_default->AddMuxToBus(address, name)) {
         return false;
       }
@@ -690,7 +692,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   if ((strcmp(device_name, "pca9546") == 0) ||
       (strcmp(device_name, "pca9548") == 0)) {
     WS_DEBUG_PRINT("[i2c] Initializing MUX driver...");
-    if (!InitMux(device_name, device_descriptor.i2c_mux_address, use_alt_bus)) {
+    if (!InitMux(device_name, device_descriptor.i2c_device_address, use_alt_bus)) {
       // TODO [Online]: Publish back out to IO here!
       WsV2.haltErrorV2("[i2c] Failed to initialize MUX driver!",
                        WS_LED_STATUS_ERROR_RUNTIME, false);
@@ -703,6 +705,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // I2cDeviceAddorReplace message
   if (device_descriptor.i2c_mux_address != 0x00) {
     if (_i2c_bus_alt->HasMux() || _i2c_bus_default->HasMux()) {
+      WS_DEBUG_PRINTLN("[i2c] Scanning MUX!");
+      _i2c_bus_default->ScanMux();
       WS_DEBUG_PRINT("[i2c] Configuring MUX channel: ");
       WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_channel);
       WS_DEBUG_PRINT("[i2c] use_alt_bus: ");
@@ -768,7 +772,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     // Create new driver
     WS_DEBUG_PRINT("[i2c] Creating driver: ");
     WS_DEBUG_PRINTLN(device_name);
-    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
+    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address, HEX);
     WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_channel);
     WS_DEBUG_PRINTLN(device_status);
 

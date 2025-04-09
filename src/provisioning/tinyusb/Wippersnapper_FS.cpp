@@ -381,8 +381,8 @@ void Wippersnapper_FS::CreateFileConfig() {
     File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
     if (file_cfg) {
       DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
-      if (error)
-        HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
+      //  if (error)
+        //  HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
       // Remove config from the filesystem
       file_cfg.close();
       wipperFatFs_v2.remove("/config.json");
