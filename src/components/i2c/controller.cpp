@@ -705,12 +705,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // I2cDeviceAddorReplace message
   if (device_descriptor.i2c_mux_address != 0x00) {
     if (_i2c_bus_alt->HasMux() || _i2c_bus_default->HasMux()) {
-      WS_DEBUG_PRINTLN("[i2c] Scanning MUX!");
-      _i2c_bus_default->ScanMux();
-      WS_DEBUG_PRINT("[i2c] Configuring MUX channel: ");
-      WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_channel);
-      WS_DEBUG_PRINT("[i2c] use_alt_bus: ");
-      WS_DEBUG_PRINTLN(use_alt_bus);
       ConfigureMuxChannel(device_descriptor.i2c_mux_channel, use_alt_bus);
       did_set_mux_ch = true;
     } else {
@@ -772,23 +766,17 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     // Create new driver
     WS_DEBUG_PRINT("[i2c] Creating driver: ");
     WS_DEBUG_PRINTLN(device_name);
-    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address, HEX);
-    WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_channel);
-    WS_DEBUG_PRINTLN(device_status);
-
     drv = CreateI2CDriverByName(
         device_name, bus, device_descriptor.i2c_device_address,
         device_descriptor.i2c_mux_channel, device_status);
     if (drv == nullptr) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
+      return false;
     }
 
     // Configure MUX and bus
     if (did_set_mux_ch) {
-      WS_DEBUG_PRINT("Configuring driver's MUX address: ");
-      WS_DEBUG_PRINTLN(device_descriptor.i2c_mux_address);
       drv->SetMuxAddress(device_descriptor.i2c_mux_address);
-      WS_DEBUG_PRINTLN("[i2c] Set driver to use MUX");
     }
 
     if (use_alt_bus) {
@@ -796,7 +784,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
                                ->i2c_device_description.i2c_bus_scl,
                            _i2c_model->GetI2cDeviceAddOrReplaceMsg()
                                ->i2c_device_description.i2c_bus_sda);
-      WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
     }
     // Configure the driver
     drv->SetSensorTypes(
@@ -919,7 +906,6 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
     _i2c_bus_alt->SelectMuxChannel(mux_channel);
     return;
   }
-  WS_DEBUG_PRINTLN("[i2c] ConfigureMuxChannel() normal bus");
   _i2c_bus_default->ClearMuxChannel(); // sanity-check
   _i2c_bus_default->SelectMuxChannel(mux_channel);
 }

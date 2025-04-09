@@ -41,7 +41,6 @@ public:
   void SelectMuxChannel(uint32_t channel);
   bool HasMux();
   void ClearMuxChannel();
-  void ScanMux();
 private:
   void TogglePowerPin();
   wippersnapper_i2c_I2cBusStatus _bus_status; ///< I2C bus status
