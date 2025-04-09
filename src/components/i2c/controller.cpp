@@ -692,7 +692,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   if ((strcmp(device_name, "pca9546") == 0) ||
       (strcmp(device_name, "pca9548") == 0)) {
     WS_DEBUG_PRINT("[i2c] Initializing MUX driver...");
-    if (!InitMux(device_name, device_descriptor.i2c_device_address, use_alt_bus)) {
+    if (!InitMux(device_name, device_descriptor.i2c_device_address,
+                 use_alt_bus)) {
       // TODO [Online]: Publish back out to IO here!
       WsV2.haltErrorV2("[i2c] Failed to initialize MUX driver!",
                        WS_LED_STATUS_ERROR_RUNTIME, false);
@@ -732,6 +733,13 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     // Get all possible driver candidates for this address
     WS_DEBUG_PRINT("[i2c] Obtaining driver candidates @ 0x");
     WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
+    if (device_descriptor.i2c_device_address == 0x68 ||
+        device_descriptor.i2c_device_address == 0x70) {
+      WS_DEBUG_PRINTLN("[i2c] Device address is shared with rtx/mux, can not "
+                       "auto-init, skipping!");
+      return true;
+    }
+
     std::vector<const char *> candidate_drivers =
         GetDriversForAddress(device_descriptor.i2c_device_address);
 
@@ -770,7 +778,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         device_name, bus, device_descriptor.i2c_device_address,
         device_descriptor.i2c_mux_channel, device_status);
     if (drv == nullptr) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
+      WS_DEBUG_PRINTLN(
+          "[i2c] ERROR: I2C driver type not found or unsupported!");
       return false;
     }
 

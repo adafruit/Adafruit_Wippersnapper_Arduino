@@ -58,6 +58,7 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
+Adafruit_USBD_CDC usb_cdc;    /*!< USB CDC object */
 static bool _fs_changed = false;
 
 /**************************************************************************/
@@ -104,10 +105,15 @@ FRESULT format_fs_fat12(void) {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
   _fs_changed = false;
-  // Detach USB device during init.
-  TinyUSBDevice.detach();
-  // Wait for detach
-  delay(500);
+
+  usb_cdc.begin(115200);
+  // If already enumerated, additional class driver begin() e.g msc, hid, midi
+  // won't take effect until re-enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
 
   // Attempt to initialize the flash chip
   if (!flash_v2.begin()) {
@@ -282,22 +288,22 @@ void Wippersnapper_FS::InitUsbMsc() {
   usb_msc_v2.setCapacity(flash_v2.pageSize() * flash_v2.numPages() / 512, 512);
 
   // MSC is ready for read/write
-  usb_msc_v2.setUnitReady(true);
+  usb_msc_v2.setUnitReady(false);
 
   // Set callback when MSC ready
   _fs_changed = false;
   usb_msc_v2.setReadyCallback(0, msc_ready_callback);
 
   // init MSC
-  usb_msc_v2.begin();
+  // usb_msc_v2.begin();
 
-// If already enumerated, additional class driverr begin() e.g msc, hid, midi
-// won't take effect until re-enumeration
-// Attach MSC and wait for enumeration
-//#ifndef BUILD_OFFLINE_ONLY
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi
+  // won't take effect until re-enumeration
+  // Attach MSC and wait for enumeration
+  // #ifndef BUILD_OFFLINE_ONLY
   TinyUSBDevice.attach();
   delay(500);
-//#endif
+  // #endif
 }
 
 /**************************************************************************/
@@ -382,7 +388,7 @@ void Wippersnapper_FS::CreateFileConfig() {
     if (file_cfg) {
       DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
       //  if (error)
-        //  HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
+      //  HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
       // Remove config from the filesystem
       file_cfg.close();
       wipperFatFs_v2.remove("/config.json");
@@ -488,8 +494,13 @@ bool Wippersnapper_FS::WriteFileConfig() {
   // Re-attach USB-MSC with updated filesystem
   // NOTE: This is required to ensure the filesystem is sync'd between host and
   // device
-  // TinyUSBDevice.attach();
-  delay(2500);
+  usb_msc_v2.begin();
+  usb_msc_v2.setUnitReady(true);
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
   // TODO: This is debug, we can remove it!
   WS_DEBUG_PRINT("Bytes written to config.json: ");
   WS_DEBUG_PRINTLN(bytes_written);
