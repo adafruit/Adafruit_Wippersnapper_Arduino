@@ -6,6 +6,7 @@ on:
     push:
       branches:
         - offline-mode
+        - offline-mode-*
     release:
       types: [published]
       branches:
