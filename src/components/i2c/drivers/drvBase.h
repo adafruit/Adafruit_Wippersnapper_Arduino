@@ -758,12 +758,12 @@ public:
       _sensors[15]; ///< Sensors attached to the device.
 
   /***************************************************************************/
-    /*!
-        @brief    Converts a SensorType to a string.
-        @param    type
-                    The SensorType to convert.
-        @returns  The string representation of the SensorType.
-    */
+  /*!
+      @brief    Converts a SensorType to a string.
+      @param    type
+                  The SensorType to convert.
+      @returns  The string representation of the SensorType.
+  */
   /***************************************************************************/
   const char *SensorTypeToString(wippersnapper_sensor_SensorType type) {
     switch (type) {
@@ -859,8 +859,8 @@ protected:
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.
   wippersnapper_sensor_SensorType
-      _default_sensor_types[15];      ///< Default sensor types
-  size_t _default_sensor_types_count; ///< Number of default sensor types
+      _default_sensor_types[15];        ///< Default sensor types
+  size_t _default_sensor_types_count;   ///< Number of default sensor types
   const char *_sensor_type_strings[15]; ///< Sensor type strings
 };
 #endif // DRV_BASE_H

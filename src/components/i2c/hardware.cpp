@@ -156,8 +156,8 @@ TwoWire *I2cHardware::GetBus() { return _bus; }
 bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
   if (!scan_results)
     return false;
-  
-  if (! _bus) {
+
+  if (!_bus) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus not initialized!");
     return false;
   }

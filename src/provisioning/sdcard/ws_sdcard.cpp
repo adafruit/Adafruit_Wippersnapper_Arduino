@@ -47,7 +47,7 @@ bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
 ws_sdcard::ws_sdcard() {
   _use_test_data = false;
   _is_soft_rtc = false;
-  
+
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
@@ -497,7 +497,8 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   // MUXes, Seesaw, special devices should have an auto-init flag set to false
   const char *is_auto = component["autoConfig"] | "true";
   if (strcmp(is_auto, "false") == 0) {
-    WS_DEBUG_PRINTLN("[SD] autoConfig = false, do not attempt to automatically initialize this address");
+    WS_DEBUG_PRINTLN("[SD] autoConfig = false, do not attempt to automatically "
+                     "initialize this address");
     _cfg_i2c_addresses.push_back(
         msg_i2c_add.i2c_device_description.i2c_device_address);
   }

@@ -656,9 +656,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
-
   // Did the driver initialize correctly?
-  if ( IsDriverInitialized(device_descriptor)) {
+  if (IsDriverInitialized(device_descriptor)) {
     WS_DEBUG_PRINTLN("[i2c] Driver already initialized, skipping...");
     return true;
   }
@@ -817,7 +816,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
                          "the correct value for"
                          "i2cDeviceAddress?");
       }
-      return true; // don't cause an error during runtime if the device is not found
+      return true; // don't cause an error during runtime if the device is not
+                   // found
     }
     WS_DEBUG_PRINTLN("[i2c] Driver successfully initialized!");
   }
@@ -858,7 +858,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 bool I2cController::ScanI2cBus(bool default_bus = true) {
   _i2c_bus_default->InitBus(default_bus);
   _scan_results = wippersnapper_i2c_I2cBusScanned_init_zero;
-  if (! default_bus)
+  if (!default_bus)
     return _i2c_bus_alt->ScanBus(&_scan_results);
   return _i2c_bus_default->ScanBus(&_scan_results);
 }
@@ -877,7 +877,7 @@ bool I2cController::WasDeviceScanned(uint32_t address) {
   if (num_found_devices == 0)
     return false; // no devices found on bus, or scan was not performed
 
-    // Check if the device was found on the bus
+  // Check if the device was found on the bus
   for (pb_size_t i; i < num_found_devices; i++) {
     if (_scan_results.i2c_bus_found_devices[i].i2c_device_address == address)
       return true; // device found on bus!

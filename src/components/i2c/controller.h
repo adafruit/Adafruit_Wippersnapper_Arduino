@@ -71,8 +71,8 @@
   "UNKNOWN_SCAN" ///< Name for I2C devices found by an i2c scan
 
 typedef struct {
-  uint32_t address; ///< I2C address of the device
-  bool is_initialized; ///< Flag to indicate if the device is initialized
+  uint32_t address;     ///< I2C address of the device
+  bool is_initialized;  ///< Flag to indicate if the device is initialized
 } initialized_device_t; ///< Struct to hold initialized device info
 
 class Wippersnapper_V2; ///< Forward declaration
@@ -107,7 +107,8 @@ public:
   bool WasDeviceScanned(uint32_t address);
   uint32_t GetScanDeviceAddress(int index);
   size_t GetScanDeviceCount();
-  bool IsDriverInitialized(wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor);
+  bool
+  IsDriverInitialized(wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor);
 
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object
