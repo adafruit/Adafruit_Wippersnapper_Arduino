@@ -9,9 +9,8 @@
 // All text above must be included in any redistribution.
 
 #include "ws_adapters.h"
-//ws_adapter_wifi wipper;
-// Uncomment the following line to use the offline adapter for Pico
-ws_adapter_offline wipper;
+ws_adapter_wifi wipper;
+
 #define WS_DEBUG // Enable debug output!
 
 void setup() {
@@ -20,4 +19,6 @@ void setup() {
   wipper.connect();
 }
 
-void loop() { wipper.run(); }
+void loop() {
+  wipper.run();
+}
