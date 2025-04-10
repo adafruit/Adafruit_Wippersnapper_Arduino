@@ -171,13 +171,13 @@ public:
                       wippersnapper_sensor_SensorType *sensor_types = nullptr,
                       size_t sensor_types_count = 0) {
 
-    // Assign num of sensors
+    // Assign number of sensors
     if (use_default_types) {
-      // Configure the driver with values from the driver
-      // NOTE: This is used only for auto-configured sensors
+      // Configure the driver with values from THE DRIVER
       ConfigureDefaultSensorTypes();
       _sensors_count = _default_sensor_types_count;
     } else {
+      // Configure the driver with values from THE CONFIG FILE
       _sensors_count = sensor_types_count;
     }
 

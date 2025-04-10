@@ -63,8 +63,6 @@ void I2cHardware::TogglePowerPin() {
 /***********************************************************************/
 void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   uint8_t pin_sda, pin_scl;
-  WS_DEBUG_PRINT("is_default: ");
-  WS_DEBUG_PRINTLN(is_default);
   if (!is_default && (sda == nullptr || scl == nullptr)) {
     _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_UNSPECIFIED;
     return;
@@ -83,7 +81,6 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
     pin_scl = SCL;
 #else
     // RP2040 BSP uses a different naming scheme than Espressif for I2C pins
-    WS_DEBUG_PRINTLN("[i2c] Using RP2040 I2C pins...");
     pin_sda = PIN_WIRE0_SDA;
     pin_scl = PIN_WIRE0_SCL;
 #endif
@@ -130,7 +127,6 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus->setSDA(pin_sda);
   _bus->setSCL(pin_scl);
   _bus->begin();
-  WS_DEBUG_PRINTLN("[i2c] RP2040 I2C bus initialized!");
 #elif defined(ARDUINO_ARCH_SAM)
   _bus = new TwoWire(&PERIPH_WIRE, pin_sda, pin_scl);
   _bus->begin();
@@ -138,7 +134,6 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 #error "I2C bus implementation not supported by this platform!"
 #endif
 
-  WS_DEBUG_PRINTLN("[i2c] I2C bus initialized!");
   _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
 }
 
@@ -167,15 +162,6 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     return false;
   }
 
-  // TODO: WS object needs to be added for this to work?
-  /*     #ifndef ARDUINO_ARCH_ESP32
-        // Set I2C WDT timeout to catch I2C hangs, SAMD-specific
-        WS.enableWDT(I2C_WDT_TIMEOUT_MS);
-        WS.feedWDT();
-      #endif */
-  WS_DEBUG_PRINT("Bus Status: ");
-  WS_DEBUG_PRINTLN(_bus_status);
-
   // Perform a bus scan
   WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
   for (uint8_t address = 1; address < 127; address++) {
@@ -189,17 +175,6 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
       scan_results
           ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
           .i2c_device_address = address;
-      // NOTE: This is disabled because _sda and _scl are not saved, we should be doing this!
-/*       strcpy(
-          scan_results
-              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
-              .i2c_bus_sda,
-          _sda);
-      strcpy(
-          scan_results
-              ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
-              .i2c_bus_scl,
-          _scl); */
       scan_results->i2c_bus_found_devices_count++;
     }
 #if defined(ARDUINO_ARCH_ESP32)
@@ -225,18 +200,11 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     }
 #endif // ARDUINO_ARCH_ESP32
     else {
-      // WS_DEBUG_PRINTLN("[i2c] Did not find device: Unknown bus error has
-      // occured!");
+      // Did not find a device, keep scanning
       continue;
     }
   }
 
-  // TODO: Re-enable this?
-  /*   #ifndef ARDUINO_ARCH_ESP32
-      // re-enable WipperSnapper SAMD WDT global timeout
-      WS.enableWDT(WS_WDT_TIMEOUT);
-      WS.feedWDT();
-    #endif */
   return true;
 }
 
@@ -274,9 +242,9 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
 */
 /***********************************************************************/
 void I2cHardware::ClearMuxChannel() {
-  if (!_has_mux) {
+  if (!_has_mux)
     return;
-  }
+
   _bus->beginTransmission(_mux_address);
   if (_mux_max_channels == 4)
     _bus->write(0b0000);
@@ -293,9 +261,9 @@ void I2cHardware::ClearMuxChannel() {
 */
 /***********************************************************************/
 void I2cHardware::SelectMuxChannel(uint32_t channel) {
-  if (channel > _mux_max_channels - 1) {
+  if (channel > _mux_max_channels - 1)
     return;
-  }
+
   _bus->beginTransmission(_mux_address);
   _bus->write(1 << channel);
   _bus->endTransmission();

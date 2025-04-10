@@ -47,13 +47,12 @@ bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
 ws_sdcard::ws_sdcard() {
   _use_test_data = false;
   _is_soft_rtc = false;
+  
   _sz_cur_log_file = 0;
   _sd_cur_log_files = 0;
 
-  delay(4000); // TODO: This is for debugging, remove when ready for final
-               // version!
-  bool did_init = false;
   // Case 1: Try to initialize the SD card with the pin from the config file
+  bool did_init = false;
   if (WsV2.pin_sd_cs != SD_CS_CFG_NOT_FOUND) {
     WS_DEBUG_PRINTLN(
         "Attempting to initialize SD card with pin from config file");
@@ -224,9 +223,11 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
     return InitPCF8523();
   } else if (strcmp(rtc_type, "SOFT") == 0) {
     return InitSoftRTC();
-  } else
-    WS_DEBUG_PRINTLN("[SD] Error: Unknown RTC type found in JSON string!");
-  return false;
+  }
+
+  WS_DEBUG_PRINTLN("[SD] Error: Unknown RTC type found in JSON string!");
+  WS_DEBUG_PRINTLN("[SD] Falling back to soft RTC...");
+  return InitSoftRTC();
 }
 
 /**************************************************************************/
@@ -727,12 +728,6 @@ bool ws_sdcard::ParseFileConfig() {
     return false;
   }
 #endif
-
-  // Get JSON document size
-  // TODO: Remove, this is DEBUG ONLY
-  size_t doc_size = measureJson(doc);
-  WS_DEBUG_PRINT("[DBG | SD] Document size: ");
-  WS_DEBUG_PRINTLN(doc_size);
 
   if (doc.isNull()) {
     WS_DEBUG_PRINTLN("[SD] Error: Document is null!");
