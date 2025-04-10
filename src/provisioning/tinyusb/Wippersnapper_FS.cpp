@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -107,8 +107,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   _fs_changed = false;
 
   usb_cdc.begin(115200);
-  // If already enumerated, additional class driver begin() e.g msc, hid, midi
-  // won't take effect until re-enumeration
+  // Re-enumerate to allow cdc class begin() to take effect
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
     delay(10);
@@ -121,13 +120,9 @@ Wippersnapper_FS::Wippersnapper_FS() {
     HaltFilesystem("Failed to initialize the flash chip!");
   }
 
-  // Attempt to initialize the filesystem
-  bool is_fs_formatted = wipperFatFs_v2.begin(&flash_v2);
-
   // If we are not formatted, attempt to format the filesystem as fat12
-  if (!is_fs_formatted) {
+  if (! wipperFatFs_v2.begin(&flash_v2)) {
     FRESULT rc = format_fs_fat12();
-
     if (rc != FR_OK) {
       setStatusLEDColor(RED);
       HaltFilesystem("FATAL ERROR: Failed to format the filesystem!");
@@ -147,7 +142,9 @@ Wippersnapper_FS::Wippersnapper_FS() {
   }
 
   // Initialize USB-MSC
+  #ifndef BUILD_OFFLINE_ONLY
   InitUsbMsc();
+  #endif
 
   // If we wrote a fresh secrets.json file, halt until user edits the file and
   // RESETs the device Signal to user that action must be taken (edit
@@ -280,7 +277,7 @@ void Wippersnapper_FS::InitUsbMsc() {
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
   usb_msc_v2.setID("Adafruit", "External Flash", "1.0");
-  // Set callback
+  // Set r/w callbacks
   usb_msc_v2.setReadWriteCallback(qspi_msc_read_cb_v2, qspi_msc_write_cb_v2,
                                   qspi_msc_flush_cb_v2);
 
@@ -288,22 +285,21 @@ void Wippersnapper_FS::InitUsbMsc() {
   usb_msc_v2.setCapacity(flash_v2.pageSize() * flash_v2.numPages() / 512, 512);
 
   // MSC is ready for read/write
-  usb_msc_v2.setUnitReady(false);
+  usb_msc_v2.setUnitReady(true);
 
-  // Set callback when MSC ready
+  // Setup callback for when MSC ready
   _fs_changed = false;
   usb_msc_v2.setReadyCallback(0, msc_ready_callback);
 
   // init MSC
-  // usb_msc_v2.begin();
+  usb_msc_v2.begin();
 
-  // If already enumerated, additional class driverr begin() e.g msc, hid, midi
-  // won't take effect until re-enumeration
-  // Attach MSC and wait for enumeration
-  // #ifndef BUILD_OFFLINE_ONLY
-  TinyUSBDevice.attach();
-  delay(500);
-  // #endif
+  // Re-enumerate to allow msc class begin() to take effect
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
 }
 
 /**************************************************************************/
@@ -460,6 +456,7 @@ void Wippersnapper_FS::AddI2cDeviceToFileConfig(
   new_component["componentAPI"] = "i2c";
   new_component["i2cDeviceName"] = driver_name;
   new_component["period"] = 30;
+  new_component["autoConfig"] = "true";
   char address_str[6];
   sprintf(address_str, "0x%02X", address);
   new_component["i2cDeviceAddress"] = address_str;
@@ -491,19 +488,8 @@ bool Wippersnapper_FS::WriteFileConfig() {
   file_cfg.flush();
   flash_v2.syncBlocks();
   refreshMassStorage();
-  // Re-attach USB-MSC with updated filesystem
-  // NOTE: This is required to ensure the filesystem is sync'd between host and
-  // device
-  usb_msc_v2.begin();
-  usb_msc_v2.setUnitReady(true);
-  if (TinyUSBDevice.mounted()) {
-    TinyUSBDevice.detach();
-    delay(10);
-    TinyUSBDevice.attach();
-  }
-  // TODO: This is debug, we can remove it!
-  WS_DEBUG_PRINT("Bytes written to config.json: ");
-  WS_DEBUG_PRINTLN(bytes_written);
+  delay(500);
+  InitUsbMsc();
   return true;
 }
 

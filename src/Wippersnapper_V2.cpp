@@ -1231,11 +1231,9 @@ void Wippersnapper_V2::connect() {
 #endif
     WS_DEBUG_PRINTLN("[APP] Performing I2C Autoscan...");
     WsV2._i2c_controller->ScanI2cBus(true);
-    WS_DEBUG_PRINTLN("[APP] Scan results: ");
-    WsV2._i2c_controller->PrintScanResults();
     // Parse the JSON file
     if (!WsV2._sdCardV2->ParseFileConfig())
-      haltErrorV2("Failed to parse config.json!");
+      haltErrorV2("[APP] Failed to parse config.json!");
     WS_DEBUG_PRINTLN("[APP] Attempting to configure hardware...");
 #ifndef OFFLINE_MODE_DEBUG
     if (!WsV2._sdCardV2->CreateNewLogFile())

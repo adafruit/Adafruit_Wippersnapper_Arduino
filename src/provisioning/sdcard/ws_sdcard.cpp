@@ -494,12 +494,9 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
       HexStrToInt(addr_device);
 
   // MUXes, Seesaw, special devices should have an auto-init flag set to false
-  const char *is_auto = component["autoInit"] | "true";
-  WS_DEBUG_PRINT("[SD] Found autoInit = ");
-  WS_DEBUG_PRINTLN(is_auto);
+  const char *is_auto = component["autoConfig"] | "true";
   if (strcmp(is_auto, "false") == 0) {
-    WS_DEBUG_PRINTLN(
-        "[SD] Found autoInit = false, do not initialize this address");
+    WS_DEBUG_PRINTLN("[SD] autoConfig = false, do not attempt to automatically initialize this address");
     _cfg_i2c_addresses.push_back(
         msg_i2c_add.i2c_device_description.i2c_device_address);
   }

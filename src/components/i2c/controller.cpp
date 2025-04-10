@@ -572,25 +572,59 @@ bool I2cController::InitMux(const char *name, uint32_t address,
                             bool is_alt_bus) {
   if (is_alt_bus) {
     if (!_i2c_bus_alt->HasMux()) {
-      WS_DEBUG_PRINTLN("[i2c] Initializing MUX driver on alt bus...");
       if (!_i2c_bus_alt->AddMuxToBus(address, name)) {
         return false;
       }
-      WS_DEBUG_PRINTLN("OK!");
     }
   } else {
     if (!_i2c_bus_default->HasMux()) {
-      WS_DEBUG_PRINTLN("[i2c] Initializing MUX driver on default bus...");
-      WS_DEBUG_PRINT("[i2c] addr: ");
-      WS_DEBUG_PRINT(address, HEX);
       if (!_i2c_bus_default->AddMuxToBus(address, name)) {
         return false;
       }
-      WS_DEBUG_PRINTLN("OK!");
     }
   }
   // TODO [Online]: Publish back out to IO here!
   return true;
+}
+
+/***********************************************************************/
+/*!
+    @brief    Checks if a driver has already been initialized with the
+              given device descriptor.
+    @param    device_descriptor
+                The I2cDeviceDescriptor message.
+    @returns  True if a driver has already been initialized, False
+              otherwise.
+*/
+/***********************************************************************/
+bool I2cController::IsDriverInitialized(
+    wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor) {
+  // Before we do anything, check if a driver has been already initialized with
+  // the device_descriptor if so, we log and skip
+  for (auto &driver : _i2c_drivers) {
+    // Do they share the same address?
+    if (driver->GetAddress() == device_descriptor.i2c_device_address) {
+      // Okay - do they sit on different i2c buses?
+      bool is_driver_bus_alt = driver->HasAltI2CBus();
+      bool is_device_bus_alt =
+          (strcmp(device_descriptor.i2c_bus_scl, "default") != 0) ||
+          (strcmp(device_descriptor.i2c_bus_sda, "default") != 0);
+      // Bus descriptors do not match, so we haven't initialized this candidate
+      if (is_driver_bus_alt != is_device_bus_alt)
+        continue;
+
+      // What about the MUX?
+      if (driver->HasMux() &&
+          driver->GetMuxAddress() == device_descriptor.i2c_mux_address &&
+          driver->GetMuxChannel() != device_descriptor.i2c_mux_channel) {
+        continue;
+      }
+
+      WS_DEBUG_PRINTLN("[i2c] Descriptor already initialized...");
+      return true;
+    }
+  }
+  return false;
 }
 
 /***********************************************************************/
@@ -622,38 +656,10 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
-  // Before we do anything, check if a driver has been already initialized with
-  // the device_descriptor if so, we log and skip
-  // TODO: Break this out into a new func.
-  bool did_init_already = false;
-  for (auto &driver : _i2c_drivers) {
-    // Do they share the same address?
-    if (driver->GetAddress() == device_descriptor.i2c_device_address) {
-      // Okay - do they sit on different i2c buses?
-      bool is_driver_bus_alt = driver->HasAltI2CBus();
-      bool is_device_bus_alt =
-          (strcmp(device_descriptor.i2c_bus_scl, "default") != 0) ||
-          (strcmp(device_descriptor.i2c_bus_sda, "default") != 0);
 
-      // Bus descriptors do not match, we haven't initialized this candidate
-      if (is_driver_bus_alt != is_device_bus_alt)
-        continue;
-
-      // What about the MUX?
-      if (driver->HasMux() &&
-          driver->GetMuxAddress() == device_descriptor.i2c_mux_address) {
-        if (driver->GetMuxChannel() != device_descriptor.i2c_mux_channel) {
-          continue;
-        }
-      }
-      WS_DEBUG_PRINTLN("[i2c] Descriptor already initialized...");
-      did_init_already = true;
-      break;
-    }
-  }
-
-  if (did_init_already) {
-    WS_DEBUG_PRINTLN("[i2c] Device already initialized, ignoring...");
+  // Did the driver initialize correctly?
+  if ( IsDriverInitialized(device_descriptor)) {
+    WS_DEBUG_PRINTLN("[i2c] Driver already initialized, skipping...");
     return true;
   }
 
@@ -718,10 +724,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // Assign I2C bus
   TwoWire *bus = nullptr;
   if (use_alt_bus) {
-    WS_DEBUG_PRINTLN("[i2c] Using alt. I2C bus...");
     bus = _i2c_bus_alt->GetBus();
   } else {
-    WS_DEBUG_PRINTLN("[i2c] Using default I2C bus...");
     bus = _i2c_bus_default->GetBus();
   }
 
@@ -735,7 +739,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
     if (device_descriptor.i2c_device_address == 0x68 ||
         device_descriptor.i2c_device_address == 0x70) {
-      WS_DEBUG_PRINTLN("[i2c] Device address is shared with rtx/mux, can not "
+      WS_DEBUG_PRINTLN("[i2c] Device address is shared with RTC/MUX, can not "
                        "auto-init, skipping!");
       return true;
     }
@@ -769,6 +773,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         break;
       }
     }
+    WS_DEBUG_PRINTLN("[i2c] ERROR - Candidates exhausted, driver not found!");
+    return true; // dont cause an error in the app
   } else {
     WS_DEBUG_PRINTLN("[i2c] Device in message/cfg file.");
     // Create new driver
@@ -806,12 +812,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
     if (!drv->begin()) {
       if (WsV2._sdCardV2->isModeOffline()) {
-        WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
+        WS_DEBUG_PRINTLN("[i2c] Failed to initialize driver!\n\tDid you set "
                          "the correct value for i2cDeviceName?\n\tDid you set "
                          "the correct value for"
-                         "i2cDeviceAddress?",
-                         WS_LED_STATUS_ERROR_RUNTIME, false);
+                         "i2cDeviceAddress?");
       }
+      return true; // don't cause an error during runtime if the device is not found
     }
     WS_DEBUG_PRINTLN("[i2c] Driver successfully initialized!");
   }

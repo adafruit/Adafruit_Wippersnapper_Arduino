@@ -108,6 +108,7 @@ public:
   void PrintScanResults();
   uint32_t GetScanDeviceAddress(int index);
   size_t GetScanDeviceCount();
+  bool IsDriverInitialized(wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor);
 
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object
