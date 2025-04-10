@@ -848,7 +848,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 /***********************************************************************/
 /*!
     @brief    Scans the I2C bus for devices and stores the results.
-    @param    defualt_bus
+    @param    default_bus
                 True to scan the default I2C bus, False to scan the
                 alternative I2C bus.
     @returns  True if the I2C bus was successfully scanned, False

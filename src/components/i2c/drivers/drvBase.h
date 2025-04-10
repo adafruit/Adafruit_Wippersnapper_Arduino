@@ -161,8 +161,11 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Configures an i2c device's sensors.
+      @param    use_default_types
+                Use default sensor types from the driver, rather than
+                the cfg file.
       @param    sensor_types
-                Pointer to an array of SensorType objects.
+                The sensor types to use for the device.
       @param    sensor_types_count
                 The number of active sensors to read from the device.
   */
@@ -754,6 +757,14 @@ public:
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< Sensors attached to the device.
 
+  /***************************************************************************/
+    /*!
+        @brief    Converts a SensorType to a string.
+        @param    type
+                    The SensorType to convert.
+        @returns  The string representation of the SensorType.
+    */
+  /***************************************************************************/
   const char *SensorTypeToString(wippersnapper_sensor_SensorType type) {
     switch (type) {
     case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
@@ -850,6 +861,6 @@ protected:
   wippersnapper_sensor_SensorType
       _default_sensor_types[15];      ///< Default sensor types
   size_t _default_sensor_types_count; ///< Number of default sensor types
-  const char *_sensor_type_strings[15];
+  const char *_sensor_type_strings[15]; ///< Sensor type strings
 };
 #endif // DRV_BASE_H
