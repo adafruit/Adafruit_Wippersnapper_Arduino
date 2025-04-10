@@ -1245,12 +1245,10 @@ void Wippersnapper_V2::connect() {
     WsV2._fileSystemV2->WriteFileConfig();
     WS_DEBUG_PRINTLN("[APP] Hardware configured!");
     // Blink status LED to green to indicate successful configuration
-    // setStatusLEDColor(0x00A300, 0.5 * 255.0);
-    // setStatusLEDColor(0x00A300, 150);
-    // delay(500);
-    // setStatusLEDColor(0x000000, 150);
-    // setStatusLEDColor(0x000000, 0.5 * 255.0);
-    WS_DEBUG_PRINTLN("[APP] begin loop");
+    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
+    delay(500);
+    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2);
+    WS_DEBUG_PRINTLN("[APP] Begin loop()");
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");

@@ -60,6 +60,7 @@ FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 Adafruit_USBD_CDC usb_cdc;    /*!< USB CDC object */
 static bool _fs_changed = false;
+static bool _did_init_msc = false;
 
 /**************************************************************************/
 /*!
@@ -105,6 +106,7 @@ FRESULT format_fs_fat12(void) {
 /**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
   _fs_changed = false;
+  _did_init_msc = false;
 
   usb_cdc.begin(115200);
   // Re-enumerate to allow cdc class begin() to take effect
@@ -121,7 +123,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
   }
 
   // If we are not formatted, attempt to format the filesystem as fat12
-  if (! wipperFatFs_v2.begin(&flash_v2)) {
+  if (!wipperFatFs_v2.begin(&flash_v2)) {
     FRESULT rc = format_fs_fat12();
     if (rc != FR_OK) {
       setStatusLEDColor(RED);
@@ -141,10 +143,10 @@ Wippersnapper_FS::Wippersnapper_FS() {
     HaltFilesystem("FATAL ERROR: Could not write filesystem contents!");
   }
 
-  // Initialize USB-MSC
-  #ifndef BUILD_OFFLINE_ONLY
+// Initialize USB-MSC
+#ifndef BUILD_OFFLINE_ONLY
   InitUsbMsc();
-  #endif
+#endif
 
   // If we wrote a fresh secrets.json file, halt until user edits the file and
   // RESETs the device Signal to user that action must be taken (edit
@@ -300,6 +302,7 @@ void Wippersnapper_FS::InitUsbMsc() {
     delay(10);
     TinyUSBDevice.attach();
   }
+  _did_init_msc = true;
 }
 
 /**************************************************************************/
@@ -679,6 +682,9 @@ void Wippersnapper_FS::WriteFileBoot(PGM_P str) {
 */
 /**************************************************************************/
 void Wippersnapper_FS::HaltFilesystem(String msg) {
+  if (!_did_init_msc) {
+    InitUsbMsc();
+  }
   TinyUSBDevice.attach();
   delay(500);
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
@@ -699,6 +705,9 @@ void Wippersnapper_FS::HaltFilesystem(String msg) {
 /**************************************************************************/
 void Wippersnapper_FS::HaltFilesystem(String msg,
                                       ws_led_status_t ledStatusColor) {
+  if (!_did_init_msc) {
+    InitUsbMsc();
+  }
   TinyUSBDevice.attach();
   delay(500);
   statusLEDSolid(ledStatusColor);

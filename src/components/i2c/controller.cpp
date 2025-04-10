@@ -735,7 +735,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("Attempting to autoconfig device found in scan...");
     // Get all possible driver candidates for this address
     WS_DEBUG_PRINT("[i2c] Obtaining driver candidates @ 0x");
-    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address);
+    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address, HEX);
     if (device_descriptor.i2c_device_address == 0x68 ||
         device_descriptor.i2c_device_address == 0x70) {
       WS_DEBUG_PRINTLN("[i2c] Device address is shared with RTC/MUX, can not "
@@ -747,6 +747,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         GetDriversForAddress(device_descriptor.i2c_device_address);
 
     // Probe each candidate to see if it communicates
+    bool did_find_driver = false;
     for (const char *driverName : candidate_drivers) {
       WS_DEBUG_PRINT("[i2c] Attempting to initialize candidate: ");
       WS_DEBUG_PRINTLN(driverName);
@@ -769,11 +770,14 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         WsV2._fileSystemV2->AddI2cDeviceToFileConfig(
             device_descriptor.i2c_device_address, driverName,
             drv->GetSensorTypeStrings(), drv->GetNumSensorTypes());
+        did_find_driver = true;
         break;
       }
     }
-    WS_DEBUG_PRINTLN("[i2c] ERROR - Candidates exhausted, driver not found!");
-    return true; // dont cause an error in the app
+    if (!did_find_driver) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR - Candidates exhausted, driver not found!");
+      return true; // dont cause an error in the app
+    }
   } else {
     WS_DEBUG_PRINTLN("[i2c] Device in message/cfg file.");
     // Create new driver
