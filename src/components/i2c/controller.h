@@ -105,7 +105,6 @@ public:
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
   bool ScanI2cBus(bool default_bus);
   bool WasDeviceScanned(uint32_t address);
-  void PrintScanResults();
   uint32_t GetScanDeviceAddress(int index);
   size_t GetScanDeviceCount();
   bool IsDriverInitialized(wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor);
