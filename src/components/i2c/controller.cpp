@@ -767,11 +767,11 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
         // Use the "default" types from the sensor driver
         drv->SetSensorTypes(true);
         drv->SetPeriod(DEFAULT_SENSOR_PERIOD);
-        #ifndef OFFLINE_MODE_WOKWI
+#ifndef OFFLINE_MODE_WOKWI
         WsV2._fileSystemV2->AddI2cDeviceToFileConfig(
             device_descriptor.i2c_device_address, driverName,
             drv->GetSensorTypeStrings(), drv->GetNumSensorTypes());
-        #endif
+#endif
         did_find_driver = true;
         break;
       }

@@ -63,13 +63,13 @@ ws_sdcard::ws_sdcard() {
   // ws_adapters.h)
   if (!did_init) {
     if (InitSdCard(SD_CS_PIN)) {
-      // Attempt to update the config file with the default pin
-      #ifndef OFFLINE_MODE_WOKWI
+// Attempt to update the config file with the default pin
+#ifndef OFFLINE_MODE_WOKWI
       did_init = WsV2._fileSystemV2->AddSDCSPinToFileConfig(SD_CS_PIN);
-      #else // WOKWI Test Mode
+#else // WOKWI Test Mode
       WsV2.pin_sd_cs = 15;
       did_init = true;
-      #endif
+#endif
     }
   }
 
