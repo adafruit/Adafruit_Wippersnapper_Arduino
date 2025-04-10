@@ -30,6 +30,10 @@ typedef ws_wifi_airlift ws_adapter_wifi;
 #define SD_CS_PIN 15
 #include "adapters/wifi/ws_wifi_esp8266.h"
 typedef ws_wifi_esp8266 ws_adapter_wifi;
+#elif defined(ARDUINO_ESP32_DEV) || defined(ESP32_DEV)
+#define SD_CS_PIN 15
+#include "adapters/wifi/ws_wifi_esp32.h"
+typedef ws_wifi_esp32 ws_adapter_offline;
 // ESP32 networking adapter
 #elif defined(ARDUINO_ARCH_ESP32)
 #define SD_CS_PIN 33

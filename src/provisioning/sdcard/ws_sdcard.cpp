@@ -64,7 +64,12 @@ ws_sdcard::ws_sdcard() {
   if (!did_init) {
     if (InitSdCard(SD_CS_PIN)) {
       // Attempt to update the config file with the default pin
+      #ifndef OFFLINE_MODE_WOKWI
       did_init = WsV2._fileSystemV2->AddSDCSPinToFileConfig(SD_CS_PIN);
+      #else // WOKWI Test Mode
+      WsV2.pin_sd_cs = 15;
+      did_init = true;
+      #endif
     }
   }
 
@@ -714,6 +719,7 @@ bool ws_sdcard::ParseFileConfig() {
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
   JsonDocument &doc = WsV2._fileSystemV2->GetDocCfg();
 #else
+  JsonDocument doc;
   // Use test data, not data from the filesystem
   if (!_use_test_data) {
     WS_DEBUG_PRINTLN("[SD] Parsing Serial Input...");

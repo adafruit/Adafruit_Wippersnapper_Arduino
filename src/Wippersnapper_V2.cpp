@@ -1241,8 +1241,9 @@ void Wippersnapper_V2::connect() {
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
-
+    #ifndef OFFLINE_MODE_WOKWI 
     WsV2._fileSystemV2->WriteFileConfig();
+    #endif // OFFLINE_MODE_WOKWI used for CI test simulations, lacks TinyUSB
     WS_DEBUG_PRINTLN("[APP] Hardware configured!");
     // Blink status LED to green to indicate successful configuration
     setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
