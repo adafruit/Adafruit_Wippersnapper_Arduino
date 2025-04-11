@@ -6,6 +6,8 @@ name: WipperSnapper Build CI
 on:
   workflow_dispatch:
   pull_request:
+    branches-ignore:
+        - 'offline-mode'
   workflow_call:
     secrets:
       GH_REPO_TOKEN:
