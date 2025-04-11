@@ -17,4 +17,4 @@ steps:
       part-id: btn1
       control: pressed
       value: 1
-  - wait-serial: '{"timestamp":0,"pin":"D4","value":false,"si_unit":"boolean"}'
+  - wait-serial: '{"timestamp":1,"pin":"D4","value":false,"si_unit":"boolean"}'
