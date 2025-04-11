@@ -9,6 +9,7 @@ on:
     secrets:
       GH_REPO_TOKEN:
         required: true
+
 jobs:
   check-branch:
     runs-on: ubuntu-latest
@@ -20,10 +21,10 @@ jobs:
           if [[ $GITHUB_REF == *"offline-mode"* ]]; then
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
-            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "should_run=false" >> $GITHUB_OUTPUT
           fi
         shell: bash
-
+  
   call-workflow-build:
     needs: check-branch
     if: needs.check-branch.outputs.should_run == 'true'
@@ -33,5 +34,5 @@ jobs:
       
   call-workflow-release:
     needs: [check-branch, call-workflow-build]
-    if: needs.check-branch.outputs.should_run == 'true'
+    if: needs.check-branch.outputs.should_run == 'true' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')
     uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/release-callee.yml@main
