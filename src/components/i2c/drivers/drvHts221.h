@@ -99,6 +99,16 @@ public:
     return _hts221_humidity->getEvent(humidEvent);
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 3;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+  }
+
 protected:
   Adafruit_HTS221 *_hts221; ///< Pointer to an HTS221 object
   Adafruit_Sensor *_hts221_temp =

@@ -94,6 +94,12 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 1;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY;
+  }
+
 protected:
   Adafruit_VL53L1X *_VL53L1X; ///< Pointer to VL53L1X temperature sensor object
 };

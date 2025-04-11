@@ -138,6 +138,11 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 1;
+    _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+  }
+
 protected:
   Adafruit_NAU7802 *_nau7802 = nullptr; ///< NAU7802 object
 };

@@ -107,6 +107,14 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 2;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY;
+  }
+
 protected:
   Adafruit_VCNL4040 *_vcnl4040; ///< Pointer to VCNL4040 light sensor object
 };
