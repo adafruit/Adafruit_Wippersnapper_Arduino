@@ -79,7 +79,7 @@
 #define STATUS_NEOPIXEL_PIN 33
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#define SD_CS_PIN 33
+#define SD_CS_PIN 10
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT)
 #define BOARD_ID "feather-esp32s2-tft"
 #define USE_TINYUSB
