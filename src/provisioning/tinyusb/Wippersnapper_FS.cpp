@@ -143,11 +143,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
     HaltFilesystem("FATAL ERROR: Could not write filesystem contents!");
   }
 
-// Initialize USB-MSC
-#ifndef BUILD_OFFLINE_ONLY
-  InitUsbMsc();
-#endif
-
   // If we wrote a fresh secrets.json file, halt until user edits the file and
   // RESETs the device Signal to user that action must be taken (edit
   // secrets.json)
@@ -683,6 +678,7 @@ void Wippersnapper_FS::WriteFileBoot(PGM_P str) {
 /**************************************************************************/
 void Wippersnapper_FS::HaltFilesystem(String msg) {
   if (!_did_init_msc) {
+    WS_DEBUG_PRINTLN("HaltFilesystem: InitUsbMsc");
     InitUsbMsc();
   }
   TinyUSBDevice.attach();
@@ -706,6 +702,7 @@ void Wippersnapper_FS::HaltFilesystem(String msg) {
 void Wippersnapper_FS::HaltFilesystem(String msg,
                                       ws_led_status_t ledStatusColor) {
   if (!_did_init_msc) {
+    WS_DEBUG_PRINTLN("HaltFilesystem: InitUsbMsc");
     InitUsbMsc();
   }
   TinyUSBDevice.attach();

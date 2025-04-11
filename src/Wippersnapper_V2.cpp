@@ -96,11 +96,9 @@ void Wippersnapper_V2::provision() {
   if (WsV2._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()
   } else {
-#ifdef BUILD_OFFLINE_ONLY
     haltErrorV2("SD initialization failed.\nDo not reformat the card!\nIs the "
                 "card correctly inserted?\nIs there a wiring/soldering "
                 "problem\nIs the config.json file malformed?");
-#endif
     // SD card not initialized, so just continue with online-mode provisioning
   }
 
