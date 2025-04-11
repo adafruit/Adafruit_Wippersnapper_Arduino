@@ -81,18 +81,18 @@ jobs:
       matrix:
         arduino-platform:
           [
-            "metroesp32s2_offline",
-            "metro_esp32s3_offline",
-            "feather_esp32s2_offline",
-            "feather_esp32s2_tft_offline",
-            "feather_esp32s2_reverse_tft_offline",
-            "feather_esp32s3_offline",
-            "feather_esp32s3_4mbflash_2mbpsram_offline",
-            "feather_esp32s3_tft_offline",
-            "qtpy_esp32s3_offline",
-            "qtpy_esp32s2_offline",
-            "feather_esp32s3_reverse_tft_offline",
-            "qtpy_esp32s3_n4r2_offline",
+            "metroesp32s2",
+            "metro_esp32s3",
+            "feather_esp32s2",
+            "feather_esp32s2_tft",
+            "feather_esp32s2_reverse_tft",
+            "feather_esp32s3",
+            "feather_esp32s3_4mbflash_2mbpsram",
+            "feather_esp32s3_tft",
+            "qtpy_esp32s3",
+            "qtpy_esp32s2",
+            "feather_esp32s3_reverse_tft",
+            "qtpy_esp32s3_n4r2",
           ]
     steps:
       - uses: actions/setup-python@v5
@@ -183,10 +183,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["pico_rp2040_tinyusb_offline",
-                        "pico_rp2350_tinyusb_offline",
-                        "feather_rp2040_adalogger_tinyusb_offline",
-                        "metro_rp2350_tinyusb_offline"
+        arduino-platform: ["pico_rp2040_tinyusb",
+                        "pico_rp2350_tinyusb",
+                        "feather_rp2040_adalogger_tinyusb",
+                        "metro_rp2350_tinyusb"
                         ]
     steps:
       - uses: actions/setup-python@v5
