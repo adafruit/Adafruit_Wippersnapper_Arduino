@@ -12,6 +12,7 @@
 #include "ws_adapters.h"
 ws_adapter_offline wipper;
 #define WS_DEBUG // Enable debug output!
+#define BUILD_OFFLINE_ONLY
 
 void setup() {
   Serial.begin(115200);
