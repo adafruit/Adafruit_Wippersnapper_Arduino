@@ -54,6 +54,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   WsV2.analogio_controller = new AnalogIOController();
   WsV2._ds18x20_controller = new DS18X20Controller();
   WsV2._i2c_controller = new I2cController();
+  WsV2._pixels_controller = new PixelsController();
 };
 
 /**************************************************************************/
@@ -408,6 +409,28 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINTLN("ERROR: Unable to remove I2C device!");
       return false;
     }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pixels_add_tag:
+    WS_DEBUG_PRINTLN("-> Pixels Add Message Type");
+    if (!WsV2._pixels_controller->Handle_Pixels_Add(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to add pixels strand!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pixels_remove_tag:
+    WS_DEBUG_PRINTLN("-> Pixels Remove Message Type");
+    if (!WsV2._pixels_controller->Handle_Pixels_Remove(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to remove pixels strand!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pixels_write_tag:
+    WS_DEBUG_PRINTLN("-> Pixels Write Message Type");
+    if (!WsV2._pixels_controller->Handle_Pixels_Write(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to write to pixels strand!");
+      return false;
+    }
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
@@ -975,6 +998,13 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.payload.ds18x20_event =
         *(wippersnapper_ds18x20_Ds18x20Event *)payload;
     break;
+  case wippersnapper_signal_DeviceToBroker_pixels_added_tag:
+    WS_DEBUG_PRINTLN("PixelsAdded");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_pixels_added_tag;
+    MsgSignal.payload.pixels_added =
+        *(wippersnapper_pixels_PixelsAdded *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
@@ -1331,7 +1361,10 @@ ws_status_t Wippersnapper_V2::run() {
 
   // TODO: Process I2C sensor events
   WsV2._i2c_controller->update();
-
+  
+  // Process Pixels events
+  // TODO: Add update() method to PixelsController if needed
+  
   // TODO: Process UART sensor events
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!

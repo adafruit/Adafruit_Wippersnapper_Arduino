@@ -86,6 +86,7 @@
 #include "protos/checkin.pb.h"
 #include "protos/digitalio.pb.h"
 #include "protos/ds18x20.pb.h"
+#include "protos/pixels.pb.h"
 #include "protos/signal.pb.h"
 
 // External libraries
@@ -109,6 +110,7 @@
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
 #include "components/i2c/controller.h"
+#include "components/pixels/controller.h"
 #include "components/sensor/model.h"
 
 // Display
@@ -149,6 +151,7 @@ class DigitalIOController;
 class AnalogIOController;
 class DS18X20Controller;
 class I2cController;
+class PixelsController;
 
 /**************************************************************************/
 /*!
@@ -250,6 +253,7 @@ public:
   DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
+  PixelsController *_pixels_controller = nullptr; ///< Instance of Pixels controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
