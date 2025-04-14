@@ -76,7 +76,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
 
   // Check if the provided pin is also the status LED pin
   if (_dio_hardware->IsStatusLEDPin(pin_name))
-    releaseStatusLED();
+    ReleaseStatusPixel();
 
   // Deinit the pin if it's already in use
   if (GetPinIdx(pin_name) != -1)

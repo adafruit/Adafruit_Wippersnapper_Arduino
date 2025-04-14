@@ -99,7 +99,7 @@ void initStatusLED() {
     @brief    De-initializes the status LED and releases pin.
 */
 /****************************************************************************/
-void releaseStatusLED() {
+void ReleaseStatusPixel() {
 #ifdef USE_STATUS_NEOPIXEL
   delete statusPixel; // Deallocate Adafruit_NeoPixel object, set data pin back
                       // to INPUT.

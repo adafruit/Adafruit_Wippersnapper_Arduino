@@ -117,7 +117,7 @@ void Wippersnapper_V2::provision() {
   }
 
   WsV2._display->enableLogging();
-  releaseStatusLED(); // don't use status LED if we are using the display
+  ReleaseStatusPixel(); // don't use status LED if we are using the display
   // UI Setup
   WsV2._ui_helper = new ws_display_ui_helper(WsV2._display);
   WsV2._ui_helper->set_bg_black();
