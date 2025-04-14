@@ -1,23 +1,37 @@
-# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2022 - 2024
+# SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2022-2025
 #
 # SPDX-License-Identifier: MIT
 name: WipperSnapper Release Workflow
-
 on:
   release:
     types: [published]
-    branches-ignore:
-      - offline-mode
+  workflow_call:
     secrets:
       GH_REPO_TOKEN:
         required: true
-
 jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - id: check
+        run: |
+          if [[ $GITHUB_REF == *"offline-mode"* ]]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
   call-workflow-build:
+    needs: check-branch
+    if: needs.check-branch.outputs.should_run == 'true'
     uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/build-clang-doxy.yml@main
     secrets:
       GH_REPO_TOKEN: ${{ secrets.GH_REPO_TOKEN }}
-
+      
   call-workflow-release:
-    needs: call-workflow-build
+    needs: [check-branch, call-workflow-build]
+    if: needs.check-branch.outputs.should_run == 'true'
     uses: adafruit/Adafruit_Wippersnapper_Arduino/.github/workflows/release-callee.yml@main
