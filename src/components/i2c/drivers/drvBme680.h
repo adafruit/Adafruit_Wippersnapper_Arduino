@@ -178,6 +178,22 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 6;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+    _default_sensor_types[2] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+    _default_sensor_types[3] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
+    _default_sensor_types[4] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE;
+    _default_sensor_types[5] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE;
+  }
+
 protected:
   Adafruit_BME680 *_bme; ///< BME680 object
 };

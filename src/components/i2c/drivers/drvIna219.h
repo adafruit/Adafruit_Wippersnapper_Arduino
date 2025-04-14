@@ -101,6 +101,14 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 2;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT;
+  }
+
 protected:
   Adafruit_INA219 *_ina219; ///< Pointer to INA219 sensor object
 };

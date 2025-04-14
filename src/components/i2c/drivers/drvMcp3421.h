@@ -123,6 +123,15 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 3;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT;
+    _default_sensor_types[2] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+  }
+
 protected:
   Adafruit_MCP3421 *_mcp3421; ///< Pointer to MCP3421 sensor object
 };

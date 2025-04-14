@@ -19,7 +19,8 @@
 #include <Arduino.h>
 #include <protos/i2c.pb.h>
 
-#define NO_MUX_CH 0xFFFF; ///< No MUX channel specified
+#define NO_MUX_CH 0xFFFF;           ///< No MUX channel specified
+#define DEFAULT_SENSOR_PERIOD 15.0f ///< Default sensor period, in seconds
 
 /**************************************************************************/
 /*!
@@ -54,6 +55,7 @@ public:
     _has_alt_i2c_bus = false;
     strcpy(_pin_scl, "default");
     strcpy(_pin_sda, "default");
+    _default_sensor_types_count = 0;
   }
 
   /*******************************************************************************/
@@ -106,6 +108,10 @@ public:
   */
   /*******************************************************************************/
   void EnableAltI2CBus(char *scl_pin, char *sda_pin) {
+    if (scl_pin == nullptr || sda_pin == nullptr) {
+      WS_DEBUG_PRINTLN("[drvBase] ERROR: Invalid Pins for Alt I2C bus!");
+      return;
+    }
     strcpy(_pin_scl, scl_pin);
     strcpy(_pin_sda, sda_pin);
     _has_alt_i2c_bus = true;
@@ -155,19 +161,53 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Configures an i2c device's sensors.
+      @param    use_default_types
+                Use default sensor types from the driver, rather than
+                the cfg file.
       @param    sensor_types
-                Pointer to an array of SensorType objects.
+                The sensor types to use for the device.
       @param    sensor_types_count
                 The number of active sensors to read from the device.
   */
   /*******************************************************************************/
-  void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
-                         size_t sensor_types_count) {
-    _sensors_count = sensor_types_count;
+  void SetSensorTypes(bool use_default_types = false,
+                      wippersnapper_sensor_SensorType *sensor_types = nullptr,
+                      size_t sensor_types_count = 0) {
+
+    // Assign number of sensors
+    if (use_default_types) {
+      // Configure the driver with values from THE DRIVER
+      ConfigureDefaultSensorTypes();
+      _sensors_count = _default_sensor_types_count;
+    } else {
+      // Configure the driver with values from THE CONFIG FILE
+      _sensors_count = sensor_types_count;
+    }
+
+    // Fill sensor types with default values
     for (size_t i = 0; i < _sensors_count; i++) {
-      _sensors[i] = sensor_types[i];
+      if (use_default_types)
+        _sensors[i] = _default_sensor_types[i];
+      else
+        _sensors[i] = sensor_types[i];
+      _sensor_type_strings[i] = SensorTypeToString(_sensors[i]);
     }
   }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets a ptr to an array containing the sensor types, as strings.
+      @returns  Pointer to an array of strings.
+  */
+  /*******************************************************************************/
+  const char **GetSensorTypeStrings() { return _sensor_type_strings; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Configures a driver with the default SensorType(s) for the
+                device.
+  /*******************************************************************************/
+  virtual void ConfigureDefaultSensorTypes() { return; }
 
   /*******************************************************************************/
   /*!
@@ -175,7 +215,7 @@ public:
       @returns  The number of enabled sensors.
   */
   /*******************************************************************************/
-  size_t GetEnabledSensorCnt() { return _sensors_count; }
+  size_t GetNumSensorTypes() { return _sensors_count; }
 
   /*******************************************************************************/
   /*!
@@ -193,11 +233,9 @@ public:
                 seconds.
   */
   /*******************************************************************************/
-  void SetSensorPeriod(float period) {
-    if (period < 0) {
-      _sensor_period = 0;
-      return;
-    }
+  void SetPeriod(float period) {
+    if (period < 0)
+      _sensor_period = DEFAULT_SENSOR_PERIOD;
     _sensor_period = (unsigned long)(period * 1000.0f);
   }
 
@@ -218,6 +256,14 @@ public:
   */
   /*******************************************************************************/
   ulong GetSensorPeriod() { return _sensor_period; }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the sensor's types
+      @returns  A pointer to an array of SensorTypes.
+  */
+  /*******************************************************************************/
+  wippersnapper_sensor_SensorType *GetSensorTypes() { return _sensors; }
 
   /*******************************************************************************/
   /*!
@@ -711,6 +757,95 @@ public:
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< Sensors attached to the device.
 
+  /***************************************************************************/
+  /*!
+      @brief    Converts a SensorType to a string.
+      @param    type
+                  The SensorType to convert.
+      @returns  The string representation of the SensorType.
+  */
+  /***************************************************************************/
+  const char *SensorTypeToString(wippersnapper_sensor_SensorType type) {
+    switch (type) {
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
+      return "unspecified";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER:
+      return "accelerometer";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD:
+      return "magnetic-field";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION:
+      return "orientation";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE:
+      return "gyroscope";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT:
+      return "light";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE:
+      return "pressure";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY:
+      return "proximity";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY:
+      return "gravity";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION:
+      return "linear-acceleration";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR:
+      return "rotation-vector";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY:
+      return "relative-humidity";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+      return "ambient-temp";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+      return "object-temp";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE:
+      return "voltage";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_CURRENT:
+      return "current";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR:
+      return "color";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW:
+      return "raw";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
+      return "pm10-std";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
+      return "pm25-std";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
+      return "pm100-std";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_ENV:
+      return "pm10-env";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_ENV:
+      return "pm25-env";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_ENV:
+      return "pm100-env";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_CO2:
+      return "co2";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_GAS_RESISTANCE:
+      return "gas-resistance";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_ALTITUDE:
+      return "altitude";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_LUX:
+      return "lux";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2:
+      return "eco2";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNITLESS_PERCENT:
+      return "unitless-percent";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+      return "ambient-temp-fahrenheit";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+      return "object-temp-fahrenheit";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX:
+      return "voc-index";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX:
+      return "nox-index";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC:
+      return "tvoc";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_BYTES:
+      return "bytes";
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN:
+      return "boolean";
+    default:
+      return "unknown";
+    }
+  }
+
 protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus
   bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus
@@ -723,5 +858,9 @@ protected:
   ulong _sensor_period;      ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv;  ///< The sensor's previous period, in milliseconds.
   size_t _sensors_count;     ///< Number of sensors on the device.
+  wippersnapper_sensor_SensorType
+      _default_sensor_types[15];        ///< Default sensor types
+  size_t _default_sensor_types_count;   ///< Number of default sensor types
+  const char *_sensor_type_strings[15]; ///< Sensor type strings
 };
 #endif // DRV_BASE_H

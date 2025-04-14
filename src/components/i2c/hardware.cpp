@@ -147,6 +147,69 @@ TwoWire *I2cHardware::GetBus() { return _bus; }
 
 /***********************************************************************/
 /*!
+    @brief  Scans the I2C bus for devices.
+    @param    scan_results
+                The results of the I2C bus scan.
+    @returns  True if the bus was successfully scanned, False otherwise.
+*/
+/***********************************************************************/
+bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
+  if (!scan_results)
+    return false;
+
+  if (!_bus) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C bus not initialized!");
+    return false;
+  }
+
+  // Perform a bus scan
+  WS_DEBUG_PRINTLN("[i2c]: Scanning I2C Bus for Devices...");
+  for (uint8_t address = 1; address < 127; address++) {
+    _bus->beginTransmission(address);
+    uint8_t endTransmissionRC = _bus->endTransmission();
+
+    if (endTransmissionRC == 0) {
+      WS_DEBUG_PRINT("[i2c] Found Device at ");
+      WS_DEBUG_PRINT("0x");
+      WS_DEBUG_PRINTLN(address, HEX);
+      scan_results
+          ->i2c_bus_found_devices[scan_results->i2c_bus_found_devices_count]
+          .i2c_device_address = address;
+      scan_results->i2c_bus_found_devices_count++;
+    }
+#if defined(ARDUINO_ARCH_ESP32)
+    // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
+    else if (endTransmissionRC == 3) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
+      continue;
+    } else if (endTransmissionRC == 2) {
+      // WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of
+      // address!");
+      continue;
+    } else if (endTransmissionRC == 1) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: data too long to fit in xmit buffer!");
+      continue;
+    } else if (endTransmissionRC == 4) {
+      WS_DEBUG_PRINTLN(
+          "[i2c] Did not find device: Unspecified bus error occured!");
+      continue;
+    } else if (endTransmissionRC == 5) {
+      WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
+      continue;
+    }
+#endif // ARDUINO_ARCH_ESP32
+    else {
+      // Did not find a device, keep scanning
+      continue;
+    }
+  }
+
+  return true;
+}
+
+/***********************************************************************/
+/*!
     @brief  Adds a MUX to the I2C bus.
     @param    address_register
                 The MUX's address register.
@@ -165,7 +228,7 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
     return false;
   }
 
-  _mux_address_register = address_register;
+  _mux_address = address_register;
   _has_mux = true;
   // Put MUX in back into its default state cuz we don't know if we're about to
   // use it again
@@ -181,7 +244,8 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
 void I2cHardware::ClearMuxChannel() {
   if (!_has_mux)
     return;
-  _bus->beginTransmission(_mux_address_register);
+
+  _bus->beginTransmission(_mux_address);
   if (_mux_max_channels == 4)
     _bus->write(0b0000);
   else if (_mux_max_channels == 8)
@@ -199,7 +263,8 @@ void I2cHardware::ClearMuxChannel() {
 void I2cHardware::SelectMuxChannel(uint32_t channel) {
   if (channel > _mux_max_channels - 1)
     return;
-  _bus->beginTransmission(_mux_address_register);
+
+  _bus->beginTransmission(_mux_address);
   _bus->write(1 << channel);
   _bus->endTransmission();
 }

@@ -30,10 +30,11 @@ class WipperSnapper_LittleFS {
 public:
   WipperSnapper_LittleFS();
   ~WipperSnapper_LittleFS();
-  void parseSecrets();
-  void fsHalt(String msg,
-              ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
-  void GetSDCSPin();
+  void ParseFileSecrets();
+  void
+  HaltFilesystem(String msg,
+                 ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
+  void GetPinSDCS();
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WIPPERSNAPPER_LITTLEFS_H
