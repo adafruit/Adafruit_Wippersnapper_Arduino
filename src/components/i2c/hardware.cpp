@@ -181,7 +181,7 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     // Check endTransmission()'s return code (Arduino-ESP32 ONLY)
     else if (endTransmissionRC == 3) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
-      return false;
+      continue;
     } else if (endTransmissionRC == 2) {
       // WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of
       // address!");
@@ -189,11 +189,11 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     } else if (endTransmissionRC == 1) {
       WS_DEBUG_PRINTLN(
           "[i2c] Did not find device: data too long to fit in xmit buffer!");
-      return false;
+      continue;
     } else if (endTransmissionRC == 4) {
       WS_DEBUG_PRINTLN(
           "[i2c] Did not find device: Unspecified bus error occured!");
-      return false;
+      continue;
     } else if (endTransmissionRC == 5) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
       continue;

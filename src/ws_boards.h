@@ -203,16 +203,6 @@
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
 #define I2c_STEMMA_WIRE1
 #define SD_CS_PIN 33
-#elif defined(ARDUINO_SAMD_NANO_33_IOT)
-#define BOARD_ID "nano-33-iot"
-#define USE_STATUS_LED
-#define STATUS_LED_PIN 13
-#define SD_CS_PIN 33
-#elif defined(ARDUINO_SAMD_MKRWIFI1010)
-#define BOARD_ID "mkrwifi1010"
-#define USE_STATUS_LED
-#define STATUS_LED_PIN 6
-#define SD_CS_PIN 33
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
 #define BOARD_ID "rpi-pico-w"
 #define USE_TINYUSB

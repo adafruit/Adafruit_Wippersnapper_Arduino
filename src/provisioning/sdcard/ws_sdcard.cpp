@@ -59,8 +59,8 @@ ws_sdcard::ws_sdcard() {
     did_init = InitSdCard(WsV2.pin_sd_cs);
   }
 
-  // Case 2: Try to initialize the SD card with the default pin (within
-  // ws_adapters.h)
+  // Case 2: Try to initialize the SD card with the default
+  // board SD CS pin (found within ws_boards.h)
   if (!did_init) {
     if (InitSdCard(SD_CS_PIN)) {
 // Attempt to update the config file with the default pin

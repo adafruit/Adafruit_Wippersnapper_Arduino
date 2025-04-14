@@ -80,14 +80,14 @@ void Wippersnapper_V2::provision() {
 #ifdef USE_TINYUSB
   WsV2._fileSystemV2 = new Wippersnapper_FS();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2 = new WipperSnapper_LittleFS();
+  WsV2._littleFSV2 = new WipperSnapper_LittleFS();
 #endif
 
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
   WsV2._fileSystemV2->GetPinSDCS();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2->GetPinSDCS();
+  WsV2._littleFSV2->GetPinSDCS();
 #elif defined(OFFLINE_MODE_WOKWI)
   WsV2.pin_sd_cs = 15;
 #endif
@@ -126,7 +126,7 @@ void Wippersnapper_V2::provision() {
 #ifdef USE_TINYUSB
   WsV2._fileSystemV2->ParseFileSecrets();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2->ParseFileSecrets();
+  WsV2._littleFSV2->ParseFileSecrets();
 #else
   check_valid_ssid(); // non-fs-backed, sets global credentials within network
                       // iface
