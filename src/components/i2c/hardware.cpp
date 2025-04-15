@@ -155,6 +155,15 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus_status = wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Clears the MUX channel.
+    @param  scan_results
+                The I2C bus scan results.
+    @returns  True if the MUX channel was successfully cleared,
+              False otherwise.
+*/
+/***********************************************************************/
 bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
   if (!scan_results)
     return false;
@@ -272,6 +281,11 @@ bool I2cHardware::AddMuxToBus(uint32_t address_register, const char *name) {
   return true;
 }
 
+/***********************************************************************/
+/*!
+    @brief  Removes a MUX from the I2C bus.
+*/
+/***********************************************************************/
 void I2cHardware::RemoveMux() {
   ClearMuxChannel();
   _has_mux = false;
@@ -318,6 +332,14 @@ void I2cHardware::SelectMuxChannel(uint32_t channel) {
 /***********************************************************************/
 bool I2cHardware::HasMux() { return _has_mux; }
 
+/***********************************************************************/
+/*!
+    @brief  Returns the maximum number of channels on the MUX.
+    @param  scan_results
+                The I2C bus scan results.
+    @returns  The maximum number of channels on the MUX.
+*/
+/***********************************************************************/
 bool I2cHardware::ScanMux(wippersnapper_i2c_I2cBusScanned *scan_results) {
   if (!HasMux()) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: No MUX present on the bus!");

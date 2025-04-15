@@ -403,6 +403,7 @@ I2cController::~I2cController() {
     @brief  Removes an I2C driver from the controller and frees memory
     @param    address
                 The desired I2C device's address.
+    @returns True if the driver was removed, False otherwise.
 */
 /***********************************************************************/
 bool I2cController::RemoveDriver(uint32_t address) {
