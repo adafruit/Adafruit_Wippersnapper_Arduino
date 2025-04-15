@@ -46,7 +46,6 @@ public:
   uint16_t GetPinData();
   void FillStrand(uint32_t color);
   void RemoveStrand();
-
 private:
   Adafruit_NeoPixel *_neopixel = nullptr; ///< Used for NeoPixel pixel strands
   Adafruit_DotStar *_dotstar = nullptr;   ///< Used for DotStar pixel strands

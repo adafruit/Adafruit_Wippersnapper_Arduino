@@ -30,9 +30,11 @@ PixelsController::PixelsController() {
 */
 /**************************************************************************/
 PixelsController::~PixelsController() {
-  delete _pixels_model;
-  delete _pixel_strands;
+  for (int i = 0; i < _num_strands; i++) {
+    delete _pixel_strands[i];
+  }
   _num_strands = 0;
+  delete _pixels_model;
 }
 
 /**************************************************************************/

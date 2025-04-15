@@ -103,6 +103,7 @@ bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
   WS_DEBUG_PRINT(pin_data);
   WS_DEBUG_PRINT(" and clock pin ");
   WS_DEBUG_PRINT(pin_clock);
+  return true;
 }
 
 /**************************************************************************/
