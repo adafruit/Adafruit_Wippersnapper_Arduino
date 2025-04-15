@@ -22,10 +22,10 @@
 */
 /**************************************************************************/
 PixelsModel::PixelsModel() {
-    _msg_pixels_add = wippersnapper_pixels_PixelsAdd_init_zero;
-    _msg_pixels_remove = wippersnapper_pixels_PixelsRemove_init_zero;
-    _msg_pixels_write = wippersnapper_pixels_PixelsWrite_init_zero;
-    _msg_pixels_added = wippersnapper_pixels_PixelsAdded_init_zero;
+  _msg_pixels_add = wippersnapper_pixels_PixelsAdd_init_zero;
+  _msg_pixels_remove = wippersnapper_pixels_PixelsRemove_init_zero;
+  _msg_pixels_write = wippersnapper_pixels_PixelsWrite_init_zero;
+  _msg_pixels_added = wippersnapper_pixels_PixelsAdded_init_zero;
 }
 
 /**************************************************************************/
@@ -33,8 +33,7 @@ PixelsModel::PixelsModel() {
     @brief  Destructs a PixelsModel object
 */
 /**************************************************************************/
-PixelsModel::~PixelsModel() {
-}
+PixelsModel::~PixelsModel() {}
 
 /**************************************************************************/
 /*!
@@ -45,6 +44,9 @@ PixelsModel::~PixelsModel() {
 */
 /**************************************************************************/
 bool PixelsModel::DecodePixelsAdd(pb_istream_t *stream) {
+  _msg_pixels_add = wippersnapper_pixels_PixelsAdd_init_zero;
+  return pb_decode(stream, wippersnapper_pixels_PixelsAdd_fields,
+                   &_msg_pixels_add);
 }
 
 /**************************************************************************/
@@ -54,6 +56,7 @@ bool PixelsModel::DecodePixelsAdd(pb_istream_t *stream) {
 */
 /**************************************************************************/
 wippersnapper_pixels_PixelsAdd *PixelsModel::GetPixelsAddMsg() {
+  return &_msg_pixels_add;
 }
 
 /**************************************************************************/
@@ -65,6 +68,9 @@ wippersnapper_pixels_PixelsAdd *PixelsModel::GetPixelsAddMsg() {
 */
 /**************************************************************************/
 bool PixelsModel::DecodePixelsRemove(pb_istream_t *stream) {
+  _msg_pixels_remove = wippersnapper_pixels_PixelsRemove_init_zero;
+  return pb_decode(stream, wippersnapper_pixels_PixelsRemove_fields,
+                   &_msg_pixels_remove);
 }
 
 /**************************************************************************/
@@ -74,6 +80,7 @@ bool PixelsModel::DecodePixelsRemove(pb_istream_t *stream) {
 */
 /**************************************************************************/
 wippersnapper_pixels_PixelsRemove *PixelsModel::GetPixelsRemoveMsg() {
+  return &_msg_pixels_remove;
 }
 
 /**************************************************************************/
@@ -85,6 +92,9 @@ wippersnapper_pixels_PixelsRemove *PixelsModel::GetPixelsRemoveMsg() {
 */
 /**************************************************************************/
 bool PixelsModel::DecodePixelsWrite(pb_istream_t *stream) {
+  _msg_pixels_write = wippersnapper_pixels_PixelsWrite_init_zero;
+  return pb_decode(stream, wippersnapper_pixels_PixelsWrite_fields,
+                   &_msg_pixels_write);
 }
 
 /**************************************************************************/
@@ -94,6 +104,7 @@ bool PixelsModel::DecodePixelsWrite(pb_istream_t *stream) {
 */
 /**************************************************************************/
 wippersnapper_pixels_PixelsWrite *PixelsModel::GetPixelsWriteMsg() {
+  return &_msg_pixels_write;
 }
 
 /**************************************************************************/
@@ -107,6 +118,21 @@ wippersnapper_pixels_PixelsWrite *PixelsModel::GetPixelsWriteMsg() {
 */
 /**************************************************************************/
 bool PixelsModel::EncodePixelsAdded(char *pin_data, bool success) {
+  // Fill the message
+  _msg_pixels_added = wippersnapper_pixels_PixelsAdded_init_zero;
+  _msg_pixels_added.is_success = success;
+  strncpy(_msg_pixels_added.pixels_pin_data, pin_data,
+          sizeof(_msg_pixels_added.pixels_pin_data));
+
+  // Encode it!
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, wippersnapper_pixels_PixelsAdded_fields,
+                           &_msg_pixels_added))
+    return false;
+  uint8_t buf[sz_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  return pb_encode(&msg_stream, wippersnapper_pixels_PixelsAdded_fields,
+                   &_msg_pixels_added);
 }
 
 /**************************************************************************/
@@ -116,4 +142,5 @@ bool PixelsModel::EncodePixelsAdded(char *pin_data, bool success) {
 */
 /**************************************************************************/
 wippersnapper_pixels_PixelsAdded *PixelsModel::GetPixelsAddedMsg() {
+  return &_msg_pixels_added;
 }

@@ -44,23 +44,33 @@ PixelsController::~PixelsController() {
 */
 /**************************************************************************/
 bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
-  // Attempt to decode the istream
+  // Attempt to decode the istream into a PixelsAdd message
   if (!_pixels_model->DecodePixelsAdd(stream))
     return false;
-  // Get the decoded message
   wippersnapper_pixels_PixelsAdd *msg_add = _pixels_model->GetPixelsAddMsg();
   _pixel_strands[_num_strands] = new PixelsHardware();
 
-  // TODO: Call ConfigureStrand()!
+  // Configure the pixel strand
   bool did_init = false;
-  did_init = _pixel_strands[_num_strands]->ConfigureStrand(
+  did_init = _pixel_strands[_num_strands]->AddStrand(
       msg_add->pixels_type, msg_add->pixels_ordering, msg_add->pixels_num,
       msg_add->pixels_brightness, msg_add->pixels_pin_data,
       msg_add->pixels_pin_dotstar_clock);
   if (!did_init)
     WS_DEBUG_PRINTLN("[pixels] Failed to create strand!");
-  // TODO: Implement the wippersnapper_pixels_PixelsAdded message back to the
-  // broker here
+
+  // Publish PixelsAdded message to the broker
+  if (!_pixels_model->EncodePixelsAdded(msg_add->pixels_pin_data, did_init)) {
+    WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
+    return false;
+  }
+  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pixels_added_tag,
+                          _pixels_model->GetPixelsAddedMsg())) {
+    WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
+    return false;
+  }
+
+  return true;
 }
 
 /**************************************************************************/
@@ -71,7 +81,25 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
     @returns True if successful, False otherwise
 */
 /**************************************************************************/
-bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {}
+bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
+  // Decode the PixelsWrite message
+  if (!_pixels_model->DecodePixelsWrite(stream)) {
+    WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsWrite message!");
+    return false;
+  }
+  wippersnapper_pixels_PixelsWrite *msg_write =
+      _pixels_model->GetPixelsWriteMsg();
+  uint16_t pin_data = atoi(msg_write->pixels_pin_data + 1);
+  uint16_t idx = GetStrandIndex(pin_data);
+  if (idx == -1) {
+    WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
+    return false;
+  }
+
+  // Call hardware to fill the strand
+  _pixel_strands[idx]->FillStrand(msg_write->pixels_color);
+  return true;
+}
 
 /**************************************************************************/
 /*!
@@ -81,4 +109,40 @@ bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {}
     @returns True if successful, False otherwise
 */
 /**************************************************************************/
-bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {}
+bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
+  // Decode the PixelsRemove message
+  if (!_pixels_model->DecodePixelsRemove(stream)) {
+    WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsRemove message!");
+    return false;
+  }
+  wippersnapper_pixels_PixelsRemove *msg_remove =
+      _pixels_model->GetPixelsRemoveMsg();
+
+  uint16_t pin_data = atoi(msg_remove->pixels_pin_data + 1);
+  uint16_t idx = GetStrandIndex(pin_data);
+  if (idx == -1) {
+    WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
+    return false;
+  }
+
+  // Call hardware to deinitialize the strand
+  _pixel_strands[idx]->RemoveStrand();
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Handles a request to update the pixel strands
+    @param  pin_data
+            The desired data pin
+    @returns Desired strand index, -1 if not found.
+*/
+/**************************************************************************/
+uint16_t PixelsController::GetStrandIndex(uint16_t pin_data) {
+  for (int i = 0; i < _num_strands; i++) {
+    if (_pixel_strands[i]->GetPinData() == pin_data) {
+      return i;
+    }
+  }
+  return -1;
+}

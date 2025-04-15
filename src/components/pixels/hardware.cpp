@@ -75,16 +75,13 @@ bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
   WS_DEBUG_PRINT(pin_clock);
 }
 
-bool PixelsHardware::ConfigureStrand(wippersnapper_pixels_PixelsType type,
-                                     wippersnapper_pixels_PixelsOrder order,
-                                     uint32_t num_pixels, uint32_t brightness,
-                                     const char *pin_data,
-                                     const char *pin_clock) {
+bool PixelsHardware::AddStrand(wippersnapper_pixels_PixelsType type,
+                               wippersnapper_pixels_PixelsOrder order,
+                               uint32_t num_pixels, uint32_t brightness,
+                               const char *pin_data, const char *pin_clock) {
   _type = type;
   // Convert the pin string to an integer
   uint16_t p_data = atoi(pin_data + 1);
-  // Generics, TODO
-
   if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     if (!AddNeoPixel(num_pixels, p_data, GetStrandOrderNeoPixel(order),
                      (uint8_t)brightness)) {
@@ -99,7 +96,7 @@ bool PixelsHardware::ConfigureStrand(wippersnapper_pixels_PixelsType type,
       return false;
     }
   } else {
-    // TODO! Signal!!!
+    WS_DEBUG_PRINTLN("[pixels] Unknown pixel type!");
     return false;
   }
   return true;
@@ -114,7 +111,32 @@ bool PixelsHardware::ConfigureStrand(wippersnapper_pixels_PixelsType type,
             32-bit color value
 */
 /**************************************************************************/
-void PixelsHardware::SetPixelColor(uint8_t pin_data, uint32_t color) {}
+void PixelsHardware::FillStrand(uint32_t color) {
+  // Apply gamma correction to match IO Web
+  uint32_t color_gamma = ApplyGammaCorrection(color);
+  WS_DEBUG_PRINT("[pixels] Filling strand with color: ");
+  WS_DEBUG_PRINT(color_gamma, HEX);
+  if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    _neopixel->fill(color_gamma);
+    _neopixel->show();
+  } else if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    _dotstar->fill(color_gamma);
+    _dotstar->show();
+  } else {
+    WS_DEBUG_PRINTLN("[pixels] Unknown pixel type!");
+  }
+}
+
+uint32_t PixelsHardware::ApplyGammaCorrection(uint32_t color) {
+  if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    return _neopixel->gamma32(color);
+  } else if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    return _dotstar->gamma32(color);
+  } else {
+    WS_DEBUG_PRINTLN("[pixels] Unknown pixel type!");
+    return color;
+  }
+}
 
 /**************************************************************************/
 /*!
@@ -123,7 +145,25 @@ void PixelsHardware::SetPixelColor(uint8_t pin_data, uint32_t color) {}
             Data pin for the pixel strand
 */
 /**************************************************************************/
-void PixelsHardware::deinit(uint8_t pin_data) {}
+void PixelsHardware::RemoveStrand() {
+  if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
+    if (_neopixel != nullptr) {
+      delete _neopixel;
+      _neopixel = nullptr;
+    }
+  } else if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_DOTSTAR) {
+    if (_dotstar != nullptr) {
+      delete _dotstar;
+      _dotstar = nullptr;
+    }
+  } else {
+    WS_DEBUG_PRINTLN("[pixels] Unknown pixel type!");
+  }
+
+  // Optionally re-init the status pixel for reuse by app.
+  if (getStatusNeoPixelPin() == _pin_data && !WsV2.lockStatusNeoPixelV2)
+    initStatusLED();
+}
 
 /**************************************************************************/
 /**
