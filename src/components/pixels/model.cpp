@@ -93,6 +93,7 @@ wippersnapper_pixels_PixelsRemove *PixelsModel::GetPixelsRemoveMsg() {
 /**************************************************************************/
 bool PixelsModel::DecodePixelsWrite(pb_istream_t *stream) {
   _msg_pixels_write = wippersnapper_pixels_PixelsWrite_init_zero;
+  WS_DEBUG_PRINTLN("Decoding PixelsWrite message...");
   return pb_decode(stream, wippersnapper_pixels_PixelsWrite_fields,
                    &_msg_pixels_write);
 }

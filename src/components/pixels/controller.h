@@ -43,7 +43,7 @@ private:
   PixelsModel *_pixels_model = nullptr; ///< Pointer to the model class
   PixelsHardware *_pixel_strands[MAX_PIXEL_STRANDS] = {nullptr}; ///< Pointer to the hardware class
   uint8_t _num_strands; ///< Number of pixel strands
-  uint16_t GetStrandIndex(uint16_t pin_data);
+  uint16_t GetStrandIndex(uint16_t pin_data); // Returns 0xFF if not found
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif // WS_PIXELS_CONTROLLER_H

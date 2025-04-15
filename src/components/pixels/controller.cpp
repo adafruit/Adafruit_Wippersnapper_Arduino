@@ -47,8 +47,10 @@ PixelsController::~PixelsController() {
 /**************************************************************************/
 bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
   // Attempt to decode the istream into a PixelsAdd message
-  if (!_pixels_model->DecodePixelsAdd(stream))
+  if (!_pixels_model->DecodePixelsAdd(stream)) {
+    WS_DEBUG_PRINTLN("[pixels]: Failed to decode PixelsAdd message!");
     return false;
+  }
   wippersnapper_pixels_PixelsAdd *msg_add = _pixels_model->GetPixelsAddMsg();
   _pixel_strands[_num_strands] = new PixelsHardware();
 
@@ -72,6 +74,13 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
     return false;
   }
 
+  // Increment the strand counter if initialization was successful
+  if (did_init) {
+    _num_strands++;
+    WS_DEBUG_PRINT("[pixels]: Added strand #");
+    WS_DEBUG_PRINTLN(_num_strands);
+  }
+
   return true;
 }
 
@@ -93,12 +102,13 @@ bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
       _pixels_model->GetPixelsWriteMsg();
   uint16_t pin_data = atoi(msg_write->pixels_pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
-  if (idx == -1) {
+  if (idx == 0xFF) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
     return false;
   }
 
   // Call hardware to fill the strand
+  WS_DEBUG_PRINTLN("[pixels]: Filling strand!");
   _pixel_strands[idx]->FillStrand(msg_write->pixels_color);
   return true;
 }
@@ -122,7 +132,7 @@ bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
 
   uint16_t pin_data = atoi(msg_remove->pixels_pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
-  if (idx == -1) {
+  if (idx == 0xFF) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
     return false;
   }
@@ -134,17 +144,19 @@ bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
 
 /**************************************************************************/
 /*!
-    @brief  Handles a request to update the pixel strands
+    @brief  Gets the index of a strand by its data pin
     @param  pin_data
             The desired data pin
-    @returns Desired strand index, -1 if not found.
+    @returns Desired strand index, or 0xFF if not found.
 */
 /**************************************************************************/
 uint16_t PixelsController::GetStrandIndex(uint16_t pin_data) {
-  for (int i = 0; i < _num_strands; i++) {
+  for (uint8_t i = 0; i < _num_strands; i++) {
     if (_pixel_strands[i]->GetPinData() == pin_data) {
       return i;
     }
   }
-  return -1;
+  WS_DEBUG_PRINT("[pixels]: No strand found on pin ");
+  WS_DEBUG_PRINTLN(pin_data);
+  return 0xFF; // Sentinel value indicating "not found"
 }
