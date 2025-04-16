@@ -216,6 +216,12 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM NUM_NEOPIXEL
 #define SD_USE_SPI_1
+#elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6)
+#define BOARD_ID "feather-esp32c6"
+#define USE_LITTLEFS
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 1
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif
