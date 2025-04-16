@@ -19,9 +19,11 @@
     @brief  CheckinModel constructor
 */
 /***********************************************************************/
-CheckinModel::CheckinModel() {
-  _CheckinRequest = wippersnapper_checkin_CheckinRequest_init_default;
-  _CheckinResponse = wippersnapper_checkin_CheckinResponse_init_default;
+CheckinModel::CheckinModel() 
+  : _CheckinRequest(wippersnapper_checkin_CheckinRequest_init_default),
+    _CheckinResponse(wippersnapper_checkin_CheckinResponse_init_default)
+{
+  // no-op
 }
 
 /***********************************************************************/
@@ -83,6 +85,7 @@ bool CheckinModel::EncodeCheckinRequest() {
 */
 /***********************************************************************/
 bool CheckinModel::DecodeCheckinResponse(pb_istream_t *stream) {
+  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
   return pb_decode(stream, wippersnapper_checkin_CheckinResponse_fields,
                    &_CheckinResponse);
 }

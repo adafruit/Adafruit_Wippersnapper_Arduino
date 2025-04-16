@@ -19,11 +19,13 @@
     @brief  DS18X20Model constructor
 */
 /***********************************************************************/
-DS18X20Model::DS18X20Model() {
-  // Initialize the DS18X20 messages
-  _msg_DS18x20Add = wippersnapper_ds18x20_Ds18x20Add_init_zero;
-  _msg_DS18x20Added = wippersnapper_ds18x20_Ds18x20Added_init_zero;
-  _msg_DS18x20Remove = wippersnapper_ds18x20_Ds18x20Remove_init_zero;
+DS18X20Model::DS18X20Model() 
+  : _msg_DS18x20Add(wippersnapper_ds18x20_Ds18x20Add_init_zero),
+    _msg_DS18x20Added(wippersnapper_ds18x20_Ds18x20Added_init_zero),
+    _msg_DS18x20Remove(wippersnapper_ds18x20_Ds18x20Remove_init_zero),
+    _msg_DS18x20Event(wippersnapper_ds18x20_Ds18x20Event_init_zero)
+{
+    // no-op
 }
 
 /***********************************************************************/
@@ -42,7 +44,7 @@ DS18X20Model::~DS18X20Model() {}
 */
 /***********************************************************************/
 bool DS18X20Model::DecodeDS18x20Add(pb_istream_t *stream) {
-  _msg_DS18x20Add = wippersnapper_ds18x20_Ds18x20Add_init_zero;
+  memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   // Attempt to decode the stream into a Ds18x20Add message
   return pb_decode(stream, wippersnapper_ds18x20_Ds18x20Add_fields,
                    &_msg_DS18x20Add);
@@ -82,7 +84,7 @@ wippersnapper_ds18x20_Ds18x20Added *DS18X20Model::GetDS18x20AddedMsg() {
 /***********************************************************************/
 bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
   // Fill the Ds18x20Added message
-  _msg_DS18x20Added = wippersnapper_ds18x20_Ds18x20Added_init_zero;
+  memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
   _msg_DS18x20Added.is_initialized = is_init;
   strcpy(_msg_DS18x20Added.onewire_pin, onewire_pin);
 
@@ -107,7 +109,7 @@ bool DS18X20Model::EncodeDS18x20Added(char *onewire_pin, bool is_init) {
 */
 /*************************************************************************/
 bool DS18X20Model::DecodeDS18x20Remove(pb_istream_t *stream) {
-  _msg_DS18x20Remove = wippersnapper_ds18x20_Ds18x20Remove_init_zero;
+  memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
   return pb_decode(stream, wippersnapper_ds18x20_Ds18x20Remove_fields,
                    &_msg_DS18x20Remove);
 }
@@ -159,7 +161,7 @@ bool DS18X20Model::EncodeDs18x20Event() {
 */
 /*************************************************************************/
 void DS18X20Model::InitDS18x20EventMsg(const char *ow_pin_name) {
-  _msg_DS18x20Event = wippersnapper_ds18x20_Ds18x20Event_init_zero;
+  memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
   _msg_DS18x20Event.sensor_events_count = 0;
   strcpy(_msg_DS18x20Event.onewire_pin, ow_pin_name);
 }

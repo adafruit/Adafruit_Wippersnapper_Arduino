@@ -21,11 +21,13 @@
     @brief  Constructs a new PixelsModel object
 */
 /**************************************************************************/
-PixelsModel::PixelsModel() {
-  _msg_pixels_add = wippersnapper_pixels_PixelsAdd_init_zero;
-  _msg_pixels_remove = wippersnapper_pixels_PixelsRemove_init_zero;
-  _msg_pixels_write = wippersnapper_pixels_PixelsWrite_init_zero;
-  _msg_pixels_added = wippersnapper_pixels_PixelsAdded_init_zero;
+PixelsModel::PixelsModel() 
+  : _msg_pixels_add(wippersnapper_pixels_PixelsAdd_init_zero),
+    _msg_pixels_remove(wippersnapper_pixels_PixelsRemove_init_zero),
+    _msg_pixels_write(wippersnapper_pixels_PixelsWrite_init_zero),
+    _msg_pixels_added(wippersnapper_pixels_PixelsAdded_init_zero)
+{
+  // no-op
 }
 
 /**************************************************************************/
@@ -44,7 +46,7 @@ PixelsModel::~PixelsModel() {}
 */
 /**************************************************************************/
 bool PixelsModel::DecodePixelsAdd(pb_istream_t *stream) {
-  _msg_pixels_add = wippersnapper_pixels_PixelsAdd_init_zero;
+  memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
   return pb_decode(stream, wippersnapper_pixels_PixelsAdd_fields,
                    &_msg_pixels_add);
 }
@@ -68,7 +70,7 @@ wippersnapper_pixels_PixelsAdd *PixelsModel::GetPixelsAddMsg() {
 */
 /**************************************************************************/
 bool PixelsModel::DecodePixelsRemove(pb_istream_t *stream) {
-  _msg_pixels_remove = wippersnapper_pixels_PixelsRemove_init_zero;
+  memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
   return pb_decode(stream, wippersnapper_pixels_PixelsRemove_fields,
                    &_msg_pixels_remove);
 }
@@ -92,7 +94,7 @@ wippersnapper_pixels_PixelsRemove *PixelsModel::GetPixelsRemoveMsg() {
 */
 /**************************************************************************/
 bool PixelsModel::DecodePixelsWrite(pb_istream_t *stream) {
-  _msg_pixels_write = wippersnapper_pixels_PixelsWrite_init_zero;
+  memset(&_msg_pixels_write, 0, sizeof(_msg_pixels_write));
   WS_DEBUG_PRINTLN("Decoding PixelsWrite message...");
   return pb_decode(stream, wippersnapper_pixels_PixelsWrite_fields,
                    &_msg_pixels_write);
@@ -120,7 +122,7 @@ wippersnapper_pixels_PixelsWrite *PixelsModel::GetPixelsWriteMsg() {
 /**************************************************************************/
 bool PixelsModel::EncodePixelsAdded(char *pin_data, bool success) {
   // Fill the message
-  _msg_pixels_added = wippersnapper_pixels_PixelsAdded_init_zero;
+  memset(&_msg_pixels_added, 0, sizeof(_msg_pixels_added));
   _msg_pixels_added.is_success = success;
   strncpy(_msg_pixels_added.pixels_pin_data, pin_data,
           sizeof(_msg_pixels_added.pixels_pin_data));

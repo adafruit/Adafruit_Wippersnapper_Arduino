@@ -19,8 +19,10 @@
     @brief  SensorModel constructor
 */
 /***********************************************************************/
-SensorModel::SensorModel() {
-  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_zero;
+SensorModel::SensorModel() 
+  : _msg_sensor_event(wippersnapper_sensor_SensorEvent_init_zero)
+{
+  // no-op
 }
 
 /***********************************************************************/
