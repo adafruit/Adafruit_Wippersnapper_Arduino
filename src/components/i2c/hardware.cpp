@@ -229,19 +229,22 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     } else if (endTransmissionRC == 5) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
       continue;
+    }
 #endif // ARDUINO_ARCH_ESP32
-    } else {
+    else {
       WS_DEBUG_PRINTLN(
           "[i2c] Did not find device: Unknown bus error has occured!");
       continue;
     }
   }
 
-  /*   #ifndef ARDUINO_ARCH_ESP32
+  /*
+  #ifndef ARDUINO_ARCH_ESP32
       // re-enable WipperSnapper SAMD WDT global timeout
       WS.enableWDT(WS_WDT_TIMEOUT);
       WS.feedWDT();
-    #endif */
+  #endif
+  */
   return true; // TODO: Change this!
 }
 
