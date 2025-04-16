@@ -33,7 +33,7 @@ typedef ws_wifi_esp8266 ws_adapter_wifi;
 #include "adapters/wifi/ws_wifi_esp32.h"
 typedef ws_wifi_esp32 ws_adapter_wifi;
 // Networking adapters for Raspberry Pi Pico W-series
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined (ARDUINO_RASPBERRY_PI_PICO_2W)
 #include "adapters/wifi/ws_wifi_pico.h"
 typedef ws_wifi_pico ws_adapter_wifi;
 // Networking adapter for Arduino Nano 33 IoT and MKR WiFi 1010
