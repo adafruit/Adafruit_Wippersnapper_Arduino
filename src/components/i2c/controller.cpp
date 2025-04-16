@@ -414,9 +414,11 @@ bool I2cController::RemoveDriver(uint32_t address) {
     if (driver->GetAddress() != address)
       continue;
 
+    auto it = std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver);
+    if (it != _i2c_drivers.end()) {
+      _i2c_drivers.erase(it);
+    }
     delete driver;
-    _i2c_drivers.erase(
-        std::find(_i2c_drivers.begin(), _i2c_drivers.end(), driver));
     return true;
   }
   return false;
