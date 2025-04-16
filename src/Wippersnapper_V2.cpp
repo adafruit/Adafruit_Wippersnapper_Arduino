@@ -1361,10 +1361,7 @@ ws_status_t Wippersnapper_V2::run() {
 
   // TODO: Process I2C sensor events
   WsV2._i2c_controller->update();
-  
-  // Process Pixels events
-  // TODO: Add update() method to PixelsController if needed
-  
+
   // TODO: Process UART sensor events
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!

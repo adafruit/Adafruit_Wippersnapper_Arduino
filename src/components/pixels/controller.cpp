@@ -60,7 +60,7 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
       msg_add->pixels_type, msg_add->pixels_ordering, msg_add->pixels_num,
       msg_add->pixels_brightness, msg_add->pixels_pin_data,
       msg_add->pixels_pin_dotstar_clock);
-  if (! did_init) {
+  if (!did_init) {
     WS_DEBUG_PRINTLN("[pixels] Failed to create strand!");
   } else {
     _num_strands++;
@@ -69,11 +69,11 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
   }
 
   // Publish PixelsAdded message to the broker
-  if (! _pixels_model->EncodePixelsAdded(msg_add->pixels_pin_data, did_init)) {
+  if (!_pixels_model->EncodePixelsAdded(msg_add->pixels_pin_data, did_init)) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
     return false;
   }
-  if (! WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pixels_added_tag,
+  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pixels_added_tag,
                           _pixels_model->GetPixelsAddedMsg())) {
     WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
     return false;

@@ -1,7 +1,7 @@
 /*!
  * @file hardware.cpp
  *
- * Hardware implementation for pixel strands.
+ * Hardware interface for NeoPixel/DotStar strands.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -204,21 +204,31 @@ uint32_t PixelsHardware::ApplyGammaCorrection(uint32_t color) {
 void PixelsHardware::RemoveStrand() {
   if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     if (_neopixel != nullptr) {
+      _neopixel->clear();
+      _neopixel->show();
       delete _neopixel;
       _neopixel = nullptr;
     }
   } else if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_DOTSTAR) {
     if (_dotstar != nullptr) {
+      _dotstar->clear();
+      _dotstar->show();
       delete _dotstar;
       _dotstar = nullptr;
     }
   } else {
     WS_DEBUG_PRINTLN("[pixels] Unknown pixel type!");
   }
-
   // Optionally re-init the status pixel for reuse by app.
-  if (getStatusNeoPixelPin() == _pin_data && !WsV2.lockStatusNeoPixelV2)
+  if (getStatusNeoPixelPin() == _pin_data && !WsV2.lockStatusNeoPixelV2) {
+    WS_DEBUG_PRINTLN("[pixels] Re-initializing status pixel");
     initStatusLED();
+  }
+  WS_DEBUG_PRINT("[pixels] Removed pixel strand from pin: ");
+  WS_DEBUG_PRINTLN(_pin_data);
+
+  _pin_data = 0; // Reset the pin data
+  _type = wippersnapper_pixels_PixelsType_PIXELS_TYPE_UNSPECIFIED;
 }
 
 /**************************************************************************/
