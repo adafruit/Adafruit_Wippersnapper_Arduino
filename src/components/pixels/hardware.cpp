@@ -165,13 +165,7 @@ bool PixelsHardware::AddStrand(wippersnapper_pixels_PixelsType type,
 /**************************************************************************/
 void PixelsHardware::FillStrand(uint32_t color) {
   // Apply gamma correction to match IO Web
-  WS_DEBUG_PRINT("[pixels] Filling strand with color: ");
-  WS_DEBUG_PRINTLN(color);
-
-  WS_DEBUG_PRINTLN("Applying gamma correction..");
   uint32_t color_gamma = ApplyGammaCorrection(color);
-  WS_DEBUG_PRINT("[pixels] Filling strand with color_gamma: ");
-  WS_DEBUG_PRINT(color_gamma);
   if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     _neopixel->fill(color_gamma);
     _neopixel->show();
@@ -192,14 +186,7 @@ void PixelsHardware::FillStrand(uint32_t color) {
 */
 /**************************************************************************/
 uint32_t PixelsHardware::ApplyGammaCorrection(uint32_t color) {
-  WS_DEBUG_PRINT("Type: ");
-  WS_DEBUG_PRINTLN(_type);
   if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
-    WS_DEBUG_PRINTLN("Applying gamma to neopixel...");
-    if (_neopixel == nullptr) {
-      WS_DEBUG_PRINTLN("[pixels] No neopixel object found!");
-      return color;
-    }
     return _neopixel->gamma32(color);
   } else if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_DOTSTAR) {
     return _dotstar->gamma32(color);

@@ -60,25 +60,23 @@ bool PixelsController::Handle_Pixels_Add(pb_istream_t *stream) {
       msg_add->pixels_type, msg_add->pixels_ordering, msg_add->pixels_num,
       msg_add->pixels_brightness, msg_add->pixels_pin_data,
       msg_add->pixels_pin_dotstar_clock);
-  if (!did_init)
+  if (! did_init) {
     WS_DEBUG_PRINTLN("[pixels] Failed to create strand!");
-
-  // Publish PixelsAdded message to the broker
-  if (!_pixels_model->EncodePixelsAdded(msg_add->pixels_pin_data, did_init)) {
-    WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
-    return false;
-  }
-  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pixels_added_tag,
-                          _pixels_model->GetPixelsAddedMsg())) {
-    WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
-    return false;
-  }
-
-  // Increment the strand counter if initialization was successful
-  if (did_init) {
+  } else {
     _num_strands++;
     WS_DEBUG_PRINT("[pixels]: Added strand #");
     WS_DEBUG_PRINTLN(_num_strands);
+  }
+
+  // Publish PixelsAdded message to the broker
+  if (! _pixels_model->EncodePixelsAdded(msg_add->pixels_pin_data, did_init)) {
+    WS_DEBUG_PRINTLN("[pixels]: Failed to encode PixelsAdded message!");
+    return false;
+  }
+  if (! WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_pixels_added_tag,
+                          _pixels_model->GetPixelsAddedMsg())) {
+    WS_DEBUG_PRINTLN("[pixels]: Unable to publish PixelsAdded message!");
+    return false;
   }
 
   return true;
@@ -102,7 +100,7 @@ bool PixelsController::Handle_Pixels_Write(pb_istream_t *stream) {
       _pixels_model->GetPixelsWriteMsg();
   uint16_t pin_data = atoi(msg_write->pixels_pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
-  if (idx == 0xFF) {
+  if (idx == STRAND_NOT_FOUND) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
     return false;
   }
@@ -132,7 +130,7 @@ bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
 
   uint16_t pin_data = atoi(msg_remove->pixels_pin_data + 1);
   uint16_t idx = GetStrandIndex(pin_data);
-  if (idx == 0xFF) {
+  if (idx == STRAND_NOT_FOUND) {
     WS_DEBUG_PRINTLN("[pixels]: Failed to find strand index!");
     return false;
   }
@@ -147,7 +145,7 @@ bool PixelsController::Handle_Pixels_Remove(pb_istream_t *stream) {
     @brief  Gets the index of a strand by its data pin
     @param  pin_data
             The desired data pin
-    @returns Desired strand index, or 0xFF if not found.
+    @returns Desired strand index, or STRAND_NOT_FOUND if not found.
 */
 /**************************************************************************/
 uint16_t PixelsController::GetStrandIndex(uint16_t pin_data) {
@@ -156,7 +154,5 @@ uint16_t PixelsController::GetStrandIndex(uint16_t pin_data) {
       return i;
     }
   }
-  WS_DEBUG_PRINT("[pixels]: No strand found on pin ");
-  WS_DEBUG_PRINTLN(pin_data);
-  return 0xFF; // Sentinel value indicating "not found"
+  return STRAND_NOT_FOUND; // Sentinel value indicating "not found"
 }
