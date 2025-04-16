@@ -62,7 +62,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      feedWDT();                                                               \
+      WsV2.feedWDTV2();                                                               \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
