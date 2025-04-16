@@ -148,7 +148,7 @@ Wippersnapper_FS::Wippersnapper_FS() {
     writeToBootOut(
         "Please edit the secrets.json file. Then, reset your board.\n");
 #ifdef USE_DISPLAY
-    WsV2._ui_helper->show_scr_error(
+    WsV2._ui_helperV2->show_scr_error(
         "INVALID SETTINGS FILE",
         "The settings.json file on the WIPPER drive contains default values. "
         "Please edit it to reflect your Adafruit IO and network credentials. "
@@ -472,7 +472,7 @@ void Wippersnapper_FS::parseSecrets() {
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
 #ifdef USE_DISPLAY
-    WsV2._ui_helper->show_scr_error(
+    WsV2._ui_helperV2->show_scr_error(
         "INVALID IO CREDS",
         "The \"io_username/io_key\" fields within secrets.json are invalid, "
         "please "
@@ -489,7 +489,7 @@ void Wippersnapper_FS::parseSecrets() {
                    "FIX: Please change network_ssid and network_password to "
                    "match your Adafruit IO credentials!\n");
 #ifdef USE_DISPLAY
-    WsV2._ui_helper->show_scr_error(
+    WsV2._ui_helperV2->show_scr_error(
         "INVALID NETWORK",
         "The \"network_ssid and network_password\" fields within secrets.json "
         "are invalid, please change it to match your WiFi credentials. Then, "

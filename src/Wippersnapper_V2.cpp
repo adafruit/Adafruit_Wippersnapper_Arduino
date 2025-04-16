@@ -108,21 +108,21 @@ void Wippersnapper_V2::provision() {
   // Initialize the display
   displayConfig config;
   WsV2._fileSystemV2->parseDisplayConfig(config);
-  WsV2._display = new ws_display_driver(config);
+  WsV2._displayV2 = new ws_display_driver(config);
   // Begin display
-  if (!WsV2._display->begin()) {
+  if (!WsV2._displayV2->begin()) {
     WS_DEBUG_PRINTLN("Unable to enable display driver and LVGL");
     haltErrorV2("Unable to enable display driver, please check the json "
                 "configuration!");
   }
 
-  WsV2._display->enableLogging();
+  WsV2._displayV2->enableLogging();
   ReleaseStatusPixel(); // don't use status LED if we are using the display
   // UI Setup
-  WsV2._ui_helper = new ws_display_ui_helper(WsV2._display);
-  WsV2._ui_helper->set_bg_black();
-  WsV2._ui_helper->show_scr_load();
-  WsV2._ui_helper->set_label_status("Validating Credentials...");
+  WsV2._ui_helperV2 = new ws_display_ui_helper(WsV2._displayV2);
+  WsV2._ui_helperV2->set_bg_black();
+  WsV2._ui_helperV2->show_scr_load();
+  WsV2._ui_helperV2->set_label_status("Validating Credentials...");
 #endif
 
 #ifdef USE_TINYUSB
@@ -139,8 +139,8 @@ void Wippersnapper_V2::provision() {
   set_ssid_pass();
 
 #ifdef USE_DISPLAY
-  WsV2._ui_helper->set_label_status("");
-  WsV2._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
+  WsV2._ui_helperV2->set_label_status("");
+  WsV2._ui_helperV2->set_load_bar_icon_complete(loadBarIconFile);
 #endif
 }
 
@@ -515,7 +515,7 @@ void cbErrorTopicV2(char *errorData, uint16_t len) {
   }
 
 #ifdef USE_DISPLAY
-  WsV2._ui_helper->show_scr_error("IO Ban Error", errorData);
+  WsV2._ui_helperV2->show_scr_error("IO Ban Error", errorData);
 #endif
 
   // WDT reset
@@ -554,7 +554,7 @@ void cbThrottleTopicV2(char *throttleData, uint16_t len) {
       buffer, 100,
       "[IO ERROR] Device is throttled for %d mS and blocking execution..\n.",
       throttleDuration);
-  WsV2._ui_helper->add_text_to_terminal(buffer);
+  WsV2._ui_helperV2->add_text_to_terminal(buffer);
 #endif
 
   // If throttle duration is less than the keepalive interval, delay for the
@@ -574,7 +574,7 @@ void cbThrottleTopicV2(char *throttleData, uint16_t len) {
   }
   WS_DEBUG_PRINTLN("Device is un-throttled, resumed command execution");
 #ifdef USE_DISPLAY
-  WsV2._ui_helper->add_text_to_terminal(
+  WsV2._ui_helperV2->add_text_to_terminal(
       "[IO] Device is un-throttled, resuming...\n");
 #endif
 }
@@ -784,8 +784,8 @@ void Wippersnapper_V2::runNetFSMV2() {
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
 #ifdef USE_DISPLAY
-        if (WsV2._ui_helper->getLoadingState())
-          WsV2._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
+        if (WsV2._ui_helperV2->getLoadingState())
+          WsV2._ui_helperV2->set_load_bar_icon_complete(loadBarIconWifi);
 #endif
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
@@ -796,15 +796,15 @@ void Wippersnapper_V2::runNetFSMV2() {
       WS_DEBUG_PRINTLN("Establishing network connection...");
       WS_PRINTER.flush();
 #ifdef USE_DISPLAY
-      if (WsV2._ui_helper->getLoadingState())
-        WsV2._ui_helper->set_label_status("Connecting to WiFi...");
+      if (WsV2._ui_helperV2->getLoadingState())
+        WsV2._ui_helperV2->set_label_status("Connecting to WiFi...");
 #endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
       if (!check_valid_ssid()) {
 #ifdef USE_DISPLAY
-        WsV2._ui_helper->show_scr_error("ERROR",
+        WsV2._ui_helperV2->show_scr_error("ERROR",
                                         "Unable to find WiFi network listed in "
                                         "the secrets file. Rebooting soon...");
 #endif
@@ -834,7 +834,7 @@ void Wippersnapper_V2::runNetFSMV2() {
       if (networkStatus() != WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
 #ifdef USE_DISPLAY
-        WsV2._ui_helper->show_scr_error(
+        WsV2._ui_helperV2->show_scr_error(
             "CONNECTION ERROR",
             "Unable to connect to WiFi Network. Please check that you entered "
             "the WiFi credentials correctly. Rebooting in 5 seconds...");
@@ -847,8 +847,8 @@ void Wippersnapper_V2::runNetFSMV2() {
       break;
     case FSM_NET_ESTABLISH_MQTT:
 #ifdef USE_DISPLAY
-      if (WsV2._ui_helper->getLoadingState())
-        WsV2._ui_helper->set_label_status("Connecting to IO...");
+      if (WsV2._ui_helperV2->getLoadingState())
+        WsV2._ui_helperV2->set_label_status("Connecting to IO...");
 #endif
       WsV2._mqttV2->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
@@ -880,7 +880,7 @@ void Wippersnapper_V2::runNetFSMV2() {
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
 #ifdef USE_DISPLAY
-        WsV2._ui_helper->show_scr_error(
+        WsV2._ui_helperV2->show_scr_error(
             "CONNECTION ERROR",
             "Unable to connect to Adafruit.io. If you are repeatedly having "
             "this issue, please check that your IO Username and IO Key are set "
@@ -1126,12 +1126,12 @@ void Wippersnapper_V2::pingBrokerV2() {
     if (WsV2._mqttV2->ping()) {
       WS_DEBUG_PRINTLN("SUCCESS!");
 #ifdef USE_DISPLAY
-      WsV2._ui_helper->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
+      WsV2._ui_helperV2->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
 #endif
     } else {
       WS_DEBUG_PRINTLN("FAILURE! Running network FSM...");
 #ifdef USE_DISPLAY
-      WsV2._ui_helper->add_text_to_terminal(
+      WsV2._ui_helperV2->add_text_to_terminal(
           "[NET] EROR: Failed to send KeepAlive ping!\n");
 #endif
       WsV2._mqttV2->disconnect();
@@ -1304,8 +1304,8 @@ void Wippersnapper_V2::connect() {
   WsV2.feedWDTV2();
 
 #ifdef USE_DISPLAY
-  WsV2._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
-  WsV2._ui_helper->set_label_status("Sending device info...");
+  WsV2._ui_helperV2->set_load_bar_icon_complete(loadBarIconCloud);
+  WsV2._ui_helperV2->set_label_status("Sending device info...");
 #endif
 
   WS_DEBUG_PRINTLN("Performing checkin handshake...");
@@ -1325,9 +1325,9 @@ void Wippersnapper_V2::connect() {
 // switch to monitor screen
 #ifdef USE_DISPLAY
   WS_DEBUG_PRINTLN("Clearing loading screen...");
-  WsV2._ui_helper->clear_scr_load();
+  WsV2._ui_helperV2->clear_scr_load();
   WS_DEBUG_PRINTLN("building monitor screen...");
-  WsV2._ui_helper->build_scr_monitor();
+  WsV2._ui_helperV2->build_scr_monitor();
 #endif
   WS_DEBUG_PRINTLN("Running app loop...");
 }
