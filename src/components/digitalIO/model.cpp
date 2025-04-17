@@ -20,11 +20,11 @@
 */
 /***********************************************************************/
 DigitalIOModel::DigitalIOModel() 
-  : _msg_dio_add(wippersnapper_digitalio_DigitalIOAdd_init_default),
-    _msg_dio_remove(wippersnapper_digitalio_DigitalIORemove_init_default),
-    _msg_dio_event(wippersnapper_digitalio_DigitalIOEvent_init_default),
-    _msg_dio_write(wippersnapper_digitalio_DigitalIOWrite_init_default)
 {
+  memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
+  memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
+  memset(&_msg_dio_event, 0, sizeof(_msg_dio_event));
+  memset(&_msg_dio_write, 0, sizeof(_msg_dio_write));
   // no-op
 }
 
@@ -33,7 +33,12 @@ DigitalIOModel::DigitalIOModel()
     @brief  DigitalIOModel destructor
 */
 /***********************************************************************/
-DigitalIOModel::~DigitalIOModel() {}
+DigitalIOModel::~DigitalIOModel() {
+  memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
+  memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
+  memset(&_msg_dio_event, 0, sizeof(_msg_dio_event));
+  memset(&_msg_dio_write, 0, sizeof(_msg_dio_write));
+}
 
 /***********************************************************************/
 /*!

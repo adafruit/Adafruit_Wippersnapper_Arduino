@@ -20,9 +20,9 @@
 */
 /***********************************************************************/
 CheckinModel::CheckinModel() 
-  : _CheckinRequest(wippersnapper_checkin_CheckinRequest_init_default),
-    _CheckinResponse(wippersnapper_checkin_CheckinResponse_init_default)
 {
+  memset(&_CheckinRequest, 0, sizeof(_CheckinRequest));
+  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
   // no-op
 }
 
@@ -32,8 +32,8 @@ CheckinModel::CheckinModel()
 */
 /***********************************************************************/
 CheckinModel::~CheckinModel() {
-  _CheckinRequest = wippersnapper_checkin_CheckinRequest_init_default;
-  _CheckinResponse = wippersnapper_checkin_CheckinResponse_init_default;
+  memset(&_CheckinRequest, 0, sizeof(_CheckinRequest));
+  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
 }
 
 /***********************************************************************/

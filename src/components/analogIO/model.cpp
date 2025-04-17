@@ -20,8 +20,10 @@
 */
 /***********************************************************************/
 AnalogIOModel::AnalogIOModel() 
-  : _msg_AnalogioAdd(wippersnapper_analogio_AnalogIOAdd_init_default)
 {
+  memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
+  memset(&_msg_AnalogioRemove, 0, sizeof(_msg_AnalogioRemove));
+  memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
   // no-op
 }
 
@@ -30,7 +32,11 @@ AnalogIOModel::AnalogIOModel()
     @brief  AnalogIOModel destructor
 */
 /***********************************************************************/
-AnalogIOModel::~AnalogIOModel() {}
+AnalogIOModel::~AnalogIOModel() {
+  memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
+  memset(&_msg_AnalogioRemove, 0, sizeof(_msg_AnalogioRemove));
+  memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
+}
 
 /***********************************************************************/
 /*!

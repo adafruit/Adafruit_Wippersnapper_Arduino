@@ -20,8 +20,8 @@
 */
 /***********************************************************************/
 SensorModel::SensorModel() 
-  : _msg_sensor_event(wippersnapper_sensor_SensorEvent_init_zero)
 {
+  memset(&_msg_sensor_event, 0, sizeof(_msg_sensor_event));
   // no-op
 }
 
@@ -32,5 +32,5 @@ SensorModel::SensorModel()
 /***********************************************************************/
 SensorModel::~SensorModel() {
   // Zero-out the SensorEvent message
-  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_zero;
+  memset(&_msg_sensor_event, 0, sizeof(_msg_sensor_event));
 }

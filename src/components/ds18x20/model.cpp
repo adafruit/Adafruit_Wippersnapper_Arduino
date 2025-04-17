@@ -20,12 +20,12 @@
 */
 /***********************************************************************/
 DS18X20Model::DS18X20Model() 
-  : _msg_DS18x20Add(wippersnapper_ds18x20_Ds18x20Add_init_zero),
-    _msg_DS18x20Added(wippersnapper_ds18x20_Ds18x20Added_init_zero),
-    _msg_DS18x20Remove(wippersnapper_ds18x20_Ds18x20Remove_init_zero),
-    _msg_DS18x20Event(wippersnapper_ds18x20_Ds18x20Event_init_zero)
 {
-    // no-op
+  memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
+  memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
+  memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
+  memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
+  // no-op
 }
 
 /***********************************************************************/
@@ -33,7 +33,12 @@ DS18X20Model::DS18X20Model()
     @brief  DS18X20Model destructor
 */
 /***********************************************************************/
-DS18X20Model::~DS18X20Model() {}
+DS18X20Model::~DS18X20Model() {
+  memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
+  memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
+  memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
+  memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
+}
 
 /***********************************************************************/
 /*!

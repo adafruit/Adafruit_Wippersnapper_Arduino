@@ -22,11 +22,11 @@
 */
 /**************************************************************************/
 PixelsModel::PixelsModel() 
-  : _msg_pixels_add(wippersnapper_pixels_PixelsAdd_init_zero),
-    _msg_pixels_remove(wippersnapper_pixels_PixelsRemove_init_zero),
-    _msg_pixels_write(wippersnapper_pixels_PixelsWrite_init_zero),
-    _msg_pixels_added(wippersnapper_pixels_PixelsAdded_init_zero)
 {
+  memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
+  memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
+  memset(&_msg_pixels_write, 0, sizeof(_msg_pixels_write));
+  memset(&_msg_pixels_added, 0, sizeof(_msg_pixels_added));
   // no-op
 }
 
@@ -35,7 +35,12 @@ PixelsModel::PixelsModel()
     @brief  Destructs a PixelsModel object
 */
 /**************************************************************************/
-PixelsModel::~PixelsModel() {}
+PixelsModel::~PixelsModel() {
+  memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
+  memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
+  memset(&_msg_pixels_write, 0, sizeof(_msg_pixels_write));
+  memset(&_msg_pixels_added, 0, sizeof(_msg_pixels_added));
+}
 
 /**************************************************************************/
 /*!
