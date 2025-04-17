@@ -62,7 +62,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      WsV2.feedWDTV2();                                                               \
+      WsV2.feedWDTV2();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -70,11 +70,11 @@
   }
 
 // Cpp STD
+#include <algorithm>
 #include <functional>
 #include <map>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>
@@ -254,7 +254,8 @@ public:
   DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
-  PixelsController *_pixels_controller = nullptr; ///< Instance of Pixels controller
+  PixelsController *_pixels_controller =
+      nullptr; ///< Instance of Pixels controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */

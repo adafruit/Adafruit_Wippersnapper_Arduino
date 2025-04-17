@@ -804,9 +804,9 @@ void Wippersnapper_V2::runNetFSMV2() {
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
       if (!check_valid_ssid()) {
 #ifdef USE_DISPLAY
-        WsV2._ui_helperV2->show_scr_error("ERROR",
-                                        "Unable to find WiFi network listed in "
-                                        "the secrets file. Rebooting soon...");
+        WsV2._ui_helperV2->show_scr_error(
+            "ERROR", "Unable to find WiFi network listed in "
+                     "the secrets file. Rebooting soon...");
 #endif
         haltErrorV2("ERROR: Unable to find WiFi network, rebooting soon...",
                     WS_LED_STATUS_WIFI_CONNECTING);
