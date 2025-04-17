@@ -74,6 +74,9 @@
 #include <map>
 #include <string>
 #include <vector>
+#ifdef ARDUINO_ARCH_SAMD
+#include <algorithm>
+#endif
 
 // Nanopb dependencies
 #include <nanopb/pb_common.h>

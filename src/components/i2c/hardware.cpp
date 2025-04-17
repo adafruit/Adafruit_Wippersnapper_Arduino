@@ -145,7 +145,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus->setSDA(_bus_sda);
   _bus->setSCL(_bus_scl);
   _bus->begin();
-#elif defined(ARDUINO_ARCH_SAM)
+#elif defined(ARDUINO_ARCH_SAMD)
   _bus = new TwoWire(&PERIPH_WIRE, _bus_sda, _bus_scl);
   _bus->begin();
 #else
