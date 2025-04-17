@@ -304,7 +304,7 @@ void I2cHardware::RemoveMux() {
 void I2cHardware::ClearMuxChannel() {
   if (!_has_mux)
     return;
-  _bus->beginTransmission(_mux_address_register);
+  _bus->beginTransmission((uint8_t)_mux_address_register);
   if (_mux_max_channels == 4)
     _bus->write(0b0000);
   else if (_mux_max_channels == 8)
@@ -322,7 +322,7 @@ void I2cHardware::ClearMuxChannel() {
 void I2cHardware::SelectMuxChannel(uint32_t channel) {
   if (channel > _mux_max_channels - 1)
     return;
-  _bus->beginTransmission(_mux_address_register);
+  _bus->beginTransmission((uint8_t)_mux_address_register);
   _bus->write(1 << channel);
   _bus->endTransmission();
 }

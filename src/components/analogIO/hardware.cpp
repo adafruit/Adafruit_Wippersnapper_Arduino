@@ -84,8 +84,10 @@ void AnalogIOHardware::SetNativeADCResolution() {
 #else
   _native_adc_resolution = 10;
 #endif
+  #ifndef ARDUINO_ARCH_ESP8266
   // Set the resolution (in bits) of the hardware's ADC
   analogReadResolution(_native_adc_resolution);
+  #endif // ARDUINO_ARCH_ESP8266
 }
 
 /*************************************************************************/
