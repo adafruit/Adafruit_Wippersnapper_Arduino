@@ -20,15 +20,17 @@
 #ifndef WS_WIFI_AIRLIFT_H
 #define WS_WIFI_AIRLIFT_H
 
+#include "../../helpers/ws_helper_macros.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "SPI.h"
 #include "WiFiNINA.h"
 #include "Wippersnapper_V2.h"
-#include "../../helpers/ws_helper_macros.h"
 
-#define NINAFWVER "2.0.0-rc.0+adafruit" /*!< min. nina-fw version compatible with this library. */
+#define NINAFWVER                                                              \
+  "2.0.0-rc.0+adafruit" /*!< min. nina-fw version compatible with this         \
+                           library. */
 #define AIRLIFT_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define AIRLIFT_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
@@ -301,7 +303,7 @@ protected:
   void _connect() {
     if (strlen(_ssid) == 0) {
       _statusV2 = WS_SSID_INVALID; // possibly unneccesary  as already checking
-                                 // elsewhere
+                                   // elsewhere
     } else {
       // disconnect from possible previous connection
       _disconnect();

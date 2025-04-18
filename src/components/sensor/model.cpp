@@ -19,8 +19,7 @@
     @brief  SensorModel constructor
 */
 /***********************************************************************/
-SensorModel::SensorModel() 
-{
+SensorModel::SensorModel() {
   memset(&_msg_sensor_event, 0, sizeof(_msg_sensor_event));
   // no-op
 }

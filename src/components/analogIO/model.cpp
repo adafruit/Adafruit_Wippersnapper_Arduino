@@ -19,8 +19,7 @@
     @brief  AnalogIOModel constructor
 */
 /***********************************************************************/
-AnalogIOModel::AnalogIOModel() 
-{
+AnalogIOModel::AnalogIOModel() {
   memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
   memset(&_msg_AnalogioRemove, 0, sizeof(_msg_AnalogioRemove));
   memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));

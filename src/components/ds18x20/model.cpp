@@ -19,8 +19,7 @@
     @brief  DS18X20Model constructor
 */
 /***********************************************************************/
-DS18X20Model::DS18X20Model() 
-{
+DS18X20Model::DS18X20Model() {
   memset(&_msg_DS18x20Add, 0, sizeof(_msg_DS18x20Add));
   memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
