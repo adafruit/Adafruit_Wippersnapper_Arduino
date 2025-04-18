@@ -55,6 +55,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   WsV2._ds18x20_controller = new DS18X20Controller();
   WsV2._i2c_controller = new I2cController();
   WsV2._pixels_controller = new PixelsController();
+  WsV2._pwm_controller = new PWMController();
 };
 
 /**************************************************************************/
@@ -428,6 +429,41 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("-> Pixels Write Message Type");
     if (!WsV2._pixels_controller->Handle_Pixels_Write(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to write to pixels strand!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pwm_add_tag:
+    WS_DEBUG_PRINTLN("-> PWM Add Message Type");
+    if (!WsV2._pwm_controller->Handle_PWM_Add(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to add PWM pin!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pwm_write_duty_cycle_tag:
+    WS_DEBUG_PRINTLN("-> PWM Write Duty Cycle Message Type");
+    if (!WsV2._pwm_controller->Handle_PWM_Write_DutyCycle(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to write duty cycle to PWM pin!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pwm_write_duty_cycle_multi_tag:
+    WS_DEBUG_PRINTLN("-> PWM Write Duty Cycle Multi Message Type");
+    if (!WsV2._pwm_controller->Handle_PWM_Write_DutyCycle_Multi(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to write multi duty cycle to PWM pins!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pwm_write_frequency_tag:
+    WS_DEBUG_PRINTLN("-> PWM Write Frequency Message Type");
+    if (!WsV2._pwm_controller->Handle_PWM_Write_Frequency(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to write frequency to PWM pin!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_pwm_remove_tag:
+    WS_DEBUG_PRINTLN("-> PWM Remove Message Type");
+    if (!WsV2._pwm_controller->Handle_PWM_Remove(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to remove PWM pin!");
       return false;
     }
     break;
