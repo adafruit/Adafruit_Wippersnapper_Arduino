@@ -19,8 +19,7 @@
     @brief  DigitalIOModel constructor
 */
 /***********************************************************************/
-DigitalIOModel::DigitalIOModel() 
-{
+DigitalIOModel::DigitalIOModel() {
   memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
   memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
   memset(&_msg_dio_event, 0, sizeof(_msg_dio_event));

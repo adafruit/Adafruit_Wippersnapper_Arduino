@@ -19,12 +19,12 @@
     @brief  I2C constructor
 */
 /***********************************************************************/
-I2cModel::I2cModel() 
-{
+I2cModel::I2cModel() {
   memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
   memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
   memset(&_msg_i2c_device_add_replace, 0, sizeof(_msg_i2c_device_add_replace));
-  memset(&_msg_i2c_device_added_replaced, 0, sizeof(_msg_i2c_device_added_replaced));
+  memset(&_msg_i2c_device_added_replaced, 0,
+         sizeof(_msg_i2c_device_added_replaced));
   memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
   memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
@@ -40,7 +40,8 @@ I2cModel::~I2cModel() {
   memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
   memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
   memset(&_msg_i2c_device_add_replace, 0, sizeof(_msg_i2c_device_add_replace));
-  memset(&_msg_i2c_device_added_replaced, 0, sizeof(_msg_i2c_device_added_replaced));
+  memset(&_msg_i2c_device_added_replaced, 0,
+         sizeof(_msg_i2c_device_added_replaced));
   memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
   memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
@@ -143,8 +144,10 @@ bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[i2c] Set _msg_i2c_device_remove...");
   memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   bool is_success = false;
-  is_success = pb_decode(stream, wippersnapper_i2c_I2cDeviceRemove_fields, &_msg_i2c_device_remove);
-  WS_DEBUG_PRINT("is_success: "); WS_DEBUG_PRINTLN(is_success);
+  is_success = pb_decode(stream, wippersnapper_i2c_I2cDeviceRemove_fields,
+                         &_msg_i2c_device_remove);
+  WS_DEBUG_PRINT("is_success: ");
+  WS_DEBUG_PRINTLN(is_success);
   return is_success;
 }
 
@@ -288,7 +291,8 @@ bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
   size_t sz_msg;
 
   // Fill I2cDeviceAddedOrReplaced message
-  memset(&_msg_i2c_device_added_replaced, 0, sizeof(_msg_i2c_device_added_replaced));
+  memset(&_msg_i2c_device_added_replaced, 0,
+         sizeof(_msg_i2c_device_added_replaced));
   _msg_i2c_device_added_replaced.has_i2c_device_description = true;
   _msg_i2c_device_added_replaced.i2c_device_description = device_descriptor;
   _msg_i2c_device_added_replaced.i2c_bus_status = bus_status;

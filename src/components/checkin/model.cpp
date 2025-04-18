@@ -19,8 +19,7 @@
     @brief  CheckinModel constructor
 */
 /***********************************************************************/
-CheckinModel::CheckinModel() 
-{
+CheckinModel::CheckinModel() {
   memset(&_CheckinRequest, 0, sizeof(_CheckinRequest));
   memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
   // no-op

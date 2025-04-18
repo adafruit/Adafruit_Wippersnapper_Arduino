@@ -33,11 +33,12 @@ public:
   uint16_t GetPinData();
   void FillStrand(uint32_t color);
   void RemoveStrand();
+
 private:
   Adafruit_NeoPixel *_neopixel = nullptr; ///< Used for NeoPixel strands
   Adafruit_DotStar *_dotstar = nullptr;   ///< Used for DotStar strands
-  wippersnapper_pixels_PixelsType _type; ///< Holds the type of strand
-  uint16_t _pin_data; ///< Data pin for the strand
+  wippersnapper_pixels_PixelsType _type;  ///< Holds the type of strand
+  uint16_t _pin_data;                     ///< Data pin for the strand
   bool AddNeoPixel(uint16_t num_pixels, uint16_t pin_data, neoPixelType order,
                    uint8_t brightness);
   bool AddDotStar(uint16_t num_pixels, uint16_t pin_data, uint16_t pin_clock,

@@ -490,7 +490,7 @@ bool I2cController::PublishI2cDeviceAddedorReplaced(
 bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
   // Attempt to decode an I2cDeviceRemove message
   WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceRemove message...");
-  if (! _i2c_model->DecodeI2cDeviceRemove(stream)) {
+  if (!_i2c_model->DecodeI2cDeviceRemove(stream)) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cDeviceRemove message!");
     return false;
   }
@@ -896,7 +896,7 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
 */
 /***********************************************************************/
 void I2cController::update() {
-  //WS_DEBUG_PRINTLN("[i2c] Updating I2C controller...");
+  // WS_DEBUG_PRINTLN("[i2c] Updating I2C controller...");
   if (_i2c_drivers.size() == 0)
     return; // bail out if no drivers exist
 

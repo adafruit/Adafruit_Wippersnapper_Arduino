@@ -216,7 +216,8 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
       continue;
     } else if (endTransmissionRC == 2) {
-      //WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of address!");
+      // WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of
+      // address!");
       continue;
     } else if (endTransmissionRC == 1) {
       WS_DEBUG_PRINTLN(

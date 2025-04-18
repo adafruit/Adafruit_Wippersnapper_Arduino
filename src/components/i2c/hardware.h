@@ -38,14 +38,15 @@ public:
                const char *scl = nullptr);
   TwoWire *GetBus();
   wippersnapper_i2c_I2cBusStatus GetBusStatus();
-  bool ScanBus(wippersnapper_i2c_I2cBusScanned* scan_results);
+  bool ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results);
   // MUX
   bool AddMuxToBus(uint32_t address_register, const char *name);
   void RemoveMux();
   bool HasMux();
   void ClearMuxChannel();
   void SelectMuxChannel(uint32_t channel);
-  bool ScanMux(wippersnapper_i2c_I2cBusScanned* scan_results);
+  bool ScanMux(wippersnapper_i2c_I2cBusScanned *scan_results);
+
 private:
   void TogglePowerPin();
   wippersnapper_i2c_I2cBusStatus _bus_status; ///< I2C bus status
@@ -54,6 +55,6 @@ private:
   uint8_t _bus_scl;                           ///< SCL pin
   bool _has_mux;                              ///< Is a MUX present on the bus?
   uint32_t _mux_address_register;             ///< I2C address for the MUX
-  int _mux_max_channels;                      ///< Maximum possible number of MUX channels
+  int _mux_max_channels; ///< Maximum possible number of MUX channels
 };
 #endif // WS_I2C_HARDWARE_H

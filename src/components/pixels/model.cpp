@@ -21,8 +21,7 @@
     @brief  Constructs a new PixelsModel object
 */
 /**************************************************************************/
-PixelsModel::PixelsModel() 
-{
+PixelsModel::PixelsModel() {
   memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
   memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
   memset(&_msg_pixels_write, 0, sizeof(_msg_pixels_write));
