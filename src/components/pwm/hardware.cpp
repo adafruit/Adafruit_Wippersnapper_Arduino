@@ -14,15 +14,34 @@
  */
 #include "hardware.h"
 
+/**************************************************************************/
+/*!
+    @brief  Ctor for PWMHardware
+*/
+/**************************************************************************/
 PWMHardware::PWMHardware() {
 _is_attached = false;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Dtor for PWMHardware
+*/
+/**************************************************************************/
 PWMHardware::~PWMHardware() {
   if (_is_attached)
     DetachPin();
 }
 
+/**************************************************************************/
+/*!
+    @brief  Attach a pin to the PWM hardware
+    @param  pin The pin to attach
+    @param  frequency The frequency of the PWM signal
+    @param  resolution The resolution of the PWM signal
+    @return true if the pin was successfully attached, false otherwise
+*/
+/**************************************************************************/
 bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency, uint32_t resolution) {
 #ifdef ARDUINO_ARCH_ESP32
   _is_attached = ledcAttach(_pin, _frequency, _resolution);
@@ -40,6 +59,12 @@ if (_is_attached) {
 return _is_attached;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Detaches a PWM pin and frees it for use.
+    @return true if the PWM pin was successfully detached, false otherwise.
+*/
+/**************************************************************************/
 bool PWMHardware::DetachPin() {
     if (! _is_attached) {
         WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
@@ -56,6 +81,14 @@ bool PWMHardware::DetachPin() {
     digitalWrite(_pin, LOW);
 }
 
+/**************************************************************************/
+/*!
+    @brief  Writes a duty cycle to a PWM pin with a fixed frequency
+            of 5kHz and 8-bit resolution.
+    @param  duty The desired duty cycle to write to the pin.
+    @return true if the duty cycle was successfully written, false otherwise
+*/
+/**************************************************************************/
 bool PWMHardware::WriteDutyCycle(uint32_t duty) {
   if (! _is_attached) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
@@ -80,8 +113,60 @@ bool PWMHardware::WriteDutyCycle(uint32_t duty) {
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Writes a frequency to a PWM pin with a fixed duty cycle.
+    @param  freq The desired frequency to write to the pin.
+    @return true if the tone was successfully written, false otherwise
+*/
+/**************************************************************************/
+uint32_t PWMHardware::WriteTone(uint32_t freq) {
+  if (! _is_attached) {
+    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
+    return false;
+  }
+
+  uint32_t rc = 0;
+  #ifdef ARDUINO_ARCH_ESP32
+  rc = ledcWriteTone(_pin, freq);
+  #else
+  tone(_pin, freq);
+  rc = freq;
+  #endif
+
+  return rc;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Stops a "tone" output on a PWM pin from WriteTone(). Must be
+            called to stop the tone before detaching the pin.
+    @return true if the tone was successfully stopped, false otherwise
+*/
+/**************************************************************************/
+void PWMHardware::WriteNoTone() {
+  if (! _is_attached) {
+    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
+    return; // back out
+  }
+
+  #ifdef ARDUINO_ARCH_ESP32
+  ledcWriteTone(_pin, 0);
+  #else
+  noTone(_pin);
+  #endif
+}
+
 // LEDC API Wrappers
 #ifdef ARDUINO_ARCH_ESP32
+/**************************************************************************/
+/*!
+    @brief  Mocks the Arduino analogWrite() function for the Arduino-ESP32
+            LEDC API
+    @param  value The value to write (0-255)
+    @return true if the value was successfully written, false otherwise
+*/
+/**************************************************************************/
 bool PWMHardware::analogWrite(uint32_t value) {
   // clamp
   if (value > 255 || value < 0) {

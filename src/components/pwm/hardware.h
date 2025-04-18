@@ -32,6 +32,8 @@ public:
   bool AttachPin(uint8_t pin, uint32_t frequency, uint32_t resolution);
   bool DetachPin();
   bool WriteDutyCycle(uint32_t duty);
+  uint32_t WriteTone(uint32_t freq);
+  void WriteNoTone();
 
   // Abstractions for LEDC API
   #ifdef ARDUINO_ARCH_ESP32
