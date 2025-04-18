@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/checkin/model.cpp
  *
  * Model for the Wippersnapper checkin proto API.
  *

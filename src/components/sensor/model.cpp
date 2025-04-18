@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/sensor/model.cpp
  *
  * Model for the sensor.proto message.
  *

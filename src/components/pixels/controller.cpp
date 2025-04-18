@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/pixels/controller.cpp
  *
  * Implementation for the pixels API controller.
  *

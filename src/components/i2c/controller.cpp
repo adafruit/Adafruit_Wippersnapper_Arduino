@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/i2c/controller.cpp
  *
  * Controller for the i2c.proto API
  *

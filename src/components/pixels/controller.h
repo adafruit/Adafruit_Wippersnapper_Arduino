@@ -1,5 +1,5 @@
 /*!
- * @file controller.h
+ * @file src/components/pixels/controller.h
  *
  * Controller for the pixels API
  *

@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/digitalIO/model.cpp
  *
  * Model for the digitalio.proto message.
  *

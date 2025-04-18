@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/digitalIO/controller.cpp
  *
  * Controller for the digitalio.proto API
  *

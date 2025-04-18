@@ -1,5 +1,5 @@
 /*!
- * @file hardware.cpp
+ * @file src/components/i2c/hardware.h
  *
  * Hardware driver for the i2c API
  *

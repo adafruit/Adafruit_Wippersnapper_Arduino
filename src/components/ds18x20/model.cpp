@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/ds18x20/model.cpp
  *
  * Model for the ds18x20.proto message.
  *

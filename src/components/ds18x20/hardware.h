@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/ds18x20/hardware.h
  *
  * Hardware implementation for the ds18x20.proto message.
  *

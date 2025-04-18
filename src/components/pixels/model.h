@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/pixels/model.h
  *
  * Model for the pixels.proto message.
  *

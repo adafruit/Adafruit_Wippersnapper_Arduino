@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/i2c/model.h
  *
  * Provides high-level interfaces for messages within i2c.proto.
  *

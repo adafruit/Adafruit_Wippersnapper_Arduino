@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/i2c/model.cpp
  *
  * Model for the i2c.proto message.
  *

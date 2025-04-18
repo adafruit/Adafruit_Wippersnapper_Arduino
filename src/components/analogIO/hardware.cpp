@@ -1,5 +1,5 @@
 /*!
- * @file hardware.cpp
+ * @file src/components/analogIO/hardware.cpp
  *
  * Hardware interface for the analogio.proto API
  *

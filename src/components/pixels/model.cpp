@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/pixels/model.cpp
  *
  * Implementation for the pixels.proto message model.
  *

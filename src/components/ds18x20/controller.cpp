@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/ds18x20/controller.cpp
  *
  * Controller for the ds18x20.proto API
  *

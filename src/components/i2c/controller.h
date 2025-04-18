@@ -1,5 +1,5 @@
 /*!
- * @file controller.h
+ * @file src/components/i2c/controller.h
  *
  * Routing controller for WipperSnapper's I2C component.
  *

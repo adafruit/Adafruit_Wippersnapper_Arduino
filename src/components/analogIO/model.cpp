@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/analogIO/model.cpp
  *
  * Interfaces for the analogio.proto API
  *

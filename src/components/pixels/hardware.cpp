@@ -1,5 +1,5 @@
 /*!
- * @file hardware.cpp
+ * @file src/components/pixels/hardware.cpp
  *
  * Hardware interface for NeoPixel/DotStar strands.
  *
