@@ -17,6 +17,7 @@
 #include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+#define MAX_PWM_PINS 25 ///< Maximum number of PWM pins supported
 
 class Wippersnapper_V2; // Forward declaration
 class PWMModel;         // Forward declaration
@@ -33,7 +34,6 @@ class PWMController {
 public:
   PWMController();
   ~PWMController();
-  // Called by the cbDecodeBrokerToDevice router function
   bool Handle_PWM_Add(pb_istream_t *stream);
   bool Handle_PWM_Write_DutyCycle(pb_istream_t *stream);
   bool Handle_PWM_Write_DutyCycle_Multi(pb_istream_t *stream);
@@ -42,7 +42,8 @@ public:
 
 private:
   PWMModel *_pwm_model;
-  PWMHardware *_pwm_hardware;
+  PWMHardware *_pwm_hardware[MAX_PWM_PINS] = {nullptr};
+  int _active_pwm_pins;
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_PWM_CONTROLLER_H
