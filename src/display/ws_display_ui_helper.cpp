@@ -404,9 +404,9 @@ void ws_display_ui_helper::build_scr_monitor() {
 /**************************************************************************/
 void ws_display_ui_helper::add_text_to_terminal(const char *text) {
   Serial.println("add_text_to_terminal");
-  char txtBuffer[256]; // temporary text buffer for snprintf
-  snprintf(txtBuffer, 256, text);
-  addToTerminal(txtBuffer);
+  /*   char txtBuffer[256]; // temporary text buffer for snprintf
+    snprintf(txtBuffer, 256, text);
+    addToTerminal(txtBuffer); */
 }
 
 /**************************************************************************/

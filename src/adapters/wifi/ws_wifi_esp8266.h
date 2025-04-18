@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -77,8 +77,8 @@ public:
   ~ws_wifi_esp8266() {
     if (_wifi_client)
       delete _wifi_client;
-    if (_mqtt)
-      delete _mqtt;
+    if (_mqttV2)
+      delete _mqttV2;
   }
 
   /**********************************************************/
@@ -109,8 +109,8 @@ public:
   */
   /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._config.network.ssid;
-    _pass = WS._config.network.pass;
+    _ssid = WsV2._configV2.network.ssid;
+    _pass = WsV2._configV2.network.pass;
   }
 
   /***********************************************************/
@@ -142,7 +142,7 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WS._isWiFiMultiV2) {
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
@@ -199,9 +199,10 @@ public:
   /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
     // Uncomment the following lines to use MQTT/SSL. You will need to
-    // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
-    // new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url,
-    // WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
+    // re-compile after. _wifi_client->setFingerprint(fingerprint); WsV2._mqttV2
+    // = new Adafruit_MQTT_Client(_wifi_client, WsV2._configV2.aio_url,
+    // WsV2._configV2.io_port, clientID, WsV2._configV2.aio_user,
+    // WsV2._configV2.aio_key);
     if (WsV2._configV2.io_port == 8883)
       WsV2._configV2.io_port = 1883;
     WsV2._mqttV2 = new Adafruit_MQTT_Client(
@@ -247,7 +248,7 @@ protected:
   @brief  Establishes a connection with the wireless network.
   */
   /**************************************************************************/
-  void _connect()() {
+  void _connect() {
 
     if (WiFi.status() == WL_CONNECTED)
       return;
@@ -265,7 +266,7 @@ protected:
       _statusV2 = WS_NET_DISCONNECTED;
       delay(100);
 
-      if (WS._isWiFiMultiV2) {
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
           if (strlen(WsV2._multiNetworksV2[i].ssid) > 0 &&
@@ -307,7 +308,7 @@ protected:
           _statusV2 = WS_NET_DISCONNECTED;
         }
       }
-      WsV2.feedWDT();
+      WsV2.feedWDTV2();
     }
   }
 

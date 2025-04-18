@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/digitalIO/model.cpp
  *
  * Model for the digitalio.proto message.
  *
@@ -20,10 +20,11 @@
 */
 /***********************************************************************/
 DigitalIOModel::DigitalIOModel() {
-  _msg_dio_add = wippersnapper_digitalio_DigitalIOAdd_init_default;
-  _msg_dio_remove = wippersnapper_digitalio_DigitalIORemove_init_default;
-  _msg_dio_event = wippersnapper_digitalio_DigitalIOEvent_init_default;
-  _msg_dio_write = wippersnapper_digitalio_DigitalIOWrite_init_default;
+  memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
+  memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
+  memset(&_msg_dio_event, 0, sizeof(_msg_dio_event));
+  memset(&_msg_dio_write, 0, sizeof(_msg_dio_write));
+  // no-op
 }
 
 /***********************************************************************/
@@ -31,7 +32,12 @@ DigitalIOModel::DigitalIOModel() {
     @brief  DigitalIOModel destructor
 */
 /***********************************************************************/
-DigitalIOModel::~DigitalIOModel() {}
+DigitalIOModel::~DigitalIOModel() {
+  memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
+  memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
+  memset(&_msg_dio_event, 0, sizeof(_msg_dio_event));
+  memset(&_msg_dio_write, 0, sizeof(_msg_dio_write));
+}
 
 /***********************************************************************/
 /*!
@@ -54,7 +60,7 @@ wippersnapper_digitalio_DigitalIOAdd *DigitalIOModel::GetDigitalIOAddMsg() {
 bool DigitalIOModel::DecodeDigitalIORemove(pb_istream_t *stream) {
   // Zero-out the DigitalIORemove message struct. to ensure we don't have any
   // old data
-  _msg_dio_remove = wippersnapper_digitalio_DigitalIORemove_init_default;
+  memset(&_msg_dio_remove, 0, sizeof(_msg_dio_remove));
 
   // Decode the stream into a DigitalIORemove message
   return pb_decode(stream, wippersnapper_digitalio_DigitalIORemove_fields,
@@ -93,7 +99,7 @@ wippersnapper_digitalio_DigitalIOEvent *DigitalIOModel::GetDigitalIOEventMsg() {
 bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
   // Zero-out the DigitalIOAdd message struct. to ensure we don't have any old
   // data
-  _msg_dio_add = wippersnapper_digitalio_DigitalIOAdd_init_default;
+  memset(&_msg_dio_add, 0, sizeof(_msg_dio_add));
 
   // Decode the stream into a DigitalIOAdd message
   return pb_decode(stream, wippersnapper_digitalio_DigitalIOAdd_fields,
@@ -112,7 +118,7 @@ bool DigitalIOModel::DecodeDigitalIOAdd(pb_istream_t *stream) {
 bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
   // Zero-out the DigitalIOWrite message struct. to ensure we don't have any old
   // data
-  _msg_dio_write = wippersnapper_digitalio_DigitalIOWrite_init_default;
+  memset(&_msg_dio_write, 0, sizeof(_msg_dio_write));
   // Decode the stream into a DigitalIOWrite message
   return pb_decode(stream, wippersnapper_digitalio_DigitalIOWrite_fields,
                    &_msg_dio_write);
@@ -132,7 +138,7 @@ bool DigitalIOModel::DecodeDigitalIOWrite(pb_istream_t *stream) {
 /***********************************************************************/
 bool DigitalIOModel::EncodeDigitalIOEvent(char *pin_name, bool value) {
   // Initialize the DigitalIOEvent
-  _msg_dio_event = wippersnapper_digitalio_DigitalIOEvent_init_default;
+  memset(&_msg_dio_event, 0, sizeof(_msg_dio_event));
   // Fill the DigitalIOEvent
   strncpy(_msg_dio_event.pin_name, pin_name, sizeof(_msg_dio_event.pin_name));
   _msg_dio_event.has_value = true;

@@ -1,5 +1,5 @@
 /*!
- * @file hardware.cpp
+ * @file src/components/ds18x20/hardware.cpp
  *
  * Hardware interface for the ds18x20.proto API
  *

@@ -62,7 +62,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      feedWDT();                                                               \
+      WsV2.feedWDTV2();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -70,6 +70,7 @@
   }
 
 // Cpp STD
+#include <algorithm>
 #include <functional>
 #include <map>
 #include <string>
@@ -129,7 +130,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-offline-beta.1" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.1" ///< WipperSnapper app. version (semver-formatted)
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
@@ -253,7 +254,8 @@ public:
   DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
-  PixelsController *_pixels_controller = nullptr; ///< Instance of Pixels controller
+  PixelsController *_pixels_controller =
+      nullptr; ///< Instance of Pixels controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */

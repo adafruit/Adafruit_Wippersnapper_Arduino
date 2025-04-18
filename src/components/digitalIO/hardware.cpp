@@ -1,5 +1,5 @@
 /*!
- * @file hardware.cpp
+ * @file src/components/digitalIO/hardware.cpp
  *
  * Hardware driver for the digitalio.proto API
  *

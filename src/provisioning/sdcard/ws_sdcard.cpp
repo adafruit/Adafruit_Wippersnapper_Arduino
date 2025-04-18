@@ -90,11 +90,15 @@ void ws_sdcard::calculateFileLimits() {
 bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
   if (!_rtc_ds1307->begin()) {
+#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_SAMD) &&           \
+    !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) &&                              \
+    !defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
     if (!_rtc_ds1307->begin(&Wire1)) {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS1307 RTC");
       delete _rtc_ds1307;
       return false;
     }
+#endif
   }
   if (!_rtc_ds1307->isrunning())
     _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -112,11 +116,15 @@ bool ws_sdcard::InitDS3231() {
   WS_DEBUG_PRINTLN("Begin DS3231 init");
   _rtc_ds3231 = new RTC_DS3231();
   if (!_rtc_ds3231->begin(&Wire)) {
+#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_SAMD) &&           \
+    !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) &&                              \
+    !defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
     if (!_rtc_ds3231->begin(&Wire1)) {
       WS_DEBUG_PRINTLN("[SD] Runtime Error: Failed to initialize DS3231 RTC");
       delete _rtc_ds3231;
       return false;
     }
+#endif
   }
   if (_rtc_ds3231->lostPower())
     _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -135,12 +143,16 @@ bool ws_sdcard::InitPCF8523() {
   if (!_rtc_pcf8523->begin(&Wire)) {
     WS_DEBUG_PRINTLN(
         "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE");
+#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_SAMD) &&           \
+    !defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6) &&                              \
+    !defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3)
     if (!_rtc_pcf8523->begin(&Wire1)) {
       WS_DEBUG_PRINTLN(
           "[SD] Runtime Error: Failed to initialize PCF8523 RTC on WIRE1");
       delete _rtc_pcf8523;
       return false;
     }
+#endif
   }
   if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));

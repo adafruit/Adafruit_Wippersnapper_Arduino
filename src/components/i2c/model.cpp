@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/i2c/model.cpp
  *
  * Model for the i2c.proto message.
  *
@@ -20,15 +20,15 @@
 */
 /***********************************************************************/
 I2cModel::I2cModel() {
-  _msg_i2c_bus_scan = wippersnapper_i2c_I2cBusScan_init_default;
-  _msg_i2c_bus_scanned = wippersnapper_i2c_I2cBusScanned_init_default;
-  _msg_i2c_device_add_replace =
-      wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
-  _msg_i2c_device_added_replaced =
-      wippersnapper_i2c_I2cDeviceAddedOrReplaced_init_default;
-  _msg_i2c_device_remove = wippersnapper_i2c_I2cDeviceRemove_init_default;
-  _msg_i2c_device_removed = wippersnapper_i2c_I2cDeviceRemoved_init_default;
-  _msg_i2c_device_event = wippersnapper_i2c_I2cDeviceEvent_init_default;
+  memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
+  memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
+  memset(&_msg_i2c_device_add_replace, 0, sizeof(_msg_i2c_device_add_replace));
+  memset(&_msg_i2c_device_added_replaced, 0,
+         sizeof(_msg_i2c_device_added_replaced));
+  memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
+  memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
+  memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
+  // no-op
 }
 
 /***********************************************************************/
@@ -37,7 +37,14 @@ I2cModel::I2cModel() {
 */
 /***********************************************************************/
 I2cModel::~I2cModel() {
-  // nothing to add here!
+  memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
+  memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
+  memset(&_msg_i2c_device_add_replace, 0, sizeof(_msg_i2c_device_add_replace));
+  memset(&_msg_i2c_device_added_replaced, 0,
+         sizeof(_msg_i2c_device_added_replaced));
+  memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
+  memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
+  memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
 }
 
 /***************************************************************************/
@@ -135,10 +142,12 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
 /****************************************************************************/
 bool I2cModel::DecodeI2cDeviceRemove(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[i2c] Set _msg_i2c_device_remove...");
-  _msg_i2c_device_remove = wippersnapper_i2c_I2cDeviceRemove_init_default;
+  memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   bool is_success = false;
-  is_success = pb_decode(stream, wippersnapper_i2c_I2cDeviceRemove_fields, &_msg_i2c_device_remove);
-  WS_DEBUG_PRINT("is_success: "); WS_DEBUG_PRINTLN(is_success);
+  is_success = pb_decode(stream, wippersnapper_i2c_I2cDeviceRemove_fields,
+                         &_msg_i2c_device_remove);
+  WS_DEBUG_PRINT("is_success: ");
+  WS_DEBUG_PRINTLN(is_success);
   return is_success;
 }
 
@@ -162,7 +171,7 @@ wippersnapper_i2c_I2cDeviceRemove *I2cModel::GetI2cDeviceRemoveMsg() {
 */
 /***************************************************************************/
 bool I2cModel::DecodeI2cBusScan(pb_istream_t *stream) {
-  _msg_i2c_bus_scan = wippersnapper_i2c_I2cBusScan_init_default;
+  memset(&_msg_i2c_bus_scan, 0, sizeof(_msg_i2c_bus_scan));
   return pb_decode(stream, wippersnapper_i2c_I2cBusScan_fields,
                    &_msg_i2c_bus_scan);
 }
@@ -193,7 +202,7 @@ wippersnapper_i2c_I2cBusScanned *I2cModel::GetI2cBusScannedMsg() {
 */
 /**********************************************************************/
 void I2cModel::ClearI2cBusScanned() {
-  _msg_i2c_bus_scanned = wippersnapper_i2c_I2cBusScanned_init_zero;
+  memset(&_msg_i2c_bus_scanned, 0, sizeof(_msg_i2c_bus_scanned));
   _msg_i2c_bus_scanned.i2c_bus_found_devices_count = 0; // zero-out the count
 }
 
@@ -247,8 +256,7 @@ bool I2cModel::AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
 */
 /***************************************************************************/
 bool I2cModel::DecodeI2cDeviceAddReplace(pb_istream_t *stream) {
-  _msg_i2c_device_add_replace =
-      wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
+  memset(&_msg_i2c_device_add_replace, 0, sizeof(_msg_i2c_device_add_replace));
   return pb_decode(stream, wippersnapper_i2c_I2cDeviceAddOrReplace_fields,
                    &_msg_i2c_device_add_replace);
 }
@@ -283,8 +291,8 @@ bool I2cModel::encodeMsgI2cDeviceAddedorReplaced(
   size_t sz_msg;
 
   // Fill I2cDeviceAddedOrReplaced message
-  _msg_i2c_device_added_replaced =
-      wippersnapper_i2c_I2cDeviceAddedOrReplaced_init_zero;
+  memset(&_msg_i2c_device_added_replaced, 0,
+         sizeof(_msg_i2c_device_added_replaced));
   _msg_i2c_device_added_replaced.has_i2c_device_description = true;
   _msg_i2c_device_added_replaced.i2c_device_description = device_descriptor;
   _msg_i2c_device_added_replaced.i2c_bus_status = bus_status;
@@ -320,7 +328,7 @@ I2cModel::GetMsgI2cDeviceAddedOrReplaced() {
 */
 /**********************************************************************/
 void I2cModel::ClearI2cDeviceEvent() {
-  _msg_i2c_device_event = wippersnapper_i2c_I2cDeviceEvent_init_zero;
+  memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
   _msg_i2c_device_event.i2c_device_events_count = 0;
 }
 

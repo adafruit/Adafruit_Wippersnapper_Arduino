@@ -1,5 +1,5 @@
 /*!
- * @file controller.h
+ * @file src/components/analogIO/controller.h
  *
  * Controller for the AnalogIO API
  *

@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/checkin/model.cpp
  *
  * Model for the Wippersnapper checkin proto API.
  *
@@ -20,8 +20,9 @@
 */
 /***********************************************************************/
 CheckinModel::CheckinModel() {
-  _CheckinRequest = wippersnapper_checkin_CheckinRequest_init_default;
-  _CheckinResponse = wippersnapper_checkin_CheckinResponse_init_default;
+  memset(&_CheckinRequest, 0, sizeof(_CheckinRequest));
+  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
+  // no-op
 }
 
 /***********************************************************************/
@@ -30,8 +31,8 @@ CheckinModel::CheckinModel() {
 */
 /***********************************************************************/
 CheckinModel::~CheckinModel() {
-  _CheckinRequest = wippersnapper_checkin_CheckinRequest_init_default;
-  _CheckinResponse = wippersnapper_checkin_CheckinResponse_init_default;
+  memset(&_CheckinRequest, 0, sizeof(_CheckinRequest));
+  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
 }
 
 /***********************************************************************/
@@ -83,6 +84,7 @@ bool CheckinModel::EncodeCheckinRequest() {
 */
 /***********************************************************************/
 bool CheckinModel::DecodeCheckinResponse(pb_istream_t *stream) {
+  memset(&_CheckinResponse, 0, sizeof(_CheckinResponse));
   return pb_decode(stream, wippersnapper_checkin_CheckinResponse_fields,
                    &_CheckinResponse);
 }

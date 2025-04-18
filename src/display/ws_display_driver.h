@@ -15,7 +15,7 @@
 #ifndef WIPPERSNAPPER_DISPLAY_H
 #define WIPPERSNAPPER_DISPLAY_H
 
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 #include "provisioning/Config.h"
 #include <Adafruit_LvGL_Glue.h> // Always include this BEFORE lvgl.h!
 #include <Adafruit_ST7789.h>
@@ -23,7 +23,7 @@
 
 LV_FONT_DECLARE(errorTriangle); ///< Error triangle symbol/font
 
-class Wippersnapper; // fwd decl
+class Wippersnapper_V2; // fwd decl
 
 /***************************************************************************/
 /*!
@@ -51,6 +51,6 @@ private:
   uint8_t
       _displayRotationMode; ///< Display rotation (mode, not number in degrees)
 };
-extern Wippersnapper WS; ///< Global Wippersnapper instance
+extern Wippersnapper_V2 WsV2; ///< Global Wippersnapper instance
 
 #endif // WIPPERSNAPPER_DISPLAY_H

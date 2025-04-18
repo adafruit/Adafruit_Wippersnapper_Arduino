@@ -1,3 +1,17 @@
+/*!
+ * @file src/components/i2c/hardware.cpp
+ *
+ * Hardware implementation for the i2c.proto API
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ *
+ * BSD license, all text here must be included in any redistribution.
+ *
+ */
 #include "hardware.h"
 
 /***********************************************************************/
@@ -145,7 +159,7 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
   _bus->setSDA(_bus_sda);
   _bus->setSCL(_bus_scl);
   _bus->begin();
-#elif defined(ARDUINO_ARCH_SAM)
+#elif defined(ARDUINO_ARCH_SAMD)
   _bus = new TwoWire(&PERIPH_WIRE, _bus_sda, _bus_scl);
   _bus->begin();
 #else
@@ -216,7 +230,8 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of data!");
       continue;
     } else if (endTransmissionRC == 2) {
-      //WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of address!");
+      // WS_DEBUG_PRINTLN("[i2c] Did not find device: NACK on transmit of
+      // address!");
       continue;
     } else if (endTransmissionRC == 1) {
       WS_DEBUG_PRINTLN(
@@ -229,19 +244,22 @@ bool I2cHardware::ScanBus(wippersnapper_i2c_I2cBusScanned *scan_results) {
     } else if (endTransmissionRC == 5) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
       continue;
+    }
 #endif // ARDUINO_ARCH_ESP32
-    } else {
+    else {
       WS_DEBUG_PRINTLN(
           "[i2c] Did not find device: Unknown bus error has occured!");
       continue;
     }
   }
 
-  /*   #ifndef ARDUINO_ARCH_ESP32
+  /*
+  #ifndef ARDUINO_ARCH_ESP32
       // re-enable WipperSnapper SAMD WDT global timeout
       WS.enableWDT(WS_WDT_TIMEOUT);
       WS.feedWDT();
-    #endif */
+  #endif
+  */
   return true; // TODO: Change this!
 }
 
@@ -301,7 +319,7 @@ void I2cHardware::RemoveMux() {
 void I2cHardware::ClearMuxChannel() {
   if (!_has_mux)
     return;
-  _bus->beginTransmission(_mux_address_register);
+  _bus->beginTransmission((uint8_t)_mux_address_register);
   if (_mux_max_channels == 4)
     _bus->write(0b0000);
   else if (_mux_max_channels == 8)
@@ -319,7 +337,7 @@ void I2cHardware::ClearMuxChannel() {
 void I2cHardware::SelectMuxChannel(uint32_t channel) {
   if (channel > _mux_max_channels - 1)
     return;
-  _bus->beginTransmission(_mux_address_register);
+  _bus->beginTransmission((uint8_t)_mux_address_register);
   _bus->write(1 << channel);
   _bus->endTransmission();
 }

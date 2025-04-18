@@ -25,7 +25,7 @@
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      feedWDT();                                                               \
+      WsV2.feedWDTV2();                                                        \
       if (millis() < start) {                                                  \
         start = millis(); /* if rollover */                                    \
       }                                                                        \
@@ -51,12 +51,12 @@
             The arguments to pass to the function.
 */
 /**************************************************************************/
-#define RETRY_FUNCTION_UNTIL_TIMEOUT(func, result_type, result_var, condition, \
-                                     timeout, interval, ...)                   \
+#define RETRY_FUNCTION_UNTIL_TIMEOUT(func, result_var, condition, timeout,     \
+                                     interval, ...)                            \
   {                                                                            \
     unsigned long startTime = millis();                                        \
     while (millis() - startTime < timeout) {                                   \
-      result_type result_var = func(__VA_ARGS__);                              \
+      result_var = func(__VA_ARGS__);                                          \
       if (condition(result_var)) {                                             \
         break;                                                                 \
       }                                                                        \

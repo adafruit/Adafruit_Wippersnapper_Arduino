@@ -1,5 +1,5 @@
 /*!
- * @file controller.h
+ * @file src/components/digitalIO/controller.h
  *
  * Controller for the digitalio API
  *

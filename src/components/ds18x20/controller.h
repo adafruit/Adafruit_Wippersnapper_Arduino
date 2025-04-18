@@ -1,5 +1,5 @@
 /*!
- * @file controller.h
+ * @file src/components/ds18x20/controller.h
  *
  * Controller for the DS18X20 API
  *

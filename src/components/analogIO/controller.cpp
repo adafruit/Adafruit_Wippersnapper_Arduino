@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/analogIO/controller.cpp
  *
  * Controller for the analogio.proto API
  *
