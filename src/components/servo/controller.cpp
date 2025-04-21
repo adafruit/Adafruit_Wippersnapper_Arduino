@@ -84,7 +84,33 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
     @returns True if successful, False otherwise
 */
 /**************************************************************************/
-bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {}
+bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
+  if (!_servo_model->DecodeServoWrite(stream)) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoWrite message!");
+    return false;
+  }
+  wippersnapper_servo_ServoWrite *msg_write = _servo_model->GetServoWriteMsg();
+  uint8_t pin = atoi(msg_write->servo_pin + 1);
+  // find the pin by using getpin()
+  int servo_idx = -1;
+  for (int i = 0; i < _active_servo_pins; i++) {
+    if (_servo_hardware[i]->GetPin() == pin) {
+      servo_idx = i;
+      break;
+    }
+  }
+  if (servo_idx == -1) {
+    WS_DEBUG_PRINTLN("[servo] Error: Servo pin not found!");
+    return false;
+  }
+  // Write the pulse width to the servo
+  _servo_hardware[servo_idx]->ServoWrite(msg_write->pulse_width);
+  WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
+  WS_DEBUG_PRINT(msg_write->pulse_width);
+  WS_DEBUG_PRINT(" mS on pin: ");
+  WS_DEBUG_PRINT(msg_write->servo_pin);
+  return true;
+}
 
 /**************************************************************************/
 /*!
@@ -94,4 +120,6 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {}
     @returns True if successful, False otherwise
 */
 /**************************************************************************/
-bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {}
+bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
+  // just delete the ServoHardware object, it'll deinit itself!
+}

@@ -44,6 +44,7 @@ public:
   ~ServoHardware();
   bool ServoAttach();
   void ServoWrite(int value);
+  uint8_t GetPin() { return _pin; }
 
 private:
 #ifdef ARDUINO_ARCH_ESP32

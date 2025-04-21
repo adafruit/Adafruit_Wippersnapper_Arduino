@@ -43,10 +43,38 @@ ServoHardware::ServoHardware(int pin, int min_pulse_width, int max_pulse_width,
 
 /**************************************************************************/
 /*!
-    @brief  Destructor
+    @brief  Detaches the servo from the pin and frees the pin for
+            other uses.
 */
 /**************************************************************************/
-ServoHardware::~ServoHardware() {}
+ServoHardware::~ServoHardware() {
+#ifdef ARDUINO_ARCH_ESP32
+  if (!_is_attached) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not attached!");
+    return;
+  }
+  if (!ledcDetach(_pin)) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach servo from pin!");
+    return;
+  }
+  _is_attached = false;
+#else
+  if (_servo == nullptr) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not created!");
+    return;
+  }
+  if (!_servo->attached()) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not attached!");
+    return;
+  }
+  _servo->detach();
+  delete _servo;
+  _servo = nullptr;
+#endif
+
+  WS_DEBUG_PRINT("[servo] Servo detached from pin ");
+  WS_DEBUG_PRINTLN(_pin);
+}
 
 /**************************************************************************/
 /*!
@@ -66,6 +94,10 @@ bool ServoHardware::ServoAttach() {
     _is_attached = true;
   }
 #else
+  if (_servo == nullptr) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not created!");
+    return false;
+  }
   rc = _servo.attach(_pin, _min_pulse_width, _max_pulse_width);
 #endif
 
@@ -87,8 +119,16 @@ bool ServoHardware::ServoAttach() {
 /**************************************************************************/
 void ServoHardware::ServoWrite(int value) {
 #ifdef ARDUINO_ARCH_ESP32
+  if (!_is_attached) {
+    WS_DEBUG_PRINTLN("[servo] Error: Servo not attached!");
+    return;
+  }
   writeMicroseconds(value);
 #else
+  if (_servo == nullptr || !_servo->attached()) {
+    WS_DEBUG_PRINTLN("[servo] Error: Servo not attached!");
+    return;
+  }
   _servo.writeMicroseconds(value);
 #endif
 }
@@ -103,11 +143,6 @@ void ServoHardware::ServoWrite(int value) {
 */
 /**************************************************************************/
 void ServoHardware::writeMicroseconds(int value) {
-  if (!_is_attached) {
-    WS_DEBUG_PRINTLN("[servo] Error: Servo not attached!");
-    return;
-  }
-
   // Clamp value to a valid pulse_width range
   if (value < _min_pulse_width)
     value = _min_pulse_width;
