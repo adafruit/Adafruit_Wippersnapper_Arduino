@@ -21,6 +21,13 @@ PWMController::PWMController() {
 
 PWMController::~PWMController() { delete _pwm_model; }
 
+/**************************************************************************/
+/*!
+    @brief  Handles the PWM_Add message.
+    @param  stream The stream containing the message data.
+    @return True if the message was handled successfully, false otherwise.
+*/
+/**************************************************************************/
 bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
   bool did_attach;
   if (!_pwm_model->DecodePWMAdd(stream)) {
@@ -109,7 +116,31 @@ bool PWMController::Handle_PWM_Write_DutyCycle_Multi(pb_istream_t *stream) {
 }
 
 bool PWMController::Handle_PWM_Write_Frequency(pb_istream_t *stream) {
-  return false;
+  if (!_pwm_model->DecodePWMWriteFrequency(stream)) {
+    WS_DEBUG_PRINTLN(
+        "[pwm] Error: Failed to decode PWMWriteFrequency message!");
+    return false;
+  }
+  wippersnapper_pwm_PWMWriteFrequency msg_write_frequency =
+      *_pwm_model->GetPWMWriteFrequencyMsg();
+  uint8_t pin = atoi(msg_write_frequency.pin + 1);
+  // Check if the pin is already attached
+  int pin_idx = GetPWMHardwareIdx(pin);
+  if (pin_idx == -1) {
+    WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
+    return false;
+  }
+
+  if (!_pwm_hardware[pin_idx]->WriteTone(msg_write_frequency.frequency) ==
+      msg_write_frequency.frequency) {
+    WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
+    return false;
+  }
+  WS_DEBUG_PRINTLN("[pwm] Wrote frequency: ");
+  WS_DEBUG_PRINT(msg_write_frequency.frequency);
+  WS_DEBUG_PRINTLN(" to pin: ");
+  WS_DEBUG_PRINT(msg_write_frequency.pin);
+  return true;
 }
 
 bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) { return false; }

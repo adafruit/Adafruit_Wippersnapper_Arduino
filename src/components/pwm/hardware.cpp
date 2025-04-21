@@ -117,7 +117,7 @@ bool PWMHardware::WriteDutyCycle(uint32_t duty) {
 /*!
     @brief  Writes a frequency to a PWM pin with a fixed duty cycle.
     @param  freq The desired frequency to write to the pin.
-    @return true if the tone was successfully written, false otherwise
+    @return The frequency that was written to the pin.
 */
 /**************************************************************************/
 uint32_t PWMHardware::WriteTone(uint32_t freq) {

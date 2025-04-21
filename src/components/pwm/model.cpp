@@ -135,8 +135,10 @@ wippersnapper_pwm_PWMWriteDutyCycleMulti *PWMModel::GetPWMWriteDutyCycleMultiMsg
 }
 
 bool PWMModel::DecodePWMWriteFrequency(pb_istream_t *stream) {
-  return false;
+  memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
+  return pb_decode(stream, wippersnapper_pwm_PWMWriteFrequency_fields, &_msg_pwm_write_frequency);
 }
 
 wippersnapper_pwm_PWMWriteFrequency *PWMModel::GetPWMWriteFrequencyMsg() {
+  return &_msg_pwm_write_frequency;
 }
