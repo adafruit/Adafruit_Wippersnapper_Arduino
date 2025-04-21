@@ -56,6 +56,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   WsV2._i2c_controller = new I2cController();
   WsV2._pixels_controller = new PixelsController();
   WsV2._pwm_controller = new PWMController();
+  WsV2._servo_controller = new ServoController();
 };
 
 /**************************************************************************/
@@ -457,6 +458,27 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("-> PWM Remove Message Type");
     if (!WsV2._pwm_controller->Handle_PWM_Remove(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to remove PWM pin!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_servo_add_tag:
+    WS_DEBUG_PRINTLN("-> Servo Add Message Type");
+    if (!WsV2._servo_controller->Handle_Servo_Add(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to add servo!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_servo_write_tag:
+    WS_DEBUG_PRINTLN("-> Servo Write Message Type");
+    if (!WsV2._servo_controller->Handle_Servo_Write(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to write to servo!");
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_servo_remove_tag:
+    WS_DEBUG_PRINTLN("-> Servo Remove Message Type");
+    if (!WsV2._servo_controller->Handle_Servo_Remove(stream)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to remove servo!");
       return false;
     }
     break;
