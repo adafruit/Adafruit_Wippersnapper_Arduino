@@ -96,7 +96,7 @@ bool PWMHardware::WriteDutyCycle(uint32_t duty) {
     return false;
   }
   bool did_write = false;
-  #ifdef defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(STATUS_LED_PIN)
+  #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(STATUS_LED_PIN)
   // Adafruit Feather ESP8266's analogWrite() gets inverted since the builtin
   // LED is reverse-wired
   _duty_cycle = 255 - duty;
