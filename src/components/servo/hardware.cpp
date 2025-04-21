@@ -98,7 +98,7 @@ bool ServoHardware::ServoAttach() {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not created!");
     return false;
   }
-  rc = _servo.attach(_pin, _min_pulse_width, _max_pulse_width);
+  rc = _servo->attach(_pin, _min_pulse_width, _max_pulse_width);
 #endif
 
   if (rc == 255) {
@@ -109,6 +109,14 @@ bool ServoHardware::ServoAttach() {
 
   return true;
 }
+
+/**************************************************************************/
+/*!
+    @brief  Returns the logical pin number of the servo
+    @returns The logical pin number of the servo
+*/
+/**************************************************************************/
+uint8_t ServoHardware::GetPin() { return _pin; }
 
 /**************************************************************************/
 /*!

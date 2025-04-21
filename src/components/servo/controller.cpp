@@ -29,7 +29,20 @@ ServoController::ServoController() {
     @brief  Destructor
 */
 /**************************************************************************/
-ServoController::~ServoController() {}
+ServoController::~ServoController() {
+  // De-initialize all servos
+  for (int i = 0; i < _active_servo_pins; i++) {
+    if (_servo_hardware[i] != nullptr) {
+      delete _servo_hardware[i];
+      _servo_hardware[i] = nullptr;
+    }
+  }
+
+  if (_servo_model != nullptr) {
+    delete _servo_model;
+    _servo_model = nullptr;
+  }
+}
 
 /**************************************************************************/
 /*!
@@ -45,6 +58,11 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
     return false;
   }
 
+  if (_active_servo_pins >= MAX_SERVOS) {
+    WS_DEBUG_PRINTLN("[servo] Error: Maximum number of servos reached!");
+    return false;
+  }
+
   wippersnapper_servo_ServoAdd *msg_add = _servo_model->GetServoAddMsg();
   uint8_t pin = atoi(msg_add->servo_pin + 1);
   _servo_hardware[_active_servo_pins] = new ServoHardware(
@@ -55,7 +73,7 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
   did_attach = _servo_hardware[_active_servo_pins]->ServoAttach();
 
   // Write the default minimum to a servo
-  if (!did_attach) {
+  if (did_attach) {
     _servo_hardware[_active_servo_pins]->ServoWrite(MIN_SERVO_PULSE_WIDTH);
     WS_DEBUG_PRINT("[servo] Servo attached to pin: ");
     WS_DEBUG_PRINT(msg_add->servo_pin);
@@ -91,7 +109,6 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
   }
   wippersnapper_servo_ServoWrite *msg_write = _servo_model->GetServoWriteMsg();
   uint8_t pin = atoi(msg_write->servo_pin + 1);
-  // find the pin by using getpin()
   int servo_idx = -1;
   for (int i = 0; i < _active_servo_pins; i++) {
     if (_servo_hardware[i]->GetPin() == pin) {
@@ -107,7 +124,7 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
   _servo_hardware[servo_idx]->ServoWrite(msg_write->pulse_width);
   WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
   WS_DEBUG_PRINT(msg_write->pulse_width);
-  WS_DEBUG_PRINT(" mS on pin: ");
+  WS_DEBUG_PRINT(" µs on pin: ");
   WS_DEBUG_PRINT(msg_write->servo_pin);
   return true;
 }
