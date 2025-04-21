@@ -19,7 +19,9 @@
 #include "model.h"
 
 #ifdef ARDUINO_ARCH_RP2040
-#define MAX_SERVOS 8 ///< Maximum number of servo objects for RP2040, https://arduino-pico.readthedocs.io/en/latest/servo.html
+#define MAX_SERVOS                                                             \
+  8 ///< Maximum number of servo objects for RP2040,
+    ///< https://arduino-pico.readthedocs.io/en/latest/servo.html
 #else
 #define MAX_SERVOS 16 ///< Maximum number of servo objects
 #endif
@@ -43,9 +45,11 @@ public:
   bool Handle_Servo_Add(pb_istream_t *stream);
   bool Handle_Servo_Write(pb_istream_t *stream);
   bool Handle_Servo_Remove(pb_istream_t *stream);
+
 private:
   ServoModel *_servo_model;
   ServoHardware *_servo_hardware[MAX_SERVOS] = {nullptr};
+  int _active_servo_pins; ///< Number of active servo pins
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_SERVO_CONTROLLER_H

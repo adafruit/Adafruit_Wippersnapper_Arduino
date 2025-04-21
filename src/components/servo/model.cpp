@@ -20,7 +20,10 @@
 */
 /**************************************************************************/
 ServoModel::ServoModel() {
-  
+  memset(&_msg_servo_add, 0, sizeof(_msg_servo_add));
+  memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
+  memset(&_msg_servo_remove, 0, sizeof(_msg_servo_remove));
+  memset(&_msg_servo_write, 0, sizeof(_msg_servo_write));
 }
 
 /**************************************************************************/
@@ -29,7 +32,10 @@ ServoModel::ServoModel() {
 */
 /**************************************************************************/
 ServoModel::~ServoModel() {
-  
+  memset(&_msg_servo_add, 0, sizeof(_msg_servo_add));
+  memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
+  memset(&_msg_servo_remove, 0, sizeof(_msg_servo_remove));
+  memset(&_msg_servo_write, 0, sizeof(_msg_servo_write));
 }
 
 /**************************************************************************/
@@ -41,7 +47,9 @@ ServoModel::~ServoModel() {
 */
 /**************************************************************************/
 bool ServoModel::DecodeServoAdd(pb_istream_t *stream) {
-  
+  memset(&_msg_servo_add, 0, sizeof(_msg_servo_add));
+  return pb_decode(stream, wippersnapper_servo_ServoAdd_fields,
+                   &_msg_servo_add);
 }
 
 /**************************************************************************/
@@ -51,7 +59,7 @@ bool ServoModel::DecodeServoAdd(pb_istream_t *stream) {
 */
 /**************************************************************************/
 wippersnapper_servo_ServoAdd *ServoModel::GetServoAddMsg() {
-  
+  return &_msg_servo_add;
 }
 
 /**************************************************************************/
@@ -66,7 +74,20 @@ wippersnapper_servo_ServoAdd *ServoModel::GetServoAddMsg() {
 */
 /**************************************************************************/
 bool ServoModel::EncodeServoAdded(char *pin_name, bool did_attach) {
-  
+  // Fill the message
+  memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
+  _msg_servo_added.attach_success = did_attach;
+  strncpy(_msg_servo_added.servo_pin, pin_name,
+          sizeof(_msg_servo_added.servo_pin));
+  // Encode it!
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, wippersnapper_servo_ServoAdded_fields,
+                           &_msg_servo_added))
+    return false;
+  uint8_t buf[sz_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  return pb_encode(&msg_stream, wippersnapper_servo_ServoAdded_fields,
+                   &_msg_servo_added);
 }
 
 /**************************************************************************/
@@ -76,7 +97,7 @@ bool ServoModel::EncodeServoAdded(char *pin_name, bool did_attach) {
 */
 /**************************************************************************/
 wippersnapper_servo_ServoAdded *ServoModel::GetServoAddedMsg() {
-  
+  return &_msg_servo_added;
 }
 
 /**************************************************************************/
@@ -88,7 +109,9 @@ wippersnapper_servo_ServoAdded *ServoModel::GetServoAddedMsg() {
 */
 /**************************************************************************/
 bool ServoModel::DecodeServoRemove(pb_istream_t *stream) {
-  
+  memset(&_msg_servo_remove, 0, sizeof(_msg_servo_remove));
+  return pb_decode(stream, wippersnapper_servo_ServoRemove_fields,
+                   &_msg_servo_remove);
 }
 
 /**************************************************************************/
@@ -98,7 +121,7 @@ bool ServoModel::DecodeServoRemove(pb_istream_t *stream) {
 */
 /**************************************************************************/
 wippersnapper_servo_ServoRemove *ServoModel::GetServoRemoveMsg() {
-  
+  return &_msg_servo_remove;
 }
 
 /**************************************************************************/
@@ -110,7 +133,9 @@ wippersnapper_servo_ServoRemove *ServoModel::GetServoRemoveMsg() {
 */
 /**************************************************************************/
 bool ServoModel::DecodeServoWrite(pb_istream_t *stream) {
-  
+  memset(&_msg_servo_write, 0, sizeof(_msg_servo_write));
+  return pb_decode(stream, wippersnapper_servo_ServoWrite_fields,
+                   &_msg_servo_write);
 }
 
 /**************************************************************************/
@@ -120,5 +145,5 @@ bool ServoModel::DecodeServoWrite(pb_istream_t *stream) {
 */
 /**************************************************************************/
 wippersnapper_servo_ServoWrite *ServoModel::GetServoWriteMsg() {
-  
+  return &_msg_servo_write;
 }

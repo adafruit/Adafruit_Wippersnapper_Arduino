@@ -34,10 +34,14 @@ public:
   wippersnapper_servo_ServoRemove *GetServoRemoveMsg();
   bool DecodeServoWrite(pb_istream_t *stream);
   wippersnapper_servo_ServoWrite *GetServoWriteMsg();
+
 private:
   wippersnapper_servo_ServoAdd _msg_servo_add; ///< ServoAdd message object
-  wippersnapper_servo_ServoAdded _msg_servo_added; ///< ServoAdded message object
-  wippersnapper_servo_ServoRemove _msg_servo_remove; ///< ServoRemove message object
-  wippersnapper_servo_ServoWrite _msg_servo_write; ///< ServoWrite message object
+  wippersnapper_servo_ServoAdded
+      _msg_servo_added; ///< ServoAdded message object
+  wippersnapper_servo_ServoRemove
+      _msg_servo_remove; ///< ServoRemove message object
+  wippersnapper_servo_ServoWrite
+      _msg_servo_write; ///< ServoWrite message object
 };
 #endif // WS_SERVO_MODEL_H
