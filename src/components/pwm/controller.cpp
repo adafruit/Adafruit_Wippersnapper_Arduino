@@ -56,8 +56,49 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
   return true;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Returns the index of the PWM hardware object that corresponds
+            to the given pin.
+    @param  pin The pin number to search for.
+    @return The index of the PWM hardware object, or -1 if not found.
+*/
+/**************************************************************************/
+int PWMController::GetPWMHardwareIdx(uint8_t pin) {
+  for (int i = 0; i < _active_pwm_pins; i++) {
+    if (_pwm_hardware[i]->GetPin() == pin) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 bool PWMController::Handle_PWM_Write_DutyCycle(pb_istream_t *stream) {
-  return false;
+  if (!_pwm_model->DecodePWMWriteDutyCycle(stream)) {
+    WS_DEBUG_PRINTLN("[pwm] Error: Failed to decode PWMWriteDutyCycle message!");
+    return false;
+  }
+
+  wippersnapper_pwm_PWMWriteDutyCycle msg_write_duty_cycle = *_pwm_model->GetPWMWriteDutyCycleMsg();
+  uint8_t pin = atoi(msg_write_duty_cycle.pin + 1);
+
+  // Check if the pin is already attached
+  int pin_idx = GetPWMHardwareIdx(pin);
+  if (pin_idx == -1) {
+    WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
+    return false;
+  }
+
+  // Write the duty cycle to the pin
+  if (! _pwm_hardware[pin_idx]->WriteDutyCycle(msg_write_duty_cycle.duty_cycle)) {
+    WS_DEBUG_PRINTLN("[pwm] Error: Failed to write duty cycle!");
+    return false;
+  }
+  WS_DEBUG_PRINTLN("[pwm] Wrote duty cycle: ");
+  WS_DEBUG_PRINT(msg_write_duty_cycle.duty_cycle);
+  WS_DEBUG_PRINTLN(" to pin: ");
+  WS_DEBUG_PRINT(msg_write_duty_cycle.pin);
+  return true;
 }
 
 bool PWMController::Handle_PWM_Write_DutyCycle_Multi(pb_istream_t *stream) {

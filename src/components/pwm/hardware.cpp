@@ -157,6 +157,16 @@ void PWMHardware::WriteNoTone() {
   #endif
 }
 
+/**************************************************************************/
+/*!
+    @brief  Returns the pin number of the PWM pin
+    @return The logical pin number of the PWM pin
+*/
+/**************************************************************************/
+uint8_t PWMHardware::GetPin() {
+    return _pin;
+}
+
 // LEDC API Wrappers
 #ifdef ARDUINO_ARCH_ESP32
 /**************************************************************************/
