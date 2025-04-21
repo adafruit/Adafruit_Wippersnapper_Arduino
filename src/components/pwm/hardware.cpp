@@ -79,6 +79,7 @@ bool PWMHardware::DetachPin() {
 
     // "Disable" the pin's output
     digitalWrite(_pin, LOW);
+    return did_detach;
 }
 
 /**************************************************************************/

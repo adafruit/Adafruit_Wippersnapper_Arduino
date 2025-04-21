@@ -51,7 +51,6 @@ PWMModel::~PWMModel() {
 /**************************************************************************/
 bool PWMModel::DecodePWMAdd(pb_istream_t *stream) {
   memset(&_msg_pwm_add, 0, sizeof(_msg_pwm_add));
-  // Attempt to decode the stream into a pwm_PWMAdd message
   return pb_decode(stream, wippersnapper_pwm_PWMAdd_fields, &_msg_pwm_add);
 }
 
@@ -98,11 +97,26 @@ wippersnapper_pwm_PWMAdded *PWMModel::GetPWMAddedMsg() {
   return &_msg_pwm_added;
 }
 
+/**************************************************************************/
+/*! 
+    @brief  Decodes a PWMRemove message from an input stream.
+    @param  stream  The stream to decode from.
+    @return true if successful, false otherwise.
+*/
+/**************************************************************************/
 bool PWMModel::DecodePWMRemove(pb_istream_t *stream) {
-  return false;
+  memset(&_msg_pwm_remove, 0, sizeof(_msg_pwm_remove));
+  return pb_decode(stream, wippersnapper_pwm_PWMRemove_fields, &_msg_pwm_remove);
 }
 
+/**************************************************************************/
+/*! 
+    @brief  Returns a pointer to the PWMRemove message.
+    @return Pointer to the PWMRemove message.
+*/
+/**************************************************************************/
 wippersnapper_pwm_PWMRemove *PWMModel::GetPWMRemoveMsg() {
+  return &_msg_pwm_remove;
 }
 
 /**************************************************************************/
@@ -127,18 +141,45 @@ wippersnapper_pwm_PWMWriteDutyCycle *PWMModel::GetPWMWriteDutyCycleMsg() {
   return &_msg_pwm_write_duty_cycle;
 }
 
+/**************************************************************************/
+/*! 
+    @brief  Decodes a PWMWriteDutyCycleMulti message from an input stream.
+    @param  stream  The stream to decode from.
+    @return true if successful, false otherwise.
+*/
+/**************************************************************************/
 bool PWMModel::DecodePWMWriteDutyCycleMulti(pb_istream_t *stream) {
   return false;
 }
 
+/**************************************************************************/
+/*! 
+    @brief  Returns a pointer to the PWMWriteDutyCycleMulti message.
+    @return Pointer to the PWMWriteDutyCycleMulti message.
+*/
+/**************************************************************************/
 wippersnapper_pwm_PWMWriteDutyCycleMulti *PWMModel::GetPWMWriteDutyCycleMultiMsg() {
+    return &_msg_pwm_write_duty_cycle_multi;
 }
 
+/**************************************************************************/
+/*! 
+    @brief  Decodes a PWMWriteFrequency message from an input stream.
+    @param  stream  The stream to decode from.
+    @return true if successful, false otherwise.
+*/
+/**************************************************************************/
 bool PWMModel::DecodePWMWriteFrequency(pb_istream_t *stream) {
   memset(&_msg_pwm_write_frequency, 0, sizeof(_msg_pwm_write_frequency));
   return pb_decode(stream, wippersnapper_pwm_PWMWriteFrequency_fields, &_msg_pwm_write_frequency);
 }
 
+/**************************************************************************/
+/*! 
+    @brief  Returns a pointer to the PWMWriteFrequency message.
+    @return Pointer to the PWMWriteFrequency message.
+*/
+/**************************************************************************/
 wippersnapper_pwm_PWMWriteFrequency *PWMModel::GetPWMWriteFrequencyMsg() {
   return &_msg_pwm_write_frequency;
 }

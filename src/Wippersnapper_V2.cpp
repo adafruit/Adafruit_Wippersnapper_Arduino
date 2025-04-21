@@ -439,21 +439,14 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
-  case wippersnapper_signal_BrokerToDevice_pwm_write_duty_cycle_tag:
+  case wippersnapper_signal_BrokerToDevice_pwm_write_duty_tag:
     WS_DEBUG_PRINTLN("-> PWM Write Duty Cycle Message Type");
     if (!WsV2._pwm_controller->Handle_PWM_Write_DutyCycle(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to write duty cycle to PWM pin!");
       return false;
     }
     break;
-  case wippersnapper_signal_BrokerToDevice_pwm_write_duty_cycle_multi_tag:
-    WS_DEBUG_PRINTLN("-> PWM Write Duty Cycle Multi Message Type");
-    if (!WsV2._pwm_controller->Handle_PWM_Write_DutyCycle_Multi(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to write multi duty cycle to PWM pins!");
-      return false;
-    }
-    break;
-  case wippersnapper_signal_BrokerToDevice_pwm_write_frequency_tag:
+  case wippersnapper_signal_BrokerToDevice_pwm_write_freq_tag:
     WS_DEBUG_PRINTLN("-> PWM Write Frequency Message Type");
     if (!WsV2._pwm_controller->Handle_PWM_Write_Frequency(stream)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to write frequency to PWM pin!");
