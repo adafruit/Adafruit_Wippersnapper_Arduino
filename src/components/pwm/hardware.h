@@ -33,7 +33,6 @@ public:
   bool DetachPin();
   bool WriteDutyCycle(uint32_t duty);
   uint32_t WriteTone(uint32_t freq);
-  void WriteNoTone();
   uint8_t GetPin();
 
   // Abstractions for LEDC API

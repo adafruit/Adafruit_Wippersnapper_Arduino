@@ -139,26 +139,6 @@ uint32_t PWMHardware::WriteTone(uint32_t freq) {
 
 /**************************************************************************/
 /*!
-    @brief  Stops a "tone" output on a PWM pin from WriteTone(). Must be
-            called to stop the tone before detaching the pin.
-    @return true if the tone was successfully stopped, false otherwise
-*/
-/**************************************************************************/
-void PWMHardware::WriteNoTone() {
-  if (! _is_attached) {
-    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
-    return; // back out
-  }
-
-  #ifdef ARDUINO_ARCH_ESP32
-  ledcWriteTone(_pin, 0);
-  #else
-  noTone(_pin);
-  #endif
-}
-
-/**************************************************************************/
-/*!
     @brief  Returns the pin number of the PWM pin
     @return The logical pin number of the PWM pin
 */
