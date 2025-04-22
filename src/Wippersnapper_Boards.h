@@ -191,12 +191,12 @@
 #define BOARD_ID "rpi-pico-w"
 #define USE_TINYUSB
 #define USE_STATUS_LED
-#define STATUS_LED_PIN 32
+#define STATUS_LED_PIN 64
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #define BOARD_ID "rpi-pico-2w"
 #define USE_TINYUSB
 #define USE_STATUS_LED
-#define STATUS_LED_PIN 32
+#define STATUS_LED_PIN 64
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 #define BOARD_ID "rpi-pico"
 #define USE_TINYUSB
