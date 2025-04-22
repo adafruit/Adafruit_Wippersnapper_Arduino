@@ -44,7 +44,7 @@ PWMHardware::~PWMHardware() {
 /**************************************************************************/
 bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency, uint32_t resolution) {
 #ifdef ARDUINO_ARCH_ESP32
-  _is_attached = ledcAttach(_pin, _frequency, _resolution);
+  _is_attached = ledcAttach(pin, frequency, resolution);
 #else
   _is_attached = true;
 #endif
@@ -73,12 +73,15 @@ bool PWMHardware::DetachPin() {
     bool did_detach = false;
     #ifdef ARDUINO_ARCH_ESP32
     did_detach = ledcDetach(_pin);
+    if (!did_detach) {
+        WS_DEBUG_PRINTLN("[pwm] Error: ledcDetach failed!");
+    }
     #else
+    digitalWrite(_pin, LOW); // "Disable" the pin's output
     did_detach = true;
     #endif
 
-    // "Disable" the pin's output
-    digitalWrite(_pin, LOW);
+    _is_attached = false; // always mark as false, for tracking
     return did_detach;
 }
 

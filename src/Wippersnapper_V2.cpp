@@ -1056,6 +1056,16 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.payload.pixels_added =
         *(wippersnapper_pixels_PixelsAdded *)payload;
     break;
+  case wippersnapper_signal_DeviceToBroker_pwm_added_tag:
+    WS_DEBUG_PRINTLN("PWMAdded");
+    MsgSignal.which_payload = wippersnapper_signal_DeviceToBroker_pwm_added_tag;
+    MsgSignal.payload.pwm_added = *(wippersnapper_pwm_PWMAdded *)payload;
+    break;
+  case wippersnapper_signal_DeviceToBroker_servo_added_tag:
+    WS_DEBUG_PRINTLN("ServoAdded");
+    MsgSignal.which_payload = wippersnapper_signal_DeviceToBroker_servo_added_tag;
+    MsgSignal.payload.servo_added = *(wippersnapper_servo_ServoAdded *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;

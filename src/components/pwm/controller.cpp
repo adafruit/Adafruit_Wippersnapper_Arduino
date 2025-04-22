@@ -95,15 +95,25 @@ bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
   }
 
   // Detach and free the pin
-  _pwm_hardware[pin_idx]->DetachPin();
-  delete _pwm_hardware[pin_idx];
-  _pwm_hardware[pin_idx] = nullptr;
+  WS_DEBUG_PRINTLN("[pwm] Removing pin ");
+  WS_DEBUG_PRINTLN(pin);
+  if (_pwm_hardware[pin_idx] != nullptr) {
+    bool detach_result = _pwm_hardware[pin_idx]->DetachPin();
+    if (!detach_result) {
+      WS_DEBUG_PRINTLN("[pwm] Error: Failed to detach pin.");
+    }
+    delete _pwm_hardware[pin_idx];
+    _pwm_hardware[pin_idx] = nullptr;
+  } else {
+    WS_DEBUG_PRINTLN("[pwm] Error: Pin not attached!");
+  }
 
-  // Update _active_pwm_pins[]
+  // Reorganize _active_pwm_pins
   _active_pwm_pins--;
   for (int i = pin_idx; i < _active_pwm_pins; i++) {
     _pwm_hardware[i] = _pwm_hardware[i + 1];
   }
+  _pwm_hardware[_active_pwm_pins] = nullptr;
   return true;
 }
 

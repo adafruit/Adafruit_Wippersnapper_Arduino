@@ -76,7 +76,7 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
   if (did_attach) {
     _servo_hardware[_active_servo_pins]->ServoWrite(MIN_SERVO_PULSE_WIDTH);
     WS_DEBUG_PRINT("[servo] Servo attached to pin: ");
-    WS_DEBUG_PRINT(msg_add->servo_pin);
+    WS_DEBUG_PRINTLN(msg_add->servo_pin);
     _active_servo_pins++;
   } else {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to attach servo to pin!");
