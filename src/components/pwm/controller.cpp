@@ -48,13 +48,12 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
   uint8_t pin = atoi(msg_add.pin + 1);
   _pwm_hardware[_active_pwm_pins] = new PWMHardware();
 
+  WS_DEBUG_PRINT("[pwm] Attaching pin: ");
+  WS_DEBUG_PRINT(msg_add.pin);
   did_attach = _pwm_hardware[_active_pwm_pins]->AttachPin(
       pin, (uint32_t)msg_add.frequency, (uint32_t)msg_add.resolution);
-  if (!did_attach) {
+  if (! did_attach) {
     WS_DEBUG_PRINTLN("[pwm] Failed to attach pin!");
-    // TODO: Test init. failure to see if the below line crashes?
-    // TODO: if it doesn't, we should probably implement this
-    // delete in the pixel controller class to avoid memory leaks
     delete _pwm_hardware[_active_pwm_pins];
   } else {
     _active_pwm_pins++;
@@ -70,6 +69,7 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[PWM]: Unable to publish PWMAdded message!");
     return false;
   }
+  WS_DEBUG_PRINTLN("...attached!");
   return true;
 }
 
@@ -87,16 +87,15 @@ bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
   }
   wippersnapper_pwm_PWMRemove msg_remove = *_pwm_model->GetPWMRemoveMsg();
   uint8_t pin = atoi(msg_remove.pin + 1);
-  // Check if the pin is already attached
   int pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
     return false;
   }
 
-  // Detach and free the pin
-  WS_DEBUG_PRINTLN("[pwm] Removing pin ");
-  WS_DEBUG_PRINTLN(pin);
+  // Detach and free the pin for other uses
+  WS_DEBUG_PRINT("[pwm] Detaching pin: ");
+  WS_DEBUG_PRINT(msg_remove.pin);
   if (_pwm_hardware[pin_idx] != nullptr) {
     bool detach_result = _pwm_hardware[pin_idx]->DetachPin();
     if (!detach_result) {
@@ -114,6 +113,7 @@ bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
     _pwm_hardware[i] = _pwm_hardware[i + 1];
   }
   _pwm_hardware[_active_pwm_pins] = nullptr;
+  WS_DEBUG_PRINTLN("...detached!");
   return true;
 }
 

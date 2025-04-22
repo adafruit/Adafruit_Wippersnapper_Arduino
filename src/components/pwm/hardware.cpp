@@ -73,9 +73,6 @@ bool PWMHardware::DetachPin() {
     bool did_detach = false;
     #ifdef ARDUINO_ARCH_ESP32
     did_detach = ledcDetach(_pin);
-    if (!did_detach) {
-        WS_DEBUG_PRINTLN("[pwm] Error: ledcDetach failed!");
-    }
     #else
     digitalWrite(_pin, LOW); // "Disable" the pin's output
     did_detach = true;
