@@ -109,13 +109,7 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
   }
   wippersnapper_servo_ServoWrite *msg_write = _servo_model->GetServoWriteMsg();
   uint8_t pin = atoi(msg_write->servo_pin + 1);
-  int servo_idx = -1;
-  for (int i = 0; i < _active_servo_pins; i++) {
-    if (_servo_hardware[i]->GetPin() == pin) {
-      servo_idx = i;
-      break;
-    }
-  }
+  int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {
     WS_DEBUG_PRINTLN("[servo] Error: Servo pin not found!");
     return false;
@@ -138,5 +132,46 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
 */
 /**************************************************************************/
 bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
-  // just delete the ServoHardware object, it'll deinit itself!
+  if (!_servo_model->DecodeServoRemove(stream)) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoRemove message!");
+    return false;
+  }
+  wippersnapper_servo_ServoRemove *msg_remove =
+      _servo_model->GetServoRemoveMsg();
+  uint8_t pin = atoi(msg_remove->servo_pin + 1);
+  int servo_idx = GetServoIndex(pin);
+  if (servo_idx == -1) {
+    WS_DEBUG_PRINTLN("[servo] Error: Servo pin not found!");
+    return false;
+  }
+
+  if (_active_servo_pins <= 0) {
+    WS_DEBUG_PRINTLN("[servo] Error: No active servos!");
+    return false;
+  }
+
+  // The destructor of ServoHardware will handle proper detachment
+  delete _servo_hardware[servo_idx];
+  _servo_hardware[servo_idx] = nullptr;
+
+  // Shift _active_servo_pins down
+  for (int i = servo_idx; i < _active_servo_pins - 1; i++) {
+    _servo_hardware[i] = _servo_hardware[i + 1];
+    _servo_hardware[i + 1] = nullptr;
+  }
+  _servo_hardware[_active_servo_pins - 1] = nullptr;
+  _active_servo_pins--;
+
+  WS_DEBUG_PRINT("[servo] Servo removed from pin: ");
+  WS_DEBUG_PRINT(msg_remove->servo_pin);
+  return true;
+}
+
+int ServoController::GetServoIndex(uint8_t pin) {
+  for (int i = 0; i < _active_servo_pins; i++) {
+    if (_servo_hardware[i]->GetPin() == pin) {
+      return i;
+    }
+  }
+  return -1;
 }

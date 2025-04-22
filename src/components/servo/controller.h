@@ -25,7 +25,6 @@
 #else
 #define MAX_SERVOS 16 ///< Maximum number of servo objects
 #endif
-#define MIN_SERVO_PULSE_WIDTH 500 ///< Default min. servo pulse width of 500uS
 
 class Wippersnapper_V2; // Forward declaration
 class ServoModel;       // Forward declaration
@@ -47,6 +46,7 @@ public:
   bool Handle_Servo_Remove(pb_istream_t *stream);
 
 private:
+  int GetServoIndex(uint8_t pin);
   ServoModel *_servo_model;
   ServoHardware *_servo_hardware[MAX_SERVOS] = {nullptr};
   int _active_servo_pins; ///< Number of active servo pins

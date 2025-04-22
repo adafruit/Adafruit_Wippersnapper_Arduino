@@ -78,7 +78,7 @@ bool ServoModel::EncodeServoAdded(char *pin_name, bool did_attach) {
   memset(&_msg_servo_added, 0, sizeof(_msg_servo_added));
   _msg_servo_added.attach_success = did_attach;
   strncpy(_msg_servo_added.servo_pin, pin_name,
-          sizeof(_msg_servo_added.servo_pin));
+          sizeof(_msg_servo_added.servo_pin) - 1);
   // Encode it!
   size_t sz_msg;
   if (!pb_get_encoded_size(&sz_msg, wippersnapper_servo_ServoAdded_fields,

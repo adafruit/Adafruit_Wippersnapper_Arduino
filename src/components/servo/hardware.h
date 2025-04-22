@@ -43,6 +43,7 @@ public:
                 int frequency);
   ~ServoHardware();
   bool ServoAttach();
+  bool ServoDetach();
   void ServoWrite(int value);
   uint8_t GetPin();
 

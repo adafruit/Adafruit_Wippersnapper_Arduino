@@ -48,32 +48,38 @@ ServoHardware::ServoHardware(int pin, int min_pulse_width, int max_pulse_width,
 */
 /**************************************************************************/
 ServoHardware::~ServoHardware() {
+  if (!ServoDetach()) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach servo!");
+  } else {
+    WS_DEBUG_PRINT("[servo] Servo detached from pin: ");
+    WS_DEBUG_PRINTLN(_pin);
+  }
+}
+
+/**************************************************************************/
+/*!
+    @brief  Detaches the servo from the pin and frees the pin for
+            other uses.
+    @returns true if successful, false otherwise
+*/
+/**************************************************************************/
+bool ServoHardware::ServoDetach() {
 #ifdef ARDUINO_ARCH_ESP32
-  if (!_is_attached) {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not attached!");
-    return;
+  detach();
+  if (attached()) {
+    WS_DEBUG_PRINTLN("[servo]Error: Servo detach failure!");
+    return false;
   }
-  if (!ledcDetach(_pin)) {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach servo from pin!");
-    return;
-  }
-  _is_attached = false;
 #else
-  if (_servo == nullptr) {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not created!");
-    return;
-  }
-  if (!_servo->attached()) {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not attached!");
-    return;
+  if (_servo == nullptr || !_servo->attached()) {
+    WS_DEBUG_PRINTLN("[servo] Detach Error: Servo not attached!");
+    return false;
   }
   _servo->detach();
   delete _servo;
   _servo = nullptr;
 #endif
-
-  WS_DEBUG_PRINT("[servo] Servo detached from pin ");
-  WS_DEBUG_PRINTLN(_pin);
+  return true;
 }
 
 /**************************************************************************/
@@ -95,7 +101,7 @@ bool ServoHardware::ServoAttach() {
   }
 #else
   if (_servo == nullptr) {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed to detach, servo not created!");
+    WS_DEBUG_PRINTLN("[servo] Attach Error: Servo not initialized!");
     return false;
   }
   rc = _servo->attach(_pin, _min_pulse_width, _max_pulse_width);
@@ -127,7 +133,7 @@ uint8_t ServoHardware::GetPin() { return _pin; }
 /**************************************************************************/
 void ServoHardware::ServoWrite(int value) {
 #ifdef ARDUINO_ARCH_ESP32
-  if (!_is_attached) {
+  if (!attached()) {
     WS_DEBUG_PRINTLN("[servo] Error: Servo not attached!");
     return;
   }
@@ -137,7 +143,12 @@ void ServoHardware::ServoWrite(int value) {
     WS_DEBUG_PRINTLN("[servo] Error: Servo not attached!");
     return;
   }
-  _servo.writeMicroseconds(value);
+  // Clamp value to a valid pulse_width range
+  if (value < _min_pulse_width)
+    value = _min_pulse_width;
+  if (value > _max_pulse_width)
+    value = _max_pulse_width;
+  _servo->writeMicroseconds(value);
 #endif
 }
 
@@ -166,4 +177,24 @@ void ServoHardware::writeMicroseconds(int value) {
   if (!ledcWrite(_pin, count))
     WS_DEBUG_PRINTLN("[servo] Error: Failed to write to servo pin!");
 }
+
+/**************************************************************************/
+/*!
+    @brief  Detaches the servo from the LEDC manager and frees the pin for
+            other uses.
+*/
+/**************************************************************************/
+void ServoHardware::detach() {
+  if (!attached())
+    return;
+  _is_attached = ledcDetach(_pin);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Returns true if the servo is attached to the pin
+    @returns true if the servo is attached to the pin, false otherwise
+*/
+/**************************************************************************/
+bool ServoHardware::attached() { return _is_attached; }
 #endif
