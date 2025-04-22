@@ -19,9 +19,7 @@
     @brief  Ctor for PWMHardware
 */
 /**************************************************************************/
-PWMHardware::PWMHardware() {
-_is_attached = false;
-}
+PWMHardware::PWMHardware() { _is_attached = false; }
 
 /**************************************************************************/
 /*!
@@ -42,21 +40,22 @@ PWMHardware::~PWMHardware() {
     @return true if the pin was successfully attached, false otherwise
 */
 /**************************************************************************/
-bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency, uint32_t resolution) {
+bool PWMHardware::AttachPin(uint8_t pin, uint32_t frequency,
+                            uint32_t resolution) {
 #ifdef ARDUINO_ARCH_ESP32
   _is_attached = ledcAttach(pin, frequency, resolution);
 #else
   _is_attached = true;
 #endif
 
-if (_is_attached) {
-  _pin = pin;
-  _frequency = frequency;
-  _resolution = resolution;
-  _duty_cycle = 0;
-}
+  if (_is_attached) {
+    _pin = pin;
+    _frequency = frequency;
+    _resolution = resolution;
+    _duty_cycle = 0;
+  }
 
-return _is_attached;
+  return _is_attached;
 }
 
 /**************************************************************************/
@@ -66,20 +65,20 @@ return _is_attached;
 */
 /**************************************************************************/
 bool PWMHardware::DetachPin() {
-    if (! _is_attached) {
-        WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
-        return false;
-    }
-    bool did_detach = false;
-    #ifdef ARDUINO_ARCH_ESP32
-    did_detach = ledcDetach(_pin);
-    #else
-    digitalWrite(_pin, LOW); // "Disable" the pin's output
-    did_detach = true;
-    #endif
+  if (!_is_attached) {
+    WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
+    return false;
+  }
+  bool did_detach = false;
+#ifdef ARDUINO_ARCH_ESP32
+  did_detach = ledcDetach(_pin);
+#else
+  digitalWrite(_pin, LOW); // "Disable" the pin's output
+  did_detach = true;
+#endif
 
-    _is_attached = false; // always mark as false, for tracking
-    return did_detach;
+  _is_attached = false; // always mark as false, for tracking
+  return did_detach;
 }
 
 /**************************************************************************/
@@ -91,18 +90,18 @@ bool PWMHardware::DetachPin() {
 */
 /**************************************************************************/
 bool PWMHardware::WriteDutyCycle(uint32_t duty) {
-  if (! _is_attached) {
+  if (!_is_attached) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
     return false;
   }
   bool did_write = false;
-  #if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(STATUS_LED_PIN)
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH) && defined(STATUS_LED_PIN)
   // Adafruit Feather ESP8266's analogWrite() gets inverted since the builtin
   // LED is reverse-wired
   _duty_cycle = 255 - duty;
-  #else
+#else
   _duty_cycle = duty;
-  #endif
+#endif
 
 #ifdef ARDUINO_ARCH_ESP32
   did_write = analogWrite(_duty_cycle);
@@ -122,18 +121,18 @@ bool PWMHardware::WriteDutyCycle(uint32_t duty) {
 */
 /**************************************************************************/
 uint32_t PWMHardware::WriteTone(uint32_t freq) {
-  if (! _is_attached) {
+  if (!_is_attached) {
     WS_DEBUG_PRINTLN("[pwm] Pin not attached!");
     return false;
   }
 
   uint32_t rc = 0;
-  #ifdef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_ESP32
   rc = ledcWriteTone(_pin, freq);
-  #else
+#else
   tone(_pin, freq);
   rc = freq;
-  #endif
+#endif
 
   return rc;
 }
@@ -144,9 +143,7 @@ uint32_t PWMHardware::WriteTone(uint32_t freq) {
     @return The logical pin number of the PWM pin
 */
 /**************************************************************************/
-uint8_t PWMHardware::GetPin() {
-    return _pin;
-}
+uint8_t PWMHardware::GetPin() { return _pin; }
 
 // LEDC API Wrappers
 #ifdef ARDUINO_ARCH_ESP32

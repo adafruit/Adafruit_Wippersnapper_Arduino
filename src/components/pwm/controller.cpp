@@ -52,7 +52,7 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
   WS_DEBUG_PRINT(msg_add.pin);
   did_attach = _pwm_hardware[_active_pwm_pins]->AttachPin(
       pin, (uint32_t)msg_add.frequency, (uint32_t)msg_add.resolution);
-  if (! did_attach) {
+  if (!did_attach) {
     WS_DEBUG_PRINTLN("[pwm] Failed to attach pin!");
     delete _pwm_hardware[_active_pwm_pins];
   } else {
@@ -174,17 +174,6 @@ bool PWMController::Handle_PWM_Write_DutyCycle(pb_istream_t *stream) {
 
 /**************************************************************************/
 /*!
-    @brief  Handles the PWM_Write_DutyCycle_Multi message.
-    @param  stream The stream containing the message data.
-    @return True if the message was handled successfully, false otherwise.
-*/
-/**************************************************************************/
-bool PWMController::Handle_PWM_Write_DutyCycle_Multi(pb_istream_t *stream) {
-  return false;
-}
-
-/**************************************************************************/
-/*!
     @brief  Handles the PWM_Write_Frequency message.
     @param  stream The stream containing the message data.
     @return True if the message was handled successfully, false otherwise.
@@ -206,7 +195,7 @@ bool PWMController::Handle_PWM_Write_Frequency(pb_istream_t *stream) {
     return false;
   }
 
-  if (!_pwm_hardware[pin_idx]->WriteTone(msg_write_frequency.frequency) ==
+  if (_pwm_hardware[pin_idx]->WriteTone(msg_write_frequency.frequency) !=
       msg_write_frequency.frequency) {
     WS_DEBUG_PRINTLN("[pwm] Error: Failed to write frequency!");
     return false;

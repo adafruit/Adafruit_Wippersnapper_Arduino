@@ -36,7 +36,6 @@ public:
   ~PWMController();
   bool Handle_PWM_Add(pb_istream_t *stream);
   bool Handle_PWM_Write_DutyCycle(pb_istream_t *stream);
-  bool Handle_PWM_Write_DutyCycle_Multi(pb_istream_t *stream);
   bool Handle_PWM_Write_Frequency(pb_istream_t *stream);
   bool Handle_PWM_Remove(pb_istream_t *stream);
   int GetPWMHardwareIdx(uint8_t pin);
