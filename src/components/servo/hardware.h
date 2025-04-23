@@ -43,11 +43,11 @@ public:
                 int frequency);
   ~ServoHardware();
   bool ServoAttach();
-  bool ServoDetach();
   void ServoWrite(int value);
   uint8_t GetPin();
 
 private:
+  bool ServoDetach();
 #ifdef ARDUINO_ARCH_ESP32
   // Mocks Servo library API for ESP32x's LEDC manager
   // https://github.com/arduino-libraries/Servo/blob/master/src/Servo.h

@@ -337,7 +337,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("-> Checkin Response Message Type");
     WS_DEBUG_PRINT("Handling Checkin Response...");
     if (!handleCheckinResponse(stream)) {
-      WS_DEBUG_PRINTLN("Failure handling Checkin Response!");
       return false;
     }
     WS_DEBUG_PRINTLN("Handled!");
@@ -345,140 +344,120 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case wippersnapper_signal_BrokerToDevice_digitalio_add_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Add Message Type");
     if (!WsV2.digital_io_controller->Handle_DigitalIO_Add(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add digitalio pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_remove_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Remove Message Type");
     if (!WsV2.digital_io_controller->Handle_DigitalIO_Remove(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to remove digitalio pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_digitalio_write_tag:
     WS_DEBUG_PRINTLN("-> DigitalIO Write Message Type");
     if (!WsV2.digital_io_controller->Handle_DigitalIO_Write(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to write to digitalio pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_analogio_add_tag:
     WS_DEBUG_PRINTLN("-> AnalogIO Add Message Type");
     if (!WsV2.analogio_controller->Handle_AnalogIOAdd(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add analogio pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_analogio_remove_tag:
     WS_DEBUG_PRINTLN("-> AnalogIO Remove Message Type");
     if (!WsV2.analogio_controller->Handle_AnalogIORemove(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to remove analogio pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_ds18x20_add_tag:
     WS_DEBUG_PRINTLN("-> DS18X20 Add Message Type");
     if (!WsV2._ds18x20_controller->Handle_Ds18x20Add(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add DS18X20 sensor!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_ds18x20_remove_tag:
     WS_DEBUG_PRINTLN("-> DS18X20 Remove Message Type");
     if (!WsV2._ds18x20_controller->Handle_Ds18x20Remove(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to remove DS18X20 sensor!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag:
     WS_DEBUG_PRINTLN("-> I2C Device Add/Replace Message Type");
     if (!WsV2._i2c_controller->Handle_I2cDeviceAddOrReplace(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add/replace I2C device!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_i2c_bus_scan_tag:
     WS_DEBUG_PRINTLN("-> I2C Bus Scan Message Type");
     if (!WsV2._i2c_controller->Handle_I2cBusScan(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add/replace I2C device!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_i2c_device_remove_tag:
     WS_DEBUG_PRINTLN("-> I2C Device Remove Message Type");
     if (!WsV2._i2c_controller->Handle_I2cDeviceRemove(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to remove I2C device!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_pixels_add_tag:
     WS_DEBUG_PRINTLN("-> Pixels Add Message Type");
     if (!WsV2._pixels_controller->Handle_Pixels_Add(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add pixels strand!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_pixels_remove_tag:
     WS_DEBUG_PRINTLN("-> Pixels Remove Message Type");
     if (!WsV2._pixels_controller->Handle_Pixels_Remove(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to remove pixels strand!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_pixels_write_tag:
     WS_DEBUG_PRINTLN("-> Pixels Write Message Type");
     if (!WsV2._pixels_controller->Handle_Pixels_Write(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to write to pixels strand!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_pwm_add_tag:
     WS_DEBUG_PRINTLN("-> PWM Add Message Type");
     if (!WsV2._pwm_controller->Handle_PWM_Add(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add PWM pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_pwm_write_duty_tag:
     WS_DEBUG_PRINTLN("-> PWM Write Duty Cycle Message Type");
     if (!WsV2._pwm_controller->Handle_PWM_Write_DutyCycle(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to write duty cycle to PWM pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_pwm_write_freq_tag:
     WS_DEBUG_PRINTLN("-> PWM Write Frequency Message Type");
     if (!WsV2._pwm_controller->Handle_PWM_Write_Frequency(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to write frequency to PWM pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_pwm_remove_tag:
     WS_DEBUG_PRINTLN("-> PWM Remove Message Type");
     if (!WsV2._pwm_controller->Handle_PWM_Remove(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to remove PWM pin!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_servo_add_tag:
     WS_DEBUG_PRINTLN("-> Servo Add Message Type");
     if (!WsV2._servo_controller->Handle_Servo_Add(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to add servo!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_servo_write_tag:
     WS_DEBUG_PRINTLN("-> Servo Write Message Type");
     if (!WsV2._servo_controller->Handle_Servo_Write(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to write to servo!");
       return false;
     }
     break;
   case wippersnapper_signal_BrokerToDevice_servo_remove_tag:
     WS_DEBUG_PRINTLN("-> Servo Remove Message Type");
     if (!WsV2._servo_controller->Handle_Servo_Remove(stream)) {
-      WS_DEBUG_PRINTLN("ERROR: Unable to remove servo!");
       return false;
     }
     break;
@@ -1063,7 +1042,8 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     break;
   case wippersnapper_signal_DeviceToBroker_servo_added_tag:
     WS_DEBUG_PRINTLN("ServoAdded");
-    MsgSignal.which_payload = wippersnapper_signal_DeviceToBroker_servo_added_tag;
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_servo_added_tag;
     MsgSignal.payload.servo_added = *(wippersnapper_servo_ServoAdded *)payload;
     break;
   default:

@@ -50,9 +50,6 @@ ServoHardware::ServoHardware(int pin, int min_pulse_width, int max_pulse_width,
 ServoHardware::~ServoHardware() {
   if (!ServoDetach()) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to detach servo!");
-  } else {
-    WS_DEBUG_PRINT("[servo] Servo detached from pin: ");
-    WS_DEBUG_PRINTLN(_pin);
   }
 }
 
@@ -65,11 +62,11 @@ ServoHardware::~ServoHardware() {
 /**************************************************************************/
 bool ServoHardware::ServoDetach() {
 #ifdef ARDUINO_ARCH_ESP32
-  detach();
-  if (attached()) {
-    WS_DEBUG_PRINTLN("[servo]Error: Servo detach failure!");
+  if (!attached()) {
+    WS_DEBUG_PRINTLN("[servo] Detach Error: Servo not attached!");
     return false;
   }
+  detach();
 #else
   if (_servo == nullptr || !_servo->attached()) {
     WS_DEBUG_PRINTLN("[servo] Detach Error: Servo not attached!");
@@ -96,6 +93,7 @@ bool ServoHardware::ServoAttach() {
   if (!ledcAttach(_pin, _frequency, LEDC_TIMER_WIDTH)) {
     rc = 255;
   } else {
+    WS_DEBUG_PRINTLN("[servo:hw:L99] Servo attached to pin");
     rc = 1;
     _is_attached = true;
   }

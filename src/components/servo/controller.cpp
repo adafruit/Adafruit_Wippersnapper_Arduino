@@ -163,7 +163,7 @@ bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
   _active_servo_pins--;
 
   WS_DEBUG_PRINT("[servo] Servo removed from pin: ");
-  WS_DEBUG_PRINT(msg_remove->servo_pin);
+  WS_DEBUG_PRINTLN(msg_remove->servo_pin);
   return true;
 }
 

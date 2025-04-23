@@ -151,8 +151,6 @@ bool PWMController::Handle_PWM_Write_DutyCycle(pb_istream_t *stream) {
   wippersnapper_pwm_PWMWriteDutyCycle msg_write_duty_cycle =
       *_pwm_model->GetPWMWriteDutyCycleMsg();
   uint8_t pin = atoi(msg_write_duty_cycle.pin + 1);
-
-  // Check if the pin is already attached
   int pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
@@ -188,7 +186,6 @@ bool PWMController::Handle_PWM_Write_Frequency(pb_istream_t *stream) {
   wippersnapper_pwm_PWMWriteFrequency msg_write_frequency =
       *_pwm_model->GetPWMWriteFrequencyMsg();
   uint8_t pin = atoi(msg_write_frequency.pin + 1);
-  // Check if the pin is already attached
   int pin_idx = GetPWMHardwareIdx(pin);
   if (pin_idx == -1) {
     WS_DEBUG_PRINTLN("[pwm] Error: pin not found!");
