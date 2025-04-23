@@ -147,6 +147,10 @@ void ServoHardware::ServoWrite(int value) {
   if (value > _max_pulse_width)
     value = _max_pulse_width;
   _servo->writeMicroseconds(value);
+  WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
+  WS_DEBUG_PRINT(value);
+  WS_DEBUG_PRINT(" µs on pin: ");
+  WS_DEBUG_PRINT(_pin);
 #endif
 }
 
@@ -174,6 +178,11 @@ void ServoHardware::writeMicroseconds(int value) {
       ((double)value / ((double)20000 / (double)pow(2, LEDC_TIMER_WIDTH)));
   if (!ledcWrite(_pin, count))
     WS_DEBUG_PRINTLN("[servo] Error: Failed to write to servo pin!");
+
+  WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
+  WS_DEBUG_PRINT(value);
+  WS_DEBUG_PRINT(" uS on pin: ");
+  WS_DEBUG_PRINT(_pin);
 }
 
 /**************************************************************************/

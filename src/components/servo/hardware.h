@@ -19,13 +19,9 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include "esp32-hal-ledc.h"
 #include "esp_err.h"
-
 #define LEDC_TIMER_WIDTH                                                       \
-  12 ///< timer width to request from LEDC manager component, in bits (NOTE:
-     ///< While ESP32x can go up to 16 bit timer width, ESP32-S2 does not work
-     ///< at this resolution. So, for the purposes of keeping this library
-     ///< compatible with multiple ESP32x platforms, the timer width has been
-     ///< scaled down to 10 bits and the calculation adjusted accordingly)
+  SOC_LEDC_TIMER_BIT_WIDTH ///< Dynamically scale bit width for each ESP32-x
+                           ///< Arch.
 #else
 #include <Servo.h>
 #endif

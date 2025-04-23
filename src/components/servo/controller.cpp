@@ -74,7 +74,8 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
 
   // Write the default minimum to a servo
   if (did_attach) {
-    _servo_hardware[_active_servo_pins]->ServoWrite(MIN_SERVO_PULSE_WIDTH);
+    _servo_hardware[_active_servo_pins]->ServoWrite(
+        (int)msg_add->min_pulse_width);
     WS_DEBUG_PRINT("[servo] Servo attached to pin: ");
     WS_DEBUG_PRINTLN(msg_add->servo_pin);
     _active_servo_pins++;
@@ -116,10 +117,6 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
   }
   // Write the pulse width to the servo
   _servo_hardware[servo_idx]->ServoWrite(msg_write->pulse_width);
-  WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
-  WS_DEBUG_PRINT(msg_write->pulse_width);
-  WS_DEBUG_PRINT(" µs on pin: ");
-  WS_DEBUG_PRINT(msg_write->servo_pin);
   return true;
 }
 
