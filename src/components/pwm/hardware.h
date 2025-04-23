@@ -35,10 +35,10 @@ public:
   uint32_t WriteTone(uint32_t freq);
   uint8_t GetPin();
 
-  // Abstractions for LEDC API
-  #ifdef ARDUINO_ARCH_ESP32
+// Abstractions for LEDC API
+#ifdef ARDUINO_ARCH_ESP32
   bool analogWrite(uint32_t value);
-  #endif
+#endif
 private:
   bool _is_attached;
   uint8_t _pin;

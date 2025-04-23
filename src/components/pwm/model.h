@@ -36,11 +36,14 @@ public:
   wippersnapper_pwm_PWMWriteDutyCycle *GetPWMWriteDutyCycleMsg();
   bool DecodePWMWriteFrequency(pb_istream_t *stream);
   wippersnapper_pwm_PWMWriteFrequency *GetPWMWriteFrequencyMsg();
+
 private:
-  wippersnapper_pwm_PWMAdd _msg_pwm_add; ///< PWMAdd message object
-  wippersnapper_pwm_PWMAdded _msg_pwm_added; ///< PWMAdded message object
+  wippersnapper_pwm_PWMAdd _msg_pwm_add;       ///< PWMAdd message object
+  wippersnapper_pwm_PWMAdded _msg_pwm_added;   ///< PWMAdded message object
   wippersnapper_pwm_PWMRemove _msg_pwm_remove; ///< PWMRemove message object
-  wippersnapper_pwm_PWMWriteDutyCycle _msg_pwm_write_duty_cycle; ///< PWMWriteDutyCycle message object
-  wippersnapper_pwm_PWMWriteFrequency _msg_pwm_write_frequency; ///< PWMWriteFrequency message object
+  wippersnapper_pwm_PWMWriteDutyCycle
+      _msg_pwm_write_duty_cycle; ///< PWMWriteDutyCycle message object
+  wippersnapper_pwm_PWMWriteFrequency
+      _msg_pwm_write_frequency; ///< PWMWriteFrequency message object
 };
 #endif // WS_PWM_MODEL_H

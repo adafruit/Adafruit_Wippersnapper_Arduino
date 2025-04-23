@@ -114,8 +114,8 @@
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
 #include "components/pwm/controller.h"
-#include "components/servo/controller.h"
 #include "components/sensor/model.h"
+#include "components/servo/controller.h"
 
 // Display
 #ifdef USE_DISPLAY
@@ -262,7 +262,8 @@ public:
   PixelsController *_pixels_controller =
       nullptr;                              ///< Instance of Pixels controller
   PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
-  ServoController *_servo_controller = nullptr; ///< Instance of Servo controller
+  ServoController *_servo_controller =
+      nullptr; ///< Instance of Servo controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
