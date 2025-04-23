@@ -18,7 +18,7 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32_DEV) ||    \
-    defined(ESP32_DEV)
+    defined(ESP32_DEV) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6)
 #include "WipperSnapper_LittleFS.h"
 
 /**************************************************************************/
@@ -162,7 +162,11 @@ void WipperSnapper_LittleFS::fsHalt(String msg, ws_led_status_t status_state) {
 /**************************************************************************/
 void WipperSnapper_LittleFS::GetSDCSPin() {
   // Attempt to open and deserialize the config.json file
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+  File file_cfg = LittleFS.open("/config.json", "r");
+#else
   File file_cfg = LittleFS.open("/config.json");
+#endif
   if (!file_cfg)
     WsV2.pin_sd_cs = 255;
 

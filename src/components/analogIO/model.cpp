@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/analogIO/model.cpp
  *
  * Interfaces for the analogio.proto API
  *
@@ -20,7 +20,10 @@
 */
 /***********************************************************************/
 AnalogIOModel::AnalogIOModel() {
-  _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
+  memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
+  memset(&_msg_AnalogioRemove, 0, sizeof(_msg_AnalogioRemove));
+  memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
+  // no-op
 }
 
 /***********************************************************************/
@@ -28,7 +31,11 @@ AnalogIOModel::AnalogIOModel() {
     @brief  AnalogIOModel destructor
 */
 /***********************************************************************/
-AnalogIOModel::~AnalogIOModel() {}
+AnalogIOModel::~AnalogIOModel() {
+  memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
+  memset(&_msg_AnalogioRemove, 0, sizeof(_msg_AnalogioRemove));
+  memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
+}
 
 /***********************************************************************/
 /*!
@@ -42,7 +49,7 @@ AnalogIOModel::~AnalogIOModel() {}
 bool AnalogIOModel::DecodeAnalogIOAdd(pb_istream_t *stream) {
   // Zero-out the AnalogIOAdd message struct. to ensure we don't have any old
   // data
-  _msg_AnalogioAdd = wippersnapper_analogio_AnalogIOAdd_init_default;
+  memset(&_msg_AnalogioAdd, 0, sizeof(_msg_AnalogioAdd));
   // Decode the stream into a AnalogIOAdd message
   return pb_decode(stream, wippersnapper_analogio_AnalogIOAdd_fields,
                    &_msg_AnalogioAdd);
@@ -70,7 +77,7 @@ wippersnapper_analogio_AnalogIOAdd *AnalogIOModel::GetAnalogIOAddMsg() {
 bool AnalogIOModel::DecodeAnalogIORemove(pb_istream_t *stream) {
   // Zero-out the AnalogIORemove message struct. to ensure we don't have any old
   // data
-  _msg_AnalogioRemove = wippersnapper_analogio_AnalogIORemove_init_default;
+  memset(&_msg_AnalogioRemove, 0, sizeof(_msg_AnalogioRemove));
   // Decode the stream into a AnalogIORemove message
   return pb_decode(stream, wippersnapper_analogio_AnalogIORemove_fields,
                    &_msg_AnalogioRemove);
@@ -112,7 +119,7 @@ bool AnalogIOModel::EncodeAnalogIOEvent(
     char *pin_name, float pin_value,
     wippersnapper_sensor_SensorType read_type) {
   // Initialize the AnalogIOEvent message to default values
-  _msg_AnalogioEvent = wippersnapper_analogio_AnalogIOEvent_init_zero;
+  memset(&_msg_AnalogioEvent, 0, sizeof(_msg_AnalogioEvent));
   // Fill the AnalogIOEvent message's fields
   strncpy(_msg_AnalogioEvent.pin_name, pin_name,
           sizeof(_msg_AnalogioEvent.pin_name));

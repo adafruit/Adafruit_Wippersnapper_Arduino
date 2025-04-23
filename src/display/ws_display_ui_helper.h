@@ -16,7 +16,7 @@
 #ifndef WS_DISPLAY_UI_HELPER_H
 #define WS_DISPLAY_UI_HELPER_H
 
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 #include "ws_display_driver.h"
 #include "ws_display_tooltips.h"
 #include <lvgl.h>

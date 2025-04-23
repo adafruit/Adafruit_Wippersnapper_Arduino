@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/ds18x20/model.h
  *
  * Model interface for the DS18X20.proto message.
  *

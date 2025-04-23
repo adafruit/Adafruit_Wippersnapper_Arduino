@@ -1,5 +1,5 @@
 /*!
- * @file controller.h
+ * @file src/components/pixels/controller.h
  *
  * Controller for the pixels API
  *
@@ -18,11 +18,13 @@
 #include "hardware.h"
 #include "model.h"
 
-#define MAX_PIXEL_STRANDS 5 ///< Maximum number of pixel strands connected to a WipperSnapper device
+#define MAX_PIXEL_STRANDS                                                      \
+  10 ///< Maximum number of pixel strands connected to a WipperSnapper device
+#define STRAND_NOT_FOUND 0xFF ///< Strand not found in the array
 
 class Wippersnapper_V2; ///< Forward declaration
-class PixelsModel;     ///< Forward declaration
-class PixelsHardware;  ///< Forward declaration
+class PixelsModel;      ///< Forward declaration
+class PixelsHardware;   ///< Forward declaration
 
 /**************************************************************************/
 /*!
@@ -35,15 +37,16 @@ class PixelsController {
 public:
   PixelsController();
   ~PixelsController();
-  // Called by the cbDecodeBrokerToDevice router function
   bool Handle_Pixels_Add(pb_istream_t *stream);
   bool Handle_Pixels_Write(pb_istream_t *stream);
   bool Handle_Pixels_Remove(pb_istream_t *stream);
+
 private:
   PixelsModel *_pixels_model = nullptr; ///< Pointer to the model class
-  PixelsHardware *_pixel_strands[MAX_PIXEL_STRANDS] = {nullptr}; ///< Pointer to the hardware class
-  uint8_t _num_strands; ///< Number of pixel strands
+  PixelsHardware *_pixel_strands[MAX_PIXEL_STRANDS] = {
+      nullptr};                               ///< Pointer to the hardware class
+  uint8_t _num_strands;                       ///< Number of pixel strands
   uint16_t GetStrandIndex(uint16_t pin_data); // Returns 0xFF if not found
 };
-extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif // WS_PIXELS_CONTROLLER_H
+extern Wippersnapper_V2 WsV2; ///< Global V2 instance
+#endif                        // WS_PIXELS_CONTROLLER_H

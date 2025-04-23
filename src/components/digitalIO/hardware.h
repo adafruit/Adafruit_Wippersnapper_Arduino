@@ -1,7 +1,7 @@
 /*!
- * @file model.h
+ * @file src/components/digitalIO/hardware.h
  *
- * Model for the digitalio.proto message.
+ * Hardware for the digitalio.proto message.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing

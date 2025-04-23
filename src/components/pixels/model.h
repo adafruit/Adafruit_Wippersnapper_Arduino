@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/pixels/model.h
  *
  * Model for the pixels.proto message.
  *
@@ -40,8 +40,7 @@ public:
   wippersnapper_pixels_PixelsAdded *GetPixelsAddedMsg();
 
 private:
-  wippersnapper_pixels_PixelsAdd
-      _msg_pixels_add; ///< PixelsAdd message object
+  wippersnapper_pixels_PixelsAdd _msg_pixels_add; ///< PixelsAdd message object
   wippersnapper_pixels_PixelsRemove
       _msg_pixels_remove; ///< PixelsRemove message object
   wippersnapper_pixels_PixelsWrite

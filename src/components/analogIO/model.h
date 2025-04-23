@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/analogIO/model.h
  *
  * Model interface for the analogio.proto message.
  *
