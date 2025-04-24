@@ -53,13 +53,13 @@ ServoController::~ServoController() {
 */
 /**************************************************************************/
 bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
-  if (!_servo_model->DecodeServoAdd(stream)) {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoAdd message!");
+  if (_active_servo_pins >= MAX_SERVOS) {
+    WS_DEBUG_PRINTLN("[servo] Error: Maximum number of servos reached!");
     return false;
   }
 
-  if (_active_servo_pins >= MAX_SERVOS) {
-    WS_DEBUG_PRINTLN("[servo] Error: Maximum number of servos reached!");
+  if (!_servo_model->DecodeServoAdd(stream)) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoAdd message!");
     return false;
   }
 
@@ -72,7 +72,7 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
   bool did_attach = false;
   did_attach = _servo_hardware[_active_servo_pins]->ServoAttach();
 
-  // Write the default minimum to a servo
+  // Write the pulse width to the servo
   if (did_attach) {
     _servo_hardware[_active_servo_pins]->ServoWrite(
         (int)msg_add->min_pulse_width);
@@ -80,7 +80,8 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN(msg_add->servo_pin);
     _active_servo_pins++;
   } else {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed to attach servo to pin!");
+    WS_DEBUG_PRINT("[servo] Error: Failed to attach servo to pin !");
+    WS_DEBUG_PRINT(msg_add->servo_pin);
     delete _servo_hardware[_active_servo_pins];
     _servo_hardware[_active_servo_pins] = nullptr;
   }
@@ -129,6 +130,11 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
 */
 /**************************************************************************/
 bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
+  if (_active_servo_pins <= 0) {
+    WS_DEBUG_PRINTLN("[servo] Error: No active servos!");
+    return false;
+  }
+
   if (!_servo_model->DecodeServoRemove(stream)) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoRemove message!");
     return false;
@@ -139,11 +145,6 @@ bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
   int servo_idx = GetServoIndex(pin);
   if (servo_idx == -1) {
     WS_DEBUG_PRINTLN("[servo] Error: Servo pin not found!");
-    return false;
-  }
-
-  if (_active_servo_pins <= 0) {
-    WS_DEBUG_PRINTLN("[servo] Error: No active servos!");
     return false;
   }
 

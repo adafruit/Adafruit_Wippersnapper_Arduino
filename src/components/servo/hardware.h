@@ -26,7 +26,7 @@
 #include <Servo.h>
 #endif
 
-#define MIN_SERVO_PULSE_WIDTH 500 ///< Default min. servo pulse width of 500uS
+#define ERROR_SERVO_ATTACH 255 ///< Error code for servo attach failure
 
 /**************************************************************************/
 /*!
@@ -44,6 +44,7 @@ public:
 
 private:
   bool ServoDetach();
+  int ClampPulseWidth(int value);
 #ifdef ARDUINO_ARCH_ESP32
   // Mocks Servo library API for ESP32x's LEDC manager
   // https://github.com/arduino-libraries/Servo/blob/master/src/Servo.h

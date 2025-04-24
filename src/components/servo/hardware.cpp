@@ -86,12 +86,12 @@ bool ServoHardware::ServoDetach() {
 */
 /**************************************************************************/
 bool ServoHardware::ServoAttach() {
-  uint16_t rc = 255;
+  uint16_t rc;
 
 // Attach the servo to the pin
 #ifdef ARDUINO_ARCH_ESP32
   if (!ledcAttach(_pin, _frequency, LEDC_TIMER_WIDTH)) {
-    rc = 255;
+    rc = ERROR_SERVO_ATTACH;
   } else {
     WS_DEBUG_PRINTLN("[servo:hw:L99] Servo attached to pin");
     rc = 1;
@@ -105,7 +105,7 @@ bool ServoHardware::ServoAttach() {
   rc = _servo->attach(_pin, _min_pulse_width, _max_pulse_width);
 #endif
 
-  if (rc == 255) {
+  if (rc == ERROR_SERVO_ATTACH) {
     WS_DEBUG_PRINT("[servo] Error: Failed to attach servo to pin: ");
     WS_DEBUG_PRINTLN(_pin);
     return false;
@@ -121,6 +121,24 @@ bool ServoHardware::ServoAttach() {
 */
 /**************************************************************************/
 uint8_t ServoHardware::GetPin() { return _pin; }
+
+/**************************************************************************/
+/*!
+    @brief  Clamps the pulse width to the min/max range
+    @param  value
+            The value to clamp
+    @returns The clamped value
+*/
+/**************************************************************************/
+int ServoHardware::ClampPulseWidth(int value) {
+  if (value < _min_pulse_width) {
+    value = _min_pulse_width;
+  }
+  if (value > _max_pulse_width) {
+    value = _max_pulse_width;
+  }
+  return value;
+}
 
 /**************************************************************************/
 /*!
@@ -141,11 +159,7 @@ void ServoHardware::ServoWrite(int value) {
     WS_DEBUG_PRINTLN("[servo] Error: Servo not attached!");
     return;
   }
-  // Clamp value to a valid pulse_width range
-  if (value < _min_pulse_width)
-    value = _min_pulse_width;
-  if (value > _max_pulse_width)
-    value = _max_pulse_width;
+  value = ClampPulseWidth(value);
   _servo->writeMicroseconds(value);
   WS_DEBUG_PRINT("[servo] Set Pulse Width: ");
   WS_DEBUG_PRINT(value);
@@ -164,11 +178,8 @@ void ServoHardware::ServoWrite(int value) {
 */
 /**************************************************************************/
 void ServoHardware::writeMicroseconds(int value) {
-  // Clamp value to a valid pulse_width range
-  if (value < _min_pulse_width)
-    value = _min_pulse_width;
-  if (value > _max_pulse_width)
-    value = _max_pulse_width;
+  // Clamp the value to the min/max range
+  value = ClampPulseWidth(value);
 
   // Formula from ESP32Servo library
   // https://github.com/madhephaestus/ESP32Servo/blob/master/src/ESP32Servo.cpp
