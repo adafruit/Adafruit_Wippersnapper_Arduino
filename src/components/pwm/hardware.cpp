@@ -162,9 +162,9 @@ bool PWMHardware::analogWrite(uint32_t value) {
     return false;
   }
 
-  // Calculate duty cycle for the `value` passed in
-  // (assumes 12-bit resolution, 2^12)
-  uint32_t dutyCycle = (uint32_t)((4095.0 / 255.0) * min(value, (uint32_t)255));
+  // Calculate duty cycle for the `value`
+  uint32_t dutyCycle =
+      (uint32_t)(((double)_resolution / 255.0) * min(value, (uint32_t)255));
   return ledcWrite(_pin, dutyCycle);
 }
 

@@ -46,6 +46,28 @@ ServoController::~ServoController() {
 
 /**************************************************************************/
 /*!
+    @brief  Publishes a ServoAdded message to the broker
+    @param  servo_pin
+            Pin number of the servo
+    @param  did_attach
+            True if the servo was attached successfully, False otherwise
+    @returns True if successful, False otherwise
+*/
+/**************************************************************************/
+bool ServoController::PublishServoAddedMsg(
+    const char *servo_pin, bool did_attach,
+    wippersnapper_servo_ServoAdd *msg_add) {
+  _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
+  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_servo_added_tag,
+                          _servo_model->GetServoAddedMsg())) {
+    WS_DEBUG_PRINTLN("[servo] Error: Failed publishing a ServoAdded message!");
+    return false;
+  }
+  return true;
+}
+
+/**************************************************************************/
+/*!
     @brief  Handles a ServoAdd message
     @param  stream
             pb_istream_t to decode from
@@ -53,13 +75,16 @@ ServoController::~ServoController() {
 */
 /**************************************************************************/
 bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
+  bool did_attach;
   if (_active_servo_pins >= MAX_SERVOS) {
     WS_DEBUG_PRINTLN("[servo] Error: Maximum number of servos reached!");
+    PublishServoAddedMsg("PIN_UNKNOWN", false, _servo_model->GetServoAddMsg());
     return false;
   }
 
   if (!_servo_model->DecodeServoAdd(stream)) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoAdd message!");
+    PublishServoAddedMsg("PIN_UNKNOWN", false, _servo_model->GetServoAddMsg());
     return false;
   }
 
@@ -69,7 +94,6 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
       pin, (int)msg_add->min_pulse_width, (int)msg_add->max_pulse_width,
       (int)msg_add->servo_freq);
   // Attempt to attach the servo to the pin
-  bool did_attach = false;
   did_attach = _servo_hardware[_active_servo_pins]->ServoAttach();
 
   // Write the pulse width to the servo
@@ -87,12 +111,8 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
   }
 
   // Publish ServoAdded message to IO
-  _servo_model->EncodeServoAdded(msg_add->servo_pin, did_attach);
-  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_servo_added_tag,
-                          _servo_model->GetServoAddedMsg())) {
-    WS_DEBUG_PRINTLN("[servo] Error: Failed publishing a ServoAdded message!");
+  if (!PublishServoAddedMsg("", false, _servo_model->GetServoAddMsg()))
     return false;
-  }
   return true;
 }
 

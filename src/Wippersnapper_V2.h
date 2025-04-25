@@ -76,20 +76,12 @@
 #include <string>
 #include <vector>
 
-// Nanopb dependencies
+// Nanopb messages and dependencies
+#include "protos/signal.pb.h"
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_decode.h>
 #include <nanopb/pb_encode.h>
 #include <nanopb/ws_pb_helpers.h>
-#include <pb.h>
-
-// Include Signal Proto
-#include "protos/checkin.pb.h"
-#include "protos/digitalio.pb.h"
-#include "protos/ds18x20.pb.h"
-#include "protos/pixels.pb.h"
-#include "protos/pwm.pb.h"
-#include "protos/signal.pb.h"
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
