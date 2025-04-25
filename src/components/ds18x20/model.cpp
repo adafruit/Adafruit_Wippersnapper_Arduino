@@ -24,7 +24,6 @@ DS18X20Model::DS18X20Model() {
   memset(&_msg_DS18x20Added, 0, sizeof(_msg_DS18x20Added));
   memset(&_msg_DS18x20Remove, 0, sizeof(_msg_DS18x20Remove));
   memset(&_msg_DS18x20Event, 0, sizeof(_msg_DS18x20Event));
-  // no-op
 }
 
 /***********************************************************************/

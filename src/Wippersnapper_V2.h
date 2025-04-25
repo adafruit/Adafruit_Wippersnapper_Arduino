@@ -76,19 +76,12 @@
 #include <string>
 #include <vector>
 
-// Nanopb dependencies
+// Nanopb messages and dependencies
+#include "protos/signal.pb.h"
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_decode.h>
 #include <nanopb/pb_encode.h>
 #include <nanopb/ws_pb_helpers.h>
-#include <pb.h>
-
-// Include Signal Proto
-#include "protos/checkin.pb.h"
-#include "protos/digitalio.pb.h"
-#include "protos/ds18x20.pb.h"
-#include "protos/pixels.pb.h"
-#include "protos/signal.pb.h"
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
@@ -112,7 +105,9 @@
 #include "components/ds18x20/controller.h"
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
+#include "components/pwm/controller.h"
 #include "components/sensor/model.h"
+#include "components/servo/controller.h"
 
 // Display
 #ifdef USE_DISPLAY
@@ -153,6 +148,8 @@ class AnalogIOController;
 class DS18X20Controller;
 class I2cController;
 class PixelsController;
+class PWMController;
+class ServoController;
 
 /**************************************************************************/
 /*!
@@ -255,7 +252,10 @@ public:
       nullptr;                              ///< Instance of DS18X20 controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
   PixelsController *_pixels_controller =
-      nullptr; ///< Instance of Pixels controller
+      nullptr;                              ///< Instance of Pixels controller
+  PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
+  ServoController *_servo_controller =
+      nullptr; ///< Instance of Servo controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
