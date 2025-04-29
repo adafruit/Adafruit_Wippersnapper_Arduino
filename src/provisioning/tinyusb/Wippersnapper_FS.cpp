@@ -381,9 +381,14 @@ void Wippersnapper_FS::CreateFileConfig() {
     File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
     if (file_cfg) {
       DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
-      //  if (error)
-      //  HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
-      // Remove config from the filesystem
+      if (error) {
+        // If we can't deserialize, just raise
+        HaltFilesystem(
+            "[fs] Error: Unable to deserialize config.json, is it corrupted?");
+      }
+      // We are going to parse the in-memory object, _doc_cfg, rather
+      // than the file. So, let's remove the ctg file since we'll replace
+      // it with a new cfg file later on
       file_cfg.close();
       wipperFatFs_v2.remove("/config.json");
       flash_v2.syncBlocks();
@@ -404,6 +409,7 @@ void Wippersnapper_FS::CreateFileConfig() {
         // Build components array
         _doc_cfg["components"].to<JsonArray>();
       }
+
       return;
     }
   }
