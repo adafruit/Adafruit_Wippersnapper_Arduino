@@ -37,6 +37,7 @@
 #include "drivers/drvLc709203f.h"
 #include "drivers/drvLps22hb.h"
 #include "drivers/drvLps25hb.h"
+#include "drivers/drvLps28dfw.h"
 #include "drivers/drvLps3xhw.h"
 #include "drivers/drvLtr329_Ltr303.h"
 #include "drivers/drvLtr390.h"
