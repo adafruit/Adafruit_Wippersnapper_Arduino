@@ -158,6 +158,11 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
         const char *driver_name) -> drvBase * {
        return new drvLps25hb(i2c, addr, mux_channel, driver_name);
      }},
+    {"lps28dfw",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLps28dfw(i2c, addr, mux_channel, driver_name);
+     }},
     {"ltr329",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
