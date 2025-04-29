@@ -862,11 +862,23 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 */
 /***********************************************************************/
 bool I2cController::ScanI2cBus(bool default_bus = true) {
-  _i2c_bus_default->InitBus(default_bus);
+  // zero-out the scan I2cBusScanned message before attempting a scan
   _scan_results = wippersnapper_i2c_I2cBusScanned_init_zero;
-  if (!default_bus)
+
+  // Scan the desired i2c bus
+  if (default_bus) {
+    if (_i2c_bus_default->GetBusStatus() !=
+        wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS) {
+      _i2c_bus_default->InitBus(default_bus);
+    }
+    return _i2c_bus_default->ScanBus(&_scan_results);
+  } else {
+    if (_i2c_bus_alt->GetBusStatus() !=
+        wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS) {
+      _i2c_bus_alt->InitBus(default_bus);
+    }
     return _i2c_bus_alt->ScanBus(&_scan_results);
-  return _i2c_bus_default->ScanBus(&_scan_results);
+  }
 }
 
 /***********************************************************************/

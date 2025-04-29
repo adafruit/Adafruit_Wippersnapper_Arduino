@@ -165,8 +165,17 @@ bool ws_sdcard::InitDS3231() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitPCF8523() {
+
+  // TODO: Check if we can see the PCF8523 after
+  // the initial i2c scan
+  WsV2._i2c_controller->ScanI2cBus(true);
+  WS_DEBUG_PRINT("[sd] Scanned I2C Devices: ")
+  WS_DEBUG_PRINTLN(WsV2._i2c_controller->GetScanDeviceCount());
+  WS_DEBUG_PRINT("Was Device Found? ");
+  WS_DEBUG_PRINTLN(WsV2._i2c_controller->WasDeviceScanned(0x68));
+
   _rtc_pcf8523 = new RTC_PCF8523();
-  if (!_rtc_pcf8523->begin(&Wire)) {
+  if (!_rtc_pcf8523->begin()) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE");
     if (!_rtc_pcf8523->begin(&Wire1)) {
       WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE1");
@@ -701,6 +710,7 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to to configure a RTC!");
     return false;
   }
+
   return true;
 }
 
@@ -714,6 +724,9 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 /**************************************************************************/
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
+
+  // delay 6 seconds
+  delay(6000);
 
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");

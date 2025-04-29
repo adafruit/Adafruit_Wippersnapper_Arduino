@@ -386,13 +386,7 @@ void Wippersnapper_FS::CreateFileConfig() {
         HaltFilesystem(
             "[fs] Error: Unable to deserialize config.json, is it corrupted?");
       }
-      // We are going to parse the in-memory object, _doc_cfg, rather
-      // than the file. So, let's remove the ctg file since we'll replace
-      // it with a new cfg file later on
       file_cfg.close();
-      wipperFatFs_v2.remove("/config.json");
-      flash_v2.syncBlocks();
-
       // Check if the config.json file has the required keys
       if (!_doc_cfg.containsKey("exportedFromDevice")) {
         // Build exportedFromDevice object
@@ -412,6 +406,7 @@ void Wippersnapper_FS::CreateFileConfig() {
 
       return;
     }
+    file_cfg.close();
   }
 
   // Create a default configConfig structure in a new doc
@@ -478,6 +473,14 @@ void Wippersnapper_FS::AddI2cDeviceToFileConfig(
 */
 /**************************************************************************/
 bool Wippersnapper_FS::WriteFileConfig() {
+  // If it exists, remove the existing config.json file
+  // as we're about to write the new one into memory
+  if (wipperFatFs_v2.exists("/config.json")) {
+    wipperFatFs_v2.remove("/config.json");
+    flash_v2.syncBlocks();
+    delay(500);
+  }
+
   // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
