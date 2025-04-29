@@ -70,6 +70,7 @@
 #include "drivers/drvVl6180x.h"
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
+#include "drivers/drvVncl4200.h"
 
 #define SCAN_DEVICE                                                            \
   "UNKNOWN_SCAN" ///< Name for I2C devices found by an i2c scan
