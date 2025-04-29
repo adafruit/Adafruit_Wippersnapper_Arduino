@@ -70,6 +70,7 @@
 #include "drivers/drvVl6180x.h"
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
+#include "drivers/drvVncl4200.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
