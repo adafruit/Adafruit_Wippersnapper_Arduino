@@ -24,7 +24,7 @@ Pre-compiled binaries and UF2 files for supported hardware are provided on the [
 |--|--|
 |[ESP32-x](https://github.com/espressif/arduino-esp32)| ESP32, ESP32-S2, ESP32-S3, ESP32-C3, ESP32-C6 |
 |[ESP8266](https://github.com/esp8266/Arduino)| ESP8266 |
-|[RP2040](https://github.com/earlephilhower/arduino-pico)| RP2040 MCU w/WiFi (i.e: Pico W) |
+|[RP2](https://github.com/earlephilhower/arduino-pico)| RP2040/RP2350 MCU w/WiFi (i.e: Pico W) |
 |[ATSAMD](https://github.com/adafruit/ArduinoCore-samd/)|  SAMD51 MCU w/separate WiFi Co-Processor (i.e: Adafruit "AirLift")|
 
 ## Contributing to Adafruit.io and WipperSnapper
