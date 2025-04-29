@@ -34,6 +34,7 @@
 #include "drivers/drvHtu31d.h"
 #include "drivers/drvHtu21d.h"
 #include "drivers/drvIna219.h"
+#include "drivers/drvIna260.h"
 #include "drivers/drvLc709203f.h"
 #include "drivers/drvLps22hb.h"
 #include "drivers/drvLps25hb.h"
