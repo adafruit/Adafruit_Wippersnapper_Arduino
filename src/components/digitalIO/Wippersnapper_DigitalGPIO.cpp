@@ -190,7 +190,11 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 /********************************************************************/
 int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
   // Service using arduino `digitalRead`
+  WS_DEBUG_PRINT("\tDioPinRead: ");
+  WS_DEBUG_PRINT(pinName);
   int pinVal = digitalRead(pinName);
+  WS_DEBUG_PRINT("=");
+  WS_DEBUG_PRINT(pinVal);
   return pinVal;
 }
 
@@ -284,8 +288,8 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
       } else if (_digital_input_pins[i].period == 0L) {
         // read pin
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
-        // only send on-change
-        if (pinVal != _digital_input_pins[i].prvPinVal) {
+        // only send on-change, but we don't know initial state of feed (prvPinVal at boot)
+        if (_digital_input_pins[i].prvPeriod <= 0 || pinVal != _digital_input_pins[i].prvPinVal) {
           WS_DEBUG_PRINT("Executing state-based event on D");
           WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
 
@@ -324,6 +328,10 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
 
           // reset the digital pin
           _digital_input_pins[i].prvPeriod = curTime;
+        } else {
+          WS_DEBUG_PRINT("Dio: No change on ");
+          WS_DEBUG_PRINT(_digital_input_pins[i].pinName);
+          WS_DEBUG_PRINTLN(", skipping...");
         }
       }
     }
