@@ -99,6 +99,12 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
     if (pull == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
       WS_DEBUG_PRINTLN("with internal pull-up enabled");
       pinMode(pinName, INPUT_PULLUP);
+#ifdef INPUT_PULLDOWN
+    } else if (pull ==
+               wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_DOWN) {
+      WS_DEBUG_PRINTLN("with internal pull-down enabled");
+      pinMode(pinName, INPUT_PULLDOWN);
+#endif
     } else {
       pinMode(pinName, INPUT);
       WS_DEBUG_PRINT("\n");
@@ -125,6 +131,11 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
         _digital_input_pins[i].pinName = pinName;
         _digital_input_pins[i].period = periodMs;
         _digital_input_pins[i].prvPeriod = curTime - periodMs;
+        if (pull == wippersnapper_pin_v1_ConfigurePinRequest_Pull_PULL_UP) {
+          _digital_input_pins[i].prvPinVal = HIGH;
+        } else {
+          _digital_input_pins[i].prvPinVal = LOW;
+        }
         break;
       }
     }
@@ -311,8 +322,7 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
         }
         // only send on-change, but we don't know initial state of feed
         // (prvPinVal at boot)
-        if (_digital_input_pins[i].prvPeriod <= 0 ||
-            pinVal != _digital_input_pins[i].prvPinVal) {
+        if (pinVal != _digital_input_pins[i].prvPinVal) {
           WS_DEBUG_PRINT("Executing state-based event on D");
           WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
 
