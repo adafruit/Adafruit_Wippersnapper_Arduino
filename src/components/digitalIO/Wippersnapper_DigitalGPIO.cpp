@@ -190,11 +190,26 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
 /********************************************************************/
 int Wippersnapper_DigitalGPIO::digitalReadSvc(int pinName) {
   // Service using arduino `digitalRead`
-  WS_DEBUG_PRINT("\tDioPinRead: ");
-  WS_DEBUG_PRINT(pinName);
   int pinVal = digitalRead(pinName);
-  WS_DEBUG_PRINT("=");
-  WS_DEBUG_PRINT(pinVal);
+  // how do i check the digital IO pull up state for one of the
+  // _digital_input_pins, because I'm experiencing issues that resemble the
+  // situation where the initially set pull up value is no longer in effect
+  //  For ESP32
+  // #if defined(ESP32)
+  // #include "driver/gpio.h"
+  // #include "esp_err.h"
+  // #include "esp_log.h"
+  // #include "esp_system.h"
+  // #include "esp32-hal-log.h"
+  // #include "esp32-hal-gpio.h"
+  //   gpio_pull_mode_t pull_mode;
+  // // can't find in idf, but merged issue
+  // https://github.com/espressif/esp-idf/issues/12176
+  //   esp_err_t result = gpio_get_pull_mode((gpio_num_t)pinName, &pull_mode);
+  //   if (result == ESP_OK) {
+  //     return (pull_mode == GPIO_PULLUP_ONLY);
+  //   }
+  // #endif
   return pinVal;
 }
 
@@ -288,8 +303,16 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
       } else if (_digital_input_pins[i].period == 0L) {
         // read pin
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
-        // only send on-change, but we don't know initial state of feed (prvPinVal at boot)
-        if (_digital_input_pins[i].prvPeriod <= 0 || pinVal != _digital_input_pins[i].prvPinVal) {
+        if (curTime - _digital_input_pins[i].prvPeriod > 500) {
+          WS_DEBUG_PRINT("D");
+          WS_DEBUG_PRINT(_digital_input_pins[i].pinName);
+          WS_DEBUG_PRINT(" is ");
+          WS_DEBUG_PRINT(pinVal);
+        }
+        // only send on-change, but we don't know initial state of feed
+        // (prvPinVal at boot)
+        if (_digital_input_pins[i].prvPeriod <= 0 ||
+            pinVal != _digital_input_pins[i].prvPinVal) {
           WS_DEBUG_PRINT("Executing state-based event on D");
           WS_DEBUG_PRINTLN(_digital_input_pins[i].pinName);
 
@@ -328,10 +351,10 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
 
           // reset the digital pin
           _digital_input_pins[i].prvPeriod = curTime;
-        } else {
-          WS_DEBUG_PRINT("Dio: No change on ");
-          WS_DEBUG_PRINT(_digital_input_pins[i].pinName);
-          WS_DEBUG_PRINTLN(", skipping...");
+          // } else {
+          //   WS_DEBUG_PRINT("Dio: No change on ");
+          //   WS_DEBUG_PRINT(_digital_input_pins[i].pinName);
+          //   WS_DEBUG_PRINTLN(", skipping...");
         }
       }
     }
