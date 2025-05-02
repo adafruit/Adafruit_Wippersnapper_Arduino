@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024-2025 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -165,17 +165,15 @@ bool ws_sdcard::InitDS3231() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitPCF8523() {
-
-  // TODO: Check if we can see the PCF8523 after
-  // the initial i2c scan
   WsV2._i2c_controller->ScanI2cBus(true);
   WS_DEBUG_PRINT("[sd] Scanned I2C Devices: ")
   WS_DEBUG_PRINTLN(WsV2._i2c_controller->GetScanDeviceCount());
   WS_DEBUG_PRINT("Was Device Found? ");
   WS_DEBUG_PRINTLN(WsV2._i2c_controller->WasDeviceScanned(0x68));
 
+
   _rtc_pcf8523 = new RTC_PCF8523();
-  if (!_rtc_pcf8523->begin()) {
+  if (!_rtc_pcf8523->begin(WsV2._i2c_controller->GetI2cBus())) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE");
     if (!_rtc_pcf8523->begin(&Wire1)) {
       WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE1");
@@ -706,6 +704,8 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 
   // Configures RTC
   const char *rtc_type = exportedFromDevice["rtc"] | "SOFT";
+  // wait 9 seconds
+  delay(9000);
   if (!ConfigureRTC(rtc_type)) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to to configure a RTC!");
     return false;

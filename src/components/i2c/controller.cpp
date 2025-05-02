@@ -881,6 +881,10 @@ bool I2cController::ScanI2cBus(bool default_bus = true) {
   }
 }
 
+TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
+    return _i2c_bus_default->GetBus();
+}
+
 /***********************************************************************/
 /*!
     @brief    Checks if a device was found on the i2c bus. MUST be called
