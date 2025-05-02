@@ -121,9 +121,10 @@ void ws_sdcard::ConfigureSDCard() {
 /**************************************************************************/
 bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
-  if (!_rtc_ds1307->begin()) {
-    if (!_rtc_ds1307->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC");
+  if (!_rtc_ds1307->begin(WsV2._i2c_controller->GetI2cBus())) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC on WIRE");
+    if (!_rtc_ds1307->begin(WsV2._i2c_controller->GetI2cBus(true))) {
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS1307 RTC on WIRE1");
       delete _rtc_ds1307;
       return false;
     }
@@ -144,9 +145,10 @@ bool ws_sdcard::InitDS1307() {
 bool ws_sdcard::InitDS3231() {
   WS_DEBUG_PRINTLN("Begin DS3231 init");
   _rtc_ds3231 = new RTC_DS3231();
-  if (!_rtc_ds3231->begin(&Wire)) {
-    if (!_rtc_ds3231->begin(&Wire1)) {
-      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC");
+  if (!_rtc_ds3231->begin(WsV2._i2c_controller->GetI2cBus())) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE");
+    if (!_rtc_ds3231->begin(WsV2._i2c_controller->GetI2cBus(true))) {
+        WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE1");
       delete _rtc_ds3231;
       return false;
     }
@@ -165,17 +167,10 @@ bool ws_sdcard::InitDS3231() {
 */
 /**************************************************************************/
 bool ws_sdcard::InitPCF8523() {
-  WsV2._i2c_controller->ScanI2cBus(true);
-  WS_DEBUG_PRINT("[sd] Scanned I2C Devices: ")
-  WS_DEBUG_PRINTLN(WsV2._i2c_controller->GetScanDeviceCount());
-  WS_DEBUG_PRINT("Was Device Found? ");
-  WS_DEBUG_PRINTLN(WsV2._i2c_controller->WasDeviceScanned(0x68));
-
-
   _rtc_pcf8523 = new RTC_PCF8523();
   if (!_rtc_pcf8523->begin(WsV2._i2c_controller->GetI2cBus())) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE");
-    if (!_rtc_pcf8523->begin(&Wire1)) {
+    if (!_rtc_pcf8523->begin(WsV2._i2c_controller->GetI2cBus(true))) {
       WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8523 RTC on WIRE1");
       delete _rtc_pcf8523;
       return false;

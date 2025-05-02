@@ -881,7 +881,19 @@ bool I2cController::ScanI2cBus(bool default_bus = true) {
   }
 }
 
+/***********************************************************************/
+/*!
+    @brief    Returns the I2C bus object.
+    @param    is_alt_bus
+                True if the alternative I2C bus is being used, False
+                otherwise.
+    @returns  A pointer to the I2C bus object.
+*/
+/***********************************************************************/
 TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
+    if (is_alt_bus) {
+        return _i2c_bus_alt->GetBus();
+    }
     return _i2c_bus_default->GetBus();
 }
 
