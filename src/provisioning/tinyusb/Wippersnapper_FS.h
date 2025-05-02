@@ -71,7 +71,6 @@ public:
   // getter for _doc_cfg
   JsonDocument &GetDocCfg() { return _doc_cfg; }
 private:
-  bool _is_secrets_file_empty = false;
   JsonDocument _doc_cfg;
 };
 extern Wippersnapper_V2 WsV2;
