@@ -142,25 +142,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
     setStatusLEDColor(RED);
     HaltFilesystem("FATAL ERROR: Could not write filesystem contents!");
   }
-
-  // If we wrote a fresh secrets.json file, halt until user edits the file and
-  // RESETs the device Signal to user that action must be taken (edit
-  // secrets.json)
-  if (_is_secrets_file_empty) {
-    WriteFileBoot(
-        "Please edit the secrets.json file. Then, reset your board.\n");
-#ifdef USE_DISPLAY
-    WsV2._ui_helper->show_scr_error(
-        "INVALID SETTINGS FILE",
-        "The settings.json file on the WIPPER drive contains default values. "
-        "Please edit it to reflect your Adafruit IO and network credentials. "
-        "When you're done, press RESET on the board.");
-#endif
-    HaltFilesystem(
-        "The settings.json file on the WIPPER drive contains default "
-        "values\n. Using a text editor, edit it to reflect your Adafruit IO "
-        "and WiFi credentials. Then, reset the board.");
-  }
 }
 
 /************************************************************/
@@ -256,9 +237,7 @@ bool Wippersnapper_FS::MakeDefaultFilesystem() {
 
   // Check if secrets.json file already exists
   if (!GetFileSecrets()) {
-    // Create new secrets.json file and halt
     CreateFileSecrets();
-    _is_secrets_file_empty = true;
   }
 
   CreateFileConfig();
