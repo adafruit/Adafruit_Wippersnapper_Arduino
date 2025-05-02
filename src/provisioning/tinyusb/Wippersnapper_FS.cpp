@@ -381,13 +381,12 @@ void Wippersnapper_FS::CreateFileConfig() {
     File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
     if (file_cfg) {
       DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
-      //  if (error)
-      //  HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
-      // Remove config from the filesystem
+      if (error) {
+        // If we can't deserialize, just raise
+        HaltFilesystem(
+            "[fs] Error: Unable to deserialize config.json, is it corrupted?");
+      }
       file_cfg.close();
-      wipperFatFs_v2.remove("/config.json");
-      flash_v2.syncBlocks();
-
       // Check if the config.json file has the required keys
       if (!_doc_cfg.containsKey("exportedFromDevice")) {
         // Build exportedFromDevice object
@@ -404,8 +403,10 @@ void Wippersnapper_FS::CreateFileConfig() {
         // Build components array
         _doc_cfg["components"].to<JsonArray>();
       }
+
       return;
     }
+    file_cfg.close();
   }
 
   // Create a default configConfig structure in a new doc
@@ -472,6 +473,14 @@ void Wippersnapper_FS::AddI2cDeviceToFileConfig(
 */
 /**************************************************************************/
 bool Wippersnapper_FS::WriteFileConfig() {
+  // If it exists, remove the existing config.json file
+  // as we're about to write the new one into memory
+  if (wipperFatFs_v2.exists("/config.json")) {
+    wipperFatFs_v2.remove("/config.json");
+    flash_v2.syncBlocks();
+    delay(500);
+  }
+
   // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
