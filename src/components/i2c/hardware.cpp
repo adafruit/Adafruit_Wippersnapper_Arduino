@@ -71,7 +71,6 @@ void I2cHardware::InitBus(bool is_default, const char *sda, const char *scl) {
 // to the i2c bus. If the pin is defined, turn the power to the i2c bus on.
 #if defined(PIN_I2C_POWER) || defined(TFT_I2C_POWER) ||                        \
     defined(NEOPIXEL_I2C_POWER)
-  WS_DEBUG_PRINTLN("[i2c] Powering on I2C bus...");
   TogglePowerPin();
 #endif
 

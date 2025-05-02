@@ -699,8 +699,6 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 
   // Configures RTC
   const char *rtc_type = exportedFromDevice["rtc"] | "SOFT";
-  // wait 9 seconds
-  delay(9000);
   if (!ConfigureRTC(rtc_type)) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to to configure a RTC!");
     return false;
@@ -719,9 +717,6 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
 /**************************************************************************/
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
-
-  // delay 6 seconds
-  delay(6000);
 
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
