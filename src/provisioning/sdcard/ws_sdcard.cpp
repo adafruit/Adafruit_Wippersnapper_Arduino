@@ -148,7 +148,7 @@ bool ws_sdcard::InitDS3231() {
   if (!_rtc_ds3231->begin(WsV2._i2c_controller->GetI2cBus())) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE");
     if (!_rtc_ds3231->begin(WsV2._i2c_controller->GetI2cBus(true))) {
-        WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE1");
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize DS3231 RTC on WIRE1");
       delete _rtc_ds3231;
       return false;
     }

@@ -891,10 +891,10 @@ bool I2cController::ScanI2cBus(bool default_bus = true) {
 */
 /***********************************************************************/
 TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
-    if (is_alt_bus) {
-        return _i2c_bus_alt->GetBus();
-    }
-    return _i2c_bus_default->GetBus();
+  if (is_alt_bus) {
+    return _i2c_bus_alt->GetBus();
+  }
+  return _i2c_bus_default->GetBus();
 }
 
 /***********************************************************************/
