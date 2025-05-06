@@ -45,6 +45,26 @@ Wippersnapper_DigitalGPIO::~Wippersnapper_DigitalGPIO() {
   delete _digital_input_pins;
 }
 
+
+#ifdef ARDUINO_ARCH_RP2040
+  void rp2040_dump_gpio_config(void) {
+    WS_PRINTER.printf("GPIO | FUNC | DIR | OUT | IN  | PULL-UP | PULL-DOWN | SLEW\n");
+    WS_PRINTER.printf("-----+------+-----+-----+-----+---------+-----------+-----\n");
+
+    for (int gpio = 0; gpio < NUM_BANK0_GPIOS; gpio++) {
+        WS_PRINTER.printf(" %2d  |  %2d  |  %s  |  %d  |  %d  |    %d    |     %d     |  %d\n",
+            gpio,
+            gpio_get_function(gpio),
+            gpio_get_dir(gpio) ? "OUT" : "IN ",
+            gpio_get_out_level(gpio),
+            gpio_get(gpio),
+            gpio_is_pulled_up(gpio),
+            gpio_is_pulled_down(gpio),
+            gpio_get_slew_rate(gpio));
+    }
+  }
+#endif
+
 /*******************************************************************************************************************************/
 /*!
     @brief  Configures a digital pin to behave as an input or an output.
@@ -140,6 +160,10 @@ void Wippersnapper_DigitalGPIO::initDigitalPin(
       }
     }
 
+#ifdef ARDUINO_ARCH_RP2040
+    rp2040_dump_gpio_config();
+#endif
+
   } else {
     WS_DEBUG_PRINTLN("ERROR: Invalid digital pin direction!");
   }
@@ -183,6 +207,10 @@ void Wippersnapper_DigitalGPIO::deinitDigitalPin(
   itoa(pinName, cstr, 10);
   pinMode(pinName, INPUT); // hi-z
 
+#ifdef ARDUINO_ARCH_RP2040
+  rp2040_dump_gpio_config();
+#endif
+  
 // if prv. in-use by DIO, release pin back to application
 #ifdef STATUS_LED_PIN
   if (pinName == STATUS_LED_PIN)
