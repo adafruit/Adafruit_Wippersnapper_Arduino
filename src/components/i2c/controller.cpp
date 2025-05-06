@@ -740,6 +740,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   wippersnapper_i2c_I2cDeviceDescriptor device_descriptor =
       _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_description;
 
+  // Is this an i2c output device?
+  bool is_output = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->is_output;
+
   // TODO [Online]: Handle Replace messages by implementing the Remove handler
   // first...then proceed to adding a new device
 

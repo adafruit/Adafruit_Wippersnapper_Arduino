@@ -272,6 +272,14 @@ I2cModel::GetI2cDeviceAddOrReplaceMsg() {
   return &_msg_i2c_device_add_replace;
 }
 
+/*!
+    @brief    Returns a pointer to the I2cOutputAdd message.
+    @returns  Pointer to the I2cOutputAdd message.
+*/
+wippersnapper_i2c_output_I2cOutputAdd *I2cModel::GetI2cOutputAddMsg() {
+  return &_msg_i2c_device_add_replace.i2c_output_add;
+}
+
 /***************************************************************************/
 /*!
     @brief    Encodes a I2cDeviceAddedOrReplaced message.
@@ -434,19 +442,6 @@ I2cOutputModel::~I2cOutputModel() {
 }
 
 /*!
-    @brief    Decodes a I2cOutputAdd message from an input stream.
-    @param    stream
-              A pointer to the pb_istream_t stream.
-    @returns  True if the I2cOutputAdd message was decoded successfully,
-              False otherwise.
-*/
-bool I2cOutputModel::DecodeI2cOutputAdd(pb_istream_t *stream) {
-  memset(&_msg_i2c_output_add, 0, sizeof(_msg_i2c_output_add));
-  return pb_decode(stream, wippersnapper_i2c_output_I2cOutputAdd_fields,
-                   &_msg_i2c_output_add);
-}
-
-/*!
     @brief    Decodes a LedBackpackWrite message from an input stream.
     @param    stream
               A pointer to the pb_istream_t stream.
@@ -470,14 +465,6 @@ bool I2cOutputModel::DecodeCharLCDWrite(pb_istream_t *stream) {
   memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
   return pb_decode(stream, wippersnapper_i2c_output_CharLCDWrite_fields,
                    &_msg_char_lcd_write);
-}
-
-/*!
-    @brief    Returns a pointer to the I2cOutputAdd message.
-    @returns  Pointer to the I2cOutputAdd message.
-*/
-wippersnapper_i2c_output_I2cOutputAdd *I2cOutputModel::GetI2cOutputAddMsg() {
-  return &_msg_i2c_output_add;
 }
 
 /*!
