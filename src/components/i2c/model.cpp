@@ -427,7 +427,6 @@ wippersnapper_i2c_I2cDeviceEvent *I2cModel::GetI2cDeviceEvent() {
     @brief  I2cOutputModel constructor
 */
 I2cOutputModel::I2cOutputModel() {
-  memset(&_msg_i2c_output_add, 0, sizeof(_msg_i2c_output_add));
   memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
   memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
 }
@@ -436,7 +435,6 @@ I2cOutputModel::I2cOutputModel() {
     @brief  I2cOutputModel destructor
 */
 I2cOutputModel::~I2cOutputModel() {
-  memset(&_msg_i2c_output_add, 0, sizeof(_msg_i2c_output_add));
   memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
   memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
 }

@@ -20,6 +20,7 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
+#include "drivers/drvOutQuadAlphaNum.h"
 #include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
@@ -99,13 +100,12 @@ public:
   bool RemoveDriver(uint32_t address);
 
 private:
-  I2cModel *_i2c_model;              ///< Pointer to an I2C model object
-  I2cOutputModel *_i2c_output_model; ///< Pointer to an I2C output model object
-  I2cHardware *_i2c_bus_default;     ///< Pointer to the default I2C bus
-  I2cHardware *_i2c_bus_alt;         ///< Pointer to an alternative I2C bus
+  I2cModel *_i2c_model = nullptr;              ///< Pointer to an I2C model object
+  I2cOutputModel *_i2c_output_model = nullptr; ///< Pointer to an I2C output model object
+  I2cHardware *_i2c_bus_default = nullptr;     ///< Pointer to the default I2C bus
+  I2cHardware *_i2c_bus_alt = nullptr;         ///< Pointer to an alternative I2C bus
   std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C input drivers
-  std::vector<drvOutputBase *>
-      _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
+  std::vector<drvOutputBase *> _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H
