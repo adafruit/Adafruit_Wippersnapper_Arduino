@@ -1,7 +1,8 @@
 /*!
  * @file src/components/i2c/model.h
  *
- * Provides high-level interfaces for messages within i2c.proto.
+ * Provides high-level interfaces for messages within i2c.proto and
+ * i2c_output.proto.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -16,6 +17,7 @@
 #define WS_I2C_MODEL_H
 #include "Wippersnapper_V2.h"
 #include <Adafruit_Sensor.h>
+#include <protos/i2c_output.pb.h>
 #define MAX_DEVICE_EVENTS                                                      \
   15 ///< Maximum number of SensorEvents within I2cDeviceEvent
 #define MAX_I2C_SCAN_DEVICES 120 ///< Maximum number of devices found on the bus
@@ -70,5 +72,30 @@ private:
   wippersnapper_i2c_I2cDeviceRemove _msg_i2c_device_remove;
   wippersnapper_i2c_I2cDeviceRemoved _msg_i2c_device_removed;
   wippersnapper_i2c_I2cDeviceEvent _msg_i2c_device_event;
+};
+
+/**************************************************************************/
+/*!
+    @brief  Provides an interface for creating, encoding, and parsing
+            messages from i2c_output.proto.
+*/
+/**************************************************************************/
+class I2cOutputModel {
+public:
+  I2cOutputModel();
+  ~I2cOutputModel();
+  // Decoders
+  bool DecodeI2cOutputAdd(pb_istream_t *stream);
+  bool DecodeLedBackpackWrite(pb_istream_t *stream);
+  bool DecodeCharLCDWrite(pb_istream_t *stream);
+  // Getters
+  wippersnapper_i2c_output_I2cOutputAdd *GetI2cOutputAddMsg();
+  wippersnapper_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
+  wippersnapper_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
+
+private:
+  wippersnapper_i2c_output_I2cOutputAdd _msg_i2c_output_add;
+  wippersnapper_i2c_output_LedBackpackWrite _msg_led_backpack_write;
+  wippersnapper_i2c_output_CharLCDWrite _msg_char_lcd_write;
 };
 #endif // WS_I2C_MODEL_H

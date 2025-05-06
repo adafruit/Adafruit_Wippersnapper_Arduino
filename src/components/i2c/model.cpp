@@ -1,7 +1,7 @@
 /*!
  * @file src/components/i2c/model.cpp
  *
- * Model for the i2c.proto message.
+ * Model for the i2c.proto and i2c_output.proto messages.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -413,4 +413,86 @@ bool I2cModel::EncodeI2cDeviceEvent() {
 /**********************************************************************/
 wippersnapper_i2c_I2cDeviceEvent *I2cModel::GetI2cDeviceEvent() {
   return &_msg_i2c_device_event;
+}
+
+/*!
+    @brief  I2cOutputModel constructor
+*/
+I2cOutputModel::I2cOutputModel() {
+  memset(&_msg_i2c_output_add, 0, sizeof(_msg_i2c_output_add));
+  memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
+  memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
+}
+
+/*!
+    @brief  I2cOutputModel destructor
+*/
+I2cOutputModel::~I2cOutputModel() {
+  memset(&_msg_i2c_output_add, 0, sizeof(_msg_i2c_output_add));
+  memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
+  memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
+}
+
+/*!
+    @brief    Decodes a I2cOutputAdd message from an input stream.
+    @param    stream
+              A pointer to the pb_istream_t stream.
+    @returns  True if the I2cOutputAdd message was decoded successfully,
+              False otherwise.
+*/
+bool I2cOutputModel::DecodeI2cOutputAdd(pb_istream_t *stream) {
+  memset(&_msg_i2c_output_add, 0, sizeof(_msg_i2c_output_add));
+  return pb_decode(stream, wippersnapper_i2c_output_I2cOutputAdd_fields,
+                   &_msg_i2c_output_add);
+}
+
+/*!
+    @brief    Decodes a LedBackpackWrite message from an input stream.
+    @param    stream
+              A pointer to the pb_istream_t stream.
+    @returns  True if the LedBackpackWrite message was decoded successfully,
+              False otherwise.
+*/
+bool I2cOutputModel::DecodeLedBackpackWrite(pb_istream_t *stream) {
+  memset(&_msg_led_backpack_write, 0, sizeof(_msg_led_backpack_write));
+  return pb_decode(stream, wippersnapper_i2c_output_LedBackpackWrite_fields,
+                   &_msg_led_backpack_write);
+}
+
+/*!
+    @brief    Decodes a CharLCDWrite message from an input stream.
+    @param    stream
+              A pointer to the pb_istream_t stream.
+    @returns  True if the CharLCDWrite message was decoded successfully,
+              False otherwise.
+*/
+bool I2cOutputModel::DecodeCharLCDWrite(pb_istream_t *stream) {
+  memset(&_msg_char_lcd_write, 0, sizeof(_msg_char_lcd_write));
+  return pb_decode(stream, wippersnapper_i2c_output_CharLCDWrite_fields,
+                   &_msg_char_lcd_write);
+}
+
+/*!
+    @brief    Returns a pointer to the I2cOutputAdd message.
+    @returns  Pointer to the I2cOutputAdd message.
+*/
+wippersnapper_i2c_output_I2cOutputAdd *I2cOutputModel::GetI2cOutputAddMsg() {
+  return &_msg_i2c_output_add;
+}
+
+/*!
+    @brief    Returns a pointer to the LedBackpackWrite message.
+    @returns  Pointer to the LedBackpackWrite message.
+*/
+wippersnapper_i2c_output_LedBackpackWrite *
+I2cOutputModel::GetLedBackpackWriteMsg() {
+  return &_msg_led_backpack_write;
+}
+
+/*!
+    @brief    Returns a pointer to the CharLCDWrite message.
+    @returns  Pointer to the CharLCDWrite message.
+*/
+wippersnapper_i2c_output_CharLCDWrite *I2cOutputModel::GetCharLCDWriteMsg() {
+  return &_msg_char_lcd_write;
 }

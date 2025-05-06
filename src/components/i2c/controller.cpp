@@ -382,6 +382,7 @@ drvBase *CreateI2CDriverByName(const char *driver_name, TwoWire *i2c,
 I2cController::I2cController() {
   _i2c_bus_alt = nullptr;
   _i2c_model = new I2cModel();
+  _i2c_output_model = new I2cOutputModel();
   _i2c_bus_default = new I2cHardware();
 }
 
@@ -393,6 +394,9 @@ I2cController::I2cController() {
 I2cController::~I2cController() {
   if (_i2c_model)
     delete _i2c_model;
+
+  if (_i2c_output_model)
+    delete _i2c_output_model;
 
   if (_i2c_bus_default)
     delete _i2c_bus_default;
