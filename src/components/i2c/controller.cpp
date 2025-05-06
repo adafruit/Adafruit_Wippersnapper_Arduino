@@ -775,6 +775,17 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
   return true;
 }
 
+/*!
+    @brief    Handler for an I2cDeviceOutputWrite message
+    @param    stream
+                A pointer to the pb_istream_t stream.
+    @returns  True if the callback was successfully executed by the driver, False otherwise.
+*/
+bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
+  // todo!
+  return false;
+}
+
 /***********************************************************************/
 /*!
     @brief    Implements handling for a I2cDeviceAddOrReplace message

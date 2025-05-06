@@ -17,15 +17,12 @@
 #define DRV_OUTPUT_BASE_H
 #include "drvBase.h"
 
-/**************************************************************************/
 /*!
     @brief  Base class for I2C Output Drivers.
 */
-/**************************************************************************/
 class drvOutputBase : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Instantiates an I2C output device.
       @param    i2c
@@ -38,19 +35,44 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvOutputBase(TwoWire *i2c, uint16_t address, uint32_t mux_channel,
                 const char *driver_name)
       : drvBase(i2c, address, mux_channel, driver_name) {
     // TODO
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an I2C output device.
   */
-  /*******************************************************************************/
   virtual ~drvOutputBase() {}
+
+  /*!
+      @brief    Initializes the I2C output device and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
+  */
+  virtual void WriteMessage(const char *message) {
+    // noop
+  }
+
+  /*!
+      @brief    Writes a floating point value to the quad alphanumeric display.
+      @param    value
+                  The value to be displayed. Only the first four digits are
+     displayed.
+  */
+  virtual void WriteValue(float value) {
+    // noop
+  }
+
+  /*!
+      @brief    Writes a floating point value to the quad alphanumeric display.
+      @param    value
+                  The value to be displayed. Only the first four digits are
+     displayed.
+  */
+ virtual void WriteValue(int32_t value) {
+    // noop
+  }
 
 protected:
   // TODO
