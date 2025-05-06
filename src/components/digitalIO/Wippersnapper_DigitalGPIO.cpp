@@ -342,12 +342,6 @@ void Wippersnapper_DigitalGPIO::processDigitalInputs() {
       } else if (_digital_input_pins[i].period == 0L) {
         // read pin
         int pinVal = digitalReadSvc(_digital_input_pins[i].pinName);
-        if (curTime - _digital_input_pins[i].prvPeriod > 500) {
-          WS_DEBUG_PRINT("D");
-          WS_DEBUG_PRINT(_digital_input_pins[i].pinName);
-          WS_DEBUG_PRINT(" is ");
-          WS_DEBUG_PRINT(pinVal);
-        }
         // only send on-change, but we don't know initial state of feed
         // (prvPinVal at boot)
         if (pinVal != _digital_input_pins[i].prvPinVal) {
