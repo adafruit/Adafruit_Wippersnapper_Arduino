@@ -16,6 +16,8 @@
 #ifndef DRV_OUTPUT_BASE_H
 #define DRV_OUTPUT_BASE_H
 #include "drvBase.h"
+#include <protos/i2c.pb.h>
+#include <protos/i2c_output.pb.h>
 
 /*!
     @brief  Base class for I2C Output Drivers.
@@ -83,6 +85,16 @@ public:
   */
   virtual void ConfigureLEDBackpack(int32_t brightness, uint32_t alignment) {
     // noop
+  }
+
+  /*!
+      @brief    High-level fn, executes a call to the appropriate driver function(s)
+                based on the message data type to write.
+      @param    msg_backpack_write
+                Pointer to a wippersnapper_i2c_output_LedBackpackWrite message.
+  */
+  void LedBackpackWrite(wippersnapper_i2c_output_LedBackpackWrite *msg_backpack_write) {
+
   }
 
 protected:

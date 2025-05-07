@@ -60,7 +60,7 @@ typedef struct _wippersnapper_i2c_output_I2cOutputAdd {
 typedef struct _wippersnapper_i2c_output_LedBackpackWrite {
     pb_size_t which_message;
     union {
-        pb_callback_t text; /* * Text to write to the LED backpack. * */
+        char text[20]; /* * Text to write to the LED backpack. * */
         int32_t number_int; /* * Number to write to the LED backpack. * */
         float number_float; /* * Float to write to the LED backpack. * */
     } message;
@@ -76,7 +76,7 @@ typedef struct _wippersnapper_i2c_output_LedBackpackWrite {
 typedef struct _wippersnapper_i2c_output_CharLCDWrite {
     pb_size_t which_message;
     union {
-        pb_callback_t text; /* * Text to write to the character LCD. * */
+        char text[20]; /* * Text to write to the character LCD. * */
         int32_t number_int; /* * Number to write to the character LCD. * */
         float number_float; /* * Float to write to the character LCD. * */
     } message;
@@ -111,13 +111,13 @@ extern "C" {
 #define wippersnapper_i2c_output_LedBackpackConfig_init_default {0, _wippersnapper_i2c_output_LedBackpackAlignment_MIN}
 #define wippersnapper_i2c_output_CharLCDConfig_init_default {0, 0, 0, ""}
 #define wippersnapper_i2c_output_I2cOutputAdd_init_default {0, {wippersnapper_i2c_output_LedBackpackConfig_init_default}}
-#define wippersnapper_i2c_output_LedBackpackWrite_init_default {0, {{{NULL}, NULL}}, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0, 0}
-#define wippersnapper_i2c_output_CharLCDWrite_init_default {0, {{{NULL}, NULL}}, 0, "", 0}
+#define wippersnapper_i2c_output_LedBackpackWrite_init_default {0, {""}, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0, 0}
+#define wippersnapper_i2c_output_CharLCDWrite_init_default {0, {""}, 0, "", 0}
 #define wippersnapper_i2c_output_LedBackpackConfig_init_zero {0, _wippersnapper_i2c_output_LedBackpackAlignment_MIN}
 #define wippersnapper_i2c_output_CharLCDConfig_init_zero {0, 0, 0, ""}
 #define wippersnapper_i2c_output_I2cOutputAdd_init_zero {0, {wippersnapper_i2c_output_LedBackpackConfig_init_zero}}
-#define wippersnapper_i2c_output_LedBackpackWrite_init_zero {0, {{{NULL}, NULL}}, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0, 0}
-#define wippersnapper_i2c_output_CharLCDWrite_init_zero {0, {{{NULL}, NULL}}, 0, "", 0}
+#define wippersnapper_i2c_output_LedBackpackWrite_init_zero {0, {""}, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0, 0}
+#define wippersnapper_i2c_output_CharLCDWrite_init_zero {0, {""}, 0, "", 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_i2c_output_LedBackpackConfig_brightness_tag 1
@@ -167,7 +167,7 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (config,char_lcd_config,config.char_lcd_confi
 #define wippersnapper_i2c_output_I2cOutputAdd_config_char_lcd_config_MSGTYPE wippersnapper_i2c_output_CharLCDConfig
 
 #define wippersnapper_i2c_output_LedBackpackWrite_FIELDLIST(X, a) \
-X(a, CALLBACK, ONEOF,    STRING,   (message,text,message.text),   1) \
+X(a, STATIC,   ONEOF,    STRING,   (message,text,message.text),   1) \
 X(a, STATIC,   ONEOF,    INT32,    (message,number_int,message.number_int),   2) \
 X(a, STATIC,   ONEOF,    FLOAT,    (message,number_float,message.number_float),   3) \
 X(a, STATIC,   SINGULAR, INT32,    brightness,        4) \
@@ -175,17 +175,17 @@ X(a, STATIC,   SINGULAR, UENUM,    blink_rate,        5) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_scroll_marquee,   6) \
 X(a, STATIC,   SINGULAR, FLOAT,    scroll_marquee_speed,   7) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_ampm_dot,   8)
-#define wippersnapper_i2c_output_LedBackpackWrite_CALLBACK pb_default_field_callback
+#define wippersnapper_i2c_output_LedBackpackWrite_CALLBACK NULL
 #define wippersnapper_i2c_output_LedBackpackWrite_DEFAULT NULL
 
 #define wippersnapper_i2c_output_CharLCDWrite_FIELDLIST(X, a) \
-X(a, CALLBACK, ONEOF,    STRING,   (message,text,message.text),   1) \
+X(a, STATIC,   ONEOF,    STRING,   (message,text,message.text),   1) \
 X(a, STATIC,   ONEOF,    INT32,    (message,number_int,message.number_int),   2) \
 X(a, STATIC,   ONEOF,    FLOAT,    (message,number_float,message.number_float),   3) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_backlight,   4) \
 X(a, STATIC,   SINGULAR, STRING,   backlight_color,   5) \
 X(a, STATIC,   SINGULAR, BOOL,     enable_scroll,     6)
-#define wippersnapper_i2c_output_CharLCDWrite_CALLBACK pb_default_field_callback
+#define wippersnapper_i2c_output_CharLCDWrite_CALLBACK NULL
 #define wippersnapper_i2c_output_CharLCDWrite_DEFAULT NULL
 
 extern const pb_msgdesc_t wippersnapper_i2c_output_LedBackpackConfig_msg;
@@ -202,12 +202,12 @@ extern const pb_msgdesc_t wippersnapper_i2c_output_CharLCDWrite_msg;
 #define wippersnapper_i2c_output_CharLCDWrite_fields &wippersnapper_i2c_output_CharLCDWrite_msg
 
 /* Maximum encoded size of messages (where known) */
-/* wippersnapper_i2c_output_LedBackpackWrite_size depends on runtime parameters */
-/* wippersnapper_i2c_output_CharLCDWrite_size depends on runtime parameters */
-#define WIPPERSNAPPER_I2C_OUTPUT_I2C_OUTPUT_PB_H_MAX_SIZE wippersnapper_i2c_output_I2cOutputAdd_size
+#define WIPPERSNAPPER_I2C_OUTPUT_I2C_OUTPUT_PB_H_MAX_SIZE wippersnapper_i2c_output_CharLCDWrite_size
 #define wippersnapper_i2c_output_CharLCDConfig_size 30
+#define wippersnapper_i2c_output_CharLCDWrite_size 46
 #define wippersnapper_i2c_output_I2cOutputAdd_size 32
 #define wippersnapper_i2c_output_LedBackpackConfig_size 13
+#define wippersnapper_i2c_output_LedBackpackWrite_size 43
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -813,9 +813,20 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
   if (driver->HasMux()) {
     ConfigureMuxChannel(mux_channel, driver->HasAltI2CBus());
   }
+
+  // Determine which driver cb function to use
+  if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_led_backpack_write) {
+    // TODO
+    WS_DEBUG_PRINTLN("[i2c] LED backpack write!");
+  } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_char_lcd_write) {
+    WS_DEBUG_PRINTLN("[i2c] Char LCD write not implemented yet!");
+  } else {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
+    return false;
+  }
   
 
-  return false;
+  return true;
 }
 
 /***********************************************************************/
