@@ -36,6 +36,7 @@ public:
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
   bool DecodeI2cBusScan(pb_istream_t *stream);
+  bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
       wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description,
@@ -50,6 +51,7 @@ public:
   wippersnapper_i2c_I2cDeviceEvent *GetI2cDeviceEvent();
   wippersnapper_i2c_I2cBusScan *GetI2cBusScanMsg();
   wippersnapper_i2c_I2cBusScanned *GetI2cBusScannedMsg();
+  wippersnapper_i2c_I2cDeviceOutputWrite *GetI2cDeviceOutputWriteMsg();
   // I2cBusScanned Message API
   void ClearI2cBusScanned();
   bool AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
@@ -73,6 +75,7 @@ private:
   wippersnapper_i2c_I2cDeviceRemove _msg_i2c_device_remove;
   wippersnapper_i2c_I2cDeviceRemoved _msg_i2c_device_removed;
   wippersnapper_i2c_I2cDeviceEvent _msg_i2c_device_event;
+  wippersnapper_i2c_I2cDeviceOutputWrite _msg_i2c_device_output_write;
 };
 
 /**************************************************************************/
@@ -91,6 +94,7 @@ public:
   // Getters
   wippersnapper_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
   wippersnapper_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
+
 private:
   wippersnapper_i2c_output_LedBackpackWrite _msg_led_backpack_write;
   wippersnapper_i2c_output_CharLCDWrite _msg_char_lcd_write;

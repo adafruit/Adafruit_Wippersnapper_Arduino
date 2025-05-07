@@ -28,7 +28,8 @@ I2cModel::I2cModel() {
   memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
   memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
-  // no-op
+  memset(&_msg_i2c_device_output_write, 0,
+         sizeof(_msg_i2c_device_output_write));
 }
 
 /***********************************************************************/
@@ -45,6 +46,8 @@ I2cModel::~I2cModel() {
   memset(&_msg_i2c_device_remove, 0, sizeof(_msg_i2c_device_remove));
   memset(&_msg_i2c_device_removed, 0, sizeof(_msg_i2c_device_removed));
   memset(&_msg_i2c_device_event, 0, sizeof(_msg_i2c_device_event));
+  memset(&_msg_i2c_device_output_write, 0,
+         sizeof(_msg_i2c_device_output_write));
 }
 
 /***************************************************************************/
@@ -421,6 +424,28 @@ bool I2cModel::EncodeI2cDeviceEvent() {
 /**********************************************************************/
 wippersnapper_i2c_I2cDeviceEvent *I2cModel::GetI2cDeviceEvent() {
   return &_msg_i2c_device_event;
+}
+
+/*!
+    @brief    Decodes a I2cDeviceOutputWrite message from an input stream.
+    @param    stream
+              A pointer to the pb_istream_t stream.
+    @returns  True if the I2cDeviceOutputWrite message was decoded successfully,
+   False otherwise.
+*/
+bool I2cModel::DecodeI2cDeviceOutputWrite(pb_istream_t *stream) {
+  memset(&_msg_i2c_device_output_write, 0,
+         sizeof(_msg_i2c_device_output_write));
+  return pb_decode(stream, wippersnapper_i2c_I2cDeviceOutputWrite_fields,
+                   &_msg_i2c_device_output_write);
+}
+
+/*!
+    @brief    Returns a pointer to the I2cDeviceOutputWrite message.
+    @returns  Pointer to the I2cDeviceOutputWrite message.
+*/
+wippersnapper_i2c_I2cDeviceOutputWrite *I2cModel::GetI2cDeviceOutputWriteMsg() {
+  return &_msg_i2c_device_output_write;
 }
 
 /*!

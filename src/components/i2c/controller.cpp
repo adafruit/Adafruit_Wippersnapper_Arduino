@@ -785,7 +785,36 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
    False otherwise.
 */
 bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
-  // todo!
+  WS_DEBUG_PRINTLN("[i2c] Decoding I2cDeviceOutputWrite message...");
+  // Attempt to decode an I2cDeviceOutputWrite message
+  if (!_i2c_model->DecodeI2cDeviceOutputWrite(stream)) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to decode I2cDeviceOutputWrite "
+                     "message!");
+    return false;
+  }
+  wippersnapper_i2c_I2cDeviceDescriptor descriptor =  _i2c_model->GetI2cDeviceOutputWriteMsg()->i2c_device_description;
+
+  // Get the driver
+  drvOutputBase *driver = nullptr;
+  for (auto *drv : _i2c_drivers_output) {
+    if (drv == nullptr)
+      continue;
+
+    if (drv->GetAddress() != descriptor.i2c_device_address)
+      continue;
+
+    driver = drv;
+    break;
+  }
+
+  // Optionally configure the I2C MUX
+  uint32_t mux_channel = driver->GetMuxChannel();
+  WS_DEBUG_PRINTLN(mux_channel);
+  if (driver->HasMux()) {
+    ConfigureMuxChannel(mux_channel, driver->HasAltI2CBus());
+  }
+  
+
   return false;
 }
 
