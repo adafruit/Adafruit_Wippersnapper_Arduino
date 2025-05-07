@@ -13,6 +13,8 @@
  *
  */
 #include "controller.h"
+#include "drivers/drvBase.h"
+#include "drivers/drvOutputBase.h"
 
 /*!
     @brief     Lambda function to create a drvBase driver instance
@@ -779,7 +781,8 @@ bool I2cController::Handle_I2cBusScan(pb_istream_t *stream) {
     @brief    Handler for an I2cDeviceOutputWrite message
     @param    stream
                 A pointer to the pb_istream_t stream.
-    @returns  True if the callback was successfully executed by the driver, False otherwise.
+    @returns  True if the callback was successfully executed by the driver,
+   False otherwise.
 */
 bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
   // todo!
@@ -885,10 +888,27 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     bus = _i2c_bus_default->GetBus();
   }
 
-  drvBase *drv =
-      CreateI2cSensorDrv(device_name, bus, device_descriptor.i2c_device_address,
-                         device_descriptor.i2c_mux_channel, device_status);
-  if (drv == nullptr) {
+  // Attempt to create the driver
+  bool did_init = false;
+  drvBase *drv = nullptr;
+  drvOutputBase *drv_out = nullptr;
+  if (!is_output) {
+    drv = CreateI2cSensorDrv(device_name, bus,
+                             device_descriptor.i2c_device_address,
+                             device_descriptor.i2c_mux_channel, device_status);
+    if (drv != nullptr) {
+      did_init = true;
+    }
+  } else {
+    drv_out = CreateI2cOutputDrv(
+        device_name, bus, device_descriptor.i2c_device_address,
+        device_descriptor.i2c_mux_channel, device_status);
+    if (drv_out != nullptr) {
+      did_init = true;
+    }
+  }
+
+  if (!did_init) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
     if (WsV2._sdCardV2->isModeOffline()) {
       WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
@@ -901,22 +921,58 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   // Attempt to initialize the driver
   if (did_set_mux_ch) {
-    drv->SetMuxAddress(device_descriptor.i2c_mux_address);
+    if (!is_output) {
+      drv->SetMuxAddress(device_descriptor.i2c_mux_address);
+    } else {
+      drv_out->SetMuxAddress(device_descriptor.i2c_mux_address);
+    }
     WS_DEBUG_PRINTLN("[i2c] Set driver to use MUX");
   }
   if (use_alt_bus) {
-    drv->EnableAltI2CBus(_i2c_model->GetI2cDeviceAddOrReplaceMsg()
-                             ->i2c_device_description.i2c_bus_scl,
-                         _i2c_model->GetI2cDeviceAddOrReplaceMsg()
-                             ->i2c_device_description.i2c_bus_sda);
+    if (!is_output) {
+      drv->EnableAltI2CBus(_i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                               ->i2c_device_description.i2c_bus_scl,
+                           _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                               ->i2c_device_description.i2c_bus_sda);
+    } else {
+      drv_out->EnableAltI2CBus(_i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                                   ->i2c_device_description.i2c_bus_scl,
+                               _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+                                   ->i2c_device_description.i2c_bus_sda);
+    }
     WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
   }
   // Configure the driver
-  drv->EnableSensorReads(
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types_count);
-  drv->SetSensorPeriod(
-      _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
+
+  if (!is_output) {
+    // Configure Input-driver settings
+    drv->EnableSensorReads(
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+            ->i2c_device_sensor_types_count);
+    drv->SetSensorPeriod(
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_period);
+  } else {
+    // Configure Output-driver settings
+    pb_size_t config =
+        _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_output_add.which_config;
+    if (config ==
+        wippersnapper_i2c_output_I2cOutputAdd_led_backpack_config_tag) {
+      // TODO: Configure LED Backpack
+      wippersnapper_i2c_output_LedBackpackConfig cfg =
+          _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+              ->i2c_output_add.config.led_backpack_config;
+      drv_out->ConfigureLEDBackpack(cfg.brightness, cfg.alignment);
+    } else if (config ==
+               wippersnapper_i2c_output_I2cOutputAdd_char_lcd_config_tag) {
+      // TODO: Configure Char LCD
+    } else {
+      WS_DEBUG_PRINTLN(
+          "[i2c] ERROR: Unknown config specified for output driver!");
+      return false;
+    }
+  }
+
   if (!drv->begin()) {
     if (WsV2._sdCardV2->isModeOffline()) {
       WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "

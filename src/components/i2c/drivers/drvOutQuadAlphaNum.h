@@ -19,6 +19,10 @@
 #include "drvOutputBase.h"
 #include <Adafruit_LEDBackpack.h>
 
+#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0
+#define LED_BACKPACK_ALIGNMENT_LEFT 1
+#define LED_BACKPACK_ALIGNMENT_RIGHT 2
+
 /*!
     @brief  Class that provides a driver interface for Quad Alphanumeric
    Displays w/I2C Backpack
@@ -58,7 +62,25 @@ public:
   */
   bool begin() override {
     _alpha4 = new Adafruit_AlphaNum4();
-    return _alpha4->begin(_address, _i2c);
+    bool did_begin = _alpha4->begin(_address, _i2c);
+    _alpha4->setBrightness(_brightness);
+  }
+
+  /*!
+    @brief    Configures a LED backpack.
+    @param    brightness
+              The brightness of the LED backpack.
+    @param    alignment
+              The alignment of the LED backpack.
+*/
+  void ConfigureLEDBackpack(int32_t brightness, uint32_t alignment) {
+    if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
+      _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
+    } else {
+      // default: left alignment
+      _alignment = LED_BACKPACK_ALIGNMENT_LEFT;
+    }
+    _brightness = brightness;
   }
 
   /*!
@@ -96,16 +118,18 @@ public:
                   The value to be displayed. Only the first four digits are
       displayed.
   */
- void WriteValue(int32_t value) {
-  if (_alpha4 == nullptr) {
-    return;
+  void WriteValue(int32_t value) {
+    if (_alpha4 == nullptr) {
+      return;
+    }
+    // TODO!
   }
-  // TODO!
-}
 
 protected:
   Adafruit_AlphaNum4 *_alpha4 =
       nullptr; ///< ptr to a 4-digit alphanumeric display object
+  int32_t _brightness;
+  uint32_t _alignment;
 };
 
 #endif // DRV_OUT_QUAD_ALPHANUM_H

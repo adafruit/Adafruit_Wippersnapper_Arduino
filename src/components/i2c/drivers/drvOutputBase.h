@@ -70,7 +70,18 @@ public:
                   The value to be displayed. Only the first four digits are
      displayed.
   */
- virtual void WriteValue(int32_t value) {
+  virtual void WriteValue(int32_t value) {
+    // noop
+  }
+
+  /*!
+      @brief    Configures a LED backpack.
+      @param    brightness
+                The brightness of the LED backpack.
+      @param    alignment
+                The alignment of the LED backpack.
+  */
+  virtual void ConfigureLEDBackpack(int32_t brightness, uint32_t alignment) {
     // noop
   }
 

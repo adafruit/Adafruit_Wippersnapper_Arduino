@@ -11,14 +11,6 @@
 
 /* Enum definitions */
 /* *
- I2cOutputType defines the category of I2C output device. */
-typedef enum _wippersnapper_i2c_output_I2cOutputType {
-    wippersnapper_i2c_output_I2cOutputType_I2C_OUTPUT_TYPE_UNSPECIFIED = 0, /* * Unspecified output type. * */
-    wippersnapper_i2c_output_I2cOutputType_I2C_OUTPUT_TYPE_LED_BACKPACK = 1, /* * LED backpack output type. * */
-    wippersnapper_i2c_output_I2cOutputType_I2C_OUTPUT_TYPE_CHAR_LCD = 2 /* * Character LCD output type. * */
-} wippersnapper_i2c_output_I2cOutputType;
-
-/* *
  LedBackpackBlinkRate represents supported, OPTIONAL, blink rates for LED backpack displays */
 typedef enum _wippersnapper_i2c_output_LedBackpackBlinkRate {
     wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_UNSPECIFIED = 0, /* * No blinking. * */
@@ -56,7 +48,6 @@ typedef struct _wippersnapper_i2c_output_CharLCDConfig {
 /* *
  I2cOutputAdd represents a request from the broker to add an I2C output device to a device. */
 typedef struct _wippersnapper_i2c_output_I2cOutputAdd {
-    wippersnapper_i2c_output_I2cOutputType type; /* * The type of I2C output device. * */
     pb_size_t which_config;
     union {
         wippersnapper_i2c_output_LedBackpackConfig led_backpack_config; /* * Configuration for LED backpack. * */
@@ -100,10 +91,6 @@ extern "C" {
 #endif
 
 /* Helper constants for enums */
-#define _wippersnapper_i2c_output_I2cOutputType_MIN wippersnapper_i2c_output_I2cOutputType_I2C_OUTPUT_TYPE_UNSPECIFIED
-#define _wippersnapper_i2c_output_I2cOutputType_MAX wippersnapper_i2c_output_I2cOutputType_I2C_OUTPUT_TYPE_CHAR_LCD
-#define _wippersnapper_i2c_output_I2cOutputType_ARRAYSIZE ((wippersnapper_i2c_output_I2cOutputType)(wippersnapper_i2c_output_I2cOutputType_I2C_OUTPUT_TYPE_CHAR_LCD+1))
-
 #define _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_UNSPECIFIED
 #define _wippersnapper_i2c_output_LedBackpackBlinkRate_MAX wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_HALFHZ
 #define _wippersnapper_i2c_output_LedBackpackBlinkRate_ARRAYSIZE ((wippersnapper_i2c_output_LedBackpackBlinkRate)(wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_HALFHZ+1))
@@ -115,7 +102,6 @@ extern "C" {
 #define wippersnapper_i2c_output_LedBackpackConfig_alignment_ENUMTYPE wippersnapper_i2c_output_LedBackpackAlignment
 
 
-#define wippersnapper_i2c_output_I2cOutputAdd_type_ENUMTYPE wippersnapper_i2c_output_I2cOutputType
 
 #define wippersnapper_i2c_output_LedBackpackWrite_blink_rate_ENUMTYPE wippersnapper_i2c_output_LedBackpackBlinkRate
 
@@ -124,12 +110,12 @@ extern "C" {
 /* Initializer values for message structs */
 #define wippersnapper_i2c_output_LedBackpackConfig_init_default {0, _wippersnapper_i2c_output_LedBackpackAlignment_MIN}
 #define wippersnapper_i2c_output_CharLCDConfig_init_default {0, 0, 0, {{NULL}, NULL}}
-#define wippersnapper_i2c_output_I2cOutputAdd_init_default {_wippersnapper_i2c_output_I2cOutputType_MIN, 0, {wippersnapper_i2c_output_LedBackpackConfig_init_default}}
+#define wippersnapper_i2c_output_I2cOutputAdd_init_default {0, {wippersnapper_i2c_output_LedBackpackConfig_init_default}}
 #define wippersnapper_i2c_output_LedBackpackWrite_init_default {0, {{{NULL}, NULL}}, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0, 0}
 #define wippersnapper_i2c_output_CharLCDWrite_init_default {0, {{{NULL}, NULL}}, 0, {{NULL}, NULL}, 0}
 #define wippersnapper_i2c_output_LedBackpackConfig_init_zero {0, _wippersnapper_i2c_output_LedBackpackAlignment_MIN}
 #define wippersnapper_i2c_output_CharLCDConfig_init_zero {0, 0, 0, {{NULL}, NULL}}
-#define wippersnapper_i2c_output_I2cOutputAdd_init_zero {_wippersnapper_i2c_output_I2cOutputType_MIN, 0, {wippersnapper_i2c_output_LedBackpackConfig_init_zero}}
+#define wippersnapper_i2c_output_I2cOutputAdd_init_zero {0, {wippersnapper_i2c_output_LedBackpackConfig_init_zero}}
 #define wippersnapper_i2c_output_LedBackpackWrite_init_zero {0, {{{NULL}, NULL}}, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0, 0}
 #define wippersnapper_i2c_output_CharLCDWrite_init_zero {0, {{{NULL}, NULL}}, 0, {{NULL}, NULL}, 0}
 
@@ -140,9 +126,8 @@ extern "C" {
 #define wippersnapper_i2c_output_CharLCDConfig_columns_tag 2
 #define wippersnapper_i2c_output_CharLCDConfig_backlight_enable_tag 3
 #define wippersnapper_i2c_output_CharLCDConfig_backlight_color_tag 4
-#define wippersnapper_i2c_output_I2cOutputAdd_type_tag 1
-#define wippersnapper_i2c_output_I2cOutputAdd_led_backpack_config_tag 2
-#define wippersnapper_i2c_output_I2cOutputAdd_char_lcd_config_tag 3
+#define wippersnapper_i2c_output_I2cOutputAdd_led_backpack_config_tag 1
+#define wippersnapper_i2c_output_I2cOutputAdd_char_lcd_config_tag 2
 #define wippersnapper_i2c_output_LedBackpackWrite_text_tag 1
 #define wippersnapper_i2c_output_LedBackpackWrite_number_int_tag 2
 #define wippersnapper_i2c_output_LedBackpackWrite_number_float_tag 3
@@ -174,9 +159,8 @@ X(a, CALLBACK, SINGULAR, STRING,   backlight_color,   4)
 #define wippersnapper_i2c_output_CharLCDConfig_DEFAULT NULL
 
 #define wippersnapper_i2c_output_I2cOutputAdd_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (config,led_backpack_config,config.led_backpack_config),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (config,char_lcd_config,config.char_lcd_config),   3)
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,led_backpack_config,config.led_backpack_config),   1) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,char_lcd_config,config.char_lcd_config),   2)
 #define wippersnapper_i2c_output_I2cOutputAdd_CALLBACK NULL
 #define wippersnapper_i2c_output_I2cOutputAdd_DEFAULT NULL
 #define wippersnapper_i2c_output_I2cOutputAdd_config_led_backpack_config_MSGTYPE wippersnapper_i2c_output_LedBackpackConfig
