@@ -78,12 +78,14 @@ public:
               The alignment of the LED backpack.
 */
   void ConfigureLEDBackpack(int32_t brightness, uint32_t alignment) {
+    WS_DEBUG_PRINTLN("[i2c] drvOutQuadAlphaNum::ConfigureLEDBackpack() called");
     if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
       _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
     } else {
       _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
     }
     _brightness = brightness;
+    WS_DEBUG_PRINTLN("[i2c] drvOutQuadAlphaNum::configured");
   }
 
   /*!
@@ -131,17 +133,37 @@ public:
       pos_start = LED_MAX_CHARS - seg_chars;
     }
 
+    WS_DEBUG_PRINT("Message to display: ");
+    WS_DEBUG_PRINT(message);
+    WS_DEBUG_PRINT(" with len_display: ");
+    WS_DEBUG_PRINT(len_display);
+    WS_DEBUG_PRINT(" at pos_start: ");
+    WS_DEBUG_PRINT(pos_start);
+
+    // TODO FRIDAY
+    // NOTE: If there's a ., increment len_display by 1 to account for the decimal
+
     // Write to the display's buffer
     int cur_idx = pos_start;
     for (size_t i = 0; i < len_display; i++) {
+      // Save the character because if there's a decimal, we need to skip it in the buffer
+      char ch = message[i];
+
       // Look-ahead for a decimal point to attach to the current character
       bool display_dot = false;
       if (i + 1 < len_display && message[i + 1] == '.') {
         display_dot = true;
         i++;
       }
+
       // Write the character to the display buffer
-      _alpha4->writeDigitAscii(cur_idx, message[i], display_dot);
+      WS_DEBUG_PRINT("Writing char: ");
+      WS_DEBUG_PRINT(message[i]);
+      WS_DEBUG_PRINT(" at index: ");
+      WS_DEBUG_PRINT(cur_idx);
+      WS_DEBUG_PRINT(" with dot: ");
+      WS_DEBUG_PRINTLN(display_dot);
+      _alpha4->writeDigitAscii(cur_idx, ch, display_dot);
       cur_idx++;
     }
     // Issue the buffered data in RAM to the display
@@ -156,7 +178,7 @@ public:
   */
   void WriteValue(float value) {
     char message[LED_MAX_CHARS + 1];
-    snprintf(message, sizeof(message), "%.4f", value);
+    snprintf(message, sizeof(message), "%.5f", value);
     WriteMessage(message);
   }
 
