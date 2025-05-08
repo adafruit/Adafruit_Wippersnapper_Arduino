@@ -23,6 +23,7 @@
 #define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0
 #define LED_BACKPACK_ALIGNMENT_LEFT 1
 #define LED_BACKPACK_ALIGNMENT_RIGHT 2
+#define LED_BACKPACK_ALIGNMENT_DEFAULT LED_BACKPACK_ALIGNMENT_LEFT
 #define LED_MAX_CHARS 4
 
 /*!
@@ -80,8 +81,7 @@ public:
     if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
       _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
     } else {
-      // default: left alignment
-      _alignment = LED_BACKPACK_ALIGNMENT_LEFT;
+      _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
     }
     _brightness = brightness;
   }
@@ -177,8 +177,7 @@ protected:
       nullptr;         ///< ptr to a 4-digit alphanumeric display object
   int32_t _brightness; ///< Brightness of the LED backpack, from 0 (off) to 15
                        ///< (full brightness)
-  uint32_t _alignment =
-      LED_BACKPACK_ALIGNMENT_RIGHT; ///< Determines L/R alignment of the message
+  uint32_t _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the message
                                     ///< displayed
 };
 

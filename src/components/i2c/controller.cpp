@@ -459,7 +459,7 @@ I2cController::~I2cController() {
 */
 /***********************************************************************/
 bool I2cController::RemoveDriver(uint32_t address) {
-  // Safely remove the i2c sensor drivers from the vector and free memory
+  // Safely remove the i2c sensor driver from the vector and free memory
   for (drvBase *driver : _i2c_drivers) {
     if (driver == nullptr)
       continue;
@@ -475,7 +475,7 @@ bool I2cController::RemoveDriver(uint32_t address) {
     return true;
   }
 
-  // Safely remove the i2c output drivers from the vector and free memory
+  // This was an output driver type, safely remove the i2c output driver from the vector and free memory
   for (drvOutputBase *driver : _i2c_drivers_output) {
     if (driver == nullptr)
       continue;
@@ -612,13 +612,7 @@ bool I2cController::Handle_I2cDeviceRemove(pb_istream_t *stream) {
         // TODO: Scan the mux to see what drivers are attached?
         wippersnapper_i2c_I2cBusScanned scan_results;
         _i2c_bus_default->ScanMux(&scan_results);
-        // DEBUG - TODO REMOVE - Print out the scan results
         for (int i = 0; i < scan_results.i2c_bus_found_devices_count; i++) {
-          WS_DEBUG_PRINT("[i2c] Found device at address: ");
-          WS_DEBUG_PRINT(
-              scan_results.i2c_bus_found_devices[i].i2c_device_address, HEX);
-          WS_DEBUG_PRINT(" on mux channel #: ");
-          WS_DEBUG_PRINTLN(
               scan_results.i2c_bus_found_devices[i].i2c_mux_channel);
           // Select the channel and remove the device
           _i2c_bus_default->SelectMuxChannel(
@@ -794,7 +788,7 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
   }
   wippersnapper_i2c_I2cDeviceDescriptor descriptor =  _i2c_model->GetI2cDeviceOutputWriteMsg()->i2c_device_description;
 
-  // Get the driver
+  // Attempt to find the driver
   drvOutputBase *driver = nullptr;
   for (auto *drv : _i2c_drivers_output) {
     if (drv == nullptr)
@@ -807,6 +801,12 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
     break;
   }
 
+  if (driver == nullptr) {
+    WS_DEBUG_PRINT("[i2c] ERROR: Unable to find driver for device at addr 0x");
+    WS_DEBUG_PRINTLN(descriptor.i2c_device_address, HEX);
+    return false;
+  }
+
   // Optionally configure the I2C MUX
   uint32_t mux_channel = driver->GetMuxChannel();
   WS_DEBUG_PRINTLN(mux_channel);
@@ -816,8 +816,7 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
 
   // Determine which driver cb function to use
   if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_led_backpack_write) {
-    // TODO
-    WS_DEBUG_PRINTLN("[i2c] LED backpack write!");
+    WS_DEBUG_PRINT("[i2c] Writing message to LED backpack...");
     if (!driver->LedBackpackWrite(&_i2c_model->GetI2cDeviceOutputWriteMsg()->led_backpack_write)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to LED backpack!");
       return false;
@@ -828,7 +827,6 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
     return false;
   }
-  
 
   return true;
 }
@@ -1045,6 +1043,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     // Create and publish the I2cDeviceAddedorReplaced message to the broker
     WS_DEBUG_PRINTLN("[i2c] MQTT Publish I2cDeviceAddedorReplaced not yet "
                      "implemented!");
+    // TODO!
     /*     if (!PublishI2cDeviceAddedorReplaced(device_descriptor,
        device_status)) return false; */
   }
