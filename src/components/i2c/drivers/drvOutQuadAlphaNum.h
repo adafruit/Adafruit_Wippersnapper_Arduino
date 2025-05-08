@@ -18,10 +18,12 @@
 
 #include "drvOutputBase.h"
 #include <Adafruit_LEDBackpack.h>
+#include <Arduino.h>
 
 #define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0
 #define LED_BACKPACK_ALIGNMENT_LEFT 1
 #define LED_BACKPACK_ALIGNMENT_RIGHT 2
+#define LED_MAX_CHARS 4
 
 /*!
     @brief  Class that provides a driver interface for Quad Alphanumeric
@@ -64,6 +66,7 @@ public:
     _alpha4 = new Adafruit_AlphaNum4();
     bool did_begin = _alpha4->begin(_address, _i2c);
     _alpha4->setBrightness(_brightness);
+    return did_begin;
   }
 
   /*!
@@ -84,18 +87,64 @@ public:
   }
 
   /*!
+      @brief    Sets the brightness of the LED backpack.
+      @param    b
+                  The brightness value, from 0 (off) to 15 (full brightness).
+  */
+  void SetLedBackpackBrightness(uint8_t b) {
+    if (_alpha4 == nullptr) {
+      return;
+    }
+    _alpha4->setBrightness(b);
+  }
+
+  /*!
       @brief    Writes the first four characters of a message to the quad
      alphanumeric display.
       @param    message
                   The message to be displayed.
   */
   void WriteMessage(const char *message) {
-    if (_alpha4 == nullptr) {
+    if (_alpha4 == nullptr || message == nullptr) {
       return;
     }
-    for (size_t i = 0; i < 4; i++) {
-      _alpha4->writeDigitAscii(i, message[i]);
+    // Clear before writing
+    _alpha4->clear();
+
+    // Calculate the number of characters to display
+    size_t len_display = min(strlen(message), (size_t)LED_MAX_CHARS);
+
+    // Set the starting position based on alignment
+    int pos_start;
+    if (_alignment == LED_BACKPACK_ALIGNMENT_LEFT) {
+      pos_start = 0; // start at the leftmost position of the display
+    } else {
+      // Exclude decimal points from the character count because those get
+      // displayed on a "special" segment of the LED display
+      int seg_chars = 0;
+      for (size_t i = 0; i < len_display; i++) {
+        if (message[i] != '.') {
+          seg_chars++;
+        }
+      }
+      // start at the rightmost position of the display
+      pos_start = LED_MAX_CHARS - seg_chars;
     }
+
+    // Write to the display's buffer
+    int cur_idx = pos_start;
+    for (size_t i = 0; i < len_display; i++) {
+      // Look-ahead for a decimal point to attach to the current character
+      bool display_dot = false;
+      if (i + 1 < len_display && message[i + 1] == '.') {
+        display_dot = true;
+        i++;
+      }
+      // Write the character to the display buffer
+      _alpha4->writeDigitAscii(cur_idx, message[i], display_dot);
+      cur_idx++;
+    }
+    // Issue the buffered data in RAM to the display
     _alpha4->writeDisplay();
   }
 
@@ -106,10 +155,9 @@ public:
       displayed.
   */
   void WriteValue(float value) {
-    if (_alpha4 == nullptr) {
-      return;
-    }
-    // TODO!
+    char message[LED_MAX_CHARS + 1];
+    snprintf(message, sizeof(message), "%.4f", value);
+    WriteMessage(message);
   }
 
   /*!
@@ -119,17 +167,19 @@ public:
       displayed.
   */
   void WriteValue(int32_t value) {
-    if (_alpha4 == nullptr) {
-      return;
-    }
-    // TODO!
+    char message[LED_MAX_CHARS + 1];
+    snprintf(message, sizeof(message), "%ld", value);
+    WriteMessage(message);
   }
 
 protected:
   Adafruit_AlphaNum4 *_alpha4 =
-      nullptr; ///< ptr to a 4-digit alphanumeric display object
-  int32_t _brightness;
-  uint32_t _alignment;
+      nullptr;         ///< ptr to a 4-digit alphanumeric display object
+  int32_t _brightness; ///< Brightness of the LED backpack, from 0 (off) to 15
+                       ///< (full brightness)
+  uint32_t _alignment =
+      LED_BACKPACK_ALIGNMENT_RIGHT; ///< Determines L/R alignment of the message
+                                    ///< displayed
 };
 
 #endif // DRV_OUT_QUAD_ALPHANUM_H

@@ -818,6 +818,10 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
   if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_led_backpack_write) {
     // TODO
     WS_DEBUG_PRINTLN("[i2c] LED backpack write!");
+    if (!driver->LedBackpackWrite(&_i2c_model->GetI2cDeviceOutputWriteMsg()->led_backpack_write)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to LED backpack!");
+      return false;
+    }
   } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_char_lcd_write) {
     WS_DEBUG_PRINTLN("[i2c] Char LCD write not implemented yet!");
   } else {

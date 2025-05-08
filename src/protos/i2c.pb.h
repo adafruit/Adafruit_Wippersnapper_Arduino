@@ -335,7 +335,7 @@ extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceOutputWrite_msg;
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_size 141
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_size 56
 #define wippersnapper_i2c_I2cDeviceDescriptor_size 50
-#define wippersnapper_i2c_I2cDeviceOutputWrite_size 145
+#define wippersnapper_i2c_I2cDeviceOutputWrite_size 147
 #define wippersnapper_i2c_I2cDeviceRemove_size   52
 #define wippersnapper_i2c_I2cDeviceRemoved_size  54
 #if defined(wippersnapper_sensor_SensorEvent_size)

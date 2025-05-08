@@ -88,16 +88,45 @@ public:
   }
 
   /*!
-      @brief    High-level fn, executes a call to the appropriate driver function(s)
-                based on the message data type to write.
+      @brief    Sets the brightness of the LED backpack.
+      @param    b
+                  The brightness value, from 0 (off) to 15 (full brightness).
+  */
+  virtual void SetLedBackpackBrightness(uint8_t b) {
+    // noop
+  }
+
+  /*!
+      @brief    High-level fn, executes a call to the appropriate driver
+     function(s) based on the message data type to write.
       @param    msg_backpack_write
                 Pointer to a wippersnapper_i2c_output_LedBackpackWrite message.
+      @returns  True if the message was written successfully, False otherwise.
   */
-  void LedBackpackWrite(wippersnapper_i2c_output_LedBackpackWrite *msg_backpack_write) {
+  bool LedBackpackWrite(
+      wippersnapper_i2c_output_LedBackpackWrite *msg_backpack_write) {
+    // Check if we should adjust brightness
+    if (msg_backpack_write->adjust_brightness)
+      SetLedBackpackBrightness((uint8_t)msg_backpack_write->brightness);
 
+    // Write the message to a LED backpack
+    switch (msg_backpack_write->which_message) {
+    case wippersnapper_i2c_output_LedBackpackWrite_text_tag:
+      WriteMessage(msg_backpack_write->message.text);
+      break;
+    case wippersnapper_i2c_output_LedBackpackWrite_number_int_tag:
+      WriteValue(msg_backpack_write->message.number_int);
+      break;
+    case wippersnapper_i2c_output_LedBackpackWrite_number_float_tag:
+      WriteValue(msg_backpack_write->message.number_float);
+      break;
+    default:
+      return false;
+      break;
+    }
+    return true;
   }
 
 protected:
-  // TODO
 };
 #endif // DRV_OUTPUT_BASE_H
