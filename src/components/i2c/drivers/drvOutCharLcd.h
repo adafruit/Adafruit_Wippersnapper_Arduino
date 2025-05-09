@@ -78,9 +78,43 @@ public:
     _enable_backlight = enable_backlight;
   }
 
+  /*!
+      @brief    Writes a message to the LCD.
+      @param    message
+                The message to be displayed.
+  */
+  void WriteMessageCharLCD(const char *message) override {
+    if (_lcd == nullptr)
+      return;
+
+    // Before writing, let's clear the display
+    _lcd->clear();
+
+    size_t message_length = strlen(message);
+    size_t cur_idx = 0; // Current index in the message
+
+    // Write each row until it hits: \n, or the end of the message, or the last
+    // column/row position
+    for (int cur_row = 0; cur_row < _rows && cur_idx < message_length;
+         cur_row++) {
+      // Write each row out at the beginning of the row
+      _lcd->setCursor(0, cur_row);
+      for (int cur_col = 0; cur_col < _cols && cur_idx < message_length;
+           cur_col++) {
+        char c = message[cur_idx];
+        if (c == '\n') {
+          cur_idx++;
+          break;
+        }
+        _lcd->write(c);
+        cur_idx++;
+      }
+    }
+  }
+
 protected:
-  Adafruit_LiquidCrystal
-      *_lcd;              ///< Pointer to the Adafruit_LiquidCrystal object
+  Adafruit_LiquidCrystal *_lcd =
+      nullptr;            ///< Pointer to the Adafruit_LiquidCrystal object
   uint8_t _rows = 2;      ///< Number of rows in the display
   uint8_t _cols = 16;     ///< Number of columns in the display
   bool _enable_backlight; ///< Flag to enable/disable backlight

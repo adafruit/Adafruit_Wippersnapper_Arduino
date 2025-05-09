@@ -102,6 +102,15 @@ public:
   }
 
   /*!
+      @brief    Writes a message to the LCD.
+      @param    message
+                The message to be displayed.
+  */
+  virtual void WriteMessageCharLCD(const char *message) override {
+    // noop
+  }
+
+  /*!
       @brief    Sets the brightness of the LED backpack.
       @param    b
                   The brightness value, from 0 (off) to 15 (full brightness).
