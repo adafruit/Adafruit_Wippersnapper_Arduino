@@ -133,12 +133,13 @@ public:
       pos_start = LED_MAX_CHARS - seg_chars;
     }
 
+
     WS_DEBUG_PRINT("Message to display: ");
-    WS_DEBUG_PRINT(message);
+    WS_DEBUG_PRINTLN(message);
     WS_DEBUG_PRINT(" with len_display: ");
-    WS_DEBUG_PRINT(len_display);
+    WS_DEBUG_PRINTLN(len_display);
     WS_DEBUG_PRINT(" at pos_start: ");
-    WS_DEBUG_PRINT(pos_start);
+    WS_DEBUG_PRINTLN(pos_start);
 
     // TODO FRIDAY
     // NOTE: If there's a ., increment len_display by 1 to account for the decimal
@@ -154,11 +155,12 @@ public:
       if (i + 1 < len_display && message[i + 1] == '.') {
         display_dot = true;
         i++;
+        len_display++;
       }
 
       // Write the character to the display buffer
       WS_DEBUG_PRINT("Writing char: ");
-      WS_DEBUG_PRINT(message[i]);
+      WS_DEBUG_PRINT(ch);
       WS_DEBUG_PRINT(" at index: ");
       WS_DEBUG_PRINT(cur_idx);
       WS_DEBUG_PRINT(" with dot: ");
@@ -177,7 +179,7 @@ public:
       displayed.
   */
   void WriteValue(float value) {
-    char message[LED_MAX_CHARS + 1];
+    char message[8+1];
     snprintf(message, sizeof(message), "%.5f", value);
     WriteMessage(message);
   }
