@@ -365,6 +365,11 @@ static const std::map<std::string, FnCreateI2cOutputDrv> I2cFactoryOutput = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvOutputBase * {
        return new drvOutQuadAlphaNum(i2c, addr, mux_channel, driver_name);
+     }},
+    {"charlcd",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvOutputBase * {
+       return new drvOutCharLcd(i2c, addr, mux_channel, driver_name);
      }}}; ///< I2C output driver factory
 
 /*!
@@ -822,7 +827,6 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
 
   // Determine which driver cb function to use
   if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_led_backpack_write) {
-    WS_DEBUG_PRINTLN("[i2c] Writing message to LED backpack...");
     if (!driver->LedBackpackWrite(
             &_i2c_model->GetI2cDeviceOutputWriteMsg()->led_backpack_write)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to LED backpack!");
@@ -830,6 +834,7 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
     }
   } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_char_lcd_write) {
     WS_DEBUG_PRINTLN("[i2c] Char LCD write not implemented yet!");
+    // TODO!
   } else {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
     return false;
@@ -1053,7 +1058,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     _i2c_drivers_output.push_back(drv_out);
   }
 
-  
   WS_DEBUG_PRINTLN("[i2c] Driver initialized and added to controller: ");
   WS_DEBUG_PRINTLN(device_name);
 

@@ -45,6 +45,7 @@
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
 #include "drivers/drvNau7802.h"
+#include "drivers/drvOutCharLcd.h"
 #include "drivers/drvOutQuadAlphaNum.h"
 #include "drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"

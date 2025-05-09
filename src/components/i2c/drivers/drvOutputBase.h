@@ -88,6 +88,20 @@ public:
   }
 
   /*!
+      @brief    Configures a character LCD.
+      @param    rows
+                  The number of rows in the LCD.
+      @param    cols
+                  The number of columns in the LCD.
+      @param    enable_backlight
+                  True if the backlight is enabled, False otherwise.
+  */
+  virtual void ConfigureCharLcd(uint32_t rows, uint32_t cols,
+                                bool enable_backlight) {
+    // noop
+  }
+
+  /*!
       @brief    Sets the brightness of the LED backpack.
       @param    b
                   The brightness value, from 0 (off) to 15 (full brightness).

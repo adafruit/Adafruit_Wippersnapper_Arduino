@@ -133,17 +133,6 @@ public:
       pos_start = LED_MAX_CHARS - seg_chars;
     }
 
-
-    WS_DEBUG_PRINT("Message to display: ");
-    WS_DEBUG_PRINTLN(message);
-    WS_DEBUG_PRINT(" with len_display: ");
-    WS_DEBUG_PRINTLN(len_display);
-    WS_DEBUG_PRINT(" at pos_start: ");
-    WS_DEBUG_PRINTLN(pos_start);
-
-    // TODO FRIDAY
-    // NOTE: If there's a ., increment len_display by 1 to account for the decimal
-
     // Write to the display's buffer
     int cur_idx = pos_start;
     for (size_t i = 0; i < len_display; i++) {
@@ -159,12 +148,6 @@ public:
       }
 
       // Write the character to the display buffer
-      WS_DEBUG_PRINT("Writing char: ");
-      WS_DEBUG_PRINT(ch);
-      WS_DEBUG_PRINT(" at index: ");
-      WS_DEBUG_PRINT(cur_idx);
-      WS_DEBUG_PRINT(" with dot: ");
-      WS_DEBUG_PRINTLN(display_dot);
       _alpha4->writeDigitAscii(cur_idx, ch, display_dot);
       cur_idx++;
     }
