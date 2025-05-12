@@ -61,7 +61,7 @@ public:
     _lcd = new Adafruit_LiquidCrystal(_address, _i2c);
     bool did_begin = _lcd->begin(_cols, _rows);
     if (did_begin && _enable_backlight) {
-      _lcd->setBacklight(LOW);
+      _lcd->setBacklight(HIGH);
     }
     return did_begin;
   }
@@ -115,8 +115,8 @@ public:
 protected:
   Adafruit_LiquidCrystal *_lcd =
       nullptr;            ///< Pointer to the Adafruit_LiquidCrystal object
-  uint8_t _rows = 2;      ///< Number of rows in the display
-  uint8_t _cols = 16;     ///< Number of columns in the display
+  uint8_t _rows;          ///< Number of rows in the display
+  uint8_t _cols;          ///< Number of columns in the display
   bool _enable_backlight; ///< Flag to enable/disable backlight
 };
 
