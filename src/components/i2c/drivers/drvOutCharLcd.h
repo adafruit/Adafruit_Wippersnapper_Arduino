@@ -91,18 +91,9 @@ public:
     _lcd->clear();
 
     // TODO: Remove all the prints!
-
     // Print the message to the serial
-    Serial.print("Writing message to LCD: ");
+    Serial.print("Writing message to Char. LCD: ");
     Serial.println(message);
-
-    // Debug: Print each character's ASCII value
-    Serial.print("Character values: ");
-    for (size_t i = 0; i < strlen(message); i++) {
-      Serial.print((int)message[i]);
-      Serial.print(" ");
-    }
-    Serial.println();
 
     size_t message_length = strlen(message);
     size_t cur_idx = 0; // Current index in the message
@@ -116,22 +107,7 @@ public:
       for (int cur_col = 0; cur_col < _cols && cur_idx < message_length;
            cur_col++) {
         char c = message[cur_idx];
-
-        // Debug: Print the character we're processing
-        Serial.print("Processing char at position ");
-        Serial.print(cur_idx);
-        Serial.print(": '");
-        if (c == '\n') {
-          Serial.print("\\n");
-        } else {
-          Serial.print(c);
-        }
-        Serial.print("' (");
-        Serial.print((int)c);
-        Serial.println(")");
-
         if (c == '\\' && message[cur_idx + 1] == 'n') {
-          Serial.println("Found newline, moving to next row");
           cur_idx += 2; // Skip the '\n' character in the buffer
           break;        // and move to the next row
         } else if (c == 194 && message[cur_idx + 1] == 176) {
