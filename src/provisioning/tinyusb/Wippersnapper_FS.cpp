@@ -477,7 +477,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   delay(500);
   InitUsbMsc();
   WS_PRINTER.flush();
-  delay(500);
+  delay(2500);
   WS_PRINTER.println("Config file written to flash!"); // List current config / components and periods
   WsV2._i2c_controller->PrintAllDrivers();
   return true;
