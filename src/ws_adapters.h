@@ -56,7 +56,8 @@ typedef ws_wifi_ninafw ws_adapter_wifi;
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
     defined(ARDUINO_ADAFRUIT_METRO_RP2350)
-#define SD_CS_PIN 23
+#define SD_CS_PIN 23 // TODO: fix this as is ignored by picow and results in 33
+// see https://github.com/adafruit/Adafruit_Wippersnapper_Arduino/issues/747
 #include "adapters/offline/ws_offline_pico.h"
 typedef ws_offline_pico ws_adapter_offline;
 #else

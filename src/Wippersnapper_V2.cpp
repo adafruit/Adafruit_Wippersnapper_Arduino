@@ -882,7 +882,13 @@ void Wippersnapper_V2::runNetFSMV2() {
 */
 /**************************************************************************/
 void Wippersnapper_V2::haltErrorV2(String error, ws_led_status_t ledStatusColor,
-                                   bool reboot) {
+                                   bool reboot, bool reattach_usb_filesystem) {
+#ifdef USE_TINYUSB
+  if (reattach_usb_filesystem) {
+    WsV2._fileSystemV2->InitUsbMsc();
+    delay(1500);
+  }
+#endif
   WS_DEBUG_PRINT("ERROR ");
   if (reboot) {
     WS_DEBUG_PRINT("[RESET]: ");
