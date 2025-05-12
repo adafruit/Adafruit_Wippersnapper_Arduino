@@ -437,6 +437,7 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x4D, {"pct2075"}},
         {0x4E, {"pct2075"}},
         {0x4F, {"pct2075"}},
+        {0x51, {"vcnl4200"}},
         {0x52, {"ens160"}},
         {0x53, {"ens160", "ltr390"}},
         {0x59, {"sgp40"}},
