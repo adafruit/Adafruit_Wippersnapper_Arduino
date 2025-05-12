@@ -1028,6 +1028,15 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
   _i2c_bus_default->SelectMuxChannel(mux_channel);
 }
 
+void I2cController::PrintAllDrivers() {
+  WS_DEBUG_PRINTLN("[i2c] Printing all drivers...");
+  for (auto *drv : _i2c_drivers) {
+    if (drv == nullptr)
+      continue; // skip null drivers
+    drv->printSensorInfo();
+  }
+}
+
 /***********************************************************************/
 /*!
     @brief    Handles polling, reading, and logger for i2c devices

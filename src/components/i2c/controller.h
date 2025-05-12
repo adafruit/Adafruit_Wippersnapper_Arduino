@@ -117,6 +117,7 @@ public:
   bool
   IsDriverInitialized(wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor);
   TwoWire *GetI2cBus(bool is_alt_bus = false);
+  void PrintAllDrivers();
 
 private:
   I2cModel *_i2c_model;                ///< Pointer to an I2C model object
