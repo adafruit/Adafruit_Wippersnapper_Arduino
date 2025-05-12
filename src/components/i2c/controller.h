@@ -29,13 +29,16 @@
 #include "drivers/drvDps310.h"
 #include "drivers/drvDs2484.h"
 #include "drivers/drvEns160.h"
+#include "drivers/drvHdc302x.h"
 #include "drivers/drvHts221.h"
 #include "drivers/drvHtu21d.h"
 #include "drivers/drvHtu31d.h"
 #include "drivers/drvIna219.h"
+#include "drivers/drvIna260.h"
 #include "drivers/drvLc709203f.h"
 #include "drivers/drvLps22hb.h"
 #include "drivers/drvLps25hb.h"
+#include "drivers/drvLps28dfw.h"
 #include "drivers/drvLps3xhw.h"
 #include "drivers/drvLtr329_Ltr303.h"
 #include "drivers/drvLtr390.h"
@@ -51,6 +54,7 @@
 #include "drivers/drvScd30.h"
 #include "drivers/drvScd4x.h"
 #include "drivers/drvSen5x.h"
+#include "drivers/drvSen6x.h"
 #include "drivers/drvSgp30.h"
 #include "drivers/drvSgp40.h"
 #include "drivers/drvSht3x.h"
@@ -68,6 +72,7 @@
 #include "drivers/drvVl6180x.h"
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
+#include "drivers/drvVncl4200.h"
 
 #define SCAN_DEVICE                                                            \
   "UNKNOWN_SCAN" ///< Name for I2C devices found by an i2c scan
