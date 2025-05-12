@@ -103,11 +103,25 @@ public:
 
   /*!
       @brief    Writes a message to the LCD.
-      @param    message
-                The message to be displayed.
+      @param    write_char_lcd
+                Pointer to a wippersnapper_i2c_output_CharLCDWrite message.
   */
-  virtual void WriteMessageCharLCD(const char *message) override {
-    // noop
+  bool
+  WriteMessageCharLCD(wippersnapper_i2c_output_CharLCDWrite *write_char_lcd) {
+    switch (write_char_lcd->which_message) {
+    case wippersnapper_i2c_output_CharLCDWrite_text_tag:
+      WriteMessage(write_char_lcd->message.text);
+      break;
+    case wippersnapper_i2c_output_CharLCDWrite_number_int_tag:
+      // WriteValue(write_char_lcd->message.number_int);
+      break;
+    case wippersnapper_i2c_output_CharLCDWrite_number_float_tag:
+      // WriteValue(write_char_lcd->message.number_float);
+      break;
+    default:
+      return false;
+    }
+    return true;
   }
 
   /*!

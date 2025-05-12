@@ -826,15 +826,20 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
   }
 
   // Determine which driver cb function to use
-  if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_led_backpack_write) {
-    if (!driver->LedBackpackWrite(
-            &_i2c_model->GetI2cDeviceOutputWriteMsg()->led_backpack_write)) {
+  if (_i2c_model->GetI2cDeviceOutputWriteMsg()->which_output_msg ==
+      wippersnapper_i2c_I2cDeviceOutputWrite_write_led_backpack_tag) {
+    if (!driver->LedBackpackWrite(&_i2c_model->GetI2cDeviceOutputWriteMsg()
+                                       ->output_msg.write_led_backpack)) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to LED backpack!");
       return false;
     }
-  } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->has_char_lcd_write) {
-    WS_DEBUG_PRINTLN("[i2c] Char LCD write not implemented yet!");
-    // TODO!
+  } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->which_output_msg ==
+             wippersnapper_i2c_I2cDeviceOutputWrite_write_char_lcd_tag) {
+    if (!driver->WriteMessageCharLCD(&_i2c_model->GetI2cDeviceOutputWriteMsg()
+                                          ->output_msg.write_char_lcd)) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to char LCD!");
+      return false;
+    }
   } else {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
     return false;

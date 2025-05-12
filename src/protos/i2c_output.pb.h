@@ -77,7 +77,7 @@ typedef struct _wippersnapper_i2c_output_LedBackpackWrite {
 typedef struct _wippersnapper_i2c_output_CharLCDWrite {
     pb_size_t which_message;
     union {
-        char text[20]; /* * Text to write to the character LCD. * */
+        char text[100]; /* * Text to write to the character LCD. * */
         int32_t number_int; /* * Number to write to the character LCD. * */
         float number_float; /* * Float to write to the character LCD. * */
     } message;
