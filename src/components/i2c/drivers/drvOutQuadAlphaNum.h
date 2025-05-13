@@ -136,7 +136,8 @@ public:
     // Write to the display's buffer
     int cur_idx = pos_start;
     for (size_t i = 0; i < len_display; i++) {
-      // Save the character because if there's a decimal, we need to skip it in the buffer
+      // Save the character because if there's a decimal, we need to skip it in
+      // the buffer
       char ch = message[i];
 
       // Look-ahead for a decimal point to attach to the current character
@@ -162,7 +163,7 @@ public:
       displayed.
   */
   void WriteValue(float value) {
-    char message[8+1];
+    char message[8 + 1];
     snprintf(message, sizeof(message), "%.5f", value);
     WriteMessage(message);
   }
@@ -184,8 +185,9 @@ protected:
       nullptr;         ///< ptr to a 4-digit alphanumeric display object
   int32_t _brightness; ///< Brightness of the LED backpack, from 0 (off) to 15
                        ///< (full brightness)
-  uint32_t _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the message
-                                    ///< displayed
+  uint32_t _alignment =
+      LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the
+                                      ///< message displayed
 };
 
 #endif // DRV_OUT_QUAD_ALPHANUM_H
