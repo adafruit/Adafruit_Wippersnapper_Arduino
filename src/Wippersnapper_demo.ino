@@ -9,7 +9,14 @@
 // All text above must be included in any redistribution.
 
 #include "ws_adapters.h"
+#if defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                  \
+    defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350)
+ws_adapter_offline wipper;
+#else
 ws_adapter_wifi wipper;
+#endif
 
 #define WS_DEBUG // Enable debug output!
 

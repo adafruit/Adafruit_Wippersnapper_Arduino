@@ -7,6 +7,9 @@ on:
       branches:
         - offline-mode
         - offline-mode-*
+    pull_request:
+      branches:
+          - offline-mode
     release:
       types: [published]
       branches:

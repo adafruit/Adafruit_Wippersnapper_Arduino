@@ -1,36 +1,36 @@
 /*!
- * @file drvLps3xhw.h
+ * @file drvHtu31d.h
  *
- * Device driver for a LPS3XHW precision pressure sensor breakout.
+ * Device driver for the HTU31D humidity and temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Tyeth Gundry 2023 for Adafruit Industries.
+ * Copyright (c) 2025 Tyeth Gundry for Adafruit Industries
  *
  * MIT license, all text here must be included in any redistribution.
  *
  */
 
-#ifndef DRV_LPS3XHW_H
-#define DRV_LPS3XHW_H
+#ifndef DRV_HTU31D_H
+#define DRV_HTU31D_H
 
 #include "drvBase.h"
-#include <Adafruit_LPS35HW.h>
+#include <Adafruit_HTU31D.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the LPS3XHW temperature
-            and pressure sensor.
+    @brief  Class that provides a sensor driver for the HTU31D humidity and
+            temperature sensor.
 */
 /**************************************************************************/
-class drvLps3xhw : public drvBase {
+class drvHtu31d : public drvBase {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an LPS3XHW sensor.
+      @brief    Constructor for an HTU31D sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -41,41 +41,35 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvLps3xhw(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-             const char *driver_name)
+  drvHtu31d(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an LPS3XHW sensor.
+      @brief    Destructor for an HTU31D sensor.
   */
   /*******************************************************************************/
-  ~drvLps3xhw() { delete _lps3xhw; }
+  ~drvHtu31d() { delete _htu31d; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the LPS3XHW sensor and begins I2C.
+      @brief    Initializes the HTU31D sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
+
   */
   /*******************************************************************************/
-  bool begin() override {
-    _lps3xhw = new Adafruit_LPS35HW();
-    // attempt to initialize LPS3XHW
-    if (!_lps3xhw->begin_I2C(_address, _i2c))
-      return false;
-
-    // Set up sample rate and filter initialization
-    _lps3xhw->setDataRate(LPS35HW_RATE_ONE_SHOT);
-    _lps3xhw->enableLowPass();
-
-    return true;
+  bool begin() {
+    // attempt to initialize the HTU31D using the I2C interface
+    _htu31d = new Adafruit_HTU31D();
+    return _htu31d->begin(_address, _i2c);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the LPS3XHW's current temperature.
+      @brief    Gets the HTU31D's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -83,25 +77,20 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    _lps3xhw->takeMeasurement();
-    tempEvent->temperature = _lps3xhw->readTemperature();
-    return true;
+    return _htu31d->getEvent(nullptr, tempEvent);
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Reads a pressure sensor and converts
-                the reading into the expected SI unit.
-      @param    pressureEvent
+      @brief    Gets the HTU31D's current humidity.
+      @param    humidEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the sensor event was obtained successfully, False
+      @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventPressure(sensors_event_t *pressureEvent) {
-    _lps3xhw->takeMeasurement();
-    pressureEvent->pressure = _lps3xhw->readPressure();
-    return true;
+  bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
+    return _htu31d->getEvent(humidEvent, nullptr);
   }
 
   void ConfigureDefaultSensorTypes() override {
@@ -111,11 +100,10 @@ public:
     _default_sensor_types[1] =
         wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
     _default_sensor_types[2] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_PRESSURE;
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
   }
 
 protected:
-  Adafruit_LPS35HW *_lps3xhw; ///< LPS3XHW  object
+  Adafruit_HTU31D *_htu31d; ///< Pointer to an HTU31D object
 };
-
-#endif // drvLps3xhw
+#endif // DRV_HTU31D_H

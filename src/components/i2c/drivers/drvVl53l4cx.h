@@ -206,7 +206,7 @@ public:
     _default_sensor_types_count = 2;
     _default_sensor_types[0] =
         wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY;
-    _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+    _default_sensor_types[1] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
   }
 
 protected:

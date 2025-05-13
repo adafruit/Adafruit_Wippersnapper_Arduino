@@ -58,7 +58,6 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
-Adafruit_USBD_CDC usb_cdc;    /*!< USB CDC object */
 static bool _fs_changed = false;
 static bool _did_init_msc = false;
 
@@ -108,7 +107,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   _fs_changed = false;
   _did_init_msc = false;
 
-  usb_cdc.begin(115200);
   // Re-enumerate to allow cdc class begin() to take effect
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
@@ -141,25 +139,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   if (!MakeDefaultFilesystem()) {
     setStatusLEDColor(RED);
     HaltFilesystem("FATAL ERROR: Could not write filesystem contents!");
-  }
-
-  // If we wrote a fresh secrets.json file, halt until user edits the file and
-  // RESETs the device Signal to user that action must be taken (edit
-  // secrets.json)
-  if (_is_secrets_file_empty) {
-    WriteFileBoot(
-        "Please edit the secrets.json file. Then, reset your board.\n");
-#ifdef USE_DISPLAY
-    WsV2._ui_helper->show_scr_error(
-        "INVALID SETTINGS FILE",
-        "The settings.json file on the WIPPER drive contains default values. "
-        "Please edit it to reflect your Adafruit IO and network credentials. "
-        "When you're done, press RESET on the board.");
-#endif
-    HaltFilesystem(
-        "The settings.json file on the WIPPER drive contains default "
-        "values\n. Using a text editor, edit it to reflect your Adafruit IO "
-        "and WiFi credentials. Then, reset the board.");
   }
 }
 
@@ -256,9 +235,7 @@ bool Wippersnapper_FS::MakeDefaultFilesystem() {
 
   // Check if secrets.json file already exists
   if (!GetFileSecrets()) {
-    // Create new secrets.json file and halt
     CreateFileSecrets();
-    _is_secrets_file_empty = true;
   }
 
   CreateFileConfig();
@@ -381,13 +358,12 @@ void Wippersnapper_FS::CreateFileConfig() {
     File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
     if (file_cfg) {
       DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
-      //  if (error)
-      //  HaltFilesystem("Error unable to parse config.json on WIPPER drive!");
-      // Remove config from the filesystem
+      if (error) {
+        // If we can't deserialize, just raise
+        HaltFilesystem(
+            "[fs] Error: Unable to deserialize config.json, is it corrupted?");
+      }
       file_cfg.close();
-      wipperFatFs_v2.remove("/config.json");
-      flash_v2.syncBlocks();
-
       // Check if the config.json file has the required keys
       if (!_doc_cfg.containsKey("exportedFromDevice")) {
         // Build exportedFromDevice object
@@ -404,8 +380,10 @@ void Wippersnapper_FS::CreateFileConfig() {
         // Build components array
         _doc_cfg["components"].to<JsonArray>();
       }
+
       return;
     }
+    file_cfg.close();
   }
 
   // Create a default configConfig structure in a new doc
@@ -472,6 +450,14 @@ void Wippersnapper_FS::AddI2cDeviceToFileConfig(
 */
 /**************************************************************************/
 bool Wippersnapper_FS::WriteFileConfig() {
+  // If it exists, remove the existing config.json file
+  // as we're about to write the new one into memory
+  if (wipperFatFs_v2.exists("/config.json")) {
+    wipperFatFs_v2.remove("/config.json");
+    flash_v2.syncBlocks();
+    delay(500);
+  }
+
   // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
@@ -488,6 +474,10 @@ bool Wippersnapper_FS::WriteFileConfig() {
   refreshMassStorage();
   delay(500);
   InitUsbMsc();
+  WS_PRINTER.flush();
+  delay(2500);
+  WS_PRINTER.println("Config file written to flash!"); // List current config / components and periods
+  WsV2._i2c_controller->PrintAllDrivers();
   return true;
 }
 
@@ -860,7 +850,6 @@ void qspi_msc_flush_cb_v2(void) {
   flash_v2.syncBlocks();
   // clear file system's cache to force refresh
   wipperFatFs_v2.cacheClear();
-  _fs_changed = true;
 }
 
 //--------------------------------------------------------------------+

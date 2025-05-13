@@ -123,10 +123,25 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
         const char *driver_name) -> drvBase * {
        return new drvHtu21d(i2c, addr, mux_channel, driver_name);
      }},
+    {"htu31d",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHtu31d(i2c, addr, mux_channel, driver_name);
+     }},
+    {"hdc302x",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHdc302x(i2c, addr, mux_channel, driver_name);
+     }},
     {"ina219",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvIna219(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina260",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna260(i2c, addr, mux_channel, driver_name);
      }},
     {"lc709203f",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -147,6 +162,11 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvLps25hb(i2c, addr, mux_channel, driver_name);
+     }},
+    {"lps28dfw",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvLps28dfw(i2c, addr, mux_channel, driver_name);
      }},
     {"ltr329",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -223,6 +243,11 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
         const char *driver_name) -> drvBase * {
        return new drvScd30(i2c, addr, mux_channel, driver_name);
      }},
+    {"sgp30",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSgp30(i2c, addr, mux_channel, driver_name);
+     }},
     {"sgp40",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -278,6 +303,36 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
         const char *driver_name) -> drvBase * {
        return new drvSen5x(i2c, addr, mux_channel, driver_name);
      }},
+    {"sen60",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sen63c",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sen65",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sen66",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sen68",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
+    {"sen6x",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvSen6x(i2c, addr, mux_channel, driver_name);
+     }},
     {"shtc3",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -317,6 +372,11 @@ static const std::map<std::string, FnCreateI2CDriver> I2cFactory = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvVncl4040(i2c, addr, mux_channel, driver_name);
+     }},
+    {"vncl4200",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvVncl4200(i2c, addr, mux_channel, driver_name);
      }},
     {"vl53l0x",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -365,10 +425,14 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x2A, {"nau7802"}},
         {0x38, {"aht20", "max17048"}},
         {0x39, {"tsl2591"}},
-        {0x40, {"htu21d", "ina219", "ms8607", "si7021", "stemma_soil"}},
-        {0x41, {"ina219"}},
-        {0x44, {"sht3x", "sht4x"}},
-        {0x45, {"sht3x"}},
+        {0x40,
+         {"htu21d", "htu31d", "ina219", "ina260", "ms8607", "si7021",
+          "stemma_soil"}},
+        {0x41, {"htu31d", "ina219", "ina260"}},
+        {0x44, {"hdc302x", "ina260", "sht3x", "sht4x"}},
+        {0x45, {"hdc302x", "ina260", "sht3x"}},
+        {0x46, {"hdc302x"}},
+        {0x47, {"hdc302x"}},
         {0x48, {"adt7410", "pct2075", "tmp117"}},
         {0x49, {"adt7410", "pct2075", "tmp117", "tsl2591"}},
         {0x4A, {"adt7410", "pct2075", "tmp117"}},
@@ -377,17 +441,21 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x4D, {"pct2075"}},
         {0x4E, {"pct2075"}},
         {0x4F, {"pct2075"}},
+        {0x51, {"vcnl4200"}},
         {0x52, {"ens160"}},
         {0x53, {"ens160", "ltr390"}},
+        {0x58, {"sgp30"}},
         {0x59, {"sgp40"}},
-        {0x5C, {"bh1750", "lps22hb", "lps25hb"}},
-        {0x5D, {"lps22hb", "lps25hb"}},
+        {0x5C,
+         {"bh1750", "lps22hb", "lps25hb", "lps28dfw", "lps33hw", "lps35hw"}},
+        {0x5D, {"lps22hb", "lps25hb", "lps28dfw", "lps33hw", "lps35hw"}},
         {0x5F, {"hts2221"}},
         {0x60, {"mpl115a2", "vncl4040"}},
         {0x61, {"scd30"}},
         {0x62, {"scd40"}},
         {0x68, {"mcp3421"}},
-        {0x69, {"sen50"}},
+        {0x69, {"sen55"}},
+        {0x6B, {"sen66"}},
         {0x70, {"pct2075", "shtc3"}},
         {0x71, {"pct2075"}},
         {0x72, {"pct2075"}},
@@ -862,11 +930,39 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 */
 /***********************************************************************/
 bool I2cController::ScanI2cBus(bool default_bus = true) {
-  _i2c_bus_default->InitBus(default_bus);
+  // zero-out the scan I2cBusScanned message before attempting a scan
   _scan_results = wippersnapper_i2c_I2cBusScanned_init_zero;
-  if (!default_bus)
+
+  // Scan the desired i2c bus
+  if (default_bus) {
+    if (_i2c_bus_default->GetBusStatus() !=
+        wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS) {
+      _i2c_bus_default->InitBus(default_bus);
+    }
+    return _i2c_bus_default->ScanBus(&_scan_results);
+  } else {
+    if (_i2c_bus_alt->GetBusStatus() !=
+        wippersnapper_i2c_I2cBusStatus_I2C_BUS_STATUS_SUCCESS) {
+      _i2c_bus_alt->InitBus(default_bus);
+    }
     return _i2c_bus_alt->ScanBus(&_scan_results);
-  return _i2c_bus_default->ScanBus(&_scan_results);
+  }
+}
+
+/***********************************************************************/
+/*!
+    @brief    Returns the I2C bus object.
+    @param    is_alt_bus
+                True if the alternative I2C bus is being used, False
+                otherwise.
+    @returns  A pointer to the I2C bus object.
+*/
+/***********************************************************************/
+TwoWire *I2cController::GetI2cBus(bool is_alt_bus) {
+  if (is_alt_bus) {
+    return _i2c_bus_alt->GetBus();
+  }
+  return _i2c_bus_default->GetBus();
 }
 
 /***********************************************************************/
@@ -932,6 +1028,13 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
   }
   _i2c_bus_default->ClearMuxChannel(); // sanity-check
   _i2c_bus_default->SelectMuxChannel(mux_channel);
+}
+
+void I2cController::PrintAllDrivers() {
+  WS_DEBUG_PRINTLN("[i2c] Printing all drivers...");
+  for (drvBase *drv : _i2c_drivers) {
+    drv->printSensorInfo();
+  }
 }
 
 /***********************************************************************/

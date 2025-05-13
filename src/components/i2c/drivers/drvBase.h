@@ -846,6 +846,31 @@ public:
     }
   }
 
+  void printSensorInfo() {
+    WS_DEBUG_PRINT("Sensor Name: ");
+    WS_DEBUG_PRINT(_name);
+    WS_DEBUG_PRINT("\tI2C Address: 0x");
+    WS_DEBUG_PRINT(_address, HEX);
+    if (_has_alt_i2c_bus) {
+      WS_DEBUG_PRINT("\tI2C Address (Alt Bus): 0x");
+      WS_DEBUG_PRINT(_address, HEX);
+    }
+    if (HasMux()) {
+      WS_DEBUG_PRINT("\tI2C MUX Address: 0x");
+      WS_DEBUG_PRINT(_i2c_mux_addr, HEX);
+      WS_DEBUG_PRINT("\tI2C MUX Channel: ");
+      WS_DEBUG_PRINT(_i2c_mux_channel);
+    }
+    WS_DEBUG_PRINT("\tSCL Pin: ");
+    WS_DEBUG_PRINT(_pin_scl);
+    WS_DEBUG_PRINT("\tSDA Pin: ");
+    WS_DEBUG_PRINT(_pin_sda);
+    WS_DEBUG_PRINT("\tSensor Period: ");
+    WS_DEBUG_PRINT(_sensor_period);
+    WS_DEBUG_PRINT("\tSensor Period remaining: ");
+    WS_DEBUG_PRINTLN(millis() - _sensor_period_prv);
+  }
+
 protected:
   TwoWire *_i2c;             ///< Pointer to the I2C bus
   bool _has_alt_i2c_bus;     ///< True if the device is on an alternate I2C bus

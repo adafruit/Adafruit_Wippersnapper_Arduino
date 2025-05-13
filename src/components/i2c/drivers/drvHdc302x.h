@@ -1,7 +1,7 @@
 /*!
- * @file drvHtu21d.h
+ * @file drvHdc302x.h
  *
- * Device driver for the HTU21D Humidity and Temperature sensor.
+ * Device driver for the HDC302X humidity and temperature sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,24 +13,24 @@
  *
  */
 
-#ifndef DRV_HTU21D_H
-#define DRV_HTU21D_H
+#ifndef DRV_HDC302X_H
+#define DRV_HDC302X_H
 
 #include "drvBase.h"
-#include <Adafruit_HTU21DF.h>
+#include <Adafruit_HDC302x.h>
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a sensor driver for the HTU21D humidity and
-            temperature sensor.
+    @brief  Class that provides a sensor driver for the HDC302X humidity and
+            temperature sensor. This implementation uses the 1 Hz data rate.
 */
 /**************************************************************************/
-class drvHtu21d : public drvBase {
+class drvHdc302x : public drvBase {
 
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for an HTU21D sensor.
+      @brief    Constructor for an HDC302X sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -41,35 +41,70 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvHtu21d(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-            const char *driver_name)
+  drvHdc302x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an HTU21D sensor.
+      @brief    Destructor for an HDC302X sensor.
   */
   /*******************************************************************************/
-  ~drvHtu21d() { delete _htu21d; }
+  ~drvHdc302x() { delete _hdc302x; }
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the HTU21D sensor and begins I2C.
+      @brief    Initializes the HDC302X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
 
   */
   /*******************************************************************************/
   bool begin() {
-    // attempt to initialize the HTU21D using the I2C interface
-    _htu21d = new Adafruit_HTU21DF();
-    return _htu21d->begin(_i2c);
+    // attempt to initialize the HDC302X using the I2C interface
+    _hdc302x = new Adafruit_HDC302x();
+    if (!_hdc302x->begin(_address, _i2c))
+      return false;
+
+    // set the HDC302X's data rate to 1 Hz lowest noise
+    _hdc302x->setAutoMode(EXIT_AUTO_MODE);
+    // discard first reading (It returned -45c for me once)
+    _hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
+                                              TRIGGERMODE_LP0);
+    return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the HTU21D's current temperature.
+      @brief    Reads the HDC302X's temperature and humidity data.
+      @returns  True if the data was read successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool ReadSensorData() {
+    uint16_t status = _hdc302x->readStatus();
+    if (status & 0x0010) {
+      WS_DEBUG_PRINTLN(F("Device Reset Detected"));
+      return false;
+    }
+
+    if (status & 0x0001) {
+      WS_DEBUG_PRINTLN(
+          F("Checksum Verification Fail (incorrect checksum received)"));
+      return false;
+    }
+
+    if (!_hdc302x->readTemperatureHumidityOnDemand(_temp, _humidity,
+                                                   TRIGGERMODE_LP0)) {
+      WS_DEBUG_PRINTLN(F("Failed to read temperature and humidity."));
+      return false;
+    }
+    return true;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the HDC302X's current temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the temperature was obtained successfully, False
@@ -77,13 +112,15 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _htu21d->readTemperature();
+    if (ReadSensorData() == false)
+      return false;
+    tempEvent->temperature = _temp;
     return true;
   }
 
   /*******************************************************************************/
   /*!
-      @brief    Gets the HTU21D's current humidity.
+      @brief    Gets the HDC302X's current humidity.
       @param    humidEvent
                 Pointer to an Adafruit_Sensor event.
       @returns  True if the humidity was obtained successfully, False
@@ -91,7 +128,9 @@ public:
   */
   /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
-    humidEvent->relative_humidity = _htu21d->readHumidity();
+    if (ReadSensorData() == false)
+      return false;
+    humidEvent->relative_humidity = _humidity;
     return true;
   }
 
@@ -101,11 +140,13 @@ public:
         wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
     _default_sensor_types[1] =
         wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
-    _default_sensor_types[1] =
+    _default_sensor_types[2] =
         wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
   }
 
 protected:
-  Adafruit_HTU21DF *_htu21d; ///< Pointer to an HTU21D object
+  Adafruit_HDC302x *_hdc302x; ///< Pointer to an HDC302X object
+  double _temp = 0.0;     ///< Holds data for the HDC302X's temperature sensor
+  double _humidity = 0.0; ///< Holds data for the HDC302X's humidity sensor
 };
-#endif // drvHtu21d
+#endif // DRV_HDC302X_H

@@ -1,7 +1,16 @@
 /*!
  * @file drvHts221.h
  *
- * Device driver for an HTS221 Humidity and Temperature sensor.
+ * Device driver for the HTS221 Humidity and Temperature sensor.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) 2025 Tyeth Gundry for Adafruit Industries
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
  */
 
 #ifndef DRV_HTS221_H

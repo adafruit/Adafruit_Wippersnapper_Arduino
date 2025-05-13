@@ -218,19 +218,19 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 32
-#define SD_CS_PIN 33
+#define SD_CS_PIN 17
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 #define BOARD_ID "rpi-pico"
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
-#define SD_CS_PIN 33
+#define SD_CS_PIN 17
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2)
 #define BOARD_ID "rpi-pico-2"
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
-#define SD_CS_PIN 33
+#define SD_CS_PIN 17
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER)
 #define BOARD_ID "feather-rp2040-adalogger"
 #define USE_TINYUSB
