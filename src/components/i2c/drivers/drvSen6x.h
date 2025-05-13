@@ -297,6 +297,26 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 8;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+    _default_sensor_types[2] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_RELATIVE_HUMIDITY;
+    _default_sensor_types[3] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD;
+    _default_sensor_types[4] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD;
+    _default_sensor_types[5] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD;
+    _default_sensor_types[6] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX;
+    _default_sensor_types[7] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_NOX_INDEX;
+  }
+
 protected:
   SensirionI2cSen66 *_sen = nullptr; ///< SEN6X driver object
   float _massConcentrationPm1p0;     ///< PM1.0 mass concentration

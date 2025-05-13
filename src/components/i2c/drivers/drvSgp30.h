@@ -97,6 +97,14 @@ public:
     return result;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 2;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_ECO2;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX;
+  }
+
 protected:
   Adafruit_SGP30 *_sgp30; ///< SGP30 driver object
 };
