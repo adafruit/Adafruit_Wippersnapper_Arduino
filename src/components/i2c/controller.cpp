@@ -1033,8 +1033,6 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
 void I2cController::PrintAllDrivers() {
   WS_DEBUG_PRINTLN("[i2c] Printing all drivers...");
   for (drvBase *drv : _i2c_drivers) {
-    if (drv == nullptr)
-      continue; // skip null drivers
     drv->printSensorInfo();
   }
 }

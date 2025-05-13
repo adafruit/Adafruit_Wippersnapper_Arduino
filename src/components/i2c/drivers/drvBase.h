@@ -868,7 +868,7 @@ public:
     WS_DEBUG_PRINT("\tSensor Period: ");
     WS_DEBUG_PRINT(_sensor_period);
     WS_DEBUG_PRINT("\tSensor Period remaining: ");
-    WS_DEBUG_PRINT(millis() - _sensor_period_prv);
+    WS_DEBUG_PRINTLN(millis() - _sensor_period_prv);
   }
 
 protected:
