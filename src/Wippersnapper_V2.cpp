@@ -96,15 +96,10 @@ void Wippersnapper_V2::provision() {
   if (WsV2._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()
   } else {
-    uint8_t cspin = WsV2.pin_sd_cs;
-    if (cspin == 255) {
-      // No CS pin found in config.json, so we've used the default
-      cspin = SD_CS_PIN;
-    }
     haltErrorV2("SD initialization failed.\nDo not reformat the card!\nIs the "
                 "card correctly inserted?\nIs there a wiring/soldering "
                 "problem\nIs the config.json file malformed?\nSD CS Pin: " +
-                String(cspin));
+                String(WsV2.pin_sd_cs));
   }
 
 #ifdef USE_DISPLAY

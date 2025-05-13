@@ -24,6 +24,7 @@
 */
 /**************************************************************************/
 bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
+  WsV2.pin_sd_cs = pin_cs;
 #ifdef SD_USE_SPI_1
   SdSpiConfig _sd_spi_cfg(pin_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1);
 #else
