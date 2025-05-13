@@ -58,7 +58,6 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
-// Adafruit_USBD_CDC usb_cdc;    /*!< USB CDC object */
 static bool _fs_changed = false;
 static bool _did_init_msc = false;
 
@@ -108,7 +107,6 @@ Wippersnapper_FS::Wippersnapper_FS() {
   _fs_changed = false;
   _did_init_msc = false;
 
-  // usb_cdc.begin(115200);
   // Re-enumerate to allow cdc class begin() to take effect
   if (TinyUSBDevice.mounted()) {
     TinyUSBDevice.detach();
@@ -852,7 +850,6 @@ void qspi_msc_flush_cb_v2(void) {
   flash_v2.syncBlocks();
   // clear file system's cache to force refresh
   wipperFatFs_v2.cacheClear();
-  // _fs_changed = true;
 }
 
 //--------------------------------------------------------------------+
