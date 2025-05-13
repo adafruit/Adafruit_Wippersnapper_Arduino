@@ -1,7 +1,16 @@
 /*!
  * @file drvHtu21d.h
  *
- * Device driver for an HTU21D Humidity and Temperature sensor.
+ * Device driver for the HTU21D Humidity and Temperature sensor.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) 2025 Tyeth Gundry for Adafruit Industries
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
  */
 
 #ifndef DRV_HTU21D_H

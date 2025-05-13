@@ -1,7 +1,16 @@
 /*!
  * @file drvHdc302x.h
  *
- * Device driver for an HDC302X Humidity and Temperature sensor.
+ * Device driver for the HDC302X humidity and temperature sensor.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) 2025 Tyeth Gundry for Adafruit Industries
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
  */
 
 #ifndef DRV_HDC302X_H
