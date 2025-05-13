@@ -25,11 +25,13 @@
 #include <Adafruit_LEDBackpack.h>
 #include <Arduino.h>
 
-#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0
-#define LED_BACKPACK_ALIGNMENT_LEFT 1
-#define LED_BACKPACK_ALIGNMENT_RIGHT 2
-#define LED_BACKPACK_ALIGNMENT_DEFAULT LED_BACKPACK_ALIGNMENT_LEFT
-#define LED_MAX_CHARS 4
+#define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0 ///< Unspecified alignment
+#define LED_BACKPACK_ALIGNMENT_LEFT 1        ///< Left alignment
+#define LED_BACKPACK_ALIGNMENT_RIGHT 2       ///< Right alignment
+#define LED_BACKPACK_ALIGNMENT_DEFAULT                                         \
+  LED_BACKPACK_ALIGNMENT_LEFT ///< Default alignment
+#define LED_MAX_CHARS                                                          \
+  4 ///< Maximum number of characters to display on the 7-segment display
 
 /*!
     @brief  Class that provides a driver for an Adafruit 7-Segment LED matrix

@@ -69,8 +69,12 @@ public:
   /*!
       @brief    Writes a message to the LCD.
       @note     MUST be called prior to begin() to configure the LCD's size
-      @param    message
-                The message to be displayed.
+      @param   rows
+                The number of rows in the LCD.
+      @param   cols
+              The number of columns in the LCD.
+      @param   enable_backlight
+              True if the backlight is enabled, False otherwise.
   */
   void ConfigureCharLcd(uint8_t rows, uint8_t cols, bool enable_backlight) {
     _rows = rows;

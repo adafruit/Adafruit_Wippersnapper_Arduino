@@ -50,7 +50,8 @@ public:
 
   /*!
       @brief    Initializes the I2C output device and begins I2C.
-      @returns  True if initialized successfully, False otherwise.
+      @param    message
+                The message to be displayed.
   */
   virtual void WriteMessage(const char *message) {
     // noop
@@ -105,6 +106,7 @@ public:
       @brief    Writes a message to the LCD.
       @param    write_char_lcd
                 Pointer to a wippersnapper_i2c_output_CharLCDWrite message.
+      @returns  True if the message was written successfully, False otherwise.
   */
   bool
   WriteMessageCharLCD(wippersnapper_i2c_output_CharLCDWrite *write_char_lcd) {
