@@ -1,7 +1,12 @@
 /*!
- * @file drvQuadAlphaNum.h
+ * @file drvOut7Seg.h
  *
- * Device driver for Quad Alphanumeric Displays w/I2C Backpack
+ * Device driver designed specifically to work with the Adafruit LED 7-Segment
+ * I2C backpacks:
+ * ----> http://www.adafruit.com/products/881
+ * ----> http://www.adafruit.com/products/880
+ * ----> http://www.adafruit.com/products/879
+ * ----> http://www.adafruit.com/products/878
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,8 +18,8 @@
  *
  */
 
-#ifndef DRV_OUT_QUAD_ALPHANUM_H
-#define DRV_OUT_QUAD_ALPHANUM_H
+#ifndef DRV_OUT_7SEG_H
+#define DRV_OUT_7SEG_H
 
 #include "drvOutputBase.h"
 #include <Adafruit_LEDBackpack.h>
@@ -27,13 +32,13 @@
 #define LED_MAX_CHARS 4
 
 /*!
-    @brief  Class that provides a driver interface for Quad Alphanumeric
-   Displays w/I2C Backpack
+    @brief  Class that provides a driver for an Adafruit 7-Segment LED matrix
+   w/I2C backpack.
 */
-class drvOutQuadAlphaNum : public drvOutputBase {
+class drvOut7Seg : public drvOutputBase {
 public:
   /*!
-      @brief    Constructor for a quad alphanumeric display..
+      @brief    Constructor for an Adafruit 7-Segment LED matrix w/I2C backpack.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -43,49 +48,52 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvOutQuadAlphaNum(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-                     const char *driver_name)
+  drvOut7Seg(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+             const char *driver_name)
       : drvOutputBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
   /*!
-      @brief    Destructor for a quad alphanumeric display.
+      @brief    Destructor for an Adafruit 7-Segment LED matrix w/I2C backpack.
   */
-  ~drvOutQuadAlphaNum() {
-    if (_alpha4) {
-      delete _alpha4;
-      _alpha4 = nullptr;
+  ~drvOut7Seg() {
+    if (_matrix) {
+      delete _matrix;
+      _matrix = nullptr;
     }
   }
 
   /*!
-      @brief    Initializes the drvOutQuadAlphaNum sensor and begins I2C.
+      @brief    Initializes the 7-segment LED matrix and begins I2C
+     communication.
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() override {
-    _alpha4 = new Adafruit_AlphaNum4();
-    bool did_begin = _alpha4->begin(_address, _i2c);
-    _alpha4->setBrightness(_brightness);
+    _matrix = new Adafruit_7segment();
+    bool did_begin = _matrix->begin(0x70, _i2c);
     return did_begin;
   }
 
   /*!
-    @brief    Configures a LED backpack.
+    @brief    Configures the LED matrix's I2C backpack.
     @param    brightness
-              The brightness of the LED backpack.
+              The brightness of the i2c backpack (0-15).
     @param    alignment
-              The alignment of the LED backpack.
+              The alignment of the i2c backpack's LED matrix (left/right).
 */
   void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) {
-    WS_DEBUG_PRINTLN("[i2c] drvOutQuadAlphaNum::ConfigureI2CBackpack() called");
     if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
       _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
     } else {
       _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
     }
-    _brightness = brightness;
-    WS_DEBUG_PRINTLN("[i2c] drvOutQuadAlphaNum::configured");
+
+    // Note: Adafruit_LEDBackpack normalizes only > 15, but not < 0,
+    // so, here we're normalizing < 0 to 8 (median brightness)
+    if (brightness < 0) {
+      brightness = 8; // Set to median brightness if out of range
+    }
   }
 
   /*!
@@ -94,24 +102,25 @@ public:
                   The brightness value, from 0 (off) to 15 (full brightness).
   */
   void SetLedBackpackBrightness(uint8_t b) {
-    if (_alpha4 == nullptr) {
+    if (_matrix == nullptr) {
       return;
     }
-    _alpha4->setBrightness(b);
+    _matrix->setBrightness(b);
   }
 
   /*!
-      @brief    Writes the first four characters of a message to the quad
-     alphanumeric display.
+      @brief    Writes the first four characters of a message to the Adafruit
+     7-segment LED matrix.
       @param    message
                   The message to be displayed.
   */
   void WriteMessage(const char *message) {
-    if (_alpha4 == nullptr || message == nullptr) {
+    if (_matrix == nullptr || message == nullptr) {
       return;
     }
+
     // Clear before writing
-    _alpha4->clear();
+    _matrix->clear();
 
     // Calculate the number of characters to display
     size_t len_display = min(strlen(message), (size_t)LED_MAX_CHARS);
@@ -136,7 +145,12 @@ public:
     // Write to the display's buffer
     int cur_idx = pos_start;
     for (size_t i = 0; i < len_display; i++) {
-      // Save the character because if there's a decimal, we need to skip it in the buffer
+      // skip position 2
+      if (cur_idx == 2) {
+        cur_idx++;
+      }
+      // Save the character because if there's a decimal, we need to skip it in
+      // the buffer
       char ch = message[i];
 
       // Look-ahead for a decimal point to attach to the current character
@@ -148,27 +162,28 @@ public:
       }
 
       // Write the character to the display buffer
-      _alpha4->writeDigitAscii(cur_idx, ch, display_dot);
+      _matrix->writeDigitAscii(cur_idx, ch, display_dot);
       cur_idx++;
     }
     // Issue the buffered data in RAM to the display
-    _alpha4->writeDisplay();
+    _matrix->writeDisplay();
   }
 
   /*!
-      @brief    Writes a floating point value to the quad alphanumeric display.
+      @brief    Writes a floating point value to the Adafruit 7-segment LED
+     matrix.
       @param    value
                   The value to be displayed. Only the first four digits are
       displayed.
   */
   void WriteValue(float value) {
-    char message[8+1];
+    char message[8 + 1];
     snprintf(message, sizeof(message), "%.5f", value);
     WriteMessage(message);
   }
 
   /*!
-      @brief    Writes an integer value to the quad alphanumeric display.
+      @brief    Writes an integer value to the Adafruit 7-segment LED matrix.
       @param    value
                   The value to be displayed. Only the first four digits are
       displayed.
@@ -180,12 +195,13 @@ public:
   }
 
 protected:
-  Adafruit_AlphaNum4 *_alpha4 =
-      nullptr;         ///< ptr to a 4-digit alphanumeric display object
+  Adafruit_7segment *_matrix =
+      nullptr;         ///< ptr to a 7-segment LED matrix object
   int32_t _brightness; ///< Brightness of the LED backpack, from 0 (off) to 15
                        ///< (full brightness)
-  uint32_t _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the message
-                                    ///< displayed
+  uint32_t _alignment =
+      LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the
+                                      ///< message displayed
 };
 
-#endif // DRV_OUT_QUAD_ALPHANUM_H
+#endif // DRV_OUT_7SEG_H

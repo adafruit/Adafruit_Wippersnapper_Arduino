@@ -83,7 +83,7 @@ public:
       @param    alignment
                 The alignment of the LED backpack.
   */
-  virtual void ConfigureLEDBackpack(int32_t brightness, uint32_t alignment) {
+  virtual void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) {
     // noop
   }
 
@@ -109,6 +109,9 @@ public:
   bool
   WriteMessageCharLCD(wippersnapper_i2c_output_CharLCDWrite *write_char_lcd) {
     WriteMessage(write_char_lcd->message);
+    // NOTE: While this isn't calling any other funcs in here and ret'ing true,
+    // I want to keep this function high-level for when we implement backlight
+    // color and scrolling.
     return true;
   }
 
@@ -137,15 +140,20 @@ public:
     // Write the message to a LED backpack
     switch (msg_backpack_write->which_message) {
     case wippersnapper_i2c_output_LedBackpackWrite_text_tag:
+      WS_DEBUG_PRINTLN("[i2c] Writing text to LED backpack...");
       WriteMessage(msg_backpack_write->message.text);
       break;
     case wippersnapper_i2c_output_LedBackpackWrite_number_int_tag:
+      WS_DEBUG_PRINTLN("[i2c] Writing int to LED backpack...");
       WriteValue(msg_backpack_write->message.number_int);
       break;
     case wippersnapper_i2c_output_LedBackpackWrite_number_float_tag:
+      WS_DEBUG_PRINTLN("[i2c] Writing float to LED backpack...");
       WriteValue(msg_backpack_write->message.number_float);
       break;
     default:
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine LED backpack "
+                       "message type!");
       return false;
       break;
     }
