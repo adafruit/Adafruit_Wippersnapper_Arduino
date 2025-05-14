@@ -92,43 +92,6 @@ public:
     // noop
   }
 
-
-  /*!
-      @brief    High-level fn, executes a call to the appropriate driver
-     function(s) based on the message data type to write.
-      @param    msg_backpack_write
-                Pointer to a wippersnapper_i2c_output_LedBackpackWrite message.
-      @returns  True if the message was written successfully, False otherwise.
-  */
-  bool LedBackpackWrite(
-      wippersnapper_i2c_output_LedBackpackWrite *msg_backpack_write) {
-    // Check if we should adjust brightness
-    if (msg_backpack_write->adjust_brightness)
-      SetLedBackpackBrightness((uint8_t)msg_backpack_write->brightness);
-
-    // Write the message to a LED backpack
-    switch (msg_backpack_write->which_message) {
-    case wippersnapper_i2c_output_LedBackpackWrite_text_tag:
-      WS_DEBUG_PRINTLN("[i2c] Writing text to LED backpack...");
-      WriteMessage(msg_backpack_write->message.text);
-      break;
-    case wippersnapper_i2c_output_LedBackpackWrite_number_int_tag:
-      WS_DEBUG_PRINTLN("[i2c] Writing int to LED backpack...");
-      WriteValue(msg_backpack_write->message.number_int);
-      break;
-    case wippersnapper_i2c_output_LedBackpackWrite_number_float_tag:
-      WS_DEBUG_PRINTLN("[i2c] Writing float to LED backpack...");
-      WriteValue(msg_backpack_write->message.number_float);
-      break;
-    default:
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine LED backpack "
-                       "message type!");
-      return false;
-      break;
-    }
-    return true;
-  }
-
 };
 
 #endif // WIPPERSNAPPER_I2C_DRIVER_OUT_H

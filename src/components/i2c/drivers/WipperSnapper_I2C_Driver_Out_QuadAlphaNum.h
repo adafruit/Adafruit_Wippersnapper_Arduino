@@ -46,7 +46,8 @@ public:
   */
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_Out_QuadAlphaNum(TwoWire *i2c, uint16_t sensorAddress) : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
-    // No-op constructor
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*!
@@ -63,9 +64,9 @@ public:
       @brief    Initializes the drvOutQuadAlphaNum component and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  bool begin() override {
+  bool begin() {
     _alpha4 = new Adafruit_AlphaNum4();
-    bool did_begin = _alpha4->begin(_address, _i2c);
+    bool did_begin = _alpha4->begin(_sensorAddress, _i2c);
     _alpha4->setBrightness(_brightness);
     return did_begin;
   }

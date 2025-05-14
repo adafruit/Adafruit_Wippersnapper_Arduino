@@ -840,16 +840,13 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("ADT7410 Initialized Successfully!");
   } else if (strcmp("quadalphanum", msgDeviceInitReq->i2c_device_name) == 0) {
     _quadAlphaNum = new WipperSnapper_I2C_Driver_Out_QuadAlphaNum(this->_i2c, i2cAddress);
-    // TODO: Need the I2C PB H updated to call the configure function
-    // _quadAlphaNum->ConfigureI2CBackpack()
-    // TODO: ^ Uncomment this! 
+    // _quadAlphaNum->ConfigureI2CBackpack(msgDeviceInitReq->i2c_output_add.config.led_backpack_config);
     if (!_quadAlphaNum->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize Quad Alphanum. Display!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
     }
-    //drivers.push_back(_adt7410);
     _drivers_out.push_back(_quadAlphaNum);
     WS_DEBUG_PRINTLN("Quad Alphanum. Display Initialized Successfully!");
   } else {
