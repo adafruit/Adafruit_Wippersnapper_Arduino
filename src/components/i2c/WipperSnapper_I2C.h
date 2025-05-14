@@ -20,6 +20,8 @@
 #include <Wire.h>
 
 #include "drivers/WipperSnapper_I2C_Driver.h"
+#include "drivers/WipperSnapper_I2C_Driver_Out.h"
+#include "drivers/WipperSnapper_I2C_Driver_Out_QuadAlphaNum.h"
 #include "drivers/WipperSnapper_I2C_Driver_ADT7410.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 #include "drivers/WipperSnapper_I2C_Driver_BH1750.h"
@@ -134,7 +136,8 @@ private:
   int32_t _portNum;
   TwoWire *_i2c = nullptr;
   wippersnapper_i2c_v1_BusResponse _busStatusResponse;
-  std::vector<WipperSnapper_I2C_Driver *> drivers; ///< List of sensor drivers
+  std::vector<WipperSnapper_I2C_Driver *> drivers; ///< List of i2c sensor drivers
+  std::vector<WipperSnapper_I2C_Driver_Out *> _drivers_out; ///< List of i2c output drivers
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
@@ -190,6 +193,7 @@ private:
   WipperSnapper_I2C_Driver_VL6180X *_vl6180x = nullptr;
   WipperSnapper_I2C_Driver_MAX17048 *_max17048 = nullptr;
   WipperSnapper_I2C_Driver_ADT7410 *_adt7410 = nullptr;
+  WipperSnapper_I2C_Driver_Out_QuadAlphaNum *_quadAlphaNum = nullptr;
 };
 extern Wippersnapper WS;
 
