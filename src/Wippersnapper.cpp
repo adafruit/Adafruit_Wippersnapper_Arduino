@@ -871,6 +871,21 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
     if (!encodeI2CResponse(&msgi2cResponse)) {
       return false;
     }
+  } else if (field->tag ==
+             wippersnapper_signal_v1_I2CRequest_req_i2c_device_out_write_tag) {
+    WS_DEBUG_PRINTLN("[app] I2C Device Output Write");
+    // Decode stream into an I2CDeviceDeinitRequest
+    wippersnapper_i2c_v1_I2CDeviceOutputWrite msgDeviceWrite =
+        wippersnapper_i2c_v1_I2CDeviceOutputWrite_init_zero;
+    // Decode stream into struct, msgI2CDeviceDeinitRequest
+    if (!ws_pb_decode(stream, wippersnapper_i2c_v1_I2CDeviceOutputWrite_fields,
+                      &msgDeviceWrite)) {
+      WS_DEBUG_PRINTLN(
+          "[app] ERROR: Failed decoding I2CDeviceOutputWrite message.");
+      return false;
+    }
+    WS._i2cPort0->Handle_I2cDeviceOutputWrite(&msgDeviceWrite);
+    WS_DEBUG_PRINTLN("[app] I2C Device Output Write Done");
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     return false; // fail out, we didn't encode anything to publish

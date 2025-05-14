@@ -20,8 +20,6 @@
 #include <Wire.h>
 
 #include "drivers/WipperSnapper_I2C_Driver.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out_QuadAlphaNum.h"
 #include "drivers/WipperSnapper_I2C_Driver_ADT7410.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
 #include "drivers/WipperSnapper_I2C_Driver_BH1750.h"
@@ -52,6 +50,8 @@
 #include "drivers/WipperSnapper_I2C_Driver_MPRLS.h"
 #include "drivers/WipperSnapper_I2C_Driver_MS8607.h"
 #include "drivers/WipperSnapper_I2C_Driver_NAU7802.h"
+#include "drivers/WipperSnapper_I2C_Driver_Out.h"
+#include "drivers/WipperSnapper_I2C_Driver_Out_QuadAlphaNum.h"
 #include "drivers/WipperSnapper_I2C_Driver_PCT2075.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
@@ -106,6 +106,9 @@ public:
 
   void update();
 
+  bool Handle_I2cDeviceOutputWrite(
+      wippersnapper_i2c_v1_I2CDeviceOutputWrite *msgDeviceWrite);
+
   void sensorEventRead(
       std::vector<WipperSnapper_I2C_Driver *>::iterator &iter,
       unsigned long curTime,
@@ -136,8 +139,10 @@ private:
   int32_t _portNum;
   TwoWire *_i2c = nullptr;
   wippersnapper_i2c_v1_BusResponse _busStatusResponse;
-  std::vector<WipperSnapper_I2C_Driver *> drivers; ///< List of i2c sensor drivers
-  std::vector<WipperSnapper_I2C_Driver_Out *> _drivers_out; ///< List of i2c output drivers
+  std::vector<WipperSnapper_I2C_Driver *>
+      drivers; ///< List of i2c sensor drivers
+  std::vector<WipperSnapper_I2C_Driver_Out *>
+      _drivers_out; ///< List of i2c output drivers
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;

@@ -32,7 +32,8 @@ public:
       @param    sensorAddress
                 The I2C sensor's unique address.
   */
-  WipperSnapper_I2C_Driver_Out(TwoWire *i2c, uint16_t sensorAddress):WipperSnapper_I2C_Driver(i2c, sensorAddress) {
+  WipperSnapper_I2C_Driver_Out(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     // No-op constructor
   }
 
@@ -43,11 +44,11 @@ public:
     // No-op destructor
   }
 
-    /*!
-      @brief    Writes a message to an i2c output device.
-      @param    message
-                The message to be displayed.
-  */
+  /*!
+    @brief    Writes a message to an i2c output device.
+    @param    message
+              The message to be displayed.
+*/
   virtual void WriteMessage(const char *message) {
     // noop
   }
@@ -92,6 +93,32 @@ public:
     // noop
   }
 
+  bool WriteLedBackpack(wippersnapper_i2c_v1_LedBackpackWrite *msg_write) {
+    // Check if we should adjust brightness
+    if (msg_write->adjust_brightness)
+      SetLedBackpackBrightness((uint8_t)msg_write->brightness);
+
+    // Write the message to a LED backpack
+    switch (msg_write->which_message) {
+    case wippersnapper_i2c_v1_LedBackpackWrite_text_tag:
+      WS_DEBUG_PRINTLN("[i2c] Writing text to LED backpack...");
+      WriteMessage(msg_write->message.text);
+      break;
+    case wippersnapper_i2c_v1_LedBackpackWrite_number_int_tag:
+      WS_DEBUG_PRINTLN("[i2c] Writing int to LED backpack...");
+      WriteValue(msg_write->message.number_int);
+      break;
+    case wippersnapper_i2c_v1_LedBackpackWrite_number_float_tag:
+      WS_DEBUG_PRINTLN("[i2c] Writing float to LED backpack...");
+      WriteValue(msg_write->message.number_float);
+      break;
+    default:
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine message type!");
+      return false;
+      break;
+    }
+    return true;
+  }
 };
 
 #endif // WIPPERSNAPPER_I2C_DRIVER_OUT_H

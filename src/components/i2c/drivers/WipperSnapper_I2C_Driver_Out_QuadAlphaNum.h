@@ -87,7 +87,97 @@ public:
     _brightness = brightness;
   }
 
+  /*!
+      @brief    Sets the brightness of the LED backpack.
+      @param    b
+                  The brightness value, from 0 (off) to 15 (full brightness).
+  */
+  void SetLedBackpackBrightness(uint8_t b) {
+    if (_alpha4 == nullptr) {
+      return;
+    }
+    _alpha4->setBrightness(b);
+  }
 
+  /*!
+      @brief    Writes the first four characters of a message to the quad
+     alphanumeric display.
+      @param    message
+                  The message to be displayed.
+  */
+  void WriteMessage(const char *message) {
+    if (_alpha4 == nullptr || message == nullptr) {
+      return;
+    }
+    // Clear before writing
+    _alpha4->clear();
+
+    // Calculate the number of characters to display
+    size_t len_display = min(strlen(message), (size_t)LED_MAX_CHARS);
+
+    // Set the starting position based on alignment
+    int pos_start;
+    if (_alignment == LED_BACKPACK_ALIGNMENT_LEFT) {
+      pos_start = 0; // start at the leftmost position of the display
+    } else {
+      // Exclude decimal points from the character count because those get
+      // displayed on a "special" segment of the LED display
+      int seg_chars = 0;
+      for (size_t i = 0; i < len_display; i++) {
+        if (message[i] != '.') {
+          seg_chars++;
+        }
+      }
+      // start at the rightmost position of the display
+      pos_start = LED_MAX_CHARS - seg_chars;
+    }
+
+    // Write to the display's buffer
+    int cur_idx = pos_start;
+    for (size_t i = 0; i < len_display; i++) {
+      // Save the character because if there's a decimal, we need to skip it in
+      // the buffer
+      char ch = message[i];
+
+      // Look-ahead for a decimal point to attach to the current character
+      bool display_dot = false;
+      if (i + 1 < len_display && message[i + 1] == '.') {
+        display_dot = true;
+        i++;
+        len_display++;
+      }
+
+      // Write the character to the display buffer
+      _alpha4->writeDigitAscii(cur_idx, ch, display_dot);
+      cur_idx++;
+    }
+    // Issue the buffered data in RAM to the display
+    _alpha4->writeDisplay();
+  }
+
+  /*!
+      @brief    Writes a floating point value to the quad alphanumeric display.
+      @param    value
+                  The value to be displayed. Only the first four digits are
+      displayed.
+  */
+  void WriteValue(float value) {
+    char message[8 + 1];
+    snprintf(message, sizeof(message), "%.5f", value);
+    WriteMessage(message);
+  }
+
+  /*!
+      @brief    Writes an integer value to the quad alphanumeric display.
+      @param    value
+                  The value to be displayed. Only the first four digits are
+      displayed.
+  */
+  void WriteValue(int32_t value) {
+    char message[LED_MAX_CHARS + 1];
+    snprintf(message, sizeof(message), "%ld", value);
+    WriteMessage(message);
+  }
 
 protected:
   Adafruit_AlphaNum4 *_alpha4 = nullptr;         ///< ptr to a 4-digit alphanumeric display object

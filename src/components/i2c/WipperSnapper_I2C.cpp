@@ -839,8 +839,11 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_adt7410);
     WS_DEBUG_PRINTLN("ADT7410 Initialized Successfully!");
   } else if (strcmp("quadalphanum", msgDeviceInitReq->i2c_device_name) == 0) {
-    _quadAlphaNum = new WipperSnapper_I2C_Driver_Out_QuadAlphaNum(this->_i2c, i2cAddress);
-    // _quadAlphaNum->ConfigureI2CBackpack(msgDeviceInitReq->i2c_output_add.config.led_backpack_config);
+    _quadAlphaNum =
+        new WipperSnapper_I2C_Driver_Out_QuadAlphaNum(this->_i2c, i2cAddress);
+    _quadAlphaNum->ConfigureI2CBackpack(
+        msgDeviceInitReq->i2c_output_add.config.led_backpack_config.brightness,
+        msgDeviceInitReq->i2c_output_add.config.led_backpack_config.alignment);
     if (!_quadAlphaNum->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize Quad Alphanum. Display!");
       _busStatusResponse =
@@ -1085,6 +1088,48 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
     WS._ui_helper->add_text_to_terminal(buffer);
 #endif
   }
+}
+
+/*******************************************************************************/
+/*!
+    @brief    Handles an I2CDeviceOutputWrite message.
+    @param    msgDeviceWrite
+              A decoded I2CDeviceOutputWrite message.
+    @returns  True if the message was handled successfully, false otherwise.
+*/
+/*******************************************************************************/
+bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
+    wippersnapper_i2c_v1_I2CDeviceOutputWrite *msgDeviceWrite) {
+
+  // Create a ptr to the base driver out
+  WipperSnapper_I2C_Driver_Out *driver_out = nullptr;
+  // Find the matching driver by address in the _drivers_out vector
+  WS_DEBUG_PRINT("Searching for i2c output driver with address: ");
+  WS_DEBUG_PRINT(msgDeviceWrite->i2c_device_address);
+  for (size_t i = 0; i < _drivers_out.size(); i++) {
+    if (_drivers_out[i]->getI2CAddress() ==
+        msgDeviceWrite->i2c_device_address) {
+      driver_out = _drivers_out[i];
+      break;
+    }
+  }
+  if (driver_out == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: Driver not found within drivers_out!");
+    return false;
+  }
+
+  // Call the output_msg
+  if (msgDeviceWrite->which_output_msg ==
+      wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_led_backpack_tag) {
+    driver_out->WriteLedBackpack(&msgDeviceWrite->output_msg.write_led_backpack);
+  } else if (msgDeviceWrite->which_output_msg ==
+             wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_char_lcd_tag) {
+    // TODO: Write to the char LCD
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unknown output message type!");
+    return false;
+  }
+  return true;
 }
 
 /*******************************************************************************/
