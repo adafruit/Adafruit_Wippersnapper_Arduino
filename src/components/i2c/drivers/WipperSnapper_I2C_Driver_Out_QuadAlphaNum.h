@@ -28,12 +28,12 @@
 #define LED_MAX_CHARS                                                          \
   4 ///< Maximum number of characters to display on the alphanumeric display
 
-
 /*!
     @brief  Class that provides a driver interface for Quad Alphanumeric
    Displays w/I2C Backpack
 */
-class WipperSnapper_I2C_Driver_Out_QuadAlphaNum : public WipperSnapper_I2C_Driver_Out {
+class WipperSnapper_I2C_Driver_Out_QuadAlphaNum
+    : public WipperSnapper_I2C_Driver_Out {
 
 public:
   /*******************************************************************************/
@@ -45,7 +45,9 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_Out_QuadAlphaNum(TwoWire *i2c, uint16_t sensorAddress) : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
+  WipperSnapper_I2C_Driver_Out_QuadAlphaNum(TwoWire *i2c,
+                                            uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
   }
@@ -53,12 +55,12 @@ public:
   /*!
       @brief    Destructor for an MS8607 sensor.
   */
-  ~WipperSnapper_I2C_Driver_Out_QuadAlphaNum() { 
+  ~WipperSnapper_I2C_Driver_Out_QuadAlphaNum() {
     if (_alpha4 != nullptr) {
       delete _alpha4;
       _alpha4 = nullptr;
     }
-   }
+  }
 
   /*!
       @brief    Initializes the drvOutQuadAlphaNum component and begins I2C.
@@ -180,10 +182,13 @@ public:
   }
 
 protected:
-  Adafruit_AlphaNum4 *_alpha4 = nullptr;         ///< ptr to a 4-digit alphanumeric display object
+  Adafruit_AlphaNum4 *_alpha4 =
+      nullptr;         ///< ptr to a 4-digit alphanumeric display object
   int32_t _brightness; ///< Brightness of the LED backpack, from 0 (off) to 15
                        ///< (full brightness)
-  uint32_t _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the message displayed
+  uint32_t _alignment =
+      LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the
+                                      ///< message displayed
 };
 
 #endif // WIPPERSNAPPER_I2C_DRIVER_OUT_QUADALPHANUM_H
