@@ -33,7 +33,6 @@
 #define LED_MAX_CHARS                                                          \
   4 ///< Maximum number of characters to display on the alphanumeric display
 
-
 /*!
     @brief  Class that provides a driver interface for 7-Segment
    Displays w/I2C Backpack
@@ -50,7 +49,8 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_Out_7Seg(TwoWire *i2c, uint16_t sensorAddress) : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
+  WipperSnapper_I2C_Driver_Out_7Seg(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
   }
@@ -58,12 +58,12 @@ public:
   /*!
       @brief    Destructor for a 7-Segment display driver.
   */
-  ~WipperSnapper_I2C_Driver_Out_7Seg() { 
+  ~WipperSnapper_I2C_Driver_Out_7Seg() {
     if (_matrix != nullptr) {
       delete _matrix;
       _matrix = nullptr;
     }
-   }
+  }
 
   /*!
       @brief    Initializes the 7-segment LED matrix and begins I2C
@@ -178,7 +178,8 @@ public:
   */
   void WriteValue(float value) {
     char message[8 + 1];
-    snprintf(message, sizeof(message), "%.2f", value);  // Less precision for 7-segment
+    snprintf(message, sizeof(message), "%.2f",
+             value); // Less precision for 7-segment
     WriteMessage(message);
   }
 
