@@ -865,6 +865,19 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_charLcd);
     WS_DEBUG_PRINTLN("Char LCD Display Initialized Successfully!");
+  } else if (strcmp("7seg", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sevenSeg = new WipperSnapper_I2C_Driver_Out_7Seg(this->_i2c, i2cAddress);
+    _sevenSeg->ConfigureCharLcd(
+        msgDeviceInitReq->i2c_output_add.config.char_lcd_config.rows,
+        msgDeviceInitReq->i2c_output_add.config.char_lcd_config.columns, true);
+    if (!_sevenSeg->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize 7-Segement LED Matrix!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _drivers_out.push_back(_sevenSeg);
+    WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =

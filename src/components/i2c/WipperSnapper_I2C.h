@@ -51,6 +51,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_MS8607.h"
 #include "drivers/WipperSnapper_I2C_Driver_NAU7802.h"
 #include "drivers/WipperSnapper_I2C_Driver_Out.h"
+#include "drivers/WipperSnapper_I2C_Driver_Out_7Seg.h"
 #include "drivers/WipperSnapper_I2C_Driver_Out_CharLcd.h"
 #include "drivers/WipperSnapper_I2C_Driver_Out_QuadAlphaNum.h"
 #include "drivers/WipperSnapper_I2C_Driver_PCT2075.h"
@@ -201,6 +202,7 @@ private:
   WipperSnapper_I2C_Driver_ADT7410 *_adt7410 = nullptr;
   WipperSnapper_I2C_Driver_Out_QuadAlphaNum *_quadAlphaNum = nullptr;
   WipperSnapper_I2C_Driver_Out_CharLcd *_charLcd = nullptr;
+  WipperSnapper_I2C_Driver_Out_7Seg *_sevenSeg = nullptr;
 };
 extern Wippersnapper WS;
 
