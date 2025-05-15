@@ -10,46 +10,78 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+/* Enum definitions */
+/* *
+ SerialConfig contains the configuration (data, parity, and stop bits) for a serial bus. */
+typedef enum _wippersnapper_uart_SerialConfig {
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_UNSPECIFIED = 0, /* Config was not specified by IO. */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8N1 = 1, /* 8 data bits, no parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_5N1 = 2, /* 5 data bits, no parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_6N1 = 3, /* 6 data bits, no parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_7N1 = 4, /* 7 data bits, no parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_5N2 = 5, /* 5 data bits, no parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_6N2 = 6, /* 6 data bits, no parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_7N2 = 7, /* 7 data bits, no parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8N2 = 8, /* 8 data bits, no parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_5E1 = 9, /* 5 data bits, even parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_6E1 = 10, /* 6 data bits, even parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_7E1 = 11, /* 7 data bits, even parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8E1 = 12, /* 8 data bits, even parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_5E2 = 13, /* 5 data bits, even parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_6E2 = 14, /* 6 data bits, even parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_7E2 = 15, /* 7 data bits, even parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8E2 = 16, /* 8 data bits, even parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_5O1 = 17, /* 5 data bits, odd parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_6O1 = 18, /* 6 data bits, odd parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_7O1 = 19, /* 7 data bits, odd parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8O1 = 20, /* 8 data bits, odd parity, 1 stop bit */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_5O2 = 21, /* 5 data bits, odd parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_6O2 = 22, /* 6 data bits, odd parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_7O2 = 23, /* 7 data bits, odd parity, 2 stop bits */
+    wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8O2 = 24 /* 8 data bits, odd parity, 2 stop bits */
+} wippersnapper_uart_SerialConfig;
+
 /* Struct definitions */
 /* *
  UARTBusData represents a message to configure a UART bus for communication with a device.
  NOTE: This message is never sent directly, it is packed inside UARTAdd. */
 typedef struct _wippersnapper_uart_UARTBusData {
-    int32_t baudrate; /* * The baudrate to use for UART communication (may be a common baud rate such as:
-1200bps, 2400bps, 4800bps, 19200bps, 38400bps, 57600bps, or 115200bps). */
-    char pin_rx[6]; /* * The pin on which to receive UART stream data. */
-    char pin_tx[6]; /* * The pin on which to transmit UART stream data. */
-    bool is_invert; /* * Inverts the UART signal on RX and TX pins. Defaults to False. */
+    pb_callback_t bus_id; /* * The ID of the Serial bus (i.e: Serial, Serial1, "SoftwareSerial"). */
+    uint32_t baud_rate; /* * The desired baudrate, in bits per second. */
+    wippersnapper_uart_SerialConfig config; /* * Configures the data, parity, and stop bits. */
+    pb_callback_t rx_pin; /* * Optional: The pin on which to receive on. */
+    pb_callback_t tx_pin; /* * Optional: The pin on which to transmit with. */
+    bool invert; /* * Optional: Inverts the UART signal on RX and TX pins. Defaults to False. */
+    float timeout; /* * Optional: The timeout, in milliseconds, for the UART bus. */
 } wippersnapper_uart_UARTBusData;
 
 /* *
  UARTAdd represents a message sent from IO to a device
- to configure the UART bus (if not already configured) and attach a device. */
+ to configure a UART bus for communication with a driver. */
 typedef struct _wippersnapper_uart_UARTAdd {
-    bool has_bus_info;
-    wippersnapper_uart_UARTBusData bus_info; /* * The UART bus configuration. */
-    pb_callback_t device_id; /* * The unique identifier of the device to attach to the UART bus, from Adafruit_WipperSnapper_Components. */
-    int32_t polling_interval; /* * The polling interval, in milliseconds, to use for the device. */
+    bool has_config;
+    wippersnapper_uart_UARTBusData config; /* * The UART bus configuration. */
+    pb_callback_t driver; /* * The unique identifier of the UART driver. */
 } wippersnapper_uart_UARTAdd;
 
 /* *
  UARTAdded represents a message sent from a device to IO to
  confirm that a device has been attached to the UART bus. */
 typedef struct _wippersnapper_uart_UARTAdded {
-    pb_callback_t device_id; /* * The unique identifier of the device to attach to the UART bus, from Adafruit_WipperSnapper_Components. */
-    bool is_success; /* * True if the UARTInit was successful, False otherwise. */
+    pb_callback_t driver; /* * The unique identifier of the UART driver. */
+    bool success; /* * True if the UART bus was successfully initialized, False otherwise. */
 } wippersnapper_uart_UARTAdded;
 
 /* UARTRemove represents a message sent from IO to a device
- to detach a device from the UART bus. */
+ to detach a driver from the UART bus and deinitialize the bus. */
 typedef struct _wippersnapper_uart_UARTRemove {
-    pb_callback_t device_id; /* * The unique identifier of the device to detach from the UART bus. */
+    pb_callback_t driver; /* * The unique identifier of the UART driver. */
 } wippersnapper_uart_UARTRemove;
 
 /* *
  UARTEvent represents incoming data from a UART sensor. */
 typedef struct _wippersnapper_uart_UARTEvent {
-    pb_callback_t device_id; /* * Unique identifier of the device to attach to the UART bus, from Adafruit_WipperSnapper_Components. */
+    pb_callback_t driver; /* * The unique identifier of the UART driver. */
     pb_callback_t sensor_events; /* * An optionally repeated event from a sensor. */
 } wippersnapper_uart_UARTEvent;
 
@@ -58,62 +90,78 @@ typedef struct _wippersnapper_uart_UARTEvent {
 extern "C" {
 #endif
 
+/* Helper constants for enums */
+#define _wippersnapper_uart_SerialConfig_MIN wippersnapper_uart_SerialConfig_SERIAL_CONFIG_UNSPECIFIED
+#define _wippersnapper_uart_SerialConfig_MAX wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8O2
+#define _wippersnapper_uart_SerialConfig_ARRAYSIZE ((wippersnapper_uart_SerialConfig)(wippersnapper_uart_SerialConfig_SERIAL_CONFIG_8O2+1))
+
+#define wippersnapper_uart_UARTBusData_config_ENUMTYPE wippersnapper_uart_SerialConfig
+
+
+
+
+
+
 /* Initializer values for message structs */
-#define wippersnapper_uart_UARTBusData_init_default {0, "", "", 0}
-#define wippersnapper_uart_UARTAdd_init_default  {false, wippersnapper_uart_UARTBusData_init_default, {{NULL}, NULL}, 0}
+#define wippersnapper_uart_UARTBusData_init_default {{{NULL}, NULL}, 0, _wippersnapper_uart_SerialConfig_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0}
+#define wippersnapper_uart_UARTAdd_init_default  {false, wippersnapper_uart_UARTBusData_init_default, {{NULL}, NULL}}
 #define wippersnapper_uart_UARTAdded_init_default {{{NULL}, NULL}, 0}
 #define wippersnapper_uart_UARTRemove_init_default {{{NULL}, NULL}}
 #define wippersnapper_uart_UARTEvent_init_default {{{NULL}, NULL}, {{NULL}, NULL}}
-#define wippersnapper_uart_UARTBusData_init_zero {0, "", "", 0}
-#define wippersnapper_uart_UARTAdd_init_zero     {false, wippersnapper_uart_UARTBusData_init_zero, {{NULL}, NULL}, 0}
+#define wippersnapper_uart_UARTBusData_init_zero {{{NULL}, NULL}, 0, _wippersnapper_uart_SerialConfig_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0}
+#define wippersnapper_uart_UARTAdd_init_zero     {false, wippersnapper_uart_UARTBusData_init_zero, {{NULL}, NULL}}
 #define wippersnapper_uart_UARTAdded_init_zero   {{{NULL}, NULL}, 0}
 #define wippersnapper_uart_UARTRemove_init_zero  {{{NULL}, NULL}}
 #define wippersnapper_uart_UARTEvent_init_zero   {{{NULL}, NULL}, {{NULL}, NULL}}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define wippersnapper_uart_UARTBusData_baudrate_tag 1
-#define wippersnapper_uart_UARTBusData_pin_rx_tag 2
-#define wippersnapper_uart_UARTBusData_pin_tx_tag 3
-#define wippersnapper_uart_UARTBusData_is_invert_tag 4
-#define wippersnapper_uart_UARTAdd_bus_info_tag  1
-#define wippersnapper_uart_UARTAdd_device_id_tag 2
-#define wippersnapper_uart_UARTAdd_polling_interval_tag 3
-#define wippersnapper_uart_UARTAdded_device_id_tag 1
-#define wippersnapper_uart_UARTAdded_is_success_tag 2
-#define wippersnapper_uart_UARTRemove_device_id_tag 1
-#define wippersnapper_uart_UARTEvent_device_id_tag 1
+#define wippersnapper_uart_UARTBusData_bus_id_tag 1
+#define wippersnapper_uart_UARTBusData_baud_rate_tag 2
+#define wippersnapper_uart_UARTBusData_config_tag 3
+#define wippersnapper_uart_UARTBusData_rx_pin_tag 4
+#define wippersnapper_uart_UARTBusData_tx_pin_tag 5
+#define wippersnapper_uart_UARTBusData_invert_tag 6
+#define wippersnapper_uart_UARTBusData_timeout_tag 7
+#define wippersnapper_uart_UARTAdd_config_tag    1
+#define wippersnapper_uart_UARTAdd_driver_tag    2
+#define wippersnapper_uart_UARTAdded_driver_tag  1
+#define wippersnapper_uart_UARTAdded_success_tag 2
+#define wippersnapper_uart_UARTRemove_driver_tag 1
+#define wippersnapper_uart_UARTEvent_driver_tag  1
 #define wippersnapper_uart_UARTEvent_sensor_events_tag 2
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_uart_UARTBusData_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, INT32,    baudrate,          1) \
-X(a, STATIC,   SINGULAR, STRING,   pin_rx,            2) \
-X(a, STATIC,   SINGULAR, STRING,   pin_tx,            3) \
-X(a, STATIC,   SINGULAR, BOOL,     is_invert,         4)
-#define wippersnapper_uart_UARTBusData_CALLBACK NULL
+X(a, CALLBACK, SINGULAR, STRING,   bus_id,            1) \
+X(a, STATIC,   SINGULAR, UINT32,   baud_rate,         2) \
+X(a, STATIC,   SINGULAR, UENUM,    config,            3) \
+X(a, CALLBACK, SINGULAR, STRING,   rx_pin,            4) \
+X(a, CALLBACK, SINGULAR, STRING,   tx_pin,            5) \
+X(a, STATIC,   SINGULAR, BOOL,     invert,            6) \
+X(a, STATIC,   SINGULAR, FLOAT,    timeout,           7)
+#define wippersnapper_uart_UARTBusData_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_UARTBusData_DEFAULT NULL
 
 #define wippersnapper_uart_UARTAdd_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  bus_info,          1) \
-X(a, CALLBACK, SINGULAR, STRING,   device_id,         2) \
-X(a, STATIC,   SINGULAR, INT32,    polling_interval,   3)
+X(a, STATIC,   OPTIONAL, MESSAGE,  config,            1) \
+X(a, CALLBACK, SINGULAR, STRING,   driver,            2)
 #define wippersnapper_uart_UARTAdd_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_UARTAdd_DEFAULT NULL
-#define wippersnapper_uart_UARTAdd_bus_info_MSGTYPE wippersnapper_uart_UARTBusData
+#define wippersnapper_uart_UARTAdd_config_MSGTYPE wippersnapper_uart_UARTBusData
 
 #define wippersnapper_uart_UARTAdded_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   device_id,         1) \
-X(a, STATIC,   SINGULAR, BOOL,     is_success,        2)
+X(a, CALLBACK, SINGULAR, STRING,   driver,            1) \
+X(a, STATIC,   SINGULAR, BOOL,     success,           2)
 #define wippersnapper_uart_UARTAdded_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_UARTAdded_DEFAULT NULL
 
 #define wippersnapper_uart_UARTRemove_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   device_id,         1)
+X(a, CALLBACK, SINGULAR, STRING,   driver,            1)
 #define wippersnapper_uart_UARTRemove_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_UARTRemove_DEFAULT NULL
 
 #define wippersnapper_uart_UARTEvent_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   device_id,         1) \
+X(a, CALLBACK, SINGULAR, STRING,   driver,            1) \
 X(a, CALLBACK, REPEATED, MESSAGE,  sensor_events,     2)
 #define wippersnapper_uart_UARTEvent_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_UARTEvent_DEFAULT NULL
@@ -133,12 +181,11 @@ extern const pb_msgdesc_t wippersnapper_uart_UARTEvent_msg;
 #define wippersnapper_uart_UARTEvent_fields &wippersnapper_uart_UARTEvent_msg
 
 /* Maximum encoded size of messages (where known) */
+/* wippersnapper_uart_UARTBusData_size depends on runtime parameters */
 /* wippersnapper_uart_UARTAdd_size depends on runtime parameters */
 /* wippersnapper_uart_UARTAdded_size depends on runtime parameters */
 /* wippersnapper_uart_UARTRemove_size depends on runtime parameters */
 /* wippersnapper_uart_UARTEvent_size depends on runtime parameters */
-#define WIPPERSNAPPER_UART_UART_PB_H_MAX_SIZE    wippersnapper_uart_UARTBusData_size
-#define wippersnapper_uart_UARTBusData_size      27
 
 #ifdef __cplusplus
 } /* extern "C" */

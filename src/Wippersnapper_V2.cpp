@@ -401,6 +401,12 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_i2c_device_output_write_tag:
+    WS_DEBUG_PRINTLN("-> I2C Device Output Write Message Type");
+    if (!WsV2._i2c_controller->Handle_I2cDeviceOutputWrite(stream)) {
+      return false;
+    }
+    break;
   case wippersnapper_signal_BrokerToDevice_pixels_add_tag:
     WS_DEBUG_PRINTLN("-> Pixels Add Message Type");
     if (!WsV2._pixels_controller->Handle_Pixels_Add(stream)) {
