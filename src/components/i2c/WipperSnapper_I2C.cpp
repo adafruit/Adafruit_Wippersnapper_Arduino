@@ -852,6 +852,19 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_quadAlphaNum);
     WS_DEBUG_PRINTLN("Quad Alphanum. Display Initialized Successfully!");
+  } else if (strcmp("charlcd", msgDeviceInitReq->i2c_device_name) == 0) {
+    _charLcd = new WipperSnapper_I2C_Driver_Out_CharLcd(this->_i2c, i2cAddress);
+    _charLcd->ConfigureCharLcd(
+        msgDeviceInitReq->i2c_output_add.config.char_lcd_config.rows,
+        msgDeviceInitReq->i2c_output_add.config.char_lcd_config.columns, true);
+    if (!_charLcd->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize Character LCD!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _drivers_out.push_back(_charLcd);
+    WS_DEBUG_PRINTLN("Char LCD Display Initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -900,8 +913,9 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
 void WipperSnapper_Component_I2C::deinitI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_device_address;
-  std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
 
+  // Check input (sensor) drivers
+  std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
   for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
     if ((*iter)->getI2CAddress() == deviceAddr) {
       // Delete the object that iter points to
@@ -920,7 +934,26 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
     }
   }
 
-  // TODO: Add an implementation for the drivers_out vector!
+  // Check for output drivers
+  std::vector<WipperSnapper_I2C_Driver_Out *>::iterator out_iter, out_end;
+  for (out_iter = _drivers_out.begin(), out_end = _drivers_out.end();
+       out_iter != out_end; ++out_iter) {
+    if ((*out_iter)->getI2CAddress() == deviceAddr) {
+      // Set the driver to nullptr
+      *out_iter = nullptr;
+// ESP-IDF, Erase–remove iter ptr from driver vector
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+      *out_iter = nullptr;
+      _drivers_out.erase(
+          remove(_drivers_out.begin(), _drivers_out.end(), nullptr),
+          _drivers_out.end());
+#else
+      // Arduino can not erase-remove, erase only
+      _drivers_out.erase(out_iter);
+#endif
+      WS_DEBUG_PRINTLN("I2C Device De-initialized!");
+    }
+  }
 
   _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 }
@@ -1121,10 +1154,11 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
   // Call the output_msg
   if (msgDeviceWrite->which_output_msg ==
       wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_led_backpack_tag) {
-    driver_out->WriteLedBackpack(&msgDeviceWrite->output_msg.write_led_backpack);
+    driver_out->WriteLedBackpack(
+        &msgDeviceWrite->output_msg.write_led_backpack);
   } else if (msgDeviceWrite->which_output_msg ==
              wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_char_lcd_tag) {
-    // TODO: Write to the char LCD
+    driver_out->WriteMessageCharLCD(&msgDeviceWrite->output_msg.write_char_lcd);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Unknown output message type!");
     return false;
@@ -1139,7 +1173,6 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
-
   // Create response message
   wippersnapper_signal_v1_I2CResponse msgi2cResponse =
       wippersnapper_signal_v1_I2CResponse_init_zero;

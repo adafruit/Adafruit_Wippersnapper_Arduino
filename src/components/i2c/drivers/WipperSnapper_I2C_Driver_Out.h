@@ -93,6 +93,12 @@ public:
     // noop
   }
 
+  /*!
+      @brief    Writes a message to the LED backpack.
+      @param    msg_write
+                Pointer to a wippersnapper_i2c_v1_LedBackpackWrite message.
+      @returns  True if the message was written successfully, False otherwise.
+  */
   bool WriteLedBackpack(wippersnapper_i2c_v1_LedBackpackWrite *msg_write) {
     // Check if we should adjust brightness
     if (msg_write->adjust_brightness)
@@ -117,6 +123,34 @@ public:
       return false;
       break;
     }
+    return true;
+  }
+
+  /*!
+      @brief    Configures a character LCD.
+      @param    rows
+                  The number of rows in the LCD.
+      @param    cols
+                  The number of columns in the LCD.
+      @param    enable_backlight
+                  True if the backlight is enabled, False otherwise.
+  */
+  virtual void ConfigureCharLcd(uint32_t rows, uint32_t cols,
+                                bool enable_backlight) {
+    // noop
+  }
+
+  /*!
+      @brief    Writes a message to the LCD.
+      @param    write_char_lcd
+                Points to a CharLCDWrite message.
+      @returns  True if the message was written successfully, False otherwise.
+  */
+  bool WriteMessageCharLCD(wippersnapper_i2c_v1_CharLCDWrite *write_char_lcd) {
+    WriteMessage(write_char_lcd->message);
+    // NOTE: While this isn't calling any other funcs in here and ret'ing true,
+    // I want to keep this function high-level for when we implement backlight
+    // color and scrolling.
     return true;
   }
 };
