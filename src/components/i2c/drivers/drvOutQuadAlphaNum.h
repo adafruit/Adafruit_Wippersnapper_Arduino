@@ -103,8 +103,7 @@ public:
   }
 
   /*!
-      @brief    Writes the first four characters of a message to the quad
-     alphanumeric display.
+      @brief    Writes a message to the quad alphanumeric display.
       @param    message
                   The message to be displayed.
   */
@@ -115,45 +114,52 @@ public:
     // Clear before writing
     _alpha4->clear();
 
-    // Calculate the number of characters to display
-    size_t len_display = min(strlen(message), (size_t)LED_MAX_CHARS);
+    // Calculate the total message length
+    size_t msg_len = strlen(message);
+
+    // Count all characters but excluding decimal points as they are part of the
+    // "segment"
+    int char_count = 0;
+    for (size_t i = 0; i < msg_len && char_count < LED_MAX_CHARS; i++) {
+      if (message[i] != '.') {
+        char_count++;
+      }
+    }
 
     // Set the starting position based on alignment
     int pos_start;
     if (_alignment == LED_BACKPACK_ALIGNMENT_LEFT) {
-      pos_start = 0; // start at the leftmost position of the display
+      pos_start = 0; // start at the leftmost position
     } else {
-      // Exclude decimal points from the character count because those get
-      // displayed on a "special" segment of the LED display
-      int seg_chars = 0;
-      for (size_t i = 0; i < len_display; i++) {
-        if (message[i] != '.') {
-          seg_chars++;
-        }
-      }
-      // start at the rightmost position of the display
-      pos_start = LED_MAX_CHARS - seg_chars;
+      pos_start = LED_MAX_CHARS - char_count; // start at the rightmost position
     }
 
     // Write to the display's buffer
     int cur_idx = pos_start;
-    for (size_t i = 0; i < len_display; i++) {
-      // Save the character because if there's a decimal, we need to skip it in
-      // the buffer
+    for (size_t i = 0; i < msg_len && cur_idx < LED_MAX_CHARS; i++) {
       char ch = message[i];
 
-      // Look-ahead for a decimal point to attach to the current character
-      bool display_dot = false;
-      if (i + 1 < len_display && message[i + 1] == '.') {
-        display_dot = true;
-        i++;
-        len_display++;
+      if (ch == '.') {
+        // If the previous character has already been processed (or we're at the
+        // start of the message), we need to show the decimal as a character
+        if (i == 0 || message[i - 1] == '.') {
+          _alpha4->writeDigitAscii(cur_idx, ch, false);
+          cur_idx++;
+        } else {
+          // Set decimal on an already written character
+          _alpha4->writeDigitAscii(cur_idx - 1, message[i - 1], true);
+        }
+        continue;
       }
+
+      // Perform a look-ahead for the decimal
+      bool display_dot = (i + 1 < msg_len && message[i + 1] == '.');
 
       // Write the character to the display buffer
       _alpha4->writeDigitAscii(cur_idx, ch, display_dot);
       cur_idx++;
     }
+
     // Issue the buffered data in RAM to the display
     _alpha4->writeDisplay();
   }
@@ -166,7 +172,7 @@ public:
   */
   void WriteValue(float value) {
     char message[8 + 1];
-    snprintf(message, sizeof(message), "%.5f", value);
+    snprintf(message, sizeof(message), "%.3f", value);
     WriteMessage(message);
   }
 

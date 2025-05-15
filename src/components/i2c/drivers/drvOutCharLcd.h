@@ -111,10 +111,12 @@ public:
       for (int cur_col = 0; cur_col < _cols && cur_idx < message_length;
            cur_col++) {
         char c = message[cur_idx];
-        if (c == '\\' && message[cur_idx + 1] == 'n') {
+        if (c == '\\' && cur_idx + 1 < message_length &&
+            message[cur_idx + 1] == 'n') {
           cur_idx += 2; // Skip the '\n' character in the buffer
           break;        // and move to the next row
-        } else if (c == 194 && message[cur_idx + 1] == 176) {
+        } else if (c == 194 && cur_idx + 1 < message_length &&
+                   message[cur_idx + 1] == 176) {
           cur_idx += 2;      // Skip the degree symbol sequence in the buffer
           _lcd->write(0xDF); // and write the degree symbol
         } else {
