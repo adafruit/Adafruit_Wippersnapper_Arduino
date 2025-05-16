@@ -77,14 +77,9 @@ public:
       @brief    Writes a message to the LED backpack.
       @param    msg_write
                 Pointer to a wippersnapper_i2c_v1_LedBackpackWrite message.
-      @returns  True if the message was written successfully, False otherwise.
   */
-  bool WriteLedBackpack(wippersnapper_i2c_v1_LedBackpackWrite *msg_write) {
-    if (msg_write->adjust_brightness)
-      SetLedBackpackBrightness((uint8_t)msg_write->brightness);
-
-    WriteMessage(msg_write->message.text);
-    return true;
+  void WriteLedBackpack(wippersnapper_i2c_v1_LedBackpackWrite *msg_write) {
+    WriteMessage(msg_write->message);
   }
 
   /*!
