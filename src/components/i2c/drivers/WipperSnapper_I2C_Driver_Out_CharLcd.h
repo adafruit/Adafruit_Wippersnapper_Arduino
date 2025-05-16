@@ -81,7 +81,7 @@ public:
     @param    enable
                 True to enable the backlight, false to disable it.
   */
-  void EnableCharLcdBacklight(bool enable=true) {
+  void EnableCharLcdBacklight(bool enable = true) {
     if (_lcd == nullptr)
       return;
 
