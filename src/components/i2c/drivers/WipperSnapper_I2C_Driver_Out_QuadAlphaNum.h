@@ -157,30 +157,6 @@ public:
     _alpha4->writeDisplay();
   }
 
-  /*!
-      @brief    Writes a floating point value to the quad alphanumeric display.
-      @param    value
-                  The value to be displayed. Only the first four digits are
-      displayed.
-  */
-  void WriteValue(float value) {
-    char message[8 + 1];
-    snprintf(message, sizeof(message), "%.5f", value);
-    WriteMessage(message);
-  }
-
-  /*!
-      @brief    Writes an integer value to the quad alphanumeric display.
-      @param    value
-                  The value to be displayed. Only the first four digits are
-      displayed.
-  */
-  void WriteValue(int32_t value) {
-    char message[LED_MAX_CHARS + 1];
-    snprintf(message, sizeof(message), "%ld", value);
-    WriteMessage(message);
-  }
-
 protected:
   Adafruit_AlphaNum4 *_alpha4 =
       nullptr;         ///< ptr to a 4-digit alphanumeric display object

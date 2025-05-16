@@ -54,26 +54,6 @@ public:
   }
 
   /*!
-      @brief    Writes a floating point value to an i2c output device.
-      @param    value
-                  The value to be displayed. Only the first four digits are
-     displayed.
-  */
-  virtual void WriteValue(float value) {
-    // noop
-  }
-
-  /*!
-      @brief    Writes a floating point value to an i2c output device.
-      @param    value
-                  The value to be displayed. Only the first four digits are
-     displayed.
-  */
-  virtual void WriteValue(int32_t value) {
-    // noop
-  }
-
-  /*!
       @brief    Configures a LED backpack.
       @param    brightness
                 The brightness of the LED backpack.
@@ -100,29 +80,10 @@ public:
       @returns  True if the message was written successfully, False otherwise.
   */
   bool WriteLedBackpack(wippersnapper_i2c_v1_LedBackpackWrite *msg_write) {
-    // Check if we should adjust brightness
     if (msg_write->adjust_brightness)
       SetLedBackpackBrightness((uint8_t)msg_write->brightness);
 
-    // Write the message to a LED backpack
-    switch (msg_write->which_message) {
-    case wippersnapper_i2c_v1_LedBackpackWrite_text_tag:
-      WS_DEBUG_PRINTLN("[i2c] Writing text to LED backpack...");
-      WriteMessage(msg_write->message.text);
-      break;
-    case wippersnapper_i2c_v1_LedBackpackWrite_number_int_tag:
-      WS_DEBUG_PRINTLN("[i2c] Writing int to LED backpack...");
-      WriteValue(msg_write->message.number_int);
-      break;
-    case wippersnapper_i2c_v1_LedBackpackWrite_number_float_tag:
-      WS_DEBUG_PRINTLN("[i2c] Writing float to LED backpack...");
-      WriteValue(msg_write->message.number_float);
-      break;
-    default:
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine message type!");
-      return false;
-      break;
-    }
+    WriteMessage(msg_write->message.text);
     return true;
   }
 
@@ -132,11 +93,17 @@ public:
                   The number of rows in the LCD.
       @param    cols
                   The number of columns in the LCD.
-      @param    enable_backlight
-                  True if the backlight is enabled, False otherwise.
   */
-  virtual void ConfigureCharLcd(uint32_t rows, uint32_t cols,
-                                bool enable_backlight) {
+  virtual void ConfigureCharLcd(uint32_t rows, uint32_t cols) {
+    // noop
+  }
+
+  /*!
+      @brief    Turns the character LCD backlight on or off.
+      @param    enable
+                  True to enable the backlight, false to disable it.
+  */
+  void EnableCharLcdBacklight(bool enable) {
     // noop
   }
 
@@ -144,14 +111,13 @@ public:
       @brief    Writes a message to the LCD.
       @param    write_char_lcd
                 Points to a CharLCDWrite message.
-      @returns  True if the message was written successfully, False otherwise.
+      @param    enable_backlight
+                True if the backlight should be enabled, false otherwise.
   */
-  bool WriteMessageCharLCD(wippersnapper_i2c_v1_CharLCDWrite *write_char_lcd) {
+  void WriteMessageCharLCD(wippersnapper_i2c_v1_CharLcdWrite *write_char_lcd,
+                           bool enable_backlight = true) {
+    EnableCharLcdBacklight(enable_backlight);
     WriteMessage(write_char_lcd->message);
-    // NOTE: While this isn't calling any other funcs in here and ret'ing true,
-    // I want to keep this function high-level for when we implement backlight
-    // color and scrolling.
-    return true;
   }
 };
 

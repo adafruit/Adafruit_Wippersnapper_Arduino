@@ -27,7 +27,6 @@ class WipperSnapper_I2C_Driver_Out_CharLcd
     : public WipperSnapper_I2C_Driver_Out {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a LCD character display.
       @param    i2c
@@ -35,7 +34,6 @@ public:
       @param    sensorAddress
                 7-bit device address.
   */
-  /*******************************************************************************/
   WipperSnapper_I2C_Driver_Out_CharLcd(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
@@ -59,7 +57,7 @@ public:
   bool begin() {
     _lcd = new Adafruit_LiquidCrystal(_sensorAddress, _i2c);
     bool did_begin = _lcd->begin(_cols, _rows);
-    if (did_begin && _enable_backlight) {
+    if (did_begin) {
       _lcd->setBacklight(HIGH);
     }
     return did_begin;
@@ -72,13 +70,26 @@ public:
                 The number of rows in the LCD.
       @param   cols
               The number of columns in the LCD.
-      @param   enable_backlight
-              True if the backlight is enabled, False otherwise.
   */
-  void ConfigureCharLcd(uint8_t rows, uint8_t cols, bool enable_backlight) {
+  void ConfigureCharLcd(uint8_t rows, uint8_t cols) {
     _rows = rows;
     _cols = cols;
-    _enable_backlight = enable_backlight;
+  }
+
+  /*!
+    @brief    Turns the character LCD backlight on or off.
+    @param    enable
+                True to enable the backlight, false to disable it.
+  */
+  void EnableCharLcdBacklight(bool enable) {
+    if (_lcd == nullptr)
+      return;
+
+    if (enable) {
+      _lcd->setBacklight(HIGH);
+    } else {
+      _lcd->setBacklight(LOW);
+    }
   }
 
   /*!
@@ -92,11 +103,6 @@ public:
 
     // Before writing, let's clear the display
     _lcd->clear();
-
-    // TODO: Remove all the prints!
-    // Print the message to the serial
-    Serial.print("Writing message to Char. LCD: ");
-    Serial.println(message);
 
     size_t message_length = strlen(message);
     size_t cur_idx = 0; // Current index in the message
@@ -128,10 +134,9 @@ public:
 
 protected:
   Adafruit_LiquidCrystal *_lcd =
-      nullptr;            ///< Pointer to the Adafruit_LiquidCrystal object
-  uint8_t _rows;          ///< Number of rows in the display
-  uint8_t _cols;          ///< Number of columns in the display
-  bool _enable_backlight; ///< Flag to enable/disable backlight
+      nullptr;   ///< Pointer to the Adafruit_LiquidCrystal object
+  uint8_t _rows; ///< Number of rows in the display
+  uint8_t _cols; ///< Number of columns in the display
 };
 
 #endif // WIPPERSNAPPER_I2C_DRIVER_OUT_CHARLCD_H
