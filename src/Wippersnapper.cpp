@@ -884,7 +884,12 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
           "[app] ERROR: Failed decoding I2CDeviceOutputWrite message.");
       return false;
     }
-    WS._i2cPort0->Handle_I2cDeviceOutputWrite(&msgDeviceWrite);
+
+    if (!WS._i2cPort0->Handle_I2cDeviceOutputWrite(&msgDeviceWrite)) {
+      WS_DEBUG_PRINTLN("[app] ERROR: Failed to write to I2C output device.");
+      return false; // fail out if we can't decode, we don't have a response to
+                    // publish
+    }
     WS_DEBUG_PRINTLN("[app] I2C Device Output Write Done");
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
