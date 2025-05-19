@@ -2834,7 +2834,7 @@ void Wippersnapper::connect() {
 #endif
 
   // Configure hardware
-  WS.pinCfgCompleted = false;
+  WS.pinCfgCompleted = true;
   while (!WS.pinCfgCompleted) {
     WS_DEBUG_PRINTLN(
         "Polling for message containing hardware configuration...");
@@ -2901,26 +2901,26 @@ ws_status_t Wippersnapper::run() {
   WS._mqtt->processPackets(10);
   WS.feedWDT();
 
-  // Process digital inputs, digitalGPIO module
+/*   // Process digital inputs, digitalGPIO module
   WS._digitalGPIO->processDigitalInputs();
   WS.feedWDT();
 
   // Process analog inputs
   WS._analogIO->update();
-  WS.feedWDT();
+  WS.feedWDT(); */
 
   // Process I2C sensor events
   if (WS._isI2CPort0Init)
     WS._i2cPort0->update();
   WS.feedWDT();
 
-  // Process DS18x20 sensor events
+/*   // Process DS18x20 sensor events
   WS._ds18x20Component->update();
   WS.feedWDT();
 
   // Process UART sensor events
   WS._uartComponent->update();
-  WS.feedWDT();
+  WS.feedWDT(); */
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

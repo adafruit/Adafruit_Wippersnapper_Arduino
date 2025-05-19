@@ -879,7 +879,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
   } else if (strcmp("ssd1306", msgDeviceInitReq->i2c_device_name) == 0) {
+    WS_DEBUG_PRINTLN("SSD1306 display detected!");
     _ssd1306 = new WipperSnapper_I2C_Driver_Out_Ssd1306(this->_i2c, i2cAddress);
+    WS_DEBUG_PRINTLN("Configuring SSD1306 display...");
     _ssd1306->ConfigureSSD1306(
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.width,
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
@@ -891,6 +893,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
     }
+    WS_DEBUG_PRINTLN("SSD1306 display configured successfully!");
     _drivers_out.push_back(_ssd1306);
     WS_DEBUG_PRINTLN("SSD1306 display initialized Successfully!");
   } else {
@@ -1190,6 +1193,7 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
     driver_out->WriteMessageCharLCD(&msgDeviceWrite->output_msg.write_char_lcd);
   } else if (msgDeviceWrite->which_output_msg ==
              wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_ssd1306_tag) {
+    WS_DEBUG_PRINTLN("Calling WriteMessageSSD1306..");
     driver_out->WriteMessageSSD1306(
         msgDeviceWrite->output_msg.write_ssd1306.message);
   } else {

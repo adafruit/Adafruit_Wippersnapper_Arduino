@@ -64,14 +64,16 @@ public:
   */
   bool begin() {
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
-    bool did_begin = _display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress);
+    bool did_begin = _display->begin(
+        SSD1306_SWITCHCAPVCC,
+        0x3C); // TODO: Note that this is hardcoded, not sure why not init'd yet
     if (!did_begin)
       return false;
 
     // Show initial display buffer contents on the screen --
     // the library initializes this with an Adafruit splash screen.
     _display->display();
-    delay(2000);
+    delay(1000);
     // Clear the buffer
     _display->clearDisplay();
     // Configure the text size and color
@@ -79,6 +81,7 @@ public:
     _display->setTextColor(SSD1306_WHITE);
     // Reset the cursor position
     _display->setCursor(0, 0);
+    _display->display();
     return true;
   }
 
@@ -107,18 +110,25 @@ public:
     if (_display == nullptr)
       return;
     _display->clearDisplay();
-    _display->setCursor(0, 0);
 
     // Calculate the line height based on the text size (NOTE: base height is
     // 8px)
     int16_t line_height = 8 * _text_sz;
+    WS_DEBUG_PRINT("Line height: ");
+    WS_DEBUG_PRINTLN(line_height);
 
     int16_t y_idx = 0;
+    _display->setCursor(0, y_idx);
     for (int i = 0; message[i] != '\0'; i++) {
       if (message[i] == '\n') {
+        WS_DEBUG_PRINTLN("New line detected!");
         y_idx += line_height;
         _display->setCursor(0, y_idx);
       } else {
+        WS_DEBUG_PRINT("Printing char: ");
+        WS_DEBUG_PRINT(message[i]);
+        WS_DEBUG_PRINT(" at y: ");
+        WS_DEBUG_PRINTLN(y_idx);
         _display->print(message[i]);
       }
     }
