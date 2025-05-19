@@ -102,7 +102,7 @@ public:
       @param    msg_write
                 Pointer to a wippersnapper_i2c_v1_LedBackpackWrite message.
   */
-  void WriteLedBackpack(wippersnapper_i2c_v1_LedBackpackWrite *msg_write) {
+  void WriteLedBackpack(wippersnapper_i2c_v1_LEDBackpackWrite *msg_write) {
     WriteMessage(msg_write->message);
   }
 
@@ -133,7 +133,7 @@ public:
       @param    enable_backlight
                 True if the backlight should be enabled, false otherwise.
   */
-  void WriteMessageCharLCD(wippersnapper_i2c_v1_CharLcdWrite *write_char_lcd,
+  void WriteMessageCharLCD(wippersnapper_i2c_v1_CharLCDWrite *write_char_lcd,
                            bool enable_backlight = true) {
     EnableCharLcdBacklight(enable_backlight);
     WriteMessage(write_char_lcd->message);
