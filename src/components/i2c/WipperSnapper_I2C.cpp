@@ -878,6 +878,21 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
+  } else if (strcmp("ssd1306", msgDeviceInitReq->i2c_device_name) == 0) {
+    _ssd1306 = new WipperSnapper_I2C_Driver_Out_Ssd1306(this->_i2c, i2cAddress);
+    _ssd1306->ConfigureSSD1306(
+        (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.width,
+        (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
+        (uint8_t)
+            msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size);
+    if (!_ssd1306->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize ssd1306!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _drivers_out.push_back(_ssd1306);
+    WS_DEBUG_PRINTLN("SSD1306 display initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -1150,6 +1165,7 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
   // Create a ptr to the base driver out
   WipperSnapper_I2C_Driver_Out *driver_out = nullptr;
   // Find the matching driver by address in the _drivers_out vector
+  // TODO: Refactor this outwards
   WS_DEBUG_PRINT("Searching for i2c output driver with address: ");
   WS_DEBUG_PRINT(msgDeviceWrite->i2c_device_address);
   for (size_t i = 0; i < _drivers_out.size(); i++) {
@@ -1172,6 +1188,10 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
   } else if (msgDeviceWrite->which_output_msg ==
              wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_char_lcd_tag) {
     driver_out->WriteMessageCharLCD(&msgDeviceWrite->output_msg.write_char_lcd);
+  } else if (msgDeviceWrite->which_output_msg ==
+             wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_ssd1306_tag) {
+    driver_out->WriteMessageSSD1306(
+        msgDeviceWrite->output_msg.write_ssd1306.message);
   } else {
     WS_DEBUG_PRINTLN("ERROR: Unknown output message type!");
     return false;

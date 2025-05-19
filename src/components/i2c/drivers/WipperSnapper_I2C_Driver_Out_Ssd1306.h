@@ -22,8 +22,6 @@
 
 #define DEFAULT_WIDTH 128
 #define DEFAULT_HEIGHT 64
-#define DEFAULT_ADDR 0x3C
-#define PIN_OLED_RESET -1
 
 /*!
     @brief  Class that provides a driver interface for a SSD1306
@@ -42,8 +40,7 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_Out_Ssd1306(TwoWire *i2c,
-                                       uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_Out_Ssd1306(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -66,9 +63,9 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() {
-    _display = new Adafruit_SSD1306(_width, _height, &_i2c, PIN_OLED_RESET);
-    bool did_begin = _display->begin(SSD1306_SWITCHCAPVCC, DEFAULT_ADDR);
-    if (! did_begin)
+    _display = new Adafruit_SSD1306(_width, _height, _i2c);
+    bool did_begin = _display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress);
+    if (!did_begin)
       return false;
 
     // Show initial display buffer contents on the screen --
@@ -77,14 +74,42 @@ public:
     delay(2000);
     // Clear the buffer
     _display->clearDisplay();
-    // Set the text size
-
+    // Configure the text size and color
+    _display->setTextSize(_text_sz);
+    _display->setTextColor(SSD1306_WHITE);
+    // Reset the cursor position
+    _display->setCursor(0, 0);
     return true;
   }
 
+  /*!
+      @brief    Configures a SSD1306 OLED display. Must be called before driver
+     begin()
+      @param    width
+                  The width of the display in pixels.
+      @param    height
+                  The height of the display in pixels.
+      @param    i2c_address
+                  The I2C address of the display.
+  */
+  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size) {
+    _width = width;
+    _height = height;
+    _text_sz = text_size;
+  }
+
+  /*!
+      @brief    Writes a message to the SSD1306 display.
+      @param    message
+                  The message to be displayed.
+  */
+  void WriteMessageSSD1306(const char *message) {
+    // noop
+  }
 
 protected:
-  Adafruit_SSD1306 *_display = nullptr; ///< Pointer to the Adafruit_SSD1306 object
+  Adafruit_SSD1306 *_display =
+      nullptr;                       ///< Pointer to the Adafruit_SSD1306 object
   uint8_t _width, _height, _text_sz; ///< Width and height of the display
 };
 

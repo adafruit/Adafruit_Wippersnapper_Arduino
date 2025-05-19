@@ -54,6 +54,30 @@ public:
   }
 
   /*!
+      @brief    Configures a SSD1306 OLED display. Must be called before driver
+     begin()
+      @param    width
+                  The width of the display in pixels.
+      @param    height
+                  The height of the display in pixels.
+      @param    i2c_address
+                  The I2C address of the display.
+  */
+  virtual void ConfigureSSD1306(uint8_t width, uint8_t height,
+                                uint8_t text_size) {
+    // noop
+  }
+
+  /*!
+      @brief    Writes a message to the SSD1306 display.
+      @param    message
+                  The message to be displayed.
+  */
+  virtual void WriteMessageSSD1306(const char *message) {
+    // noop
+  }
+
+  /*!
       @brief    Configures a LED backpack.
       @param    brightness
                 The brightness of the LED backpack.
