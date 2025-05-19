@@ -104,7 +104,25 @@ public:
                   The message to be displayed.
   */
   void WriteMessageSSD1306(const char *message) {
-    // noop
+    if (_display == nullptr)
+      return;
+    _display->clearDisplay();
+    _display->setCursor(0, 0);
+
+    // Calculate the line height based on the text size (NOTE: base height is
+    // 8px)
+    int16_t line_height = 8 * _text_sz;
+
+    int16_t y_idx = 0;
+    for (int i = 0; message[i] != '\0'; i++) {
+      if (message[i] == '\n') {
+        y_idx += line_height;
+        _display->setCursor(0, y_idx);
+      } else {
+        _display->print(message[i]);
+      }
+    }
+    _display->display();
   }
 
 protected:
