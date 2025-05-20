@@ -63,17 +63,17 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() {
+    WS_DEBUG_PRINT("New SSD1306 with height: ");
+    WS_DEBUG_PRINT(_height);
+    WS_DEBUG_PRINT(" width: ");
+    WS_DEBUG_PRINT(_width);
+    WS_DEBUG_PRINT(" text size: ");
+    WS_DEBUG_PRINT(_text_sz);
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
-    bool did_begin = _display->begin(
-        SSD1306_SWITCHCAPVCC,
-        0x3C); // TODO: Note that this is hardcoded, not sure why not init'd yet
+    // TODO: Use _sensorAddress instead of 0x3C hardcode!
+    bool did_begin = _display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
     if (!did_begin)
-      return false;
-
-    // Show initial display buffer contents on the screen --
-    // the library initializes this with an Adafruit splash screen.
-    _display->display();
-    delay(1000);
+        return false;
     // Clear the buffer
     _display->clearDisplay();
     // Configure the text size and color
@@ -82,7 +82,7 @@ public:
     // Reset the cursor position
     _display->setCursor(0, 0);
     _display->display();
-    return true;
+    return did_begin;
   }
 
   /*!
@@ -118,21 +118,27 @@ public:
     WS_DEBUG_PRINTLN(line_height);
 
     int16_t y_idx = 0;
+    uint16_t c_idx = 0;
     _display->setCursor(0, y_idx);
-    for (int i = 0; message[i] != '\0'; i++) {
-      if (message[i] == '\n') {
+    for (int i = 0; i < strlen(message); i++) {
+      char c = message[c_idx];
+      if (c == '\\' && message[c_idx + 1] == 'n') {
         WS_DEBUG_PRINTLN("New line detected!");
+        // Skip the '\n' character in the buffer
+        c_idx += 2;
+        // Move the cursor to the next line
         y_idx += line_height;
         _display->setCursor(0, y_idx);
       } else {
         WS_DEBUG_PRINT("Printing char: ");
-        WS_DEBUG_PRINT(message[i]);
+        WS_DEBUG_PRINT(message[c_idx]);
         WS_DEBUG_PRINT(" at y: ");
         WS_DEBUG_PRINTLN(y_idx);
-        _display->print(message[i]);
+        _display->print(message[c_idx]);
+        _display->display();
+        c_idx++;
       }
     }
-    _display->display();
   }
 
 protected:
