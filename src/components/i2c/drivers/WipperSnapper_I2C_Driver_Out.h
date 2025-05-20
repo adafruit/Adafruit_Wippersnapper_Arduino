@@ -60,8 +60,8 @@ public:
                   The width of the display in pixels.
       @param    height
                   The height of the display in pixels.
-      @param    i2c_address
-                  The I2C address of the display.
+      @param    text_size
+                  The display's text size.
   */
   virtual void ConfigureSSD1306(uint8_t width, uint8_t height,
                                 uint8_t text_size) {

@@ -85,8 +85,8 @@ public:
                   The width of the display in pixels.
       @param    height
                   The height of the display in pixels.
-      @param    i2c_address
-                  The I2C address of the display.
+      @param    text_size
+                  The magnification factor for the text size.
   */
   void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size) {
     _width = width;
@@ -133,8 +133,10 @@ public:
 
 protected:
   Adafruit_SSD1306 *_display =
-      nullptr;                       ///< Pointer to the Adafruit_SSD1306 object
-  uint8_t _width, _height, _text_sz; ///< Width and height of the display
+      nullptr;      ///< Pointer to the Adafruit_SSD1306 object
+  uint8_t _width;   ///< Width of the display in pixels
+  uint8_t _height;  ///< Height of the display in pixels
+  uint8_t _text_sz; ///< Text size of the display
 };
 
 #endif // WIPPERSNAPPER_I2C_DRIVER_OUT_SSD1306_H
