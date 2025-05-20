@@ -20,8 +20,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 
-#define DEFAULT_WIDTH 128
-#define DEFAULT_HEIGHT 64
+#define DEFAULT_WIDTH 128 ///< Default width for a ssd1306 128x64 display
+#define DEFAULT_HEIGHT 64 ///< Default height for a ssd1306 128x64 display
 
 /*!
     @brief  Class that provides a driver interface for a SSD1306
@@ -63,17 +63,10 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() {
-    WS_DEBUG_PRINT("New SSD1306 with height: ");
-    WS_DEBUG_PRINT(_height);
-    WS_DEBUG_PRINT(" width: ");
-    WS_DEBUG_PRINT(_width);
-    WS_DEBUG_PRINT(" text size: ");
-    WS_DEBUG_PRINT(_text_sz);
+    // Attempt to create and allocate a SSD1306 obj.
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
-    // TODO: Use _sensorAddress instead of 0x3C hardcode!
-    bool did_begin = _display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    if (!did_begin)
-        return false;
+    if (!_display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress))
+      return false;
     // Clear the buffer
     _display->clearDisplay();
     // Configure the text size and color
@@ -82,7 +75,7 @@ public:
     // Reset the cursor position
     _display->setCursor(0, 0);
     _display->display();
-    return did_begin;
+    return true;
   }
 
   /*!
@@ -109,34 +102,31 @@ public:
   void WriteMessageSSD1306(const char *message) {
     if (_display == nullptr)
       return;
+
+    // Start with a fresh display buffer
+    // and settings
+    int16_t y_idx = 0;
     _display->clearDisplay();
+    _display->setTextSize(_text_sz);
+    _display->setTextColor(SSD1306_WHITE);
+    _display->setCursor(0, y_idx);
+    _display->display();
 
     // Calculate the line height based on the text size (NOTE: base height is
     // 8px)
     int16_t line_height = 8 * _text_sz;
-    WS_DEBUG_PRINT("Line height: ");
-    WS_DEBUG_PRINTLN(line_height);
-
-    int16_t y_idx = 0;
     uint16_t c_idx = 0;
-    _display->setCursor(0, y_idx);
-    for (int i = 0; i < strlen(message); i++) {
-      char c = message[c_idx];
-      if (c == '\\' && message[c_idx + 1] == 'n') {
-        WS_DEBUG_PRINTLN("New line detected!");
-        // Skip the '\n' character in the buffer
-        c_idx += 2;
-        // Move the cursor to the next line
+    size_t msg_size = strlen(message);
+    for (size_t i = 0; i < msg_size && c_idx < msg_size; i++) {
+      if (message[i] == '\\' && i + 1 < msg_size && message[i + 1] == 'n') {
+        // detected a newline char sequence (\n)
+        i++;
+        // Skip to the next possible line
         y_idx += line_height;
         _display->setCursor(0, y_idx);
       } else {
-        WS_DEBUG_PRINT("Printing char: ");
-        WS_DEBUG_PRINT(message[c_idx]);
-        WS_DEBUG_PRINT(" at y: ");
-        WS_DEBUG_PRINTLN(y_idx);
-        _display->print(message[c_idx]);
+        _display->print(message[i]);
         _display->display();
-        c_idx++;
       }
     }
   }

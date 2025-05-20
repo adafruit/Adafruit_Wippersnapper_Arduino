@@ -1193,7 +1193,6 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
     driver_out->WriteMessageCharLCD(&msgDeviceWrite->output_msg.write_char_lcd);
   } else if (msgDeviceWrite->which_output_msg ==
              wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_ssd1306_tag) {
-    WS_DEBUG_PRINTLN("Calling WriteMessageSSD1306..");
     driver_out->WriteMessageSSD1306(
         msgDeviceWrite->output_msg.write_ssd1306.message);
   } else {
