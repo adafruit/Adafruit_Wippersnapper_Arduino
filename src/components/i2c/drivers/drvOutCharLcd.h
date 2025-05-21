@@ -83,6 +83,22 @@ public:
   }
 
   /*!
+       @brief    Enables or disables the backlight on a character LCD.
+       @param    enable_backlight
+                   True to enable the backlight, False to disable it.
+ */
+  void EnableBackLightCharLCD(bool enable_backlight) {
+    if (_lcd == nullptr)
+      return;
+    if (_enable_backlight) {
+      _lcd->setBacklight(HIGH);
+    } else {
+      _lcd->setBacklight(LOW);
+    }
+    _enable_backlight = enable_backlight;
+  }
+
+  /*!
       @brief    Writes a message to the LCD.
       @param    message
                 The message to be displayed.
@@ -93,11 +109,6 @@ public:
 
     // Before writing, let's clear the display
     _lcd->clear();
-
-    // TODO: Remove all the prints!
-    // Print the message to the serial
-    Serial.print("Writing message to Char. LCD: ");
-    Serial.println(message);
 
     size_t message_length = strlen(message);
     size_t cur_idx = 0; // Current index in the message
