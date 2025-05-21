@@ -133,6 +133,7 @@ typedef struct _wippersnapper_i2c_I2cDeviceOutputWrite {
     union {
         wippersnapper_i2c_output_LedBackpackWrite write_led_backpack; /* * Optional - If the I2C device is a LED backpack, fill this field. * */
         wippersnapper_i2c_output_CharLCDWrite write_char_lcd; /* * Optional - If the I2C device is a character LCD, fill this field. * */
+        wippersnapper_i2c_output_OLEDWrite write_oled; /* * Optional - If the I2C device is an OLED display, fill this field. * */
     } output_msg;
 } wippersnapper_i2c_I2cDeviceOutputWrite;
 
@@ -221,6 +222,7 @@ extern "C" {
 #define wippersnapper_i2c_I2cDeviceOutputWrite_i2c_device_description_tag 1
 #define wippersnapper_i2c_I2cDeviceOutputWrite_write_led_backpack_tag 2
 #define wippersnapper_i2c_I2cDeviceOutputWrite_write_char_lcd_tag 3
+#define wippersnapper_i2c_I2cDeviceOutputWrite_write_oled_tag 4
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_i2c_I2cDeviceDescriptor_FIELDLIST(X, a) \
@@ -301,12 +303,14 @@ X(a, STATIC,   REPEATED, MESSAGE,  i2c_device_events,   2)
 #define wippersnapper_i2c_I2cDeviceOutputWrite_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (output_msg,write_led_backpack,output_msg.write_led_backpack),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (output_msg,write_char_lcd,output_msg.write_char_lcd),   3)
+X(a, STATIC,   ONEOF,    MESSAGE,  (output_msg,write_char_lcd,output_msg.write_char_lcd),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (output_msg,write_oled,output_msg.write_oled),   4)
 #define wippersnapper_i2c_I2cDeviceOutputWrite_CALLBACK NULL
 #define wippersnapper_i2c_I2cDeviceOutputWrite_DEFAULT NULL
 #define wippersnapper_i2c_I2cDeviceOutputWrite_i2c_device_description_MSGTYPE wippersnapper_i2c_I2cDeviceDescriptor
 #define wippersnapper_i2c_I2cDeviceOutputWrite_output_msg_write_led_backpack_MSGTYPE wippersnapper_i2c_output_LedBackpackWrite
 #define wippersnapper_i2c_I2cDeviceOutputWrite_output_msg_write_char_lcd_MSGTYPE wippersnapper_i2c_output_CharLCDWrite
+#define wippersnapper_i2c_I2cDeviceOutputWrite_output_msg_write_oled_MSGTYPE wippersnapper_i2c_output_OLEDWrite
 
 extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceDescriptor_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_I2cBusDescriptor_msg;
@@ -339,7 +343,7 @@ extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceOutputWrite_msg;
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_size 125
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_size 56
 #define wippersnapper_i2c_I2cDeviceDescriptor_size 50
-#define wippersnapper_i2c_I2cDeviceOutputWrite_size 157
+#define wippersnapper_i2c_I2cDeviceOutputWrite_size 569
 #define wippersnapper_i2c_I2cDeviceRemove_size   54
 #define wippersnapper_i2c_I2cDeviceRemoved_size  54
 #if defined(wippersnapper_sensor_SensorEvent_size)

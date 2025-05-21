@@ -133,6 +133,28 @@ public:
     // noop
   }
 
-protected:
+  /*!
+      @brief    Configures a SSD1306 OLED display. Must be called before driver
+     begin()
+      @param    width
+                  The width of the display in pixels.
+      @param    height
+                  The height of the display in pixels.
+      @param    text_size
+                  The magnification factor for the text size.
+  */
+  virtual void ConfigureSSD1306(uint8_t width, uint8_t height,
+                                uint8_t text_size) {
+    // noop
+  }
+
+  /*!
+      @brief    Writes a message to the SSD1306 display.
+      @param    message
+                  The message to be displayed.
+  */
+  virtual void WriteMessageSSD1306(const char *message) {
+    // noop
+  }
 };
 #endif // DRV_OUTPUT_BASE_H

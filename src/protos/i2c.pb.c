@@ -33,7 +33,7 @@ PB_BIND(wippersnapper_i2c_I2cDeviceRemoved, wippersnapper_i2c_I2cDeviceRemoved, 
 PB_BIND(wippersnapper_i2c_I2cDeviceEvent, wippersnapper_i2c_I2cDeviceEvent, 2)
 
 
-PB_BIND(wippersnapper_i2c_I2cDeviceOutputWrite, wippersnapper_i2c_I2cDeviceOutputWrite, AUTO)
+PB_BIND(wippersnapper_i2c_I2cDeviceOutputWrite, wippersnapper_i2c_I2cDeviceOutputWrite, 2)
 
 
 

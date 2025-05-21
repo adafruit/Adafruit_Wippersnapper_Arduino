@@ -375,6 +375,11 @@ static const std::map<std::string, FnCreateI2cOutputDrv> I2cFactoryOutput = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvOutputBase * {
        return new drvOutCharLcd(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ssd1306",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvOutputBase * {
+       return new drvOutSsd1306(i2c, addr, mux_channel, driver_name);
      }}}; ///< I2C output driver factory
 
 /*!
@@ -844,6 +849,14 @@ bool I2cController::Handle_I2cDeviceOutputWrite(pb_istream_t *stream) {
       WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to write to char LCD!");
       return false;
     }
+  } else if (_i2c_model->GetI2cDeviceOutputWriteMsg()->which_output_msg ==
+             wippersnapper_i2c_I2cDeviceOutputWrite_write_oled_tag) {
+    WS_DEBUG_PRINTLN("[i2c] Writing to SSD1306 OLED...");
+    // Note: In the future, we can expand this to support other OLEDs by
+    // creating and checking a tag within the write oled msg (e.g. SSD1327,
+    // etc.)
+    driver->WriteMessageSSD1306(_i2c_model->GetI2cDeviceOutputWriteMsg()
+                                    ->output_msg.write_oled.message);
   } else {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to determine I2C Output Write type!");
     return false;
@@ -1036,6 +1049,15 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     } else if (config ==
                wippersnapper_i2c_output_I2cOutputAdd_char_lcd_config_tag) {
       WS_DEBUG_PRINTLN("[i2c] Configuring char LCD...");
+    } else if (config ==
+               wippersnapper_i2c_output_I2cOutputAdd_oled_config_tag) {
+      WS_DEBUG_PRINTLN("[i2c] Configuring OLED...");
+      wippersnapper_i2c_output_OledConfig cfg =
+          _i2c_model->GetI2cDeviceAddOrReplaceMsg()
+              ->i2c_output_add.config.oled_config;
+      WS_DEBUG_PRINT("[i2c] Got cfg, calling ConfigureOLED...");
+      drv_out->ConfigureSSD1306(cfg.width, cfg.height, cfg.font_size);
+      WS_DEBUG_PRINTLN("OK!");
     } else {
       WS_DEBUG_PRINTLN(
           "[i2c] ERROR: Unknown config specified for output driver!");
