@@ -1,7 +1,8 @@
 /*!
  * @file src/components/i2c/model.h
  *
- * Provides high-level interfaces for messages within i2c.proto.
+ * Provides high-level interfaces for messages within i2c.proto and
+ * i2c_output.proto.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -16,6 +17,7 @@
 #define WS_I2C_MODEL_H
 #include "Wippersnapper_V2.h"
 #include <Adafruit_Sensor.h>
+#include <protos/i2c_output.pb.h>
 #define MAX_DEVICE_EVENTS                                                      \
   15 ///< Maximum number of SensorEvents within I2cDeviceEvent
 #define MAX_I2C_SCAN_DEVICES 120 ///< Maximum number of devices found on the bus
@@ -34,6 +36,7 @@ public:
   bool DecodeI2cDeviceAddReplace(pb_istream_t *stream);
   bool DecodeI2cDeviceRemove(pb_istream_t *stream);
   bool DecodeI2cBusScan(pb_istream_t *stream);
+  bool DecodeI2cDeviceOutputWrite(pb_istream_t *stream);
   // Encoders
   bool encodeMsgI2cDeviceAddedorReplaced(
       wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description,
@@ -43,10 +46,12 @@ public:
   // Getters
   wippersnapper_i2c_I2cDeviceRemove *GetI2cDeviceRemoveMsg();
   wippersnapper_i2c_I2cDeviceAddOrReplace *GetI2cDeviceAddOrReplaceMsg();
+  wippersnapper_i2c_output_I2cOutputAdd *GetI2cOutputAddMsg();
   wippersnapper_i2c_I2cDeviceAddedOrReplaced *GetMsgI2cDeviceAddedOrReplaced();
   wippersnapper_i2c_I2cDeviceEvent *GetI2cDeviceEvent();
   wippersnapper_i2c_I2cBusScan *GetI2cBusScanMsg();
   wippersnapper_i2c_I2cBusScanned *GetI2cBusScannedMsg();
+  wippersnapper_i2c_I2cDeviceOutputWrite *GetI2cDeviceOutputWriteMsg();
   // I2cBusScanned Message API
   void ClearI2cBusScanned();
   bool AddDeviceToBusScan(const char *bus_scl, const char *bus_sda,
@@ -70,5 +75,28 @@ private:
   wippersnapper_i2c_I2cDeviceRemove _msg_i2c_device_remove;
   wippersnapper_i2c_I2cDeviceRemoved _msg_i2c_device_removed;
   wippersnapper_i2c_I2cDeviceEvent _msg_i2c_device_event;
+  wippersnapper_i2c_I2cDeviceOutputWrite _msg_i2c_device_output_write;
+};
+
+/**************************************************************************/
+/*!
+    @brief  Provides an interface for creating, encoding, and parsing
+            messages from i2c_output.proto.
+*/
+/**************************************************************************/
+class I2cOutputModel {
+public:
+  I2cOutputModel();
+  ~I2cOutputModel();
+  // Decoders
+  bool DecodeLedBackpackWrite(pb_istream_t *stream);
+  bool DecodeCharLCDWrite(pb_istream_t *stream);
+  // Getters
+  wippersnapper_i2c_output_LedBackpackWrite *GetLedBackpackWriteMsg();
+  wippersnapper_i2c_output_CharLCDWrite *GetCharLCDWriteMsg();
+
+private:
+  wippersnapper_i2c_output_LedBackpackWrite _msg_led_backpack_write;
+  wippersnapper_i2c_output_CharLCDWrite _msg_char_lcd_write;
 };
 #endif // WS_I2C_MODEL_H

@@ -10,6 +10,7 @@
 #include "ds18x20.pb.h"
 #include "error.pb.h"
 #include "i2c.pb.h"
+#include "i2c_output.pb.h"
 #include "pixels.pb.h"
 #include "pwm.pb.h"
 #include "servo.pb.h"
@@ -62,6 +63,7 @@ typedef struct _wippersnapper_signal_BrokerToDevice {
         wippersnapper_i2c_I2cBusScan i2c_bus_scan;
         wippersnapper_i2c_I2cDeviceAddOrReplace i2c_device_add_replace;
         wippersnapper_i2c_I2cDeviceRemove i2c_device_remove;
+        wippersnapper_i2c_I2cDeviceOutputWrite i2c_device_output_write;
         /* error.proto */
         wippersnapper_error_Error error;
     } payload;
@@ -138,6 +140,7 @@ extern "C" {
 #define wippersnapper_signal_BrokerToDevice_i2c_bus_scan_tag 90
 #define wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag 91
 #define wippersnapper_signal_BrokerToDevice_i2c_device_remove_tag 92
+#define wippersnapper_signal_BrokerToDevice_i2c_device_output_write_tag 93
 #define wippersnapper_signal_BrokerToDevice_error_tag 100
 #define wippersnapper_signal_DeviceToBroker_digitalio_event_tag 10
 #define wippersnapper_signal_DeviceToBroker_analogio_event_tag 20
@@ -181,6 +184,7 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart_remove,payload.uart_remove),  8
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_bus_scan,payload.i2c_bus_scan),  90) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_add_replace,payload.i2c_device_add_replace),  91) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_remove,payload.i2c_device_remove),  92) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_output_write,payload.i2c_device_output_write),  93) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,error,payload.error), 100)
 #define wippersnapper_signal_BrokerToDevice_CALLBACK NULL
 #define wippersnapper_signal_BrokerToDevice_DEFAULT NULL
@@ -209,6 +213,7 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,error,payload.error), 100)
 #define wippersnapper_signal_BrokerToDevice_payload_i2c_bus_scan_MSGTYPE wippersnapper_i2c_I2cBusScan
 #define wippersnapper_signal_BrokerToDevice_payload_i2c_device_add_replace_MSGTYPE wippersnapper_i2c_I2cDeviceAddOrReplace
 #define wippersnapper_signal_BrokerToDevice_payload_i2c_device_remove_MSGTYPE wippersnapper_i2c_I2cDeviceRemove
+#define wippersnapper_signal_BrokerToDevice_payload_i2c_device_output_write_MSGTYPE wippersnapper_i2c_I2cDeviceOutputWrite
 #define wippersnapper_signal_BrokerToDevice_payload_error_MSGTYPE wippersnapper_error_Error
 
 #define wippersnapper_signal_DeviceToBroker_FIELDLIST(X, a) \
@@ -252,7 +257,7 @@ extern const pb_msgdesc_t wippersnapper_signal_DeviceToBroker_msg;
 
 /* Maximum encoded size of messages (where known) */
 #if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_digitalio_DigitalIOWrite_size) && defined(wippersnapper_uart_UARTAdd_size) && defined(wippersnapper_uart_UARTRemove_size)
-union wippersnapper_signal_BrokerToDevice_payload_size_union {char f12[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f13[(6 + wippersnapper_digitalio_DigitalIOWrite_size)]; char f80[(7 + wippersnapper_uart_UARTAdd_size)]; char f81[(7 + wippersnapper_uart_UARTRemove_size)]; char f0[106];};
+union wippersnapper_signal_BrokerToDevice_payload_size_union {char f12[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f13[(6 + wippersnapper_digitalio_DigitalIOWrite_size)]; char f80[(7 + wippersnapper_uart_UARTAdd_size)]; char f81[(7 + wippersnapper_uart_UARTRemove_size)]; char f0[573];};
 #endif
 #if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_analogio_AnalogIOEvent_size) && defined(wippersnapper_ds18x20_Ds18x20Event_size) && defined(wippersnapper_uart_UARTAdded_size) && defined(wippersnapper_uart_UARTEvent_size) && defined(wippersnapper_i2c_I2cDeviceEvent_size)
 union wippersnapper_signal_DeviceToBroker_payload_size_union {char f10[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f20[(7 + wippersnapper_analogio_AnalogIOEvent_size)]; char f80[(7 + wippersnapper_ds18x20_Ds18x20Event_size)]; char f90[(7 + wippersnapper_uart_UARTAdded_size)]; char f100[(7 + wippersnapper_uart_UARTEvent_size)]; char f113[(7 + wippersnapper_i2c_I2cDeviceEvent_size)]; char f0[6246];};

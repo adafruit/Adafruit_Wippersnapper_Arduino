@@ -20,7 +20,7 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
-#include "drivers/drvBase.h" ///< Base driver class
+#include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
 #include "drivers/drvBme680.h"
@@ -45,6 +45,11 @@
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
 #include "drivers/drvNau7802.h"
+#include "drivers/drvOut7Seg.h"
+#include "drivers/drvOutCharLcd.h"
+#include "drivers/drvOutQuadAlphaNum.h"
+#include "drivers/drvOutSsd1306.h"
+#include "drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
 #include "drivers/drvScd30.h"
@@ -69,6 +74,7 @@
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
+class I2cOutputModel;   ///< Forward declaration
 class I2cHardware;      ///< Forward declaration
 
 /**************************************************************************/
@@ -84,9 +90,9 @@ public:
   void update();
   // Routing //
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
-  // TODO [Online]: These are for Online mode and not yet implemented
   bool Handle_I2cBusScan(pb_istream_t *stream);
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
+  bool Handle_I2cDeviceOutputWrite(pb_istream_t *stream);
   // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
       const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
@@ -95,13 +101,17 @@ public:
   bool IsBusStatusOK(bool is_alt_bus = false);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
-  bool RemoveDriver(uint32_t address);
+  bool RemoveDriver(uint32_t address, bool is_output_device);
 
 private:
-  I2cModel *_i2c_model;                ///< Pointer to an I2C model object
-  I2cHardware *_i2c_bus_default;       ///< Pointer to the default I2C bus
-  I2cHardware *_i2c_bus_alt;           ///< Pointer to an alternative I2C bus
-  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C device drivers
+  I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
+  I2cOutputModel *_i2c_output_model =
+      nullptr; ///< Pointer to an I2C output model object
+  I2cHardware *_i2c_bus_default = nullptr; ///< Pointer to the default I2C bus
+  I2cHardware *_i2c_bus_alt = nullptr; ///< Pointer to an alternative I2C bus
+  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C input drivers
+  std::vector<drvOutputBase *>
+      _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H
