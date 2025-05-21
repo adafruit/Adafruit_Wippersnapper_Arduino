@@ -11,22 +11,20 @@
 
 /* Enum definitions */
 /* *
- LedBackpackBlinkRate represents supported, OPTIONAL, blink rates for LED backpack displays */
-typedef enum _wippersnapper_i2c_output_LedBackpackBlinkRate {
-    wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_UNSPECIFIED = 0, /* * No blinking. * */
-    wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_OFF = 1, /* * No blinking. * */
-    wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_2HZ = 2, /* * 2 Hz blink rate. * */
-    wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_1HZ = 3, /* * 1 Hz blink rate. * */
-    wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_HALFHZ = 4 /* * 0.5 Hz blink rate. * */
-} wippersnapper_i2c_output_LedBackpackBlinkRate;
-
-/* *
  LedBackpackAlignment represents all text alignment option for LED backpack displays */
 typedef enum _wippersnapper_i2c_output_LedBackpackAlignment {
     wippersnapper_i2c_output_LedBackpackAlignment_LED_BACKPACK_ALIGNMENT_UNSPECIFIED = 0, /* * Unspecified alignment option. * */
     wippersnapper_i2c_output_LedBackpackAlignment_LED_BACKPACK_ALIGNMENT_LEFT = 1, /* * (Default) Left-aligned. * */
     wippersnapper_i2c_output_LedBackpackAlignment_LED_BACKPACK_ALIGNMENT_RIGHT = 2 /* * Right-aligned. * */
 } wippersnapper_i2c_output_LedBackpackAlignment;
+
+/* *
+ Desired OLED display text 'magnification' size. */
+typedef enum _wippersnapper_i2c_output_OledTextSize {
+    wippersnapper_i2c_output_OledTextSize_OLED_TEXT_SIZE_UNSPECIFIED = 0, /* * Unspecified text size. * */
+    wippersnapper_i2c_output_OledTextSize_OLED_TEXT_SIZE_DEFAULT = 1, /* * Default text size, 6x8px. * */
+    wippersnapper_i2c_output_OledTextSize_OLED_TEXT_SIZE_LARGE = 2 /* * Larger text size option, 12x16px. * */
+} wippersnapper_i2c_output_OledTextSize;
 
 /* Struct definitions */
 /* *
@@ -41,42 +39,45 @@ typedef struct _wippersnapper_i2c_output_LedBackpackConfig {
 typedef struct _wippersnapper_i2c_output_CharLCDConfig {
     uint32_t rows; /* * Number of rows for the character LCD. * */
     uint32_t columns; /* * Number of columns for the character LCD. * */
-    char backlight_color[15]; /* * Optional Backlight color for the character LCD, in Hex. * */
 } wippersnapper_i2c_output_CharLCDConfig;
+
+/* *
+ OledConfig represents the configuration for a OLED display. */
+typedef struct _wippersnapper_i2c_output_OledConfig {
+    uint32_t width; /* * Width of the OLED display in pixels. * */
+    uint32_t height; /* * Height of the OLED display in pixels. * */
+    wippersnapper_i2c_output_OledTextSize font_size; /* * Desired font magnification for the OLED display. Defaults to OLED_TEXT_SIZE_DEFAULT. * */
+} wippersnapper_i2c_output_OledConfig;
 
 /* *
  I2cOutputAdd represents a request from the broker to add an I2C output device to a device. */
 typedef struct _wippersnapper_i2c_output_I2cOutputAdd {
     pb_size_t which_config;
     union {
-        wippersnapper_i2c_output_LedBackpackConfig led_backpack_config; /* * Configuration for LED backpack. * */
-        wippersnapper_i2c_output_CharLCDConfig char_lcd_config; /* * Configuration for character LCD. * */
+        wippersnapper_i2c_output_LedBackpackConfig led_backpack_config; /* * Configuration for a LED backpack. * */
+        wippersnapper_i2c_output_CharLCDConfig char_lcd_config; /* * Configuration for a character LCD. * */
+        wippersnapper_i2c_output_OledConfig oled_config; /* * Configuration for an OLED display. * */
     } config;
 } wippersnapper_i2c_output_I2cOutputAdd;
 
 /* *
  LedBackpackWrite represents a request from the broker to write a message to a LED backpack. */
 typedef struct _wippersnapper_i2c_output_LedBackpackWrite {
-    pb_size_t which_message;
-    union {
-        char text[20]; /* * Text to write to the LED backpack. * */
-        int32_t number_int; /* * Number to write to the LED backpack. * */
-        float number_float; /* * Float to write to the LED backpack. * */
-    } message;
-    bool adjust_brightness; /* * Optionally used to enable the brightness tag. * */
-    int32_t brightness; /* * Optionally adjusts the brightness from 0 (off) to 15 (full brightness). * */
-    wippersnapper_i2c_output_LedBackpackBlinkRate blink_rate; /* * Optionally sets the blink rate for the LED backpack. * */
-    bool enable_scroll_marquee; /* * Optionally enables automatic text scrolling * */
-    float scroll_marquee_speed; /* * Speed for the scrolling marquee. * */
+    char message[8]; /* * Message to write to the LED backpack. * */
 } wippersnapper_i2c_output_LedBackpackWrite;
 
 /* *
  CharLCDWrite represents a request from the broker to write to a character LCD. */
 typedef struct _wippersnapper_i2c_output_CharLCDWrite {
-    char message[128]; /* * Message to write to the character LCD. * */
-    char backlight_color[20]; /* * Optional Backlight color for the character LCD, in Hex. * */
-    bool enable_scroll; /* * Optional Enable automatic scrolling for the character LCD. * */
+    char message[100]; /* * Message to write to the character LCD. * */
+    bool enable_backlight; /* * Whether to enable the backlight. Defaults to True. * */
 } wippersnapper_i2c_output_CharLCDWrite;
+
+/* *
+ OLEDWrite represents a request from the broker to write to a OLED display. */
+typedef struct _wippersnapper_i2c_output_OLEDWrite {
+    char message[512]; /* * Message to write to an OLED display. * */
+} wippersnapper_i2c_output_OLEDWrite;
 
 
 #ifdef __cplusplus
@@ -84,53 +85,55 @@ extern "C" {
 #endif
 
 /* Helper constants for enums */
-#define _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_UNSPECIFIED
-#define _wippersnapper_i2c_output_LedBackpackBlinkRate_MAX wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_HALFHZ
-#define _wippersnapper_i2c_output_LedBackpackBlinkRate_ARRAYSIZE ((wippersnapper_i2c_output_LedBackpackBlinkRate)(wippersnapper_i2c_output_LedBackpackBlinkRate_LED_BACKPACK_BLINK_RATE_HALFHZ+1))
-
 #define _wippersnapper_i2c_output_LedBackpackAlignment_MIN wippersnapper_i2c_output_LedBackpackAlignment_LED_BACKPACK_ALIGNMENT_UNSPECIFIED
 #define _wippersnapper_i2c_output_LedBackpackAlignment_MAX wippersnapper_i2c_output_LedBackpackAlignment_LED_BACKPACK_ALIGNMENT_RIGHT
 #define _wippersnapper_i2c_output_LedBackpackAlignment_ARRAYSIZE ((wippersnapper_i2c_output_LedBackpackAlignment)(wippersnapper_i2c_output_LedBackpackAlignment_LED_BACKPACK_ALIGNMENT_RIGHT+1))
 
+#define _wippersnapper_i2c_output_OledTextSize_MIN wippersnapper_i2c_output_OledTextSize_OLED_TEXT_SIZE_UNSPECIFIED
+#define _wippersnapper_i2c_output_OledTextSize_MAX wippersnapper_i2c_output_OledTextSize_OLED_TEXT_SIZE_LARGE
+#define _wippersnapper_i2c_output_OledTextSize_ARRAYSIZE ((wippersnapper_i2c_output_OledTextSize)(wippersnapper_i2c_output_OledTextSize_OLED_TEXT_SIZE_LARGE+1))
+
 #define wippersnapper_i2c_output_LedBackpackConfig_alignment_ENUMTYPE wippersnapper_i2c_output_LedBackpackAlignment
 
 
+#define wippersnapper_i2c_output_OledConfig_font_size_ENUMTYPE wippersnapper_i2c_output_OledTextSize
 
-#define wippersnapper_i2c_output_LedBackpackWrite_blink_rate_ENUMTYPE wippersnapper_i2c_output_LedBackpackBlinkRate
+
+
 
 
 
 /* Initializer values for message structs */
 #define wippersnapper_i2c_output_LedBackpackConfig_init_default {0, _wippersnapper_i2c_output_LedBackpackAlignment_MIN}
-#define wippersnapper_i2c_output_CharLCDConfig_init_default {0, 0, ""}
+#define wippersnapper_i2c_output_CharLCDConfig_init_default {0, 0}
+#define wippersnapper_i2c_output_OledConfig_init_default {0, 0, _wippersnapper_i2c_output_OledTextSize_MIN}
 #define wippersnapper_i2c_output_I2cOutputAdd_init_default {0, {wippersnapper_i2c_output_LedBackpackConfig_init_default}}
-#define wippersnapper_i2c_output_LedBackpackWrite_init_default {0, {""}, 0, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0}
-#define wippersnapper_i2c_output_CharLCDWrite_init_default {"", "", 0}
+#define wippersnapper_i2c_output_LedBackpackWrite_init_default {""}
+#define wippersnapper_i2c_output_CharLCDWrite_init_default {"", 0}
+#define wippersnapper_i2c_output_OLEDWrite_init_default {""}
 #define wippersnapper_i2c_output_LedBackpackConfig_init_zero {0, _wippersnapper_i2c_output_LedBackpackAlignment_MIN}
-#define wippersnapper_i2c_output_CharLCDConfig_init_zero {0, 0, ""}
+#define wippersnapper_i2c_output_CharLCDConfig_init_zero {0, 0}
+#define wippersnapper_i2c_output_OledConfig_init_zero {0, 0, _wippersnapper_i2c_output_OledTextSize_MIN}
 #define wippersnapper_i2c_output_I2cOutputAdd_init_zero {0, {wippersnapper_i2c_output_LedBackpackConfig_init_zero}}
-#define wippersnapper_i2c_output_LedBackpackWrite_init_zero {0, {""}, 0, 0, _wippersnapper_i2c_output_LedBackpackBlinkRate_MIN, 0, 0}
-#define wippersnapper_i2c_output_CharLCDWrite_init_zero {"", "", 0}
+#define wippersnapper_i2c_output_LedBackpackWrite_init_zero {""}
+#define wippersnapper_i2c_output_CharLCDWrite_init_zero {"", 0}
+#define wippersnapper_i2c_output_OLEDWrite_init_zero {""}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_i2c_output_LedBackpackConfig_brightness_tag 1
 #define wippersnapper_i2c_output_LedBackpackConfig_alignment_tag 2
 #define wippersnapper_i2c_output_CharLCDConfig_rows_tag 1
 #define wippersnapper_i2c_output_CharLCDConfig_columns_tag 2
-#define wippersnapper_i2c_output_CharLCDConfig_backlight_color_tag 3
+#define wippersnapper_i2c_output_OledConfig_width_tag 1
+#define wippersnapper_i2c_output_OledConfig_height_tag 2
+#define wippersnapper_i2c_output_OledConfig_font_size_tag 3
 #define wippersnapper_i2c_output_I2cOutputAdd_led_backpack_config_tag 1
 #define wippersnapper_i2c_output_I2cOutputAdd_char_lcd_config_tag 2
-#define wippersnapper_i2c_output_LedBackpackWrite_text_tag 1
-#define wippersnapper_i2c_output_LedBackpackWrite_number_int_tag 2
-#define wippersnapper_i2c_output_LedBackpackWrite_number_float_tag 3
-#define wippersnapper_i2c_output_LedBackpackWrite_adjust_brightness_tag 4
-#define wippersnapper_i2c_output_LedBackpackWrite_brightness_tag 5
-#define wippersnapper_i2c_output_LedBackpackWrite_blink_rate_tag 6
-#define wippersnapper_i2c_output_LedBackpackWrite_enable_scroll_marquee_tag 7
-#define wippersnapper_i2c_output_LedBackpackWrite_scroll_marquee_speed_tag 8
+#define wippersnapper_i2c_output_I2cOutputAdd_oled_config_tag 3
+#define wippersnapper_i2c_output_LedBackpackWrite_message_tag 1
 #define wippersnapper_i2c_output_CharLCDWrite_message_tag 1
-#define wippersnapper_i2c_output_CharLCDWrite_backlight_color_tag 2
-#define wippersnapper_i2c_output_CharLCDWrite_enable_scroll_tag 3
+#define wippersnapper_i2c_output_CharLCDWrite_enable_backlight_tag 2
+#define wippersnapper_i2c_output_OLEDWrite_message_tag 1
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_i2c_output_LedBackpackConfig_FIELDLIST(X, a) \
@@ -141,58 +144,69 @@ X(a, STATIC,   SINGULAR, UENUM,    alignment,         2)
 
 #define wippersnapper_i2c_output_CharLCDConfig_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   rows,              1) \
-X(a, STATIC,   SINGULAR, UINT32,   columns,           2) \
-X(a, STATIC,   SINGULAR, STRING,   backlight_color,   3)
+X(a, STATIC,   SINGULAR, UINT32,   columns,           2)
 #define wippersnapper_i2c_output_CharLCDConfig_CALLBACK NULL
 #define wippersnapper_i2c_output_CharLCDConfig_DEFAULT NULL
 
+#define wippersnapper_i2c_output_OledConfig_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   width,             1) \
+X(a, STATIC,   SINGULAR, UINT32,   height,            2) \
+X(a, STATIC,   SINGULAR, UENUM,    font_size,         3)
+#define wippersnapper_i2c_output_OledConfig_CALLBACK NULL
+#define wippersnapper_i2c_output_OledConfig_DEFAULT NULL
+
 #define wippersnapper_i2c_output_I2cOutputAdd_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (config,led_backpack_config,config.led_backpack_config),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (config,char_lcd_config,config.char_lcd_config),   2)
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,char_lcd_config,config.char_lcd_config),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,oled_config,config.oled_config),   3)
 #define wippersnapper_i2c_output_I2cOutputAdd_CALLBACK NULL
 #define wippersnapper_i2c_output_I2cOutputAdd_DEFAULT NULL
 #define wippersnapper_i2c_output_I2cOutputAdd_config_led_backpack_config_MSGTYPE wippersnapper_i2c_output_LedBackpackConfig
 #define wippersnapper_i2c_output_I2cOutputAdd_config_char_lcd_config_MSGTYPE wippersnapper_i2c_output_CharLCDConfig
+#define wippersnapper_i2c_output_I2cOutputAdd_config_oled_config_MSGTYPE wippersnapper_i2c_output_OledConfig
 
 #define wippersnapper_i2c_output_LedBackpackWrite_FIELDLIST(X, a) \
-X(a, STATIC,   ONEOF,    STRING,   (message,text,message.text),   1) \
-X(a, STATIC,   ONEOF,    INT32,    (message,number_int,message.number_int),   2) \
-X(a, STATIC,   ONEOF,    FLOAT,    (message,number_float,message.number_float),   3) \
-X(a, STATIC,   SINGULAR, BOOL,     adjust_brightness,   4) \
-X(a, STATIC,   SINGULAR, INT32,    brightness,        5) \
-X(a, STATIC,   SINGULAR, UENUM,    blink_rate,        6) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_scroll_marquee,   7) \
-X(a, STATIC,   SINGULAR, FLOAT,    scroll_marquee_speed,   8)
+X(a, STATIC,   SINGULAR, STRING,   message,           1)
 #define wippersnapper_i2c_output_LedBackpackWrite_CALLBACK NULL
 #define wippersnapper_i2c_output_LedBackpackWrite_DEFAULT NULL
 
 #define wippersnapper_i2c_output_CharLCDWrite_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   message,           1) \
-X(a, STATIC,   SINGULAR, STRING,   backlight_color,   2) \
-X(a, STATIC,   SINGULAR, BOOL,     enable_scroll,     3)
+X(a, STATIC,   SINGULAR, BOOL,     enable_backlight,   2)
 #define wippersnapper_i2c_output_CharLCDWrite_CALLBACK NULL
 #define wippersnapper_i2c_output_CharLCDWrite_DEFAULT NULL
 
+#define wippersnapper_i2c_output_OLEDWrite_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, STRING,   message,           1)
+#define wippersnapper_i2c_output_OLEDWrite_CALLBACK NULL
+#define wippersnapper_i2c_output_OLEDWrite_DEFAULT NULL
+
 extern const pb_msgdesc_t wippersnapper_i2c_output_LedBackpackConfig_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_output_CharLCDConfig_msg;
+extern const pb_msgdesc_t wippersnapper_i2c_output_OledConfig_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_output_I2cOutputAdd_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_output_LedBackpackWrite_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_output_CharLCDWrite_msg;
+extern const pb_msgdesc_t wippersnapper_i2c_output_OLEDWrite_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define wippersnapper_i2c_output_LedBackpackConfig_fields &wippersnapper_i2c_output_LedBackpackConfig_msg
 #define wippersnapper_i2c_output_CharLCDConfig_fields &wippersnapper_i2c_output_CharLCDConfig_msg
+#define wippersnapper_i2c_output_OledConfig_fields &wippersnapper_i2c_output_OledConfig_msg
 #define wippersnapper_i2c_output_I2cOutputAdd_fields &wippersnapper_i2c_output_I2cOutputAdd_msg
 #define wippersnapper_i2c_output_LedBackpackWrite_fields &wippersnapper_i2c_output_LedBackpackWrite_msg
 #define wippersnapper_i2c_output_CharLCDWrite_fields &wippersnapper_i2c_output_CharLCDWrite_msg
+#define wippersnapper_i2c_output_OLEDWrite_fields &wippersnapper_i2c_output_OLEDWrite_msg
 
 /* Maximum encoded size of messages (where known) */
-#define WIPPERSNAPPER_I2C_OUTPUT_I2C_OUTPUT_PB_H_MAX_SIZE wippersnapper_i2c_output_CharLCDWrite_size
-#define wippersnapper_i2c_output_CharLCDConfig_size 28
-#define wippersnapper_i2c_output_CharLCDWrite_size 153
-#define wippersnapper_i2c_output_I2cOutputAdd_size 30
+#define WIPPERSNAPPER_I2C_OUTPUT_I2C_OUTPUT_PB_H_MAX_SIZE wippersnapper_i2c_output_OLEDWrite_size
+#define wippersnapper_i2c_output_CharLCDConfig_size 12
+#define wippersnapper_i2c_output_CharLCDWrite_size 103
+#define wippersnapper_i2c_output_I2cOutputAdd_size 16
 #define wippersnapper_i2c_output_LedBackpackConfig_size 13
-#define wippersnapper_i2c_output_LedBackpackWrite_size 43
+#define wippersnapper_i2c_output_LedBackpackWrite_size 9
+#define wippersnapper_i2c_output_OLEDWrite_size  514
+#define wippersnapper_i2c_output_OledConfig_size 14
 
 #ifdef __cplusplus
 } /* extern "C" */

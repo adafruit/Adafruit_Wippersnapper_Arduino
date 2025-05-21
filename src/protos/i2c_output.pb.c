@@ -12,6 +12,9 @@ PB_BIND(wippersnapper_i2c_output_LedBackpackConfig, wippersnapper_i2c_output_Led
 PB_BIND(wippersnapper_i2c_output_CharLCDConfig, wippersnapper_i2c_output_CharLCDConfig, AUTO)
 
 
+PB_BIND(wippersnapper_i2c_output_OledConfig, wippersnapper_i2c_output_OledConfig, AUTO)
+
+
 PB_BIND(wippersnapper_i2c_output_I2cOutputAdd, wippersnapper_i2c_output_I2cOutputAdd, AUTO)
 
 
@@ -19,6 +22,9 @@ PB_BIND(wippersnapper_i2c_output_LedBackpackWrite, wippersnapper_i2c_output_LedB
 
 
 PB_BIND(wippersnapper_i2c_output_CharLCDWrite, wippersnapper_i2c_output_CharLCDWrite, AUTO)
+
+
+PB_BIND(wippersnapper_i2c_output_OLEDWrite, wippersnapper_i2c_output_OLEDWrite, 2)
 
 
 
