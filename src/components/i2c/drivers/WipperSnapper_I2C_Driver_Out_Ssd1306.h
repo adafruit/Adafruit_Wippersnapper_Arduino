@@ -53,6 +53,7 @@ public:
   */
   ~WipperSnapper_I2C_Driver_Out_Ssd1306() {
     if (_display != nullptr) {
+      _display->ssd1306_command(SSD1306_DISPLAYOFF);
       delete _display;
       _display = nullptr;
     }
