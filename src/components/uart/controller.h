@@ -39,7 +39,7 @@ public:
   // Polling
   void update();
 private:
-  UARTModel *_UART_model; ///< UART model
+  UARTModel *_uart_model; ///< UART model
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif // WS_UART_CONTROLLER_H

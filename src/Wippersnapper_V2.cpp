@@ -490,7 +490,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
   }
-
   // once this is returned, pb_dec_submessage()
   // decodes the submessage contents.
   return true;

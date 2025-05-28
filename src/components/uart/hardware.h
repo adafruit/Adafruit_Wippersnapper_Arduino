@@ -15,6 +15,20 @@
 #ifndef WS_UART_HARDWARE_H
 #define WS_UART_HARDWARE_H
 #include "Wippersnapper_V2.h"
+#include <Arduino.h>
+#include <HardwareSerial.h>
+
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_ESP8266)
+// SAMD supports native Arduino SoftwareSerial API
+// ESP8266 supports SoftwareSerial in the ESP8266 Arduino core
+// RP2040/RP2350 supports a wrapper around SoftwareSerial and emulation via PIOUART
+// (see: https://arduino-pico.readthedocs.io/en/latest/piouart.html#softwareserial-emulation)
+#include <SoftwareSerial.h>
+#define HAS_SW_SERIAL 1 ///< Indicates that the board supports SoftwareSerial
+#else
+#define HAS_SW_SERIAL 0 ///< Indicates that the board DOES NOT support SoftwareSerial
+#endif
+
 
 /**************************************************************************/
 /*!
@@ -25,8 +39,13 @@ class UARTHardware {
 public:
   UARTHardware();
   ~UARTHardware();
-  // TODO
+  bool ConfigureSerial(const wippersnapper_uart_UartSerialConfig &config);
+  bool isHardwareSerial() const;
+  bool isSoftwareSerial() const;
 private:
-  // TODO
+  HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance for this bus
+  #if HAS_SW_SERIAL
+  SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
+  #endif // HAS_SW_SERIAL
 };
 #endif // WS_UART_HARDWARE_H

@@ -49,9 +49,7 @@ UARTModel::~UARTModel() {
 */
 /**************************************************************************/
 bool UARTModel::DecodeUartAdd(pb_istream_t *stream) {
-  // TODO
-  return false;
-
+  return pb_decode(stream, wippersnapper_uart_UartAdd_fields, &_msg_UartAdd);
 }
 
 /**************************************************************************/

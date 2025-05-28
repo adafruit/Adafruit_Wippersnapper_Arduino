@@ -21,7 +21,7 @@
 */
 /**************************************************************************/
 UARTController::UARTController() {
-
+  // TODO! Needs implementation
 }
 
 /**************************************************************************/
@@ -30,7 +30,7 @@ UARTController::UARTController() {
 */
 /**************************************************************************/
 UARTController::~UARTController() {
-
+ // TODO! Needs impl.
 }
 
 /**************************************************************************/
@@ -42,8 +42,27 @@ UARTController::~UARTController() {
 */
 /**************************************************************************/
 bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
-    // TODO: Needs implementation
+  // Attempt to decode the UartAdd message
+  if (!_uart_model->DecodeUartAdd(stream))
     return false;
+  // Get ref. to the UartAdd message within the model
+  wippersnapper_uart_UartAdd *add_msg = _uart_model->GetUartAddMsg();
+  // TODO: fix the id field, currently it is a callback and should be a string.
+  if (! add_msg->has_cfg_serial && ! add_msg->has_cfg_device) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: No configuration provided for UART device!");
+    return false;
+  }
+  // Get the serial and device configuration from the UartAdd message
+  wippersnapper_uart_UartSerialConfig cfg_serial = add_msg->cfg_serial;
+  wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
+
+  // Let's first configure the hardware serial settings
+  // TODO: Implement hardware serial configuration
+  // Create new uarthardware instance 
+  // then, create a new UartDevice "driver" on the hardware layer (UARTHardware)
+
+  // TODO: Publish back to IO that the UART device was added
+  return true;
 }
 
 /**************************************************************************/

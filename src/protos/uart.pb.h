@@ -121,10 +121,10 @@ typedef struct _wippersnapper_uart_UartDeviceConfig {
  to configure a device on a UART bus for communication. */
 typedef struct _wippersnapper_uart_UartAdd {
     pb_callback_t id; /* * The unique identifier of the UART device. */
-    bool has_config;
-    wippersnapper_uart_UartSerialConfig config; /* * The Serial configuration. */
-    bool has_device_config;
-    wippersnapper_uart_UartDeviceConfig device_config; /* * The device-specific configuration. */
+    bool has_cfg_serial;
+    wippersnapper_uart_UartSerialConfig cfg_serial; /* * The Serial configuration. */
+    bool has_cfg_device;
+    wippersnapper_uart_UartDeviceConfig cfg_device; /* * The device-specific configuration. */
 } wippersnapper_uart_UartAdd;
 
 /* *
@@ -233,8 +233,8 @@ extern "C" {
 #define wippersnapper_uart_UartDeviceConfig_pm25aqi_config_tag 4
 #define wippersnapper_uart_UartDeviceConfig_gps_config_tag 5
 #define wippersnapper_uart_UartAdd_id_tag        1
-#define wippersnapper_uart_UartAdd_config_tag    2
-#define wippersnapper_uart_UartAdd_device_config_tag 3
+#define wippersnapper_uart_UartAdd_cfg_serial_tag 2
+#define wippersnapper_uart_UartAdd_cfg_device_tag 3
 #define wippersnapper_uart_UartAdded_id_tag      1
 #define wippersnapper_uart_UartAdded_success_tag 2
 #define wippersnapper_uart_UartRemove_id_tag     1
@@ -287,12 +287,12 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  gps_config,        5)
 
 #define wippersnapper_uart_UartAdd_FIELDLIST(X, a) \
 X(a, CALLBACK, SINGULAR, STRING,   id,                1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  config,            2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  device_config,     3)
+X(a, STATIC,   OPTIONAL, MESSAGE,  cfg_serial,        2) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  cfg_device,        3)
 #define wippersnapper_uart_UartAdd_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_UartAdd_DEFAULT NULL
-#define wippersnapper_uart_UartAdd_config_MSGTYPE wippersnapper_uart_UartSerialConfig
-#define wippersnapper_uart_UartAdd_device_config_MSGTYPE wippersnapper_uart_UartDeviceConfig
+#define wippersnapper_uart_UartAdd_cfg_serial_MSGTYPE wippersnapper_uart_UartSerialConfig
+#define wippersnapper_uart_UartAdd_cfg_device_MSGTYPE wippersnapper_uart_UartDeviceConfig
 
 #define wippersnapper_uart_UartAdded_FIELDLIST(X, a) \
 X(a, CALLBACK, SINGULAR, STRING,   id,                1) \
