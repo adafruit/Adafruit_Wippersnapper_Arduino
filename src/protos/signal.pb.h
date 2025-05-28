@@ -9,6 +9,7 @@
 #include "digitalio.pb.h"
 #include "ds18x20.pb.h"
 #include "error.pb.h"
+#include "gps.pb.h"
 #include "i2c.pb.h"
 #include "i2c_output.pb.h"
 #include "pixels.pb.h"
@@ -57,8 +58,9 @@ typedef struct _wippersnapper_signal_BrokerToDevice {
         wippersnapper_ds18x20_Ds18x20Add ds18x20_add;
         wippersnapper_ds18x20_Ds18x20Remove ds18x20_remove;
         /* uart.proto */
-        wippersnapper_uart_UARTAdd uart_add;
-        wippersnapper_uart_UARTRemove uart_remove;
+        wippersnapper_uart_UartAdd uart_add;
+        wippersnapper_uart_UartRemove uart_remove;
+        wippersnapper_uart_UartWrite uart_write;
         /* i2c.proto */
         wippersnapper_i2c_I2cBusScan i2c_bus_scan;
         wippersnapper_i2c_I2cDeviceAddOrReplace i2c_device_add_replace;
@@ -93,13 +95,16 @@ typedef struct _wippersnapper_signal_DeviceToBroker {
         wippersnapper_ds18x20_Ds18x20Added ds18x20_added;
         wippersnapper_ds18x20_Ds18x20Event ds18x20_event;
         /* uart.proto */
-        wippersnapper_uart_UARTAdded uart_added;
-        wippersnapper_uart_UARTEvent uart_event;
+        wippersnapper_uart_UartAdded uart_added;
+        wippersnapper_uart_UartWritten uart_written;
         /* i2c.proto */
         wippersnapper_i2c_I2cBusScanned i2c_bus_scanned;
         wippersnapper_i2c_I2cDeviceAddedOrReplaced i2c_device_added_replaced;
         wippersnapper_i2c_I2cDeviceRemoved i2c_device_removed;
         wippersnapper_i2c_I2cDeviceEvent i2c_device_event;
+        /* gps.proto */
+        wippersnapper_gps_GPSRMCResponse gps_rmc_response;
+        wippersnapper_gps_GPGGAResponse gps_gga_response;
     } payload;
 } wippersnapper_signal_DeviceToBroker;
 
@@ -137,6 +142,7 @@ extern "C" {
 #define wippersnapper_signal_BrokerToDevice_ds18x20_remove_tag 71
 #define wippersnapper_signal_BrokerToDevice_uart_add_tag 80
 #define wippersnapper_signal_BrokerToDevice_uart_remove_tag 81
+#define wippersnapper_signal_BrokerToDevice_uart_write_tag 82
 #define wippersnapper_signal_BrokerToDevice_i2c_bus_scan_tag 90
 #define wippersnapper_signal_BrokerToDevice_i2c_device_add_replace_tag 91
 #define wippersnapper_signal_BrokerToDevice_i2c_device_remove_tag 92
@@ -151,11 +157,13 @@ extern "C" {
 #define wippersnapper_signal_DeviceToBroker_ds18x20_added_tag 70
 #define wippersnapper_signal_DeviceToBroker_ds18x20_event_tag 80
 #define wippersnapper_signal_DeviceToBroker_uart_added_tag 90
-#define wippersnapper_signal_DeviceToBroker_uart_event_tag 100
+#define wippersnapper_signal_DeviceToBroker_uart_written_tag 91
 #define wippersnapper_signal_DeviceToBroker_i2c_bus_scanned_tag 110
 #define wippersnapper_signal_DeviceToBroker_i2c_device_added_replaced_tag 111
 #define wippersnapper_signal_DeviceToBroker_i2c_device_removed_tag 112
 #define wippersnapper_signal_DeviceToBroker_i2c_device_event_tag 113
+#define wippersnapper_signal_DeviceToBroker_gps_rmc_response_tag 120
+#define wippersnapper_signal_DeviceToBroker_gps_gga_response_tag 121
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_signal_BrokerToDevice_FIELDLIST(X, a) \
@@ -181,6 +189,7 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,ds18x20_add,payload.ds18x20_add),  7
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,ds18x20_remove,payload.ds18x20_remove),  71) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart_add,payload.uart_add),  80) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart_remove,payload.uart_remove),  81) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart_write,payload.uart_write),  82) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_bus_scan,payload.i2c_bus_scan),  90) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_add_replace,payload.i2c_device_add_replace),  91) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_remove,payload.i2c_device_remove),  92) \
@@ -208,8 +217,9 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,error,payload.error), 100)
 #define wippersnapper_signal_BrokerToDevice_payload_pixels_write_MSGTYPE wippersnapper_pixels_PixelsWrite
 #define wippersnapper_signal_BrokerToDevice_payload_ds18x20_add_MSGTYPE wippersnapper_ds18x20_Ds18x20Add
 #define wippersnapper_signal_BrokerToDevice_payload_ds18x20_remove_MSGTYPE wippersnapper_ds18x20_Ds18x20Remove
-#define wippersnapper_signal_BrokerToDevice_payload_uart_add_MSGTYPE wippersnapper_uart_UARTAdd
-#define wippersnapper_signal_BrokerToDevice_payload_uart_remove_MSGTYPE wippersnapper_uart_UARTRemove
+#define wippersnapper_signal_BrokerToDevice_payload_uart_add_MSGTYPE wippersnapper_uart_UartAdd
+#define wippersnapper_signal_BrokerToDevice_payload_uart_remove_MSGTYPE wippersnapper_uart_UartRemove
+#define wippersnapper_signal_BrokerToDevice_payload_uart_write_MSGTYPE wippersnapper_uart_UartWrite
 #define wippersnapper_signal_BrokerToDevice_payload_i2c_bus_scan_MSGTYPE wippersnapper_i2c_I2cBusScan
 #define wippersnapper_signal_BrokerToDevice_payload_i2c_device_add_replace_MSGTYPE wippersnapper_i2c_I2cDeviceAddOrReplace
 #define wippersnapper_signal_BrokerToDevice_payload_i2c_device_remove_MSGTYPE wippersnapper_i2c_I2cDeviceRemove
@@ -226,11 +236,13 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,pixels_added,payload.pixels_added), 
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,ds18x20_added,payload.ds18x20_added),  70) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,ds18x20_event,payload.ds18x20_event),  80) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart_added,payload.uart_added),  90) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart_event,payload.uart_event), 100) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,uart_written,payload.uart_written),  91) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_bus_scanned,payload.i2c_bus_scanned), 110) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_added_replaced,payload.i2c_device_added_replaced), 111) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_removed,payload.i2c_device_removed), 112) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_event,payload.i2c_device_event), 113)
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_event,payload.i2c_device_event), 113) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,gps_rmc_response,payload.gps_rmc_response), 120) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,gps_gga_response,payload.gps_gga_response), 121)
 #define wippersnapper_signal_DeviceToBroker_CALLBACK NULL
 #define wippersnapper_signal_DeviceToBroker_DEFAULT NULL
 #define wippersnapper_signal_DeviceToBroker_payload_digitalio_event_MSGTYPE wippersnapper_digitalio_DigitalIOEvent
@@ -241,12 +253,14 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_event,payload.i2c_device_
 #define wippersnapper_signal_DeviceToBroker_payload_pixels_added_MSGTYPE wippersnapper_pixels_PixelsAdded
 #define wippersnapper_signal_DeviceToBroker_payload_ds18x20_added_MSGTYPE wippersnapper_ds18x20_Ds18x20Added
 #define wippersnapper_signal_DeviceToBroker_payload_ds18x20_event_MSGTYPE wippersnapper_ds18x20_Ds18x20Event
-#define wippersnapper_signal_DeviceToBroker_payload_uart_added_MSGTYPE wippersnapper_uart_UARTAdded
-#define wippersnapper_signal_DeviceToBroker_payload_uart_event_MSGTYPE wippersnapper_uart_UARTEvent
+#define wippersnapper_signal_DeviceToBroker_payload_uart_added_MSGTYPE wippersnapper_uart_UartAdded
+#define wippersnapper_signal_DeviceToBroker_payload_uart_written_MSGTYPE wippersnapper_uart_UartWritten
 #define wippersnapper_signal_DeviceToBroker_payload_i2c_bus_scanned_MSGTYPE wippersnapper_i2c_I2cBusScanned
 #define wippersnapper_signal_DeviceToBroker_payload_i2c_device_added_replaced_MSGTYPE wippersnapper_i2c_I2cDeviceAddedOrReplaced
 #define wippersnapper_signal_DeviceToBroker_payload_i2c_device_removed_MSGTYPE wippersnapper_i2c_I2cDeviceRemoved
 #define wippersnapper_signal_DeviceToBroker_payload_i2c_device_event_MSGTYPE wippersnapper_i2c_I2cDeviceEvent
+#define wippersnapper_signal_DeviceToBroker_payload_gps_rmc_response_MSGTYPE wippersnapper_gps_GPSRMCResponse
+#define wippersnapper_signal_DeviceToBroker_payload_gps_gga_response_MSGTYPE wippersnapper_gps_GPGGAResponse
 
 extern const pb_msgdesc_t wippersnapper_signal_BrokerToDevice_msg;
 extern const pb_msgdesc_t wippersnapper_signal_DeviceToBroker_msg;
@@ -256,17 +270,17 @@ extern const pb_msgdesc_t wippersnapper_signal_DeviceToBroker_msg;
 #define wippersnapper_signal_DeviceToBroker_fields &wippersnapper_signal_DeviceToBroker_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_digitalio_DigitalIOWrite_size) && defined(wippersnapper_uart_UARTAdd_size) && defined(wippersnapper_uart_UARTRemove_size)
-union wippersnapper_signal_BrokerToDevice_payload_size_union {char f12[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f13[(6 + wippersnapper_digitalio_DigitalIOWrite_size)]; char f80[(7 + wippersnapper_uart_UARTAdd_size)]; char f81[(7 + wippersnapper_uart_UARTRemove_size)]; char f0[573];};
+#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_digitalio_DigitalIOWrite_size) && defined(wippersnapper_uart_UartAdd_size) && defined(wippersnapper_uart_UartRemove_size) && defined(wippersnapper_uart_UartWrite_size)
+union wippersnapper_signal_BrokerToDevice_payload_size_union {char f12[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f13[(6 + wippersnapper_digitalio_DigitalIOWrite_size)]; char f80[(7 + wippersnapper_uart_UartAdd_size)]; char f81[(7 + wippersnapper_uart_UartRemove_size)]; char f82[(7 + wippersnapper_uart_UartWrite_size)]; char f0[573];};
 #endif
-#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_analogio_AnalogIOEvent_size) && defined(wippersnapper_ds18x20_Ds18x20Event_size) && defined(wippersnapper_uart_UARTAdded_size) && defined(wippersnapper_uart_UARTEvent_size) && defined(wippersnapper_i2c_I2cDeviceEvent_size)
-union wippersnapper_signal_DeviceToBroker_payload_size_union {char f10[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f20[(7 + wippersnapper_analogio_AnalogIOEvent_size)]; char f80[(7 + wippersnapper_ds18x20_Ds18x20Event_size)]; char f90[(7 + wippersnapper_uart_UARTAdded_size)]; char f100[(7 + wippersnapper_uart_UARTEvent_size)]; char f113[(7 + wippersnapper_i2c_I2cDeviceEvent_size)]; char f0[6246];};
+#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_analogio_AnalogIOEvent_size) && defined(wippersnapper_ds18x20_Ds18x20Event_size) && defined(wippersnapper_uart_UartAdded_size) && defined(wippersnapper_uart_UartWritten_size) && defined(wippersnapper_i2c_I2cDeviceEvent_size)
+union wippersnapper_signal_DeviceToBroker_payload_size_union {char f10[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f20[(7 + wippersnapper_analogio_AnalogIOEvent_size)]; char f80[(7 + wippersnapper_ds18x20_Ds18x20Event_size)]; char f90[(7 + wippersnapper_uart_UartAdded_size)]; char f91[(7 + wippersnapper_uart_UartWritten_size)]; char f113[(7 + wippersnapper_i2c_I2cDeviceEvent_size)]; char f0[6246];};
 #endif
-#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_digitalio_DigitalIOWrite_size) && defined(wippersnapper_uart_UARTAdd_size) && defined(wippersnapper_uart_UARTRemove_size)
+#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_digitalio_DigitalIOWrite_size) && defined(wippersnapper_uart_UartAdd_size) && defined(wippersnapper_uart_UartRemove_size) && defined(wippersnapper_uart_UartWrite_size)
 #define WIPPERSNAPPER_SIGNAL_SIGNAL_PB_H_MAX_SIZE wippersnapper_signal_BrokerToDevice_size
 #define wippersnapper_signal_BrokerToDevice_size (0 + sizeof(union wippersnapper_signal_BrokerToDevice_payload_size_union))
 #endif
-#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_analogio_AnalogIOEvent_size) && defined(wippersnapper_ds18x20_Ds18x20Event_size) && defined(wippersnapper_uart_UARTAdded_size) && defined(wippersnapper_uart_UARTEvent_size) && defined(wippersnapper_i2c_I2cDeviceEvent_size)
+#if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_analogio_AnalogIOEvent_size) && defined(wippersnapper_ds18x20_Ds18x20Event_size) && defined(wippersnapper_uart_UartAdded_size) && defined(wippersnapper_uart_UartWritten_size) && defined(wippersnapper_i2c_I2cDeviceEvent_size)
 #define wippersnapper_signal_DeviceToBroker_size (0 + sizeof(union wippersnapper_signal_DeviceToBroker_payload_size_union))
 #endif
 

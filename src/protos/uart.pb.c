@@ -6,19 +6,36 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(wippersnapper_uart_UARTBusData, wippersnapper_uart_UARTBusData, AUTO)
+PB_BIND(wippersnapper_uart_UartSerialConfig, wippersnapper_uart_UartSerialConfig, AUTO)
 
 
-PB_BIND(wippersnapper_uart_UARTAdd, wippersnapper_uart_UARTAdd, AUTO)
+PB_BIND(wippersnapper_uart_GenericUartInputConfig, wippersnapper_uart_GenericUartInputConfig, AUTO)
 
 
-PB_BIND(wippersnapper_uart_UARTAdded, wippersnapper_uart_UARTAdded, AUTO)
+PB_BIND(wippersnapper_uart_TrinamicDynamixelConfig, wippersnapper_uart_TrinamicDynamixelConfig, AUTO)
 
 
-PB_BIND(wippersnapper_uart_UARTRemove, wippersnapper_uart_UARTRemove, AUTO)
+PB_BIND(wippersnapper_uart_PM25AQIConfig, wippersnapper_uart_PM25AQIConfig, AUTO)
 
 
-PB_BIND(wippersnapper_uart_UARTEvent, wippersnapper_uart_UARTEvent, AUTO)
+PB_BIND(wippersnapper_uart_UartDeviceConfig, wippersnapper_uart_UartDeviceConfig, 2)
+
+
+PB_BIND(wippersnapper_uart_UartAdd, wippersnapper_uart_UartAdd, 2)
+
+
+PB_BIND(wippersnapper_uart_UartAdded, wippersnapper_uart_UartAdded, AUTO)
+
+
+PB_BIND(wippersnapper_uart_UartRemove, wippersnapper_uart_UartRemove, AUTO)
+
+
+PB_BIND(wippersnapper_uart_UartWrite, wippersnapper_uart_UartWrite, AUTO)
+
+
+PB_BIND(wippersnapper_uart_UartWritten, wippersnapper_uart_UartWritten, AUTO)
+
+
 
 
 
