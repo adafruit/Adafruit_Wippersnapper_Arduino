@@ -54,6 +54,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   WsV2.analogio_controller = new AnalogIOController();
   WsV2._ds18x20_controller = new DS18X20Controller();
   WsV2._i2c_controller = new I2cController();
+  WsV2._uart_controller = new UARTController();
   WsV2._pixels_controller = new PixelsController();
   WsV2._pwm_controller = new PWMController();
   WsV2._servo_controller = new ServoController();
@@ -467,6 +468,24 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
+  case wippersnapper_signal_BrokerToDevice_uart_add_tag:
+    WS_DEBUG_PRINTLN("-> UART Add Message Type");
+    if (!WsV2._uart_controller->Handle_UartAdd(stream)) {
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_uart_remove_tag:
+    WS_DEBUG_PRINTLN("-> UART Remove Message Type");
+    if (!WsV2._uart_controller->Handle_UartRemove(stream)) {
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_uart_write_tag:
+    WS_DEBUG_PRINTLN("-> UART Write Message Type");
+    if (!WsV2._uart_controller->Handle_UartWrite(stream)) {
+      return false;
+    }
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
@@ -776,18 +795,18 @@ bool Wippersnapper_V2::generateWSTopics() {
               The error message to write to the serial and filesystem.
 */
 /**************************************************************************/
-void Wippersnapper_V2::errorWriteHangV2(String error) {
+void Wippersnapper_V2::errorWriteHangV2(const char* error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
-  _fileSystemV2->writeToBootOut(error.c_str());
+  _fileSystemV2->writeToBootOut(error);
   TinyUSBDevice.attach();
   delay(500);
 #endif
   // Signal and hang forever
   while (1) {
     WS_DEBUG_PRINTLN("ERROR: Halted execution");
-    WS_DEBUG_PRINTLN(error.c_str());
+    WS_DEBUG_PRINTLN(error);
     WsV2.feedWDTV2();
     statusLEDBlink(WS_LED_STATUS_ERROR_RUNTIME);
     delay(1000);
@@ -948,7 +967,7 @@ void Wippersnapper_V2::runNetFSMV2() {
               instead hang indefinitely, holding the WIPPER drive open
 */
 /**************************************************************************/
-void Wippersnapper_V2::haltErrorV2(String error, ws_led_status_t ledStatusColor,
+void Wippersnapper_V2::haltErrorV2(const char* error, ws_led_status_t ledStatusColor,
                                    bool reboot) {
   WS_DEBUG_PRINT("ERROR ");
   if (reboot) {
@@ -1410,6 +1429,7 @@ ws_status_t Wippersnapper_V2::run() {
   WsV2._i2c_controller->update();
 
   // TODO: Process UART sensor events
+  WsV2._uart_controller->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

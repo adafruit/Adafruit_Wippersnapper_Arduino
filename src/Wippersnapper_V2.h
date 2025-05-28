@@ -108,6 +108,7 @@
 #include "components/pwm/controller.h"
 #include "components/sensor/model.h"
 #include "components/servo/controller.h"
+#include "components/uart/controller.h"
 
 // Display
 #ifdef USE_DISPLAY
@@ -150,6 +151,7 @@ class I2cController;
 class PixelsController;
 class PWMController;
 class ServoController;
+class UARTController;
 
 /**************************************************************************/
 /*!
@@ -214,10 +216,10 @@ public:
   void BlinkKATStatus();
 
   // Error handling helpers
-  void haltErrorV2(String error,
+  void haltErrorV2(const char* error,
                    ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME,
                    bool reboot = true);
-  void errorWriteHangV2(String error);
+  void errorWriteHangV2(const char* error);
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode
 
@@ -236,10 +238,6 @@ public:
   ws_display_ui_helper *_ui_helperV2 =
       nullptr; ///< Instance of display UI helper class
 #endif
-  // ws_pixels *_ws_pixelsComponentV2; ///< ptr to instance of ws_pixels class
-  // ws_pwm *_pwmComponentV2;          ///< Instance of pwm class
-  // ws_servo *_servoComponentV2;      ///< Instance of servo class
-  // ws_uart *_uartComponentV2;        ///< Instance of UART class
 
   // API v2 Components
   CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
@@ -256,6 +254,7 @@ public:
   PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
   ServoController *_servo_controller =
       nullptr; ///< Instance of Servo controller
+  UARTController *_uart_controller = nullptr; ///< Instance of UART controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
