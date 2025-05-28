@@ -52,14 +52,19 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[uart] ERROR: No configuration provided for UART device!");
     return false;
   }
-  // Get the serial and device configuration from the UartAdd message
+
+  // Configure the UART hardware instance using the provided serial configuration
   wippersnapper_uart_UartSerialConfig cfg_serial = add_msg->cfg_serial;
+  UARTHardware *uart_hardware = new UARTHardware();
+  if (!uart_hardware->ConfigureSerial(cfg_serial)) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to configure UART hardware!");
+    delete uart_hardware; // cleanup the instance
+    return false;
+  }
+
+  // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
 
-  // Let's first configure the hardware serial settings
-  // TODO: Implement hardware serial configuration
-  // Create new uarthardware instance 
-  // then, create a new UartDevice "driver" on the hardware layer (UARTHardware)
 
   // TODO: Publish back to IO that the UART device was added
   return true;

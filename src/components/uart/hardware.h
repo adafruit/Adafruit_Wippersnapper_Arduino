@@ -40,6 +40,7 @@ public:
   UARTHardware();
   ~UARTHardware();
   bool ConfigureSerial(const wippersnapper_uart_UartSerialConfig &config);
+  uint8_t UartPacketFormatToConfig(const wippersnapper_uart_UartPacketFormat uart_format);
   bool isHardwareSerial() const;
   bool isSoftwareSerial() const;
 private:

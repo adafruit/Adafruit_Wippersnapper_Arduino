@@ -40,6 +40,7 @@ public:
   void update();
 private:
   UARTModel *_uart_model; ///< UART model
+  std::vector<UARTHardware *> _uart_hardware; ///< Vector of UARTHardware instances
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif // WS_UART_CONTROLLER_H
