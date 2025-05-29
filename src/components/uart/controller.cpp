@@ -62,7 +62,48 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
-  // TODO: Store device_id within the driver instance
+  wippersnapper_uart_UartDeviceType device_type = cfg_device.device_type;
+
+  // TODO: Refactor this out into a factory method or similar
+  drvUartBase *uart_driver = nullptr;
+  switch (device_type) {
+  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_UNSPECIFIED:
+    WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
+    return false;
+  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT:
+    WS_DEBUG_PRINTLN("[uart] Generic Input device type not implemented!");
+    break;
+  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_OUTPUT:
+    WS_DEBUG_PRINTLN("[uart] Generic Output device type not implemented!");
+    break;
+  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
+    WS_DEBUG_PRINTLN("[uart] GPS device type not implemented!");
+    break;
+  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
+    WS_DEBUG_PRINTLN("[uart] PM2.5 AQI device type not implemented!");
+    // Create a new PM2.5 AQI driver instance
+    // TODO: Support SoftwareSerial as well, currently only HardwareSerial
+    // here?!
+    uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
+                                  device_type, cfg_device.device_id);
+    break;
+  case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:
+    WS_DEBUG_PRINTLN("[uart] TM22XX device type not implemented!");
+    break;
+  default:
+    WS_DEBUG_PRINTLN("[uart] ERROR: Unknown device type!");
+    return false;
+  }
+
+  // Attempt to initialize the UART driver
+  if (!uart_driver->begin()) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
+    delete uart_driver; // cleanup
+    return false;
+  }
+
+  // TODO: Attempt to configure the UART driver with the device-specific
+  // configuration, wippersnapper_uart_UartDeviceConfig
 
   // TODO: Publish back to IO that the UART device was added
   return true;
