@@ -71,6 +71,7 @@ typedef enum _wippersnapper_uart_GenericDeviceLineEnding {
 typedef struct _wippersnapper_uart_UartSerialConfig {
     char pin_rx[16]; /* * The pin on which to receive on. */
     char pin_tx[16]; /* * The pin on which to transmit with. */
+    uint32_t uart_nbr; /* * The UART bus number to use, eg: 0, 1, 2, etc. */
     uint32_t baud_rate; /* * The desired baudrate, in bits per second. */
     wippersnapper_uart_UartPacketFormat format; /* * The data, parity, and stop bits. */
     float timeout; /* * Maximum milliseconds to wait for serial data. Defaults to 1000 ms. */
@@ -194,7 +195,7 @@ extern "C" {
 
 
 /* Initializer values for message structs */
-#define wippersnapper_uart_UartSerialConfig_init_default {"", "", 0, _wippersnapper_uart_UartPacketFormat_MIN, 0, 0, 0}
+#define wippersnapper_uart_UartSerialConfig_init_default {"", "", 0, 0, _wippersnapper_uart_UartPacketFormat_MIN, 0, 0, 0}
 #define wippersnapper_uart_GenericUartInputConfig_init_default {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN}
 #define wippersnapper_uart_TrinamicDynamixelConfig_init_default {0}
 #define wippersnapper_uart_PM25AQIConfig_init_default {0}
@@ -204,7 +205,7 @@ extern "C" {
 #define wippersnapper_uart_UartRemove_init_default {""}
 #define wippersnapper_uart_UartWrite_init_default {{{NULL}, NULL}, 0, {{{NULL}, NULL}}}
 #define wippersnapper_uart_UartWritten_init_default {{{NULL}, NULL}, 0}
-#define wippersnapper_uart_UartSerialConfig_init_zero {"", "", 0, _wippersnapper_uart_UartPacketFormat_MIN, 0, 0, 0}
+#define wippersnapper_uart_UartSerialConfig_init_zero {"", "", 0, 0, _wippersnapper_uart_UartPacketFormat_MIN, 0, 0, 0}
 #define wippersnapper_uart_GenericUartInputConfig_init_zero {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN}
 #define wippersnapper_uart_TrinamicDynamixelConfig_init_zero {0}
 #define wippersnapper_uart_PM25AQIConfig_init_zero {0}
@@ -218,11 +219,12 @@ extern "C" {
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_uart_UartSerialConfig_pin_rx_tag 1
 #define wippersnapper_uart_UartSerialConfig_pin_tx_tag 2
-#define wippersnapper_uart_UartSerialConfig_baud_rate_tag 3
-#define wippersnapper_uart_UartSerialConfig_format_tag 4
-#define wippersnapper_uart_UartSerialConfig_timeout_tag 5
-#define wippersnapper_uart_UartSerialConfig_use_sw_serial_tag 6
-#define wippersnapper_uart_UartSerialConfig_sw_serial_invert_tag 7
+#define wippersnapper_uart_UartSerialConfig_uart_nbr_tag 3
+#define wippersnapper_uart_UartSerialConfig_baud_rate_tag 4
+#define wippersnapper_uart_UartSerialConfig_format_tag 5
+#define wippersnapper_uart_UartSerialConfig_timeout_tag 6
+#define wippersnapper_uart_UartSerialConfig_use_sw_serial_tag 7
+#define wippersnapper_uart_UartSerialConfig_sw_serial_invert_tag 8
 #define wippersnapper_uart_GenericUartInputConfig_name_tag 1
 #define wippersnapper_uart_GenericUartInputConfig_line_ending_tag 2
 #define wippersnapper_uart_TrinamicDynamixelConfig_device_id_tag 1
@@ -248,11 +250,12 @@ extern "C" {
 #define wippersnapper_uart_UartSerialConfig_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, STRING,   pin_rx,            1) \
 X(a, STATIC,   SINGULAR, STRING,   pin_tx,            2) \
-X(a, STATIC,   SINGULAR, UINT32,   baud_rate,         3) \
-X(a, STATIC,   SINGULAR, UENUM,    format,            4) \
-X(a, STATIC,   SINGULAR, FLOAT,    timeout,           5) \
-X(a, STATIC,   SINGULAR, BOOL,     use_sw_serial,     6) \
-X(a, STATIC,   SINGULAR, BOOL,     sw_serial_invert,   7)
+X(a, STATIC,   SINGULAR, UINT32,   uart_nbr,          3) \
+X(a, STATIC,   SINGULAR, UINT32,   baud_rate,         4) \
+X(a, STATIC,   SINGULAR, UENUM,    format,            5) \
+X(a, STATIC,   SINGULAR, FLOAT,    timeout,           6) \
+X(a, STATIC,   SINGULAR, BOOL,     use_sw_serial,     7) \
+X(a, STATIC,   SINGULAR, BOOL,     sw_serial_invert,   8)
 #define wippersnapper_uart_UartSerialConfig_CALLBACK NULL
 #define wippersnapper_uart_UartSerialConfig_DEFAULT NULL
 
@@ -352,7 +355,7 @@ extern const pb_msgdesc_t wippersnapper_uart_UartWritten_msg;
 #define wippersnapper_uart_TrinamicDynamixelConfig_size 6
 #define wippersnapper_uart_UartAdded_size        35
 #define wippersnapper_uart_UartRemove_size       33
-#define wippersnapper_uart_UartSerialConfig_size 51
+#define wippersnapper_uart_UartSerialConfig_size 57
 
 #ifdef __cplusplus
 } /* extern "C" */

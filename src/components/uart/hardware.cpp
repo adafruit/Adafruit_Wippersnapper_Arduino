@@ -38,7 +38,7 @@ UARTHardware::~UARTHardware() {
             The UART packet format to convert.
     @return The corresponding xSerial config value.
 */
-uint8_t UARTHardware::UartPacketFormatToConfig(const wippersnapper_uart_UartPacketFormat uart_pkt_fmt) {
+uint16_t UARTHardware::UartPacketFormatToConfig(const wippersnapper_uart_UartPacketFormat uart_pkt_fmt) {
   switch (uart_pkt_fmt) {
     case wippersnapper_uart_UartPacketFormat_UART_PACKET_FORMAT_8N1:
       return SERIAL_8N1;
@@ -100,7 +100,59 @@ uint8_t UARTHardware::UartPacketFormatToConfig(const wippersnapper_uart_UartPack
 */
 bool UARTHardware::ConfigureSerial(const wippersnapper_uart_UartSerialConfig &config) {
   // TODO: IMPLEMENT HERE
-  uint8_t config = UartPacketFormatToConfig(config.format);
+  uint16_t cfg = UartPacketFormatToConfig(config.format);
+
+  // save the pins
+  int8_t rx_pin = -1;
+  int8_t tx_pin = -1;
+  if (config.pin_rx[0] == 'D' || config.pin_rx[0] == 'A') {
+    rx_pin = atoi(config.pin_rx + 1);
+  } else {
+    rx_pin = atoi(config.pin_rx);
+  }
+  if (config.pin_tx[0] == 'D' || config.pin_tx[0] == 'A') {
+    tx_pin = atoi(config.pin_tx + 1);
+  } else {
+    tx_pin = atoi(config.pin_tx);
+  }
+
+
+  if (config.use_sw_serial) {
+    // Does this architecture support SoftwareSerial?
+    #if HAS_SW_SERIAL
+    // Create a new SoftwareSerial instance
+    _swSerial = new SoftwareSerial(rx_pin, tx_pin, config.sw_serial_invert);
+    if (_swSerial == nullptr) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to allocate a SoftwareSerial instance!");
+      return false;
+    }
+    _swSerial->begin((unsigned long) config.baud_rate);
+    #endif // HAS_SW_SERIAL
+  } else {
+    // Create a new HardwareSerial instance
+    _hwSerial = new HardwareSerial(config.uart_nbr);
+    if (_hwSerial == nullptr) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to allocate HardwareSerial instance!");
+      return false;
+    }
+    // Calls to HardwareSerial begin() differ based on the platform
+    #if ARDUINO_ARCH_ESP32
+    _hwSerial->begin((unsigned long) config.baud_rate, (uint32_t)cfg, rx_pin, tx_pin, false,(unsigned long) config.timeout);
+    #elif ARDUINO_ARCH_RP2040
+    _hwSerial->setRx(rx_pin);
+    _hwSerial->setTx(tx_pin);
+    _hwSerial->begin((unsigned long) config.baud_rate, (uint32_t)cfg);
+    #else 
+    // ESP8266, SAMD, and other platforms
+    // take the default Arduino/Wiring API arguments
+    _hwSerial->begin((unsigned long) config.baud_rate, (uint32_t)cfg);
+    #endif
+  }
+
+
+
+  
+
   return true;
 }
 
