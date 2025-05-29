@@ -18,17 +18,19 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_ESP8266)
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_SAMD) ||              \
+    defined(ARDUINO_ARCH_ESP8266)
 // SAMD supports native Arduino SoftwareSerial API
 // ESP8266 supports SoftwareSerial in the ESP8266 Arduino core
-// RP2040/RP2350 supports a wrapper around SoftwareSerial and emulation via PIOUART
-// (see: https://arduino-pico.readthedocs.io/en/latest/piouart.html#softwareserial-emulation)
+// RP2040/RP2350 supports a wrapper around SoftwareSerial and emulation via
+// PIOUART (see:
+// https://arduino-pico.readthedocs.io/en/latest/piouart.html#softwareserial-emulation)
 #include <SoftwareSerial.h>
 #define HAS_SW_SERIAL 1 ///< Indicates that the board supports SoftwareSerial
 #else
-#define HAS_SW_SERIAL 0 ///< Indicates that the board DOES NOT support SoftwareSerial
+#define HAS_SW_SERIAL                                                          \
+  0 ///< Indicates that the board DOES NOT support SoftwareSerial
 #endif
-
 
 /**************************************************************************/
 /*!
@@ -37,16 +39,22 @@
 /**************************************************************************/
 class UARTHardware {
 public:
-  UARTHardware();
+  UARTHardware(const wippersnapper_uart_UartSerialConfig &config);
   ~UARTHardware();
-  bool ConfigureSerial(const wippersnapper_uart_UartSerialConfig &config);
-  uint16_t UartPacketFormatToConfig(const wippersnapper_uart_UartPacketFormat uart_format);
+  bool ConfigureSerial();
+  uint16_t UartPacketFormatToConfig(
+      const wippersnapper_uart_UartPacketFormat uart_format);
   bool isHardwareSerial() const;
   bool isSoftwareSerial() const;
+  int GetBusNumber();
+
 private:
+  wippersnapper_uart_UartSerialConfig
+      _config;                         ///< The UART serial configuration
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance for this bus
-  #if HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
-  #endif // HAS_SW_SERIAL
+#endif                                 // HAS_SW_SERIAL
+  int _uart_nbr = -1; ///< The UART bus number this hardware instance is using
 };
 #endif // WS_UART_HARDWARE_H

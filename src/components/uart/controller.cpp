@@ -1,8 +1,8 @@
 /*!
  * @file src/components/uart/controller.cpp
  *
- * Controller for WipperSnapper's UART component, bridges between the UART.proto API,
- * the model, and the hardware layer.
+ * Controller for WipperSnapper's UART component, bridges between the UART.proto
+ * API, the model, and the hardware layer.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -30,7 +30,7 @@ UARTController::UARTController() {
 */
 /**************************************************************************/
 UARTController::~UARTController() {
- // TODO! Needs impl.
+  // TODO! Needs impl.
 }
 
 /**************************************************************************/
@@ -48,23 +48,27 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // Get ref. to the UartAdd message within the model
   wippersnapper_uart_UartAdd *add_msg = _uart_model->GetUartAddMsg();
   // TODO: fix the id field, currently it is a callback and should be a string.
-  if (! add_msg->has_cfg_serial && ! add_msg->has_cfg_device) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: No configuration provided for UART device!");
+  if (!add_msg->has_cfg_serial && !add_msg->has_cfg_device) {
+    WS_DEBUG_PRINTLN(
+        "[uart] ERROR: No configuration provided for UART device!");
     return false;
   }
 
-  // Configure the UART hardware instance using the provided serial configuration
+  // Configure a UART hardware instance using the provided serial configuration
   wippersnapper_uart_UartSerialConfig cfg_serial = add_msg->cfg_serial;
-  UARTHardware *uart_hardware = new UARTHardware();
-  if (!uart_hardware->ConfigureSerial(cfg_serial)) {
+  UARTHardware *uart_hardware = new UARTHardware(cfg_serial);
+  if (!uart_hardware->ConfigureSerial()) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to configure UART hardware!");
-    delete uart_hardware; // cleanup the instance
+    delete uart_hardware; // cleanup
     return false;
   }
+  // Add the newly configured hardware instance to the controller's vector of
+  // UART ports
+  _uart_ports.push_back(uart_hardware);
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
-
+  // TODO: Store device_id within the driver instance
 
   // TODO: Publish back to IO that the UART device was added
   return true;
@@ -79,8 +83,14 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
 */
 /**************************************************************************/
 bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
-    // TODO: Needs implementation
-    return false;
+  // TODO: Needs implementation
+
+  // TO ADDRESS:
+  // 1) Hardware is the uart_nbr
+  // 2) type is the driver type
+  // 3) device_id is the unique identifier for the UART device, stored by the
+  // driver
+  return false;
 }
 
 /**************************************************************************/
@@ -92,8 +102,13 @@ bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
 */
 /**************************************************************************/
 bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
-    // TODO: Needs implementation
-    return false;
+  // TODO: Needs implementation
+  // TO ADDRESS:
+  // 1) Hardware is the uart_nbr
+  // 2) type is the driver type
+  // 3) device_id is the unique identifier for the UART device, stored by the
+  // driver
+  return false;
 }
 
 /**************************************************************************/
@@ -102,5 +117,10 @@ bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
 */
 /**************************************************************************/
 void UARTController::update() {
-    // TODO: Needs implementation
+  // TODO: Needs implementation
+  // TO ADDRESS:
+  // 1) Hardware is the uart_nbr
+  // 2) type is the driver type
+  // 3) device_id is the unique identifier for the UART device, stored by the
+  // driver
 }
