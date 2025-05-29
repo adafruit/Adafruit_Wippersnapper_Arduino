@@ -14,30 +14,24 @@
  */
 #include "controller.h"
 
-/**************************************************************************/
 /*!
     @brief  Ctor for PWMController.
 */
-/**************************************************************************/
 PWMController::PWMController() {
   _pwm_model = new PWMModel();
   _active_pwm_pins = 0;
 }
 
-/**************************************************************************/
 /*!
     @brief  Dtor for PWMController.
 */
-/**************************************************************************/
 PWMController::~PWMController() { delete _pwm_model; }
 
-/**************************************************************************/
 /*!
     @brief  Handles the PWM_Add message.
     @param  stream The stream containing the message data.
     @return True if the message was handled successfully, false otherwise.
 */
-/**************************************************************************/
 bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
   bool did_attach;
   if (!_pwm_model->DecodePWMAdd(stream)) {
@@ -73,13 +67,11 @@ bool PWMController::Handle_PWM_Add(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles the PWM_Remove message.
     @param  stream The stream containing the message data.
     @return True if the message was handled successfully, false otherwise.
 */
-/**************************************************************************/
 bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
   if (!_pwm_model->DecodePWMRemove(stream)) {
     WS_DEBUG_PRINTLN("[pwm] Error: Failed to decode PWMRemove message!");
@@ -117,14 +109,12 @@ bool PWMController::Handle_PWM_Remove(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Returns the index of the PWM hardware object that corresponds
             to the given pin.
     @param  pin The pin number to search for.
     @return The index of the PWM hardware object, or -1 if not found.
 */
-/**************************************************************************/
 int PWMController::GetPWMHardwareIdx(uint8_t pin) {
   for (int i = 0; i < _active_pwm_pins; i++) {
     if (_pwm_hardware[i]->GetPin() == pin) {
@@ -134,13 +124,11 @@ int PWMController::GetPWMHardwareIdx(uint8_t pin) {
   return -1;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles the PWM_Write_DutyCycle message.
     @param  stream The stream containing the message data.
     @return True if the message was handled successfully, false otherwise.
 */
-/**************************************************************************/
 bool PWMController::Handle_PWM_Write_DutyCycle(pb_istream_t *stream) {
   if (!_pwm_model->DecodePWMWriteDutyCycle(stream)) {
     WS_DEBUG_PRINTLN(
@@ -170,13 +158,11 @@ bool PWMController::Handle_PWM_Write_DutyCycle(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles the PWM_Write_Frequency message.
     @param  stream The stream containing the message data.
     @return True if the message was handled successfully, false otherwise.
 */
-/**************************************************************************/
 bool PWMController::Handle_PWM_Write_Frequency(pb_istream_t *stream) {
   if (!_pwm_model->DecodePWMWriteFrequency(stream)) {
     WS_DEBUG_PRINTLN(

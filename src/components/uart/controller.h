@@ -25,11 +25,9 @@ class Wippersnapper_V2; ///< Forward declaration
 class UARTModel;        ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
 
-/**************************************************************************/
 /*!
     @brief  Routes messages between the uart.proto API and the hardware.
 */
-/**************************************************************************/
 class UARTController {
 public:
   UARTController();

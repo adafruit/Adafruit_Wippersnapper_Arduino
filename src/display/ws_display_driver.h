@@ -25,11 +25,9 @@ LV_FONT_DECLARE(errorTriangle); ///< Error triangle symbol/font
 
 class Wippersnapper_V2; // fwd decl
 
-/***************************************************************************/
 /*!
     @brief  Display driver for LVGL and LVGL_Glue in WipperSnapper.
 */
-/***************************************************************************/
 class ws_display_driver {
 public:
   ws_display_driver(){};

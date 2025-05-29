@@ -23,11 +23,9 @@ class Wippersnapper_V2; ///< Forward declaration
 class DS18X20Model;     ///< Forward declaration
 class DS18X20Hardware;  ///< Forward declaration
 
-/**************************************************************************/
 /*!
     @brief  Routes messages between the ds18x20.proto API and the hardware.
 */
-/**************************************************************************/
 class DS18X20Controller {
 public:
   DS18X20Controller();

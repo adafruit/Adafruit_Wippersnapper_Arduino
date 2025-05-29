@@ -60,13 +60,11 @@ Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
 
-/**************************************************************************/
 /*!
     @brief    Formats the flash filesystem as FAT12.
     @returns  FR_OK if filesystem formatted correctly,
                 otherwise any FRESULT enum.
 */
-/**************************************************************************/
 FRESULT format_fs_fat12(void) {
   FATFS elmchamFatfs_v2;
   uint8_t workbuf_v2[4096];
@@ -97,11 +95,9 @@ FRESULT format_fs_fat12(void) {
   return r;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes USB-MSC and the QSPI flash filesystem.
 */
-/**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
   // Detach USB device during init.
   TinyUSBDevice.detach();
@@ -161,22 +157,18 @@ Wippersnapper_FS::Wippersnapper_FS() {
   }
 }
 
-/************************************************************/
 /*!
     @brief    Filesystem destructor
 */
-/************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {
   // Unmount filesystem
   wipperFatFs_v2.end();
 }
 
-/**************************************************************************/
 /*!
     @brief    Attempts to obtain the hardware's CS pin from the
               config.json file.
 */
-/**************************************************************************/
 void Wippersnapper_FS::GetSDCSPin() {
   File32 file_cfg;
   DeserializationError error;
@@ -200,12 +192,10 @@ void Wippersnapper_FS::GetSDCSPin() {
   file_cfg.close();
 }
 
-/**************************************************************************/
 /*!
     @brief    Writes files to the filesystem to disable macOS from indexing.
     @returns  True if files written successfully, false otherwise.
 */
-/**************************************************************************/
 bool disableMacOSIndexing() {
   wipperFatFs_v2.mkdir("/.fseventsd/");
   File32 writeFile = wipperFatFs_v2.open("/.fseventsd/no_log", FILE_WRITE);
@@ -226,14 +216,12 @@ bool disableMacOSIndexing() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes the flash filesystem.
     @param    force_format
                 If true, forces a new filesystem to be created. [DESTRUCTIVE]
     @return   True if filesystem initialized correctly, false otherwise.
 */
-/**************************************************************************/
 bool Wippersnapper_FS::writeFSContents() {
   // If CircuitPython was previously installed - erase CircuitPython's default
   // filesystem
@@ -259,11 +247,9 @@ bool Wippersnapper_FS::writeFSContents() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes the USB MSC device.
 */
-/**************************************************************************/
 void Wippersnapper_FS::initUSBMSC() {
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
@@ -288,22 +274,18 @@ void Wippersnapper_FS::initUSBMSC() {
   delay(500);
 }
 
-/**************************************************************************/
 /*!
     @brief    Checks if secrets.json file exists on the flash filesystem.
     @returns  True if secrets.json file exists, False otherwise.
 */
-/**************************************************************************/
 bool Wippersnapper_FS::getSecretsFile() {
   // Does secrets.json file exist?
   return wipperFatFs_v2.exists("/secrets.json");
 }
 
-/**************************************************************************/
 /*!
     @brief    Erases the default CircuitPython filesystem if it exists.
 */
-/**************************************************************************/
 void Wippersnapper_FS::eraseCPFS() {
   if (wipperFatFs_v2.exists("/boot_out.txt")) {
     wipperFatFs_v2.remove("/boot_out.txt");
@@ -313,22 +295,18 @@ void Wippersnapper_FS::eraseCPFS() {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Erases the existing "wipper_boot_out.txt" file from the FS.
 */
-/**************************************************************************/
 void Wippersnapper_FS::eraseBootFile() {
   // overwrite previous boot_out file on each boot
   if (wipperFatFs_v2.exists("/wipper_boot_out.txt"))
     wipperFatFs_v2.remove("/wipper_boot_out.txt");
 }
 
-/**************************************************************************/
 /*!
     @brief    Creates or overwrites `wipper_boot_out.txt` file to FS.
 */
-/**************************************************************************/
 bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   char sMAC[18] = {0};
@@ -368,11 +346,9 @@ bool Wippersnapper_FS::createBootFile() {
   return is_success;
 }
 
-/**************************************************************************/
 /*!
     @brief    Creates a default secrets.json file on the filesystem.
 */
-/**************************************************************************/
 void Wippersnapper_FS::createSecretsFile() {
   // Open file for writing
   File32 secretsFile = wipperFatFs_v2.open("/secrets.json", FILE_WRITE);
@@ -398,11 +374,9 @@ void Wippersnapper_FS::createSecretsFile() {
   delay(2500);
 }
 
-/**************************************************************************/
 /*!
     @brief    Parses a secrets.json file on the flash filesystem.
 */
-/**************************************************************************/
 void Wippersnapper_FS::parseSecrets() {
   // Attempt to open the secrets.json file for reading
   File32 secretsFile = wipperFatFs_v2.open("/secrets.json");
@@ -513,13 +487,11 @@ void Wippersnapper_FS::parseSecrets() {
   secretsFile.close();
 }
 
-/**************************************************************************/
 /*!
     @brief    Appends message string to wipper_boot_out.txt file.
     @param    str
                 PROGMEM string.
 */
-/**************************************************************************/
 void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
   File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
@@ -530,13 +502,11 @@ void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   bootFile.close();
 }
 
-/**************************************************************************/
 /*!
     @brief    Halts execution and blinks the status LEDs yellow.
     @param    msg
                 Error message to print to serial console.
 */
-/**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg) {
   TinyUSBDevice.attach();
   delay(500);
@@ -549,13 +519,11 @@ void Wippersnapper_FS::fsHalt(String msg) {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Halts execution and blinks the status LEDs yellow.
     @param    msg
                 Error message to print to serial console.
 */
-/**************************************************************************/
 void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
   TinyUSBDevice.attach();
   delay(500);
@@ -569,11 +537,9 @@ void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
 }
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
-/**************************************************************************/
 /*!
     @brief    Creates a default display_config.json file on the filesystem.
 */
-/**************************************************************************/
 void Wippersnapper_FS::createDisplayConfig() {
   // Open file for writing
   File32 displayFile = wipperFatFs_v2.open("/display_config.json", FILE_WRITE);
@@ -603,13 +569,11 @@ void Wippersnapper_FS::createDisplayConfig() {
   delay(2500); // give FS some time to write the file
 }
 
-/**************************************************************************/
 /*!
     @brief    Parses a display_config.json file on the flash filesystem.
     @param    dispCfg
                 displayConfig struct to populate.
 */
-/**************************************************************************/
 void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   // Check if display_config.json file exists, if not, generate it
   if (!wipperFatFs_v2.exists("/display_config.json")) {
@@ -641,7 +605,6 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
 }
 #endif // ARDUINO_FUNHOUSE_ESP32S2
 
-/**************************************************************************/
 /*!
     @brief    Callback invoked when received READ10 command. Copies disk's
               data up to buffer.
@@ -653,7 +616,6 @@ void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
                 Desired size of buffer to read.
     @returns  Number of written bytes (must be multiple of block size)
 */
-/**************************************************************************/
 int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize) {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it,
@@ -662,7 +624,6 @@ int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize) {
                                                                     : -1;
 }
 
-/**************************************************************************/
 /*!
     @brief    Callback invoked when received WRITE command. Process data
               in buffer to disk's storage.
@@ -674,7 +635,6 @@ int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize) {
                 Desired size of buffer to write.
     @returns  Number of written bytes (must be multiple of block size)
 */
-/**************************************************************************/
 int32_t qspi_msc_write_cb_v2(uint32_t lba, uint8_t *buffer, uint32_t bufsize) {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it,
@@ -682,12 +642,10 @@ int32_t qspi_msc_write_cb_v2(uint32_t lba, uint8_t *buffer, uint32_t bufsize) {
   return flash_v2.writeBlocks(lba, buffer, bufsize / 512) ? bufsize : -1;
 }
 
-/***************************************************************************/
 /*!
     @brief  Callback invoked when WRITE10 command is completed (status
             received and accepted by host). Used to flush any pending cache.
 */
-/***************************************************************************/
 void qspi_msc_flush_cb_v2(void) {
   // sync w/flash
   flash_v2.syncBlocks();

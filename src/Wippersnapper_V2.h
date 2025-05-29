@@ -23,13 +23,11 @@
 #define WS_DEBUG          /**< Define to enable debugging to serial terminal */
 #define WS_PRINTER Serial /**< Where debug messages will be printed */
 
-/**************************************************************************/
 /*!
     @brief  Debug print macros for WipperSnapper debugging output
     @details These macros provide debug output functionality when WS_DEBUG is
    defined
 */
-/**************************************************************************/
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
@@ -49,13 +47,11 @@
   {} /**< Debug println */
 #endif
 
-/**************************************************************************/
 /*!
     @brief  delay() function for use with a watchdog timer
     @param  timeout
             Delay duration in milliseconds
 */
-/**************************************************************************/
 #define WS_DELAY_WITH_WDT(timeout)                                             \
   {                                                                            \
     unsigned long start = millis();                                            \
@@ -153,12 +149,10 @@ class PWMController;
 class ServoController;
 class UARTController;
 
-/**************************************************************************/
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
             Wippersnapper interface.
 */
-/**************************************************************************/
 class Wippersnapper_V2 {
 public:
   Wippersnapper_V2();

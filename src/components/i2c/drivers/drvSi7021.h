@@ -21,15 +21,12 @@
 #include <Adafruit_Si7021.h>
 #include <Wire.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SI7021 sensor.
 */
-/**************************************************************************/
 class drvSi7021 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a SI7021 sensor.
       @param    i2c
@@ -41,35 +38,29 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvSi7021(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an SI7021 sensor.
   */
-  /*******************************************************************************/
   ~drvSi7021() {
     // Called when a Si7021 component is deleted.
     delete _si7021;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the SI7021 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _si7021 = new Adafruit_Si7021(_i2c);
     return _si7021->begin();
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SI7021's current temperature.
       @param    tempEvent
@@ -77,14 +68,12 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
     tempEvent->temperature = _si7021->readTemperature();
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SI7021's current relative humidity reading.
       @param    humidEvent
@@ -92,7 +81,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
     humidEvent->relative_humidity = _si7021->readHumidity();

@@ -29,25 +29,20 @@
 #include <NetworkClientSecure.h>
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper client instance
 
-/****************************************************************************/
 /*!
     @brief  Class for using the ESP32 network interface.
 */
-/****************************************************************************/
 class ws_wifi_esp32 : public Wippersnapper_V2 {
 
 public:
-  /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for ESP32 devices.
   */
-  /**************************************************************************/
   ws_wifi_esp32() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
   }
 
-  /**************************************************************************/
   /*!
   @brief  Overload for ESP32 devices without filesystem-backed provisioning.
     @param  aioUsername
@@ -63,7 +58,6 @@ public:
     @param  brokerPort
                 Adafruit IO broker port.
   */
-  /**************************************************************************/
   ws_wifi_esp32(const char *aioUsername, const char *aioKey,
                 const char *netSSID, const char *netPass, const char *brokerURL,
                 uint16_t brokerPort)
@@ -83,11 +77,9 @@ public:
     WsV2._configV2.io_port = brokerPort;
   }
 
-  /**************************************************************************/
   /*!
   @brief  Destructor for the Adafruit IO AirLift class.
   */
-  /**************************************************************************/
   ~ws_wifi_esp32() {
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
@@ -95,7 +87,6 @@ public:
       delete _mqtt_client_insecure;
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   @param  ssid
@@ -103,7 +94,6 @@ public:
   @param  ssidPassword
             WiFi network's password.
   */
-  /********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
 
@@ -116,22 +106,18 @@ public:
     }
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   */
-  /**********************************************************/
   void set_ssid_pass() {
     _ssid = WsV2._configV2.network.ssid;
     _pass = WsV2._configV2.network.pass;
   }
 
-  /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
   @returns True if `_network_ssid` is found, False otherwise.
   */
-  /***********************************************************/
   bool check_valid_ssid() {
     // Set WiFi to station mode and disconnect from an AP if it was previously
     // connected
@@ -183,33 +169,27 @@ public:
     return false;
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the ESP32's unique client identifier
   @note   On ESP32, the UID is the MAC address.
   */
-  /********************************************************/
   void getMacAddr() {
     uint8_t mac[6] = {0};
     Network.macAddress(mac);
     memcpy(WsV2._macAddrV2, mac, sizeof(mac));
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the current network RSSI value
   @return int32_t RSSI value
   */
-  /********************************************************/
   int32_t getRSSI() { return WiFi.RSSI(); }
 
-  /********************************************************/
   /*!
   @brief  Initializes the MQTT client
   @param  clientID
           MQTT client identifier
   */
-  /********************************************************/
   void setupMQTTClient(const char *clientID) {
     if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
         strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
@@ -231,12 +211,10 @@ public:
     }
   }
 
-  /********************************************************/
   /*!
   @brief  Returns the network status of an ESP32 module.
   @return ws_status_t
   */
-  /********************************************************/
   ws_status_t networkStatus() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
@@ -250,12 +228,10 @@ public:
     }
   }
 
-  /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
   @return ESP32
   */
-  /*******************************************************************/
   const char *connectionType() { return "ESP32"; }
 
 protected:
@@ -324,11 +300,9 @@ protected:
       "7h4SeM6Y8l/7MBRpPCz6l8Y=\n"
       "-----END CERTIFICATE-----\n"; ///< Root certificate for io.adafruit.com
 
-  /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
   */
-  /**************************************************************************/
   void _connect() {
 
     if (WiFi.status() == WL_CONNECTED)
@@ -369,11 +343,9 @@ protected:
     }
   }
 
-  /**************************************************************************/
   /*!
       @brief  Disconnects from the wireless network.
   */
-  /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
     delay(500);

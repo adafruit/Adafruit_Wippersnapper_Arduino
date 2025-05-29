@@ -14,21 +14,17 @@
  */
 #include "controller.h"
 
-/**************************************************************************/
 /*!
     @brief  Constructor
 */
-/**************************************************************************/
 ServoController::ServoController() {
   _servo_model = new ServoModel();
   _active_servo_pins = 0;
 }
 
-/**************************************************************************/
 /*!
     @brief  Destructor
 */
-/**************************************************************************/
 ServoController::~ServoController() {
   // De-initialize all servos
   for (int i = 0; i < _active_servo_pins; i++) {
@@ -44,7 +40,6 @@ ServoController::~ServoController() {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief  Publishes a ServoAdded message to the broker
     @param  servo_pin
@@ -53,7 +48,6 @@ ServoController::~ServoController() {
             True if the servo was attached successfully, False otherwise
     @returns True if successful, False otherwise
 */
-/**************************************************************************/
 bool ServoController::PublishServoAddedMsg(
     const char *servo_pin, bool did_attach,
     wippersnapper_servo_ServoAdd *msg_add) {
@@ -66,14 +60,12 @@ bool ServoController::PublishServoAddedMsg(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a ServoAdd message
     @param  stream
             pb_istream_t to decode from
     @returns True if successful, False otherwise
 */
-/**************************************************************************/
 bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
   bool did_attach;
   if (_active_servo_pins >= MAX_SERVOS) {
@@ -116,14 +108,12 @@ bool ServoController::Handle_Servo_Add(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a ServoWrite message
     @param  stream
             pb_istream_t to decode from
     @returns True if successful, False otherwise
 */
-/**************************************************************************/
 bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
   if (!_servo_model->DecodeServoWrite(stream)) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to decode ServoWrite message!");
@@ -141,14 +131,12 @@ bool ServoController::Handle_Servo_Write(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a ServoRemove message
     @param  stream
             pb_istream_t to decode from
     @returns True if successful, False otherwise
 */
-/**************************************************************************/
 bool ServoController::Handle_Servo_Remove(pb_istream_t *stream) {
   if (_active_servo_pins <= 0) {
     WS_DEBUG_PRINTLN("[servo] Error: No active servos!");

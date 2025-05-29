@@ -60,19 +60,15 @@ Wippersnapper_V2::Wippersnapper_V2() {
   WsV2._servo_controller = new ServoController();
 };
 
-/**************************************************************************/
 /*!
     @brief    Wippersnapper_V2 destructor
 */
-/**************************************************************************/
 Wippersnapper_V2::~Wippersnapper_V2() {}
 
-/**************************************************************************/
 /*!
     @brief    Provisions a WipperSnapper device with its network
               configuration and Adafruit IO credentials.
 */
-/**************************************************************************/
 void Wippersnapper_V2::provision() {
   // Obtain device's MAC address
   getMacAddr();
@@ -147,83 +143,68 @@ void Wippersnapper_V2::provision() {
 #endif
 }
 
-/**************************************************************************/
 /*!
     @brief    Disconnects from Adafruit IO+ Wippersnapper_V2.
 */
-/**************************************************************************/
 void Wippersnapper_V2::disconnect() { _disconnect(); }
 
 // Concrete class definition for abstract classes
 
-/****************************************************************************/
 /*!
     @brief    Connects to wireless network.
 */
-/****************************************************************************/
 void Wippersnapper_V2::_connect() {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::_connect()");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/****************************************************************************/
 /*!
     @brief    Disconnect Wippersnapper MQTT session and network.
 */
-/****************************************************************************/
 void Wippersnapper_V2::_disconnect() {
   WS_DEBUG_PRINTLN("WIppersnapper_V2::_disconnect");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets the network interface's unique identifer, typically the
               MAC address.
 */
-/****************************************************************************/
 void Wippersnapper_V2::getMacAddr() {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::getMacAddr");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/****************************************************************************/
 /*!
     @brief    Gets the network's RSSI.
     @return   int32_t RSSI value, 0 to 255, in dB
 */
-/****************************************************************************/
 int32_t Wippersnapper_V2::getRSSI() {
   WS_DEBUG_PRINTLN("Wiippersnapper_V2::getRSSI");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return 0;
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets up the MQTT client session.
     @param    clientID
               A unique client identifier string.
 */
-/****************************************************************************/
 void Wippersnapper_V2::setupMQTTClient(const char * /*clientID*/) {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::setupMQTTClient");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/****************************************************************************/
 /*!
     @brief    Returns the network's connection status
     @returns  Network status as ws_status_t.
 */
-/****************************************************************************/
 ws_status_t Wippersnapper_V2::networkStatus() {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::networkStatus");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return WS_IDLE;
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets the device's wireless network credentials.
     @param    ssid
@@ -231,49 +212,41 @@ ws_status_t Wippersnapper_V2::networkStatus() {
     @param    ssidPassword
               Your wireless network's password.
 */
-/****************************************************************************/
 void Wippersnapper_V2::set_ssid_pass(const char * /*ssid*/,
                                      const char * /*ssidPassword*/) {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets the device's wireless network credentials from the
               secrets.json configuration file.
 */
-/****************************************************************************/
 void Wippersnapper_V2::set_ssid_pass() {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::set_ssid_pass");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/***********************************************************/
 /*!
 @brief   Performs a scan of local WiFi networks.
 @returns True if `_network_ssid` is found, False otherwise.
 */
-/***********************************************************/
 bool Wippersnapper_V2::check_valid_ssid() {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::check_valid_ssid");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
   return false;
 }
 
-/****************************************************************************/
 /*!
     @brief    Configures the device's Adafruit IO credentials. This method
               should be used only if filesystem-backed provisioning is
               not avaliable.
 */
-/****************************************************************************/
 void Wippersnapper_V2::set_user_key() {
   WS_DEBUG_PRINTLN("Wippersnapper_V2::set_user_key");
   WS_DEBUG_PRINTLN("ERROR: Please define a network interface!");
 }
 
-/****************************************************************************/
 /*!
     @brief    Handles a Checkin Response message and initializes the
               device's GPIO classes.
@@ -282,7 +255,6 @@ void Wippersnapper_V2::set_user_key() {
     @returns  True if Checkin Response decoded and parsed successfully,
               False otherwise.
 */
-/****************************************************************************/
 bool handleCheckinResponse(pb_istream_t *stream) {
   // Decode the Checkin Response message
   if (!WsV2.CheckInModel->DecodeCheckinResponse(stream)) {
@@ -316,7 +288,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
 
 // Decoders //
 
-/******************************************************************************************/
 /*!
     @brief    Decodes a BrokerToDevice message and executes the asscoiated
    callback.
@@ -328,7 +299,6 @@ bool handleCheckinResponse(pb_istream_t *stream) {
               Optional arguments from decoder calling function.
     @returns  True if decoded and executed successfully, False otherwise.
 */
-/******************************************************************************************/
 bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
                             void **arg) {
   (void)arg; // marking unused parameters to avoid compiler warning
@@ -495,7 +465,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Called when client receives a message published across the
                 Adafruit IO MQTT /ws-b2d/ "signal topic".
@@ -504,7 +473,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
     @param    len
                 Length of data received from MQTT broker.
 */
-/**************************************************************************/
 void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("=> New B2D message!");
   wippersnapper_signal_BrokerToDevice msg_signal =
@@ -525,12 +493,10 @@ void cbBrokerToDevice(char *data, uint16_t len) {
   WS_DEBUG_PRINTLN("Decoded BrokerToDevice message!");
 }
 
-/**************************************************************************/
 /*!
     @brief    Decodes and parses a buffer containing configuration
               messages from the SD card.
 */
-/**************************************************************************/
 void callDecodeB2D() {
   for (size_t i = 0; i < WsV2._sharedConfigBuffers.size(); i++) {
     wippersnapper_signal_BrokerToDevice msg_signal =
@@ -548,7 +514,6 @@ void callDecodeB2D() {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Called when client receives a message published across the
                 Adafruit IO MQTT /error special topic.
@@ -557,7 +522,6 @@ void callDecodeB2D() {
     @param    len
                 Length of data received from MQTT broker.
 */
-/**************************************************************************/
 void cbErrorTopicV2(char *errorData, uint16_t len) {
   (void)len; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINT("IO Ban Error: ");
@@ -576,7 +540,6 @@ void cbErrorTopicV2(char *errorData, uint16_t len) {
   WsV2.haltErrorV2("IO MQTT Ban Error");
 }
 
-/**************************************************************************/
 /*!
     @brief    Called when client receives a message published across the
                 Adafruit IO MQTT /throttle special topic. Delays until
@@ -586,7 +549,6 @@ void cbErrorTopicV2(char *errorData, uint16_t len) {
     @param    len
                 Length of data received from MQTT broker.
 */
-/**************************************************************************/
 void cbThrottleTopicV2(char *throttleData, uint16_t len) {
   (void)len; // marking unused parameter to avoid compiler warning
   WS_DEBUG_PRINT("IO Throttle Error: ");
@@ -633,13 +595,11 @@ void cbThrottleTopicV2(char *throttleData, uint16_t len) {
 #endif
 }
 
-/**************************************************************************/
 /*!
     @brief    Attempts to generate unique device identifier.
     @returns  True if device identifier generated successfully,
               False otherwise.
 */
-/**************************************************************************/
 bool Wippersnapper_V2::generateDeviceUID() {
   // Generate device unique identifier
   // Set machine_name
@@ -683,14 +643,12 @@ bool Wippersnapper_V2::generateDeviceUID() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Generates device-specific Wippersnapper control topics and
               subscribes to them.
     @returns  True if memory for control topics allocated successfully,
                 False otherwise.
 */
-/**************************************************************************/
 bool Wippersnapper_V2::generateWSTopics() {
   WS_DEBUG_PRINTLN("Pre-calculating topic lengths...");
   // Calculate length of strings that are are dynamic within the secrets file
@@ -786,14 +744,12 @@ bool Wippersnapper_V2::generateWSTopics() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Writes an error message to the serial and the filesystem,
                 blinks WS_LED_STATUS_ERROR_RUNTIME pattern and hangs.
     @param    error
               The error message to write to the serial and filesystem.
 */
-/**************************************************************************/
 void Wippersnapper_V2::errorWriteHangV2(const char* error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
@@ -812,12 +768,10 @@ void Wippersnapper_V2::errorWriteHangV2(const char* error) {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Checks network and MQTT connectivity. Handles network
               re-connection and mqtt re-establishment.
 */
-/**************************************************************************/
 void Wippersnapper_V2::runNetFSMV2() {
   WsV2.feedWDTV2();
   // Initial state
@@ -952,7 +906,6 @@ void Wippersnapper_V2::runNetFSMV2() {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Prints an error to the serial and halts the hardware until
               the WDT bites.
@@ -965,7 +918,6 @@ void Wippersnapper_V2::runNetFSMV2() {
               If false, the device will not allow the WDT to bite and
               instead hang indefinitely, holding the WIPPER drive open
 */
-/**************************************************************************/
 void Wippersnapper_V2::haltErrorV2(const char* error, ws_led_status_t ledStatusColor,
                                    bool reboot) {
   WS_DEBUG_PRINT("ERROR ");
@@ -993,7 +945,6 @@ void Wippersnapper_V2::haltErrorV2(const char* error, ws_led_status_t ledStatusC
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Publishes a signal message to the broker.
     @param    which_payload
@@ -1003,7 +954,6 @@ void Wippersnapper_V2::haltErrorV2(const char* error, ws_led_status_t ledStatusC
     @returns  True if the signal message published successfully,
               False otherwise.
 */
-/**************************************************************************/
 bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
 
 #ifdef DEBUG_PROFILE
@@ -1130,14 +1080,12 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Creates, fills, encodes and publishes a checkin request
               message to the broker.
     @returns  True if the Checkin request message published successfully,
               False otherwise.
 */
-/**************************************************************************/
 bool Wippersnapper_V2::CreateCheckinRequest() {
   WS_DEBUG_PRINT("Creating the CheckinRequest message...");
   WsV2.CheckInModel = new CheckinModel();
@@ -1158,12 +1106,10 @@ bool Wippersnapper_V2::CreateCheckinRequest() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Polls for and handles the checkin response
               message from the broker.
 */
-/**************************************************************************/
 void Wippersnapper_V2::PollCheckinResponse() {
   WsV2.got_checkin_response = false;
   WS_DEBUG_PRINTLN("Waiting for checkin response...");
@@ -1176,13 +1122,11 @@ void Wippersnapper_V2::PollCheckinResponse() {
   WS_DEBUG_PRINTLN("Completed checkin process!");
 }
 
-/**************************************************************************/
 /*!
     @brief  Pings the MQTT broker within the keepalive interval
             to keep the connection alive. Blinks the keepalive LED
             every STATUS_LED_KAT_BLINK_TIME milliseconds.
 */
-/**************************************************************************/
 void Wippersnapper_V2::pingBrokerV2() {
   // ping within keepalive-10% to keep connection open
   if (millis() > (_prv_pingV2 + (WS_KEEPALIVE_INTERVAL_MS -
@@ -1210,12 +1154,10 @@ void Wippersnapper_V2::pingBrokerV2() {
   BlinkKATStatus();
 }
 
-/**************************************************************************/
 /*!
     @brief  Blinks the status LED every STATUS_LED_KAT_BLINK_TIME
             milliseconds to indicate that the device is still alive.
 */
-/**************************************************************************/
 void Wippersnapper_V2::BlinkKATStatus() {
   if (millis() > (_prvKATBlinkV2 + STATUS_LED_KAT_BLINK_TIME)) {
     statusLEDBlink(WS_LED_STATUS_KAT);
@@ -1223,11 +1165,9 @@ void Wippersnapper_V2::BlinkKATStatus() {
   }
 }
 
-/********************************************************/
 /*!
     @brief    Feeds the WDT to prevent hardware reset.
 */
-/*******************************************************/
 void Wippersnapper_V2::feedWDTV2() {
 #ifndef OFFLINE_MODE_WOKWI
   // TODO: This is a temporary fix for watchdog.reset() not firing
@@ -1236,14 +1176,12 @@ void Wippersnapper_V2::feedWDTV2() {
 #endif
 }
 
-/********************************************************/
 /*!
     @brief  Enables the watchdog timer.
     @param  timeoutMS
             The desired amount of time to elapse before
             the WDT executes.
 */
-/*******************************************************/
 void Wippersnapper_V2::enableWDTV2(int timeoutMS) {
 #ifndef ARDUINO_ARCH_RP2040
   Watchdog.disable();
@@ -1253,13 +1191,11 @@ void Wippersnapper_V2::enableWDTV2(int timeoutMS) {
   }
 }
 
-/********************************************************/
 /*!
     @brief  Process all incoming packets from the
             Adafruit IO MQTT broker. Handles network
             connectivity.
 */
-/*******************************************************/
 void Wippersnapper_V2::processPacketsV2() {
   // runNetFSMV2(); // NOTE: Removed for now, causes error with virtual
   // _connect() method when caused with WsV2 object in another file.
@@ -1268,11 +1204,9 @@ void Wippersnapper_V2::processPacketsV2() {
   WsV2._mqttV2->processPackets(10);
 }
 
-/**************************************************************************/
 /*!
     @brief    Prints information about the WsV2 device to the serial monitor.
 */
-/**************************************************************************/
 void printDeviceInfoV2() {
   WS_DEBUG_PRINTLN("-------Device Information-------");
   WS_DEBUG_PRINT("Firmware Version: ");
@@ -1301,11 +1235,9 @@ void printDeviceInfoV2() {
 #endif
 }
 
-/**************************************************************************/
 /*!
     @brief    Connects to Adafruit IO+ Wippersnapper_V2 broker.
 */
-/**************************************************************************/
 void Wippersnapper_V2::connect() {
   WS_DEBUG_PRINTLN("Adafruit.io WipperSnapper");
   // Dump device info to the serial monitor
@@ -1397,12 +1329,10 @@ void Wippersnapper_V2::connect() {
   WS_DEBUG_PRINTLN("Running app loop...");
 }
 
-/**************************************************************************/
 /*!
     @brief    Processes incoming commands and handles network connection.
     @returns  Network status, as ws_status_t.
 */
-/**************************************************************************/
 ws_status_t Wippersnapper_V2::run() {
   WsV2.feedWDTV2();
   if (!WsV2._sdCardV2->isModeOffline()) {

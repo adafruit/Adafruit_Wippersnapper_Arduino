@@ -19,7 +19,6 @@
     @param  config The configuration for the serial.
 */
 UARTHardware::UARTHardware(const wippersnapper_uart_UartSerialConfig &config) {
-  // Store the configuration and UART port number
   _config = config;
   _uart_nbr = config.uart_nbr;
 }
@@ -176,3 +175,19 @@ bool UARTHardware::isSoftwareSerial() const {
  * @return The bus number of the hardware instance, or -1 if not set.
  */
 int UARTHardware::GetBusNumber() { return _uart_nbr; }
+
+/*!
+ * @brief  Gets the HardwareSerial instance for this port
+ * @return A pointer to the HardwareSerial instance, or nullptr if not
+ * constructed.
+ */
+HardwareSerial *UARTHardware::GetHardwareSerial() { return _hwSerial; }
+
+#if HAS_SW_SERIAL
+/*!
+ * @brief  Gets the SoftwareSerial instance for this port
+ * @return A pointer to the SoftwareSerial instance, or nullptr if not
+ * constructed.
+ */
+SoftwareSerial *UARTHardware::GetSoftwareSerial() { return _swSerial; }
+#endif // HAS_SW_SERIAL

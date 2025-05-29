@@ -28,11 +28,9 @@
 
 #define ERROR_SERVO_ATTACH 255 ///< Error code for servo attach failure
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with hardware's Servo API.
 */
-/**************************************************************************/
 class ServoHardware {
 public:
   ServoHardware(int pin, int min_pulse_width, int max_pulse_width,

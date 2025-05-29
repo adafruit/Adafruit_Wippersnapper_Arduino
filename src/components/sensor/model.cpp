@@ -14,21 +14,17 @@
  */
 #include "model.h"
 
-/***********************************************************************/
 /*!
     @brief  SensorModel constructor
 */
-/***********************************************************************/
 SensorModel::SensorModel() {
   memset(&_msg_sensor_event, 0, sizeof(_msg_sensor_event));
   // no-op
 }
 
-/***********************************************************************/
 /*!
     @brief  SensorModel destructor
 */
-/***********************************************************************/
 SensorModel::~SensorModel() {
   // Zero-out the SensorEvent message
   memset(&_msg_sensor_event, 0, sizeof(_msg_sensor_event));

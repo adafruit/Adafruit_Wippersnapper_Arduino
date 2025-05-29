@@ -19,14 +19,11 @@
 #include "drvBase.h"
 #include <Adafruit_seesaw.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the STEMMA soil sensor.
 */
-/**************************************************************************/
 class drvStemmaSoil : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a STEMMA soil sensor.
       @param    i2c
@@ -38,7 +35,6 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvStemmaSoil(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
                 const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
@@ -50,22 +46,17 @@ public:
     _seesaw = new Adafruit_seesaw(_i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for a STEMMA soil sensor.
   */
-  /*******************************************************************************/
   ~drvStemmaSoil() { _seesaw = nullptr; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the soil sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override { return _seesaw->begin(_address); }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's current temperature.
       @param    tempEvent
@@ -73,13 +64,11 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     tempEvent->temperature = _seesaw->getTemp();
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's current moisture sensor capacitance value.
       @param    rawEvent
@@ -87,7 +76,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
     uint16_t touchData = _seesaw->touchRead(0);
 

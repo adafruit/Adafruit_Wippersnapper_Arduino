@@ -19,16 +19,13 @@
 #include "drvBase.h"
 #include <Adafruit_LPS2X.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the LPS25HB temperature
             and pressure sensor.
 */
-/**************************************************************************/
 class drvLps25hb : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an LPS25HB sensor.
       @param    i2c
@@ -40,26 +37,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvLps25hb(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an LPS25HB sensor.
   */
-  /*******************************************************************************/
   ~drvLps25hb() { delete _lps25; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the LPS25HB sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _lps25 = new Adafruit_LPS25();
     // attempt to initialize LPS25HB
@@ -77,7 +69,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the LPS25HB's current temperature.
       @param    tempEvent
@@ -85,12 +76,10 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     return _temp->getEvent(tempEvent);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a pressure sensor and converts
                 the reading into the expected SI unit.
@@ -99,7 +88,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     return _pressure->getEvent(pressureEvent);
   }

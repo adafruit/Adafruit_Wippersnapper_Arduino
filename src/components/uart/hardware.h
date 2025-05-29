@@ -32,11 +32,9 @@
   0 ///< Indicates that the board DOES NOT support SoftwareSerial
 #endif
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with the UART hardware.
 */
-/**************************************************************************/
 class UARTHardware {
 public:
   UARTHardware(const wippersnapper_uart_UartSerialConfig &config);
@@ -44,10 +42,13 @@ public:
   bool ConfigureSerial();
   uint16_t UartPacketFormatToConfig(
       const wippersnapper_uart_UartPacketFormat uart_format);
+  int GetBusNumber();
   bool isHardwareSerial() const;
   bool isSoftwareSerial() const;
-  int GetBusNumber();
-
+  HardwareSerial *GetHardwareSerial();
+#if HAS_SW_SERIAL
+  SoftwareSerial *GetSoftwareSerial();
+#endif // HAS_SW_SERIAL
 private:
   wippersnapper_uart_UartSerialConfig
       _config;                         ///< The UART serial configuration

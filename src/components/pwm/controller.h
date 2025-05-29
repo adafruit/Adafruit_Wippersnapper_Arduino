@@ -23,13 +23,11 @@ class Wippersnapper_V2; // Forward declaration
 class PWMModel;         // Forward declaration
 class PWMHardware;      // Forward declaration
 
-/**************************************************************************/
 /*!
     @brief  Routes messages using the pwm.proto API to the
             appropriate hardware and model classes, controls and tracks
             the state of the hardware's PWM pins.
 */
-/**************************************************************************/
 class PWMController {
 public:
   PWMController();

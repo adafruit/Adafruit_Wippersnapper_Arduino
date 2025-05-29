@@ -26,13 +26,11 @@ class Wippersnapper_V2; ///< Forward declaration
 class PixelsModel;      ///< Forward declaration
 class PixelsHardware;   ///< Forward declaration
 
-/**************************************************************************/
 /*!
     @brief  Routes messages using the pixels.proto API to the
             appropriate hardware and model classes, controls and tracks
             the state of pixel strands.
 */
-/**************************************************************************/
 class PixelsController {
 public:
   PixelsController();

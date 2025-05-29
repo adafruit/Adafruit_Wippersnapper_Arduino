@@ -15,32 +15,26 @@
  */
 #include "controller.h"
 
-/**************************************************************************/
 /*!
     @brief  Constructs a new UARTController.
 */
-/**************************************************************************/
 UARTController::UARTController() {
   // TODO! Needs implementation
 }
 
-/**************************************************************************/
 /*!
     @brief  Destructs the UARTController.
 */
-/**************************************************************************/
 UARTController::~UARTController() {
   // TODO! Needs impl.
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a UartAdd message.
     @param  stream
             Pointer to a pb_istream_t object.
     @return True if the message was handled successfully, False otherwise.
 */
-/**************************************************************************/
 bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // Attempt to decode the UartAdd message
   if (!_uart_model->DecodeUartAdd(stream))
@@ -74,14 +68,12 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a UartRemove message.
     @param  stream
             Pointer to a pb_istream_t object.
     @return True if the message was handled successfully, False otherwise.
 */
-/**************************************************************************/
 bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
   // TODO: Needs implementation
 
@@ -93,14 +85,12 @@ bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
   return false;
 }
 
-/**************************************************************************/
 /*!
     @brief  Handles a UartWrite message.
     @param  stream
             Pointer to a pb_istream_t object.
     @return True if the message was handled successfully, False otherwise.
 */
-/**************************************************************************/
 bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
   // TODO: Needs implementation
   // TO ADDRESS:
@@ -111,11 +101,9 @@ bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
   return false;
 }
 
-/**************************************************************************/
 /*!
     @brief  Updates all UART devices.
 */
-/**************************************************************************/
 void UARTController::update() {
   // TODO: Needs implementation
   // TO ADDRESS:

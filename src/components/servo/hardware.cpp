@@ -14,7 +14,6 @@
  */
 #include "hardware.h"
 
-/**************************************************************************/
 /*!
     @brief  Constructs a ServoHardware object
     @param  pin
@@ -26,7 +25,6 @@
     @param  frequency
             The frequency of the PWM signal, in Hz (50Hz is sent from IO)
 */
-/**************************************************************************/
 ServoHardware::ServoHardware(int pin, int min_pulse_width, int max_pulse_width,
                              int frequency) {
   _pin = pin;
@@ -41,25 +39,21 @@ ServoHardware::ServoHardware(int pin, int min_pulse_width, int max_pulse_width,
 #endif
 }
 
-/**************************************************************************/
 /*!
     @brief  Detaches the servo from the pin and frees the pin for
             other uses.
 */
-/**************************************************************************/
 ServoHardware::~ServoHardware() {
   if (!ServoDetach()) {
     WS_DEBUG_PRINTLN("[servo] Error: Failed to detach servo!");
   }
 }
 
-/**************************************************************************/
 /*!
     @brief  Detaches the servo from the pin and frees the pin for
             other uses.
     @returns true if successful, false otherwise
 */
-/**************************************************************************/
 bool ServoHardware::ServoDetach() {
 #ifdef ARDUINO_ARCH_ESP32
   if (!attached()) {
@@ -79,12 +73,10 @@ bool ServoHardware::ServoDetach() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Attempts to attach a servo to a GPIO pin.
     @returns true if successful, false otherwise.
 */
-/**************************************************************************/
 bool ServoHardware::ServoAttach() {
   uint16_t rc;
 
@@ -114,22 +106,18 @@ bool ServoHardware::ServoAttach() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Returns the logical pin number of the servo
     @returns The logical pin number of the servo
 */
-/**************************************************************************/
 uint8_t ServoHardware::GetPin() { return _pin; }
 
-/**************************************************************************/
 /*!
     @brief  Clamps the pulse width to the min/max range
     @param  value
             The value to clamp
     @returns The clamped value
 */
-/**************************************************************************/
 int ServoHardware::ClampPulseWidth(int value) {
   if (value < _min_pulse_width) {
     value = _min_pulse_width;
@@ -140,13 +128,11 @@ int ServoHardware::ClampPulseWidth(int value) {
   return value;
 }
 
-/**************************************************************************/
 /*!
     @brief  Writes a value to the servo pin
     @param  value
             The value to write to the servo pin
 */
-/**************************************************************************/
 void ServoHardware::ServoWrite(int value) {
 #ifdef ARDUINO_ARCH_ESP32
   if (!attached()) {
@@ -169,14 +155,12 @@ void ServoHardware::ServoWrite(int value) {
 }
 
 #ifdef ARDUINO_ARCH_ESP32
-/**************************************************************************/
 /*!
     @brief  Mocks writeMicroseconds() call in arduino/servo api for
             ESP32x's LEDC manager.
     @param  value
             The value to write to the servo pin.
 */
-/**************************************************************************/
 void ServoHardware::writeMicroseconds(int value) {
   // Clamp the value to the min/max range
   value = ClampPulseWidth(value);
@@ -196,23 +180,19 @@ void ServoHardware::writeMicroseconds(int value) {
   WS_DEBUG_PRINT(_pin);
 }
 
-/**************************************************************************/
 /*!
     @brief  Detaches the servo from the LEDC manager and frees the pin for
             other uses.
 */
-/**************************************************************************/
 void ServoHardware::detach() {
   if (!attached())
     return;
   _is_attached = ledcDetach(_pin);
 }
 
-/**************************************************************************/
 /*!
     @brief  Returns true if the servo is attached to the pin
     @returns true if the servo is attached to the pin, false otherwise
 */
-/**************************************************************************/
 bool ServoHardware::attached() { return _is_attached; }
 #endif

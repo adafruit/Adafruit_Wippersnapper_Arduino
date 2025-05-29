@@ -17,7 +17,6 @@
 #include "esp_task_wdt.h"
 #include <Esp.h>
 
-/*******************************************************************************************************************************/
 /*!
     @brief    Converts reset reason type to a C string.. This uses the mechanism
    in IDF that persists crash reasons across a reset. see:
@@ -26,7 +25,6 @@
               The reset reason, esp_reset_reason_t
     @return   A C string representing the reset reason.
 */
-/*******************************************************************************************************************************/
 inline const char *resetReasonName(esp_reset_reason_t r) {
   switch (r) {
   case ESP_RST_UNKNOWN:

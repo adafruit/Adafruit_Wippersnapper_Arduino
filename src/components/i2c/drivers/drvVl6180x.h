@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_VL6180X.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VL6180X sensor.
 */
-/**************************************************************************/
 class drvVl6180x : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a VL6180X sensor.
       @param    i2c
@@ -37,35 +34,29 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvVl6180x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an VL6180X sensor.
   */
-  /*******************************************************************************/
   ~drvVl6180x() {
     // Called when a VL6180X component is deleted.
     delete _vl6180x;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the VL6180X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() {
     _vl6180x = new Adafruit_VL6180X(_address);
     return _vl6180x->begin(_i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the VL6180X's current proximity.
       @param    proximityEvent
@@ -73,7 +64,6 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     uint8_t range = _vl6180x->readRange();
     uint8_t status = _vl6180x->readRangeStatus();
@@ -106,7 +96,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Performs a light sensor reading.
       @param    lightEvent
@@ -114,7 +103,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // TODO: Update when I2C Sensor Properties allow setting custom Gain, etc.
     // Gain_5 results in max 41.6klux with cover glass - See 2.10.3 in datasheet

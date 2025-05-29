@@ -18,50 +18,65 @@
 #include "Adafruit_PM25AQI.h"
 #include "drvUartBase.h"
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for the Adafruit_PM25AQI library over
             UART.
 */
-/**************************************************************************/
 class drvUartPm25 : public drvUartBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Instantiates a UART device.
+      @param    hw_serial
+                Pointer to a HardwareSerial instance.
       @param    device_type
                 The type of device connected to the UART port.
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
-  drvUartPm25(wippersnapper_uart_UartDeviceType device_type,
+  drvUartPm25(HardwareSerial *hw_serial,
+              wippersnapper_uart_UartDeviceType device_type,
               const char *driver_name)
-      : drvUartBase(device_type, driver_name) {
-    _device_type = device_type;
-    strncpy(_name, driver_name, sizeof(_name) - 1);
-    _name[sizeof(_name) - 1] = '\0';
+      : drvUartBase(hw_serial, device_type, driver_name) {
+    // Handled by drvUartBase constructor
   }
 
-  /*******************************************************************************/
+#if HAS_SW_SERIAL
+  /*!
+    @brief    Instantiates a UART device.
+    @param    sw_serial
+              Pointer to a SoftwareSerial instance.
+    @param    device_type
+              The type of device connected to the UART port.
+    @param    driver_name
+              The name of the driver.
+*/
+  drvUartPm25(SoftwareSerial *sw_serial,
+              wippersnapper_uart_UartDeviceType device_type,
+              const char *driver_name)
+      : drvUartBase(sw_serial, device_type, driver_name) {
+    // Handled by drvUartBase constructor
+  }
+#endif // HAS_SW_SERIAL
+
   /*!
       @brief    Destructor for a UART device.
   */
-  /*******************************************************************************/
   ~drvUartPm25() {
-    // This is a base class, nothing to clean up!
+    if (_aqi) {
+      delete _aqi; // Clean up the Adafruit_PM25AQI instance
+      _aqi = nullptr;
+    }
   }
 
-  /*******************************************************************************/
   /*!
-      @brief    Initializes the UART device.
+      @brief    Initializes the Adafruit_PM25AQI instance.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
-    // TODO!
-    return true;
+    if (IsSoftwareSerial)
+      return _aqi->begin(_hw_serial);
+    return _aqi->begin(_sw_serial);
   }
 
 protected:

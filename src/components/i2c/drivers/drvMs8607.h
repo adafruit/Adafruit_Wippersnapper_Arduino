@@ -19,15 +19,12 @@
 #include "drvBase.h"
 #include <Adafruit_MS8607.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the MS8607 PHT sensor.
 */
-/**************************************************************************/
 class drvMs8607 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an MS8607 sensor.
       @param    i2c
@@ -39,26 +36,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvMs8607(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an MS8607 sensor.
   */
-  /*******************************************************************************/
   ~drvMs8607() { delete _ms8607; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the MS8607 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _ms8607 = new Adafruit_MS8607();
     // attempt to initialize MS8607
@@ -78,7 +70,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the MS8607's current temperature.
       @param    tempEvent
@@ -86,13 +77,11 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     _ms8607_temp->getEvent(tempEvent);
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the MS8607's current relative humidity reading.
       @param    humidEvent
@@ -100,13 +89,11 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     _ms8607_humidity->getEvent(humidEvent);
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a pressure sensor and converts
                 the reading into the expected SI unit.
@@ -115,7 +102,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     _ms8607_pressure->getEvent(pressureEvent);
     return true;

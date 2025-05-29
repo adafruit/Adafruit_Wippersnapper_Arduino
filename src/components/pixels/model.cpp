@@ -16,11 +16,9 @@
 #include "Wippersnapper_V2.h"
 #include "nanopb/ws_pb_helpers.h"
 
-/**************************************************************************/
 /*!
     @brief  Constructs a new PixelsModel object
 */
-/**************************************************************************/
 PixelsModel::PixelsModel() {
   memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
   memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
@@ -29,11 +27,9 @@ PixelsModel::PixelsModel() {
   // no-op
 }
 
-/**************************************************************************/
 /*!
     @brief  Destructs a PixelsModel object
 */
-/**************************************************************************/
 PixelsModel::~PixelsModel() {
   memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
   memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
@@ -41,62 +37,52 @@ PixelsModel::~PixelsModel() {
   memset(&_msg_pixels_added, 0, sizeof(_msg_pixels_added));
 }
 
-/**************************************************************************/
 /*!
     @brief  Decodes a PixelsAdd message from a protocol buffer input stream.
     @param  stream
             Protocol buffer input stream.
     @returns True if successful, False otherwise.
 */
-/**************************************************************************/
 bool PixelsModel::DecodePixelsAdd(pb_istream_t *stream) {
   memset(&_msg_pixels_add, 0, sizeof(_msg_pixels_add));
   return pb_decode(stream, wippersnapper_pixels_PixelsAdd_fields,
                    &_msg_pixels_add);
 }
 
-/**************************************************************************/
 /*!
     @brief  Returns a pointer to the PixelsAdd message.
     @returns Pointer to the PixelsAdd message object.
 */
-/**************************************************************************/
 wippersnapper_pixels_PixelsAdd *PixelsModel::GetPixelsAddMsg() {
   return &_msg_pixels_add;
 }
 
-/**************************************************************************/
 /*!
     @brief  Decodes a PixelsRemove message from a protocol buffer input stream.
     @param  stream
             Protocol buffer input stream.
     @returns True if successful, False otherwise.
 */
-/**************************************************************************/
 bool PixelsModel::DecodePixelsRemove(pb_istream_t *stream) {
   memset(&_msg_pixels_remove, 0, sizeof(_msg_pixels_remove));
   return pb_decode(stream, wippersnapper_pixels_PixelsRemove_fields,
                    &_msg_pixels_remove);
 }
 
-/**************************************************************************/
 /*!
     @brief  Returns a pointer to the PixelsRemove message.
     @returns Pointer to the PixelsRemove message object.
 */
-/**************************************************************************/
 wippersnapper_pixels_PixelsRemove *PixelsModel::GetPixelsRemoveMsg() {
   return &_msg_pixels_remove;
 }
 
-/**************************************************************************/
 /*!
     @brief  Decodes a PixelsWrite message from a protocol buffer input stream.
     @param  stream
             Protocol buffer input stream.
     @returns True if successful, False otherwise.
 */
-/**************************************************************************/
 bool PixelsModel::DecodePixelsWrite(pb_istream_t *stream) {
   memset(&_msg_pixels_write, 0, sizeof(_msg_pixels_write));
   WS_DEBUG_PRINTLN("Decoding PixelsWrite message...");
@@ -104,17 +90,14 @@ bool PixelsModel::DecodePixelsWrite(pb_istream_t *stream) {
                    &_msg_pixels_write);
 }
 
-/**************************************************************************/
 /*!
     @brief  Returns a pointer to the PixelsWrite message.
     @returns Pointer to the PixelsWrite message object.
 */
-/**************************************************************************/
 wippersnapper_pixels_PixelsWrite *PixelsModel::GetPixelsWriteMsg() {
   return &_msg_pixels_write;
 }
 
-/**************************************************************************/
 /*!
     @brief  Encodes a PixelsAdded message.
     @param  pin_data
@@ -123,7 +106,6 @@ wippersnapper_pixels_PixelsWrite *PixelsModel::GetPixelsWriteMsg() {
             True if strand was successfully initialized, False otherwise.
     @returns True if successful, False otherwise.
 */
-/**************************************************************************/
 bool PixelsModel::EncodePixelsAdded(char *pin_data, bool success) {
   // Fill the message
   memset(&_msg_pixels_added, 0, sizeof(_msg_pixels_added));
@@ -142,12 +124,10 @@ bool PixelsModel::EncodePixelsAdded(char *pin_data, bool success) {
                    &_msg_pixels_added);
 }
 
-/**************************************************************************/
 /*!
     @brief  Returns a pointer to the PixelsAdded message.
     @returns Pointer to the PixelsAdded message object.
 */
-/**************************************************************************/
 wippersnapper_pixels_PixelsAdded *PixelsModel::GetPixelsAddedMsg() {
   return &_msg_pixels_added;
 }

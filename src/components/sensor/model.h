@@ -17,12 +17,10 @@
 #include "Wippersnapper_V2.h"
 #include "protos/sensor.pb.h"
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from sensor.proto.
 */
-/**************************************************************************/
 class SensorModel {
 public:
   SensorModel();

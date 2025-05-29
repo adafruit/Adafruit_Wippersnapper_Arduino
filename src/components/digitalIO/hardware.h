@@ -16,11 +16,9 @@
 #define WS_DIGITALIO_HARDWARE_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with hardware's digital I/O pin API.
 */
-/**************************************************************************/
 class DigitalIOHardware {
 public:
   DigitalIOHardware();

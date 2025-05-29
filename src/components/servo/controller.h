@@ -30,13 +30,11 @@ class Wippersnapper_V2; // Forward declaration
 class ServoModel;       // Forward declaration
 class ServoHardware;    // Forward declaration
 
-/**************************************************************************/
 /*!
     @brief  Routes messages using the servo.proto API to the
             appropriate hardware and model classes, controls and tracks
             the state of the hardware's Servo pins.
 */
-/**************************************************************************/
 class ServoController {
 public:
   ServoController();

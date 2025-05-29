@@ -32,7 +32,6 @@
     }                                                                          \
   } ///< Delay function
 
-/**************************************************************************/
 /*!
     @brief  Retry a function until a condition is met or a timeout is reached.
     @param  func
@@ -50,7 +49,6 @@
     @param  ...
             The arguments to pass to the function.
 */
-/**************************************************************************/
 #define RETRY_FUNCTION_UNTIL_TIMEOUT(func, result_var, condition, timeout,     \
                                      interval, ...)                            \
   {                                                                            \

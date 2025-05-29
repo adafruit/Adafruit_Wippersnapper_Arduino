@@ -15,23 +15,18 @@
 #include "hardware.h"
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Constructs a new PixelsHardware object
 */
-/**************************************************************************/
 PixelsHardware::PixelsHardware() {
   _type = wippersnapper_pixels_PixelsType_PIXELS_TYPE_UNSPECIFIED;
 }
 
-/**************************************************************************/
 /*!
     @brief  Destructs a PixelsHardware object
 */
-/**************************************************************************/
 PixelsHardware::~PixelsHardware() {}
 
-/**************************************************************************/
 /*!
     @brief  Initializes a new NeoPixel strand on a desired pin.
     @param  num_pixels
@@ -44,7 +39,6 @@ PixelsHardware::~PixelsHardware() {}
             The desired brightness of the pixel strand (0-255).
     @returns True if successful, False otherwise.
 */
-/**************************************************************************/
 bool PixelsHardware::AddNeoPixel(uint16_t num_pixels, uint16_t pin_data,
                                  neoPixelType order, uint8_t brightness) {
   if (getStatusNeoPixelPin() == pin_data && WsV2.lockStatusNeoPixelV2) {
@@ -66,7 +60,6 @@ bool PixelsHardware::AddNeoPixel(uint16_t num_pixels, uint16_t pin_data,
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Initializes a new DotStar strand on a desired pin.
     @param  num_pixels
@@ -81,7 +74,6 @@ bool PixelsHardware::AddNeoPixel(uint16_t num_pixels, uint16_t pin_data,
             The desired brightness of the pixel strand (0-255).
     @returns True if successful, False otherwise.
 */
-/**************************************************************************/
 bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
                                 uint16_t pin_clock,
                                 wippersnapper_pixels_PixelsOrder order,
@@ -108,7 +100,6 @@ bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Initializes a new pixel strand on a desired pin.
     @param  type
@@ -125,7 +116,6 @@ bool PixelsHardware::AddDotStar(uint16_t num_pixels, uint16_t pin_data,
             The desired clock pin for the pixel strand (for DotStar).
     @returns True if successful, False otherwise.
 */
-/**************************************************************************/
 bool PixelsHardware::AddStrand(wippersnapper_pixels_PixelsType type,
                                wippersnapper_pixels_PixelsOrder order,
                                uint32_t num_pixels, uint32_t brightness,
@@ -156,13 +146,11 @@ bool PixelsHardware::AddStrand(wippersnapper_pixels_PixelsType type,
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Sets the color of all pixels in the strand
     @param  color
             32-bit color value
 */
-/**************************************************************************/
 void PixelsHardware::FillStrand(uint32_t color) {
   // Apply gamma correction to match IO Web
   uint32_t color_gamma = ApplyGammaCorrection(color);
@@ -177,14 +165,12 @@ void PixelsHardware::FillStrand(uint32_t color) {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief  Applies gamma correction to a color value to match IO Web.
     @param  color
             The color value to be corrected
     @returns The gamma-corrected color value
 */
-/**************************************************************************/
 uint32_t PixelsHardware::ApplyGammaCorrection(uint32_t color) {
   if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     return _neopixel->gamma32(color);
@@ -196,11 +182,9 @@ uint32_t PixelsHardware::ApplyGammaCorrection(uint32_t color) {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief  Deinitializes a pixel strand
 */
-/**************************************************************************/
 void PixelsHardware::RemoveStrand() {
   if (_type == wippersnapper_pixels_PixelsType_PIXELS_TYPE_NEOPIXEL) {
     if (_neopixel != nullptr) {
@@ -240,14 +224,12 @@ void PixelsHardware::RemoveStrand() {
 /**************************************************************************/
 uint16_t PixelsHardware::GetPinData() { return _pin_data; }
 
-/**************************************************************************/
 /*!
     @brief  Gets the color ordering for NeoPixel strands
     @param  order
             The desired color ordering for the pixel strand.
     @returns The color ordering for NeoPixel strands
 */
-/**************************************************************************/
 neoPixelType
 PixelsHardware::GetStrandOrderNeoPixel(wippersnapper_pixels_PixelsOrder order) {
   switch (order) {
@@ -266,14 +248,12 @@ PixelsHardware::GetStrandOrderNeoPixel(wippersnapper_pixels_PixelsOrder order) {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief  Gets the color ordering for DotStar strands
     @param  order
             The desired color ordering for the pixel strand.
     @returns The color ordering for DotStar strands
 */
-/**************************************************************************/
 uint8_t
 PixelsHardware::GetStrandOrderDotStar(wippersnapper_pixels_PixelsOrder order) {
   switch (order) {

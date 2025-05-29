@@ -16,12 +16,10 @@
 #define WS_UART_MODEL_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from UART.proto.
 */
-/**************************************************************************/
 class UARTModel {
 public:
   UARTModel();
