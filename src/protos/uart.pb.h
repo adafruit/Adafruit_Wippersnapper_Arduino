@@ -5,6 +5,7 @@
 #define PB_WIPPERSNAPPER_UART_UART_PB_H_INCLUDED
 #include <pb.h>
 #include "gps.pb.h"
+#include "sensor.pb.h"
 
 #if PB_PROTO_HEADER_VERSION != 40
 #error Regenerate this file with the current version of nanopb generator.
@@ -85,6 +86,8 @@ typedef struct _wippersnapper_uart_UartSerialConfig {
 typedef struct _wippersnapper_uart_GenericUartInputConfig {
     pb_callback_t name; /* * The name used to identify the device. */
     wippersnapper_uart_GenericDeviceLineEnding line_ending; /* * The line ending used by the device. */
+    int32_t period; /* * The period to poll the device, in milliseconds */
+    pb_callback_t i2c_device_sensor_types; /* * SI Types for each sensor on the I2c device. */
 } wippersnapper_uart_GenericUartInputConfig;
 
 /* *
@@ -99,6 +102,8 @@ typedef struct _wippersnapper_uart_TrinamicDynamixelConfig {
  containing device-specific configuration info for PM2.5 AQI sensors. */
 typedef struct _wippersnapper_uart_PM25AQIConfig {
     bool is_pm1006; /* * True if the device is a PM1006 AQ sensor, Defaults to False. */
+    int32_t period; /* * The period to poll the device, in milliseconds */
+    pb_callback_t i2c_device_sensor_types; /* * SI Types for each sensor on the I2c device. */
 } wippersnapper_uart_PM25AQIConfig;
 
 /* *
@@ -176,6 +181,20 @@ typedef struct _wippersnapper_uart_UartWritten {
     uint32_t bytes_written; /* * The number of bytes written to the device. */
 } wippersnapper_uart_UartWritten;
 
+/* *
+ UartInputEvent represents a message sent from a device to IO
+ containing data from a UART input device.
+ This message is sent from a device to IO to report sensor data.
+ It can contain multiple SensorEvents if the device has multiple sensors. */
+typedef struct _wippersnapper_uart_UartInputEvent {
+    /* Addressing */
+    uint32_t uart_nbr; /* * The UART port number (eg: 0, 1, 2, etc.) that the device is attached to. */
+    wippersnapper_uart_UartDeviceType type; /* * The category of device attached to the UART port, corresponds to its driver type. */
+    pb_callback_t device_id; /* * The unique identifier string for the UART device. */
+    /* Payload */
+    pb_callback_t events; /* * Required, but optionally repeated, SensorEvent from a sensor. */
+} wippersnapper_uart_UartInputEvent;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -197,8 +216,10 @@ extern "C" {
 #define wippersnapper_uart_UartSerialConfig_format_ENUMTYPE wippersnapper_uart_UartPacketFormat
 
 #define wippersnapper_uart_GenericUartInputConfig_line_ending_ENUMTYPE wippersnapper_uart_GenericDeviceLineEnding
+#define wippersnapper_uart_GenericUartInputConfig_i2c_device_sensor_types_ENUMTYPE wippersnapper_sensor_SensorType
 
 
+#define wippersnapper_uart_PM25AQIConfig_i2c_device_sensor_types_ENUMTYPE wippersnapper_sensor_SensorType
 
 #define wippersnapper_uart_UartDeviceConfig_device_type_ENUMTYPE wippersnapper_uart_UartDeviceType
 
@@ -211,28 +232,32 @@ extern "C" {
 
 #define wippersnapper_uart_UartWritten_type_ENUMTYPE wippersnapper_uart_UartDeviceType
 
+#define wippersnapper_uart_UartInputEvent_type_ENUMTYPE wippersnapper_uart_UartDeviceType
+
 
 /* Initializer values for message structs */
 #define wippersnapper_uart_UartSerialConfig_init_default {"", "", 0, 0, _wippersnapper_uart_UartPacketFormat_MIN, 0, 0, 0}
-#define wippersnapper_uart_GenericUartInputConfig_init_default {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN}
+#define wippersnapper_uart_GenericUartInputConfig_init_default {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN, 0, {{NULL}, NULL}}
 #define wippersnapper_uart_TrinamicDynamixelConfig_init_default {0}
-#define wippersnapper_uart_PM25AQIConfig_init_default {0}
+#define wippersnapper_uart_PM25AQIConfig_init_default {0, 0, {{NULL}, NULL}}
 #define wippersnapper_uart_UartDeviceConfig_init_default {_wippersnapper_uart_UartDeviceType_MIN, "", false, wippersnapper_uart_GenericUartInputConfig_init_default, false, wippersnapper_uart_TrinamicDynamixelConfig_init_default, false, wippersnapper_uart_PM25AQIConfig_init_default, false, wippersnapper_gps_GPSConfig_init_default}
 #define wippersnapper_uart_UartAdd_init_default  {false, wippersnapper_uart_UartSerialConfig_init_default, false, wippersnapper_uart_UartDeviceConfig_init_default}
 #define wippersnapper_uart_UartAdded_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
 #define wippersnapper_uart_UartRemove_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, ""}
 #define wippersnapper_uart_UartWrite_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0, {{{NULL}, NULL}}}
 #define wippersnapper_uart_UartWritten_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
+#define wippersnapper_uart_UartInputEvent_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, {{NULL}, NULL}, {{NULL}, NULL}}
 #define wippersnapper_uart_UartSerialConfig_init_zero {"", "", 0, 0, _wippersnapper_uart_UartPacketFormat_MIN, 0, 0, 0}
-#define wippersnapper_uart_GenericUartInputConfig_init_zero {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN}
+#define wippersnapper_uart_GenericUartInputConfig_init_zero {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN, 0, {{NULL}, NULL}}
 #define wippersnapper_uart_TrinamicDynamixelConfig_init_zero {0}
-#define wippersnapper_uart_PM25AQIConfig_init_zero {0}
+#define wippersnapper_uart_PM25AQIConfig_init_zero {0, 0, {{NULL}, NULL}}
 #define wippersnapper_uart_UartDeviceConfig_init_zero {_wippersnapper_uart_UartDeviceType_MIN, "", false, wippersnapper_uart_GenericUartInputConfig_init_zero, false, wippersnapper_uart_TrinamicDynamixelConfig_init_zero, false, wippersnapper_uart_PM25AQIConfig_init_zero, false, wippersnapper_gps_GPSConfig_init_zero}
 #define wippersnapper_uart_UartAdd_init_zero     {false, wippersnapper_uart_UartSerialConfig_init_zero, false, wippersnapper_uart_UartDeviceConfig_init_zero}
 #define wippersnapper_uart_UartAdded_init_zero   {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
 #define wippersnapper_uart_UartRemove_init_zero  {0, _wippersnapper_uart_UartDeviceType_MIN, ""}
 #define wippersnapper_uart_UartWrite_init_zero   {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0, {{{NULL}, NULL}}}
 #define wippersnapper_uart_UartWritten_init_zero {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
+#define wippersnapper_uart_UartInputEvent_init_zero {0, _wippersnapper_uart_UartDeviceType_MIN, {{NULL}, NULL}, {{NULL}, NULL}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_uart_UartSerialConfig_pin_rx_tag 1
@@ -245,8 +270,12 @@ extern "C" {
 #define wippersnapper_uart_UartSerialConfig_sw_serial_invert_tag 8
 #define wippersnapper_uart_GenericUartInputConfig_name_tag 1
 #define wippersnapper_uart_GenericUartInputConfig_line_ending_tag 2
+#define wippersnapper_uart_GenericUartInputConfig_period_tag 3
+#define wippersnapper_uart_GenericUartInputConfig_i2c_device_sensor_types_tag 4
 #define wippersnapper_uart_TrinamicDynamixelConfig_device_id_tag 1
 #define wippersnapper_uart_PM25AQIConfig_is_pm1006_tag 1
+#define wippersnapper_uart_PM25AQIConfig_period_tag 2
+#define wippersnapper_uart_PM25AQIConfig_i2c_device_sensor_types_tag 3
 #define wippersnapper_uart_UartDeviceConfig_device_type_tag 1
 #define wippersnapper_uart_UartDeviceConfig_device_id_tag 2
 #define wippersnapper_uart_UartDeviceConfig_generic_uart_input_config_tag 3
@@ -271,6 +300,10 @@ extern "C" {
 #define wippersnapper_uart_UartWritten_type_tag  2
 #define wippersnapper_uart_UartWritten_device_id_tag 3
 #define wippersnapper_uart_UartWritten_bytes_written_tag 4
+#define wippersnapper_uart_UartInputEvent_uart_nbr_tag 1
+#define wippersnapper_uart_UartInputEvent_type_tag 2
+#define wippersnapper_uart_UartInputEvent_device_id_tag 3
+#define wippersnapper_uart_UartInputEvent_events_tag 4
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_uart_UartSerialConfig_FIELDLIST(X, a) \
@@ -287,7 +320,9 @@ X(a, STATIC,   SINGULAR, BOOL,     sw_serial_invert,   8)
 
 #define wippersnapper_uart_GenericUartInputConfig_FIELDLIST(X, a) \
 X(a, CALLBACK, SINGULAR, STRING,   name,              1) \
-X(a, STATIC,   SINGULAR, UENUM,    line_ending,       2)
+X(a, STATIC,   SINGULAR, UENUM,    line_ending,       2) \
+X(a, STATIC,   SINGULAR, INT32,    period,            3) \
+X(a, CALLBACK, REPEATED, UENUM,    i2c_device_sensor_types,   4)
 #define wippersnapper_uart_GenericUartInputConfig_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_GenericUartInputConfig_DEFAULT NULL
 
@@ -297,8 +332,10 @@ X(a, STATIC,   SINGULAR, UINT32,   device_id,         1)
 #define wippersnapper_uart_TrinamicDynamixelConfig_DEFAULT NULL
 
 #define wippersnapper_uart_PM25AQIConfig_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     is_pm1006,         1)
-#define wippersnapper_uart_PM25AQIConfig_CALLBACK NULL
+X(a, STATIC,   SINGULAR, BOOL,     is_pm1006,         1) \
+X(a, STATIC,   SINGULAR, INT32,    period,            2) \
+X(a, CALLBACK, REPEATED, UENUM,    i2c_device_sensor_types,   3)
+#define wippersnapper_uart_PM25AQIConfig_CALLBACK pb_default_field_callback
 #define wippersnapper_uart_PM25AQIConfig_DEFAULT NULL
 
 #define wippersnapper_uart_UartDeviceConfig_FIELDLIST(X, a) \
@@ -355,6 +392,15 @@ X(a, STATIC,   SINGULAR, UINT32,   bytes_written,     4)
 #define wippersnapper_uart_UartWritten_CALLBACK NULL
 #define wippersnapper_uart_UartWritten_DEFAULT NULL
 
+#define wippersnapper_uart_UartInputEvent_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   uart_nbr,          1) \
+X(a, STATIC,   SINGULAR, UENUM,    type,              2) \
+X(a, CALLBACK, SINGULAR, STRING,   device_id,         3) \
+X(a, CALLBACK, REPEATED, MESSAGE,  events,            4)
+#define wippersnapper_uart_UartInputEvent_CALLBACK pb_default_field_callback
+#define wippersnapper_uart_UartInputEvent_DEFAULT NULL
+#define wippersnapper_uart_UartInputEvent_events_MSGTYPE wippersnapper_sensor_SensorEvent
+
 extern const pb_msgdesc_t wippersnapper_uart_UartSerialConfig_msg;
 extern const pb_msgdesc_t wippersnapper_uart_GenericUartInputConfig_msg;
 extern const pb_msgdesc_t wippersnapper_uart_TrinamicDynamixelConfig_msg;
@@ -365,6 +411,7 @@ extern const pb_msgdesc_t wippersnapper_uart_UartAdded_msg;
 extern const pb_msgdesc_t wippersnapper_uart_UartRemove_msg;
 extern const pb_msgdesc_t wippersnapper_uart_UartWrite_msg;
 extern const pb_msgdesc_t wippersnapper_uart_UartWritten_msg;
+extern const pb_msgdesc_t wippersnapper_uart_UartInputEvent_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define wippersnapper_uart_UartSerialConfig_fields &wippersnapper_uart_UartSerialConfig_msg
@@ -377,14 +424,16 @@ extern const pb_msgdesc_t wippersnapper_uart_UartWritten_msg;
 #define wippersnapper_uart_UartRemove_fields &wippersnapper_uart_UartRemove_msg
 #define wippersnapper_uart_UartWrite_fields &wippersnapper_uart_UartWrite_msg
 #define wippersnapper_uart_UartWritten_fields &wippersnapper_uart_UartWritten_msg
+#define wippersnapper_uart_UartInputEvent_fields &wippersnapper_uart_UartInputEvent_msg
 
 /* Maximum encoded size of messages (where known) */
 /* wippersnapper_uart_GenericUartInputConfig_size depends on runtime parameters */
+/* wippersnapper_uart_PM25AQIConfig_size depends on runtime parameters */
 /* wippersnapper_uart_UartDeviceConfig_size depends on runtime parameters */
 /* wippersnapper_uart_UartAdd_size depends on runtime parameters */
 /* wippersnapper_uart_UartWrite_size depends on runtime parameters */
+/* wippersnapper_uart_UartInputEvent_size depends on runtime parameters */
 #define WIPPERSNAPPER_UART_UART_PB_H_MAX_SIZE    wippersnapper_uart_UartSerialConfig_size
-#define wippersnapper_uart_PM25AQIConfig_size    2
 #define wippersnapper_uart_TrinamicDynamixelConfig_size 6
 #define wippersnapper_uart_UartAdded_size        43
 #define wippersnapper_uart_UartRemove_size       41
