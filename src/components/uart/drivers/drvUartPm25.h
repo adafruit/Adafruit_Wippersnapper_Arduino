@@ -29,15 +29,11 @@ public:
       @brief    Instantiates a UART device.
       @param    hw_serial
                 Pointer to a HardwareSerial instance.
-      @param    device_type
-                The type of device connected to the UART port.
       @param    driver_name
                 The name of the driver.
   */
-  drvUartPm25(HardwareSerial *hw_serial,
-              wippersnapper_uart_UartDeviceType device_type,
-              const char *driver_name)
-      : drvUartBase(hw_serial, device_type, driver_name) {
+  drvUartPm25(HardwareSerial *hw_serial, const char *driver_name)
+      : drvUartBase(hw_serial, driver_name) {
     // Handled by drvUartBase constructor
   }
 
@@ -63,9 +59,9 @@ public:
       @brief    Destructor for a UART device.
   */
   ~drvUartPm25() {
-    if (_aqi) {
-      delete _aqi; // Clean up the Adafruit_PM25AQI instance
-      _aqi = nullptr;
+    if (_pm25) {
+      delete _pm25; // Clean up the Adafruit_PM25AQI instance
+      _pm25 = nullptr;
     }
   }
 
@@ -74,12 +70,78 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() override {
-    if (IsSoftwareSerial)
-      return _aqi->begin(_hw_serial);
-    return _aqi->begin(_sw_serial);
+    delay(3000); // Wait for the sensor to boot up
+                 /*     if (IsSoftwareSerial)
+                       return _pm25->begin_UART(_sw_serial); */
+    return _pm25->begin_UART(_hw_serial);
+  }
+
+  /*!
+      @brief    Gets the PM25 sensor's PM1.0 STD reading.
+      @param    pm10StdEvent
+                  Adafruit Sensor event for PM1.0
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
+    PM25_AQI_Data data;
+    if (!_pm25->read(&data)) {
+      // TODO: Debug - remove for production PR
+      WS_DEBUG_PRINTLN("Failed to read PM10STD data");
+      return false; // couldn't read data
+    }
+
+    pm10StdEvent->pm10_std = (float)data.pm10_standard;
+    // TODO: Debug - remove for production PR
+    WS_DEBUG_PRINT("PM10STD: ");
+    WS_DEBUG_PRINTLN(pm10StdEvent->pm10_std);
+    return true;
+  }
+
+  /*!
+      @brief    Gets the PM25 sensor's PM2.5 STD reading.
+      @param    pm25StdEvent
+                  Adafruit Sensor event for PM2.5
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
+    PM25_AQI_Data data;
+    if (!_pm25->read(&data)) {
+      // TODO: Debug - remove for production PR
+      WS_DEBUG_PRINTLN("Failed to read PM25STD data");
+      return false; // couldn't read data
+    }
+    pm25StdEvent->pm25_std = (float)data.pm25_standard;
+    // TODO: Debug - remove for production PR
+    WS_DEBUG_PRINT("PM25STD: ");
+    WS_DEBUG_PRINTLN(pm25StdEvent->pm25_std);
+    return true;
+  }
+
+  /*!
+      @brief    Gets the PM25 sensor's PM10.0 STD reading.
+      @param    pm100StdEvent
+                  Adafruit Sensor event for PM10.0
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
+    PM25_AQI_Data data;
+    if (!_pm25->read(&data)) {
+      // TODO: Debug - remove for production PR
+      WS_DEBUG_PRINTLN("Failed to read PM100STD data");
+      return false; // couldn't read data
+    }
+
+    pm100StdEvent->pm100_std = (float)data.pm100_standard;
+    // TODO: Debug - remove for production PR
+    WS_DEBUG_PRINT("PM100STD: ");
+    WS_DEBUG_PRINTLN(pm100StdEvent->pm100_std);
+    return true;
   }
 
 protected:
-  Adafruit_PM25AQI *_aqi = nullptr; ///< Instance of the Adafruit_PM25AQI class
+  Adafruit_PM25AQI *_pm25 = nullptr; ///< Instance of the Adafruit_PM25AQI class
 };
 #endif // DRV_UART_PM25_H

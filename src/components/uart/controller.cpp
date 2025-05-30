@@ -62,11 +62,10 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
-  wippersnapper_uart_UartDeviceType device_type = cfg_device.device_type;
 
   // TODO: Refactor this out into a factory method or similar
   drvUartBase *uart_driver = nullptr;
-  switch (device_type) {
+  switch (cfg_device.device_type) {
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
     return false;
@@ -85,7 +84,8 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     // TODO: Support SoftwareSerial as well, currently only HardwareSerial
     // here?!
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
-                                  device_type, cfg_device.device_id);
+                                  cfg_device.device_id);
+    uart_driver->ConfigureDriver(cfg_device);
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:
     WS_DEBUG_PRINTLN("[uart] TM22XX device type not implemented!");
