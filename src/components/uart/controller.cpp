@@ -79,13 +79,17 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[uart] GPS device type not implemented!");
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
-    WS_DEBUG_PRINTLN("[uart] PM2.5 AQI device type not implemented!");
+    WS_DEBUG_PRINTLN("[uart] Adding PM2.5 AQI device..");
     // Create a new PM2.5 AQI driver instance
     // TODO: Support SoftwareSerial as well, currently only HardwareSerial
-    // here?!
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
                                   cfg_device.device_id);
     uart_driver->ConfigureDriver(cfg_device);
+    uart_driver->EnableSensorEvents(
+        cfg_device.pm25aqi_config.i2c_device_sensor_types,
+        cfg_device.pm25aqi_config.i2c_device_sensor_types_count);
+    uart_driver->SetSensorPeriod(cfg_device.pm25aqi_config.period);
+    WS_DEBUG_PRINT("added!");
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:
     WS_DEBUG_PRINTLN("[uart] TM22XX device type not implemented!");
@@ -94,18 +98,35 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Unknown device type!");
     return false;
   }
-
   // Attempt to initialize the UART driver
-  if (!uart_driver->begin()) {
+  bool did_begin = false;
+  did_begin = uart_driver->begin();
+  if (!did_begin) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
     delete uart_driver; // cleanup
+  } else {
+    WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
+    _uart_drivers.push_back(uart_driver);
+  }
+
+  // Are we in offline mode?
+  if (WsV2._sdCardV2->isModeOffline())
+    return true; // Don't publish to IO in offline mode
+
+  // Encode and publish out to Adafruit IO
+  if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
+                                    cfg_device.device_type,
+                                    cfg_device.device_id, did_begin)) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
     return false;
   }
 
-  // TODO: Attempt to configure the UART driver with the device-specific
-  // configuration, wippersnapper_uart_UartDeviceConfig
+  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
+                          _uart_model->GetUartAddedMsg())) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to IO!");
+    return false;
+  }
 
-  // TODO: Publish back to IO that the UART device was added
   return true;
 }
 

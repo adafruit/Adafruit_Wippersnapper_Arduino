@@ -27,7 +27,7 @@ public:
   // Message API
   bool DecodeUartAdd(pb_istream_t *stream);
   wippersnapper_uart_UartAdd *GetUartAddMsg();
-  bool EncodeUartAdded(const char *id, bool success);
+  bool EncodeUartAdded(int32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *id, bool success);
   wippersnapper_uart_UartAdded *GetUartAddedMsg();
 private:
   wippersnapper_uart_UartAdd _msg_UartAdd;         ///< wippersnapper_uart_UartAdd message

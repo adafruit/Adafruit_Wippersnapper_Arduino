@@ -541,16 +541,17 @@ bool I2cController::IsBusStatusOK(bool is_alt_bus) {
 bool I2cController::PublishI2cDeviceAddedorReplaced(
     const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
     const wippersnapper_i2c_I2cDeviceStatus &device_status) {
-  if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
+  // If we're in offline mode, don't publish out to IO
+  if (WsV2._sdCardV2->isModeOffline())
+    return true; // Back out if we're in offline mode
+  
+  // Encode the I2cDeviceAddedorReplaced message and publish it to IO
+    if (!_i2c_model->encodeMsgI2cDeviceAddedorReplaced(
           device_descriptor, _i2c_bus_default->GetBusStatus(), device_status)) {
     WS_DEBUG_PRINTLN(
         "[i2c] ERROR: Unable to encode I2cDeviceAddedorReplaced message!");
     return false;
   }
-
-  if (WsV2._sdCardV2->isModeOffline())
-    return true; // Back out if we're in offline mode
-
   if (!WsV2.PublishSignal(
           wippersnapper_signal_DeviceToBroker_i2c_device_added_replaced_tag,
           _i2c_model->GetMsgI2cDeviceAddedOrReplaced())) {

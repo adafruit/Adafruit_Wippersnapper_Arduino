@@ -56,15 +56,31 @@ wippersnapper_uart_UartAdd *UARTModel::GetUartAddMsg() {
 
 /*!
     @brief  Encodes a UartAdded message.
+    @param  uart_nbr
+            The UART port number (eg: 0, 1, 2, etc.) that the device was attached to.
+    @param  type
+            The category of device attached to the UART port, corresponds to its driver type.
     @param  id
-            The ID of the UART device.
+            The unique identifier string for the UART device.
     @param  success
-            Whether the UART device was added successfully.
+            True if the device on the UART port was successfully initialized, False otherwise.
     @return True if the message was encoded successfully, False otherwise.
 */
-bool UARTModel::EncodeUartAdded(const char *id, bool success) {
-  // TODO: Implement
-  return false;
+bool UARTModel::EncodeUartAdded(int32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *id, bool success) {
+    _msg_UartAdded.uart_nbr = uart_nbr;
+    _msg_UartAdded.type = type;
+    strncpy(_msg_UartAdded.device_id, id, sizeof(_msg_UartAdded.device_id) - 1);
+    _msg_UartAdded.device_id[sizeof(_msg_UartAdded.device_id) - 1] = '\0';
+    _msg_UartAdded.success = success;
+    // Calculate the size of the encoded message
+    size_t sz_msg;
+    if (!pb_get_encoded_size(&sz_msg, wippersnapper_uart_UartAdded_fields,
+                            &_msg_UartAdded))
+        return false;
+    // Attempt to encode the message into a buffer
+    uint8_t buf[sz_msg];
+    pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+    return pb_encode(&msg_stream, wippersnapper_uart_UartAdded_fields, &_msg_UartAdded);
 }
 
 /*!
