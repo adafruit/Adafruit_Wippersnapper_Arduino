@@ -26,9 +26,12 @@ public:
   ~UARTModel();
   // Message API
   bool DecodeUartAdd(pb_istream_t *stream);
+  bool DecodeUartDeviceRemove(pb_istream_t *stream);
   wippersnapper_uart_UartAdd *GetUartAddMsg();
+  wippersnapper_uart_UartRemove *GetUartRemoveMsg();
   bool EncodeUartAdded(int32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *id, bool success);
   wippersnapper_uart_UartAdded *GetUartAddedMsg();
+  
 private:
   wippersnapper_uart_UartAdd _msg_UartAdd;         ///< wippersnapper_uart_UartAdd message
   wippersnapper_uart_UartAdded _msg_UartAdded;     ///< wippersnapper_uart_UartAdded message

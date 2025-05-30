@@ -90,3 +90,23 @@ bool UARTModel::EncodeUartAdded(int32_t uart_nbr, wippersnapper_uart_UartDeviceT
 wippersnapper_uart_UartAdded *UARTModel::GetUartAddedMsg() {
   return &_msg_UartAdded;
 }
+
+/*!
+    @brief  Decodes a UartDeviceRemove message from an input stream.
+    @param  stream
+            Pointer to a pb_istream_t object.
+    @return True if the UartDeviceRemove message was decoded successfully,
+            False otherwise.
+*/
+bool UARTModel::DecodeUartDeviceRemove(pb_istream_t *stream) {
+  memset(&_msg_UartRemove, 0, sizeof(_msg_UartRemove));
+  return pb_decode(stream, wippersnapper_uart_UartRemove_fields, &_msg_UartRemove);
+}
+
+/*!
+    @brief  Gets a pointer to the UartRemove message.
+    @return Pointer to the UartRemove message.
+*/
+wippersnapper_uart_UartRemove *UARTModel::GetUartRemoveMsg() {
+  return &_msg_UartRemove;
+}

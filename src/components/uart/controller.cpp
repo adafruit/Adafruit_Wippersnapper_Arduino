@@ -137,7 +137,15 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     @return True if the message was handled successfully, False otherwise.
 */
 bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
-  // TODO: Needs implementation
+  if (!_uart_model->DecodeUartDeviceRemove(stream) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to decode UartRemove message!");
+    return false;
+  }
+  // Get the UartRemove message from the model
+  wippersnapper_uart_UartRemove *remove_msg = _uart_model->GetUartRemoveMsg();
+  !!// TODO: Monday you were here!!!
+  // TODO: drvUartBase should contain the bus number, pass it through in UartAdd
+  // then you can check the message's bus number against the mapping sent by IO
 
   // TO ADDRESS:
   // 1) Hardware is the uart_nbr
