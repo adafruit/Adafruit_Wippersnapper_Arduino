@@ -192,9 +192,10 @@ typedef struct _wippersnapper_uart_UartInputEvent {
     /* Addressing */
     uint32_t uart_nbr; /* * The UART port number (eg: 0, 1, 2, etc.) that the device is attached to. */
     wippersnapper_uart_UartDeviceType type; /* * The category of device attached to the UART port, corresponds to its driver type. */
-    pb_callback_t device_id; /* * The unique identifier string for the UART device. */
+    char device_id[16]; /* * The unique identifier string for the UART device. */
     /* Payload */
-    pb_callback_t events; /* * Required, but optionally repeated, SensorEvent from a sensor. */
+    pb_size_t events_count;
+    wippersnapper_sensor_SensorEvent events[15]; /* * Required, but optionally repeated, SensorEvent from a sensor. */
 } wippersnapper_uart_UartInputEvent;
 
 
@@ -248,7 +249,7 @@ extern "C" {
 #define wippersnapper_uart_UartRemove_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, ""}
 #define wippersnapper_uart_UartWrite_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0, {{{NULL}, NULL}}}
 #define wippersnapper_uart_UartWritten_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
-#define wippersnapper_uart_UartInputEvent_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, {{NULL}, NULL}, {{NULL}, NULL}}
+#define wippersnapper_uart_UartInputEvent_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0, {wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default}}
 #define wippersnapper_uart_UartSerialConfig_init_zero {"", "", 0, 0, _wippersnapper_uart_UartPacketFormat_MIN, 0, 0, 0}
 #define wippersnapper_uart_GenericUartInputConfig_init_zero {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN, 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}}
 #define wippersnapper_uart_TrinamicDynamixelConfig_init_zero {0}
@@ -259,7 +260,7 @@ extern "C" {
 #define wippersnapper_uart_UartRemove_init_zero  {0, _wippersnapper_uart_UartDeviceType_MIN, ""}
 #define wippersnapper_uart_UartWrite_init_zero   {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0, {{{NULL}, NULL}}}
 #define wippersnapper_uart_UartWritten_init_zero {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
-#define wippersnapper_uart_UartInputEvent_init_zero {0, _wippersnapper_uart_UartDeviceType_MIN, {{NULL}, NULL}, {{NULL}, NULL}}
+#define wippersnapper_uart_UartInputEvent_init_zero {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0, {wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_uart_UartSerialConfig_pin_rx_tag 1
@@ -397,9 +398,9 @@ X(a, STATIC,   SINGULAR, UINT32,   bytes_written,     4)
 #define wippersnapper_uart_UartInputEvent_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   uart_nbr,          1) \
 X(a, STATIC,   SINGULAR, UENUM,    type,              2) \
-X(a, CALLBACK, SINGULAR, STRING,   device_id,         3) \
-X(a, CALLBACK, REPEATED, MESSAGE,  events,            4)
-#define wippersnapper_uart_UartInputEvent_CALLBACK pb_default_field_callback
+X(a, STATIC,   SINGULAR, STRING,   device_id,         3) \
+X(a, STATIC,   REPEATED, MESSAGE,  events,            4)
+#define wippersnapper_uart_UartInputEvent_CALLBACK NULL
 #define wippersnapper_uart_UartInputEvent_DEFAULT NULL
 #define wippersnapper_uart_UartInputEvent_events_MSGTYPE wippersnapper_sensor_SensorEvent
 
@@ -433,14 +434,16 @@ extern const pb_msgdesc_t wippersnapper_uart_UartInputEvent_msg;
 /* wippersnapper_uart_UartDeviceConfig_size depends on runtime parameters */
 /* wippersnapper_uart_UartAdd_size depends on runtime parameters */
 /* wippersnapper_uart_UartWrite_size depends on runtime parameters */
-/* wippersnapper_uart_UartInputEvent_size depends on runtime parameters */
-#define WIPPERSNAPPER_UART_UART_PB_H_MAX_SIZE    wippersnapper_uart_UartSerialConfig_size
 #define wippersnapper_uart_PM25AQIConfig_size    43
 #define wippersnapper_uart_TrinamicDynamixelConfig_size 6
 #define wippersnapper_uart_UartAdded_size        43
 #define wippersnapper_uart_UartRemove_size       41
 #define wippersnapper_uart_UartSerialConfig_size 57
 #define wippersnapper_uart_UartWritten_size      47
+#if defined(wippersnapper_sensor_SensorEvent_size)
+#define WIPPERSNAPPER_UART_UART_PB_H_MAX_SIZE    wippersnapper_uart_UartInputEvent_size
+#define wippersnapper_uart_UartInputEvent_size   (115 + 15*wippersnapper_sensor_SensorEvent_size)
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -156,7 +156,7 @@ public:
     @brief    Gets the number of enabled sensors.
     @returns  The number of enabled sensors.
   */
-  size_t GetEnabledSensorCnt() { return _sensors_count; }
+  size_t GetNumSensors() { return _sensors_count; }
 
   /*!
       @brief    Sets the sensor's period and converts from seconds to
@@ -264,6 +264,8 @@ public:
          return this->getEventPM100_STD(event);
        }}}; ///< SensorType to function call map
 
+  wippersnapper_sensor_SensorType
+      _sensors[15]; ///< The sensors attached to the device.
 protected:
   HardwareSerial *_hw_serial; ///< Pointer to a HardwareSerial instance
 #if HAS_SW_SERIAL
@@ -277,8 +279,7 @@ protected:
   // Sensor API - UART INPUT
   // TODO: This is OK here for testing but should be moved to a base class and
   // refactored for drvBase and drvUartBase
-  wippersnapper_sensor_SensorType
-      _sensors[15];         ///< The sensors attached to the device.
+
   size_t _sensors_count;    ///< Number of sensors on the device
   ulong _sensor_period;     ///< The sensor's period, in milliseconds.
   ulong _sensor_period_prv; ///< The sensor's previous period, in milliseconds.

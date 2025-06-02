@@ -1120,7 +1120,7 @@ void I2cController::ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus) {
 */
 void I2cController::update() {
   // WS_DEBUG_PRINTLN("[i2c] Updating I2C controller...");
-  if (_i2c_drivers.size() == 0)
+  if (_i2c_drivers.empty())
     return; // bail out if no drivers exist
 
   for (auto *drv : _i2c_drivers) {

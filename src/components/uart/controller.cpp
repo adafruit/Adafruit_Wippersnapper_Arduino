@@ -186,13 +186,68 @@ bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
 }
 
 /*!
-    @brief  Updates all UART devices.
+    @brief  Polls the UARTController for updates, processes any pending events
+   from the UART drivers and sends data to Adafruit IO.
 */
 void UARTController::update() {
-  // TODO: Needs implementation
-  // TO ADDRESS:
-  // 1) Hardware is the uart_nbr
-  // 2) type is the driver type
-  // 3) device_id is the unique identifier for the UART device, stored by the
-  // driver
+  if (_uart_drivers.empty())
+    return; // bail-out
+
+  for (drvUartBase *drv : _uart_drivers) {
+
+    size_t num_sensors = drv->GetNumSensors();
+    if (num_sensors == 0) {
+      WS_DEBUG_PRINTLN("[uart] No sensors available for driver: " +
+                       String(drv->GetName()));
+      continue; // No sensors to poll, skip this driver
+    }
+
+    // Did driver's read period elapse yet?
+    ulong cur_time = millis();
+    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
+      continue;
+
+    // Read the events from the drivers
+    _uart_model->ClearUartInputEventMsg();
+    _uart_model->ConfigureUartInputEventMsg(
+        drv->GetPortNum(), drv->GetDeviceType(), drv->GetName());
+    for (size_t i = 0; i < num_sensors; i++) {
+      // Attempt to read from the driver
+      sensors_event_t event = {0};
+      if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
+        WS_DEBUG_PRINTLN("[uart] ERROR: Failed to read sensor!");
+        continue; // skip this sensor if reading failed
+      }
+      // Fill the event with the sensor data
+      _uart_model->AddUartInputEvent(event, drv->_sensors[i]);
+    }
+
+    // Encode the UART input event message
+    if (_uart_model->EncodeUartInputEvent()) {
+      // Handle the UartInputEvent message
+      if (WsV2._sdCardV2->isModeOffline()) {
+        // TODO: This is UNIMPLEMENTED!
+        // In offline mode, log to SD card
+        /* if
+        (!WsV2._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
+        { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
+        SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+        } */
+      } else {
+        // In online mode, publish to Adafruit IO
+        if (!WsV2.PublishSignal(
+                wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
+                _uart_model->GetUartInputEventMsg())) {
+          WS_DEBUG_PRINTLN(
+              "[uart] ERROR: Unable to publish UartInputEvent to IO!");
+        }
+      }
+    } else {
+      WS_DEBUG_PRINTLN(
+          "[uart] ERROR: Failed to encode UartInputEvent message!");
+    }
+    // Update the driver's previous period timestamp
+    cur_time = millis();
+    drv->SetSensorPeriodPrv(cur_time);
+  }
 }

@@ -36,7 +36,7 @@ PB_BIND(wippersnapper_uart_UartWrite, wippersnapper_uart_UartWrite, AUTO)
 PB_BIND(wippersnapper_uart_UartWritten, wippersnapper_uart_UartWritten, AUTO)
 
 
-PB_BIND(wippersnapper_uart_UartInputEvent, wippersnapper_uart_UartInputEvent, AUTO)
+PB_BIND(wippersnapper_uart_UartInputEvent, wippersnapper_uart_UartInputEvent, 2)
 
 
 
