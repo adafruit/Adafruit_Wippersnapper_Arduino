@@ -83,7 +83,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     // Create a new PM2.5 AQI driver instance
     // TODO: Support SoftwareSerial as well, currently only HardwareSerial
     uart_driver = new drvUartPm25(uart_hardware->GetHardwareSerial(),
-                                  cfg_device.device_id);
+                                  cfg_device.device_id, cfg_serial.uart_nbr);
     uart_driver->ConfigureDriver(cfg_device);
     uart_driver->EnableSensorEvents(
         cfg_device.pm25aqi_config.i2c_device_sensor_types,
@@ -137,21 +137,35 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     @return True if the message was handled successfully, False otherwise.
 */
 bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
-  if (!_uart_model->DecodeUartDeviceRemove(stream) {
+  if (!_uart_model->DecodeUartDeviceRemove(stream)) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to decode UartRemove message!");
     return false;
   }
   // Get the UartRemove message from the model
   wippersnapper_uart_UartRemove *remove_msg = _uart_model->GetUartRemoveMsg();
-  !!// TODO: Monday you were here!!!
-  // TODO: drvUartBase should contain the bus number, pass it through in UartAdd
-  // then you can check the message's bus number against the mapping sent by IO
 
-  // TO ADDRESS:
-  // 1) Hardware is the uart_nbr
-  // 2) type is the driver type
-  // 3) device_id is the unique identifier for the UART device, stored by the
-  // driver
+  // Find the corresponding hardware instance for the UART port
+  uint32_t port_num = remove_msg->uart_nbr;
+  for (auto it = _uart_ports.begin(); it != _uart_ports.end(); ++it) {
+    if ((*it)->GetBusNumber() == port_num) {
+      // Find the corresponding driver for the uart port
+      for (auto driver_it = _uart_drivers.begin();
+           driver_it != _uart_drivers.end(); ++driver_it) {
+        if ((*driver_it)->GetPortNum() == port_num &&
+            (*driver_it)->GetDeviceType() == remove_msg->type &&
+            strcmp((*driver_it)->GetName(), remove_msg->device_id) == 0) {
+          // Driver found, remove it
+          WS_DEBUG_PRINT("[uart] Removing UART driver: " +
+                         String((*driver_it)->GetName()) + "...");
+          delete *driver_it;
+          _uart_drivers.erase(driver_it);
+          WS_DEBUG_PRINTLN("Removed!");
+          return true;
+        }
+      }
+    }
+  }
+
   return false;
 }
 

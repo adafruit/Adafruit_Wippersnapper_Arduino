@@ -31,9 +31,13 @@ public:
                 Pointer to a HardwareSerial instance.
       @param    driver_name
                 The name of the driver.
+      @param    port_num
+                The port number for the UART device corresponding to the Serial
+     instance.
   */
-  drvUartPm25(HardwareSerial *hw_serial, const char *driver_name)
-      : drvUartBase(hw_serial, driver_name) {
+  drvUartPm25(HardwareSerial *hw_serial, const char *driver_name,
+              uint32_t port_num)
+      : drvUartBase(hw_serial, driver_name, port_num) {
     // Handled by drvUartBase constructor
   }
 
@@ -46,11 +50,14 @@ public:
               The type of device connected to the UART port.
     @param    driver_name
               The name of the driver.
+    @param   port_num
+              The port number for the UART device corresponding to the Serial
+    instance.
 */
   drvUartPm25(SoftwareSerial *sw_serial,
               wippersnapper_uart_UartDeviceType device_type,
-              const char *driver_name)
-      : drvUartBase(sw_serial, device_type, driver_name) {
+              const char *driver_name, uint32_t port_num)
+      : drvUartBase(sw_serial, device_type, driver_name, port_num) {
     // Handled by drvUartBase constructor
   }
 #endif // HAS_SW_SERIAL

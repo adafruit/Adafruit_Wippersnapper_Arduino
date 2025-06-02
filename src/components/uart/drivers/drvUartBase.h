@@ -33,12 +33,17 @@ public:
                 Pointer to a HardwareSerial instance.
       @param    driver_name
                 The name of the driver.
+      @param    port_num
+                The port number for the UART device corresponding to the Serial
+     instance.
   */
-  drvUartBase(HardwareSerial *hw_serial, const char *driver_name) {
+  drvUartBase(HardwareSerial *hw_serial, const char *driver_name,
+              uint32_t port_num) {
     _hw_serial = hw_serial;
     _is_software_serial = false;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
+    _port_num = port_num;
   }
 
 #if HAS_SW_SERIAL
@@ -106,6 +111,18 @@ public:
       @returns  The UART device type.
   */
   wippersnapper_uart_UartDeviceType GetDeviceType() { return _device_type; }
+
+  /*!
+      @brief    Gets the name of the UART driver.
+      @returns  The name of the UART driver.
+  */
+  uint32_t GetPortNum() const { return _port_num; }
+
+  /*!
+      @brief    Gets the name of the UART driver.
+      @returns  The name of the UART driver.
+  */
+  const char *GetName() const { return _name; }
 
   /*!
       @brief    Gets the type of Serial used by this driver.
@@ -254,6 +271,7 @@ protected:
 #endif                        // HAS_SW_SERIAL
   wippersnapper_uart_UartDeviceType _device_type; ///< The UART device type
   char _name[15];                                 ///< The device's name
+  uint32_t _port_num = 0; ///< The port number for the UART device
   bool _is_software_serial =
       false; ///< Indicates if this driver uses SoftwareSerial
   // Sensor API - UART INPUT
