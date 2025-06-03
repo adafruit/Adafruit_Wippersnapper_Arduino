@@ -285,6 +285,7 @@ jobs:
             "wippersnapper_feather_esp32",
             "qtpy_esp32",
             "sparklemotionmini_esp32",
+            "sparklemotionstick_esp32",
             "feather_esp32_v2",
             "itsybitsy_esp32",
             "wippersnapper_qtpy_esp32c3",
