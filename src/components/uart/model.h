@@ -16,7 +16,6 @@
 #define WS_UART_MODEL_H
 #include "Wippersnapper_V2.h"
 #include <Adafruit_Sensor.h>
-
 #define MAX_UART_INPUT_EVENTS 15
 
 /*!
@@ -27,24 +26,28 @@ class UARTModel {
 public:
   UARTModel();
   ~UARTModel();
-  // Message API
+  // Messaging APIs //
+  // UartAdd
   bool DecodeUartAdd(pb_istream_t *stream);
   bool DecodeUartDeviceRemove(pb_istream_t *stream);
   wippersnapper_uart_UartAdd *GetUartAddMsg();
-  wippersnapper_uart_UartRemove *GetUartRemoveMsg();
+  // UartAdded
   bool EncodeUartAdded(int32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *id, bool success);
   wippersnapper_uart_UartAdded *GetUartAddedMsg();
-  void ClearUartInputEventMsg();
-  void ConfigureUartInputEventMsg(uint32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *device_id);
+  // UartRemove
+  wippersnapper_uart_UartRemove *GetUartRemoveMsg();
+  // UartInputEvent
   bool AddUartInputEvent(sensors_event_t &event, wippersnapper_sensor_SensorType sensor_type);
   bool EncodeUartInputEvent();
   wippersnapper_uart_UartInputEvent *GetUartInputEventMsg();
+  void ClearUartInputEventMsg();
+  void ConfigureUartInputEventMsg(uint32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *device_id);
 private:
-  wippersnapper_uart_UartAdd _msg_UartAdd;         ///< wippersnapper_uart_UartAdd message
-  wippersnapper_uart_UartAdded _msg_UartAdded;     ///< wippersnapper_uart_UartAdded message
-  wippersnapper_uart_UartRemove _msg_UartRemove;   ///< wippersnapper_uart_UartRemove message
-  wippersnapper_uart_UartWrite _msg_UartWrite;     ///< wippersnapper_uart_UartWrite message
-  wippersnapper_uart_UartWritten _msg_UartWritten; ///< wippersnapper_uart_UartWritten message
+  wippersnapper_uart_UartAdd _msg_UartAdd;               ///< wippersnapper_uart_UartAdd message
+  wippersnapper_uart_UartAdded _msg_UartAdded;           ///< wippersnapper_uart_UartAdded message
+  wippersnapper_uart_UartRemove _msg_UartRemove;         ///< wippersnapper_uart_UartRemove message
+  wippersnapper_uart_UartWrite _msg_UartWrite;           ///< wippersnapper_uart_UartWrite message
+  wippersnapper_uart_UartWritten _msg_UartWritten;       ///< wippersnapper_uart_UartWritten message
   wippersnapper_uart_UartInputEvent _msg_UartInputEvent; ///< wippersnapper_uart_UartInputEvent message
 };
 #endif // WS_UART_MODEL_H

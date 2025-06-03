@@ -242,6 +242,36 @@ public:
   }
 
   /*!
+      @brief    Base implementation - Reads an ambient temperature sensor (°C).
+                Expects value to return in the proper SI unit.
+      @param    tempEvent
+                Pointer to an Adafruit_Sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventAmbientTemp(sensors_event_t *tempEvent) { return false; }
+
+  /*!
+      @brief    Helper function to obtain a sensor's ambient temperature value
+                in °F. Requires `getEventAmbientTemp()` to be fully
+                implemented by a driver.
+      @param    AmbientTempFEvent
+                The ambient temperature value, in °F.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventAmbientTempF(sensors_event_t *AmbientTempFEvent) {
+    // obtain ambient temp. in °C
+    if (!getEventAmbientTemp(AmbientTempFEvent)) {
+      return false;
+    }
+    // convert event from °C to °F
+    AmbientTempFEvent->temperature =
+        (AmbientTempFEvent->temperature * 9.0) / 5.0 + 32;
+    return true;
+  }
+
+  /*!
       @brief    Function type for sensor event handlers
       @param    sensors_event_t*
                 Pointer to the sensor event structure to be filled
@@ -262,7 +292,16 @@ public:
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventPM100_STD(event);
-       }}}; ///< SensorType to function call map
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventAmbientTempF(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventAmbientTemp(event);
+       }},
+  }; ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< The sensors attached to the device.

@@ -1354,10 +1354,10 @@ ws_status_t Wippersnapper_V2::run() {
   // Process all DS18x20 sensor events
   WsV2._ds18x20_controller->update();
 
-  // TODO: Process I2C sensor events
+  // Process I2C driver events
   WsV2._i2c_controller->update();
 
-  // TODO: Process UART sensor events
+  // Process UART driver events
   WsV2._uart_controller->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
