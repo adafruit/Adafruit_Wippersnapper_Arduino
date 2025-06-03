@@ -20,6 +20,7 @@
 
 #define CMD_US100_REQ_TEMP 0x50     ///< Temperature request command
 #define CMD_US100_REQ_DISTANCE 0x55 ///< Distance request command
+#define US_100_DELAY_TIME 100       ///< Delay time for US-100, in milliseconds
 
 /**
  * Basic UART device class that demonstrates using GenericDevice with a Stream
@@ -36,6 +37,7 @@ public:
   // Called by GenericDevice when data needs to be sent
   static bool uart_write(void *thiz, const uint8_t *buffer, size_t len) {
     UARTDevice *dev = (UARTDevice *)thiz;
+    dev->_serial->flush(); // Ensure the serial buffer is empty before writing
     dev->_serial->write(buffer, len);
     return true;
   }
@@ -74,7 +76,7 @@ class drvUartUs100 : public drvUartBase {
 
 public:
   /*!
-      @brief    Instantiates a UART device.
+      @brief    Instantiates a US-100 UART device.
       @param    hw_serial
                 Pointer to a HardwareSerial instance.
       @param    driver_name
@@ -91,27 +93,24 @@ public:
 
 #if HAS_SW_SERIAL
   /*!
-    @brief    Instantiates a UART device.
+    @brief    Instantiates a US-100 UART device.
     @param    sw_serial
               Pointer to a SoftwareSerial instance.
-    @param    device_type
-              The type of device connected to the UART port.
     @param    driver_name
               The name of the driver.
     @param   port_num
               The port number for the UART device corresponding to the Serial
     instance.
 */
-  drvUartUs100(SoftwareSerial *sw_serial,
-               wippersnapper_uart_UartDeviceType device_type,
-               const char *driver_name, uint32_t port_num)
+  drvUartUs100(SoftwareSerial *sw_serial, const char *driver_name,
+               uint32_t port_num)
       : drvUartBase(sw_serial, device_type, driver_name, port_num) {
     // Handled by drvUartBase constructor
   }
 #endif // HAS_SW_SERIAL
 
   /*!
-      @brief    Destructor for a UART device.
+      @brief    Destructor for a US-100 UART device.
   */
   ~drvUartUs100() {
     if (_device_us100) {
@@ -159,7 +158,7 @@ public:
     if (!_device_us100->write(write_buf, len_write_buf))
       return false;
     // Wait for US-100 to respond
-    delay(100);
+    delay(US_100_DELAY_TIME);
 
     // Attempt to read the response from the US-100
     uint8_t len_read_buf = 1;
@@ -175,6 +174,43 @@ public:
       return false;
     }
 
+    return true;
+  }
+
+  /*!
+      @brief    Gets the US-100 sensor's distance measurement.
+      @param    rawEvent
+                The Raw value, contains the distance in centimeters.
+      @returns  True if the distance value was obtained successfully, False
+                otherwise.
+  */
+  bool getEventRaw(sensors_event_t *rawEvent) {
+    // Write the distance request command to the US-100
+    uint8_t len_write_buf = 1;
+    uint8_t write_buf[len_write_buf] = {CMD_US100_REQ_DISTANCE};
+    if (!_device_us100->write(write_buf, len_write_buf))
+      return false;
+    // Wait for US-100 to respond
+    delay(US_100_DELAY_TIME);
+
+    // Read the response from the US-100
+    uint8_t len_read_buf = 2;
+    uint8_t read_buf[len_read_buf] = {0};
+    if (!_device_us100->read(read_buf, len_read_buf))
+      return false;
+
+    // Calculate distance
+    uint16_t dist_high_byte = read_buf[0];
+    uint16_t dist_low_byte = read_buf[1];
+    uint16_t distance = dist_high_byte * 256 + dist_low_byte;
+
+    // Check if the distance is within valid range
+    if ((distance < 1) || (distance > 10000)) {
+      return false;
+    }
+
+    // Populate the raw event with the distance value in cm
+    rawEvent->data[0] = (float)distance;
     return true;
   }
 

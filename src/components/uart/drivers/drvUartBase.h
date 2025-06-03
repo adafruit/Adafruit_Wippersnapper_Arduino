@@ -53,14 +53,16 @@ public:
                 Pointer to a SoftwareSerial instance.
       @param    driver_name
                 The name of the driver.
+      @param    port_num
+                The port number for the UART device corresponding to the Serial
   */
-  drvUartBase(SoftwareSerial *sw_serial,
-              wippersnapper_uart_UartDeviceType device_type,
-              const char *driver_name) {
+  drvUartBase(SoftwareSerial *sw_serial, const char *driver_name,
+              uint32_t port_num) {
     _sw_serial = sw_serial;
     _is_software_serial = true;
     strncpy(_name, driver_name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
+    _port_num = port_num;
   }
 #endif // HAS_SW_SERIAL
 
@@ -272,6 +274,15 @@ public:
   }
 
   /*!
+      @brief    Gets a sensor's Raw value.
+      @param    rawEvent
+                The Raw value.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventRaw(sensors_event_t *rawEvent) { return false; }
+
+  /*!
       @brief    Function type for sensor event handlers
       @param    sensors_event_t*
                 Pointer to the sensor event structure to be filled
@@ -301,7 +312,10 @@ public:
        [this](sensors_event_t *event) -> bool {
          return this->getEventAmbientTemp(event);
        }},
-  }; ///< SensorType to function call map
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventRaw(event);
+       }}}; ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< The sensors attached to the device.
