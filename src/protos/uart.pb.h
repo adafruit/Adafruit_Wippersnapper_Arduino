@@ -115,14 +115,13 @@ typedef struct _wippersnapper_uart_PM25AQIConfig {
 typedef struct _wippersnapper_uart_UartDeviceConfig {
     wippersnapper_uart_UartDeviceType device_type; /* * The type of device connected to the UART port. */
     char device_id[32]; /* * The unique identifier string for the UART device. */
-    bool has_generic_uart_input_config;
-    wippersnapper_uart_GenericUartInputConfig generic_uart_input_config; /* * OPTIONAL configuration for a generic UART input device. */
-    bool has_trinamic_dynamixel_config;
-    wippersnapper_uart_TrinamicDynamixelConfig trinamic_dynamixel_config; /* * OPTIONAL configuration for a Trinamic stepper or DYNAMIXEL servo. */
-    bool has_pm25aqi_config;
-    wippersnapper_uart_PM25AQIConfig pm25aqi_config; /* * OPTIONAL configuration for a PM2.5 AQI sensor. */
-    bool has_gps_config;
-    wippersnapper_gps_GPSConfig gps_config; /* * OPTIONAL configuration for a GPS RMC response. */
+    pb_size_t which_config;
+    union {
+        wippersnapper_uart_GenericUartInputConfig generic_uart_input; /* * OPTIONAL configuration for a generic UART input device. */
+        wippersnapper_uart_TrinamicDynamixelConfig trinamic_dynamixel; /* * OPTIONAL configuration for a Trinamic stepper or DYNAMIXEL servo. */
+        wippersnapper_uart_PM25AQIConfig pm25aqi; /* * OPTIONAL configuration for a PM2.5 AQI sensor. */
+        wippersnapper_gps_GPSConfig gps; /* * OPTIONAL configuration for a GPS RMC response. */
+    } config;
 } wippersnapper_uart_UartDeviceConfig;
 
 /* *
@@ -243,7 +242,7 @@ extern "C" {
 #define wippersnapper_uart_GenericUartInputConfig_init_default {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN, 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}}
 #define wippersnapper_uart_TrinamicDynamixelConfig_init_default {0}
 #define wippersnapper_uart_PM25AQIConfig_init_default {0, 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}}
-#define wippersnapper_uart_UartDeviceConfig_init_default {_wippersnapper_uart_UartDeviceType_MIN, "", false, wippersnapper_uart_GenericUartInputConfig_init_default, false, wippersnapper_uart_TrinamicDynamixelConfig_init_default, false, wippersnapper_uart_PM25AQIConfig_init_default, false, wippersnapper_gps_GPSConfig_init_default}
+#define wippersnapper_uart_UartDeviceConfig_init_default {_wippersnapper_uart_UartDeviceType_MIN, "", 0, {wippersnapper_uart_GenericUartInputConfig_init_default}}
 #define wippersnapper_uart_UartAdd_init_default  {false, wippersnapper_uart_UartSerialConfig_init_default, false, wippersnapper_uart_UartDeviceConfig_init_default}
 #define wippersnapper_uart_UartAdded_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
 #define wippersnapper_uart_UartRemove_init_default {0, _wippersnapper_uart_UartDeviceType_MIN, ""}
@@ -254,7 +253,7 @@ extern "C" {
 #define wippersnapper_uart_GenericUartInputConfig_init_zero {{{NULL}, NULL}, _wippersnapper_uart_GenericDeviceLineEnding_MIN, 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}}
 #define wippersnapper_uart_TrinamicDynamixelConfig_init_zero {0}
 #define wippersnapper_uart_PM25AQIConfig_init_zero {0, 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}}
-#define wippersnapper_uart_UartDeviceConfig_init_zero {_wippersnapper_uart_UartDeviceType_MIN, "", false, wippersnapper_uart_GenericUartInputConfig_init_zero, false, wippersnapper_uart_TrinamicDynamixelConfig_init_zero, false, wippersnapper_uart_PM25AQIConfig_init_zero, false, wippersnapper_gps_GPSConfig_init_zero}
+#define wippersnapper_uart_UartDeviceConfig_init_zero {_wippersnapper_uart_UartDeviceType_MIN, "", 0, {wippersnapper_uart_GenericUartInputConfig_init_zero}}
 #define wippersnapper_uart_UartAdd_init_zero     {false, wippersnapper_uart_UartSerialConfig_init_zero, false, wippersnapper_uart_UartDeviceConfig_init_zero}
 #define wippersnapper_uart_UartAdded_init_zero   {0, _wippersnapper_uart_UartDeviceType_MIN, "", 0}
 #define wippersnapper_uart_UartRemove_init_zero  {0, _wippersnapper_uart_UartDeviceType_MIN, ""}
@@ -281,10 +280,10 @@ extern "C" {
 #define wippersnapper_uart_PM25AQIConfig_i2c_device_sensor_types_tag 3
 #define wippersnapper_uart_UartDeviceConfig_device_type_tag 1
 #define wippersnapper_uart_UartDeviceConfig_device_id_tag 2
-#define wippersnapper_uart_UartDeviceConfig_generic_uart_input_config_tag 3
-#define wippersnapper_uart_UartDeviceConfig_trinamic_dynamixel_config_tag 4
-#define wippersnapper_uart_UartDeviceConfig_pm25aqi_config_tag 5
-#define wippersnapper_uart_UartDeviceConfig_gps_config_tag 6
+#define wippersnapper_uart_UartDeviceConfig_generic_uart_input_tag 3
+#define wippersnapper_uart_UartDeviceConfig_trinamic_dynamixel_tag 4
+#define wippersnapper_uart_UartDeviceConfig_pm25aqi_tag 5
+#define wippersnapper_uart_UartDeviceConfig_gps_tag 6
 #define wippersnapper_uart_UartAdd_cfg_serial_tag 1
 #define wippersnapper_uart_UartAdd_cfg_device_tag 2
 #define wippersnapper_uart_UartAdded_uart_nbr_tag 1
@@ -344,16 +343,16 @@ X(a, STATIC,   REPEATED, UENUM,    i2c_device_sensor_types,   3)
 #define wippersnapper_uart_UartDeviceConfig_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    device_type,       1) \
 X(a, STATIC,   SINGULAR, STRING,   device_id,         2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  generic_uart_input_config,   3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  trinamic_dynamixel_config,   4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  pm25aqi_config,    5) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  gps_config,        6)
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,generic_uart_input,config.generic_uart_input),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,trinamic_dynamixel,config.trinamic_dynamixel),   4) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,pm25aqi,config.pm25aqi),   5) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (config,gps,config.gps),   6)
 #define wippersnapper_uart_UartDeviceConfig_CALLBACK NULL
 #define wippersnapper_uart_UartDeviceConfig_DEFAULT NULL
-#define wippersnapper_uart_UartDeviceConfig_generic_uart_input_config_MSGTYPE wippersnapper_uart_GenericUartInputConfig
-#define wippersnapper_uart_UartDeviceConfig_trinamic_dynamixel_config_MSGTYPE wippersnapper_uart_TrinamicDynamixelConfig
-#define wippersnapper_uart_UartDeviceConfig_pm25aqi_config_MSGTYPE wippersnapper_uart_PM25AQIConfig
-#define wippersnapper_uart_UartDeviceConfig_gps_config_MSGTYPE wippersnapper_gps_GPSConfig
+#define wippersnapper_uart_UartDeviceConfig_config_generic_uart_input_MSGTYPE wippersnapper_uart_GenericUartInputConfig
+#define wippersnapper_uart_UartDeviceConfig_config_trinamic_dynamixel_MSGTYPE wippersnapper_uart_TrinamicDynamixelConfig
+#define wippersnapper_uart_UartDeviceConfig_config_pm25aqi_MSGTYPE wippersnapper_uart_PM25AQIConfig
+#define wippersnapper_uart_UartDeviceConfig_config_gps_MSGTYPE wippersnapper_gps_GPSConfig
 
 #define wippersnapper_uart_UartAdd_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  cfg_serial,        1) \
