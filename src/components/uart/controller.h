@@ -21,6 +21,7 @@
 // drivers
 #include "drivers/drvUartBase.h"
 #include "drivers/drvUartPm25.h"
+#include "drivers/drvUartUs100.h"
 
 class Wippersnapper_V2; ///< Forward declaration
 class UARTModel;        ///< Forward declaration

@@ -45,6 +45,7 @@ UARTModel::~UARTModel() {
     @return True if the message was decoded successfully, False otherwise.
 */
 bool UARTModel::DecodeUartAdd(pb_istream_t *stream) {
+  memset(&_msg_UartAdd, 0, sizeof(_msg_UartAdd));
   return pb_decode(stream, wippersnapper_uart_UartAdd_fields, &_msg_UartAdd);
 }
 

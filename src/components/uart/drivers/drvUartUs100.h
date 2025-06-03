@@ -104,7 +104,7 @@ public:
 */
   drvUartUs100(SoftwareSerial *sw_serial, const char *driver_name,
                uint32_t port_num)
-      : drvUartBase(sw_serial, device_type, driver_name, port_num) {
+      : drvUartBase(sw_serial, driver_name, port_num) {
     // Handled by drvUartBase constructor
   }
 #endif // HAS_SW_SERIAL
@@ -129,9 +129,11 @@ public:
   */
   bool begin() override {
 // Create a new UARTDevice instance with the Serial instance
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
     if (IsSoftwareSerial()) {
       _uart = new UARTDevice(_sw_serial);
+    } else {
+      _uart = new UARTDevice(_hw_serial);
     }
 #else
     _uart = new UARTDevice(_hw_serial);
