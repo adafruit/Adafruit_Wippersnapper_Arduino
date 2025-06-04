@@ -36,9 +36,16 @@ public:
   // Static callback for writing data to UART
   // Called by GenericDevice when data needs to be sent
   static bool uart_write(void *thiz, const uint8_t *buffer, size_t len) {
+    WS_DEBUG_PRINTLN("creating dev...");
     UARTDevice *dev = (UARTDevice *)thiz;
-    dev->_serial->flush(); // Ensure the serial buffer is empty before writing
+    WS_DEBUG_PRINT("[uart] Lets write..");
+    if (dev->_serial == nullptr) {
+      WS_DEBUG_PRINTLN("ERROR: Serial is null!");
+      return false;
+    }
+
     dev->_serial->write(buffer, len);
+    WS_DEBUG_PRINTLN(" done.");
     return true;
   }
 
@@ -190,6 +197,7 @@ public:
     // Write the distance request command to the US-100
     uint8_t len_write_buf = 1;
     uint8_t write_buf[len_write_buf] = {CMD_US100_REQ_DISTANCE};
+    WS_DEBUG_PRINTLN("[uart] Requesting distance from US-100...");
     if (!_device_us100->write(write_buf, len_write_buf))
       return false;
     // Wait for US-100 to respond

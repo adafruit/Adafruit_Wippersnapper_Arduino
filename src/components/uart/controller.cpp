@@ -19,14 +19,17 @@
     @brief  Constructs a new UARTController.
 */
 UARTController::UARTController() {
-  // TODO! Needs implementation
+  _uart_model = new UARTModel();
 }
 
 /*!
     @brief  Destructs the UARTController.
 */
 UARTController::~UARTController() {
-  // TODO! Needs impl.
+  if (_uart_model != nullptr) {
+    delete _uart_model; // cleanup model
+    _uart_model = nullptr;
+  }
 }
 
 /*!
@@ -83,9 +86,9 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
                                      cfg_device.device_id, cfg_serial.uart_nbr);
       uart_driver->ConfigureDriver(cfg_device);
       uart_driver->EnableSensorEvents(
-          cfg_device.generic_uart_input_config.i2c_device_sensor_types,
-          cfg_device.generic_uart_input_config.i2c_device_sensor_types_count);
-      uart_driver->SetSensorPeriod(cfg_device.generic_uart_input_config.period);
+          cfg_device.config.generic_uart_input.i2c_device_sensor_types,
+          cfg_device.config.generic_uart_input.i2c_device_sensor_types_count);
+      uart_driver->SetSensorPeriod(cfg_device.config.generic_uart_input.period);
       WS_DEBUG_PRINT("added!");
     } else {
         WS_DEBUG_PRINTLN("[uart] Specified generic device type is not implemented!");
@@ -107,9 +110,9 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
                                   cfg_device.device_id, cfg_serial.uart_nbr);
     uart_driver->ConfigureDriver(cfg_device);
     uart_driver->EnableSensorEvents(
-        cfg_device.pm25aqi_config.i2c_device_sensor_types,
-        cfg_device.pm25aqi_config.i2c_device_sensor_types_count);
-    uart_driver->SetSensorPeriod(cfg_device.pm25aqi_config.period);
+        cfg_device.config.pm25aqi.i2c_device_sensor_types,
+        cfg_device.config.pm25aqi.i2c_device_sensor_types_count);
+    uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
     WS_DEBUG_PRINT("added!");
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:

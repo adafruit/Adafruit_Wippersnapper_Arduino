@@ -1020,6 +1020,19 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
         wippersnapper_signal_DeviceToBroker_servo_added_tag;
     MsgSignal.payload.servo_added = *(wippersnapper_servo_ServoAdded *)payload;
     break;
+  case wippersnapper_signal_DeviceToBroker_uart_added_tag:
+    WS_DEBUG_PRINTLN("UARTAdded");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_uart_added_tag;
+    MsgSignal.payload.uart_added = *(wippersnapper_uart_UartAdded *)payload;
+    break;
+  case wippersnapper_signal_DeviceToBroker_uart_input_event_tag:
+    WS_DEBUG_PRINTLN("UARTInputEvent");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_uart_input_event_tag;
+    MsgSignal.payload.uart_input_event =
+        *(wippersnapper_uart_UartInputEvent *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
