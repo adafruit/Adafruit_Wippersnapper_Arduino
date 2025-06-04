@@ -31,11 +31,23 @@
 
 class UARTDevice {
 public:
-  UARTDevice(Stream *serial) : _serial(serial) {}
+  UARTDevice(Stream *serial) {
+    WS_DEBUG_PRINTLN("[uart] UARTDevice constructor called");
+    if (serial == nullptr) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Serial is null!");
+      return;
+    } else {
+      WS_DEBUG_PRINTLN("[uart] Serial is not null, proceeding...");
+    }
+    _serial = serial;
+  }
 
   // Static callback for writing data to UART
   // Called by GenericDevice when data needs to be sent
   static bool uart_write(void *thiz, const uint8_t *buffer, size_t len) {
+    WS_DEBUG_PRINT("[uart] uart_write called with len: ");
+    WS_DEBUG_PRINTLN(len);
+    delay(250);
     WS_DEBUG_PRINTLN("creating dev...");
     UARTDevice *dev = (UARTDevice *)thiz;
     WS_DEBUG_PRINT("[uart] Lets write..");
@@ -135,20 +147,24 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() override {
-// Create a new UARTDevice instance with the Serial instance
-#if HAS_SW_SERIAL
-    if (IsSoftwareSerial()) {
-      _uart = new UARTDevice(_sw_serial);
+    // is _hw_serial nullptr?
+    if (_hw_serial == nullptr) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: _hw_serial is null!");
+      return false;
     } else {
-      _uart = new UARTDevice(_hw_serial);
+      WS_DEBUG_PRINTLN("[uart] _hw_serial is not null, proceeding...");
     }
-#else
-    _uart = new UARTDevice(_hw_serial);
-#endif // HAS_SW_SERIAL
 
+    WS_DEBUG_PRINTLN("[uart] Initializing US-100 Ultrasonic Distance Sensor...");
+    _uart = new UARTDevice(_hw_serial);
+    WS_DEBUG_PRINTLN("[uart] Creating GenericDevice...");
     // Create a GenericDevice instance using the UARTDevice
     _device_us100 = _uart->createDevice();
-    _device_us100->begin();
+    if (!_device_us100->begin()) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize US-100 device!");
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[uart] US-100 device initialized successfully.");
     return true;
   }
 
@@ -198,6 +214,15 @@ public:
     uint8_t len_write_buf = 1;
     uint8_t write_buf[len_write_buf] = {CMD_US100_REQ_DISTANCE};
     WS_DEBUG_PRINTLN("[uart] Requesting distance from US-100...");
+
+    // is _device_us100 nullptr?
+    if (_device_us100 == nullptr) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: _device_us100 is null!");
+      return false;
+    } else {
+      WS_DEBUG_PRINTLN("[uart] _device_us100 is not null, proceeding...");
+    }
+
     if (!_device_us100->write(write_buf, len_write_buf))
       return false;
     // Wait for US-100 to respond
