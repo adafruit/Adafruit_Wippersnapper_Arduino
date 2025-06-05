@@ -53,6 +53,8 @@ public:
   */
   ~WipperSnapper_I2C_Driver_Out_Ssd1306() {
     if (_display != nullptr) {
+      _display->clearDisplay();
+      _display->display();
       _display->ssd1306_command(SSD1306_DISPLAYOFF);
       delete _display;
       _display = nullptr;
@@ -68,13 +70,14 @@ public:
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
     if (!_display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress))
       return false;
-    // Clear the buffer
-    _display->clearDisplay();
     // Configure the text size and color
     _display->setTextSize(_text_sz);
     _display->setTextColor(SSD1306_WHITE);
     // Use full 256 char 'Code Page 437' font
     _display->cp437(true);
+    // Clear the buffer
+    _display->clearDisplay();
+    _display->display();
     return true;
   }
 
