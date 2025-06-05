@@ -18,9 +18,7 @@
 /*!
     @brief  Constructs a new UARTController.
 */
-UARTController::UARTController() {
-  _uart_model = new UARTModel();
-}
+UARTController::UARTController() { _uart_model = new UARTModel(); }
 
 /*!
     @brief  Destructs the UARTController.
@@ -91,9 +89,10 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
       uart_driver->SetSensorPeriod(cfg_device.config.generic_uart_input.period);
       WS_DEBUG_PRINT("added!");
     } else {
-        WS_DEBUG_PRINTLN("[uart] Specified generic device type is not implemented!");
-        delete uart_hardware; // cleanup
-        return false;
+      WS_DEBUG_PRINTLN(
+          "[uart] Specified generic device type is not implemented!");
+      delete uart_hardware; // cleanup
+      return false;
     }
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_OUTPUT:
@@ -122,164 +121,163 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Unknown device type!");
     return false;
   }
-    // Attempt to initialize the UART driver
-    bool did_begin = false;
-    did_begin = uart_driver->begin();
-    if (!did_begin) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
-      delete uart_driver; // cleanup
-    } else {
-      WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
-      _uart_drivers.push_back(uart_driver);
-    }
-
-    // Check if we have a valid driver
-    if (uart_driver == nullptr) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: No UART driver was created!");
-      delete uart_hardware; // cleanup
-      return false;
-    }
-    
-    // Are we in offline mode?
-    if (WsV2._sdCardV2->isModeOffline())
-      return true; // Don't publish to IO in offline mode
-
-    // Encode and publish out to Adafruit IO
-    if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
-                                      cfg_device.device_type,
-                                      cfg_device.device_id, did_begin)) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
-      return false;
-    }
-
-    if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
-                            _uart_model->GetUartAddedMsg())) {
-      WS_DEBUG_PRINTLN(
-          "[i2c] ERROR: Unable to publish UartAdded message to IO!");
-      return false;
-    }
-
-    return true;
+  // Attempt to initialize the UART driver
+  bool did_begin = false;
+  did_begin = uart_driver->begin();
+  if (!did_begin) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
+    delete uart_driver; // cleanup
+  } else {
+    WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
+    _uart_drivers.push_back(uart_driver);
   }
 
-  /*!
-      @brief  Handles a UartRemove message.
-      @param  stream
-              Pointer to a pb_istream_t object.
-      @return True if the message was handled successfully, False otherwise.
-  */
-  bool UARTController::Handle_UartRemove(pb_istream_t * stream) {
-    if (!_uart_model->DecodeUartDeviceRemove(stream)) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to decode UartRemove message!");
-      return false;
-    }
-    // Get the UartRemove message from the model
-    wippersnapper_uart_UartRemove *remove_msg = _uart_model->GetUartRemoveMsg();
-
-    // Find the corresponding hardware instance for the UART port
-    uint32_t port_num = remove_msg->uart_nbr;
-    for (auto it = _uart_ports.begin(); it != _uart_ports.end(); ++it) {
-      if ((*it)->GetBusNumber() == port_num) {
-        // Find the corresponding driver for the uart port
-        for (auto driver_it = _uart_drivers.begin();
-             driver_it != _uart_drivers.end(); ++driver_it) {
-          if ((*driver_it)->GetPortNum() == port_num &&
-              (*driver_it)->GetDeviceType() == remove_msg->type &&
-              strcmp((*driver_it)->GetName(), remove_msg->device_id) == 0) {
-            // Driver found, remove it
-            WS_DEBUG_PRINT("[uart] Removing UART driver: " +
-                           String((*driver_it)->GetName()) + "...");
-            delete *driver_it;
-            _uart_drivers.erase(driver_it);
-            WS_DEBUG_PRINTLN("Removed!");
-            return true;
-          }
-        }
-      }
-    }
-
+  // Check if we have a valid driver
+  if (uart_driver == nullptr) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: No UART driver was created!");
+    delete uart_hardware; // cleanup
     return false;
   }
 
-  /*!
-      @brief  Handles a UartWrite message.
-      @param  stream
-              Pointer to a pb_istream_t object.
-      @return True if the message was handled successfully, False otherwise.
-  */
-  bool UARTController::Handle_UartWrite(pb_istream_t * stream) {
-    // TODO: Needs implementation
-    // TO ADDRESS:
-    // 1) Hardware is the uart_nbr
-    // 2) type is the driver type
-    // 3) device_id is the unique identifier for the UART device, stored by the
-    // driver
+  // Are we in offline mode?
+  if (WsV2._sdCardV2->isModeOffline())
+    return true; // Don't publish to IO in offline mode
+
+  // Encode and publish out to Adafruit IO
+  if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
+                                    cfg_device.device_type,
+                                    cfg_device.device_id, did_begin)) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
     return false;
   }
 
-  /*!
-      @brief  Polls the UARTController for updates, processes any pending events
-     from the UART drivers and sends data to Adafruit IO.
-  */
-  void UARTController::update() {
-    if (_uart_drivers.empty())
-      return; // bail-out
+  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
+                          _uart_model->GetUartAddedMsg())) {
+    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to IO!");
+    return false;
+  }
 
-    for (drvUartBase *drv : _uart_drivers) {
+  return true;
+}
 
-      size_t num_sensors = drv->GetNumSensors();
-      if (num_sensors == 0) {
-        WS_DEBUG_PRINTLN("[uart] No sensors available for driver: " +
-                         String(drv->GetName()));
-        continue; // No sensors to poll, skip this driver
-      }
+/*!
+    @brief  Handles a UartRemove message.
+    @param  stream
+            Pointer to a pb_istream_t object.
+    @return True if the message was handled successfully, False otherwise.
+*/
+bool UARTController::Handle_UartRemove(pb_istream_t *stream) {
+  if (!_uart_model->DecodeUartDeviceRemove(stream)) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to decode UartRemove message!");
+    return false;
+  }
+  // Get the UartRemove message from the model
+  wippersnapper_uart_UartRemove *remove_msg = _uart_model->GetUartRemoveMsg();
 
-      // Did driver's read period elapse yet?
-      ulong cur_time = millis();
-      if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
-        continue;
-
-      // Read the events from the drivers
-      _uart_model->ClearUartInputEventMsg();
-      _uart_model->ConfigureUartInputEventMsg(
-          drv->GetPortNum(), drv->GetDeviceType(), drv->GetName());
-      for (size_t i = 0; i < num_sensors; i++) {
-        // Attempt to read from the driver
-        sensors_event_t event = {0};
-        if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
-          WS_DEBUG_PRINTLN("[uart] ERROR: Failed to read sensor!");
-          continue; // skip this sensor if reading failed
+  // Find the corresponding hardware instance for the UART port
+  uint32_t port_num = remove_msg->uart_nbr;
+  for (auto it = _uart_ports.begin(); it != _uart_ports.end(); ++it) {
+    if ((*it)->GetBusNumber() == port_num) {
+      // Find the corresponding driver for the uart port
+      for (auto driver_it = _uart_drivers.begin();
+           driver_it != _uart_drivers.end(); ++driver_it) {
+        if ((*driver_it)->GetPortNum() == port_num &&
+            (*driver_it)->GetDeviceType() == remove_msg->type &&
+            strcmp((*driver_it)->GetName(), remove_msg->device_id) == 0) {
+          // Driver found, remove it
+          WS_DEBUG_PRINT("[uart] Removing UART driver: " +
+                         String((*driver_it)->GetName()) + "...");
+          delete *driver_it;
+          _uart_drivers.erase(driver_it);
+          WS_DEBUG_PRINTLN("Removed!");
+          return true;
         }
-        // Fill the event with the sensor data
-        _uart_model->AddUartInputEvent(event, drv->_sensors[i]);
       }
+    }
+  }
 
-      // Encode the UART input event message
-      if (_uart_model->EncodeUartInputEvent()) {
-        // Handle the UartInputEvent message
-        if (WsV2._sdCardV2->isModeOffline()) {
-          // TODO: This is UNIMPLEMENTED!
-          // In offline mode, log to SD card
-          /* if
-          (!WsV2._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
-          { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
-          SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
-          } */
-        } else {
-          // In online mode, publish to Adafruit IO
-          if (!WsV2.PublishSignal(
-                  wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
-                  _uart_model->GetUartInputEventMsg())) {
-            WS_DEBUG_PRINTLN(
-                "[uart] ERROR: Unable to publish UartInputEvent to IO!");
-          }
-        }
+  return false;
+}
+
+/*!
+    @brief  Handles a UartWrite message.
+    @param  stream
+            Pointer to a pb_istream_t object.
+    @return True if the message was handled successfully, False otherwise.
+*/
+bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
+  // TODO: Needs implementation
+  // TO ADDRESS:
+  // 1) Hardware is the uart_nbr
+  // 2) type is the driver type
+  // 3) device_id is the unique identifier for the UART device, stored by the
+  // driver
+  return false;
+}
+
+/*!
+    @brief  Polls the UARTController for updates, processes any pending events
+   from the UART drivers and sends data to Adafruit IO.
+*/
+void UARTController::update() {
+  if (_uart_drivers.empty())
+    return; // bail-out
+
+  for (drvUartBase *drv : _uart_drivers) {
+
+    size_t num_sensors = drv->GetNumSensors();
+    if (num_sensors == 0) {
+      WS_DEBUG_PRINTLN("[uart] No sensors available for driver: " +
+                       String(drv->GetName()));
+      continue; // No sensors to poll, skip this driver
+    }
+
+    // Did driver's read period elapse yet?
+    ulong cur_time = millis();
+    if (cur_time - drv->GetSensorPeriodPrv() < drv->GetSensorPeriod())
+      continue;
+
+    // Read the events from the drivers
+    _uart_model->ClearUartInputEventMsg();
+    _uart_model->ConfigureUartInputEventMsg(
+        drv->GetPortNum(), drv->GetDeviceType(), drv->GetName());
+    for (size_t i = 0; i < num_sensors; i++) {
+      // Attempt to read from the driver
+      sensors_event_t event = {0};
+      if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
+        WS_DEBUG_PRINTLN("[uart] ERROR: Failed to read sensor!");
+        continue; // skip this sensor if reading failed
+      }
+      // Fill the event with the sensor data
+      _uart_model->AddUartInputEvent(event, drv->_sensors[i]);
+    }
+
+    // Encode the UART input event message
+    if (_uart_model->EncodeUartInputEvent()) {
+      // Handle the UartInputEvent message
+      if (WsV2._sdCardV2->isModeOffline()) {
+        // TODO: This is UNIMPLEMENTED!
+        // In offline mode, log to SD card
+        /* if
+        (!WsV2._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
+        { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
+        SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+        } */
       } else {
-        WS_DEBUG_PRINTLN(
-            "[uart] ERROR: Failed to encode UartInputEvent message!");
+        // In online mode, publish to Adafruit IO
+        if (!WsV2.PublishSignal(
+                wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
+                _uart_model->GetUartInputEventMsg())) {
+          WS_DEBUG_PRINTLN(
+              "[uart] ERROR: Unable to publish UartInputEvent to IO!");
+        }
       }
-      // Update the driver's previous period timestamp
-      cur_time = millis();
-      drv->SetSensorPeriodPrv(cur_time);
+    } else {
+      WS_DEBUG_PRINTLN(
+          "[uart] ERROR: Failed to encode UartInputEvent message!");
     }
+    // Update the driver's previous period timestamp
+    cur_time = millis();
+    drv->SetSensorPeriodPrv(cur_time);
   }
+}

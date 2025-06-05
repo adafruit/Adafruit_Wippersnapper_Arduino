@@ -31,60 +31,44 @@
 
 class UARTDevice {
 public:
-  UARTDevice(Stream *serial) {
-    WS_DEBUG_PRINTLN("[uart] UARTDevice constructor called");
-    if (serial == nullptr) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Serial is null!");
-      return;
-    } else {
-      WS_DEBUG_PRINTLN("[uart] Serial is not null, proceeding...");
-    }
-    _serial = serial;
+  UARTDevice(Stream *serial) { _serial_dev = serial; }
+  ~UARTDevice() { /* no-op destructor */
   }
 
-  // Static callback for writing data to UART
-  // Called by GenericDevice when data needs to be sent
-  static bool uart_write(void *thiz, const uint8_t *buffer, size_t len) {
-    WS_DEBUG_PRINT("[uart] uart_write called with len: ");
-    WS_DEBUG_PRINTLN(len);
-    delay(250);
-    WS_DEBUG_PRINTLN("creating dev...");
-    UARTDevice *dev = (UARTDevice *)thiz;
-    WS_DEBUG_PRINT("[uart] Lets write..");
-    if (dev->_serial == nullptr) {
-      WS_DEBUG_PRINTLN("ERROR: Serial is null!");
-      return false;
+  bool CreateDevice() {
+    if (_generic_dev != nullptr) {
+      return false; // already initialized
     }
+    _generic_dev = new Adafruit_GenericDevice(this, uart_read, uart_write);
+    return _generic_dev->begin();
+  }
 
-    dev->_serial->write(buffer, len);
-    WS_DEBUG_PRINTLN(" done.");
+  static bool uart_write(void *thiz, const uint8_t *buffer, size_t len) {
+    UARTDevice *dev = (UARTDevice *)thiz;
+    dev->_serial_dev->write(buffer, len);
     return true;
   }
 
-  // Static callback for reading data from UART
-  // Includes timeout and will return false if not enough data available
   static bool uart_read(void *thiz, uint8_t *buffer, size_t len) {
     UARTDevice *dev = (UARTDevice *)thiz;
     uint16_t timeout = 100;
-    while (dev->_serial->available() < len && timeout--) {
+    while (dev->_serial_dev->available() < len && timeout--) {
       delay(1);
     }
     if (timeout == 0) {
       return false;
     }
     for (size_t i = 0; i < len; i++) {
-      buffer[i] = dev->_serial->read();
+      buffer[i] = dev->_serial_dev->read();
     }
     return true;
   }
 
-  // Create a GenericDevice instance using our callbacks
-  Adafruit_GenericDevice *createDevice() {
-    return new Adafruit_GenericDevice(this, uart_read, uart_write);
-  }
+  Adafruit_GenericDevice *getGenericDevice() { return _generic_dev; }
 
 private:
-  Stream *_serial; // Underlying Stream instance (HardwareSerial, etc)
+  Adafruit_GenericDevice *_generic_dev = nullptr;
+  Stream *_serial_dev = nullptr;
 };
 
 /*!
@@ -131,16 +115,7 @@ public:
   /*!
       @brief    Destructor for a US-100 UART device.
   */
-  ~drvUartUs100() {
-    if (_device_us100) {
-      delete _device_us100;
-      _device_us100 = nullptr;
-    }
-    if (_uart) {
-      delete _uart;
-      _uart = nullptr;
-    }
-  }
+  ~drvUartUs100() { /* TODO: Add back CTOR */ }
 
   /*!
       @brief    Initializes the US-100 UART device.
@@ -155,15 +130,12 @@ public:
       WS_DEBUG_PRINTLN("[uart] _hw_serial is not null, proceeding...");
     }
 
-    WS_DEBUG_PRINTLN("[uart] Initializing US-100 Ultrasonic Distance Sensor...");
-    _uart = new UARTDevice(_hw_serial);
+    WS_DEBUG_PRINTLN(
+        "[uart] Initializing US-100 Ultrasonic Distance Sensor...");
+    _uart_dev = new UARTDevice(_hw_serial);
     WS_DEBUG_PRINTLN("[uart] Creating GenericDevice...");
     // Create a GenericDevice instance using the UARTDevice
-    _device_us100 = _uart->createDevice();
-    if (!_device_us100->begin()) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize US-100 device!");
-      return false;
-    }
+    return _uart_dev->CreateDevice();
     WS_DEBUG_PRINTLN("[uart] US-100 device initialized successfully.");
     return true;
   }
@@ -180,7 +152,7 @@ public:
     uint8_t len_write_buf = 1;
     // Write the temperature request command to the US-100
     uint8_t write_buf[len_write_buf] = {CMD_US100_REQ_TEMP};
-    if (!_device_us100->write(write_buf, len_write_buf))
+    if (!_uart_dev->getGenericDevice()->write(write_buf, len_write_buf))
       return false;
     // Wait for US-100 to respond
     delay(US_100_DELAY_TIME);
@@ -188,7 +160,7 @@ public:
     // Attempt to read the response from the US-100
     uint8_t len_read_buf = 1;
     uint8_t read_buf[len_read_buf] = {0};
-    if (!_device_us100->read(read_buf, len_read_buf))
+    if (!_uart_dev->getGenericDevice()->read(read_buf, len_read_buf))
       return false;
 
     // Check if the response is within a valid range
@@ -215,15 +187,7 @@ public:
     uint8_t write_buf[len_write_buf] = {CMD_US100_REQ_DISTANCE};
     WS_DEBUG_PRINTLN("[uart] Requesting distance from US-100...");
 
-    // is _device_us100 nullptr?
-    if (_device_us100 == nullptr) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: _device_us100 is null!");
-      return false;
-    } else {
-      WS_DEBUG_PRINTLN("[uart] _device_us100 is not null, proceeding...");
-    }
-
-    if (!_device_us100->write(write_buf, len_write_buf))
+    if (!_uart_dev->getGenericDevice()->write(write_buf, len_write_buf))
       return false;
     // Wait for US-100 to respond
     delay(US_100_DELAY_TIME);
@@ -231,7 +195,7 @@ public:
     // Read the response from the US-100
     uint8_t len_read_buf = 2;
     uint8_t read_buf[len_read_buf] = {0};
-    if (!_device_us100->read(read_buf, len_read_buf))
+    if (!_uart_dev->getGenericDevice()->read(read_buf, len_read_buf))
       return false;
 
     // Calculate distance
@@ -250,8 +214,6 @@ public:
   }
 
 protected:
-  UARTDevice *_uart = nullptr; ///< Pointer to the UARTDevice instance
-  Adafruit_GenericDevice *_device_us100 =
-      nullptr; ///< Pointer to the GenericDevice instance
+  UARTDevice *_uart_dev = nullptr; ///< Pointer to the UARTDevice instance
 };
 #endif // DRV_UART_US100_H
