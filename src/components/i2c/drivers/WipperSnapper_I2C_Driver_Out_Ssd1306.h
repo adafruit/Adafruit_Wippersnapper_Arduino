@@ -73,9 +73,8 @@ public:
     // Configure the text size and color
     _display->setTextSize(_text_sz);
     _display->setTextColor(SSD1306_WHITE);
-    // Reset the cursor position
-    _display->setCursor(0, 0);
-    _display->display();
+    // Use full 256 char 'Code Page 437' font
+    _display->cp437(true);
     return true;
   }
 
@@ -118,6 +117,7 @@ public:
     int16_t line_height = 8 * _text_sz;
     uint16_t c_idx = 0;
     size_t msg_size = strlen(message);
+    // _display->cp437(true);
     for (size_t i = 0; i < msg_size && c_idx < msg_size; i++) {
       if (message[i] == '\\' && i + 1 < msg_size && message[i + 1] == 'n') {
         // detected a newline char sequence (\n)
@@ -125,6 +125,10 @@ public:
         // Skip to the next possible line
         y_idx += line_height;
         _display->setCursor(0, y_idx);
+      } else if (message[i] == 0xC2 || message[i + 1] == 0xB0) {
+        _display->write(char(248));
+        _display->display();
+        i++;
       } else {
         _display->print(message[i]);
         _display->display();
