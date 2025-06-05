@@ -879,7 +879,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
   } else if (strcmp("oled128x32default", msgDeviceInitReq->i2c_device_name) ==
-             0) {
+                 0 ||
+             strcmp("oled128x32large", msgDeviceInitReq->i2c_device_name) ==
+                 0) {
     WS_DEBUG_PRINTLN("SSD1306 display detected!");
     _ssd1306 = new WipperSnapper_I2C_Driver_Out_Ssd1306(this->_i2c, i2cAddress);
     WS_DEBUG_PRINTLN("Configuring SSD1306 display...");

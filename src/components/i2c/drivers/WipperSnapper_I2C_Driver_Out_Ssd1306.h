@@ -117,7 +117,6 @@ public:
     int16_t line_height = 8 * _text_sz;
     uint16_t c_idx = 0;
     size_t msg_size = strlen(message);
-    // _display->cp437(true);
     for (size_t i = 0; i < msg_size && c_idx < msg_size; i++) {
       if (message[i] == '\\' && i + 1 < msg_size && message[i + 1] == 'n') {
         // detected a newline char sequence (\n)
