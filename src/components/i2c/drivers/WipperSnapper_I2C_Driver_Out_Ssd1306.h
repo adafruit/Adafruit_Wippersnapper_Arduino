@@ -127,7 +127,7 @@ public:
         // Skip to the next possible line
         y_idx += line_height;
         _display->setCursor(0, y_idx);
-      } else if (message[i] == 0xC2 || message[i + 1] == 0xB0) {
+      } else if (message[i] == 0xC2 && message[i + 1] == 0xB0) {
         _display->write(char(248));
         _display->display();
         i++;

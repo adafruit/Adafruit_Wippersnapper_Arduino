@@ -148,7 +148,14 @@ public:
         i++;
         len_display++;
       }
-
+      else if (message[i] == 0xC2 && message[i + 1] == 0xB0 &&  i + 1 < strlen(message)) {
+        WS_DEBUG_PRINTLN("Degree symbol detected!");
+        // Build a degree symbol (A, B, F, G1, G2 segments)
+        _alpha4->writeDigitRaw(cur_idx, 0b0000000011100011);
+        i++;
+        cur_idx++;
+        continue;
+      }
       // Write the character to the display buffer
       _alpha4->writeDigitAscii(cur_idx, ch, display_dot);
       cur_idx++;
