@@ -30,8 +30,7 @@
 #define LED_BACKPACK_ALIGNMENT_RIGHT 2       ///< Right alignment
 #define LED_BACKPACK_ALIGNMENT_DEFAULT                                         \
   LED_BACKPACK_ALIGNMENT_LEFT ///< Default alignment
-#define LED_MAX_CHARS                                                          \
-  4 ///< Maximum number of characters to display on the alphanumeric display
+#define LED_MAX_CHARS 5
 
 /*!
     @brief  Class that provides a driver interface for 7-Segment
@@ -140,12 +139,30 @@ public:
         }
       }
       // start at the rightmost position of the display
-      pos_start = LED_MAX_CHARS - seg_chars;
+      switch (seg_chars) {
+      case 4:
+        pos_start = 0;
+        break;
+      case 3:
+        pos_start = 1;
+        break;
+      case 2:
+        pos_start = 3; // if 2 characters, start at position 3 is required
+                       // because ':' is position 2 and we need to skip it
+        break;
+      case 1:
+        pos_start = 4;
+        break;
+      default:
+        pos_start = 0; // if no characters or overflow, start at position 0
+        break;
+      }
     }
 
     // Write to the display's buffer
     int cur_idx = pos_start;
     for (size_t i = 0; i < len_display; i++) {
+
       // skip position 2
       if (cur_idx == 2) {
         cur_idx++;
