@@ -30,7 +30,10 @@
 #define LED_BACKPACK_ALIGNMENT_RIGHT 2       ///< Right alignment
 #define LED_BACKPACK_ALIGNMENT_DEFAULT                                         \
   LED_BACKPACK_ALIGNMENT_LEFT ///< Default alignment
-#define LED_MAX_CHARS 5
+#define LED_MAX_CHARS                                                          \
+  5 ///< Maximum characters for 7-segment display, including ':'
+#define LED_BACKPACK_DEGREE_SYMBOL                                             \
+  0b01100011 ///< Degree symbol for 7-segment display
 
 /*!
     @brief  Class that provides a driver interface for 7-Segment
@@ -177,8 +180,14 @@ public:
         display_dot = true;
         i++;
         len_display++;
+      } else if (message[i] == 0xC2 && message[i + 1] == 0xB0 &&
+                 i + 1 < strlen(message)) {
+        // Write degree symbol
+        _matrix->writeDigitRaw(cur_idx, LED_BACKPACK_DEGREE_SYMBOL);
+        i++;
+        cur_idx++;
+        continue; // skip to next character
       }
-
       // Write the character to the display buffer
       _matrix->writeDigitAscii(cur_idx, ch, display_dot);
       cur_idx++;

@@ -27,6 +27,8 @@
   LED_BACKPACK_ALIGNMENT_LEFT ///< Default alignment
 #define LED_MAX_CHARS                                                          \
   4 ///< Maximum number of characters to display on the alphanumeric display
+#define ALPHANUM_DEGREE_SYMBOL                                                 \
+  0b0000000011100011 ///< Degree symbol for alphanumeric display
 
 /*!
     @brief  Class that provides a driver interface for Quad Alphanumeric
@@ -147,11 +149,10 @@ public:
         display_dot = true;
         i++;
         len_display++;
-      }
-      else if (message[i] == 0xC2 && message[i + 1] == 0xB0 &&  i + 1 < strlen(message)) {
-        WS_DEBUG_PRINTLN("Degree symbol detected!");
-        // Build a degree symbol (A, B, F, G1, G2 segments)
-        _alpha4->writeDigitRaw(cur_idx, 0b0000000011100011);
+      } else if (message[i] == 0xC2 && message[i + 1] == 0xB0 &&
+                 i + 1 < strlen(message)) {
+        // Write the degree symbol
+        _alpha4->writeDigitRaw(cur_idx, ALPHANUM_DEGREE_SYMBOL);
         i++;
         cur_idx++;
         continue;
