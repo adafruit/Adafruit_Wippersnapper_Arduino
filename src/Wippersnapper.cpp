@@ -891,6 +891,8 @@ bool cbDecodeSignalRequestI2C(pb_istream_t *stream, const pb_field_t *field,
                     // publish
     }
     WS_DEBUG_PRINTLN("[app] I2C Device Output Write Done");
+    return true; // we successfully wrote to the device, this subtype has no
+                 // response to publish to IO
   } else {
     WS_DEBUG_PRINTLN("ERROR: Undefined I2C message tag");
     return false; // fail out, we didn't encode anything to publish
