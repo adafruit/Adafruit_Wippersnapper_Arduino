@@ -1175,9 +1175,6 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
   // Create a ptr to the base driver out
   WipperSnapper_I2C_Driver_Out *driver_out = nullptr;
   // Find the matching driver by address in the _drivers_out vector
-  // TODO: Refactor this outwards
-  WS_DEBUG_PRINT("Searching for i2c output driver with address: ");
-  WS_DEBUG_PRINT(msgDeviceWrite->i2c_device_address);
   for (size_t i = 0; i < _drivers_out.size(); i++) {
     if (_drivers_out[i]->getI2CAddress() ==
         msgDeviceWrite->i2c_device_address) {
@@ -1186,7 +1183,7 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
     }
   }
   if (driver_out == nullptr) {
-    WS_DEBUG_PRINTLN("ERROR: Driver not found within drivers_out!");
+    WS_DEBUG_PRINTLN("ERROR: I2c output driver not found within drivers_out!");
     return false;
   }
 
@@ -1203,7 +1200,7 @@ bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
     driver_out->WriteMessageSSD1306(
         msgDeviceWrite->output_msg.write_ssd1306.message);
   } else {
-    WS_DEBUG_PRINTLN("ERROR: Unknown output message type!");
+    WS_DEBUG_PRINTLN("ERROR: Unknown i2c output message type!");
     return false;
   }
   return true;
