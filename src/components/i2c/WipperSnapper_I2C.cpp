@@ -852,7 +852,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_quadAlphaNum);
     WS_DEBUG_PRINTLN("Quad Alphanum. Display Initialized Successfully!");
-  } else if (strcmp("chardisplay16x2", msgDeviceInitReq->i2c_device_name) == 0) {
+  } else if (strcmp("chardisplay16x2", msgDeviceInitReq->i2c_device_name) == 0 || strcmp("chardisplay20x4", msgDeviceInitReq->i2c_device_name) == 0) {
     _charLcd = new WipperSnapper_I2C_Driver_Out_CharLcd(this->_i2c, i2cAddress);
     _charLcd->ConfigureCharLcd(
         msgDeviceInitReq->i2c_output_add.config.char_lcd_config.rows,
