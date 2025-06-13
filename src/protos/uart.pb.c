@@ -18,10 +18,10 @@ PB_BIND(wippersnapper_uart_TrinamicDynamixelConfig, wippersnapper_uart_TrinamicD
 PB_BIND(wippersnapper_uart_PM25AQIConfig, wippersnapper_uart_PM25AQIConfig, AUTO)
 
 
-PB_BIND(wippersnapper_uart_UartDeviceConfig, wippersnapper_uart_UartDeviceConfig, 2)
+PB_BIND(wippersnapper_uart_UartDeviceConfig, wippersnapper_uart_UartDeviceConfig, 4)
 
 
-PB_BIND(wippersnapper_uart_UartAdd, wippersnapper_uart_UartAdd, 2)
+PB_BIND(wippersnapper_uart_UartAdd, wippersnapper_uart_UartAdd, 4)
 
 
 PB_BIND(wippersnapper_uart_UartAdded, wippersnapper_uart_UartAdded, AUTO)
