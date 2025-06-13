@@ -53,6 +53,7 @@ Wippersnapper_V2::Wippersnapper_V2() {
   WsV2.digital_io_controller = new DigitalIOController();
   WsV2.analogio_controller = new AnalogIOController();
   WsV2._ds18x20_controller = new DS18X20Controller();
+  WsV2._gps_controller = new GPSController();
   WsV2._i2c_controller = new I2cController();
   WsV2._uart_controller = new UARTController();
   WsV2._pixels_controller = new PixelsController();
@@ -453,6 +454,12 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
   case wippersnapper_signal_BrokerToDevice_uart_write_tag:
     WS_DEBUG_PRINTLN("-> UART Write Message Type");
     if (!WsV2._uart_controller->Handle_UartWrite(stream)) {
+      return false;
+    }
+    break;
+  case wippersnapper_signal_BrokerToDevice_gps_config_tag:
+    WS_DEBUG_PRINTLN("-> GPS Config Message Type");
+    if (!WsV2._gps_controller->Handle_GPSConfig(stream)) {
       return false;
     }
     break;
@@ -1033,6 +1040,13 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.payload.uart_input_event =
         *(wippersnapper_uart_UartInputEvent *)payload;
     break;
+  case wippersnapper_signal_DeviceToBroker_gps_event_tag:
+    WS_DEBUG_PRINTLN("GPSEvent");
+    MsgSignal.which_payload =
+        wippersnapper_signal_DeviceToBroker_gps_event_tag;
+    MsgSignal.payload.gps_event =
+        *(wippersnapper_gps_GPGGAResponse *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
@@ -1369,6 +1383,9 @@ ws_status_t Wippersnapper_V2::run() {
 
   // Process I2C driver events
   WsV2._i2c_controller->update();
+
+  // Process GPS events
+  WsV2._gps_controller->update();
 
   // Process UART driver events
   WsV2._uart_controller->update();

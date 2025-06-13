@@ -99,6 +99,7 @@
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
+#include "components/gps/controller.h"
 #include "components/i2c/controller.h"
 #include "components/pixels/controller.h"
 #include "components/pwm/controller.h"
@@ -143,6 +144,7 @@ class SensorModel;
 class DigitalIOController;
 class AnalogIOController;
 class DS18X20Controller;
+class GPSController;
 class I2cController;
 class PixelsController;
 class PWMController;
@@ -242,6 +244,7 @@ public:
       nullptr; ///< Instance of AnalogIO controller
   DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
+  GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
   PixelsController *_pixels_controller =
       nullptr;                              ///< Instance of Pixels controller
