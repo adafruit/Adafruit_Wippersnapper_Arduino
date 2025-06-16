@@ -38,8 +38,7 @@ GPSModel::~GPSModel() {
  * @returns True if the GPSConfig message was decoded successfully, False otherwise.
  */
 bool DecodeGPSConfig(pb_istream_t *stream) {
-  // TODO: Implement the decoding logic for GPSConfig
-  return false;
+  return pb_decode(stream, wippersnapper_gps_GPSConfig_fields, &_msg_gps_config);
 }
 
 /*!
