@@ -49,3 +49,7 @@ examples/Wippersnapper_demo/build/
 
 # Secrets
 data/
+
+# Misc. Data
+tests/
+venv/

@@ -838,6 +838,74 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _adt7410->configureDriver(msgDeviceInitReq);
     drivers.push_back(_adt7410);
     WS_DEBUG_PRINTLN("ADT7410 Initialized Successfully!");
+  } else if (strcmp("quadalphanum", msgDeviceInitReq->i2c_device_name) == 0) {
+    _quadAlphaNum =
+        new WipperSnapper_I2C_Driver_Out_QuadAlphaNum(this->_i2c, i2cAddress);
+    _quadAlphaNum->ConfigureI2CBackpack(
+        msgDeviceInitReq->i2c_output_add.config.led_backpack_config.brightness,
+        msgDeviceInitReq->i2c_output_add.config.led_backpack_config.alignment);
+    if (!_quadAlphaNum->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize Quad Alphanum. Display!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _drivers_out.push_back(_quadAlphaNum);
+    WS_DEBUG_PRINTLN("Quad Alphanum. Display Initialized Successfully!");
+  } else if (strcmp("chardisplay16x2", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("chardisplay20x4", msgDeviceInitReq->i2c_device_name) ==
+                 0) {
+    _charLcd = new WipperSnapper_I2C_Driver_Out_CharLcd(this->_i2c, i2cAddress);
+    _charLcd->ConfigureCharLcd(
+        msgDeviceInitReq->i2c_output_add.config.char_lcd_config.rows,
+        msgDeviceInitReq->i2c_output_add.config.char_lcd_config.columns);
+    if (!_charLcd->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize Character LCD!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _drivers_out.push_back(_charLcd);
+    WS_DEBUG_PRINTLN("Char LCD Display Initialized Successfully!");
+  } else if (strcmp("7seg", msgDeviceInitReq->i2c_device_name) == 0) {
+    _sevenSeg = new WipperSnapper_I2C_Driver_Out_7Seg(this->_i2c, i2cAddress);
+    _sevenSeg->ConfigureI2CBackpack(
+        msgDeviceInitReq->i2c_output_add.config.led_backpack_config.brightness,
+        msgDeviceInitReq->i2c_output_add.config.led_backpack_config.alignment);
+    if (!_sevenSeg->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize 7-Segement LED Matrix!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _drivers_out.push_back(_sevenSeg);
+    WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
+  } else if (strcmp("oled128x32default", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("oled128x32large", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("oled128x64default", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("oled128x64large", msgDeviceInitReq->i2c_device_name) ==
+                 0) {
+    WS_DEBUG_PRINTLN("SSD1306 display detected!");
+    _ssd1306 = new WipperSnapper_I2C_Driver_Out_Ssd1306(this->_i2c, i2cAddress);
+    WS_DEBUG_PRINTLN("Configuring SSD1306 display...");
+    _ssd1306->ConfigureSSD1306(
+        (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.width,
+        (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
+        (uint8_t)
+            msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size);
+    if (!_ssd1306->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize ssd1306!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    WS_DEBUG_PRINTLN("SSD1306 display configured successfully!");
+    _drivers_out.push_back(_ssd1306);
+    WS_DEBUG_PRINTLN("SSD1306 display initialized Successfully!");
   } else {
     WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
     _busStatusResponse =
@@ -886,8 +954,9 @@ void WipperSnapper_Component_I2C::updateI2CDeviceProperties(
 void WipperSnapper_Component_I2C::deinitI2CDevice(
     wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq) {
   uint16_t deviceAddr = (uint16_t)msgDeviceDeinitReq->i2c_device_address;
-  std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
 
+  // Check input (sensor) drivers
+  std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
   for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
     if ((*iter)->getI2CAddress() == deviceAddr) {
       // Delete the object that iter points to
@@ -905,6 +974,28 @@ void WipperSnapper_Component_I2C::deinitI2CDevice(
       WS_DEBUG_PRINTLN("I2C Device De-initialized!");
     }
   }
+
+  // Check for output drivers
+  std::vector<WipperSnapper_I2C_Driver_Out *>::iterator out_iter, out_end;
+  for (out_iter = _drivers_out.begin(), out_end = _drivers_out.end();
+       out_iter != out_end; ++out_iter) {
+    if ((*out_iter)->getI2CAddress() == deviceAddr) {
+      // Set the driver to nullptr
+      *out_iter = nullptr;
+// ESP-IDF, Erase–remove iter ptr from driver vector
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+      *out_iter = nullptr;
+      _drivers_out.erase(
+          remove(_drivers_out.begin(), _drivers_out.end(), nullptr),
+          _drivers_out.end());
+#else
+      // Arduino can not erase-remove, erase only
+      _drivers_out.erase(out_iter);
+#endif
+      WS_DEBUG_PRINTLN("I2C Device De-initialized!");
+    }
+  }
+
   _busStatusResponse = wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_SUCCESS;
 }
 
@@ -1075,12 +1166,56 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
 
 /*******************************************************************************/
 /*!
+    @brief    Handles an I2CDeviceOutputWrite message.
+    @param    msgDeviceWrite
+              A decoded I2CDeviceOutputWrite message.
+    @returns  True if the message was handled successfully, false otherwise.
+*/
+/*******************************************************************************/
+bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite(
+    wippersnapper_i2c_v1_I2CDeviceOutputWrite *msgDeviceWrite) {
+
+  // Create a ptr to the base driver out
+  WipperSnapper_I2C_Driver_Out *driver_out = nullptr;
+  // Find the matching driver by address in the _drivers_out vector
+  for (size_t i = 0; i < _drivers_out.size(); i++) {
+    if (_drivers_out[i]->getI2CAddress() ==
+        msgDeviceWrite->i2c_device_address) {
+      driver_out = _drivers_out[i];
+      break;
+    }
+  }
+  if (driver_out == nullptr) {
+    WS_DEBUG_PRINTLN("ERROR: I2c output driver not found within drivers_out!");
+    return false;
+  }
+
+  // Call the output_msg
+  if (msgDeviceWrite->which_output_msg ==
+      wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_led_backpack_tag) {
+    driver_out->WriteLedBackpack(
+        &msgDeviceWrite->output_msg.write_led_backpack);
+  } else if (msgDeviceWrite->which_output_msg ==
+             wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_char_lcd_tag) {
+    driver_out->WriteMessageCharLCD(&msgDeviceWrite->output_msg.write_char_lcd);
+  } else if (msgDeviceWrite->which_output_msg ==
+             wippersnapper_i2c_v1_I2CDeviceOutputWrite_write_ssd1306_tag) {
+    driver_out->WriteMessageSSD1306(
+        msgDeviceWrite->output_msg.write_ssd1306.message);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Unknown i2c output message type!");
+    return false;
+  }
+  return true;
+}
+
+/*******************************************************************************/
+/*!
     @brief    Queries all I2C device drivers for new values. Fills and sends an
               I2CSensorEvent with the sensor event data.
 */
 /*******************************************************************************/
 void WipperSnapper_Component_I2C::update() {
-
   // Create response message
   wippersnapper_signal_v1_I2CResponse msgi2cResponse =
       wippersnapper_signal_v1_I2CResponse_init_zero;
