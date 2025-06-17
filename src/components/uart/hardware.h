@@ -49,6 +49,8 @@ public:
 #if HAS_SW_SERIAL
   SoftwareSerial *GetSoftwareSerial();
 #endif // HAS_SW_SERIAL
+  uint32_t GetBaudRate();
+
 private:
   wippersnapper_uart_UartSerialConfig
       _config;                         ///< The UART serial configuration
@@ -56,6 +58,7 @@ private:
 #if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
 #endif                                 // HAS_SW_SERIAL
-  int _uart_nbr = -1; ///< The UART bus number this hardware instance is using
+  int _uart_nbr = -1;  ///< The UART bus number this hardware instance is using
+  uint32_t _baud_rate; ///< The baud rate for this hardware instance
 };
 #endif // WS_UART_HARDWARE_H

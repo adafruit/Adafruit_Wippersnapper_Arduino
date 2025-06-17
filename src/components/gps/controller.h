@@ -18,6 +18,7 @@
 #include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
+#include <Adafruit_GPS.h>
 
 class Wippersnapper_V2; ///< Forward declaration
 class GPSModel;         ///< Forward declaration
@@ -27,8 +28,8 @@ enum GpsInterfaceType {
   GPS_IFACE_NONE,    ///< No interface/undefined
   GPS_IFACE_UART_HW, ///< UART hardware interface
   GPS_IFACE_UART_SW, ///< UART software interface
-  GPS_IFACE_I2C     ///< I2C interface
-}; ///< Type of interface used by GPS
+  GPS_IFACE_I2C      ///< I2C interface
+};                   ///< Type of interface used by GPS
 
 /*!
     @brief  Routes messages between the GPS.proto API and the hardware.
@@ -44,10 +45,12 @@ public:
   bool Handle_GPSConfig(pb_istream_t *stream);
   bool RemoveGPSDevice(const char *id);
   void update();
+
 private:
-  GPSModel *_gps_model;                     ///< GPS model
-  UARTHardware *_uart_hardware = nullptr;   ///< UART hardware instance for GPS
-  GpsInterfaceType _iface_type; ///< Type of interface used by GPS
+  GPSModel *_gps_model;                   ///< GPS model
+  UARTHardware *_uart_hardware = nullptr; ///< UART hardware instance for GPS
+  GpsInterfaceType _iface_type;           ///< Type of interface used by GPS
+  Adafruit_GPS _ada_gps = nullptr;        ///< Adafruit GPS instance
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
-#endif // WS_GPS_CONTROLLER_H
+#endif                        // WS_GPS_CONTROLLER_H

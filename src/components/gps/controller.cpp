@@ -47,6 +47,7 @@ bool GPSController::SetInterface(UARTHardware *uart_hardware) {
   _uart_hardware = uart_hardware;
   // Determine iface type
   if (_uart_hardware->isHardwareSerial()) {
+    _ada_gps = Adafruit_Gps(_uart_hardware->GetHardwareSerial());
     _iface_type = GPS_IFACE_UART_HW;
   } else if (_uart_hardware->isSoftwareSerial()) {
     _iface_type = GPS_IFACE_UART_SW;
@@ -59,7 +60,8 @@ bool GPSController::SetInterface(UARTHardware *uart_hardware) {
 /*!
  * @brief Handles GPS configuration messages.
  * @param stream A pointer to the pb_istream_t stream.
- * @returns True if the GPS configuration was handled successfully, False otherwise.
+ * @returns True if the GPS configuration was handled successfully, False
+ * otherwise.
  */
 bool GPSController::Handle_GPSConfig(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[gps] Decoding GPSConfig message...");
@@ -68,10 +70,11 @@ bool GPSController::Handle_GPSConfig(pb_istream_t *stream) {
     return false;
   }
 
-  // NOTE: GPSConfig just stores the commands from IO to send to the GPS device, it does
-  // not store anything else!
+  // NOTE: GPSConfig just stores the commands from IO to send to the GPS device,
+  // it does not store anything else!
   // TODO: This is debug-only, remove in production!
-  for (pb_size_t i = 0; i < _gps_model->GetGPSConfigMsg()->commands_count; i++) {
+  for (pb_size_t i = 0; i < _gps_model->GetGPSConfigMsg()->commands_count;
+       i++) {
     WS_DEBUG_PRINT("[gps] Processing Command: ");
     WS_DEBUG_PRINTLN(_gps_model->GetGPSConfigMsg()->commands[i]);
     Send_Command(_gps_model->GetGPSConfigMsg()->commands[i]);
@@ -85,7 +88,7 @@ bool GPSController::Handle_GPSConfig(pb_istream_t *stream) {
  * @returns True if the module's interface is available, False otherwise.
  */
 bool GPSController::IsAvailable() {
-  if (! _uart_hardware == nullptr)
+  if (!_uart_hardware == nullptr)
     return true;
   WS_DEBUG_PRINTLN("[gps] ERROR: No UART hardware interface set!");
   return false;
@@ -98,13 +101,27 @@ bool GPSController::IsAvailable() {
  *                   Default is 1000 milliseconds.
  * @returns True if the command was sent successfully, False otherwise.
  */
-bool GPSController::Send_Command(const char *command, unsigned long timeout_ms) { 
+bool GPSController::Send_Command(const char *command,
+                                 unsigned long timeout_ms) {
   if (!IsAvailable()) {
     WS_DEBUG_PRINTLN("[gps] ERROR: GPS interface is not available!");
     return false;
   }
 
   // Check which type of interface we have
+  if (_iface_type == GPS_IFACE_UART_HW) {
+    WS_DEBUG_PRINT("[gps] Sending command via Hardware Serial: ");
+    WS_DEBUG_PRINTLN(command);
+    long start_time = millis();
+    // Wait for the hardware serial to be ready
+    // TODO: Send command via HardwareSerial
+    _uart_hardware->GetHardwareSerial()->println(command);
+    while ()
+  } else {
+    WS_DEBUG_PRINT("[gps] Unknown interface type, cannot send command: ");
+    WS_DEBUG_PRINTLN(command);
+    return false;
+  }
 }
 
 /*!
@@ -112,11 +129,8 @@ bool GPSController::Send_Command(const char *command, unsigned long timeout_ms) 
  * @param id The ID of the GPS device to remove.
  * @returns True if the device was removed successfully, False otherwise.
  */
-bool RemoveGPSDevice(const char *id) {
-  return false;
-}
-
+bool RemoveGPSDevice(const char *id) { return false; }
 
 void update() {
-  // TODO: Implement! 
+  // TODO: Implement!
 }

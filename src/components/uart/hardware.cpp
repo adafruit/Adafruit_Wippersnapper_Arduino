@@ -123,6 +123,7 @@ bool UARTHardware::ConfigureSerial() {
       return false;
     }
     _swSerial->begin((unsigned long)_config.baud_rate);
+    _baud_rate = _config.baud_rate;
 #endif // HAS_SW_SERIAL
   } else {
     // Create a new HardwareSerial instance
@@ -145,6 +146,7 @@ bool UARTHardware::ConfigureSerial() {
     // take the default Arduino/Wiring API arguments
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #endif
+    _baud_rate = _config.baud_rate;
   }
   return true;
 }
@@ -191,3 +193,9 @@ HardwareSerial *UARTHardware::GetHardwareSerial() { return _hwSerial; }
  */
 SoftwareSerial *UARTHardware::GetSoftwareSerial() { return _swSerial; }
 #endif // HAS_SW_SERIAL
+
+/*!
+ * @brief  Gets the baud rate of the serial instance.
+ * @return The baud rate of the serial instance.
+ */
+uint32_t UARTHardware::GetBaudRate() { return _baud_rate; }
