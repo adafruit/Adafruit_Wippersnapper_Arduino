@@ -116,14 +116,19 @@ public:
       for (int cur_col = 0; cur_col < _cols && cur_idx < message_length;
            cur_col++) {
         char c = message[cur_idx];
+        WS_DEBUG_PRINTLN("CharLCD: Writing char: ");
+        WS_DEBUG_PRINT(c);
+        WS_DEBUG_PRINT("  | hex:0x");
+        // print hex
+        WS_DEBUG_PRINTHEX(c);
+        WS_DEBUG_PRINTLN(" ");
         if (c == '\\' && cur_idx + 1 < message_length &&
-            message[cur_idx + 1] == 'n') {
-          cur_idx += 2; // Skip the '\n' character in the buffer
+            (message[cur_idx + 1] == 'n' || message[cur_idx + 1] == 'r')) {
+          cur_idx += 2; // Skip the '\n' or '\r' character in the buffer
           break;        // and move to the next row
-        } else if (c == '\\' && cur_idx + 1 < message_length &&
-                   message[cur_idx + 1] == 'r') {
-          cur_idx += 2; // Skip the '\r' character in the buffer
-          continue;     // and continue writing on the same row
+        } else if ((c == 0x0A || c == 0x0D) && cur_idx + 1 < message_length) {
+          cur_idx += 1; // Skip the UTF-8 sequence for \n or \r
+          break;        // and move to the next row
         } else if (c == 194 && cur_idx + 1 < message_length &&
                    message[cur_idx + 1] == 176) {
           cur_idx += 2;      // Skip the degree symbol sequence in the buffer
