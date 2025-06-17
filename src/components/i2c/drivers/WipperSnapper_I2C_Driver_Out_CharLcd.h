@@ -116,28 +116,20 @@ public:
       for (int cur_col = 0; cur_col < _cols && cur_idx < message_length;
            cur_col++) {
         char c = message[cur_idx];
-        WS_DEBUG_PRINTLN("CharLCD: Writing char: ");
-        WS_DEBUG_PRINT(c);
-        WS_DEBUG_PRINT("  | hex:0x");
-        // print hex
-        WS_DEBUG_PRINTHEX(c);
-        WS_DEBUG_PRINTLN(" ");
         if (c == '\\' && cur_idx + 1 < message_length &&
             (message[cur_idx + 1] == 'n' || message[cur_idx + 1] == 'r')) {
-          WS_DEBUG_PRINTLN("CharLCD: Detected newline sequence");
           // Handle \r\n sequence as a single newline
           if (message[cur_idx + 1] == 'r' && cur_idx + 3 < message_length &&
               message[cur_idx + 2] == '\\' && message[cur_idx + 3] == 'n') {
             cur_idx += 4; // Skip \r\n and don't move the cursor two rows
+            break; // Move to the next row
           } else {
             cur_idx += 2; // Skip the \n or \r
-            WS_DEBUG_PRINTLN("CharLCD: Detected single character");
-            if (c == '\\' && message[cur_idx + 1] == 'n') {
-              WS_DEBUG_PRINTLN("CharLCD: Detected newline character");
-              _lcd->write('\\');
-              _lcd->write('n');
+            if (c == '\\' && message[cur_idx + 1] == 'r') {
+              _lcd->write(0x2F);
+              _lcd->write('r');
             } else {
-              break;
+              break; // Move to the next row
             }
           }
         } else if ((c == 0x0A || c == 0x0D) && cur_idx + 1 < message_length) {
@@ -151,7 +143,6 @@ public:
         } else if (c == 0x0D ||
                    (c == 'r' && c == '\\') && cur_idx + 1 < message_length) {
           // write \r to the lcd
-          WS_DEBUG_PRINTLN("CharLCD: Detected carriage return sequence");
           _lcd->write('\\');
           _lcd->write('r');
           cur_idx += 2;
