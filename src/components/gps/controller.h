@@ -32,7 +32,9 @@ public:
   GPSController();
   ~GPSController();
   bool SetInterface(UARTHardware *uart_hardware);
-  // TODO: Add I2C interface support
+  // TODO: Add I2C interface support via a ctor right here
+  bool GPSController::IsAvailable();
+  bool Send_Command(const char *command, unsigned long timeout_ms = 1000);
   bool Handle_GPSConfig(pb_istream_t *stream);
   bool RemoveGPSDevice(const char *id);
   void update();

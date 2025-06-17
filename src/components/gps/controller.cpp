@@ -57,14 +57,42 @@ bool GPSController::Handle_GPSConfig(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to decode GPSConfig message!");
     return false;
   }
+
   // NOTE: GPSConfig just stores the commands from IO to send to the GPS device, it does
   // not store anything else!
+  // TODO: This is debug-only, remove in production!
   for (pb_size_t i = 0; i < _gps_model->GetGPSConfigMsg()->commands_count; i++) {
-    WS_DEBUG_PRINT("[gps] Command: ");
+    WS_DEBUG_PRINT("[gps] Processing Command: ");
     WS_DEBUG_PRINTLN(_gps_model->GetGPSConfigMsg()->commands[i]);
+    Send_Command(_gps_model->GetGPSConfigMsg()->commands[i]);
   }
   // TODO: Implement the logic to handle the GPS configuration
   return false;
+}
+
+/*!
+ * @brief Checks if the GPS module's interface is available.
+ * @returns True if the module's interface is available, False otherwise.
+ */
+bool GPSController::IsAvailable() {
+  if (! _uart_hardware == nullptr)
+    return true;
+  WS_DEBUG_PRINTLN("[gps] ERROR: No UART hardware interface set!");
+  return false;
+}
+
+/*!
+ * @brief Sends a command to the GPS module.
+ * @param command The command to send to the GPS module.
+ * @param timeout_ms The timeout in milliseconds for the command to complete.
+ *                   Default is 1000 milliseconds.
+ * @returns True if the command was sent successfully, False otherwise.
+ */
+bool GPSController::Send_Command(const char *command, unsigned long timeout_ms) { 
+  if (!IsAvailable()) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: GPS interface is not available!");
+    return false;
+  }
 }
 
 /*!
