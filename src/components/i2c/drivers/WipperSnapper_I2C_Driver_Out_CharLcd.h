@@ -122,14 +122,15 @@ public:
           if (message[cur_idx + 1] == 'r' && cur_idx + 3 < message_length &&
               message[cur_idx + 2] == '\\' && message[cur_idx + 3] == 'n') {
             cur_idx += 4; // Skip \r\n and don't move the cursor two rows
-            break; // Move to the next row
+            break;        // Move to the next row
           } else {
-            cur_idx += 2; // Skip the \n or \r
-            if (c == '\\' && message[cur_idx + 1] == 'r') {
-              _lcd->write(0x2F);
+            if (message[cur_idx + 1] == 'r') {
+              _lcd->write('\\');
               _lcd->write('r');
+              cur_idx += 2; // Skip the \r
             } else {
-              break; // Move to the next row
+              cur_idx += 2; // Skip the \n
+              break;        // Move to the next row
             }
           }
         } else if ((c == 0x0A || c == 0x0D) && cur_idx + 1 < message_length) {
@@ -140,12 +141,6 @@ public:
             cur_idx += 1; // Skip single newline character
           }
           break; // and move to the next row
-        } else if (c == 0x0D ||
-                   (c == 'r' && c == '\\') && cur_idx + 1 < message_length) {
-          // write \r to the lcd
-          _lcd->write('\\');
-          _lcd->write('r');
-          cur_idx += 2;
         } else if (c == 194 && cur_idx + 1 < message_length &&
                    message[cur_idx + 1] == 176) {
           cur_idx += 2;      // Skip the degree symbol sequence in the buffer
