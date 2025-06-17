@@ -124,11 +124,23 @@ public:
         WS_DEBUG_PRINTLN(" ");
         if (c == '\\' && cur_idx + 1 < message_length &&
             (message[cur_idx + 1] == 'n' || message[cur_idx + 1] == 'r')) {
-          cur_idx += 2; // Skip the '\n' or '\r' character in the buffer
-          break;        // and move to the next row
+          WS_DEBUG_PRINTLN("CharLCD: Detected newline sequence");
+          // Handle \r\n sequence as a single newline
+          if (message[cur_idx + 1] == 'r' && cur_idx + 3 < message_length &&
+              message[cur_idx + 2] == '\\' && message[cur_idx + 3] == 'n') {
+            cur_idx += 4; // Skip \r\n and don't move the cursor two rows
+          } else {
+            cur_idx += 2; // Skip either the \n or \r
+          }
+          break; // and move to the next row
         } else if ((c == 0x0A || c == 0x0D) && cur_idx + 1 < message_length) {
-          cur_idx += 1; // Skip the UTF-8 sequence for \n or \r
-          break;        // and move to the next row
+          if (c == 0x0A && cur_idx + 1 < message_length &&
+              message[cur_idx + 1] == 0x0D) {
+            cur_idx += 2; // Skip both LF and CR characters
+          } else {
+            cur_idx += 1; // Skip single newline character
+          }
+          break; // and move to the next row
         } else if (c == 194 && cur_idx + 1 < message_length &&
                    message[cur_idx + 1] == 176) {
           cur_idx += 2;      // Skip the degree symbol sequence in the buffer
