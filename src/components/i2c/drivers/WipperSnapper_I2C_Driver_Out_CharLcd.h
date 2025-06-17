@@ -120,6 +120,10 @@ public:
             message[cur_idx + 1] == 'n') {
           cur_idx += 2; // Skip the '\n' character in the buffer
           break;        // and move to the next row
+        } else if (c == '\\' && cur_idx + 1 < message_length &&
+                   message[cur_idx + 1] == 'r') {
+          cur_idx += 2; // Skip the '\r' character in the buffer
+          continue;     // and continue writing on the same row
         } else if (c == 194 && cur_idx + 1 < message_length &&
                    message[cur_idx + 1] == 176) {
           cur_idx += 2;      // Skip the degree symbol sequence in the buffer
