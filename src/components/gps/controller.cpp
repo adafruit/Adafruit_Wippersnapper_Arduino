@@ -20,6 +20,7 @@
  */
 GPSController::GPSController() {
   _gps_model = new GPSModel();
+  _iface_type = GPS_IFACE_NONE;
 }
 
 /*!
@@ -44,6 +45,15 @@ bool GPSController::SetInterface(UARTHardware *uart_hardware) {
     return false;
   }
   _uart_hardware = uart_hardware;
+  // Determine iface type
+  if (_uart_hardware->isHardwareSerial()) {
+    _iface_type = GPS_IFACE_UART_HW;
+  } else if (_uart_hardware->isSoftwareSerial()) {
+    _iface_type = GPS_IFACE_UART_SW;
+  } else {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported UART interface type!");
+    return false;
+  }
 }
 
 /*!
@@ -93,6 +103,8 @@ bool GPSController::Send_Command(const char *command, unsigned long timeout_ms) 
     WS_DEBUG_PRINTLN("[gps] ERROR: GPS interface is not available!");
     return false;
   }
+
+  // Check which type of interface we have
 }
 
 /*!
