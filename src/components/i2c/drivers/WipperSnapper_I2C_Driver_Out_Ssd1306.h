@@ -121,17 +121,21 @@ public:
     uint16_t c_idx = 0;
     size_t msg_size = strlen(message);
     for (size_t i = 0; i < msg_size && c_idx < msg_size; i++) {
-      if (message[i] == '\\' && i + 1 < msg_size && message[i + 1] == 'n') {
-        // detected a newline char sequence (\n)
-        i++;
-        // Skip to the next possible line
-        y_idx += line_height;
-        _display->setCursor(0, y_idx);
-      } else if (message[i] == '\\' && i + 1 < msg_size &&
-                 message[i + 1] == 'r') {
-        // skip the \r character, continue to the next character
-        i++;
-        continue;
+      if (message[i] == '\\' && i + 1 < msg_size &&
+          (message[i + 1] == 'n' || message[i + 1] == 'r')) {
+        // Handle \r\n sequence as a single newline
+        if (message[i + 1] == 'r' && i + 3 < msg_size &&
+            message[i + 2] == '\\' && message[i + 3] == 'n') {
+          // Skip to the next line
+          y_idx += line_height;
+          _display->setCursor(0, y_idx);
+          i += 3;
+        } else if (message[i + 1] == 'n') {
+          // Skip to the next line
+          y_idx += line_height;
+          _display->setCursor(0, y_idx);
+          i++;
+        }
       } else if (message[i] == 0xC2 && message[i + 1] == 0xB0) {
         _display->write(char(248));
         _display->display();
