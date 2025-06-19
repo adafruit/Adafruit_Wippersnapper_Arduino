@@ -19,6 +19,7 @@
 #include "WipperSnapper_I2C_Driver_Out.h"
 #include <Adafruit_GrayOLED.h>
 #include <Adafruit_SH110X.h>
+#include "Adafruit_SH110X/splash.h"
 #include <Arduino.h>
 
 #define DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
@@ -76,7 +77,7 @@ public:
     // Since the buffer is intialized with an Adafruit splashscreen
     // internally, this will display the splashscreen.
     _display->display();
-    delay(700);
+    delay(1700);
     
     // Clear the buffer.
     _display->clearDisplay();
@@ -90,6 +91,8 @@ public:
     // _display->cp437(true);
     // Clear the buffer
     _display->clearDisplay();
+    _display->display();
+    _display->write(char('a'));
     _display->display();
     return true;
   }
