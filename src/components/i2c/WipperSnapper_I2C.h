@@ -54,6 +54,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_Out_7Seg.h"
 #include "drivers/WipperSnapper_I2C_Driver_Out_CharLcd.h"
 #include "drivers/WipperSnapper_I2C_Driver_Out_QuadAlphaNum.h"
+#include "drivers/WipperSnapper_I2C_Driver_Out_Sh1107.h"
 #include "drivers/WipperSnapper_I2C_Driver_Out_Ssd1306.h"
 #include "drivers/WipperSnapper_I2C_Driver_PCT2075.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
