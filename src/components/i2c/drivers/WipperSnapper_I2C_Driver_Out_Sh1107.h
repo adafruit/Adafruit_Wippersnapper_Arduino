@@ -93,6 +93,7 @@ public:
     // Clear the buffer
     _display->clearDisplay();
     _display->display();
+    _display->print(char('a'));
     _display->display();
     return true;
   }
@@ -123,7 +124,8 @@ public:
   void WriteMessageSH1107(const char *message) {
     if (_display == nullptr)
       return;
-
+    WS_DEBUG_PRINT("Message:");
+    WS_DEBUG_PRINTLN(message);
     // Start with a fresh display buffer
     // and settings
     int16_t y_idx = 0;
