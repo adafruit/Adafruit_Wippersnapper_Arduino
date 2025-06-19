@@ -33,14 +33,14 @@ class WipperSnapper_I2C_Driver_Out_SH1107
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a SH1107 OLED display.
+      @brief    Constructor for a  OLED display.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_Out_SH1107(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_Out_(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -55,7 +55,7 @@ public:
     if (_display != nullptr) {
       _display->clearDisplay();
       _display->display();
-      _display->sh1107_command(SH1107_DISPLAYOFF);
+      _display->sh1107_command(SH110X_DISPLAYOFF);
       delete _display;
       _display = nullptr;
     }
@@ -72,7 +72,7 @@ public:
       return false;
     // Configure the text size and color
     _display->setTextSize(_text_sz);
-    _display->setTextColor(SH1107_WHITE);
+    _display->setTextColor(SH110X_WHITE);
     // Use full 256 char 'Code Page 437' font
     _display->cp437(true);
     // Clear the buffer
@@ -111,7 +111,7 @@ public:
     int16_t y_idx = 0;
     _display->clearDisplay();
     _display->setTextSize(_text_sz);
-    _display->setTextColor(SH1107_WHITE);
+    _display->setTextColor(SH110X_WHITE);
     _display->setCursor(0, y_idx);
     _display->display();
 
