@@ -29,11 +29,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -208,11 +208,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -320,11 +320,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -457,11 +457,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -538,11 +538,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -616,11 +616,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -711,11 +711,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -814,11 +814,11 @@ jobs:
     steps:
       - name: "skip if unwanted"
         if: |
-          github.event_name != 'workflow_dispatch' ||
-          github.event.inputs.board == '' ||
-          matrix.arduino-platform == github.event.inputs.board
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
         run: |
-          echo "build this one!"
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
