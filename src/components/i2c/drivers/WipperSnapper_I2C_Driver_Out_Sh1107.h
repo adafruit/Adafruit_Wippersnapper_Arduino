@@ -78,13 +78,13 @@ public:
     // internally, this will display the splashscreen.
     _display->display();
     delay(1700);
-    
+
     // Clear the buffer.
     _display->clearDisplay();
     _display->display();
     _display->setRotation(1);
-  
-      // Configure the text size and color
+
+    // Configure the text size and color
     _display->setTextSize(_text_sz);
     _display->setTextColor(SH110X_WHITE);
     _display->setCursor(0, 0);
