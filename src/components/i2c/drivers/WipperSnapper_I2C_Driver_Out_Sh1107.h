@@ -21,7 +21,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
-#include "WipperSnapper.h"
 
 #define DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
 #define DEFAULT_HEIGHT 64 ///< Default height for a sh1107 128x64 display
@@ -94,7 +93,6 @@ public:
     // Clear the buffer
     _display->clearDisplay();
     _display->display();
-    _display->write(char('a'));
     _display->display();
     return true;
   }
