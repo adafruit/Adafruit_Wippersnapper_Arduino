@@ -26,12 +26,12 @@ jobs:
         arduino-platform: ["funhouse_noota"]
         include:
           - offset: "0x1000"
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -202,12 +202,12 @@ jobs:
             "feather_esp32s3_reverse_tft",
             "qtpy_esp32s3_n4r2",
           ]
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -311,12 +311,12 @@ jobs:
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -445,12 +445,12 @@ jobs:
             "pyportal_titano_tinyusb",
             "metro_m4_airliftlite_tinyusb",
           ]
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -523,12 +523,12 @@ jobs:
       fail-fast: false
       matrix:
         arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb"]
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -598,12 +598,12 @@ jobs:
       fail-fast: false
       matrix:
         arduino-platform: ["feather_esp8266"]
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -690,12 +690,12 @@ jobs:
             "metroesp32s2_debug",
             "metro_esp32s3_debug",
           ]
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
@@ -790,12 +790,12 @@ jobs:
           - offset: "0x1000"
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.board == '' ||
-      matrix.arduino-platform == github.event.inputs.board
     steps:
       - uses: actions/setup-python@v5
+        if: |
+          github.event_name != 'workflow_dispatch' ||
+          github.event.inputs.board == '' ||
+          matrix.arduino-platform == github.event.inputs.board
         with:
           python-version: "3.x"
       - uses: actions/checkout@v4
