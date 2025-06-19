@@ -17,6 +17,7 @@
 #define WIPPERSNAPPER_I2C_DRIVER_OUT_SH1107_H
 
 #include "WipperSnapper_I2C_Driver_Out.h"
+#include <Adafruit_GrayOLED.h>
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
@@ -55,7 +56,7 @@ public:
     if (_display != nullptr) {
       _display->clearDisplay();
       _display->display();
-      _display->sh1107_command(SH110X_DISPLAYOFF);
+      _display->oled_command(SH110X_DISPLAYOFF);
       delete _display;
       _display = nullptr;
     }
