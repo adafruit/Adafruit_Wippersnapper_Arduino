@@ -22,8 +22,8 @@
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
-#define DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
-#define DEFAULT_HEIGHT 64 ///< Default height for a sh1107 128x64 display
+#define DEFAULT_WIDTH 64 ///< Default width for a sh1107 128x64 display
+#define DEFAULT_HEIGHT 128 ///< Default height for a sh1107 128x64 display
 
 /*!
     @brief  Class that provides a driver interface for a SH1107
