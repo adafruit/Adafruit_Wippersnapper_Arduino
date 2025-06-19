@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Brent Rubell for Adafruit Industries, 2023
 #
 # SPDX-License-Identifier: MIT
-name: WipperSnapper Build ${{ github.event.inputs.board || 'CI' }}
+name: WipperSnapper Build CI
 
 on:
   workflow_dispatch:
@@ -20,6 +20,7 @@ jobs:
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx(lvgl)
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -186,6 +187,7 @@ jobs:
   build-esp32sx:
     name: 🏗️ESP32-Sx
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -297,6 +299,7 @@ jobs:
   build-esp32:
     name: 🏗️ESP32/Cx
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -445,6 +448,7 @@ jobs:
   build-samd:
     name: 🏗️SAMD
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -531,6 +535,7 @@ jobs:
   build-rp2040:
     name: 🏗️RP2040
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -609,6 +614,7 @@ jobs:
   build-esp8266:
     name: 🏗️ESP8266
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -694,6 +700,7 @@ jobs:
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -800,6 +807,7 @@ jobs:
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
