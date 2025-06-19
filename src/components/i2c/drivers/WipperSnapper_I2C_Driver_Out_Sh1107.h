@@ -17,7 +17,7 @@
 #define WIPPERSNAPPER_I2C_DRIVER_OUT_SH1107_H
 
 #include "WipperSnapper_I2C_Driver_Out.h"
-#include <Adafruit_SH110x.h>
+#include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
 #define DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
