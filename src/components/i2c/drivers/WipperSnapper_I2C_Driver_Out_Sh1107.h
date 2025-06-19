@@ -87,6 +87,7 @@ public:
       // Configure the text size and color
     _display->setTextSize(_text_sz);
     _display->setTextColor(SH110X_WHITE);
+    -display->setCursor(0, 0);
     // Use full 256 char 'Code Page 437' font
     // _display->cp437(true);
     // Clear the buffer
