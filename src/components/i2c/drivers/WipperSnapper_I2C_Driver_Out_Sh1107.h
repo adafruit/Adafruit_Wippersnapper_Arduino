@@ -22,8 +22,8 @@
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
-#define DEFAULT_WIDTH 64 ///< Default width for a sh1107 128x64 display
-#define DEFAULT_HEIGHT 128 ///< Default height for a sh1107 128x64 display
+#define DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
+#define DEFAULT_HEIGHT 64 ///< Default height for a sh1107 128x64 display
 
 /*!
     @brief  Class that provides a driver interface for a SH1107
@@ -68,8 +68,8 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() {
-    // Attempt to create and allocate a SH1107 obj.
-    _display = new Adafruit_SH1107(_width, _height, _i2c);
+    // Attempt to create and allocate a SH1107 obj, backwards w/h
+    _display = new Adafruit_SH1107(_height, _width, _i2c);
     if (!_display->begin(_sensorAddress, true))
       return false;
 
