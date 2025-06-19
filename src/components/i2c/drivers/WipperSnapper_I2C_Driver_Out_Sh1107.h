@@ -71,11 +71,23 @@ public:
     _display = new Adafruit_SH1107(_width, _height, _i2c);
     if (!_display->begin(_sensorAddress, true))
       return false;
-    // Configure the text size and color
+
+    // Show image buffer on the display hardware.
+    // Since the buffer is intialized with an Adafruit splashscreen
+    // internally, this will display the splashscreen.
+    display.display();
+    delay(700);
+    
+    // Clear the buffer.
+    display.clearDisplay();
+    display.display();
+    display.setRotation(1);
+  
+      // Configure the text size and color
     _display->setTextSize(_text_sz);
     _display->setTextColor(SH110X_WHITE);
     // Use full 256 char 'Code Page 437' font
-    _display->cp437(true);
+    // _display->cp437(true);
     // Clear the buffer
     _display->clearDisplay();
     _display->display();
