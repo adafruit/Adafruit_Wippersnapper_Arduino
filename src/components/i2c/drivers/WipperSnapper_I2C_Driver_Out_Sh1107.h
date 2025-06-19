@@ -75,13 +75,13 @@ public:
     // Show image buffer on the display hardware.
     // Since the buffer is intialized with an Adafruit splashscreen
     // internally, this will display the splashscreen.
-    display.display();
+    _display.display();
     delay(700);
     
     // Clear the buffer.
-    display.clearDisplay();
-    display.display();
-    display.setRotation(1);
+    _display.clearDisplay();
+    _display.display();
+    _display.setRotation(1);
   
       // Configure the text size and color
     _display->setTextSize(_text_sz);
