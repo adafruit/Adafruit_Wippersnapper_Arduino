@@ -95,6 +95,8 @@ public:
     _width = width;
     _height = height;
     _text_sz = text_size;
+    WS_DEBUG_PRINT("SSD1306 text size: ");
+    WS_DEBUG_PRINTLN(text_size);
   }
 
   /*!
@@ -105,6 +107,9 @@ public:
   void WriteMessageSSD1306(const char *message) {
     if (_display == nullptr)
       return;
+
+    WS_DEBUG_PRINT("SSD1306 Message:");
+    WS_DEBUG_PRINTLN(message);
 
     // Start with a fresh display buffer
     // and settings

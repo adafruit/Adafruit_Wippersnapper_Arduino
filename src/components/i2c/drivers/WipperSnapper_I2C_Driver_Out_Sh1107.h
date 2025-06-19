@@ -17,7 +17,9 @@
 #define WIPPERSNAPPER_I2C_DRIVER_OUT_SH1107_H
 
 #include "WipperSnapper_I2C_Driver_Out.h"
-#include <Adafruit_SH110x.h>
+// #include <Adafruit_GrayOLED.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
 #define DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
@@ -33,7 +35,7 @@ class WipperSnapper_I2C_Driver_Out_SH1107
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a SH1107 OLED display.
+      @brief    Constructor for a  OLED display.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -55,7 +57,7 @@ public:
     if (_display != nullptr) {
       _display->clearDisplay();
       _display->display();
-      _display->sh1107_command(SH1107_DISPLAYOFF);
+      _display->oled_command(SH110X_DISPLAYOFF);
       delete _display;
       _display = nullptr;
     }
@@ -66,17 +68,34 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() {
-    // Attempt to create and allocate a SH1107 obj.
-    _display = new Adafruit_SH1107(_width, _height, _i2c);
+    // Attempt to create and allocate a SH1107 obj, backwards w/h
+    _display = new Adafruit_SH1107(_height, _width, _i2c);
     if (!_display->begin(_sensorAddress, true))
       return false;
+
+    // Show image buffer on the display hardware.
+    // Since the buffer is intialized with an Adafruit splashscreen
+    // internally, this will display the splashscreen.
+    _display->display();
+    delay(1700);
+
+    // Clear the buffer.
+    _display->clearDisplay();
+    _display->display();
+    _display->setRotation(1);
+
     // Configure the text size and color
     _display->setTextSize(_text_sz);
-    _display->setTextColor(SH1107_WHITE);
+    _display->setTextColor(SH110X_WHITE);
+    _display->setCursor(0, 0);
     // Use full 256 char 'Code Page 437' font
-    _display->cp437(true);
+    // _display->cp437(true);
     // Clear the buffer
     _display->clearDisplay();
+    _display->display();
+    _display->print(char('a'));
+    delay(500);
+    _display->write(char('b'));
     _display->display();
     return true;
   }
@@ -95,7 +114,25 @@ public:
     _width = width;
     _height = height;
     _text_sz = text_size;
+    WS_DEBUG_PRINT("SH1107 text size: ");
+    WS_DEBUG_PRINTLN(text_size);
   }
+  /*!
+      @brief    Configures a SSD1306 OLED display. Must be called before driver
+     begin() - This is a fake function to match the SSD1306 interface.
+      @param    width
+                  The width of the display in pixels.
+      @param    height
+                  The height of the display in pixels.
+      @param    text_size
+                  The magnification factor for the text size.
+  */
+  void ConfigureSSD1306(uint8_t width, uint8_t height,
+                                 uint8_t text_size) {
+    // This is a SH1107, not a SSD1306, so we don't need to do anything here.
+    ConfigureSH1107(width, height, text_size);
+  }
+
 
   /*!
       @brief    Writes a message to the SH1107 display.
@@ -105,13 +142,14 @@ public:
   void WriteMessageSH1107(const char *message) {
     if (_display == nullptr)
       return;
-
+    WS_DEBUG_PRINT("SH1107 Message:");
+    WS_DEBUG_PRINTLN(message);
     // Start with a fresh display buffer
     // and settings
     int16_t y_idx = 0;
     _display->clearDisplay();
     _display->setTextSize(_text_sz);
-    _display->setTextColor(SH1107_WHITE);
+    _display->setTextColor(SH110X_WHITE);
     _display->setCursor(0, y_idx);
     _display->display();
 
@@ -128,11 +166,15 @@ public:
             message[i + 2] == '\\' && message[i + 3] == 'n') {
           // Skip to the next line
           y_idx += line_height;
+          WS_DEBUG_PRINT("SH1107 Newline at: ");
+          WS_DEBUG_PRINTLN(y_idx);
           _display->setCursor(0, y_idx);
           i += 3;
         } else if (message[i + 1] == 'n') {
           // Skip to the next line
           y_idx += line_height;
+          WS_DEBUG_PRINT("SH1107 Newline at: ");
+          WS_DEBUG_PRINTLN(y_idx);
           _display->setCursor(0, y_idx);
           i++;
         }
@@ -145,6 +187,17 @@ public:
         _display->display();
       }
     }
+  }
+
+
+  /*!
+      @brief    Writes a message to the fake "SSD1306" SH1107 display.
+      @param    msg_write
+                  Pointer to a wippersnapper_i2c_v1_SSD1306Write message.
+  */
+  void WriteMessageSSD1306(const char *message) {
+    // This is a SH1107, not a SSD1306, so we just call the SH1107 write
+    WriteMessageSH1107(message);
   }
 
 protected:

@@ -205,6 +205,7 @@ private:
   WipperSnapper_I2C_Driver_Out_QuadAlphaNum *_quadAlphaNum = nullptr;
   WipperSnapper_I2C_Driver_Out_CharLcd *_charLcd = nullptr;
   WipperSnapper_I2C_Driver_Out_7Seg *_sevenSeg = nullptr;
+  WipperSnapper_I2C_Driver_Out_SH1107 *_sh1107 = nullptr;
   WipperSnapper_I2C_Driver_Out_Ssd1306 *_ssd1306 = nullptr;
 };
 extern Wippersnapper WS;
