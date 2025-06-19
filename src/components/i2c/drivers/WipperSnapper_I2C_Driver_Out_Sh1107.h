@@ -18,6 +18,7 @@
 
 #include "WipperSnapper_I2C_Driver_Out.h"
 // #include <Adafruit_GrayOLED.h>
+#include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
