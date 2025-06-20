@@ -37,7 +37,7 @@ GPSModel::~GPSModel() {
  * @param stream A pointer to the pb_istream_t stream.
  * @returns True if the GPSConfig message was decoded successfully, False otherwise.
  */
-bool DecodeGPSConfig(pb_istream_t *stream) {
+bool GPSModel::DecodeGPSConfig(pb_istream_t *stream) {
   return pb_decode(stream, wippersnapper_gps_GPSConfig_fields, &_msg_gps_config);
 }
 
@@ -45,7 +45,7 @@ bool DecodeGPSConfig(pb_istream_t *stream) {
  * @brief Returns a pointer to the GPSConfig message.
  * @returns Pointer to the GPSConfig message.
  */
-wippersnapper_gps_GPSConfig *GetGPSConfigMsg() {
+wippersnapper_gps_GPSConfig *GPSModel::GetGPSConfigMsg() {
   return &_msg_gps_config;
 }
 
@@ -53,7 +53,7 @@ wippersnapper_gps_GPSConfig *GetGPSConfigMsg() {
  * @brief Encodes a GPGGA response message.
  * @returns True if the GPGGA response message was encoded successfully, False otherwise.
  */
-bool EncodeGPGGAResponse() {
+bool GPSModel::EncodeGPGGAResponse() {
   // TODO: Implement the encoding logic for GPGGAResponse
   return false;
 }
@@ -62,13 +62,13 @@ bool EncodeGPGGAResponse() {
  * @brief Returns a pointer to the GPGGA response message.
  * @returns Pointer to the GPGGA response message.
  */
-wippersnapper_gps_GPGGAResponse *GetGPGGAResponseMsg() {
+wippersnapper_gps_GPGGAResponse *GPSModel::GetGPGGAResponseMsg() {
   return &_msg_gpgga_response;
 }
 
 /*!
  * @brief Gets the GPGGA response message.
  */
-wippersnapper_gps_GPSRMCResponse *GetGPSRMCResponseMsg() {
+wippersnapper_gps_GPSRMCResponse *GPSModel::GetGPSRMCResponseMsg() {
   return &_msg_gpsrmc_response;
 }

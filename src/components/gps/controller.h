@@ -16,7 +16,6 @@
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
 #include "Wippersnapper_V2.h"
-#include "hardware.h"
 #include "model.h"
 #include <Adafruit_GPS.h>
 
@@ -25,6 +24,7 @@
 #define CMD_MTK_QUERY_FW_RESP                                                  \
   "PMTK705" ///< Response from querying MediaTek firmware version without the
             ///< ReleaseStr
+#define MAX_NEMA_SENTENCE_LEN 82 ///< Maximum length of a NMEA sentence
 
 class Wippersnapper_V2; ///< Forward declaration
 class GPSModel;         ///< Forward declaration
@@ -51,11 +51,12 @@ class GPSController {
 public:
   GPSController();
   ~GPSController();
-  // TODO: Add I2C interface support via a ctor right here
   bool SetInterface(UARTHardware *uart_hardware);
+  // TODO: Add SetInterface(I2C *_i2c_hardware) for I2C support here!
   bool begin();
-  bool QueryDriverType();
+  bool QueryModuleType();
   bool DetectMediatek();
+  // Protobuf API methods
   bool Handle_GPSConfig(pb_istream_t *stream);
   bool RemoveGPSDevice(const char *id);
   void update();
@@ -65,7 +66,7 @@ private:
   UARTHardware *_uart_hardware = nullptr; ///< UART hardware instance for GPS
   GpsInterfaceType _iface_type;           ///< Type of interface used by GPS
   GpsDriverType _driver_type;             ///< Type of GPS driver used
-  Adafruit_GPS _ada_gps = nullptr;        ///< Adafruit GPS instance
+  Adafruit_GPS *_ada_gps = nullptr;       ///< Adafruit GPS instance
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_CONTROLLER_H

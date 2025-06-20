@@ -457,12 +457,6 @@ bool cbDecodeBrokerToDevice(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     break;
-  case wippersnapper_signal_BrokerToDevice_gps_config_tag:
-    WS_DEBUG_PRINTLN("-> GPS Config Message Type");
-    if (!WsV2._gps_controller->Handle_GPSConfig(stream)) {
-      return false;
-    }
-    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: BrokerToDevice message type not found!");
     return false;
@@ -1040,13 +1034,6 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.payload.uart_input_event =
         *(wippersnapper_uart_UartInputEvent *)payload;
     break;
-  case wippersnapper_signal_DeviceToBroker_gps_event_tag:
-    WS_DEBUG_PRINTLN("GPSEvent");
-    MsgSignal.which_payload =
-        wippersnapper_signal_DeviceToBroker_gps_event_tag;
-    MsgSignal.payload.gps_event =
-        *(wippersnapper_gps_GPGGAResponse *)payload;
-    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;
@@ -1384,11 +1371,12 @@ ws_status_t Wippersnapper_V2::run() {
   // Process I2C driver events
   WsV2._i2c_controller->update();
 
-  // Process GPS events
-  WsV2._gps_controller->update();
-
   // Process UART driver events
   WsV2._uart_controller->update();
+
+  // Process GPS events
+  // TODO!
+  // WsV2._gps_controller->update();
 
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }
