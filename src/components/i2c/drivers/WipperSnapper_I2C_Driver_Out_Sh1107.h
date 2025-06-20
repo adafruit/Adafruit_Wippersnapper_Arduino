@@ -94,6 +94,8 @@ public:
     _display->clearDisplay();
     _display->display();
     _display->print(char('a'));
+    delay(500);
+    _display->write(char('b'));
     _display->display();
     return true;
   }
@@ -112,7 +114,7 @@ public:
     _width = width;
     _height = height;
     _text_sz = text_size;
-    WS_DEBUG_PRINT("text size: ");
+    WS_DEBUG_PRINT("SH1107 text size: ");
     WS_DEBUG_PRINTLN(text_size);
   }
 
@@ -124,7 +126,7 @@ public:
   void WriteMessageSH1107(const char *message) {
     if (_display == nullptr)
       return;
-    WS_DEBUG_PRINT("Message:");
+    WS_DEBUG_PRINT("SH1107 Message:");
     WS_DEBUG_PRINTLN(message);
     // Start with a fresh display buffer
     // and settings
@@ -148,11 +150,15 @@ public:
             message[i + 2] == '\\' && message[i + 3] == 'n') {
           // Skip to the next line
           y_idx += line_height;
+          WS_DEBUG_PRINT("SH1107 Newline at: ");
+          WS_DEBUG_PRINTLN(y_idx);
           _display->setCursor(0, y_idx);
           i += 3;
         } else if (message[i + 1] == 'n') {
           // Skip to the next line
           y_idx += line_height;
+          WS_DEBUG_PRINT("SH1107 Newline at: ");
+          WS_DEBUG_PRINTLN(y_idx);
           _display->setCursor(0, y_idx);
           i++;
         }
