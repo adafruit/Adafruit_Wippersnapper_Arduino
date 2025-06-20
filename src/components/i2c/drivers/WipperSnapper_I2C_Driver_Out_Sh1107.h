@@ -117,6 +117,22 @@ public:
     WS_DEBUG_PRINT("SH1107 text size: ");
     WS_DEBUG_PRINTLN(text_size);
   }
+  /*!
+      @brief    Configures a SSD1306 OLED display. Must be called before driver
+     begin() - This is a fake function to match the SSD1306 interface.
+      @param    width
+                  The width of the display in pixels.
+      @param    height
+                  The height of the display in pixels.
+      @param    text_size
+                  The magnification factor for the text size.
+  */
+  void ConfigureSSD1306(uint8_t width, uint8_t height,
+                                 uint8_t text_size) {
+    // This is a SH1107, not a SSD1306, so we don't need to do anything here.
+    ConfigureSH1107(width, height, text_size);
+  }
+
 
   /*!
       @brief    Writes a message to the SH1107 display.
@@ -171,6 +187,20 @@ public:
         _display->display();
       }
     }
+  }
+
+
+  /*!
+      @brief    Writes a message to the fake "SSD1306" SH1107 display.
+      @param    msg_write
+                  Pointer to a wippersnapper_i2c_v1_SSD1306Write message.
+  */
+  void WriteMessageSSD1306(wippersnapper_i2c_v1_SSD1306Write *msg_write) {
+    if (_display == nullptr)
+      return;
+    WS_DEBUG_PRINT("SH1107 Message:");
+    WS_DEBUG_PRINTLN(msg_write->message);
+    WriteMessageSH1107(msg_write->message);
   }
 
 protected:
