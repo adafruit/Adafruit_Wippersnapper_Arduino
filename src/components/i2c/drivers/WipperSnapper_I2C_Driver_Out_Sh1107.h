@@ -195,12 +195,9 @@ public:
       @param    msg_write
                   Pointer to a wippersnapper_i2c_v1_SSD1306Write message.
   */
-  void WriteMessageSSD1306(wippersnapper_i2c_v1_SSD1306Write *msg_write) {
-    if (_display == nullptr)
-      return;
-    WS_DEBUG_PRINT("SH1107 Message:");
-    WS_DEBUG_PRINTLN(msg_write->message);
-    WriteMessageSH1107(msg_write->message);
+  void WriteMessageSSD1306(const char *message) {
+    // This is a SH1107, not a SSD1306, so we just call the SH1107 write
+    WriteMessageSH1107(message);
   }
 
 protected:
