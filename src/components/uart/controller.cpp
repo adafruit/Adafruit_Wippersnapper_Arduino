@@ -39,8 +39,10 @@ UARTController::~UARTController() {
 bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // Attempt to decode the UartAdd message
   WS_DEBUG_PRINTLN("[uart] Decoding UartAdd message...");
-  if (!_uart_model->DecodeUartAdd(stream))
+  if (!_uart_model->DecodeUartAdd(stream)) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to decode UartAdd message!");
     return false;
+  }
   WS_DEBUG_PRINTLN("[uart] UartAdd message decoded successfully!");
   // Get ref. to the UartAdd message within the model
   wippersnapper_uart_UartAdd *add_msg = _uart_model->GetUartAddMsg();
@@ -67,9 +69,17 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
-
-  // TODO: Refactor this out into a factory method or similar
+  WS_DEBUG_PRINT("cfg_device.device_type: ");
+  WS_DEBUG_PRINTLN(cfg_device.device_type);
   drvUartBase *uart_driver = nullptr;
+
+  // tODO: Am seeing an issue where device_id causes a crash
+  // uncomment below:
+  // WS_DEBUG_PRINT("cfg_device.device_id: ");
+  // WS_DEBUG_PRINTLN(cfg_device.device_id);
+
+  /*
+  // TODO: Monday, Crash occurs here, no idea why yet
   switch (cfg_device.device_type) {
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
@@ -97,10 +107,12 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_OUTPUT:
     WS_DEBUG_PRINTLN("[uart] Generic Output device type not implemented!");
-    break;
+    delete uart_hardware; // cleanup
+    return false;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
     WS_DEBUG_PRINTLN("[uart] GPS device type not implemented!");
-    break;
+    delete uart_hardware; // cleanup
+    return false;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
     WS_DEBUG_PRINTLN("[uart] Adding PM2.5 AQI device..");
     // Create a new PM2.5 AQI driver instance
@@ -116,12 +128,20 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:
     WS_DEBUG_PRINTLN("[uart] TM22XX device type not implemented!");
-    break;
+    delete uart_hardware; // cleanup
+    return false;
   default:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unknown device type!");
+    delete uart_hardware; // cleanup
     return false;
   }
+
   // Attempt to initialize the UART driver
+  if (uart_driver == nullptr) {
+    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to create UART driver!");
+    delete uart_hardware; // cleanup
+    return false;
+  }
   bool did_begin = false;
   did_begin = uart_driver->begin();
   if (!did_begin) {
@@ -156,7 +176,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to IO!");
     return false;
   }
-
+ */
   return true;
 }
 

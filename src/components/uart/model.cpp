@@ -45,6 +45,7 @@ UARTModel::~UARTModel() {
     @return True if the message was decoded successfully, False otherwise.
 */
 bool UARTModel::DecodeUartAdd(pb_istream_t *stream) {
+  WS_DEBUG_PRINTLN("[uart] Decoding UartAdd message...");
   memset(&_msg_UartAdd, 0, sizeof(_msg_UartAdd));
   return pb_decode(stream, wippersnapper_uart_UartAdd_fields, &_msg_UartAdd);
 }
@@ -53,37 +54,41 @@ bool UARTModel::DecodeUartAdd(pb_istream_t *stream) {
     @brief  Gets a pointer to the decoded UartAdd message.
     @return Pointer to the decoded UartAdd message.
 */
-wippersnapper_uart_UartAdd *UARTModel::GetUartAddMsg() {
-  return &_msg_UartAdd;
-}
+wippersnapper_uart_UartAdd *UARTModel::GetUartAddMsg() { return &_msg_UartAdd; }
 
 /*!
     @brief  Encodes a UartAdded message.
     @param  uart_nbr
-            The UART port number (eg: 0, 1, 2, etc.) that the device was attached to.
+            The UART port number (eg: 0, 1, 2, etc.) that the device was
+   attached to.
     @param  type
-            The category of device attached to the UART port, corresponds to its driver type.
+            The category of device attached to the UART port, corresponds to its
+   driver type.
     @param  id
             The unique identifier string for the UART device.
     @param  success
-            True if the device on the UART port was successfully initialized, False otherwise.
+            True if the device on the UART port was successfully initialized,
+   False otherwise.
     @return True if the message was encoded successfully, False otherwise.
 */
-bool UARTModel::EncodeUartAdded(int32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *id, bool success) {
-    _msg_UartAdded.uart_nbr = uart_nbr;
-    _msg_UartAdded.type = type;
-    strncpy(_msg_UartAdded.device_id, id, sizeof(_msg_UartAdded.device_id) - 1);
-    _msg_UartAdded.device_id[sizeof(_msg_UartAdded.device_id) - 1] = '\0';
-    _msg_UartAdded.success = success;
-    // Calculate the size of the encoded message
-    size_t sz_msg;
-    if (!pb_get_encoded_size(&sz_msg, wippersnapper_uart_UartAdded_fields,
-                            &_msg_UartAdded))
-        return false;
-    // Attempt to encode the message into a buffer
-    uint8_t buf[sz_msg];
-    pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-    return pb_encode(&msg_stream, wippersnapper_uart_UartAdded_fields, &_msg_UartAdded);
+bool UARTModel::EncodeUartAdded(int32_t uart_nbr,
+                                wippersnapper_uart_UartDeviceType type,
+                                const char *id, bool success) {
+  _msg_UartAdded.uart_nbr = uart_nbr;
+  _msg_UartAdded.type = type;
+  strncpy(_msg_UartAdded.device_id, id, sizeof(_msg_UartAdded.device_id) - 1);
+  _msg_UartAdded.device_id[sizeof(_msg_UartAdded.device_id) - 1] = '\0';
+  _msg_UartAdded.success = success;
+  // Calculate the size of the encoded message
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, wippersnapper_uart_UartAdded_fields,
+                           &_msg_UartAdded))
+    return false;
+  // Attempt to encode the message into a buffer
+  uint8_t buf[sz_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  return pb_encode(&msg_stream, wippersnapper_uart_UartAdded_fields,
+                   &_msg_UartAdded);
 }
 
 /*!
@@ -103,7 +108,8 @@ wippersnapper_uart_UartAdded *UARTModel::GetUartAddedMsg() {
 */
 bool UARTModel::DecodeUartDeviceRemove(pb_istream_t *stream) {
   memset(&_msg_UartRemove, 0, sizeof(_msg_UartRemove));
-  return pb_decode(stream, wippersnapper_uart_UartRemove_fields, &_msg_UartRemove);
+  return pb_decode(stream, wippersnapper_uart_UartRemove_fields,
+                   &_msg_UartRemove);
 }
 
 /*!
@@ -118,25 +124,30 @@ wippersnapper_uart_UartRemove *UARTModel::GetUartRemoveMsg() {
     @brief  Clears an UartInputEvent message.
 */
 void UARTModel::ClearUartInputEventMsg() {
-    memset(&_msg_UartInputEvent, 0, sizeof(_msg_UartInputEvent));
+  memset(&_msg_UartInputEvent, 0, sizeof(_msg_UartInputEvent));
 }
 
 /*!
     @brief  Configures an UartInputEvent message with addressing information.
     @param  uart_nbr
-            The UART port number (eg: 0, 1, 2, etc.) that the device is attached to.
+            The UART port number (eg: 0, 1, 2, etc.) that the device is attached
+   to.
     @param  type
-            The category of device attached to the UART port, corresponds to its driver type.
+            The category of device attached to the UART port, corresponds to its
+   driver type.
     @param  device_id
             The unique identifier string for the UART device.
 */
-void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr, wippersnapper_uart_UartDeviceType type, const char *device_id) {
-    // Addressing information
-    _msg_UartInputEvent.uart_nbr = uart_nbr;
-    _msg_UartInputEvent.type = type;
-    strncpy(_msg_UartInputEvent.device_id, device_id, sizeof(_msg_UartInputEvent.device_id) - 1);
-    _msg_UartInputEvent.device_id[sizeof(_msg_UartInputEvent.device_id) - 1] = '\0';
-
+void UARTModel::ConfigureUartInputEventMsg(
+    uint32_t uart_nbr, wippersnapper_uart_UartDeviceType type,
+    const char *device_id) {
+  // Addressing information
+  _msg_UartInputEvent.uart_nbr = uart_nbr;
+  _msg_UartInputEvent.type = type;
+  strncpy(_msg_UartInputEvent.device_id, device_id,
+          sizeof(_msg_UartInputEvent.device_id) - 1);
+  _msg_UartInputEvent.device_id[sizeof(_msg_UartInputEvent.device_id) - 1] =
+      '\0';
 }
 
 /*!
@@ -147,38 +158,40 @@ void UARTModel::ConfigureUartInputEventMsg(uint32_t uart_nbr, wippersnapper_uart
             The type of sensor that produced the event.
     @return True if the event was added successfully, False otherwise.
 */
-bool UARTModel::AddUartInputEvent(sensors_event_t &event, wippersnapper_sensor_SensorType sensor_type) {
-    if (_msg_UartInputEvent.events_count >= MAX_UART_INPUT_EVENTS) {
-        return false; // Maximum number of events reached
-    }
+bool UARTModel::AddUartInputEvent(sensors_event_t &event,
+                                  wippersnapper_sensor_SensorType sensor_type) {
+  if (_msg_UartInputEvent.events_count >= MAX_UART_INPUT_EVENTS) {
+    return false; // Maximum number of events reached
+  }
 
-    // Configure the sensor event
-    wippersnapper_sensor_SensorEvent &sensor_event = _msg_UartInputEvent.events[_msg_UartInputEvent.events_count];
-    sensor_event.type = sensor_type;
-    
-    // Handle different sensor types
-    switch (sensor_type) {
-        case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
-            sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
-            sensor_event.value.float_value = event.pm10_std;
-            break;
-        case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
-            sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
-            sensor_event.value.float_value = event.pm25_std;
-            break;
-        case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
-            sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
-            sensor_event.value.float_value = event.pm100_std;
-            break;
-        // TODO: Add more cases for other sensor types
-        default:
-            sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
-            sensor_event.value.float_value = event.data[0];
-            break;
-    }
+  // Configure the sensor event
+  wippersnapper_sensor_SensorEvent &sensor_event =
+      _msg_UartInputEvent.events[_msg_UartInputEvent.events_count];
+  sensor_event.type = sensor_type;
 
-    _msg_UartInputEvent.events_count++;
-    return true;
+  // Handle different sensor types
+  switch (sensor_type) {
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM10_STD:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.pm10_std;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM25_STD:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.pm25_std;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PM100_STD:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.pm100_std;
+    break;
+  // TODO: Add more cases for other sensor types
+  default:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.data[0];
+    break;
+  }
+
+  _msg_UartInputEvent.events_count++;
+  return true;
 }
 
 /*!
@@ -186,16 +199,17 @@ bool UARTModel::AddUartInputEvent(sensors_event_t &event, wippersnapper_sensor_S
     @return True if the message was encoded successfully, False otherwise.
 */
 bool UARTModel::EncodeUartInputEvent() {
-    // Calculate the size of the encoded message
-    size_t sz_msg;
-    if (!pb_get_encoded_size(&sz_msg, wippersnapper_uart_UartInputEvent_fields,
-                            &_msg_UartInputEvent))
-        return false;
-    
-    // Attempt to encode the message into a buffer
-    uint8_t buf[sz_msg];
-    pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
-    return pb_encode(&msg_stream, wippersnapper_uart_UartInputEvent_fields, &_msg_UartInputEvent);
+  // Calculate the size of the encoded message
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, wippersnapper_uart_UartInputEvent_fields,
+                           &_msg_UartInputEvent))
+    return false;
+
+  // Attempt to encode the message into a buffer
+  uint8_t buf[sz_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  return pb_encode(&msg_stream, wippersnapper_uart_UartInputEvent_fields,
+                   &_msg_UartInputEvent);
 }
 
 /*!
@@ -203,5 +217,5 @@ bool UARTModel::EncodeUartInputEvent() {
     @return Pointer to the UartInputEvent message.
 */
 wippersnapper_uart_UartInputEvent *UARTModel::GetUartInputEventMsg() {
-    return &_msg_UartInputEvent;
+  return &_msg_UartInputEvent;
 }
