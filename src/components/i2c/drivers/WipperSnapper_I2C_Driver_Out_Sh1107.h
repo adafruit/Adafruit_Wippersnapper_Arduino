@@ -127,12 +127,10 @@ public:
       @param    text_size
                   The magnification factor for the text size.
   */
-  void ConfigureSSD1306(uint8_t width, uint8_t height,
-                                 uint8_t text_size) {
+  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size) {
     // This is a SH1107, not a SSD1306, so we don't need to do anything here.
     ConfigureSH1107(width, height, text_size);
   }
-
 
   /*!
       @brief    Writes a message to the SH1107 display.
@@ -188,7 +186,6 @@ public:
       }
     }
   }
-
 
   /*!
       @brief    Writes a message to the fake "SSD1306" SH1107 display.
