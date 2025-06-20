@@ -902,7 +902,10 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("SH1107 display configured successfully!");
     _drivers_out.push_back(_sh1107);
     WS_DEBUG_PRINTLN("SH1107 display initialized Successfully!");
-  } else if (strcmp("oled128x32wingdefault",
+  } else if (strcmp("oled64x32default", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("oled64x32large", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("oled128x32wingdefault",
                     msgDeviceInitReq->i2c_device_name) == 0 ||
              strcmp("oled128x32winglarge", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
