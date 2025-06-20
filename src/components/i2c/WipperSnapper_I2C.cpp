@@ -881,7 +881,10 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
-  } else if (strcmp("oled128x64wingdefault",
+  } else if (strcmp("oled64x32default", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("oled64x32large", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("oled128x64wingdefault",
                     msgDeviceInitReq->i2c_device_name) == 0 ||
              strcmp("oled128x64winglarge", msgDeviceInitReq->i2c_device_name) ==
                  0) {
