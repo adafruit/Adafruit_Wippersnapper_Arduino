@@ -21,6 +21,7 @@
 GPSController::GPSController() {
   _gps_model = new GPSModel();
   _iface_type = GPS_IFACE_NONE;
+  _driver_type = GPS_DRV_NONE;
 }
 
 /*!
@@ -47,12 +48,93 @@ bool GPSController::SetInterface(UARTHardware *uart_hardware) {
   _uart_hardware = uart_hardware;
   // Determine iface type
   if (_uart_hardware->isHardwareSerial()) {
-    _ada_gps = Adafruit_Gps(_uart_hardware->GetHardwareSerial());
     _iface_type = GPS_IFACE_UART_HW;
   } else if (_uart_hardware->isSoftwareSerial()) {
     _iface_type = GPS_IFACE_UART_SW;
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported UART interface type!");
+    return false;
+  }
+}
+
+/*!
+ * @brief Detects if the GPS module is a MediaTek GPS module by querying its
+ * firmware version.
+ * @returns True if a MediaTek GPS module was detected, False otherwise.
+ */
+bool GPSController::DetectMediatek() {
+  size_t buf_len = 83;  // NMEA sentence length + padding
+  char buffer[buf_len]; // Holds the response from the GPS module, ideally a
+                        // NMEA sentence
+
+  // Query MediaTek firmware version
+  _uart_hardware->GetHardwareSerial()->flush();
+  _uart_hardware->GetHardwareSerial->println(CMD_MTK_QUERY_FW);
+  // Wait for response
+  uint16_t timeout = 1000; // 1 second timeout
+  while (_uart_hardware->GetHardwareSerial()->available() < 100 && timeout--) {
+    delay(1);
+  }
+
+  if (timeout == 0) {
+    // TODO: Remove in production
+    WS_DEBUG_PRINTLN("[gps] ERROR: Timeout from MediaTek GPS module!");
+    return false;
+  }
+
+  // We found a response, let's verify that it's the expected PMTK_DK_RELEASE
+  // command Read out the NMEA sentence string into a buffer
+  for (size_t i = 0; i < buf_len; i++) {
+    buffer[i] = _uart_hardware->GetHardwareSerial()->read();
+  }
+
+  // Compare the first 7 characters to the expected PMTK705 string
+  if (strncmp(buffer, CMD_MTK_QUERY_FW_RESP, 7) != 0) {
+    return false;
+  }
+
+  // Load Adafruit_GPS instance
+  _ada_gps = Adafruit_GPS(_uart_hardware->GetHardwareSerial());
+  if (!_ada_gps.begin(_uart_hardware->GetBaudRate())) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
+    return false;
+  }
+  _driver_type = GPS_DRV_MTK;
+  WS_DEBUG_PRINTLN("[gps] Detected MediaTek GPS module!");
+  return true;
+}
+
+/*!
+ * @brief Queries the GPS driver type by attempting to detect MediaTek or u-blox
+ * GPS modules.
+ * @returns True if the driver type was detected successfully, False otherwise.
+ */
+bool GPSController::QueryDriverType() {
+  WS_DEBUG_PRINTLN("[gps] Attempting to detect GPS driver type...");
+  if (!DetectMediatek()) {
+    WS_DEBUG_PRINTLN("[gps] Failed to detect mediatek module, attempting to "
+                     "detect u-blox GPS module...");
+    // If we didn't detect MediaTek, let's try to detect u-blox
+    // TODO: Implement u-blox detection logic here
+  }
+}
+
+bool GPSController::begin() {
+  if (_iface_type == GPS_IFACE_NONE) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: No interface set for GPS!");
+    return false;
+  }
+
+  if (_iface_type == GPS_IFACE_UART_HW) {
+    // Attempt to detect the hw type from a predefined command set sent over
+    // UART
+    // TODO: Maybe this should be abstracted to a GPS Hardware class but
+    // whatever, for now we'll try this as a MVP approach
+    WS_DEBUG_PRINTLN("[gps] Initializing GPS with Hardware Serial...");
+
+    // return _ada_gps.begin(_uart_hardware->GetBaudRate());
+  } else {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Unimplemented interface type for begin!");
     return false;
   }
 }
@@ -84,24 +166,13 @@ bool GPSController::Handle_GPSConfig(pb_istream_t *stream) {
 }
 
 /*!
- * @brief Checks if the GPS module's interface is available.
- * @returns True if the module's interface is available, False otherwise.
- */
-bool GPSController::IsAvailable() {
-  if (!_uart_hardware == nullptr)
-    return true;
-  WS_DEBUG_PRINTLN("[gps] ERROR: No UART hardware interface set!");
-  return false;
-}
-
-/*!
  * @brief Sends a command to the GPS module.
  * @param command The command to send to the GPS module.
  * @param timeout_ms The timeout in milliseconds for the command to complete.
  *                   Default is 1000 milliseconds.
  * @returns True if the command was sent successfully, False otherwise.
  */
-bool GPSController::Send_Command(const char *command,
+/* bool GPSController::Send_Command(const char *command,
                                  unsigned long timeout_ms) {
   if (!IsAvailable()) {
     WS_DEBUG_PRINTLN("[gps] ERROR: GPS interface is not available!");
@@ -122,7 +193,7 @@ bool GPSController::Send_Command(const char *command,
     WS_DEBUG_PRINTLN(command);
     return false;
   }
-}
+} */
 
 /*!
  * @brief Removes a GPS device by its ID.

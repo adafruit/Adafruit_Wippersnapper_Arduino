@@ -20,6 +20,12 @@
 #include "model.h"
 #include <Adafruit_GPS.h>
 
+#define CMD_MTK_QUERY_FW                                                       \
+  "$PMTK605*31" ///< Request to query MediaTek firmware version
+#define CMD_MTK_QUERY_FW_RESP                                                  \
+  "PMTK705" ///< Response from querying MediaTek firmware version without the
+            ///< ReleaseStr
+
 class Wippersnapper_V2; ///< Forward declaration
 class GPSModel;         ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
@@ -29,7 +35,14 @@ enum GpsInterfaceType {
   GPS_IFACE_UART_HW, ///< UART hardware interface
   GPS_IFACE_UART_SW, ///< UART software interface
   GPS_IFACE_I2C      ///< I2C interface
-};                   ///< Type of interface used by GPS
+}; ///< Type of interface used by GPS
+
+enum GpsDriverType {
+  GPS_DRV_NONE,        ///< No driver/undefined
+  GPS_DRV_MTK,         ///< MediaTek GPS driver
+  GPS_DRV_UBLOX,       ///< u-blox GPS driver
+  GPS_DRV_GENERIC_NMEA ///< Generic NMEA GPS driver
+}; ///< Type of GPS driver used
 
 /*!
     @brief  Routes messages between the GPS.proto API and the hardware.
@@ -38,10 +51,11 @@ class GPSController {
 public:
   GPSController();
   ~GPSController();
-  bool SetInterface(UARTHardware *uart_hardware);
   // TODO: Add I2C interface support via a ctor right here
-  bool GPSController::IsAvailable();
-  bool Send_Command(const char *command, unsigned long timeout_ms = 1000);
+  bool SetInterface(UARTHardware *uart_hardware);
+  bool begin();
+  bool QueryDriverType();
+  bool DetectMediatek();
   bool Handle_GPSConfig(pb_istream_t *stream);
   bool RemoveGPSDevice(const char *id);
   void update();
@@ -50,6 +64,7 @@ private:
   GPSModel *_gps_model;                   ///< GPS model
   UARTHardware *_uart_hardware = nullptr; ///< UART hardware instance for GPS
   GpsInterfaceType _iface_type;           ///< Type of interface used by GPS
+  GpsDriverType _driver_type;             ///< Type of GPS driver used
   Adafruit_GPS _ada_gps = nullptr;        ///< Adafruit GPS instance
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
