@@ -17,7 +17,7 @@
 typedef struct _wippersnapper_gps_GPSConfig {
     /* Baud rate is not included here as it is included in the UartAdd->UartSerialConfig message. */
     pb_size_t commands_count;
-    char commands[16][256]; /* * List of commands to configure the GPS * */
+    char commands[16][90]; /* * List of commands to configure the GPS * */
 } wippersnapper_gps_GPSConfig;
 
 /* * GPSDateTime represents the date and time information from a GPRMC/GPGGA string * */
@@ -161,7 +161,7 @@ extern const pb_msgdesc_t wippersnapper_gps_GPGGAResponse_msg;
 /* Maximum encoded size of messages (where known) */
 #define WIPPERSNAPPER_GPS_GPS_PB_H_MAX_SIZE      wippersnapper_gps_GPSConfig_size
 #define wippersnapper_gps_GPGGAResponse_size     168
-#define wippersnapper_gps_GPSConfig_size         4128
+#define wippersnapper_gps_GPSConfig_size         1456
 #define wippersnapper_gps_GPSDateTime_size       77
 #define wippersnapper_gps_GPSRMCResponse_size    139
 

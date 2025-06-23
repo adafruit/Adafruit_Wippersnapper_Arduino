@@ -22,8 +22,8 @@
 #define CMD_MTK_QUERY_FW                                                       \
   "$PMTK605*31" ///< Request to query MediaTek firmware version
 #define CMD_MTK_QUERY_FW_RESP                                                  \
-  "PMTK705" ///< Response from querying MediaTek firmware version without the
-            ///< ReleaseStr
+  "$PMTK705" ///< Response from querying MediaTek firmware version without the
+             ///< ReleaseStr
 #define MAX_NEMA_SENTENCE_LEN 82 ///< Maximum length of a NMEA sentence
 
 class Wippersnapper_V2; ///< Forward declaration

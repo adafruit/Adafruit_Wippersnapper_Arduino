@@ -24,6 +24,7 @@
 #include "drivers/drvUartUs100.h"
 
 class Wippersnapper_V2; ///< Forward declaration
+class GPSController;
 class UARTModel;        ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
 

@@ -68,18 +68,9 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[uart] UART hardware instance configured successfully!");
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
-  wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
-  WS_DEBUG_PRINT("cfg_device.device_type: ");
-  WS_DEBUG_PRINTLN(cfg_device.device_type);
   drvUartBase *uart_driver = nullptr;
-
-  // tODO: Am seeing an issue where device_id causes a crash
-  // uncomment below:
-  // WS_DEBUG_PRINT("cfg_device.device_id: ");
-  // WS_DEBUG_PRINTLN(cfg_device.device_id);
-
-  /*
-  // TODO: Monday, Crash occurs here, no idea why yet
+  wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
+  GPSController gps; // TODO: This should be a member variable, not a local one
   switch (cfg_device.device_type) {
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
@@ -111,8 +102,26 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     return false;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
     WS_DEBUG_PRINTLN("[uart] GPS device type not implemented!");
-    delete uart_hardware; // cleanup
-    return false;
+    // delete uart_hardware; // cleanup
+    // return false;
+
+    WS_DEBUG_PRINTLN("[uart] Adding GPS device..");
+    if (!gps.SetInterface(uart_hardware)) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to set GPS interface!");
+      delete uart_hardware; // cleanup
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[uart] Initializing GPS device...");
+    if (!gps.begin()) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS device!");
+      delete uart_hardware; // cleanup
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[uart] GPS device initialized successfully!");
+    // TODO: Figure out how to add this to the drivers  list so it can be
+    // queried, also this is sitting on the stack instead of the heap, so it
+    // will be destroyed when this function returns!!!
+    break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
     WS_DEBUG_PRINTLN("[uart] Adding PM2.5 AQI device..");
     // Create a new PM2.5 AQI driver instance
@@ -136,6 +145,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     return false;
   }
 
+  /*
   // Attempt to initialize the UART driver
   if (uart_driver == nullptr) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to create UART driver!");

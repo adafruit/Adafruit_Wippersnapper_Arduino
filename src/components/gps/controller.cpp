@@ -158,10 +158,17 @@ bool GPSController::DetectMediatek() {
   char buffer[buf_len];
   size_t available = _uart_hardware->GetHardwareSerial()->available();
   size_t bytes_to_read = min(available, buf_len - 1);
+  // Print the two out
+  WS_DEBUG_PRINT("[gps] Reading MediaTek GPS response: ");
+  WS_DEBUG_PRINT(available);
+  WS_DEBUG_PRINT(" bytes, reading ");
+  WS_DEBUG_PRINTLN(bytes_to_read);
   for (size_t i = 0; i < bytes_to_read; i++) {
     buffer[i] = _uart_hardware->GetHardwareSerial()->read();
   }
   buffer[bytes_to_read] = '\0';
+  WS_DEBUG_PRINT("[gps] MediaTek GPS response: ");
+  WS_DEBUG_PRINTLN(buffer);
   // Compare the first 7 characters to the expected PMTK705 string
   if (strncmp(buffer, CMD_MTK_QUERY_FW_RESP, 7) != 0) {
     return false;

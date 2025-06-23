@@ -6,7 +6,7 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(wippersnapper_signal_BrokerToDevice, wippersnapper_signal_BrokerToDevice, 4)
+PB_BIND(wippersnapper_signal_BrokerToDevice, wippersnapper_signal_BrokerToDevice, 2)
 
 
 PB_BIND(wippersnapper_signal_DeviceToBroker, wippersnapper_signal_DeviceToBroker, 4)

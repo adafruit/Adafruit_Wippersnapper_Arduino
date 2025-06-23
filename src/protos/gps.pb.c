@@ -6,7 +6,7 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(wippersnapper_gps_GPSConfig, wippersnapper_gps_GPSConfig, 4)
+PB_BIND(wippersnapper_gps_GPSConfig, wippersnapper_gps_GPSConfig, 2)
 
 
 PB_BIND(wippersnapper_gps_GPSDateTime, wippersnapper_gps_GPSDateTime, AUTO)
