@@ -70,7 +70,6 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   drvUartBase *uart_driver = nullptr;
   wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
-  GPSController gps; // TODO: This should be a member variable, not a local one
   switch (cfg_device.device_type) {
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_UNSPECIFIED:
     WS_DEBUG_PRINTLN("[uart] ERROR: Unspecified device type!");
