@@ -68,7 +68,7 @@ public:
   bool begin() {
     // Attempt to create and allocate a SSD1306 obj.
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
-    if (!_display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress))
+    if (!_display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress, false, false))
       return false;
     // Configure the text size and color
     _display->setTextSize(_text_sz);
