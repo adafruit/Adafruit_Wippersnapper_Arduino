@@ -51,7 +51,7 @@ class GPSController {
 public:
   GPSController();
   ~GPSController();
-  bool SetInterface(UARTHardware *uart_hardware);
+  bool SetInterface(HardwareSerial *serial);
   // TODO: Add SetInterface(I2C *_i2c_hardware) for I2C support here!
   bool begin();
   bool QueryModuleType();
@@ -62,11 +62,11 @@ public:
   void update();
 
 private:
-  GPSModel *_gps_model;                   ///< GPS model
-  UARTHardware *_uart_hardware = nullptr; ///< UART hardware instance for GPS
-  GpsInterfaceType _iface_type;           ///< Type of interface used by GPS
-  GpsDriverType _driver_type;             ///< Type of GPS driver used
-  Adafruit_GPS *_ada_gps = nullptr;       ///< Adafruit GPS instance
+  GPSModel *_gps_model;                 ///< GPS model
+  GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
+  GpsDriverType _driver_type;           ///< Type of GPS driver used
+  HardwareSerial *_hw_serial = nullptr; ///< HardwareSerial instance for GPS;
+  Adafruit_GPS *_ada_gps = nullptr;     ///< Adafruit GPS instance
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_CONTROLLER_H

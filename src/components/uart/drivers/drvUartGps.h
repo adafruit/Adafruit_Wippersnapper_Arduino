@@ -72,7 +72,6 @@ public:
   bool begin() override {
     if (_hw_serial == nullptr)
       return false;
-
     _gps = new GPSController();
     // TODO TUES: Note that _hw_serial isnt a pointer to the UARTHardware
     // and instead the raw hw serial. This is fine 

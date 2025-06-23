@@ -43,24 +43,16 @@ GPSController::~GPSController() {
 
 /*!
  * @brief Sets a UART hardware interface for the GPS controller.
- * @param uart_hardware Pointer to the UARTHardware instance.
+ * @param serial
+ *        Pointer to a HardwareSerial instance.
  * @returns True if the interface was set successfully, False otherwise.
  */
-bool GPSController::SetInterface(UARTHardware *uart_hardware) {
-  if (uart_hardware == nullptr) {
-    WS_DEBUG_PRINTLN("[gps] ERROR: Provided UART instance is undefined!");
+bool GPSController::SetInterface(HardwareSerial *serial) {
+  if (serial == nullptr)
     return false;
-  }
-  _uart_hardware = uart_hardware;
-  // Determine iface type
-  if (_uart_hardware->isHardwareSerial()) {
-    _iface_type = GPS_IFACE_UART_HW;
-  } else if (_uart_hardware->isSoftwareSerial()) {
-    _iface_type = GPS_IFACE_UART_SW;
-  } else {
-    WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported UART interface type!");
-    return false;
-  }
+  // Set the hardware serial interface
+  _hw_serial = serial;
+  _iface_type = GPS_IFACE_UART_HW;
   return true;
 }
 
@@ -136,13 +128,11 @@ bool GPSController::DetectMediatek() {
   }
 
   // Query MediaTek firmware version
-  _uart_hardware->GetHardwareSerial()->flush();
-  _uart_hardware->GetHardwareSerial()->println(CMD_MTK_QUERY_FW);
+  _hw_serial->flush();
+  _hw_serial->println(CMD_MTK_QUERY_FW);
   // Wait for response
   uint16_t timeout = 1000; // 1 second timeout
-  while (_uart_hardware->GetHardwareSerial()->available() <
-             MAX_NEMA_SENTENCE_LEN &&
-         timeout--) {
+  while (_hw_serial->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
     delay(1);
   }
 
@@ -156,7 +146,7 @@ bool GPSController::DetectMediatek() {
   // command by reading out the NMEA sentence string into a buffer
   size_t buf_len = MAX_NEMA_SENTENCE_LEN + 3; // +3 for \r\n and null terminator
   char buffer[buf_len];
-  size_t available = _uart_hardware->GetHardwareSerial()->available();
+  size_t available = _hw_serial->available();
   size_t bytes_to_read = min(available, buf_len - 1);
   // Print the two out
   WS_DEBUG_PRINT("[gps] Reading MediaTek GPS response: ");
@@ -164,7 +154,7 @@ bool GPSController::DetectMediatek() {
   WS_DEBUG_PRINT(" bytes, reading ");
   WS_DEBUG_PRINTLN(bytes_to_read);
   for (size_t i = 0; i < bytes_to_read; i++) {
-    buffer[i] = _uart_hardware->GetHardwareSerial()->read();
+    buffer[i] = _hw_serial->read();
   }
   buffer[bytes_to_read] = '\0';
   WS_DEBUG_PRINT("[gps] MediaTek GPS response: ");
@@ -178,8 +168,8 @@ bool GPSController::DetectMediatek() {
   if (_ada_gps != nullptr) {
     delete _ada_gps; // Clean up previous instance if it exists
   }
-  _ada_gps = new Adafruit_GPS(_uart_hardware->GetHardwareSerial());
-  if (!_ada_gps->begin(_uart_hardware->GetBaudRate())) {
+  _ada_gps = new Adafruit_GPS(_hw_serial);
+  if (!_ada_gps->begin(_hw_serial->baudRate())) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
     return false;
   }
