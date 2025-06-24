@@ -68,8 +68,14 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() {
-    // Attempt to create and allocate a SH1107 obj, backwards w/h
-    _display = new Adafruit_SH1107(_height, _width, _i2c);
+    uint8_t rotation = 0;  // Default rotation
+    // Attempt to create and allocate a SH1107 obj
+    if (_width == 128 && _height == 64) {  // featherwing
+      _display = new Adafruit_SH1107(_height, _width, _i2c);
+      rotation = 1;  // Set rotation to 1 for 128x64 OLED featherwing
+    } else {
+      _display = new Adafruit_SH1107(_width, _height, _i2c);
+    }
     if (!_display->begin(_sensorAddress, true))
       return false;
 
@@ -82,7 +88,7 @@ public:
     // Clear the buffer.
     _display->clearDisplay();
     _display->display();
-    _display->setRotation(1);
+    _display->setRotation(rotation);
 
     // Configure the text size and color
     _display->setTextSize(_text_sz);
