@@ -58,8 +58,6 @@ public:
   bool DetectMediatek();
   // Protobuf API methods
   bool Handle_GPSConfig(pb_istream_t *stream);
-  bool RemoveGPSDevice(const char *id);
-  void update();
 
 private:
   GPSModel *_gps_model;                 ///< GPS model

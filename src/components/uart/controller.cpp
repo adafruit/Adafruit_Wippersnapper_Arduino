@@ -247,7 +247,6 @@ bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
 void UARTController::update() {
   if (_uart_drivers.empty())
     return; // bail-out
-  WS_DEBUG_PRINTLN("[uart] Polling UART drivers for events...");
 
   for (drvUartBase *drv : _uart_drivers) {
 

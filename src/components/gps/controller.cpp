@@ -42,6 +42,43 @@ GPSController::~GPSController() {
 }
 
 /*!
+ * @brief Handles a GPSConfig message from the protobuf stream.
+ * @param stream
+ *        Pointer to a pb_istream_t object.
+ * @returns True if the message was handled successfully, False otherwise.
+ */
+bool GPSController::Handle_GPSConfig(pb_istream_t *stream) {
+  // Attempt to decode the GPSConfig message
+  WS_DEBUG_PRINTLN("[gps] Decoding GPSConfig message...");
+  if (!_gps_model->DecodeGPSConfig(stream)) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to decode GPSConfig message!");
+    return false;
+  }
+  WS_DEBUG_PRINTLN("[gps] GPSConfig message decoded successfully!");
+
+  if (_driver_type == GPS_DRV_MTK) {
+    // handle commands for mtk driver
+    WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
+    wippersnapper_gps_GPSConfig *gps_config = _gps_model->GetGPSConfigMsg();
+    if (gps_config == nullptr) {
+      WS_DEBUG_PRINTLN("[gps] ERROR: No GPSConfig message found!");
+      return false;
+    }
+    // Iterate through the commands and send them to the GPS module
+    for (size_t i = 0; i < gps_config->commands_count; i++) {
+      WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
+      WS_DEBUG_PRINTLN(gps_config->commands[i]);
+      _ada_gps->sendCommand(gps_config->commands[i]);
+    }
+  } else {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
+    return false;
+  }
+
+  return true;
+}
+
+/*!
  * @brief Sets a UART hardware interface for the GPS controller.
  * @param serial
  *        Pointer to a HardwareSerial instance.
