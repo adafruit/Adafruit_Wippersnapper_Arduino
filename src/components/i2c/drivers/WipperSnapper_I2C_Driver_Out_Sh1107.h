@@ -134,10 +134,13 @@ public:
                   The height of the display in pixels.
       @param    text_size
                   The magnification factor for the text size.
+      @param    rotation
+                  The rotation of the display in degrees, default is 0 (no rotation).
   */
-  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size) {
+  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size,
+                        uint8_t rotation = 0) {
     // This is a SH1107, not a SSD1306, so we don't need to do anything here.
-    ConfigureSH1107(width, height, text_size);
+    ConfigureSH1107(width, height, text_size, rotation);
   }
 
   /*!
