@@ -47,28 +47,29 @@ GPSController::~GPSController() {
  *        Pointer to a pb_istream_t object.
  * @returns True if the message was handled successfully, False otherwise.
  */
-bool GPSController::Handle_GPSConfig(pb_istream_t *stream) {
+bool GPSController::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
   // Attempt to decode the GPSConfig message
-  WS_DEBUG_PRINTLN("[gps] Decoding GPSConfig message...");
-  if (!_gps_model->DecodeGPSConfig(stream)) {
-    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to decode GPSConfig message!");
-    return false;
-  }
-  WS_DEBUG_PRINTLN("[gps] GPSConfig message decoded successfully!");
-
   if (_driver_type == GPS_DRV_MTK) {
     // handle commands for mtk driver
     WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
-    wippersnapper_gps_GPSConfig *gps_config = _gps_model->GetGPSConfigMsg();
     if (gps_config == nullptr) {
       WS_DEBUG_PRINTLN("[gps] ERROR: No GPSConfig message found!");
       return false;
     }
-    // Iterate through the commands and send them to the GPS module
+    // Iterate through the command sentences and send them to the GPS module
     for (size_t i = 0; i < gps_config->commands_count; i++) {
       WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
       WS_DEBUG_PRINTLN(gps_config->commands[i]);
+      _hw_serial->flush(); // Flush the serial buffer before sending
+      // Send the command to the GPS module
       _ada_gps->sendCommand(gps_config->commands[i]);
+      // and wait for the corresponding response from the GPS module
+      if (!_ada_gps->waitForSentence(gps_config->responses[i])) {
+        WS_DEBUG_PRINT(
+            "[gps] ERROR: Failed to get response from MediaTek for cmd:");
+        WS_DEBUG_PRINTLN(gps_config->commands[i]);
+        return false;
+      }
     }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
@@ -168,7 +169,7 @@ bool GPSController::DetectMediatek() {
   _hw_serial->flush();
   _hw_serial->println(CMD_MTK_QUERY_FW);
   // Wait for response
-  uint16_t timeout = 1000; // 1 second timeout
+  uint16_t timeout = 2000; // 1 second timeout
   while (_hw_serial->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
     delay(1);
   }
@@ -181,7 +182,7 @@ bool GPSController::DetectMediatek() {
 
   // We found a response, let's verify that it's the expected PMTK_DK_RELEASE
   // command by reading out the NMEA sentence string into a buffer
-  size_t buf_len = MAX_NEMA_SENTENCE_LEN + 3; // +3 for \r\n and null terminator
+  size_t buf_len = MAX_NEMA_SENTENCE_LEN * 4; // +3 for \r\n and null terminator
   char buffer[buf_len];
   size_t available = _hw_serial->available();
   size_t bytes_to_read = min(available, buf_len - 1);

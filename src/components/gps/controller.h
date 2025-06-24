@@ -57,7 +57,7 @@ public:
   bool QueryModuleType();
   bool DetectMediatek();
   // Protobuf API methods
-  bool Handle_GPSConfig(pb_istream_t *stream);
+  bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
 
 private:
   GPSModel *_gps_model;                 ///< GPS model

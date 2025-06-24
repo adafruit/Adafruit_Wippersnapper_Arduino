@@ -152,6 +152,13 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     did_begin = drv_uart_gps->begin();
     if (did_begin) {
       WS_DEBUG_PRINTLN("[uart] GPS controller initialized successfully!");
+      WS_DEBUG_PRINTLN("[uart] Sending commands...");
+      if (!drv_uart_gps->Handle_GPSConfig(&cfg_device.config.gps)) {
+        WS_DEBUG_PRINTLN("[uart] ERROR: Failed to handle GPS config!");
+        delete drv_uart_gps; // cleanup
+        return false;
+      }
+      WS_DEBUG_PRINTLN("[uart] GPS config handled successfully!");
       _uart_drivers_gps.push_back(drv_uart_gps);
     } else {
       WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS controller!");
