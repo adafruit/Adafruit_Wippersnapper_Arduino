@@ -22,12 +22,11 @@
 #include "drivers/drvUartBase.h"
 #include "drivers/drvUartPm25.h"
 #include "drivers/drvUartUs100.h"
-#include "drivers/drvUartGps.h"
 
 class Wippersnapper_V2; ///< Forward declaration
-class GPSController;
 class UARTModel;        ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
+class GPSController;    ///< Forward declaration
 
 /*!
     @brief  Routes messages between the uart.proto API and the hardware.
@@ -49,6 +48,7 @@ private:
       _uart_ports; ///< Vector of UART hardware instances
   std::vector<drvUartBase *>
       _uart_drivers; ///< Vector of UART device drivers (eg: PM2.5, etc.)
+  std::vector<GPSController *> _uart_drivers_gps; ///< Vector of GPS device drivers (eg: Adafruit GPS, etc.)
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_UART_CONTROLLER_H

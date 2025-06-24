@@ -69,6 +69,8 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
   drvUartBase *uart_driver = nullptr;
+  GPSController *drv_uart_gps = nullptr;
+  bool is_gps_drv = false;
   wippersnapper_uart_UartDeviceConfig cfg_device = add_msg->cfg_device;
   switch (cfg_device.device_type) {
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_UNSPECIFIED:
@@ -101,17 +103,11 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     return false;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
     WS_DEBUG_PRINTLN("[uart] GPS device type not implemented!");
-    uart_driver = new drvUartGps(uart_hardware->GetHardwareSerial(),
-                                 cfg_device.device_id, cfg_serial.uart_nbr);
-    // todo: set events, set period, configure gps via messages functionality
-    // etc
-    if (!uart_driver->begin()) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS driver!");
-      delete uart_driver;
-      delete uart_hardware;
-      return false;
-    }
+    // Create a new GPS driver instance
+    drv_uart_gps = new GPSController();
+    drv_uart_gps->SetInterface(uart_hardware->GetHardwareSerial());
     WS_DEBUG_PRINTLN("[uart] GPS driver initialized successfully!");
+    is_gps_drv = true; // mark as GPS driver
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
     WS_DEBUG_PRINTLN("[uart] Adding PM2.5 AQI device..");
@@ -137,27 +133,31 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   }
 
   // Attempt to initialize the UART driver
-  if (uart_driver == nullptr) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to create UART driver!");
-    delete uart_hardware; // cleanup
-    return false;
-  }
-
   bool did_begin = false;
-  did_begin = uart_driver->begin();
-  if (!did_begin) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
-    delete uart_driver; // cleanup
+  WS_DEBUG_PRINTLN("[uart] Initializing UART driver...");
+  if (!is_gps_drv) {
+    WS_DEBUG_PRINTLN("[uart] STD UART drv...");
+    did_begin = uart_driver->begin();
+    if (did_begin) {
+      WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
+      _uart_drivers.push_back(uart_driver);
+    } else {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
+      delete uart_driver; // cleanup
+      return false;
+    }
   } else {
-    WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
-    _uart_drivers.push_back(uart_driver);
-  }
-
-  // Check if we have a valid driver
-  if (uart_driver == nullptr) {
-    WS_DEBUG_PRINTLN("[uart] ERROR: No UART driver was created!");
-    delete uart_hardware; // cleanup
-    return false;
+    // If a GPS driver, initialize the GPS controller
+    WS_DEBUG_PRINTLN("[uart] GPS drv...");
+    did_begin = drv_uart_gps->begin();
+    if (did_begin) {
+      WS_DEBUG_PRINTLN("[uart] GPS controller initialized successfully!");
+      _uart_drivers_gps.push_back(drv_uart_gps);
+    } else {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS controller!");
+      delete drv_uart_gps; // cleanup
+      return false;
+    }
   }
 
   // Are we in offline mode?
@@ -165,18 +165,22 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     return true; // Don't publish to IO in offline mode
 
   // Encode and publish out to Adafruit IO
+  WS_DEBUG_PRINTLN("[uart] Encoding UartAdded message...");
   if (!_uart_model->EncodeUartAdded(uart_hardware->GetBusNumber(),
                                     cfg_device.device_type,
                                     cfg_device.device_id, did_begin)) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartAdded message!");
     return false;
   }
+  WS_DEBUG_PRINTLN("[uart] UartAdded message encoded successfully!");
 
+  WS_DEBUG_PRINTLN("[uart] Publishing UartAdded message to IO...");
   if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
                           _uart_model->GetUartAddedMsg())) {
     WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to IO!");
     return false;
   }
+  WS_DEBUG_PRINTLN("[uart] UartAdded message published successfully!");
 
   return true;
 }
@@ -243,6 +247,7 @@ bool UARTController::Handle_UartWrite(pb_istream_t *stream) {
 void UARTController::update() {
   if (_uart_drivers.empty())
     return; // bail-out
+  WS_DEBUG_PRINTLN("[uart] Polling UART drivers for events...");
 
   for (drvUartBase *drv : _uart_drivers) {
 
