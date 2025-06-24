@@ -893,8 +893,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
         (uint8_t)
             msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size,
-        90);  // fixed as currently the only screen is 128x64 featherwing which
-              // needs a rotation of 1 / 90degrees, and constructor w/h swap.
+        90); // fixed as currently the only screen is 128x64 featherwing which
+             // needs a rotation of 1 / 90degrees, and constructor w/h swap.
     if (!_sh1107->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize sh1107!");
       _busStatusResponse =
@@ -928,7 +928,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
         (uint8_t)
             msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size,
-        0);  // TODO: add rotation to protobuf and IO UI for adapted max len
+        0); // TODO: add rotation to protobuf and IO UI for adapted max len
     if (!_ssd1306->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize ssd1306!");
       _busStatusResponse =

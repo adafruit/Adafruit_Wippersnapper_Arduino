@@ -86,7 +86,7 @@ public:
     // Clear the buffer.
     _display->clearDisplay();
     _display->display();
-    _display->setRotation(_rotation);  // 0-3, not degrees for SH1107
+    _display->setRotation(_rotation); // 0-3, not degrees for SH1107
 
     // Configure the text size and color
     _display->setTextSize(_text_sz);
@@ -114,7 +114,7 @@ public:
       @param    text_size
                   The magnification factor for the text size.
       @param    rotation
-                  The rotation of the display in degrees, default is 0 (no rotation).
+                  The rotation of the display in degrees, default is 0.
   */
   void ConfigureSH1107(uint8_t width, uint8_t height, uint8_t text_size,
                        uint8_t rotation) {
@@ -135,7 +135,7 @@ public:
       @param    text_size
                   The magnification factor for the text size.
       @param    rotation
-                  The rotation of the display in degrees, default is 0 (no rotation).
+                  The rotation of the display in degrees, default is 0.
   */
   void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size,
                         uint8_t rotation = 0) {
@@ -209,12 +209,12 @@ public:
   }
 
 protected:
- Adafruit_SH1107 *_display =
-     nullptr;        ///< Pointer to the Adafruit_SH1107 object
- uint8_t _width;     ///< Width of the display in pixels
- uint8_t _height;    ///< Height of the display in pixels
- uint8_t _rotation;  ///< Rotation of the display (0-3)
- uint8_t _text_sz;   ///< Text size of the display
+  Adafruit_SH1107 *_display =
+      nullptr;       ///< Pointer to the Adafruit_SH1107 object
+  uint8_t _width;    ///< Width of the display in pixels
+  uint8_t _height;   ///< Height of the display in pixels
+  uint8_t _rotation; ///< Rotation of the display (0-3)
+  uint8_t _text_sz;  ///< Text size of the display
 };
 
 #endif // WIPPERSNAPPER_I2C_DRIVER_OUT_SH1107_H

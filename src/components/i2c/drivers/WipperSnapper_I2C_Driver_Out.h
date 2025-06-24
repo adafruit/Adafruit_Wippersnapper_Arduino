@@ -63,7 +63,7 @@ public:
       @param    text_size
                   The display's text size.
       @param    rotation
-                  The rotation of the display in degrees, default is 0 (no rotation).
+                  The rotation of the display in degrees, default is 0.
   */
   virtual void ConfigureSSD1306(uint8_t width, uint8_t height,
                                 uint8_t text_size, uint8_t rotation = 0) {
