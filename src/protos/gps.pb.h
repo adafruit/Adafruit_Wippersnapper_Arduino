@@ -18,6 +18,7 @@ typedef struct _wippersnapper_gps_GPSConfig {
     /* Baud rate is not included here as it is included in the UartAdd->UartSerialConfig message. */
     pb_size_t commands_count;
     char commands[16][90]; /* * List of commands to configure the GPS * */
+    int32_t period; /* * The period to poll the GPS module, in milliseconds */
 } wippersnapper_gps_GPSConfig;
 
 /* * GPSDateTime represents the date and time information from a GPRMC/GPGGA string * */
@@ -65,17 +66,18 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define wippersnapper_gps_GPSConfig_init_default {0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
+#define wippersnapper_gps_GPSConfig_init_default {0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}, 0}
 #define wippersnapper_gps_GPSDateTime_init_default {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", "", "", ""}
 #define wippersnapper_gps_GPGGAResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", 0, 0, "", "", ""}
-#define wippersnapper_gps_GPSConfig_init_zero    {0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
+#define wippersnapper_gps_GPSConfig_init_zero    {0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}, 0}
 #define wippersnapper_gps_GPSDateTime_init_zero  {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_zero {false, wippersnapper_gps_GPSDateTime_init_zero, "", "", "", "", "", "", ""}
 #define wippersnapper_gps_GPGGAResponse_init_zero {false, wippersnapper_gps_GPSDateTime_init_zero, "", "", "", "", 0, 0, "", "", ""}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_gps_GPSConfig_commands_tag 1
+#define wippersnapper_gps_GPSConfig_period_tag   2
 #define wippersnapper_gps_GPSDateTime_hour_tag   1
 #define wippersnapper_gps_GPSDateTime_minute_tag 2
 #define wippersnapper_gps_GPSDateTime_seconds_tag 3
@@ -104,7 +106,8 @@ extern "C" {
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_gps_GPSConfig_FIELDLIST(X, a) \
-X(a, STATIC,   REPEATED, STRING,   commands,          1)
+X(a, STATIC,   REPEATED, STRING,   commands,          1) \
+X(a, STATIC,   SINGULAR, INT32,    period,            2)
 #define wippersnapper_gps_GPSConfig_CALLBACK NULL
 #define wippersnapper_gps_GPSConfig_DEFAULT NULL
 
@@ -161,7 +164,7 @@ extern const pb_msgdesc_t wippersnapper_gps_GPGGAResponse_msg;
 /* Maximum encoded size of messages (where known) */
 #define WIPPERSNAPPER_GPS_GPS_PB_H_MAX_SIZE      wippersnapper_gps_GPSConfig_size
 #define wippersnapper_gps_GPGGAResponse_size     168
-#define wippersnapper_gps_GPSConfig_size         1456
+#define wippersnapper_gps_GPSConfig_size         1467
 #define wippersnapper_gps_GPSDateTime_size       77
 #define wippersnapper_gps_GPSRMCResponse_size    139
 
