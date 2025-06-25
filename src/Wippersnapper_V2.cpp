@@ -1374,5 +1374,8 @@ ws_status_t Wippersnapper_V2::run() {
   // Process UART driver events
   WsV2._uart_controller->update();
 
+  // Process GPS controller events
+  WsV2._gps_controller->update();
+
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

@@ -53,6 +53,10 @@ public:
   ~GPSHardware();
   bool begin();
   bool SetInterface(HardwareSerial *serial);
+  void SetPollPeriod(ulong poll_period);
+  void SetPollPeriodPrv(ulong poll_period_prv);
+  ulong GetPollPeriod();
+  ulong GetPollPeriodPrv();
   // TODO: Add SetInterface(I2C *_i2c_hardware) for I2C support here!
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
 
@@ -64,6 +68,10 @@ private:
   GpsDriverType _driver_type;           ///< Type of GPS driver used
   HardwareSerial *_hw_serial = nullptr; ///< HardwareSerial instance for GPS;
   Adafruit_GPS *_ada_gps = nullptr;     ///< Adafruit GPS instance
+  ulong _period;     ///< Polling period for GPS data (Specified by IO), in
+                     ///< milliseconds
+  ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in
+                     ///< milliseconds
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_HARDWARE_H

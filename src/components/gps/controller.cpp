@@ -59,7 +59,23 @@ bool GPSController::AddGPS(HardwareSerial *serial,
     return false;
   }
 
-  _gps_hardware.push_back(gps_hw);
+  _gps_drivers.push_back(gps_hw);
   WS_DEBUG_PRINTLN("[gps] GPS hardware added successfully!");
   return true;
+}
+
+/*!
+ * @brief Updates the GPSController, polling the GPS hardware for data.
+ * This function checks if the read period has elapsed and processes the GPS
+ * data accordingly.
+ */
+void GPSController::update() {
+  if (_gps_drivers.empty())
+    return; // bail-out!
+
+  for (GPSHardware *drv : _gps_drivers) {
+
+    // Did read period elapse?
+    ulong cur_time = millis();
+  }
 }

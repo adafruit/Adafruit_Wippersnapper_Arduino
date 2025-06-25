@@ -225,3 +225,31 @@ bool GPSHardware::BuildPmtkAck(char *msg_cmd, char *msg_resp) {
   _ada_gps->addChecksum(msg_resp);
   return true;
 }
+
+/*!
+ * @brief Sets the polling period for GPS data.
+ * @param poll_period
+ *        The polling period in milliseconds.
+ */
+void GPSHardware::SetPollPeriod(ulong poll_period) { _period = poll_period; }
+
+/*!
+ * @brief Sets the previous polling period for GPS data.
+ * @param poll_period_prv
+ *        The previous polling period in milliseconds.
+ */
+void GPSHardware::SetPollPeriodPrv(ulong poll_period_prv) {
+  _period_prv = poll_period_prv;
+}
+
+/*!
+ * @brief Gets the current polling period for GPS data.
+ * @returns The polling period in milliseconds.
+ */
+ulong GPSHardware::GetPollPeriod() { return _period; }
+
+/*!
+ * @brief Gets the previous polling period for GPS data.
+ * @returns The previous polling period in milliseconds.
+ */
+ulong GPSHardware::GetPollPeriodPrv() { return _period_prv; }

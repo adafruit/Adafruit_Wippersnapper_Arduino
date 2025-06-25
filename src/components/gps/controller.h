@@ -32,11 +32,11 @@ public:
   GPSController();
   ~GPSController();
   bool AddGPS(HardwareSerial *serial, wippersnapper_gps_GPSConfig *gps_config);
+  void update();
 
 private:
-  GPSModel *_gps_model; ///< GPS model instance
-  std::vector<GPSHardware *>
-      _gps_hardware; ///< Vector of GPS hardware instances
+  GPSModel *_gps_model;                    ///< GPS model instance
+  std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_CONTROLLER_H
