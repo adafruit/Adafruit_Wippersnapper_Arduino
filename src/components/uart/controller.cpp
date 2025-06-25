@@ -102,10 +102,14 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     delete uart_hardware; // cleanup
     return false;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
-    // Create a new GPS driver instance
-    drv_uart_gps = new GPSController();
-    drv_uart_gps->SetInterface(uart_hardware->GetHardwareSerial());
-    WS_DEBUG_PRINTLN("[uart] GPS driver initialized successfully!");
+    WS_DEBUG_PRINTLN("[uart] Adding GPS device..");
+    if (!WsV2._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
+                                      &cfg_device.config.gps)) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS device!");
+      delete uart_hardware; // cleanup
+      return false;
+    }
+    WS_DEBUG_PRINTLN("[uart] Added GPS driver!");
     is_gps_drv = true; // mark as GPS driver
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI:
@@ -143,25 +147,6 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     } else {
       WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize UART driver!");
       delete uart_driver; // cleanup
-      return false;
-    }
-  } else {
-    // If a GPS driver, initialize the GPS controller
-    WS_DEBUG_PRINTLN("[uart] GPS drv...");
-    did_begin = drv_uart_gps->begin();
-    if (did_begin) {
-      WS_DEBUG_PRINTLN("[uart] GPS controller initialized successfully!");
-      WS_DEBUG_PRINTLN("[uart] Sending commands...");
-      if (!drv_uart_gps->Handle_GPSConfig(&cfg_device.config.gps)) {
-        WS_DEBUG_PRINTLN("[uart] ERROR: Failed to handle GPS config!");
-        delete drv_uart_gps; // cleanup
-        return false;
-      }
-      WS_DEBUG_PRINTLN("[uart] GPS config handled successfully!");
-      _uart_drivers_gps.push_back(drv_uart_gps);
-    } else {
-      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS controller!");
-      delete drv_uart_gps; // cleanup
       return false;
     }
   }

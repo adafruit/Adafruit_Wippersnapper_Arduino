@@ -16,33 +16,13 @@
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
 #include "Wippersnapper_V2.h"
+#include "hardware.h"
 #include "model.h"
 #include <Adafruit_GPS.h>
 
-#define CMD_MTK_QUERY_FW                                                       \
-  "$PMTK605*31" ///< Request to query MediaTek firmware version
-#define CMD_MTK_QUERY_FW_RESP                                                  \
-  "$PMTK705" ///< Response from querying MediaTek firmware version without the
-             ///< ReleaseStr
-#define MAX_NEMA_SENTENCE_LEN 82 ///< Maximum length of a NMEA sentence
-
 class Wippersnapper_V2; ///< Forward declaration
 class GPSModel;         ///< Forward declaration
-class UARTHardware;     ///< Forward declaration
-
-enum GpsInterfaceType {
-  GPS_IFACE_NONE,    ///< No interface/undefined
-  GPS_IFACE_UART_HW, ///< UART hardware interface
-  GPS_IFACE_UART_SW, ///< UART software interface
-  GPS_IFACE_I2C      ///< I2C interface
-}; ///< Type of interface used by GPS
-
-enum GpsDriverType {
-  GPS_DRV_NONE,        ///< No driver/undefined
-  GPS_DRV_MTK,         ///< MediaTek GPS driver
-  GPS_DRV_UBLOX,       ///< u-blox GPS driver
-  GPS_DRV_GENERIC_NMEA ///< Generic NMEA GPS driver
-}; ///< Type of GPS driver used
+class GPSHardware;      ///< Forward declaration
 
 /*!
     @brief  Routes messages between the GPS.proto API and the hardware.
@@ -51,21 +31,12 @@ class GPSController {
 public:
   GPSController();
   ~GPSController();
-  bool SetInterface(HardwareSerial *serial);
-  // TODO: Add SetInterface(I2C *_i2c_hardware) for I2C support here!
-  bool begin();
-  bool QueryModuleType();
-  bool DetectMediatek();
-  bool BuildPmtkAck(char *msg_cmd, char *msg_resp);
-  // Protobuf API methods
-  bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
+  bool AddGPS(HardwareSerial *serial, wippersnapper_gps_GPSConfig *gps_config);
 
 private:
-  GPSModel *_gps_model;                 ///< GPS model
-  GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
-  GpsDriverType _driver_type;           ///< Type of GPS driver used
-  HardwareSerial *_hw_serial = nullptr; ///< HardwareSerial instance for GPS;
-  Adafruit_GPS *_ada_gps = nullptr;     ///< Adafruit GPS instance
+  GPSModel *_gps_model; ///< GPS model instance
+  std::vector<GPSHardware *>
+      _gps_hardware; ///< Vector of GPS hardware instances
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_CONTROLLER_H
