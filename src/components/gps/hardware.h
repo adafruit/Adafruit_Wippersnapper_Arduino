@@ -22,7 +22,9 @@
 #define CMD_MTK_QUERY_FW_RESP                                                  \
   "$PMTK705" ///< Response from querying MediaTek firmware version without the
              ///< ReleaseStr
-#define MAX_NEMA_SENTENCE_LEN 82 ///< Maximum length of a NMEA sentence
+#define DEFAULT_MTK_NMEA_UPDATE_RATE 1  ///< Default NMEA update rate in Hz
+#define DEFAULT_MTK_NMEA_BAUD_RATE 9600 ///< Default NMEA baud rate in bits per
+#define MAX_NEMA_SENTENCE_LEN 82        ///< Maximum length of a NMEA sentence
 
 class Wippersnapper_V2; ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
@@ -57,8 +59,13 @@ public:
   void SetPollPeriodPrv(ulong poll_period_prv);
   ulong GetPollPeriod();
   ulong GetPollPeriodPrv();
+  void SetNmeaUpdateRate(int nmea_update_rate);
+  int GetNmeaUpdateRate();
+  void SetNmeaBaudRate(int nmea_baud_rate);
+  int GetNmeaBaudRate();
   // TODO: Add SetInterface(I2C *_i2c_hardware) for I2C support here!
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
+  Adafruit_GPS *GetAdaGps();
 
 private:
   bool QueryModuleType();
@@ -68,10 +75,12 @@ private:
   GpsDriverType _driver_type;           ///< Type of GPS driver used
   HardwareSerial *_hw_serial = nullptr; ///< HardwareSerial instance for GPS;
   Adafruit_GPS *_ada_gps = nullptr;     ///< Adafruit GPS instance
-  ulong _period;     ///< Polling period for GPS data (Specified by IO), in
-                     ///< milliseconds
-  ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in
-                     ///< milliseconds
+  ulong _period;         ///< Polling period for GPS data (Specified by IO), in
+                         ///< milliseconds
+  ulong _period_prv;     ///< Previous period for GPS data (Specified by IO), in
+                         ///< milliseconds
+  int _nmea_update_rate; ///< NMEA update rate for GPS data, in Hz
+  int _nmea_baud_rate;   ///< NMEA baud rate for GPS data, in bits per second
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_HARDWARE_H

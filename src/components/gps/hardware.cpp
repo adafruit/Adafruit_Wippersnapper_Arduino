@@ -40,6 +40,12 @@ GPSHardware::~GPSHardware() {
  * @returns True if the message was handled successfully, False otherwise.
  */
 bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
+  WS_DEBUG_PRINTLN("[gps] Handling GPSConfig message...");
+  if (gps_config == nullptr)
+    return false;
+  // Set the polling period for GPS data
+  SetPollPeriod(gps_config->period);
+
   // Attempt to decode the GPSConfig message
   if (_driver_type == GPS_DRV_MTK) {
     WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
@@ -206,6 +212,8 @@ bool GPSHardware::DetectMediatek() {
     return false;
   }
   _driver_type = GPS_DRV_MTK;
+  _nmea_baud_rate = DEFAULT_MTK_NMEA_BAUD_RATE;
+  _nmea_update_rate = DEFAULT_MTK_NMEA_UPDATE_RATE;
   return true;
 }
 
@@ -231,7 +239,13 @@ bool GPSHardware::BuildPmtkAck(char *msg_cmd, char *msg_resp) {
  * @param poll_period
  *        The polling period in milliseconds.
  */
-void GPSHardware::SetPollPeriod(ulong poll_period) { _period = poll_period; }
+void GPSHardware::SetPollPeriod(ulong poll_period) {
+  if (poll_period < 0) {
+    _period = 0;
+    return;
+  }
+  _period = (unsigned long)(poll_period * 1000.0f);
+}
 
 /*!
  * @brief Sets the previous polling period for GPS data.
@@ -253,3 +267,39 @@ ulong GPSHardware::GetPollPeriod() { return _period; }
  * @returns The previous polling period in milliseconds.
  */
 ulong GPSHardware::GetPollPeriodPrv() { return _period_prv; }
+
+/*!
+ * @brief Returns the Adafruit_GPS instance.
+ * @returns Pointer to the Adafruit_GPS instance.
+ */
+Adafruit_GPS *GPSHardware::GetAdaGps() { return _ada_gps; }
+
+/*!
+ * @brief Sets the NMEA update rate for GPS data.
+ * @param nmea_update_rate
+ *        The NMEA update rate, in Hz.
+ */
+void GPSHardware::SetNmeaUpdateRate(int nmea_update_rate) {
+  _nmea_update_rate = nmea_update_rate;
+}
+
+/*!
+ * @brief Returns the NMEA port update rate for GPS data.
+ * @returns The NMEA update rate, in Hz.
+ */
+int GPSHardware::GetNmeaUpdateRate() { return _nmea_update_rate; }
+
+/*!
+ * @brief Sets the NMEA baud rate for GPS data.
+ * @param nmea_baud_rate
+ *        The NMEA baud rate, in bits per second.
+ */
+void GPSHardware::SetNmeaBaudRate(int nmea_baud_rate) {
+  _nmea_baud_rate = nmea_baud_rate;
+}
+
+/*!
+ * @brief Returns the NMEA port baud rate for GPS data.
+ * @returns The NMEA baud rate, in bits per second.
+ */
+int GPSHardware::GetNmeaBaudRate() { return _nmea_baud_rate; }

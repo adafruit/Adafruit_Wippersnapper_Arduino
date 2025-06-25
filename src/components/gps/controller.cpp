@@ -77,5 +77,28 @@ void GPSController::update() {
 
     // Did read period elapse?
     ulong cur_time = millis();
+    if (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod())
+      continue; // Not yet elapsed, skip this driver
+
+    // Discard the GPS buffer before we attempt to do a fresh read
+    size_t bytes_avail = drv->GetAdaGps()->available();
+    if (bytes_avail > 0) {
+      // TODO: Remove these two WS_DEBUG_PRINTs!
+      WS_DEBUG_PRINT("[gps] Discarding GPS data: ");
+      WS_DEBUG_PRINTLN(bytes_avail);
+      // Read the available data from the GPS module
+      // and discard it
+      for (size_t i = 0; i < bytes_avail; i++) {
+        drv->GetAdaGps()->read();
+      }
+    }
+
+    // Unset the received flag
+    if (drv->GetAdaGps()->newNMEAreceived()) {
+      drv->GetAdaGps()->lastNMEA();
+    }
+
+    // Let's attempt to get a sentence from the GPS module
+    // TODO: Are we expecting RMC, GGA, or other sentences?
+    // TODO: Use a timeout for the read here
   }
-}
