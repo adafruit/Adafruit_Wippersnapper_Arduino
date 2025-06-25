@@ -60,11 +60,28 @@ bool GPSController::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
     for (size_t i = 0; i < gps_config->commands_count; i++) {
       WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
       WS_DEBUG_PRINTLN(gps_config->commands[i]);
-      _hw_serial->flush(); // Flush the serial buffer before sending
+
+      // Build the ACK command
+      // first, strip out the command number only from the command string
+      int cmd_num = 0;
+      if (sscanf(gps_config->commands[i], "$PMTK%d", &cmd_num) == 1) {
+        WS_DEBUG_PRINT("[gps] Command number extracted: ");
+        WS_DEBUG_PRINTLN(cmd_num);
+      } else {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to extract command number!");
+        return false;
+      }
+      char cmd_resp[255];
+      snprintf(cmd_resp, sizeof(cmd_resp), "$PMTK001,%d,3", cmd_num);
+      _ada_gps->addChecksum(cmd_resp);
+      WS_DEBUG_PRINT("[gps] ACK command w/checksum: ");
+      WS_DEBUG_PRINTLN(cmd_resp);
+
       // Send the command to the GPS module
+      _hw_serial->flush(); // Flush the serial buffer before sending
       _ada_gps->sendCommand(gps_config->commands[i]);
       // and wait for the corresponding response from the GPS module
-      if (!_ada_gps->waitForSentence(gps_config->responses[i])) {
+      if (!_ada_gps->waitForSentence(cmd_resp)) {
         WS_DEBUG_PRINT(
             "[gps] ERROR: Failed to get response from MediaTek for cmd:");
         WS_DEBUG_PRINTLN(gps_config->commands[i]);
