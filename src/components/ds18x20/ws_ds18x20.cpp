@@ -116,8 +116,7 @@ bool ws_ds18x20::addDS18x20(
   pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_Ds18x20Response_fields,
                       &msgInitResp);
   WS_DEBUG_PRINT("-> DS18x Init Response...");
-  WS._mqtt->publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz,
-                    1);
+  WS.publish(WS._topic_signal_ds18_device, WS._buffer_outgoing, msgSz, 1);
   WS_DEBUG_PRINTLN("Published!");
 
   return is_success;
@@ -294,7 +293,7 @@ void ws_ds18x20::update() {
                               wippersnapper_signal_v1_Ds18x20Response_fields,
                               &msgDS18x20Response);
           WS_DEBUG_PRINT("PUBLISHING -> msgDS18x20Response Event Message...");
-          if (!WS._mqtt->publish(WS._topic_signal_ds18_device,
+          if (!WS.publish(WS._topic_signal_ds18_device,
                                  WS._buffer_outgoing, msgSz, 1)) {
             WS_DEBUG_PRINTLN("ERROR: Unable to publish DS18x20 event message - "
                              "MQTT Publish failed!");
