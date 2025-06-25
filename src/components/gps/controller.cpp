@@ -50,40 +50,28 @@ GPSController::~GPSController() {
 bool GPSController::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
   // Attempt to decode the GPSConfig message
   if (_driver_type == GPS_DRV_MTK) {
-    // handle commands for mtk driver
     WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
     if (gps_config == nullptr) {
       WS_DEBUG_PRINTLN("[gps] ERROR: No GPSConfig message found!");
       return false;
     }
     // Iterate through the command sentences and send them to the GPS module
+    // TODO: We may want to break this out into a generic function that supports
+    // MTK, Ublox, etc...
     for (size_t i = 0; i < gps_config->commands_count; i++) {
       WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
       WS_DEBUG_PRINTLN(gps_config->commands[i]);
-
-      // Build the ACK command
-      // first, strip out the command number only from the command string
-      int cmd_num = 0;
-      if (sscanf(gps_config->commands[i], "$PMTK%d", &cmd_num) == 1) {
-        WS_DEBUG_PRINT("[gps] Command number extracted: ");
-        WS_DEBUG_PRINTLN(cmd_num);
-      } else {
-        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to extract command number!");
-        return false;
-      }
-      char cmd_resp[255];
-      snprintf(cmd_resp, sizeof(cmd_resp), "$PMTK001,%d,3", cmd_num);
-      _ada_gps->addChecksum(cmd_resp);
-      WS_DEBUG_PRINT("[gps] ACK command w/checksum: ");
-      WS_DEBUG_PRINTLN(cmd_resp);
-
       // Send the command to the GPS module
       _hw_serial->flush(); // Flush the serial buffer before sending
       _ada_gps->sendCommand(gps_config->commands[i]);
       // and wait for the corresponding response from the GPS module
-      if (!_ada_gps->waitForSentence(cmd_resp)) {
-        WS_DEBUG_PRINT(
-            "[gps] ERROR: Failed to get response from MediaTek for cmd:");
+      char msg_resp[MAX_NEMA_SENTENCE_LEN];
+      if (!BuildPmtkAck(gps_config->commands[i], msg_resp)) {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to build PMTK ACK response!");
+        return false;
+      }
+      if (!_ada_gps->waitForSentence(msg_resp)) {
+        WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
         WS_DEBUG_PRINTLN(gps_config->commands[i]);
         return false;
       }
@@ -191,11 +179,8 @@ bool GPSController::DetectMediatek() {
     delay(1);
   }
 
-  if (timeout == 0) {
-    // TODO: Remove in production
-    WS_DEBUG_PRINTLN("[gps] ERROR: Timeout from MediaTek GPS module!");
+  if (timeout == 0)
     return false;
-  }
 
   // We found a response, let's verify that it's the expected PMTK_DK_RELEASE
   // command by reading out the NMEA sentence string into a buffer
@@ -229,5 +214,22 @@ bool GPSController::DetectMediatek() {
     return false;
   }
   _driver_type = GPS_DRV_MTK;
+  return true;
+}
+
+/*!
+ * @brief Builds a PMTK acknowledgment message for the provided command.
+ * @param msg_cmd
+ *        Pointer to a command string.
+ * @param msg_resp
+ *        Pointer to a response string.
+ * @returns True if the acknowledgment was built successfully, False otherwise.
+ */
+bool GPSController::BuildPmtkAck(char *msg_cmd, char *msg_resp) {
+  int cmd_num = 0;
+  if (sscanf(msg_cmd, "$PMTK%d", &cmd_num) != 1)
+    return false;
+  snprintf(msg_resp, MAX_NEMA_SENTENCE_LEN, "$PMTK001,%d,3", cmd_num);
+  _ada_gps->addChecksum(msg_resp);
   return true;
 }

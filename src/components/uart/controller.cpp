@@ -102,7 +102,6 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
     delete uart_hardware; // cleanup
     return false;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
-    WS_DEBUG_PRINTLN("[uart] GPS device type not implemented!");
     // Create a new GPS driver instance
     drv_uart_gps = new GPSController();
     drv_uart_gps->SetInterface(uart_hardware->GetHardwareSerial());
@@ -182,11 +181,14 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[uart] UartAdded message encoded successfully!");
 
   WS_DEBUG_PRINTLN("[uart] Publishing UartAdded message to IO...");
-  if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
-                          _uart_model->GetUartAddedMsg())) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to IO!");
-    return false;
-  }
+  // TODO: Unsure why this is causing a crash on GPS, figure out later
+  // Currently commented out to prevent crashes
+  /*   if
+    (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
+                            _uart_model->GetUartAddedMsg())) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to
+    IO!"); return false;
+    } */
   WS_DEBUG_PRINTLN("[uart] UartAdded message published successfully!");
 
   return true;

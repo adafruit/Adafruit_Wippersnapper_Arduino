@@ -56,6 +56,7 @@ public:
   bool begin();
   bool QueryModuleType();
   bool DetectMediatek();
+  bool BuildPmtkAck(char *msg_cmd, char *msg_resp);
   // Protobuf API methods
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
 
