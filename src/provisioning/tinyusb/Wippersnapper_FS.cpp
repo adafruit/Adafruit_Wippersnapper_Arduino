@@ -22,7 +22,7 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_TFT) ||                           \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM) ||                       \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) ||                          \
-    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) ||                               \
+    defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) || defined(ARDUINO_ESP32S3) ||   \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_TFT) ||                           \
     defined(ARDUINO_ARCH_RP2040) ||                                            \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
