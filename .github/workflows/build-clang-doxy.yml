@@ -182,6 +182,7 @@ jobs:
             "magtag",
             "metroesp32s2",
             "metro_esp32s3",
+            "esp32s3_devkitc_1_n8",
             "feather_esp32s2",
             "feather_esp32s2_tft",
             "feather_esp32s2_reverse_tft",
@@ -652,6 +653,7 @@ jobs:
       matrix:
         arduino-platform:
           [
+            "esp32s3_devkitc_1_n8_debug",
             "feather_esp32s2_debug",
             "feather_esp32s2_tft_debug",
             "feather_esp32s3_debug",
