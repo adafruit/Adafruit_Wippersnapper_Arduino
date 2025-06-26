@@ -20,6 +20,16 @@
 #include "model.h"
 #include <Adafruit_GPS.h>
 
+#define MAX_NMEA_SENTENCES 10    ///< Size of the NMEA buffer
+#define MAX_LEN_NMEA_SENTENCE 82 ///< Maximum length of a NMEA sentence
+
+typedef struct {
+  char sentences[MAX_NMEA_SENTENCES][MAX_LEN_NMEA_SENTENCE];
+  int head;
+  int tail;
+  int maxlen;
+} nmea_buffer_t;
+
 class Wippersnapper_V2; ///< Forward declaration
 class GPSModel;         ///< Forward declaration
 class GPSHardware;      ///< Forward declaration
@@ -35,8 +45,11 @@ public:
   void update();
 
 private:
+  int NmeaBufPush(const char *new_sentence);
+  int NmeaBufPop(char *sentence);
   GPSModel *_gps_model;                    ///< GPS model instance
   std::vector<GPSHardware *> _gps_drivers; ///< GPS hardware instances
+  nmea_buffer_t _nmea_buff; ///< NMEA buffer for storing sentences
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_CONTROLLER_H

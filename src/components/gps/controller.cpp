@@ -18,7 +18,12 @@
 /*!
  * @brief Constructor for GPSController.
  */
-GPSController::GPSController() { _gps_model = new GPSModel(); }
+GPSController::GPSController() {
+  _gps_model = new GPSModel();
+  _nmea_buff.head = 0;
+  _nmea_buff.tail = 0;
+  _nmea_buff.maxlen = MAX_NMEA_SENTENCES;
+}
 
 /*!
  * @brief Destructor for GPSController.
@@ -65,6 +70,54 @@ bool GPSController::AddGPS(HardwareSerial *serial,
 }
 
 /*!
+ * @brief Pushes a new NMEA sentence into the circular buffer.
+ * @param new_sentence Pointer to the new NMEA sentence to be added.
+ * @return 0 on success, -1 if the buffer is full.
+ */
+int GPSController::NmeaBufPush(const char *new_sentence) {
+  if (!new_sentence)
+    return -1;
+
+  int next = _nmea_buff.head + 1; // points to head after the current write
+  if (next >= _nmea_buff.maxlen)
+    next = 0; // wrap around
+
+  // If buffer is full, advance tail to overwrite oldest data
+  if (next == _nmea_buff.tail) {
+    _nmea_buff.tail = (_nmea_buff.tail + 1) % _nmea_buff.maxlen;
+  }
+
+  // Copy the new sentence into the buffer
+  strncpy(_nmea_buff.sentences[_nmea_buff.head], new_sentence,
+          MAX_LEN_NMEA_SENTENCE - 1);
+  _nmea_buff.sentences[_nmea_buff.head][MAX_LEN_NMEA_SENTENCE - 1] = '\0';
+  _nmea_buff.head = next;
+  return 0;
+}
+
+/*!
+ * @brief Pops a NMEA sentence from the circular buffer, FIFO order.
+ * @param sentence Pointer to the buffer where the popped sentence will be
+ * stored.
+ * @return 0 on success, -1 if the buffer is empty.
+ */
+int GPSController::NmeaBufPop(char *sentence) {
+  // Is the buffer empty?
+  if (_nmea_buff.head == _nmea_buff.tail)
+    return -1;
+
+  int next =
+      _nmea_buff.tail + 1; // next is where tail will point to after this read.
+  if (next >= _nmea_buff.maxlen)
+    next = 0;
+
+  // Copy sentence from tail
+  strcpy(sentence, _nmea_buff.sentences[_nmea_buff.tail]);
+  _nmea_buff.tail = next; // Advance tail
+  return 0;
+}
+
+/*!
  * @brief Updates the GPSController, polling the GPS hardware for data.
  * This function checks if the read period has elapsed and processes the GPS
  * data accordingly.
@@ -99,6 +152,70 @@ void GPSController::update() {
     }
 
     // Let's attempt to get a sentence from the GPS module
-    // TODO: Are we expecting RMC, GGA, or other sentences?
-    // TODO: Use a timeout for the read here
+    // Convert the NMEA update rate to milliseconds
+    ulong update_rate = 1000 / drv->GetNmeaUpdateRate();
+
+    // Read from the GPS module for update_rate milliseconds
+    ulong start_time = millis();
+    int read_calls = 0;
+    while (millis() - start_time < update_rate) {
+      if (read_calls > 9) {
+        // Check if we have a new NMEA sentence
+        if (drv->GetAdaGps()->newNMEAreceived()) {
+          // If we have a new sentence, push it to the buffer and mark the
+          // received flag as false
+          // TODO: Check result of this operation actually
+          NmeaBufPush(drv->GetAdaGps()->lastNMEA());
+          read_calls = 0; // Keep reading until update_rate elapses
+        }
+        char c = drv->GetAdaGps()->read();
+        read_calls++;
+      }
+    }
+
+    // We are done reading for this period
+
+    // TODO: This is for debugging purposes only, remove later!
+    WS_DEBUG_PRINT("[gps] Read ");
+    WS_DEBUG_PRINT(read_calls);
+    WS_DEBUG_PRINTLN(" times from GPS module.");
+    // Pop off the buffer and parse
+    char nmea_sentence[MAX_LEN_NMEA_SENTENCE];
+    int rc = NmeaBufPop(nmea_sentence);
+    if (rc == -1) {
+      WS_DEBUG_PRINTLN("[gps] NMEA sentence buffer empty!");
+      continue; // No sentences to process, skip this driver
+    }
+    // Parse the NMEA sentence
+    if (!drv->GetAdaGps()->parse(nmea_sentence)) {
+      WS_DEBUG_PRINT("[gps] ERROR: Failed to parse NMEA sentence: ");
+      WS_DEBUG_PRINTLN(nmea_sentence);
+      continue; // Skip this driver if parsing failed
+    }
+    Serial.print("Fix: ");
+    Serial.print((int)drv->GetAdaGps()->fix);
+    Serial.print(" quality: ");
+    Serial.println((int)drv->GetAdaGps()->fixquality);
+    if (drv->GetAdaGps()->fix) {
+      Serial.print("Location: ");
+      Serial.print(drv->GetAdaGps()->latitude, 4);
+      Serial.print(drv->GetAdaGps()->lat);
+      Serial.print(", ");
+      Serial.print(drv->GetAdaGps()->longitude, 4);
+      Serial.println(drv->GetAdaGps()->lon);
+      Serial.print("Speed (knots): ");
+      Serial.println(drv->GetAdaGps()->speed);
+      Serial.print("Angle: ");
+      Serial.println(drv->GetAdaGps()->angle);
+      Serial.print("Altitude: ");
+      Serial.println(drv->GetAdaGps()->altitude);
+      Serial.print("Satellites: ");
+      Serial.println((int)drv->GetAdaGps()->satellites);
+      Serial.print("Antenna status: ");
+      Serial.println((int)drv->GetAdaGps()->antenna);
+    }
+    // TODO: Successfully parsed the NMEA sentence, update the model
+
+    drv->SetPollPeriodPrv(cur_time);
   }
+}
