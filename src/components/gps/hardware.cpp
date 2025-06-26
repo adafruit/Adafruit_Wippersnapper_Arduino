@@ -59,15 +59,16 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
     for (size_t i = 0; i < gps_config->commands_count; i++) {
       WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
       WS_DEBUG_PRINTLN(gps_config->commands[i]);
-      // Send the command to the GPS module
-      _hw_serial->flush(); // Flush the serial buffer before sending
-      _ada_gps->sendCommand(gps_config->commands[i]);
-      // and wait for the corresponding response from the GPS module
+      // Build the PMTK ACK response for the command
       char msg_resp[MAX_NEMA_SENTENCE_LEN];
       if (!BuildPmtkAck(gps_config->commands[i], msg_resp)) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to build PMTK ACK response!");
         return false;
       }
+      // Send the command to the GPS module
+      _hw_serial->flush(); // Flush the serial buffer before sending
+      _ada_gps->sendCommand(gps_config->commands[i]);
+      // and wait for the corresponding response from the GPS module
       if (!_ada_gps->waitForSentence(msg_resp)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
         WS_DEBUG_PRINTLN(gps_config->commands[i]);
@@ -303,3 +304,22 @@ void GPSHardware::SetNmeaBaudRate(int nmea_baud_rate) {
  * @returns The NMEA baud rate, in bits per second.
  */
 int GPSHardware::GetNmeaBaudRate() { return _nmea_baud_rate; }
+
+/*!
+ * @brief Sets the last time the GPS hardware was polled.
+ * @param kat_prv
+ *        The last time the GPS hardware was polled, in milliseconds.
+ */
+void GPSHardware::SetPrvKat(ulong kat_prv) {
+  if (kat_prv < 0) {
+    _kat_prv = 0;
+    return;
+  }
+  _kat_prv = kat_prv;
+}
+
+/*!
+ * @brief   Gets the last time the GPS hardware was polled.
+ * @returns The last time the GPS hardware was polled, in milliseconds.
+ */
+ulong GPSHardware::GetPrvKat() { return _kat_prv; }

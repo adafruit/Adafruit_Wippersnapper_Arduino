@@ -22,6 +22,7 @@
 #define CMD_MTK_QUERY_FW_RESP                                                  \
   "$PMTK705" ///< Response from querying MediaTek firmware version without the
              ///< ReleaseStr
+#define CMD_MTK_CHECK_ANTENNA "$PGCMD,33,1*6C" ///< Command to check antenna
 #define DEFAULT_MTK_NMEA_UPDATE_RATE 1  ///< Default NMEA update rate in Hz
 #define DEFAULT_MTK_NMEA_BAUD_RATE 9600 ///< Default NMEA baud rate in bits per
 #define MAX_NEMA_SENTENCE_LEN 82        ///< Maximum length of a NMEA sentence
@@ -59,6 +60,8 @@ public:
   void SetPollPeriodPrv(ulong poll_period_prv);
   ulong GetPollPeriod();
   ulong GetPollPeriodPrv();
+  ulong GetPrvKat();
+  void SetPrvKat(ulong kat_prv);
   void SetNmeaUpdateRate(int nmea_update_rate);
   int GetNmeaUpdateRate();
   void SetNmeaBaudRate(int nmea_baud_rate);
@@ -75,10 +78,11 @@ private:
   GpsDriverType _driver_type;           ///< Type of GPS driver used
   HardwareSerial *_hw_serial = nullptr; ///< HardwareSerial instance for GPS;
   Adafruit_GPS *_ada_gps = nullptr;     ///< Adafruit GPS instance
-  ulong _period;         ///< Polling period for GPS data (Specified by IO), in
-                         ///< milliseconds
-  ulong _period_prv;     ///< Previous period for GPS data (Specified by IO), in
-                         ///< milliseconds
+  ulong _period;     ///< Polling period for GPS data (Specified by IO), in
+                     ///< milliseconds
+  ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in
+                     ///< milliseconds
+  ulong _kat_prv;    ///< Last time the GPS hardware was polled, in milliseconds
   int _nmea_update_rate; ///< NMEA update rate for GPS data, in Hz
   int _nmea_baud_rate;   ///< NMEA baud rate for GPS data, in bits per second
 };

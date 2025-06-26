@@ -91,6 +91,8 @@ int GPSController::NmeaBufPush(const char *new_sentence) {
   strncpy(_nmea_buff.sentences[_nmea_buff.head], new_sentence,
           MAX_LEN_NMEA_SENTENCE - 1);
   _nmea_buff.sentences[_nmea_buff.head][MAX_LEN_NMEA_SENTENCE - 1] = '\0';
+  WS_DEBUG_PRINT("[gps] Pushing NMEA sentence: ");
+  WS_DEBUG_PRINTLN(_nmea_buff.sentences[_nmea_buff.head]);
   _nmea_buff.head = next;
   return 0;
 }
@@ -128,6 +130,13 @@ void GPSController::update() {
 
   for (GPSHardware *drv : _gps_drivers) {
 
+    // Perform a keep-alive check by sending an antenna check command every 2
+    // seconds
+    if (millis() - drv->GetPrvKat() > 2000) {
+      drv->GetAdaGps()->sendCommand(CMD_MTK_CHECK_ANTENNA);
+      drv->SetPrvKat(millis());
+    }
+
     // Did read period elapse?
     ulong cur_time = millis();
     if (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod())
@@ -153,25 +162,31 @@ void GPSController::update() {
 
     // Let's attempt to get a sentence from the GPS module
     // Convert the NMEA update rate to milliseconds
+    // TODO: This should be stored as a member within the hardware class
     ulong update_rate = 1000 / drv->GetNmeaUpdateRate();
 
     // Read from the GPS module for update_rate milliseconds
     ulong start_time = millis();
     int read_calls = 0;
+
+    WS_DEBUG_PRINT("[gps] Reading GPS data for ");
+    WS_DEBUG_PRINT(update_rate);
+    WS_DEBUG_PRINTLN(" milliseconds...");
     while (millis() - start_time < update_rate) {
-      if (read_calls > 9) {
-        // Check if we have a new NMEA sentence
-        if (drv->GetAdaGps()->newNMEAreceived()) {
-          // If we have a new sentence, push it to the buffer and mark the
-          // received flag as false
-          // TODO: Check result of this operation actually
-          NmeaBufPush(drv->GetAdaGps()->lastNMEA());
-          read_calls = 0; // Keep reading until update_rate elapses
-        }
-        char c = drv->GetAdaGps()->read();
-        read_calls++;
+      char c = drv->GetAdaGps()->read();
+      read_calls++;
+
+      // Check if we have a new NMEA sentence
+      if (drv->GetAdaGps()->newNMEAreceived()) {
+        // If we have a new sentence, push it to the buffer
+        // TODO: Check result of this operation actually
+        WS_DEBUG_PRINTLN("[gps] New data, pushing sentence to buffer.");
+        // Push the last NMEA sentence to the buffer
+        char *last_nmea = drv->GetAdaGps()->lastNMEA();
+        NmeaBufPush(drv->GetAdaGps()->lastNMEA());
       }
     }
+    WS_DEBUG_PRINTLN("[gps] Finished reading GPS data.");
 
     // We are done reading for this period
 
@@ -184,6 +199,8 @@ void GPSController::update() {
     // Pop until we have no more sentences in the buffer
     while (NmeaBufPop(nmea_sentence) != -1) {
       // Parse the NMEA sentence
+      WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
+      WS_DEBUG_PRINTLN(nmea_sentence);
       if (!drv->GetAdaGps()->parse(nmea_sentence)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to parse NMEA sentence: ");
         WS_DEBUG_PRINTLN(nmea_sentence);
