@@ -181,39 +181,38 @@ void GPSController::update() {
     WS_DEBUG_PRINTLN(" times from GPS module.");
     // Pop off the buffer and parse
     char nmea_sentence[MAX_LEN_NMEA_SENTENCE];
-    int rc = NmeaBufPop(nmea_sentence);
-    if (rc == -1) {
-      WS_DEBUG_PRINTLN("[gps] NMEA sentence buffer empty!");
-      continue; // No sentences to process, skip this driver
+    // Pop until we have no more sentences in the buffer
+    while (NmeaBufPop(nmea_sentence) != -1) {
+      // Parse the NMEA sentence
+      if (!drv->GetAdaGps()->parse(nmea_sentence)) {
+        WS_DEBUG_PRINT("[gps] ERROR: Failed to parse NMEA sentence: ");
+        WS_DEBUG_PRINTLN(nmea_sentence);
+        continue; // Skip this driver if parsing failed
+      }
+      Serial.print("Fix: ");
+      Serial.print((int)drv->GetAdaGps()->fix);
+      Serial.print(" quality: ");
+      Serial.println((int)drv->GetAdaGps()->fixquality);
+      if (drv->GetAdaGps()->fix) {
+        Serial.print("Location: ");
+        Serial.print(drv->GetAdaGps()->latitude, 4);
+        Serial.print(drv->GetAdaGps()->lat);
+        Serial.print(", ");
+        Serial.print(drv->GetAdaGps()->longitude, 4);
+        Serial.println(drv->GetAdaGps()->lon);
+        Serial.print("Speed (knots): ");
+        Serial.println(drv->GetAdaGps()->speed);
+        Serial.print("Angle: ");
+        Serial.println(drv->GetAdaGps()->angle);
+        Serial.print("Altitude: ");
+        Serial.println(drv->GetAdaGps()->altitude);
+        Serial.print("Satellites: ");
+        Serial.println((int)drv->GetAdaGps()->satellites);
+        Serial.print("Antenna status: ");
+        Serial.println((int)drv->GetAdaGps()->antenna);
+      }
     }
-    // Parse the NMEA sentence
-    if (!drv->GetAdaGps()->parse(nmea_sentence)) {
-      WS_DEBUG_PRINT("[gps] ERROR: Failed to parse NMEA sentence: ");
-      WS_DEBUG_PRINTLN(nmea_sentence);
-      continue; // Skip this driver if parsing failed
-    }
-    Serial.print("Fix: ");
-    Serial.print((int)drv->GetAdaGps()->fix);
-    Serial.print(" quality: ");
-    Serial.println((int)drv->GetAdaGps()->fixquality);
-    if (drv->GetAdaGps()->fix) {
-      Serial.print("Location: ");
-      Serial.print(drv->GetAdaGps()->latitude, 4);
-      Serial.print(drv->GetAdaGps()->lat);
-      Serial.print(", ");
-      Serial.print(drv->GetAdaGps()->longitude, 4);
-      Serial.println(drv->GetAdaGps()->lon);
-      Serial.print("Speed (knots): ");
-      Serial.println(drv->GetAdaGps()->speed);
-      Serial.print("Angle: ");
-      Serial.println(drv->GetAdaGps()->angle);
-      Serial.print("Altitude: ");
-      Serial.println(drv->GetAdaGps()->altitude);
-      Serial.print("Satellites: ");
-      Serial.println((int)drv->GetAdaGps()->satellites);
-      Serial.print("Antenna status: ");
-      Serial.println((int)drv->GetAdaGps()->antenna);
-    }
+    WS_DEBUG_PRINTLN("[gps] Finished processing NMEA sentences.");
     // TODO: Successfully parsed the NMEA sentence, update the model
 
     drv->SetPollPeriodPrv(cur_time);
