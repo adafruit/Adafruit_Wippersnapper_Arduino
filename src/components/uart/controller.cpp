@@ -54,6 +54,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   }
 
   // Configure a UART hardware instance using the provided serial configuration
+  // TODO: Have we already configured this UART hardware instance?!
   WS_DEBUG_PRINTLN("[uart] Configuring UART hardware instance...");
   wippersnapper_uart_UartSerialConfig cfg_serial = add_msg->cfg_serial;
   UARTHardware *uart_hardware = new UARTHardware(cfg_serial);
@@ -68,6 +69,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   WS_DEBUG_PRINTLN("[uart] UART hardware instance configured successfully!");
 
   // Create a new UartDevice "driver" on the hardware layer (UARTHardware)
+  // TODO: Have we already added this UART device?!
   drvUartBase *uart_driver = nullptr;
   GPSController *drv_uart_gps = nullptr;
   bool is_gps_drv = false;

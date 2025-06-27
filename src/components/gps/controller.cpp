@@ -91,8 +91,6 @@ int GPSController::NmeaBufPush(const char *new_sentence) {
   strncpy(_nmea_buff.sentences[_nmea_buff.head], new_sentence,
           MAX_LEN_NMEA_SENTENCE - 1);
   _nmea_buff.sentences[_nmea_buff.head][MAX_LEN_NMEA_SENTENCE - 1] = '\0';
-  WS_DEBUG_PRINT("[gps] Pushing NMEA sentence: ");
-  WS_DEBUG_PRINTLN(_nmea_buff.sentences[_nmea_buff.head]);
   _nmea_buff.head = next;
   return 0;
 }
@@ -130,12 +128,13 @@ void GPSController::update() {
 
   for (GPSHardware *drv : _gps_drivers) {
 
+    // TODO: Commented out due to parsing failures, stability issue (failed to parse NMEA acks for this)
     // Perform a keep-alive check by sending an antenna check command every 2
     // seconds
-    if (millis() - drv->GetPrvKat() > 2000) {
+/*     if (millis() - drv->GetPrvKat() > 2000) {
       drv->GetAdaGps()->sendCommand(CMD_MTK_CHECK_ANTENNA);
       drv->SetPrvKat(millis());
-    }
+    } */
 
     // Did read period elapse?
     ulong cur_time = millis();
@@ -179,9 +178,6 @@ void GPSController::update() {
       // Check if we have a new NMEA sentence
       if (drv->GetAdaGps()->newNMEAreceived()) {
         // If we have a new sentence, push it to the buffer
-        // TODO: Check result of this operation actually
-        WS_DEBUG_PRINTLN("[gps] New data, pushing sentence to buffer.");
-        // Push the last NMEA sentence to the buffer
         char *last_nmea = drv->GetAdaGps()->lastNMEA();
         NmeaBufPush(drv->GetAdaGps()->lastNMEA());
       }
@@ -201,11 +197,10 @@ void GPSController::update() {
       // Parse the NMEA sentence
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
-      if (!drv->GetAdaGps()->parse(nmea_sentence)) {
-        WS_DEBUG_PRINT("[gps] ERROR: Failed to parse NMEA sentence: ");
-        WS_DEBUG_PRINTLN(nmea_sentence);
-        continue; // Skip this driver if parsing failed
-      }
+      if (!drv->GetAdaGps()->parse(nmea_sentence))
+        continue; // Skip parsing this sentence if parsing failed
+
+      // Print the parsed data for debugging
       Serial.print("Fix: ");
       Serial.print((int)drv->GetAdaGps()->fix);
       Serial.print(" quality: ");
@@ -228,6 +223,8 @@ void GPSController::update() {
         Serial.print("Antenna status: ");
         Serial.println((int)drv->GetAdaGps()->antenna);
       }
+
+     // TODO: Okay so here we are going to create the model of gps data
     }
     WS_DEBUG_PRINTLN("[gps] Finished processing NMEA sentences.");
     // TODO: Successfully parsed the NMEA sentence, update the model
