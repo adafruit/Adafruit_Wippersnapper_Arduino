@@ -60,6 +60,12 @@ typedef struct _wippersnapper_gps_GPGGAResponse {
     char geoid_height[10]; /* * Diff between geoid height and WGS84 height * */
 } wippersnapper_gps_GPGGAResponse;
 
+/* * GPSEvent represents a collection of GPS event responses, including RMC and GGA data. * */
+typedef struct _wippersnapper_gps_GPSEvent {
+    pb_callback_t rmc_responses; /* * List of RMC responses * */
+    pb_callback_t gga_responses; /* * List of GGA responses * */
+} wippersnapper_gps_GPSEvent;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,10 +76,12 @@ extern "C" {
 #define wippersnapper_gps_GPSDateTime_init_default {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", "", "", ""}
 #define wippersnapper_gps_GPGGAResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", 0, 0, "", "", ""}
+#define wippersnapper_gps_GPSEvent_init_default  {{{NULL}, NULL}, {{NULL}, NULL}}
 #define wippersnapper_gps_GPSConfig_init_zero    {0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}, 0}
 #define wippersnapper_gps_GPSDateTime_init_zero  {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_zero {false, wippersnapper_gps_GPSDateTime_init_zero, "", "", "", "", "", "", ""}
 #define wippersnapper_gps_GPGGAResponse_init_zero {false, wippersnapper_gps_GPSDateTime_init_zero, "", "", "", "", 0, 0, "", "", ""}
+#define wippersnapper_gps_GPSEvent_init_zero     {{{NULL}, NULL}, {{NULL}, NULL}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_gps_GPSConfig_commands_tag 1
@@ -103,6 +111,8 @@ extern "C" {
 #define wippersnapper_gps_GPGGAResponse_hdop_tag 10
 #define wippersnapper_gps_GPGGAResponse_altitude_tag 11
 #define wippersnapper_gps_GPGGAResponse_geoid_height_tag 12
+#define wippersnapper_gps_GPSEvent_rmc_responses_tag 1
+#define wippersnapper_gps_GPSEvent_gga_responses_tag 2
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_gps_GPSConfig_FIELDLIST(X, a) \
@@ -150,18 +160,29 @@ X(a, STATIC,   SINGULAR, STRING,   geoid_height,     12)
 #define wippersnapper_gps_GPGGAResponse_DEFAULT NULL
 #define wippersnapper_gps_GPGGAResponse_datetime_MSGTYPE wippersnapper_gps_GPSDateTime
 
+#define wippersnapper_gps_GPSEvent_FIELDLIST(X, a) \
+X(a, CALLBACK, REPEATED, MESSAGE,  rmc_responses,     1) \
+X(a, CALLBACK, REPEATED, MESSAGE,  gga_responses,     2)
+#define wippersnapper_gps_GPSEvent_CALLBACK pb_default_field_callback
+#define wippersnapper_gps_GPSEvent_DEFAULT NULL
+#define wippersnapper_gps_GPSEvent_rmc_responses_MSGTYPE wippersnapper_gps_GPSRMCResponse
+#define wippersnapper_gps_GPSEvent_gga_responses_MSGTYPE wippersnapper_gps_GPGGAResponse
+
 extern const pb_msgdesc_t wippersnapper_gps_GPSConfig_msg;
 extern const pb_msgdesc_t wippersnapper_gps_GPSDateTime_msg;
 extern const pb_msgdesc_t wippersnapper_gps_GPSRMCResponse_msg;
 extern const pb_msgdesc_t wippersnapper_gps_GPGGAResponse_msg;
+extern const pb_msgdesc_t wippersnapper_gps_GPSEvent_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define wippersnapper_gps_GPSConfig_fields &wippersnapper_gps_GPSConfig_msg
 #define wippersnapper_gps_GPSDateTime_fields &wippersnapper_gps_GPSDateTime_msg
 #define wippersnapper_gps_GPSRMCResponse_fields &wippersnapper_gps_GPSRMCResponse_msg
 #define wippersnapper_gps_GPGGAResponse_fields &wippersnapper_gps_GPGGAResponse_msg
+#define wippersnapper_gps_GPSEvent_fields &wippersnapper_gps_GPSEvent_msg
 
 /* Maximum encoded size of messages (where known) */
+/* wippersnapper_gps_GPSEvent_size depends on runtime parameters */
 #define WIPPERSNAPPER_GPS_GPS_PB_H_MAX_SIZE      wippersnapper_gps_GPSConfig_size
 #define wippersnapper_gps_GPGGAResponse_size     168
 #define wippersnapper_gps_GPSConfig_size         1467
