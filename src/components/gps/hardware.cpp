@@ -177,7 +177,7 @@ bool GPSHardware::DetectMediatek() {
   _hw_serial->flush();
   while (_hw_serial->available() > 0) {
     _hw_serial->read();
-  } 
+  }
   _hw_serial->println(CMD_MTK_QUERY_FW);
   // Query MediaTek firmware version
   // Wait for response
