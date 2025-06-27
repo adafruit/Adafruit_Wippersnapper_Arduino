@@ -65,8 +65,12 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to build PMTK ACK response!");
         return false;
       }
+      // Flush the RX/TX buffers before sending
+      _hw_serial->flush();
+      while (_hw_serial->available() > 0) {
+        _hw_serial->read();
+      }
       // Send the command to the GPS module
-      _hw_serial->flush(); // Flush the serial buffer before sending
       _ada_gps->sendCommand(gps_config->commands[i]);
       // and wait for the corresponding response from the GPS module
       if (!_ada_gps->waitForSentence(msg_resp)) {
@@ -169,9 +173,13 @@ bool GPSHardware::DetectMediatek() {
     return false;
   }
 
-  // Query MediaTek firmware version
+  // Clear the tx and rx buffers before sending the command
   _hw_serial->flush();
+  while (_hw_serial->available() > 0) {
+    _hw_serial->read();
+  } 
   _hw_serial->println(CMD_MTK_QUERY_FW);
+  // Query MediaTek firmware version
   // Wait for response
   uint16_t timeout = 2000; // 1 second timeout
   while (_hw_serial->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
