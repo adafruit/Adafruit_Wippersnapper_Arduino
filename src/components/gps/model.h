@@ -27,13 +27,7 @@ public:
   ~GPSModel();
   bool DecodeGPSConfig(pb_istream_t *stream);
   wippersnapper_gps_GPSConfig *GetGPSConfigMsg();
-  bool EncodeGPGGAResponse();
-  wippersnapper_gps_GPGGAResponse *GetGPGGAResponseMsg();
-  void ClearGPGGAResponseMsg();
-  wippersnapper_gps_GPSRMCResponse *GetGPSRMCResponseMsg();
 private:
   wippersnapper_gps_GPSConfig _msg_gps_config;           ///< GPS configuration message
-  wippersnapper_gps_GPGGAResponse _msg_gpgga_response;   ///< GPGGA response message
-  wippersnapper_gps_GPSRMCResponse _msg_gpsrmc_response; ///< GPSRMC response message
 };
 #endif // WS_GPS_MODEL_H
