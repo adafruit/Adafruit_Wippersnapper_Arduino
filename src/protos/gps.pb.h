@@ -62,8 +62,10 @@ typedef struct _wippersnapper_gps_GPGGAResponse {
 
 /* * GPSEvent represents a collection of GPS event responses, including RMC and GGA data. * */
 typedef struct _wippersnapper_gps_GPSEvent {
-    pb_callback_t rmc_responses; /* * List of RMC responses * */
-    pb_callback_t gga_responses; /* * List of GGA responses * */
+    pb_size_t rmc_responses_count;
+    wippersnapper_gps_GPSRMCResponse rmc_responses[10]; /* * List of RMC responses * */
+    pb_size_t gga_responses_count;
+    wippersnapper_gps_GPGGAResponse gga_responses[10]; /* * List of GGA responses * */
 } wippersnapper_gps_GPSEvent;
 
 
@@ -76,12 +78,12 @@ extern "C" {
 #define wippersnapper_gps_GPSDateTime_init_default {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", "", "", ""}
 #define wippersnapper_gps_GPGGAResponse_init_default {false, wippersnapper_gps_GPSDateTime_init_default, "", "", "", "", 0, 0, "", "", ""}
-#define wippersnapper_gps_GPSEvent_init_default  {{{NULL}, NULL}, {{NULL}, NULL}}
+#define wippersnapper_gps_GPSEvent_init_default  {0, {wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default, wippersnapper_gps_GPSRMCResponse_init_default}, 0, {wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default, wippersnapper_gps_GPGGAResponse_init_default}}
 #define wippersnapper_gps_GPSConfig_init_zero    {0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}, 0}
 #define wippersnapper_gps_GPSDateTime_init_zero  {0, 0, 0, 0, 0, 0, 0}
 #define wippersnapper_gps_GPSRMCResponse_init_zero {false, wippersnapper_gps_GPSDateTime_init_zero, "", "", "", "", "", "", ""}
 #define wippersnapper_gps_GPGGAResponse_init_zero {false, wippersnapper_gps_GPSDateTime_init_zero, "", "", "", "", 0, 0, "", "", ""}
-#define wippersnapper_gps_GPSEvent_init_zero     {{{NULL}, NULL}, {{NULL}, NULL}}
+#define wippersnapper_gps_GPSEvent_init_zero     {0, {wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero, wippersnapper_gps_GPSRMCResponse_init_zero}, 0, {wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero, wippersnapper_gps_GPGGAResponse_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_gps_GPSConfig_commands_tag 1
@@ -161,9 +163,9 @@ X(a, STATIC,   SINGULAR, STRING,   geoid_height,     12)
 #define wippersnapper_gps_GPGGAResponse_datetime_MSGTYPE wippersnapper_gps_GPSDateTime
 
 #define wippersnapper_gps_GPSEvent_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, MESSAGE,  rmc_responses,     1) \
-X(a, CALLBACK, REPEATED, MESSAGE,  gga_responses,     2)
-#define wippersnapper_gps_GPSEvent_CALLBACK pb_default_field_callback
+X(a, STATIC,   REPEATED, MESSAGE,  rmc_responses,     1) \
+X(a, STATIC,   REPEATED, MESSAGE,  gga_responses,     2)
+#define wippersnapper_gps_GPSEvent_CALLBACK NULL
 #define wippersnapper_gps_GPSEvent_DEFAULT NULL
 #define wippersnapper_gps_GPSEvent_rmc_responses_MSGTYPE wippersnapper_gps_GPSRMCResponse
 #define wippersnapper_gps_GPSEvent_gga_responses_MSGTYPE wippersnapper_gps_GPGGAResponse
@@ -182,11 +184,11 @@ extern const pb_msgdesc_t wippersnapper_gps_GPSEvent_msg;
 #define wippersnapper_gps_GPSEvent_fields &wippersnapper_gps_GPSEvent_msg
 
 /* Maximum encoded size of messages (where known) */
-/* wippersnapper_gps_GPSEvent_size depends on runtime parameters */
-#define WIPPERSNAPPER_GPS_GPS_PB_H_MAX_SIZE      wippersnapper_gps_GPSConfig_size
+#define WIPPERSNAPPER_GPS_GPS_PB_H_MAX_SIZE      wippersnapper_gps_GPSEvent_size
 #define wippersnapper_gps_GPGGAResponse_size     168
 #define wippersnapper_gps_GPSConfig_size         1467
 #define wippersnapper_gps_GPSDateTime_size       77
+#define wippersnapper_gps_GPSEvent_size          3130
 #define wippersnapper_gps_GPSRMCResponse_size    139
 
 #ifdef __cplusplus

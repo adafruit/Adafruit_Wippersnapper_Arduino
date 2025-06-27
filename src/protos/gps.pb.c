@@ -18,7 +18,7 @@ PB_BIND(wippersnapper_gps_GPSRMCResponse, wippersnapper_gps_GPSRMCResponse, AUTO
 PB_BIND(wippersnapper_gps_GPGGAResponse, wippersnapper_gps_GPGGAResponse, AUTO)
 
 
-PB_BIND(wippersnapper_gps_GPSEvent, wippersnapper_gps_GPSEvent, AUTO)
+PB_BIND(wippersnapper_gps_GPSEvent, wippersnapper_gps_GPSEvent, 2)
 
 
 
