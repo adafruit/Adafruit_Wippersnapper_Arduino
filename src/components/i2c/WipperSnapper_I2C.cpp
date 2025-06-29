@@ -380,6 +380,28 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _scd30->configureDriver(msgDeviceInitReq);
     drivers.push_back(_scd30);
     WS_DEBUG_PRINTLN("SCD30 Initialized Successfully!");
+  } else if (strcmp("ina237", msgDeviceInitReq->i2c_device_name) == 0) {
+    _ina237 = new WipperSnapper_I2C_Driver_INA237(this->_i2c, i2cAddress);
+    if (!_ina237->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize INA237");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _ina237->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_ina237);
+    WS_DEBUG_PRINTLN("INA237 Initialized Successfully!");
+  } else if (strcmp("ina238", msgDeviceInitReq->i2c_device_name) == 0) {
+    _ina238 = new WipperSnapper_I2C_Driver_INA238(this->_i2c, i2cAddress);
+    if (!_ina238->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize INA238");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _ina238->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_ina238);
+    WS_DEBUG_PRINTLN("INA238 Initialized Successfully!");
   } else if (strcmp("ina219", msgDeviceInitReq->i2c_device_name) == 0) {
     _ina219 = new WipperSnapper_I2C_Driver_INA219(this->_i2c, i2cAddress);
     if (!_ina219->begin()) {
