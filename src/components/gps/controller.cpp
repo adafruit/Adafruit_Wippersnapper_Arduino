@@ -128,13 +128,13 @@ void GPSController::update() {
 
   for (GPSHardware *drv : _gps_drivers) {
 
-    // TODO: Commented out due to parsing failures, stability issue (failed to parse NMEA acks for this)
-    // Perform a keep-alive check by sending an antenna check command every 2
-    // seconds
-/*     if (millis() - drv->GetPrvKat() > 2000) {
-      drv->GetAdaGps()->sendCommand(CMD_MTK_CHECK_ANTENNA);
-      drv->SetPrvKat(millis());
-    } */
+    // TODO: Commented out due to parsing failures, stability issue (failed to
+    // parse NMEA acks for this) Perform a keep-alive check by sending an
+    // antenna check command every 2 seconds
+    /*     if (millis() - drv->GetPrvKat() > 2000) {
+          drv->GetAdaGps()->sendCommand(CMD_MTK_CHECK_ANTENNA);
+          drv->SetPrvKat(millis());
+        } */
 
     // Did read period elapse?
     ulong cur_time = millis();
@@ -224,7 +224,7 @@ void GPSController::update() {
         Serial.println((int)drv->GetAdaGps()->antenna);
       }
 
-     // TODO: Okay so here we are going to create the model of gps data
+      // TODO: Okay so here we are going to create the model of gps data
     }
     WS_DEBUG_PRINTLN("[gps] Finished processing NMEA sentences.");
     // TODO: Successfully parsed the NMEA sentence, update the model

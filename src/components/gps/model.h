@@ -16,6 +16,7 @@
 #define WS_GPS_MODEL_H
 #include "Wippersnapper_V2.h"
 #include <protos/gps.pb.h>
+#define MAX_COUNT_RMC_GGA 10; ///< Maximum number of RMC or GGA responses
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -27,7 +28,20 @@ public:
   ~GPSModel();
   bool DecodeGPSConfig(pb_istream_t *stream);
   wippersnapper_gps_GPSConfig *GetGPSConfigMsg();
+  // GPSEvent API
+  void CreateGPSEvent();
+  wippersnapper_gps_GPSDateTime CreateGpsDatetime(uint8_t hour, uint8_t minute,
+                                                  uint8_t seconds,
+                                                  uint8_t milliseconds,
+                                                  uint8_t day, uint8_t month,
+                                                  uint8_t year);
+  bool AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
+                      uint8_t fix_status, nmea_float_t latitude, char *lat_dir,
+                      nmea_float_t longitude, char *lon_dir, nmea_float_t speed,
+                      nmea_float_t angle);
+
 private:
-  wippersnapper_gps_GPSConfig _msg_gps_config;           ///< GPS configuration message
+  wippersnapper_gps_GPSConfig _msg_gps_config; ///< GPS configuration message
+  wippersnapper_gps_GPSEvent _msg_gps_event;   ///< GPS event message
 };
 #endif // WS_GPS_MODEL_H

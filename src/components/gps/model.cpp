@@ -19,8 +19,7 @@
  */
 GPSModel::GPSModel() {
   memset(&_msg_gps_config, 0, sizeof(_msg_gps_config));
-  memset(&_msg_gpgga_response, 0, sizeof(_msg_gpgga_response));
-  memset(&_msg_gpsrmc_response, 0, sizeof(_msg_gpsrmc_response));
+  memset(&_msg_gps_event, 0, sizeof(_msg_gps_event));
 }
 
 /*!
@@ -28,17 +27,18 @@ GPSModel::GPSModel() {
  */
 GPSModel::~GPSModel() {
   memset(&_msg_gps_config, 0, sizeof(_msg_gps_config));
-  memset(&_msg_gpgga_response, 0, sizeof(_msg_gpgga_response));
-  memset(&_msg_gpsrmc_response, 0, sizeof(_msg_gpsrmc_response));
+  memset(&_msg_gps_event, 0, sizeof(_msg_gps_event));
 }
 
 /*!
  * @brief Decodes a GPSConfig message from an input stream.
  * @param stream A pointer to the pb_istream_t stream.
- * @returns True if the GPSConfig message was decoded successfully, False otherwise.
+ * @returns True if the GPSConfig message was decoded successfully, False
+ * otherwise.
  */
 bool GPSModel::DecodeGPSConfig(pb_istream_t *stream) {
-  return pb_decode(stream, wippersnapper_gps_GPSConfig_fields, &_msg_gps_config);
+  return pb_decode(stream, wippersnapper_gps_GPSConfig_fields,
+                   &_msg_gps_config);
 }
 
 /*!
@@ -50,25 +50,94 @@ wippersnapper_gps_GPSConfig *GPSModel::GetGPSConfigMsg() {
 }
 
 /*!
- * @brief Encodes a GPGGA response message.
- * @returns True if the GPGGA response message was encoded successfully, False otherwise.
+ * @brief Creates a new GPSEvent message and initializes it.
+ * @NOTE: This function will clear an existing GPSEvent message. Only call when
+ * you are creating a NEW gps event, not modifying an existing one.
  */
-bool GPSModel::EncodeGPGGAResponse() {
-  // TODO: Implement the encoding logic for GPGGAResponse
-  return false;
+void GPSModel::CreateGPSEvent() {
+  // Zero-out whatever was previously in the GPSEvent message
+  memset(&_msg_gps_event, 0, sizeof(_msg_gps_event));
+  // Create new GPSEvent message with initializer
+  _msg_gps_event = wippersnapper_gps_GPSEvent_init_zero;
+  _msg_gps_event.gga_responses_count = 0;
+  _msg_gps_event.rmc_responses_count = 0;
 }
 
 /*!
- * @brief Returns a pointer to the GPGGA response message.
- * @returns Pointer to the GPGGA response message.
+ * @brief Creates a GPSDateTime message with the provided parameters.
+ * @param hour GMT hour of the day (0-23).
+ * @param minute GMT minute of the hour (0-59).
+ * @param seconds GMT seconds of the minute (0-59).
+ * @param milliseconds GMT milliseconds (0-999).
+ * @param day GMT day of the month (1-31).
+ * @param month GMT month of the year (1-12).
+ * @param year GMT year (e.g., 25).
+ * @returns A wippersnapper_gps_GPSDateTime message.
  */
-wippersnapper_gps_GPGGAResponse *GPSModel::GetGPGGAResponseMsg() {
-  return &_msg_gpgga_response;
+wippersnapper_gps_GPSDateTime
+GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
+                            uint8_t milliseconds, uint8_t day, uint8_t month,
+                            uint8_t year) {
+  wippersnapper_gps_GPSDateTime datetime;
+  // Fill in the datetime structure with the provided values
+  datetime.hour = (uint32_t)(hour);
+  datetime.minute = (uint32_t)(minute);
+  datetime.seconds = (uint32_t)(seconds);
+  datetime.milliseconds = (uint32_t)(milliseconds);
+  datetime.day = (uint32_t)(day);
+  datetime.month = (uint32_t)(month);
+  datetime.year = (uint32_t)(year);
+  return datetime;
 }
 
-/*!
- * @brief Gets the GPGGA response message.
- */
-wippersnapper_gps_GPSRMCResponse *GPSModel::GetGPSRMCResponseMsg() {
-  return &_msg_gpsrmc_response;
+bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
+                              uint8_t fix_status, nmea_float_t latitude,
+                              char *lat_dir, nmea_float_t longitude,
+                              char *lon_dir, nmea_float_t speed,
+                              nmea_float_t angle) {
+  // Check if we've reached the maximum number of RMC responses
+  if (_msg_gps_event.rmc_responses_count >= MAX_COUNT_RMC_GGA) {
+    return false; // Cannot add more RMC responses
+  }
+
+  // Validate pointers have been provided correctly
+  if (!lat_dir || !lon_dir) {
+    return false;
+  }
+
+  wippersnapper_gps_GPSRMCResponse rmc_response;
+  rmc_response = wippersnapper_gps_GPSRMCResponse_init_zero;
+  // Assign the datetime, if provided
+  if (datetime) {
+    rmc_response.has_datetime = true;
+    rmc_response.datetime = *datetime;
+  } else {
+    rmc_response.has_datetime = false;
+  }
+
+  // Determine the fix status
+  if (fix_status == 1 || fix_status == 2) {
+    rmc_response.fix_status[0] = 'A'; // Active fix
+  } else {
+    rmc_response.fix_status[0] = 'V'; // Void fix
+  }
+  rmc_response.fix_status[1] = '\0';
+
+  // Fill lat/lon and direction
+  snprintf(rmc_response.lat, sizeof(rmc_response.lat), "%.6f", latitude);
+  snprintf(rmc_response.lon, sizeof(rmc_response.lon), "%.6f", longitude);
+  strncpy(rmc_response.lat_dir, lat_dir, sizeof(rmc_response.lat_dir) - 1);
+  rmc_response.lat_dir[sizeof(rmc_response.lat_dir) - 1] = '\0';
+  strncpy(rmc_response.lon_dir, lon_dir, sizeof(rmc_response.lon_dir) - 1);
+  rmc_response.lon_dir[sizeof(rmc_response.lon_dir) - 1] = '\0';
+
+  // Fill current speed over ground, in knots
+  snprintf(rmc_response.speed, sizeof(rmc_response.speed), "%.1f", speed);
+  // Fill course in degrees from true north
+  snprintf(rmc_response.angle, sizeof(rmc_response.angle) "%.1f", angle);
+
+  _msg_gps_event.rmc_responses[_msg_gps_event.rmc_responses_count] =
+      rmc_response;
+  _msg_gps_event.rmc_responses_count++;
+  return true;
 }
