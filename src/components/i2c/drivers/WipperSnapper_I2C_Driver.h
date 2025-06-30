@@ -18,6 +18,8 @@
 
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
+#include <Wire.h>
+#include "../../../wippersnapper/i2c/v1/i2c.pb.h"
 
 #define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
 ///< Used for last sensor read time, initially set 24hrs ago (max period)

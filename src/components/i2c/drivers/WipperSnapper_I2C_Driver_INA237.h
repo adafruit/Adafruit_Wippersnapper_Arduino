@@ -18,7 +18,10 @@
 #define WipperSnapper_I2C_Driver_INA237_H
 
 #include "WipperSnapper_I2C_Driver.h"
-#include <Adafruit_INA237.h>
+#include "Wippersnapper.h"
+
+// Forward declaration
+class Adafruit_INA237;
 
 /**************************************************************************/
 /*!
@@ -36,18 +39,14 @@ public:
                 The 7-bit I2C address of the sensor.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_INA237(TwoWire *i2c, uint16_t sensorAddress)
-      : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
-    _i2c = i2c;
-    _sensorAddress = sensorAddress;
-  }
+  WipperSnapper_I2C_Driver_INA237(TwoWire *i2c, uint16_t sensorAddress);
 
   /*******************************************************************************/
   /*!
       @brief    Destructor for an INA237 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_INA237() { delete _ina237; }
+  ~WipperSnapper_I2C_Driver_INA237();
 
   /*******************************************************************************/
   /*!
@@ -55,27 +54,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() {
-    _ina237 = new Adafruit_INA237();
-    if (!_ina237->begin(_sensorAddress, _i2c)) {
-      WS_DEBUG_PRINTLN("INA237 failed to initialise!");
-      return false;
-    }
-
-    // Configuration based on INA237 example sketch
-    // Set default shunt resistance and maximum current
-    // Default 0.015 ohm shunt, 10A max current
-    _ina237->setShunt(0.015, 10.0);
-    
-    // Set averaging for better accuracy (16 samples)
-    _ina237->setAveragingCount(INA2XX_COUNT_16);
-    
-    // Set conversion times as per example
-    _ina237->setVoltageConversionTime(INA2XX_TIME_150_us);
-    _ina237->setCurrentConversionTime(INA2XX_TIME_280_us);
-
-    return true;
-  }
+  bool begin();
 
   /*******************************************************************************/
   /*!
@@ -87,10 +66,7 @@ public:
                 otherwise.
   */
   /*******************************************************************************/
-  bool getEventVoltage(sensors_event_t *voltageEvent) {
-    voltageEvent->voltage = _ina237->getBusVoltage_V();
-    return true;
-  }
+  bool getEventVoltage(sensors_event_t *voltageEvent);
 
   /**
    * @brief   Get the current sensor event.
@@ -100,10 +76,7 @@ public:
    * @returns True if the sensor event was obtained successfully, False
    * otherwise.
    */
-  bool getEventCurrent(sensors_event_t *currentEvent) {
-    currentEvent->current = _ina237->getCurrent_mA();
-    return true;
-  }
+  bool getEventCurrent(sensors_event_t *currentEvent);
 
   /**
    * @brief   Get the raw (power) sensor event.
@@ -113,13 +86,10 @@ public:
    * @returns True if the sensor event was obtained successfully, False
    * otherwise.
    */
-  bool getEventRaw(sensors_event_t *powerEvent) {
-    powerEvent->data[0] = _ina237->getPower_mW();
-    return true;
-  }
+  bool getEventRaw(sensors_event_t *powerEvent);
 
 protected:
-  Adafruit_INA237 *_ina237 = nullptr; ///< Pointer to INA237 sensor object
+  Adafruit_INA237 *_ina237; ///< Pointer to INA237 sensor object
 };
 
 #endif // WipperSnapper_I2C_Driver_INA237

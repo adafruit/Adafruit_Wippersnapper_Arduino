@@ -86,6 +86,10 @@
 
 // forward decl.
 class Wippersnapper;
+class WipperSnapper_I2C_Driver_INA260;
+class WipperSnapper_I2C_Driver_INA237;
+class WipperSnapper_I2C_Driver_INA238;
+
 
 /**************************************************************************/
 /*!
