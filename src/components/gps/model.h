@@ -16,7 +16,7 @@
 #define WS_GPS_MODEL_H
 #include "Wippersnapper_V2.h"
 #include <protos/gps.pb.h>
-#define MAX_COUNT_RMC_GGA 10; ///< Maximum number of RMC or GGA responses
+#define MAX_COUNT_RMC_GGA 10 ///< Maximum number of RMC or GGA responses
 
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
@@ -36,15 +36,13 @@ public:
                                                   uint8_t day, uint8_t month,
                                                   uint8_t year);
   bool AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
-                      uint8_t fix_status, nmea_float_t lat, char *lat_dir,
-                      nmea_float_t lon, char *lon_dir, nmea_float_t speed,
-                      nmea_float_t angle);
+                      uint8_t fix_status, float lat, char *lat_dir, float lon,
+                      char *lon_dir, float speed, float angle);
 
   bool AddGpsEventGGA(wippersnapper_gps_GPSDateTime *datetime,
-                      uint8_t fix_status, nmea_float_t lat, char *lat_dir,
-                      nmea_float_t lon, char *lon_dir, uint8_t num_sats,
-                      nmea_float_t hdop, nmea_float_t alt,
-                      nmea_float_t geoid_height);
+                      uint8_t fix_status, float lat, char *lat_dir, float lon,
+                      char *lon_dir, uint8_t num_sats, float hdop, float alt,
+                      float geoid_height);
 
 private:
   wippersnapper_gps_GPSConfig _msg_gps_config; ///< GPS configuration message

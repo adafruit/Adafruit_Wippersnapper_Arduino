@@ -91,9 +91,9 @@ GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
 }
 
 bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
-                              uint8_t fix_status, nmea_float_t lat,
-                              char *lat_dir, nmea_float_t lon, char *lon_dir,
-                              nmea_float_t speed, nmea_float_t angle) {
+                              uint8_t fix_status, float lat, char *lat_dir,
+                              float lon, char *lon_dir, float speed,
+                              float angle) {
   // Check if we've reached the maximum number of RMC responses
   if (_msg_gps_event.rmc_responses_count >= MAX_COUNT_RMC_GGA) {
     return false;
@@ -142,10 +142,9 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
 }
 
 bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime *datetime,
-                              uint8_t fix_status, nmea_float_t lat,
-                              char *lat_dir, nmea_float_t lon, char *lon_dir,
-                              uint8_t num_sats, nmea_float_t hdop,
-                              nmea_float_t alt, nmea_float_t geoid_height) {
+                              uint8_t fix_status, float lat, char *lat_dir,
+                              float lon, char *lon_dir, uint8_t num_sats,
+                              float hdop, float alt, float geoid_height) {
 
   // Check if we've reached the maximum number of RMC responses
   if (_msg_gps_event.gga_responses_count >= MAX_COUNT_RMC_GGA) {
