@@ -36,9 +36,15 @@ public:
                                                   uint8_t day, uint8_t month,
                                                   uint8_t year);
   bool AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
-                      uint8_t fix_status, nmea_float_t latitude, char *lat_dir,
-                      nmea_float_t longitude, char *lon_dir, nmea_float_t speed,
+                      uint8_t fix_status, nmea_float_t lat, char *lat_dir,
+                      nmea_float_t lon, char *lon_dir, nmea_float_t speed,
                       nmea_float_t angle);
+
+  bool AddGpsEventGGA(wippersnapper_gps_GPSDateTime *datetime,
+                      uint8_t fix_status, nmea_float_t lat, char *lat_dir,
+                      nmea_float_t lon, char *lon_dir, uint8_t num_sats,
+                      nmea_float_t hdop, nmea_float_t alt,
+                      nmea_float_t geoid_height);
 
 private:
   wippersnapper_gps_GPSConfig _msg_gps_config; ///< GPS configuration message

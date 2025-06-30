@@ -91,13 +91,12 @@ GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
 }
 
 bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
-                              uint8_t fix_status, nmea_float_t latitude,
-                              char *lat_dir, nmea_float_t longitude,
-                              char *lon_dir, nmea_float_t speed,
-                              nmea_float_t angle) {
+                              uint8_t fix_status, nmea_float_t lat,
+                              char *lat_dir, nmea_float_t lon, char *lon_dir,
+                              nmea_float_t speed, nmea_float_t angle) {
   // Check if we've reached the maximum number of RMC responses
   if (_msg_gps_event.rmc_responses_count >= MAX_COUNT_RMC_GGA) {
-    return false; // Cannot add more RMC responses
+    return false;
   }
 
   // Validate pointers have been provided correctly
@@ -124,8 +123,8 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
   rmc_response.fix_status[1] = '\0';
 
   // Fill lat/lon and direction
-  snprintf(rmc_response.lat, sizeof(rmc_response.lat), "%.6f", latitude);
-  snprintf(rmc_response.lon, sizeof(rmc_response.lon), "%.6f", longitude);
+  snprintf(rmc_response.lat, sizeof(rmc_response.lat), "%.6f", lat);
+  snprintf(rmc_response.lon, sizeof(rmc_response.lon), "%.6f", lon);
   strncpy(rmc_response.lat_dir, lat_dir, sizeof(rmc_response.lat_dir) - 1);
   rmc_response.lat_dir[sizeof(rmc_response.lat_dir) - 1] = '\0';
   strncpy(rmc_response.lon_dir, lon_dir, sizeof(rmc_response.lon_dir) - 1);
@@ -134,10 +133,63 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
   // Fill current speed over ground, in knots
   snprintf(rmc_response.speed, sizeof(rmc_response.speed), "%.1f", speed);
   // Fill course in degrees from true north
-  snprintf(rmc_response.angle, sizeof(rmc_response.angle) "%.1f", angle);
+  snprintf(rmc_response.angle, sizeof(rmc_response.angle), "%.1f", angle);
 
   _msg_gps_event.rmc_responses[_msg_gps_event.rmc_responses_count] =
       rmc_response;
   _msg_gps_event.rmc_responses_count++;
+  return true;
+}
+
+bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime *datetime,
+                              uint8_t fix_status, nmea_float_t lat,
+                              char *lat_dir, nmea_float_t lon, char *lon_dir,
+                              uint8_t num_sats, nmea_float_t hdop,
+                              nmea_float_t alt, nmea_float_t geoid_height) {
+
+  // Check if we've reached the maximum number of RMC responses
+  if (_msg_gps_event.gga_responses_count >= MAX_COUNT_RMC_GGA) {
+    return false;
+  }
+
+  // Validate pointers have been provided correctly
+  if (!lat_dir || !lon_dir) {
+    return false;
+  }
+
+  wippersnapper_gps_GPGGAResponse gga_response;
+  gga_response = wippersnapper_gps_GPGGAResponse_init_zero;
+  // Assign the datetime, if provided
+  if (datetime) {
+    gga_response.has_datetime = true;
+    gga_response.datetime = *datetime;
+  } else {
+    gga_response.has_datetime = false;
+  }
+
+  // Fill lat/lon and direction
+  snprintf(gga_response.lat, sizeof(gga_response.lat), "%.6f", lat);
+  snprintf(gga_response.lon, sizeof(gga_response.lon), "%.6f", lon);
+  strncpy(gga_response.lat_dir, lat_dir, sizeof(gga_response.lat_dir) - 1);
+  gga_response.lat_dir[sizeof(gga_response.lat_dir) - 1] = '\0';
+  strncpy(gga_response.lon_dir, lon_dir, sizeof(gga_response.lon_dir) - 1);
+  gga_response.lon_dir[sizeof(gga_response.lon_dir) - 1] = '\0';
+
+  // Determine the fix quality
+  gga_response.fix_quality = (uint32_t)fix_status;
+  // Fill number of satellites in use
+  gga_response.num_satellites = (uint32_t)num_sats;
+
+  // Fill horizontal dilution of precision
+  snprintf(gga_response.hdop, sizeof(gga_response.hdop), "%.1f", hdop);
+  // Fill altitude in meters above MSL
+  snprintf(gga_response.altitude, sizeof(gga_response.altitude), "%.1f", alt);
+  // Fill geoid height in meters
+  snprintf(gga_response.geoid_height, sizeof(gga_response.geoid_height), "%.1f",
+           geoid_height);
+
+  _msg_gps_event.gga_responses[_msg_gps_event.gga_responses_count] =
+      gga_response;
+  _msg_gps_event.gga_responses_count++;
   return true;
 }
