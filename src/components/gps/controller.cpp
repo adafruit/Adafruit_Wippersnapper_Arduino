@@ -127,6 +127,22 @@ void GPSController::update() {
     return; // bail-out!
 
   for (GPSHardware *drv : _gps_drivers) {
+    // Get the GPS driver interface from the hardware instance
+    Adafruit_GPS *ada_gps = nullptr;
+    if (drv->GetDriverType() == GPS_DRV_MTK) {
+      // Interface shouldn't matter here because we already set it up in the
+      // initialization phase, so we can just grab the Adafruit_GPS instance
+      Adafruit_GPS *ada_gps = drv->GetAdaGps();
+      if (ada_gps == nullptr) {
+        WS_DEBUG_PRINTLN(
+            "[gps] ERROR: Can't read - GPS instance not initialized!");
+        continue;
+      }
+    } else {
+      WS_DEBUG_PRINTLN(
+          "[gps] ERROR: Unsupported GPS driver type, skipping update()!");
+      continue;
+    }
 
     // TODO: Commented out due to parsing failures, stability issue (failed to
     // parse NMEA acks for this) Perform a keep-alive check by sending an
@@ -142,125 +158,76 @@ void GPSController::update() {
       continue; // Not yet elapsed, skip this driver
 
     // Discard the GPS buffer before we attempt to do a fresh read
-    size_t bytes_avail = drv->GetAdaGps()->available();
+    size_t bytes_avail = ada_gps->available();
     if (bytes_avail > 0) {
-      // TODO: Remove these two WS_DEBUG_PRINTs!
-      WS_DEBUG_PRINT("[gps] Discarding GPS data: ");
-      WS_DEBUG_PRINTLN(bytes_avail);
-      // Read the available data from the GPS module
-      // and discard it
       for (size_t i = 0; i < bytes_avail; i++) {
-        drv->GetAdaGps()->read();
+        ada_gps->read();
       }
     }
 
-    // Unset the received flag
-    if (drv->GetAdaGps()->newNMEAreceived()) {
-      drv->GetAdaGps()->lastNMEA();
+    // Unset the RX flag
+    if (ada_gps->newNMEAreceived()) {
+      ada_gps->lastNMEA();
     }
 
     // Let's attempt to get a sentence from the GPS module
-    // Convert the NMEA update rate to milliseconds
-    // TODO: This should be stored as a member within the hardware class
-    ulong update_rate = 1000 / drv->GetNmeaUpdateRate();
-
     // Read from the GPS module for update_rate milliseconds
+    ulong update_rate = 1000 / drv->GetNmeaUpdateRate();
     ulong start_time = millis();
-    int read_calls = 0;
 
     WS_DEBUG_PRINT("[gps] Reading GPS data for ");
     WS_DEBUG_PRINT(update_rate);
-    WS_DEBUG_PRINTLN(" milliseconds...");
+    WS_DEBUG_PRINTLN(" ms...");
     while (millis() - start_time < update_rate) {
-      char c = drv->GetAdaGps()->read();
-      read_calls++;
-
+      char c = ada_gps->read();
       // Check if we have a new NMEA sentence
-      if (drv->GetAdaGps()->newNMEAreceived()) {
+      if (ada_gps->newNMEAreceived()) {
         // If we have a new sentence, push it to the buffer
-        char *last_nmea = drv->GetAdaGps()->lastNMEA();
-        NmeaBufPush(drv->GetAdaGps()->lastNMEA());
+        char *last_nmea = ada_gps->lastNMEA();
+        NmeaBufPush(ada_gps->lastNMEA());
       }
     }
-    WS_DEBUG_PRINTLN("[gps] Finished reading GPS data.");
-    // We are done reading for this period, create a new GPSEvent message
-    _gps_model->CreateGPSEvent();
 
-    // TODO: This is for debugging purposes only, remove later!
-    WS_DEBUG_PRINT("[gps] Read ");
-    WS_DEBUG_PRINT(read_calls);
-    WS_DEBUG_PRINTLN(" times from GPS module.");
-    // Pop off the buffer and parse
+    // Parse each NMEA sentence in the buffer
     char nmea_sentence[MAX_LEN_NMEA_SENTENCE];
-    // Pop until we have no more sentences in the buffer
+    bool has_gps_event = false;
     while (NmeaBufPop(nmea_sentence) != -1) {
       // Parse the NMEA sentence
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
-      if (!drv->GetAdaGps()->parse(nmea_sentence))
+      if (!ada_gps->parse(nmea_sentence)) {
         continue; // Skip parsing this sentence if parsing failed
-
-      // Print the parsed data for debugging
-      Serial.print("Fix: ");
-      Serial.print((int)drv->GetAdaGps()->fix);
-      Serial.print(" quality: ");
-      Serial.println((int)drv->GetAdaGps()->fixquality);
-      if (drv->GetAdaGps()->fix) {
-        Serial.print("Location: ");
-        Serial.print(drv->GetAdaGps()->latitude, 4);
-        Serial.print(drv->GetAdaGps()->lat);
-        Serial.print(", ");
-        Serial.print(drv->GetAdaGps()->longitude, 4);
-        Serial.println(drv->GetAdaGps()->lon);
-        Serial.print("Speed (knots): ");
-        Serial.println(drv->GetAdaGps()->speed);
-        Serial.print("Angle: ");
-        Serial.println(drv->GetAdaGps()->angle);
-        Serial.print("Altitude: ");
-        Serial.println(drv->GetAdaGps()->altitude);
-        Serial.print("Satellites: ");
-        Serial.println((int)drv->GetAdaGps()->satellites);
-        Serial.print("Antenna status: ");
-        Serial.println((int)drv->GetAdaGps()->antenna);
+      } else {
+        _gps_model->CreateGPSEvent();
+        has_gps_event = true;
       }
 
-      // now, let's build the model from the sentence
+      // Build the GPSEvent message from the sentence
+      wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
+          ada_gps->hour, ada_gps->minute, ada_gps->seconds,
+          ada_gps->milliseconds, ada_gps->day, ada_gps->month, ada_gps->year);
       if (strncmp(nmea_sentence, "$GPRMC", 6) == 0) {
-        WS_DEBUG_PRINT(
-            "[gps] Adding RMC to GPSEvent..."); // TODO: This is for debug,
-                                                // remove in production!
-        wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
-            drv->GetAdaGps()->hour, drv->GetAdaGps()->minute,
-            drv->GetAdaGps()->seconds, drv->GetAdaGps()->milliseconds,
-            drv->GetAdaGps()->day, drv->GetAdaGps()->month,
-            drv->GetAdaGps()->year);
         _gps_model->AddGpsEventRMC(
-            datetime, drv->GetAdaGps()->fix, drv->GetAdaGps()->latitude,
-            &drv->GetAdaGps()->lat, drv->GetAdaGps()->longitude,
-            &drv->GetAdaGps()->lon, drv->GetAdaGps()->speed,
-            drv->GetAdaGps()->angle);
-        WS_DEBUG_PRINTLN("added!"); // TODO: THIS IS FOR DEBUG, REMOVE IN PROD
+            datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
+            ada_gps->longitude, &ada_gps->lon, ada_gps->speed, ada_gps->angle);
       } else if (strncmp(nmea_sentence, "$GPGGA", 6) == 0) {
-        WS_DEBUG_PRINT(
-            "[gps] Adding GGA to GPSEvent..."); // TODO: This is for debug,
-                                                // remove in production!
-        wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
-            drv->GetAdaGps()->hour, drv->GetAdaGps()->minute,
-            drv->GetAdaGps()->seconds, drv->GetAdaGps()->milliseconds,
-            drv->GetAdaGps()->day, drv->GetAdaGps()->month,
-            drv->GetAdaGps()->year);
         _gps_model->AddGpsEventGGA(
-            datetime, drv->GetAdaGps()->fix, drv->GetAdaGps()->latitude,
-            &drv->GetAdaGps()->lat, drv->GetAdaGps()->longitude,
-            &drv->GetAdaGps()->lon, drv->GetAdaGps()->satellites,
-            drv->GetAdaGps()->HDOP, drv->GetAdaGps()->altitude,
-            drv->GetAdaGps()->geoidheight);
-        WS_DEBUG_PRINTLN("added!"); // TODO: THIS IS FOR DEBUG, REMOVE IN PROD
+            datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
+            ada_gps->longitude, &ada_gps->lon, ada_gps->satellites,
+            ada_gps->HDOP, ada_gps->altitude, ada_gps->geoidheight);
       } else {
         WS_DEBUG_PRINTLN(
             "[gps] WARNING - Parsed sentence is not type RMC or GGA!");
       }
     }
+
+    // We did not create a GPSEvent because the NMEA sentences were not
+    // GGA/RMC or parsed correctly
+    if (!has_gps_event) {
+      WS_DEBUG_PRINTLN("[gps] No GPSEvent created from NMEA sentences!");
+      continue;
+    }
+
     // Encode and publish to IO
     WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
     bool did_encode = _gps_model->EncodeGPSEvent();

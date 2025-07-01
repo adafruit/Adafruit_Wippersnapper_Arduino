@@ -331,3 +331,9 @@ void GPSHardware::SetPrvKat(ulong kat_prv) {
  * @returns The last time the GPS hardware was polled, in milliseconds.
  */
 ulong GPSHardware::GetPrvKat() { return _kat_prv; }
+
+/*!
+ * @brief Returns the driver type of the GPS hardware.
+ * @returns The driver type of the GPS hardware.
+ */
+GpsDriverType GPSHardware::GetDriverType() { return _driver_type; }

@@ -69,6 +69,7 @@ public:
   // TODO: Add SetInterface(I2C *_i2c_hardware) for I2C support here!
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
   Adafruit_GPS *GetAdaGps();
+  GpsDriverType GetDriverType();
 
 private:
   bool QueryModuleType();
