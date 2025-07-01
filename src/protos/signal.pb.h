@@ -104,8 +104,7 @@ typedef struct _wippersnapper_signal_DeviceToBroker {
         wippersnapper_i2c_I2cDeviceRemoved i2c_device_removed;
         wippersnapper_i2c_I2cDeviceEvent i2c_device_event;
         /* gps.proto */
-        wippersnapper_gps_GPSRMCResponse gps_rmc_response;
-        wippersnapper_gps_GPGGAResponse gps_gga_response;
+        wippersnapper_gps_GPSEvent gps_event;
     } payload;
 } wippersnapper_signal_DeviceToBroker;
 
@@ -164,8 +163,7 @@ extern "C" {
 #define wippersnapper_signal_DeviceToBroker_i2c_device_added_replaced_tag 111
 #define wippersnapper_signal_DeviceToBroker_i2c_device_removed_tag 112
 #define wippersnapper_signal_DeviceToBroker_i2c_device_event_tag 113
-#define wippersnapper_signal_DeviceToBroker_gps_rmc_response_tag 120
-#define wippersnapper_signal_DeviceToBroker_gps_gga_response_tag 121
+#define wippersnapper_signal_DeviceToBroker_gps_event_tag 120
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_signal_BrokerToDevice_FIELDLIST(X, a) \
@@ -244,8 +242,7 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_bus_scanned,payload.i2c_bus_scan
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_added_replaced,payload.i2c_device_added_replaced), 111) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_removed,payload.i2c_device_removed), 112) \
 X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,i2c_device_event,payload.i2c_device_event), 113) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,gps_rmc_response,payload.gps_rmc_response), 120) \
-X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,gps_gga_response,payload.gps_gga_response), 121)
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,gps_event,payload.gps_event), 120)
 #define wippersnapper_signal_DeviceToBroker_CALLBACK NULL
 #define wippersnapper_signal_DeviceToBroker_DEFAULT NULL
 #define wippersnapper_signal_DeviceToBroker_payload_digitalio_event_MSGTYPE wippersnapper_digitalio_DigitalIOEvent
@@ -263,8 +260,7 @@ X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,gps_gga_response,payload.gps_gga_res
 #define wippersnapper_signal_DeviceToBroker_payload_i2c_device_added_replaced_MSGTYPE wippersnapper_i2c_I2cDeviceAddedOrReplaced
 #define wippersnapper_signal_DeviceToBroker_payload_i2c_device_removed_MSGTYPE wippersnapper_i2c_I2cDeviceRemoved
 #define wippersnapper_signal_DeviceToBroker_payload_i2c_device_event_MSGTYPE wippersnapper_i2c_I2cDeviceEvent
-#define wippersnapper_signal_DeviceToBroker_payload_gps_rmc_response_MSGTYPE wippersnapper_gps_GPSRMCResponse
-#define wippersnapper_signal_DeviceToBroker_payload_gps_gga_response_MSGTYPE wippersnapper_gps_GPGGAResponse
+#define wippersnapper_signal_DeviceToBroker_payload_gps_event_MSGTYPE wippersnapper_gps_GPSEvent
 
 extern const pb_msgdesc_t wippersnapper_signal_BrokerToDevice_msg;
 extern const pb_msgdesc_t wippersnapper_signal_DeviceToBroker_msg;
