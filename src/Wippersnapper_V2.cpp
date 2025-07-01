@@ -1034,6 +1034,11 @@ bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
     MsgSignal.payload.uart_input_event =
         *(wippersnapper_uart_UartInputEvent *)payload;
     break;
+  case wippersnapper_signal_DeviceToBroker_gps_event_tag:
+    WS_DEBUG_PRINTLN("GPSEvent");
+    MsgSignal.which_payload = wippersnapper_signal_DeviceToBroker_gps_event_tag;
+    MsgSignal.payload.gps_event = *(wippersnapper_gps_GPSEvent *)payload;
+    break;
   default:
     WS_DEBUG_PRINTLN("ERROR: Invalid signal payload type, bailing out!");
     return false;

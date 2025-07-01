@@ -267,6 +267,13 @@ void GPSController::update() {
       WS_DEBUG_PRINTLN("[gps] Finished processing NMEA sentences.");
       _gps_model->EncodeGPSEvent();
 
+      // TODO: Publish out to IO
+      if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_gps_event_tag,
+                              _gps_model->GetGPSEvent())) {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
+      } else {
+        WS_DEBUG_PRINTLN("[gps] GPSEvent published successfully!");
+      }
       drv->SetPollPeriodPrv(cur_time);
     }
   }
