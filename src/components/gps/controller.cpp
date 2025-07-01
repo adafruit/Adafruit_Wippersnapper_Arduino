@@ -183,8 +183,8 @@ void GPSController::update() {
       }
     }
     WS_DEBUG_PRINTLN("[gps] Finished reading GPS data.");
-
-    // We are done reading for this period
+    // We are done reading for this period, create a new GPSEvent message
+    _gps_model->CreateGPSEvent();
 
     // TODO: This is for debugging purposes only, remove later!
     WS_DEBUG_PRINT("[gps] Read ");
@@ -224,11 +224,50 @@ void GPSController::update() {
         Serial.println((int)drv->GetAdaGps()->antenna);
       }
 
-      // TODO: Okay so here we are going to create the model of gps data
-    }
-    WS_DEBUG_PRINTLN("[gps] Finished processing NMEA sentences.");
-    // TODO: Successfully parsed the NMEA sentence, update the model
+      // now, let's build the model from the sentence
+      // $GPGGA
+      // $GPRMC
+      if (strncmp(nmea_sentence, "$GPRMC", 7)) {
+        // parse GPRMC into event
+        WS_DEBUG_PRINT(
+            "[gps] Adding GGA to GPSEvent..."); // TODO: This is for debug,
+                                                // remove in production!
+        wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
+            drv->GetAdaGps()->hour, drv->GetAdaGps()->minute,
+            drv->GetAdaGps()->seconds, drv->GetAdaGps()->milliseconds,
+            drv->GetAdaGps()->day, drv->GetAdaGps()->month,
+            drv->GetAdaGps()->year);
+        _gps_model->AddGpsEventRMC(
+            datetime, drv->GetAdaGps()->fix, drv->GetAdaGps()->latitude,
+            &drv->GetAdaGps()->lat, drv->GetAdaGps()->longitude,
+            &drv->GetAdaGps()->lon, drv->GetAdaGps()->speed,
+            drv->GetAdaGps()->angle);
+        WS_DEBUG_PRINTLN("added!"); // TODO: THIS IS FOR DEBUG, REMOVE IN PROD
+      } else if (strncmp(nmea_sentence, "$GPRMC", 7)) {
+        // parse GPGGA into event
+        WS_DEBUG_PRINT(
+            "[gps] Adding GGA to GPSEvent..."); // TODO: This is for debug,
+                                                // remove in production!
+        wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
+            drv->GetAdaGps()->hour, drv->GetAdaGps()->minute,
+            drv->GetAdaGps()->seconds, drv->GetAdaGps()->milliseconds,
+            drv->GetAdaGps()->day, drv->GetAdaGps()->month,
+            drv->GetAdaGps()->year);
+        _gps_model->AddGpsEventGGA(
+            datetime, drv->GetAdaGps()->fix, drv->GetAdaGps()->latitude,
+            &drv->GetAdaGps()->lat, drv->GetAdaGps()->longitude,
+            &drv->GetAdaGps()->lon, drv->GetAdaGps()->satellites,
+            drv->GetAdaGps()->HDOP, drv->GetAdaGps()->altitude,
+            drv->GetAdaGps()->geoidheight);
+        WS_DEBUG_PRINTLN("added!"); // TODO: THIS IS FOR DEBUG, REMOVE IN PROD
+      } else {
+        WS_DEBUG_PRINTLN(
+            "[gps] WARNING - Parsed sentence is not type RMC or GGA!");
+      }
+      WS_DEBUG_PRINTLN("[gps] Finished processing NMEA sentences.");
+      _gps_model->EncodeGPSEvent();
 
-    drv->SetPollPeriodPrv(cur_time);
+      drv->SetPollPeriodPrv(cur_time);
+    }
   }
 }

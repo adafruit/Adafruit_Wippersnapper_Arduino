@@ -30,16 +30,18 @@ public:
   wippersnapper_gps_GPSConfig *GetGPSConfigMsg();
   // GPSEvent API
   void CreateGPSEvent();
+  bool EncodeGPSEvent();
+  wippersnapper_gps_GPSEvent *GetGPSEvent();
   wippersnapper_gps_GPSDateTime CreateGpsDatetime(uint8_t hour, uint8_t minute,
                                                   uint8_t seconds,
                                                   uint8_t milliseconds,
                                                   uint8_t day, uint8_t month,
                                                   uint8_t year);
-  bool AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
+  bool AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
                       uint8_t fix_status, float lat, char *lat_dir, float lon,
                       char *lon_dir, float speed, float angle);
 
-  bool AddGpsEventGGA(wippersnapper_gps_GPSDateTime *datetime,
+  bool AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
                       uint8_t fix_status, float lat, char *lat_dir, float lon,
                       char *lon_dir, uint8_t num_sats, float hdop, float alt,
                       float geoid_height);

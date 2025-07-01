@@ -64,6 +64,30 @@ void GPSModel::CreateGPSEvent() {
 }
 
 /*!
+ * @brief Encodes the GPSEvent message into a buffer.
+ * @returns True if the encoding was successful, false otherwise.
+ */
+bool GPSModel::EncodeGPSEvent() {
+  // Calculate the size of the encoded message
+  size_t sz_msg;
+  if (!pb_get_encoded_size(&sz_msg, wippersnapper_gps_GPSEvent_fields,
+                           &_msg_gps_event))
+    return false;
+
+  // Attempt to encode the message into a buffer
+  uint8_t buf[sz_msg];
+  pb_ostream_t msg_stream = pb_ostream_from_buffer(buf, sizeof(buf));
+  return pb_encode(&msg_stream, wippersnapper_gps_GPSEvent_fields,
+                   &_msg_gps_event);
+}
+
+/*!
+ * @brief Returns a pointer to the GPSEvent message.
+ * @returns Pointer to the GPSEvent message.
+ */
+wippersnapper_gps_GPSEvent *GPSModel::GetGPSEvent() { return &_msg_gps_event; };
+
+/*!
  * @brief Creates a GPSDateTime message with the provided parameters.
  * @param hour GMT hour of the day (0-23).
  * @param minute GMT minute of the hour (0-59).
@@ -90,7 +114,7 @@ GPSModel::CreateGpsDatetime(uint8_t hour, uint8_t minute, uint8_t seconds,
   return datetime;
 }
 
-bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
+bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
                               uint8_t fix_status, float lat, char *lat_dir,
                               float lon, char *lon_dir, float speed,
                               float angle) {
@@ -106,13 +130,8 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
 
   wippersnapper_gps_GPSRMCResponse rmc_response;
   rmc_response = wippersnapper_gps_GPSRMCResponse_init_zero;
-  // Assign the datetime, if provided
-  if (datetime) {
-    rmc_response.has_datetime = true;
-    rmc_response.datetime = *datetime;
-  } else {
-    rmc_response.has_datetime = false;
-  }
+  rmc_response.has_datetime = true;
+  rmc_response.datetime = datetime;
 
   // Determine the fix status
   if (fix_status == 1 || fix_status == 2) {
@@ -141,7 +160,7 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime *datetime,
   return true;
 }
 
-bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime *datetime,
+bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
                               uint8_t fix_status, float lat, char *lat_dir,
                               float lon, char *lon_dir, uint8_t num_sats,
                               float hdop, float alt, float geoid_height) {
@@ -158,13 +177,8 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime *datetime,
 
   wippersnapper_gps_GPGGAResponse gga_response;
   gga_response = wippersnapper_gps_GPGGAResponse_init_zero;
-  // Assign the datetime, if provided
-  if (datetime) {
-    gga_response.has_datetime = true;
-    gga_response.datetime = *datetime;
-  } else {
-    gga_response.has_datetime = false;
-  }
+  gga_response.has_datetime = true;
+  gga_response.datetime = datetime;
 
   // Fill lat/lon and direction
   snprintf(gga_response.lat, sizeof(gga_response.lat), "%.6f", lat);
