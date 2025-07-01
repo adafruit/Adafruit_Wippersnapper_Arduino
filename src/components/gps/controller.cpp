@@ -225,12 +225,9 @@ void GPSController::update() {
       }
 
       // now, let's build the model from the sentence
-      // $GPGGA
-      // $GPRMC
-      if (strncmp(nmea_sentence, "$GPRMC", 7)) {
-        // parse GPRMC into event
+      if (strncmp(nmea_sentence, "$GPRMC", 6) == 0) {
         WS_DEBUG_PRINT(
-            "[gps] Adding GGA to GPSEvent..."); // TODO: This is for debug,
+            "[gps] Adding RMC to GPSEvent..."); // TODO: This is for debug,
                                                 // remove in production!
         wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
             drv->GetAdaGps()->hour, drv->GetAdaGps()->minute,
@@ -243,8 +240,7 @@ void GPSController::update() {
             &drv->GetAdaGps()->lon, drv->GetAdaGps()->speed,
             drv->GetAdaGps()->angle);
         WS_DEBUG_PRINTLN("added!"); // TODO: THIS IS FOR DEBUG, REMOVE IN PROD
-      } else if (strncmp(nmea_sentence, "$GPRMC", 7)) {
-        // parse GPGGA into event
+      } else if (strncmp(nmea_sentence, "$GPGGA", 6) == 0) {
         WS_DEBUG_PRINT(
             "[gps] Adding GGA to GPSEvent..."); // TODO: This is for debug,
                                                 // remove in production!
@@ -264,17 +260,21 @@ void GPSController::update() {
         WS_DEBUG_PRINTLN(
             "[gps] WARNING - Parsed sentence is not type RMC or GGA!");
       }
-      WS_DEBUG_PRINTLN("[gps] Finished processing NMEA sentences.");
-      _gps_model->EncodeGPSEvent();
-
-      // TODO: Publish out to IO
+    }
+    // Encode and publish to IO
+    WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
+    bool did_encode = _gps_model->EncodeGPSEvent();
+    if (!did_encode) {
+      WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
+    } else {
+      // Publish the GPSEvent to IO
       if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_gps_event_tag,
                               _gps_model->GetGPSEvent())) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
       } else {
         WS_DEBUG_PRINTLN("[gps] GPSEvent published successfully!");
       }
-      drv->SetPollPeriodPrv(cur_time);
     }
+    drv->SetPollPeriodPrv(cur_time);
   }
 }
