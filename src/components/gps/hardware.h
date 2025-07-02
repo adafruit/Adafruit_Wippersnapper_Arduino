@@ -26,6 +26,7 @@
 #define DEFAULT_MTK_NMEA_UPDATE_RATE 1  ///< Default NMEA update rate in Hz
 #define DEFAULT_MTK_NMEA_BAUD_RATE 9600 ///< Default NMEA baud rate in bits per
 #define MAX_NEMA_SENTENCE_LEN 82        ///< Maximum length of a NMEA sentence
+#define PA1010D_I2C_ADDRESS 0x10        ///< I2C address for PA1010D GPS module
 
 class Wippersnapper_V2; ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
@@ -56,6 +57,7 @@ public:
   ~GPSHardware();
   bool begin();
   bool SetInterface(HardwareSerial *serial);
+  bool SetInterface(TwoWire *wire);
   void SetPollPeriod(ulong poll_period);
   void SetPollPeriodPrv(ulong poll_period_prv);
   ulong GetPollPeriod();
@@ -66,7 +68,7 @@ public:
   int GetNmeaUpdateRate();
   void SetNmeaBaudRate(int nmea_baud_rate);
   int GetNmeaBaudRate();
-  // TODO: Add SetInterface(I2C *_i2c_hardware) for I2C support here!
+  void SetI2CAddress(uint32_t i2c_address);
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
   Adafruit_GPS *GetAdaGps();
   GpsDriverType GetDriverType();
@@ -78,12 +80,12 @@ private:
   GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
   GpsDriverType _driver_type;           ///< Type of GPS driver used
   HardwareSerial *_hw_serial = nullptr; ///< HardwareSerial instance for GPS;
+  TwoWire *_wire = nullptr;             ///< TwoWire instance for I2C GPS
   Adafruit_GPS *_ada_gps = nullptr;     ///< Adafruit GPS instance
-  ulong _period;     ///< Polling period for GPS data (Specified by IO), in
-                     ///< milliseconds
-  ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in
-                     ///< milliseconds
-  ulong _kat_prv;    ///< Last time the GPS hardware was polled, in milliseconds
+  uint32_t _addr;                       ///< I2C address for GPS device
+  ulong _period;     ///< Polling period for GPS data (Specified by IO), in ms
+  ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in ms
+  ulong _kat_prv;    ///< Last time the GPS hardware was polled, in ms
   int _nmea_update_rate; ///< NMEA update rate for GPS data, in Hz
   int _nmea_baud_rate;   ///< NMEA baud rate for GPS data, in bits per second
 };

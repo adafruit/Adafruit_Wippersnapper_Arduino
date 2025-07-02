@@ -20,6 +20,8 @@
 GPSHardware::GPSHardware() {
   _iface_type = GPS_IFACE_NONE;
   _driver_type = GPS_DRV_NONE;
+  _nmea_baud_rate = DEFAULT_MTK_NMEA_BAUD_RATE;
+  _nmea_update_rate = DEFAULT_MTK_NMEA_UPDATE_RATE;
 }
 
 /*!
@@ -96,9 +98,24 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
 bool GPSHardware::SetInterface(HardwareSerial *serial) {
   if (serial == nullptr)
     return false;
-  // Set the hardware serial interface
+  // Configure the hardware serial interface
   _hw_serial = serial;
   _iface_type = GPS_IFACE_UART_HW;
+  return true;
+}
+
+/*!
+ * @brief Sets a TwoWire (I2C) interface for the GPS controller.
+ * @param wire
+ *        Points to a TwoWire instance.
+ * @returns True if the interface was set successfully, False otherwise.
+ */
+bool GPSHardware::SetInterface(TwoWire *wire) {
+  if (wire == nullptr)
+    return false;
+  // Configure the I2C interface
+  _wire = wire;
+  _iface_type = GPS_IFACE_I2C;
   return true;
 }
 
@@ -109,9 +126,8 @@ bool GPSHardware::SetInterface(HardwareSerial *serial) {
  * otherwise.
  */
 bool GPSHardware::begin() {
-  // Validate if the interface type is set
   if (_iface_type == GPS_IFACE_NONE) {
-    WS_DEBUG_PRINTLN("[gps] ERROR: No interface type configured!");
+    WS_DEBUG_PRINTLN("[gps] ERROR: No interface configured for GPS!");
     return false;
   }
 
@@ -120,9 +136,8 @@ bool GPSHardware::begin() {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to query GPS module type!");
     return false;
   }
+  WS_DEBUG_PRINTLN("[gps] Module detected, ready for commands!");
 
-  WS_DEBUG_PRINTLN(
-      "[gps] GPS module type detected successfully and ready for commands!");
   return true;
 }
 
@@ -132,32 +147,48 @@ bool GPSHardware::begin() {
  * @returns True if the driver type was detected successfully, False otherwise.
  */
 bool GPSHardware::QueryModuleType() {
-  // Validate if the interface is set
-  if (_iface_type == GPS_IFACE_NONE) {
-    WS_DEBUG_PRINTLN("[gps] ERROR: No interface configured for GPS!");
-    return false;
-  }
   WS_DEBUG_PRINTLN("[gps] Attempting to detect GPS module type...");
 
-  // Try to detect MediaTek GPS module
-  if (DetectMediatek()) {
-    WS_DEBUG_PRINTLN("[gps] Using MediaTek GPS driver!");
-    return true;
+  if (_iface_type == GPS_IFACE_UART_HW) {
+    // Try to detect MediaTek GPS module
+    if (DetectMediatek()) {
+      WS_DEBUG_PRINTLN("[gps] Using MediaTek GPS driver!");
+      return true;
+    }
+
+    WS_DEBUG_PRINTLN("[gps] Failed to detect MTK GPS, attempting to detect "
+                     "u-blox GPS module...");
+    // TODO: Implement u-blox detection here
+    // if (DetectUblox()) {
+    //   return true;
+    // }
+
+    WS_DEBUG_PRINTLN(
+        "[gps] ERROR: Failed to detect GPS driver type, attempting "
+        "to use generic driver!");
+    // TODO: Implement generic NMEA GPS driver detection
+
+    // No responses from the GPS module over the defined iface, so we bail out
+    WS_DEBUG_PRINTLN("[gps] ERROR: No GPS driver type detected!");
+  } else if (_iface_type == GPS_IFACE_I2C) {
+    if (_addr == PA1010D_I2C_ADDRESS) {
+      WS_DEBUG_PRINT("[gps] Attempting to use PA1010D driver...");
+      // Attempt to use Adafruit_GPS I2c interface
+      _ada_gps = new Adafruit_GPS(_hw_serial);
+      if (!_ada_gps->begin(_addr)) {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
+        return false;
+      }
+      WS_DEBUG_PRINTLN("ok!");
+      _driver_type = GPS_DRV_MTK;
+      return true;
+    } else {
+      WS_DEBUG_PRINTLN(
+          "[gps] ERROR: Only PA1010D i2c module is supported at this time!");
+      return false;
+    }
   }
 
-  WS_DEBUG_PRINTLN("[gps] Failed to detect MTK GPS, attempting to detect "
-                   "u-blox GPS module...");
-  // TODO: Implement u-blox detection here
-  // if (DetectUblox()) {
-  //   return true;
-  // }
-
-  WS_DEBUG_PRINTLN("[gps] ERROR: Failed to detect GPS driver type, attempting "
-                   "to use generic driver!");
-  // TODO: Implement generic NMEA GPS driver detection
-
-  // No responses from the GPS module over the defined iface, so we bail out
-  WS_DEBUG_PRINTLN("[gps] ERROR: No GPS driver type detected!");
   return false;
 }
 
@@ -212,17 +243,12 @@ bool GPSHardware::DetectMediatek() {
   }
 
   // Attempt to use Adafruit_GPS
-  if (_ada_gps != nullptr) {
-    delete _ada_gps; // Clean up previous instance if it exists
-  }
   _ada_gps = new Adafruit_GPS(_hw_serial);
   if (!_ada_gps->begin(_hw_serial->baudRate())) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
     return false;
   }
   _driver_type = GPS_DRV_MTK;
-  _nmea_baud_rate = DEFAULT_MTK_NMEA_BAUD_RATE;
-  _nmea_update_rate = DEFAULT_MTK_NMEA_UPDATE_RATE;
   return true;
 }
 
@@ -312,6 +338,13 @@ void GPSHardware::SetNmeaBaudRate(int nmea_baud_rate) {
  * @returns The NMEA baud rate, in bits per second.
  */
 int GPSHardware::GetNmeaBaudRate() { return _nmea_baud_rate; }
+
+/*!
+ * @brief Sets the I2C address for a GPS.
+ * @param i2c_address
+ *       The I2C address to set for the GPS device.
+ */
+void GPSHardware::SetI2CAddress(uint32_t i2c_address) { _addr = i2c_address; }
 
 /*!
  * @brief Sets the last time the GPS hardware was polled.

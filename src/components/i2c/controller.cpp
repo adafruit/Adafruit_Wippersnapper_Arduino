@@ -881,7 +881,7 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   bool is_output = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->is_output;
 
   // Is this a i2c GPS?
-  bool is_gps = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->has_gps_config;
+  bool is_gps = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->is_gps;
 
   // TODO [Online]: Handle Replace messages by implementing the Remove handler
   // first...then proceed to adding a new device
@@ -954,14 +954,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   bool did_init = false;
   drvBase *drv = nullptr;
   drvOutputBase *drv_out = nullptr;
-  if (!is_output) {
-    drv = CreateI2cSensorDrv(device_name, bus,
-                             device_descriptor.i2c_device_address,
-                             device_descriptor.i2c_mux_channel, device_status);
-    if (drv != nullptr) {
-      did_init = true;
-    }
-  } else {
+  GPSController *drv_uart_gps = nullptr;
+
+  if (is_output) {
     WS_DEBUG_PRINT("[i2c] Creating an I2C output driver...");
     drv_out = CreateI2cOutputDrv(
         device_name, bus, device_descriptor.i2c_device_address,
@@ -970,10 +965,30 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       did_init = true;
     }
     WS_DEBUG_PRINTLN("OK!");
+  } else if (is_gps) {
+    WS_DEBUG_PRINT("[i2c] Creating a GPS driver...");
+    // TODO: You were here!
+    // bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr, wippersnapper_gps_GPSConfig *gps_config) {
+    if (!WsV2._gps_controller->AddGPS(bus, device_descriptor.i2c_device_address, &_i2c_model->GetI2cDeviceAddOrReplaceMsg()->gps_config)) {
+      did_init = false;
+      WS_DEBUG_PRINTLN("FAILURE!");
+    } else {
+      did_init = true;
+      WS_DEBUG_PRINTLN("OK!");
+      // TODO: We are doing an early-out here and should publish back to IO!
+      return true;
+    }
+  } else {
+    drv = CreateI2cSensorDrv(device_name, bus,
+                             device_descriptor.i2c_device_address,
+                             device_descriptor.i2c_mux_channel, device_status);
+    if (drv != nullptr) {
+      did_init = true;
+    }
   }
 
   if (!did_init) {
-    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver type not found or unsupported!");
+    WS_DEBUG_PRINTLN("[i2c] ERROR: I2C driver failed to initialize!");
     if (WsV2._sdCardV2->isModeOffline()) {
       WsV2.haltErrorV2("[i2c] Driver failed to initialize!\n\tDid you set "
                        "the correct value for i2cDeviceName?\n\tDid you set "

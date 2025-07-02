@@ -37,6 +37,41 @@ GPSController::~GPSController() {
 }
 
 /*!
+ * @brief Adds an I2C GPS hardware instance to the controller.
+ * @param wire Pointer to the TwoWire instance for I2C communication.
+ * @param i2c_addr I2C address of the GPS device.
+ * @param gps_config Pointer to the GPS configuration message.
+ * @return True if the GPS was added successfully, false otherwise.
+ */
+bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
+                           wippersnapper_gps_GPSConfig *gps_config) {
+  GPSHardware *gps_hw = new GPSHardware();
+
+  if (!gps_hw->SetInterface(wire)) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to set module interface!");
+    delete gps_hw;
+    return false;
+  }
+
+  gps_hw->SetI2CAddress(i2c_addr);
+  if (!gps_hw->begin()) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize module!");
+    delete gps_hw;
+    return false;
+  }
+
+  if (!gps_hw->Handle_GPSConfig(gps_config)) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Configuration failed!");
+    delete gps_hw;
+    return false;
+  }
+
+  _gps_drivers.push_back(gps_hw);
+  WS_DEBUG_PRINTLN("[gps] GPS hardware added successfully!");
+  return true;
+}
+
+/*!
  * @brief Adds a GPS hardware instance to the controller.
  * @param serial Pointer to the HardwareSerial instance for GPS communication.
  * @param gps_config Pointer to the GPS configuration message.
@@ -47,7 +82,7 @@ bool GPSController::AddGPS(HardwareSerial *serial,
   GPSHardware *gps_hw = new GPSHardware();
 
   if (!gps_hw->SetInterface(serial)) {
-    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to set GPS interface!");
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to set GPS UART interface!");
     delete gps_hw;
     return false;
   }
