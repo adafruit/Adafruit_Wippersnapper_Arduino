@@ -87,7 +87,7 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
 
     _d6t1a->read();
     _deviceTemp = (float)_d6t1a->ambientTempC();
-    _objectTemp = (float)_d6t1a->objectTempC();
+    _objectTemp = (float)_d6t1a->objectTempC(0, 0);
     _lastRead = millis();
     return true;
   }
