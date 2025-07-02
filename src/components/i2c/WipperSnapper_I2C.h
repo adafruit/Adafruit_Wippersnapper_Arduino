@@ -27,6 +27,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_BME680.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP3XX.h"
+#include "drivers/WipperSnapper_I2C_Driver_D6T1A.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_DS2484.h"
 #include "drivers/WipperSnapper_I2C_Driver_ENS160.h"

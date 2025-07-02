@@ -292,6 +292,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _bme680->configureDriver(msgDeviceInitReq);
     drivers.push_back(_bme680);
     WS_DEBUG_PRINTLN("BME680 Initialized Successfully!");
+  } else if (strcmp("d6t1a", msgDeviceInitReq->i2c_device_name) == 0) {
+    _d6t1a = new WipperSnapper_I2C_Driver_D6T1A(this->_i2c, i2cAddress);
+    if (!_d6t1a->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize D6T1A");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _d6t1a->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_d6t1a);
+    WS_DEBUG_PRINTLN("D6T1A Initialized Successfully!");
   } else if (strcmp("dps310", msgDeviceInitReq->i2c_device_name) == 0) {
     _dps310 = new WipperSnapper_I2C_Driver_DPS310(this->_i2c, i2cAddress);
     if (!_dps310->begin()) {
