@@ -57,7 +57,7 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
   */
   /*******************************************************************************/
   bool begin() {
-    _d6t1a = new OmronD6T(OmronD6T.Model.D6T_1A, _i2c);
+    _d6t1a = new OmronD6T(OmronD6T::Model.D6T_1A, _i2c);
     // attempt to initialize D6T1A
     if (!_d6t1a->begin(_sensorAddress)) return false;
     return true;
@@ -86,8 +86,8 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
     }
 
     _d6t1a->read();
-    _deviceTemp.temperature = _d6t1a->ambientTempC();
-    _objectTemp.relative_humidity = _d6t1a->objectTempC();
+    _deviceTemp = _d6t1a->ambientTempC();
+    _objectTemp = _d6t1a->objectTempC();
     _lastRead = millis();
     return true;
   }
@@ -102,7 +102,7 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() && _deviceTemp != nan) {
+    if (ReadSensorData() && _deviceTemp != NAN) {
       // if the sensor was read recently, return the cached temperature
       tempEvent->temperature = _deviceTemp;
       return true;
@@ -120,7 +120,7 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
   */
   /*******************************************************************************/
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
-    if (ReadSensorData() && _objectTemp != nan) {
+    if (ReadSensorData() && _objectTemp != NAN) {
       // if the sensor was read recently, return the cached temperature
       tempEvent->temperature = _objectTemp;
       return true;
@@ -129,8 +129,8 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
   }
 
  protected:
-  float _deviceTemp = nan;  ///< Device temperature in Celsius
-  float _objectTemp = nan;  ///< Object temperature in Celsius
+  float _deviceTemp = NAN;  ///< Device temperature in Celsius
+  float _objectTemp = NAN;  ///< Object temperature in Celsius
   uint32_t _lastRead = 0;   ///< Last time the sensor was read in milliseconds
   OmronD6T *_d6t1a = nullptr;  ///< D6T1A object
 };
