@@ -16,8 +16,9 @@
 #ifndef WipperSnapper_I2C_Driver_D6T1A_H
 #define WipperSnapper_I2C_Driver_D6T1A_H
 
-#include "WipperSnapper_I2C_Driver.h"
 #include <OmronD6T.h>
+
+#include "WipperSnapper_I2C_Driver.h"
 
 /**************************************************************************/
 /*!
@@ -26,8 +27,7 @@
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
-
-public:
+ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an D6T1A sensor.
@@ -57,13 +57,11 @@ public:
   */
   /*******************************************************************************/
   bool begin() {
-    _d6t1a = new OmronD6T( OmronD6T.Model.D6T_1A, _i2c);
+    _d6t1a = new OmronD6T(OmronD6T.Model.D6T_1A, _i2c);
     // attempt to initialize D6T1A
-    if (!_d6t1a->begin(_sensorAddress))
-      return false;
+    if (!_d6t1a->begin(_sensorAddress)) return false;
     return true;
   }
-
 
   /*******************************************************************************/
   /*!
@@ -94,8 +92,6 @@ public:
     return true;
   }
 
-
-
   /*******************************************************************************/
   /*!
       @brief    Gets the D6T1A's current temperature.
@@ -111,7 +107,7 @@ public:
       tempEvent->temperature = _deviceTemp;
       return true;
     }
-    return false; // sensor not read recently, return false
+    return false;  // sensor not read recently, return false
   }
 
   /*******************************************************************************/
@@ -129,15 +125,14 @@ public:
       tempEvent->temperature = _objectTemp;
       return true;
     }
-    return false; // sensor not read recently, return false
+    return false;  // sensor not read recently, return false
   }
 
-
-protected:
-  float _deviceTemp = nan; ///< Device temperature in Celsius
-  float _objectTemp = nan; ///< Object temperature in Celsius
-  uint32_t _lastRead = 0; ///< Last time the sensor was read in milliseconds
-  OmronD6T *_d6t1a = nullptr; ///< D6T1A object
+ protected:
+  float _deviceTemp = nan;  ///< Device temperature in Celsius
+  float _objectTemp = nan;  ///< Object temperature in Celsius
+  uint32_t _lastRead = 0;   ///< Last time the sensor was read in milliseconds
+  OmronD6T *_d6t1a = nullptr;  ///< D6T1A object
 };
 
-#endif // WipperSnapper_I2C_Driver_D6T1A
+#endif  // WipperSnapper_I2C_Driver_D6T1A
