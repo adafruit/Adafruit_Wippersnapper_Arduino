@@ -57,7 +57,7 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
   */
   /*******************************************************************************/
   bool begin() {
-    _d6t1a = new OmronD6T(OmronD6T::Model.D6T_1A, _i2c);
+    _d6t1a = new OmronD6T(OmronD6T::D6T_1A, _i2c);
     // attempt to initialize D6T1A
     if (!_d6t1a->begin(_sensorAddress)) return false;
     return true;
@@ -86,8 +86,8 @@ class WipperSnapper_I2C_Driver_D6T1A : public WipperSnapper_I2C_Driver {
     }
 
     _d6t1a->read();
-    _deviceTemp = _d6t1a->ambientTempC();
-    _objectTemp = _d6t1a->objectTempC();
+    _deviceTemp = (float)_d6t1a->ambientTempC();
+    _objectTemp = (float)_d6t1a->objectTempC();
     _lastRead = millis();
     return true;
   }
