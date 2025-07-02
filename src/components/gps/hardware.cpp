@@ -59,23 +59,28 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
     // TODO: We may want to break this out into a generic function that supports
     // MTK, Ublox, etc...
     for (size_t i = 0; i < gps_config->commands_count; i++) {
-      WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
-      WS_DEBUG_PRINTLN(gps_config->commands[i]);
       // Build the PMTK ACK response for the command
       char msg_resp[MAX_NEMA_SENTENCE_LEN];
+      WS_DEBUG_PRINT("[gps] Building PMTK ACK response for command: ");
       if (!BuildPmtkAck(gps_config->commands[i], msg_resp)) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to build PMTK ACK response!");
         return false;
       }
-      // Flush the RX/TX buffers before sending
-      _hw_serial->flush();
-      while (_hw_serial->available() > 0) {
-        _hw_serial->read();
+      WS_DEBUG_PRINTLN(msg_resp);
+      if (_iface_type == GPS_IFACE_UART_HW) {
+        // Flush the RX/TX buffers before sending
+        _hw_serial->flush();
+        while (_hw_serial->available() > 0) {
+            _hw_serial->read();
+        }
       }
+      WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
+      WS_DEBUG_PRINTLN(gps_config->commands[i]);
       // Send the command to the GPS module
       _ada_gps->sendCommand(gps_config->commands[i]);
+      WS_DEBUG_PRINTLN("[gps] Command sent, waiting for response...");
       // and wait for the corresponding response from the GPS module
-      if (!_ada_gps->waitForSentence(msg_resp)) {
+      if (! _ada_gps->waitForSentence(msg_resp)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
         WS_DEBUG_PRINTLN(gps_config->commands[i]);
         return false;
@@ -175,12 +180,15 @@ bool GPSHardware::QueryModuleType() {
       WS_DEBUG_PRINT("[gps] Attempting to use PA1010D driver...");
       // Attempt to use Adafruit_GPS I2c interface
       _ada_gps = new Adafruit_GPS(_hw_serial);
-      if (!_ada_gps->begin(_addr)) {
+      if (! _ada_gps->begin(_addr)) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
         return false;
       }
       WS_DEBUG_PRINTLN("ok!");
       _driver_type = GPS_DRV_MTK;
+      WS_DEBUG_PRINT("sending RMCGGA...");
+      _ada_gps->sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+      WS_DEBUG_PRINTLN("Sent command!");
       return true;
     } else {
       WS_DEBUG_PRINTLN(
