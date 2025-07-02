@@ -271,7 +271,7 @@ extern const pb_msgdesc_t wippersnapper_signal_DeviceToBroker_msg;
 
 /* Maximum encoded size of messages (where known) */
 #if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_digitalio_DigitalIOWrite_size) && defined(wippersnapper_uart_UartAdd_size) && defined(wippersnapper_uart_UartWrite_size)
-union wippersnapper_signal_BrokerToDevice_payload_size_union {char f12[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f13[(6 + wippersnapper_digitalio_DigitalIOWrite_size)]; char f80[(7 + wippersnapper_uart_UartAdd_size)]; char f82[(7 + wippersnapper_uart_UartWrite_size)]; char f0[1601];};
+union wippersnapper_signal_BrokerToDevice_payload_size_union {char f12[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f13[(6 + wippersnapper_digitalio_DigitalIOWrite_size)]; char f80[(7 + wippersnapper_uart_UartAdd_size)]; char f82[(7 + wippersnapper_uart_UartWrite_size)]; char f0[1597];};
 #endif
 #if defined(wippersnapper_digitalio_DigitalIOEvent_size) && defined(wippersnapper_analogio_AnalogIOEvent_size) && defined(wippersnapper_ds18x20_Ds18x20Event_size) && defined(wippersnapper_uart_UartInputEvent_size) && defined(wippersnapper_i2c_I2cDeviceEvent_size)
 union wippersnapper_signal_DeviceToBroker_payload_size_union {char f10[(6 + wippersnapper_digitalio_DigitalIOEvent_size)]; char f20[(7 + wippersnapper_analogio_AnalogIOEvent_size)]; char f80[(7 + wippersnapper_ds18x20_Ds18x20Event_size)]; char f92[(7 + wippersnapper_uart_UartInputEvent_size)]; char f113[(7 + wippersnapper_i2c_I2cDeviceEvent_size)]; char f0[6246];};

@@ -880,6 +880,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   // Is this an i2c output device?
   bool is_output = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->is_output;
 
+  // Is this a i2c GPS?
+  bool is_gps = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->has_gps_config;
+
   // TODO [Online]: Handle Replace messages by implementing the Remove handler
   // first...then proceed to adding a new device
 
