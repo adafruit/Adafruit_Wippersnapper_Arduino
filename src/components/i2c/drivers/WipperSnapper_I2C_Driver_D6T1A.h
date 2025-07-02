@@ -64,6 +64,38 @@ public:
     return true;
   }
 
+
+  /*******************************************************************************/
+  /*!
+      @brief    Checks if sensor was read within last 1s, or is the first read.
+      @returns  True if the sensor was recently read, False otherwise.
+  */
+  /*******************************************************************************/
+  bool HasBeenReadInLast200ms() {
+    return _lastRead != 0 && millis() - _lastRead < 200;
+  }
+
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the sensor.
+      @returns  True if the sensor was read successfully, False otherwise.
+  */
+  /*******************************************************************************/
+  bool ReadSensorData() {
+    // dont read sensor more than once per 200ms
+    if (HasBeenReadInLast200ms()) {
+      return true;
+    }
+
+    _d6t1a->read();
+    _deviceTemp.temperature = _d6t1a->ambientTempC();
+    _objectTemp.relative_humidity = _d6t1a->objectTempC();
+    _lastRead = millis();
+    return true;
+  }
+
+
+
   /*******************************************************************************/
   /*!
       @brief    Gets the D6T1A's current temperature.
@@ -74,8 +106,12 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _d6t1a->ambientTempC();
-    return true;
+    if (ReadSensorData() && _deviceTemp != nan) {
+      // if the sensor was read recently, return the cached temperature
+      tempEvent->temperature = _deviceTemp;
+      return true;
+    }
+    return false; // sensor not read recently, return false
   }
 
   /*******************************************************************************/
@@ -88,13 +124,20 @@ public:
   */
   /*******************************************************************************/
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
-    tempEvent->temperature = _d6t1a->objectTempC();
-    return true;
+    if (ReadSensorData() && _objectTemp != nan) {
+      // if the sensor was read recently, return the cached temperature
+      tempEvent->temperature = _objectTemp;
+      return true;
+    }
+    return false; // sensor not read recently, return false
   }
 
 
 protected:
-  OmronD6T *_d6t1a; ///< D6T1A  object
+  float _deviceTemp = nan; ///< Device temperature in Celsius
+  float _objectTemp = nan; ///< Object temperature in Celsius
+  uint32_t _lastRead = 0; ///< Last time the sensor was read in milliseconds
+  OmronD6T *_d6t1a = nullptr; ///< D6T1A object
 };
 
 #endif // WipperSnapper_I2C_Driver_D6T1A
