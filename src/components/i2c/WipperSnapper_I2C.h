@@ -149,6 +149,7 @@ private:
       _drivers_out; ///< List of i2c output drivers
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
+  WipperSnapper_I2C_Driver_D6T1A *_d6t1a = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_DS2484 *_ds2484 = nullptr;
   WipperSnapper_I2C_Driver_ENS160 *_ens160 = nullptr;
