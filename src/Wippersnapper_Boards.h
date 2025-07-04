@@ -208,7 +208,7 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
-#elif defined(ARDUINO_SEEED_XIAO_ESP32S3)
+#elif defined(ARDUINO_XIAO_ESP32S3)
 #define BOARD_ID "seeed-xiao-esp32s3"
 #define USE_TINYUSB
 #define USE_STATUS_LED
