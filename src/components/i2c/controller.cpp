@@ -967,8 +967,6 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     WS_DEBUG_PRINTLN("OK!");
   } else if (is_gps) {
     WS_DEBUG_PRINT("[i2c] Creating a GPS driver...");
-    // TODO: You were here!
-    // bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr, wippersnapper_gps_GPSConfig *gps_config) {
     if (!WsV2._gps_controller->AddGPS(bus, device_descriptor.i2c_device_address, &_i2c_model->GetI2cDeviceAddOrReplaceMsg()->gps_config)) {
       did_init = false;
       WS_DEBUG_PRINTLN("FAILURE!");

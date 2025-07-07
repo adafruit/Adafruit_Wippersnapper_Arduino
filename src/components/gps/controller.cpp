@@ -92,6 +92,8 @@ bool GPSController::AddGPS(HardwareSerial *serial,
     delete gps_hw;
     return false;
   }
+  // Required - let the GPS spit out its initial data
+  delay(1000);
 
   if (!gps_hw->Handle_GPSConfig(gps_config)) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to configure GPS!");

@@ -71,7 +71,7 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
         // Flush the RX/TX buffers before sending
         _hw_serial->flush();
         while (_hw_serial->available() > 0) {
-            _hw_serial->read();
+          _hw_serial->read();
         }
       }
       WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
@@ -80,7 +80,8 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
       _ada_gps->sendCommand(gps_config->commands[i]);
       WS_DEBUG_PRINTLN("[gps] Command sent, waiting for response...");
       // and wait for the corresponding response from the GPS module
-      if (! _ada_gps->waitForSentence(msg_resp)) {
+      if (!_ada_gps->waitForSentence(
+              "$PMTK705,AXN_5.1.7_3333_19020118,0027,PA1010D,1.0*76")) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
         WS_DEBUG_PRINTLN(gps_config->commands[i]);
         return false;
@@ -179,16 +180,13 @@ bool GPSHardware::QueryModuleType() {
     if (_addr == PA1010D_I2C_ADDRESS) {
       WS_DEBUG_PRINT("[gps] Attempting to use PA1010D driver...");
       // Attempt to use Adafruit_GPS I2c interface
-      _ada_gps = new Adafruit_GPS(_hw_serial);
-      if (! _ada_gps->begin(_addr)) {
+      _ada_gps = new Adafruit_GPS(_wire);
+      if (!_ada_gps->begin(_addr)) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
         return false;
       }
       WS_DEBUG_PRINTLN("ok!");
       _driver_type = GPS_DRV_MTK;
-      WS_DEBUG_PRINT("sending RMCGGA...");
-      _ada_gps->sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-      WS_DEBUG_PRINTLN("Sent command!");
       return true;
     } else {
       WS_DEBUG_PRINTLN(
