@@ -55,13 +55,17 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
       WS_DEBUG_PRINTLN("[gps] ERROR: No GPSConfig message found!");
       return false;
     }
+
+    // Delay for two seconds to allow the GPS module to initialize
+    WS_DEBUG_PRINTLN("[gps] Delaying for 1 second");
+    delay(1000);
     // Iterate through the command sentences and send them to the GPS module
     // TODO: We may want to break this out into a generic function that supports
     // MTK, Ublox, etc...
     for (size_t i = 0; i < gps_config->commands_count; i++) {
       // Build the PMTK ACK response for the command
       char msg_resp[MAX_NEMA_SENTENCE_LEN];
-      WS_DEBUG_PRINT("[gps] Building PMTK ACK response for command: ");
+      WS_DEBUG_PRINT("[gps] Building PMTK ACK response: ");
       if (!BuildPmtkAck(gps_config->commands[i], msg_resp)) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to build PMTK ACK response!");
         return false;
@@ -76,12 +80,27 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
       }
       WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
       WS_DEBUG_PRINTLN(gps_config->commands[i]);
+      // Clear the tx and rx buffer before sending the command
+      WS_DEBUG_PRINT("[gps] Clearing buffer before sending command...");
+      // Clear any pending GPS data
+      uint8_t buf[32];
+      int maxReads = 10; // Prevent infinite loop
+      while (maxReads-- > 0) {
+        Wire.requestFrom(PA1010D_I2C_ADDRESS, 32);
+        if (Wire.available() == 0)
+          break; // No more data
+
+        while (Wire.available()) {
+          Wire.read(); // Discard
+        }
+        delay(10); // Give GPS time to refill buffer
+      }
+      WS_DEBUG_PRINTLN("cleared!");
       // Send the command to the GPS module
       _ada_gps->sendCommand(gps_config->commands[i]);
       WS_DEBUG_PRINTLN("[gps] Command sent, waiting for response...");
       // and wait for the corresponding response from the GPS module
-      if (!_ada_gps->waitForSentence(
-              "$PMTK705,AXN_5.1.7_3333_19020118,0027,PA1010D,1.0*76")) {
+      if (!_ada_gps->waitForSentence(msg_resp, 100)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
         WS_DEBUG_PRINTLN(gps_config->commands[i]);
         return false;
