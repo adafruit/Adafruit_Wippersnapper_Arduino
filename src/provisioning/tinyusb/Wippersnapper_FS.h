@@ -59,7 +59,7 @@ public:
   void parseSecrets();
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
-  bool parseDisplayConfig(displayConfig &displayFile, bool forceRecreate = false);
+  bool parseDisplayConfig(displayConfig &displayFile, bool force_recreate = false);
   void createDisplayConfig();
 #endif
 private:

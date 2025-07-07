@@ -543,8 +543,8 @@ void Wippersnapper_FS::createDisplayConfig() {
   delay(2500); // give FS some time to write the file
 }
 
-bool Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg, bool forceRecreate) {
-  if (forceRecreate) {
+bool Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg, bool force_recreate) {
+  if (force_recreate) {
     if (wipperFatFs.exists("/display_config.json")) {
       wipperFatFs.remove("/display_config.json");
     }
@@ -565,8 +565,8 @@ bool Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg, bool forceRecr
   // Attempt to open file for JSON parsing
   File32 file = wipperFatFs.open("/display_config.json", FILE_READ);
   if (!file) {
-    if (!forceRecreate && parseDisplayConfig(dispCfg, true)) {
-      return true;
+    if (!force_recreate) {
+      return false;
     }
     fsHalt("FATAL ERROR: Unable to open display_config.json for parsing");
   }
@@ -575,8 +575,8 @@ bool Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg, bool forceRecr
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file);
   if (error) {
-    if (!forceRecreate && parseDisplayConfig(dispCfg, true)) {
-      return true;
+    if (!force_recreate) {
+      return false;
     }
     fsHalt(String("FATAL ERROR: Unable to parse display_config.json - "
                   "deserializeJson() failed with code") +
