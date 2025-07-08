@@ -72,6 +72,8 @@ public:
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
   Adafruit_GPS *GetAdaGps();
   GpsDriverType GetDriverType();
+  GpsInterfaceType GetIfaceType();
+  void I2cReadDiscard();
 
 private:
   bool QueryModuleType();

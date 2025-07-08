@@ -36,6 +36,18 @@ GPSHardware::~GPSHardware() {
 }
 
 /*!
+ * @brief Reads and discards data requested by the I2C bus.
+ */
+void GPSHardware::I2cReadDiscard() {
+  _wire->flush();
+  uint8_t bytes_requested = 32;
+  _wire->requestFrom(_addr, bytes_requested);
+  while (_wire->available()) {
+    _wire->read();
+  }
+}
+
+/*!
  * @brief Handles a GPSConfig message from the protobuf stream.
  * @param stream
  *        Pointer to a pb_istream_t object.
@@ -77,30 +89,16 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
         while (_hw_serial->available() > 0) {
           _hw_serial->read();
         }
+      } else if (_iface_type == GPS_IFACE_I2C) {
+        I2cReadDiscard();
       }
       WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
       WS_DEBUG_PRINTLN(gps_config->commands[i]);
-      // Clear the tx and rx buffer before sending the command
-      WS_DEBUG_PRINT("[gps] Clearing buffer before sending command...");
-      // Clear any pending GPS data
-      uint8_t buf[32];
-      int maxReads = 10; // Prevent infinite loop
-      while (maxReads-- > 0) {
-        Wire.requestFrom(PA1010D_I2C_ADDRESS, 32);
-        if (Wire.available() == 0)
-          break; // No more data
-
-        while (Wire.available()) {
-          Wire.read(); // Discard
-        }
-        delay(10); // Give GPS time to refill buffer
-      }
-      WS_DEBUG_PRINTLN("cleared!");
       // Send the command to the GPS module
       _ada_gps->sendCommand(gps_config->commands[i]);
       WS_DEBUG_PRINTLN("[gps] Command sent, waiting for response...");
       // and wait for the corresponding response from the GPS module
-      if (!_ada_gps->waitForSentence(msg_resp, 100)) {
+      if (!_ada_gps->waitForSentence(msg_resp, 255)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
         WS_DEBUG_PRINTLN(gps_config->commands[i]);
         return false;
@@ -395,3 +393,9 @@ ulong GPSHardware::GetPrvKat() { return _kat_prv; }
  * @returns The driver type of the GPS hardware.
  */
 GpsDriverType GPSHardware::GetDriverType() { return _driver_type; }
+
+/*!
+ * @brief Returns the interface type of the GPS hardware.
+ * @returns The interface type of the GPS hardware.
+ */
+GpsInterfaceType GPSHardware::GetIfaceType() { return _iface_type; }
