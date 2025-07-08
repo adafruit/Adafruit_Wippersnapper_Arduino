@@ -68,20 +68,17 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
       return false;
     }
 
-    // Delay for two seconds to allow the GPS module to initialize
-    WS_DEBUG_PRINTLN("[gps] Delaying for 1 second");
-    delay(1000);
     // Iterate through the command sentences and send them to the GPS module
     // TODO: We may want to break this out into a generic function that supports
     // MTK, Ublox, etc...
     for (size_t i = 0; i < gps_config->commands_count; i++) {
       // Build the PMTK ACK response for the command
       char msg_resp[MAX_NEMA_SENTENCE_LEN];
-      WS_DEBUG_PRINT("[gps] Building PMTK ACK response: ");
       if (!BuildPmtkAck(gps_config->commands[i], msg_resp)) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to build PMTK ACK response!");
         return false;
       }
+      WS_DEBUG_PRINT("[gps] Expected response: ");
       WS_DEBUG_PRINTLN(msg_resp);
       if (_iface_type == GPS_IFACE_UART_HW) {
         // Flush the RX/TX buffers before sending
@@ -90,13 +87,15 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
           _hw_serial->read();
         }
       } else if (_iface_type == GPS_IFACE_I2C) {
+        WS_DEBUG_PRINT("[gps] Flushing I2C buffers...");
         I2cReadDiscard();
+        WS_DEBUG_PRINTLN(" done!");
       }
-      WS_DEBUG_PRINT("[gps] Sending command to MediaTek GPS: ");
+      WS_DEBUG_PRINT("[gps] TX, CMD: ");
       WS_DEBUG_PRINTLN(gps_config->commands[i]);
       // Send the command to the GPS module
       _ada_gps->sendCommand(gps_config->commands[i]);
-      WS_DEBUG_PRINTLN("[gps] Command sent, waiting for response...");
+      WS_DEBUG_PRINTLN("[gps] Waiting for RX...");
       // and wait for the corresponding response from the GPS module
       if (!_ada_gps->waitForSentence(msg_resp, 255)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
@@ -288,7 +287,6 @@ bool GPSHardware::BuildPmtkAck(char *msg_cmd, char *msg_resp) {
   if (sscanf(msg_cmd, "$PMTK%d", &cmd_num) != 1)
     return false;
   snprintf(msg_resp, MAX_NEMA_SENTENCE_LEN, "$PMTK001,%d,3", cmd_num);
-  _ada_gps->addChecksum(msg_resp);
   return true;
 }
 
