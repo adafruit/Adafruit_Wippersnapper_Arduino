@@ -18,16 +18,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: [
-          "funhouse_noota",
-          "esp32s3_devkitc_1_n8"
+        arduino-platform:
+          [
+            "funhouse_noota",
+            "esp32s3_devkitc_1_n8"
           ]
         include:
           - offset: "0x0"
           - offset: "0x1000"
             arduino-platform: "funhouse_noota"
-          - offset: "0x1000"
-            arduino-platform: "esp32s3_devkitc_1_n8"
     steps:
       - uses: actions/setup-python@v5
         with:
