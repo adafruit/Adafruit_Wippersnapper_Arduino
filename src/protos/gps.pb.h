@@ -97,22 +97,22 @@ extern "C" {
 #define wippersnapper_gps_GPSDateTime_year_tag   7
 #define wippersnapper_gps_GPSRMCResponse_datetime_tag 1
 #define wippersnapper_gps_GPSRMCResponse_fix_status_tag 2
-#define wippersnapper_gps_GPSRMCResponse_lat_tag 4
-#define wippersnapper_gps_GPSRMCResponse_lat_dir_tag 5
-#define wippersnapper_gps_GPSRMCResponse_lon_tag 6
-#define wippersnapper_gps_GPSRMCResponse_lon_dir_tag 7
-#define wippersnapper_gps_GPSRMCResponse_speed_tag 8
-#define wippersnapper_gps_GPSRMCResponse_angle_tag 9
+#define wippersnapper_gps_GPSRMCResponse_lat_tag 3
+#define wippersnapper_gps_GPSRMCResponse_lat_dir_tag 4
+#define wippersnapper_gps_GPSRMCResponse_lon_tag 5
+#define wippersnapper_gps_GPSRMCResponse_lon_dir_tag 6
+#define wippersnapper_gps_GPSRMCResponse_speed_tag 7
+#define wippersnapper_gps_GPSRMCResponse_angle_tag 8
 #define wippersnapper_gps_GPGGAResponse_datetime_tag 1
-#define wippersnapper_gps_GPGGAResponse_lat_tag  4
-#define wippersnapper_gps_GPGGAResponse_lat_dir_tag 5
-#define wippersnapper_gps_GPGGAResponse_lon_tag  6
-#define wippersnapper_gps_GPGGAResponse_lon_dir_tag 7
-#define wippersnapper_gps_GPGGAResponse_fix_quality_tag 8
-#define wippersnapper_gps_GPGGAResponse_num_satellites_tag 9
-#define wippersnapper_gps_GPGGAResponse_hdop_tag 10
-#define wippersnapper_gps_GPGGAResponse_altitude_tag 11
-#define wippersnapper_gps_GPGGAResponse_geoid_height_tag 12
+#define wippersnapper_gps_GPGGAResponse_lat_tag  2
+#define wippersnapper_gps_GPGGAResponse_lat_dir_tag 3
+#define wippersnapper_gps_GPGGAResponse_lon_tag  4
+#define wippersnapper_gps_GPGGAResponse_lon_dir_tag 5
+#define wippersnapper_gps_GPGGAResponse_fix_quality_tag 6
+#define wippersnapper_gps_GPGGAResponse_num_satellites_tag 7
+#define wippersnapper_gps_GPGGAResponse_hdop_tag 8
+#define wippersnapper_gps_GPGGAResponse_altitude_tag 9
+#define wippersnapper_gps_GPGGAResponse_geoid_height_tag 10
 #define wippersnapper_gps_GPSEvent_rmc_responses_tag 1
 #define wippersnapper_gps_GPSEvent_gga_responses_tag 2
 
@@ -137,27 +137,27 @@ X(a, STATIC,   SINGULAR, INT32,    year,              7)
 #define wippersnapper_gps_GPSRMCResponse_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  datetime,          1) \
 X(a, STATIC,   SINGULAR, STRING,   fix_status,        2) \
-X(a, STATIC,   SINGULAR, STRING,   lat,               4) \
-X(a, STATIC,   SINGULAR, STRING,   lat_dir,           5) \
-X(a, STATIC,   SINGULAR, STRING,   lon,               6) \
-X(a, STATIC,   SINGULAR, STRING,   lon_dir,           7) \
-X(a, STATIC,   SINGULAR, STRING,   speed,             8) \
-X(a, STATIC,   SINGULAR, STRING,   angle,             9)
+X(a, STATIC,   SINGULAR, STRING,   lat,               3) \
+X(a, STATIC,   SINGULAR, STRING,   lat_dir,           4) \
+X(a, STATIC,   SINGULAR, STRING,   lon,               5) \
+X(a, STATIC,   SINGULAR, STRING,   lon_dir,           6) \
+X(a, STATIC,   SINGULAR, STRING,   speed,             7) \
+X(a, STATIC,   SINGULAR, STRING,   angle,             8)
 #define wippersnapper_gps_GPSRMCResponse_CALLBACK NULL
 #define wippersnapper_gps_GPSRMCResponse_DEFAULT NULL
 #define wippersnapper_gps_GPSRMCResponse_datetime_MSGTYPE wippersnapper_gps_GPSDateTime
 
 #define wippersnapper_gps_GPGGAResponse_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  datetime,          1) \
-X(a, STATIC,   SINGULAR, STRING,   lat,               4) \
-X(a, STATIC,   SINGULAR, STRING,   lat_dir,           5) \
-X(a, STATIC,   SINGULAR, STRING,   lon,               6) \
-X(a, STATIC,   SINGULAR, STRING,   lon_dir,           7) \
-X(a, STATIC,   SINGULAR, INT32,    fix_quality,       8) \
-X(a, STATIC,   SINGULAR, INT32,    num_satellites,    9) \
-X(a, STATIC,   SINGULAR, STRING,   hdop,             10) \
-X(a, STATIC,   SINGULAR, STRING,   altitude,         11) \
-X(a, STATIC,   SINGULAR, STRING,   geoid_height,     12)
+X(a, STATIC,   SINGULAR, STRING,   lat,               2) \
+X(a, STATIC,   SINGULAR, STRING,   lat_dir,           3) \
+X(a, STATIC,   SINGULAR, STRING,   lon,               4) \
+X(a, STATIC,   SINGULAR, STRING,   lon_dir,           5) \
+X(a, STATIC,   SINGULAR, INT32,    fix_quality,       6) \
+X(a, STATIC,   SINGULAR, INT32,    num_satellites,    7) \
+X(a, STATIC,   SINGULAR, STRING,   hdop,              8) \
+X(a, STATIC,   SINGULAR, STRING,   altitude,          9) \
+X(a, STATIC,   SINGULAR, STRING,   geoid_height,     10)
 #define wippersnapper_gps_GPGGAResponse_CALLBACK NULL
 #define wippersnapper_gps_GPGGAResponse_DEFAULT NULL
 #define wippersnapper_gps_GPGGAResponse_datetime_MSGTYPE wippersnapper_gps_GPSDateTime

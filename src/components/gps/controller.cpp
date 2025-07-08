@@ -189,58 +189,32 @@ void GPSController::update() {
           drv->SetPrvKat(millis());
         } */
 
-    // TODO: Did the polling periods get set? Let's print and check them
-    WS_DEBUG_PRINT("[gps] Poll period: ");
-    WS_DEBUG_PRINT(drv->GetPollPeriod());
-    WS_DEBUG_PRINT(", Previous poll period: ");
-    WS_DEBUG_PRINTLN(drv->GetPollPeriodPrv());
-
     // Did read period elapse?
     ulong cur_time = millis();
     if (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod())
       continue; // Not yet elapsed, skip this driver
 
     // Discard the GPS buffer before we attempt to do a fresh read
-    WS_DEBUG_PRINTLN("[gps] Discarding GPS buffer...");
-    WS_DEBUG_PRINT("iface type: ");
-    WS_DEBUG_PRINTLN(drv->GetIfaceType());
-
     if (drv->GetIfaceType() == GPS_IFACE_UART_HW) {
       // TODO: Refactor this into a function within hardware.cpp
       size_t bytes_avail = ada_gps->available();
       if (bytes_avail > 0) {
         for (size_t i = 0; i < bytes_avail; i++) {
-          WS_DEBUG_PRINT("[gps] Reading byte: ");
-          WS_DEBUG_PRINT(i);
           ada_gps->read();
-          WS_DEBUG_PRINTLN("...OK!");
         }
       }
     } else if (drv->GetIfaceType() == GPS_IFACE_I2C) {
-      // For I2C, request and discard any stale data from the device
-      WS_DEBUG_PRINTLN("[gps] Discarding stale I2C data...");
       drv->I2cReadDiscard();
     }
 
-    // if (drv->GetIfaceType() == GPS_IFACE_UART_HW) {
-
     // Unset the RX flag
-    WS_DEBUG_PRINT("[gps] Unsetting RX flag...");
     if (ada_gps->newNMEAreceived()) {
       ada_gps->lastNMEA();
     }
-    WS_DEBUG_PRINT("ok");
 
-    // Let's attempt to get a sentence from the GPS module
     // Read from the GPS module for update_rate milliseconds
-    WS_DEBUG_PRINT("[gps] GetNmeaUpdateRate...");
     ulong update_rate = 1000 / drv->GetNmeaUpdateRate();
     ulong start_time = millis();
-    WS_DEBUG_PRINT("ok");
-
-    WS_DEBUG_PRINT("[gps] Reading GPS data for ");
-    WS_DEBUG_PRINT(update_rate);
-    WS_DEBUG_PRINTLN(" ms...");
     while (millis() - start_time < update_rate) {
       char c = ada_gps->read();
       // Check if we have a new NMEA sentence
@@ -252,6 +226,7 @@ void GPSController::update() {
     }
 
     // Parse each NMEA sentence in the buffer
+    _gps_model->CreateGPSEvent();
     char nmea_sentence[MAX_LEN_NMEA_SENTENCE];
     bool has_gps_event = false;
     while (NmeaBufPop(nmea_sentence) != -1) {
@@ -259,23 +234,23 @@ void GPSController::update() {
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
       if (!ada_gps->parse(nmea_sentence)) {
+        WS_DEBUG_PRINTLN("[gps] Failed to parse NMEA sentence!"); // TODO: Remove in Prod!
         continue; // Skip parsing this sentence if parsing failed
-      } else {
-        _gps_model->CreateGPSEvent();
-        has_gps_event = true;
       }
-
-      // Build the GPSEvent message from the sentence
+      has_gps_event = true;
+      // Build a GPSEvent message from the sentence
       wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
           ada_gps->hour, ada_gps->minute, ada_gps->seconds,
           ada_gps->milliseconds, ada_gps->day, ada_gps->month, ada_gps->year);
       if (strncmp(nmea_sentence, "$GPRMC", 6) == 0 ||
           strncmp(nmea_sentence, "$GNRMC", 6) == 0) {
+        WS_DEBUG_PRINTLN("[gps] Processing RMC sentence"); // TODO: Remove in Prod!
         _gps_model->AddGpsEventRMC(
             datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
             ada_gps->longitude, &ada_gps->lon, ada_gps->speed, ada_gps->angle);
       } else if (strncmp(nmea_sentence, "$GPGGA", 6) == 0 ||
                  strncmp(nmea_sentence, "$GNGGA", 6) == 0) {
+        WS_DEBUG_PRINTLN("[gps] Processing GGA sentence"); // TODO: Remove in Prod!
         _gps_model->AddGpsEventGGA(
             datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
             ada_gps->longitude, &ada_gps->lon, ada_gps->satellites,

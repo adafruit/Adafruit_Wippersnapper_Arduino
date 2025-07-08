@@ -119,14 +119,12 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
                               float lon, char *lon_dir, float speed,
                               float angle) {
   // Check if we've reached the maximum number of RMC responses
-  if (_msg_gps_event.rmc_responses_count >= MAX_COUNT_RMC_GGA) {
+  if (_msg_gps_event.rmc_responses_count >= MAX_COUNT_RMC_GGA)
     return false;
-  }
 
   // Validate pointers have been provided correctly
-  if (!lat_dir || !lon_dir) {
+  if (!lat_dir || !lon_dir)
     return false;
-  }
 
   wippersnapper_gps_GPSRMCResponse rmc_response;
   rmc_response = wippersnapper_gps_GPSRMCResponse_init_zero;
@@ -166,14 +164,12 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
                               float hdop, float alt, float geoid_height) {
 
   // Check if we've reached the maximum number of RMC responses
-  if (_msg_gps_event.gga_responses_count >= MAX_COUNT_RMC_GGA) {
+  if (_msg_gps_event.gga_responses_count >= MAX_COUNT_RMC_GGA)
     return false;
-  }
 
   // Validate pointers have been provided correctly
-  if (!lat_dir || !lon_dir) {
+  if (!lat_dir || !lon_dir)
     return false;
-  }
 
   wippersnapper_gps_GPGGAResponse gga_response;
   gga_response = wippersnapper_gps_GPGGAResponse_init_zero;
