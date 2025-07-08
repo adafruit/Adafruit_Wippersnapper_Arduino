@@ -169,7 +169,7 @@ void GPSController::update() {
     if (drv->GetDriverType() == GPS_DRV_MTK) {
       // Interface shouldn't matter here because we already set it up in the
       // initialization phase, so we can just grab the Adafruit_GPS instance
-      Adafruit_GPS *ada_gps = drv->GetAdaGps();
+      ada_gps = drv->GetAdaGps();
       if (ada_gps == nullptr) {
         WS_DEBUG_PRINTLN(
             "[gps] ERROR: Can't read - GPS instance not initialized!");
@@ -215,22 +215,28 @@ void GPSController::update() {
           ada_gps->read();
           WS_DEBUG_PRINTLN("...OK!");
         }
-      } else if (drv->GetIfaceType() == GPS_IFACE_I2C) {
-        // For I2C, request and discard any stale data from the device
-        WS_DEBUG_PRINT("[gps] Discarding stale I2C data...");
-        drv->I2cReadDiscard();
       }
+    } else if (drv->GetIfaceType() == GPS_IFACE_I2C) {
+      // For I2C, request and discard any stale data from the device
+      WS_DEBUG_PRINTLN("[gps] Discarding stale I2C data...");
+      drv->I2cReadDiscard();
+    }
+
+    // if (drv->GetIfaceType() == GPS_IFACE_UART_HW) {
 
       // Unset the RX flag
-      WS_DEBUG_PRINTLN("[gps] Unsetting RX flag...");
+      WS_DEBUG_PRINT("[gps] Unsetting RX flag...");
       if (ada_gps->newNMEAreceived()) {
         ada_gps->lastNMEA();
       }
+      WS_DEBUG_PRINT("ok");
 
       // Let's attempt to get a sentence from the GPS module
       // Read from the GPS module for update_rate milliseconds
+      WS_DEBUG_PRINT("[gps] GetNmeaUpdateRate...");
       ulong update_rate = 1000 / drv->GetNmeaUpdateRate();
       ulong start_time = millis();
+      WS_DEBUG_PRINT("ok");
 
       WS_DEBUG_PRINT("[gps] Reading GPS data for ");
       WS_DEBUG_PRINT(update_rate);
@@ -302,6 +308,5 @@ void GPSController::update() {
         }
       }
       drv->SetPollPeriodPrv(cur_time);
-    }
   }
 }
