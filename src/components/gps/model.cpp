@@ -118,14 +118,11 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
                               uint8_t fix_status, float lat, char *lat_dir,
                               float lon, char *lon_dir, float speed,
                               float angle) {
-  // Check if we've reached the maximum number of RMC responses
-  if (_msg_gps_event.rmc_responses_count >= MAX_COUNT_RMC_GGA)
-    return false;
-
   // Validate pointers have been provided correctly
   if (!lat_dir || !lon_dir)
     return false;
 
+  // Always store at index 0, overwriting any previous response
   wippersnapper_gps_GPSRMCResponse rmc_response;
   rmc_response = wippersnapper_gps_GPSRMCResponse_init_zero;
   rmc_response.has_datetime = true;
@@ -152,9 +149,9 @@ bool GPSModel::AddGpsEventRMC(wippersnapper_gps_GPSDateTime datetime,
   // Fill course in degrees from true north
   snprintf(rmc_response.angle, sizeof(rmc_response.angle), "%.1f", angle);
 
-  _msg_gps_event.rmc_responses[_msg_gps_event.rmc_responses_count] =
-      rmc_response;
-  _msg_gps_event.rmc_responses_count++;
+  // Always store at index 0, overwrite any previous response in the FIFO buffer
+  _msg_gps_event.rmc_responses[0] = rmc_response;
+  _msg_gps_event.rmc_responses_count = 1;
   return true;
 }
 
@@ -162,11 +159,6 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
                               uint8_t fix_status, float lat, char *lat_dir,
                               float lon, char *lon_dir, uint8_t num_sats,
                               float hdop, float alt, float geoid_height) {
-
-  // Check if we've reached the maximum number of RMC responses
-  if (_msg_gps_event.gga_responses_count >= MAX_COUNT_RMC_GGA)
-    return false;
-
   // Validate pointers have been provided correctly
   if (!lat_dir || !lon_dir)
     return false;
@@ -197,8 +189,8 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
   snprintf(gga_response.geoid_height, sizeof(gga_response.geoid_height), "%.1f",
            geoid_height);
 
-  _msg_gps_event.gga_responses[_msg_gps_event.gga_responses_count] =
-      gga_response;
-  _msg_gps_event.gga_responses_count++;
+  // Always store at index 0, overwrite any previous response in the FIFO buffer
+  _msg_gps_event.gga_responses[0] = gga_response;
+  _msg_gps_event.gga_responses_count = 1;
   return true;
 }

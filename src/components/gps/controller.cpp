@@ -234,7 +234,6 @@ void GPSController::update() {
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
       if (!ada_gps->parse(nmea_sentence)) {
-        WS_DEBUG_PRINTLN("[gps] Failed to parse NMEA sentence!"); // TODO: Remove in Prod!
         continue; // Skip parsing this sentence if parsing failed
       }
       has_gps_event = true;
@@ -244,13 +243,11 @@ void GPSController::update() {
           ada_gps->milliseconds, ada_gps->day, ada_gps->month, ada_gps->year);
       if (strncmp(nmea_sentence, "$GPRMC", 6) == 0 ||
           strncmp(nmea_sentence, "$GNRMC", 6) == 0) {
-        WS_DEBUG_PRINTLN("[gps] Processing RMC sentence"); // TODO: Remove in Prod!
         _gps_model->AddGpsEventRMC(
             datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
             ada_gps->longitude, &ada_gps->lon, ada_gps->speed, ada_gps->angle);
       } else if (strncmp(nmea_sentence, "$GPGGA", 6) == 0 ||
                  strncmp(nmea_sentence, "$GNGGA", 6) == 0) {
-        WS_DEBUG_PRINTLN("[gps] Processing GGA sentence"); // TODO: Remove in Prod!
         _gps_model->AddGpsEventGGA(
             datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
             ada_gps->longitude, &ada_gps->lon, ada_gps->satellites,
@@ -264,7 +261,9 @@ void GPSController::update() {
     // We did not create a GPSEvent because the NMEA sentences were not
     // GGA/RMC or parsed correctly
     if (!has_gps_event) {
-      WS_DEBUG_PRINTLN("[gps] No GPSEvent created from NMEA sentences!");
+      WS_DEBUG_PRINTLN(
+          "[gps] No GPSEvent created from NMEA sentences!"); // TODO: Remove
+                                                             // this in prod
       continue;
     }
 
@@ -279,7 +278,7 @@ void GPSController::update() {
                               _gps_model->GetGPSEvent())) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
       } else {
-        WS_DEBUG_PRINTLN("[gps] GPSEvent published successfully!");
+        WS_DEBUG_PRINTLN("...ok!");
       }
     }
     drv->SetPollPeriodPrv(cur_time);
