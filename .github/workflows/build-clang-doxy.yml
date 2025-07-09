@@ -5,6 +5,11 @@ name: WipperSnapper Build CI
 
 on:
   workflow_dispatch:
+    inputs:
+      board:
+        description: 'Build ONLY this board (must match a matrix entry exactly, or leave empty for all)'
+        required: false
+        default: ''
   pull_request:
   workflow_call:
     secrets:
@@ -15,6 +20,7 @@ jobs:
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx(lvgl)
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -22,6 +28,13 @@ jobs:
         include:
           - offset: "0x1000"
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -174,6 +187,7 @@ jobs:
   build-esp32sx:
     name: 🏗️ESP32-Sx
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -194,6 +208,13 @@ jobs:
             "qtpy_esp32s3_n4r2",
           ]
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -278,6 +299,7 @@ jobs:
   build-esp32:
     name: 🏗️ESP32/Cx
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -299,6 +321,13 @@ jobs:
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -419,6 +448,7 @@ jobs:
   build-samd:
     name: 🏗️SAMD
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -429,6 +459,13 @@ jobs:
             "metro_m4_airliftlite_tinyusb",
           ]
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -498,11 +535,19 @@ jobs:
   build-rp2040:
     name: 🏗️RP2040
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb"]
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -569,11 +614,19 @@ jobs:
   build-esp8266:
     name: 🏗️ESP8266
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         arduino-platform: ["feather_esp8266"]
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -647,6 +700,7 @@ jobs:
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -662,6 +716,13 @@ jobs:
             "metro_esp32s3_debug",
           ]
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -746,6 +807,7 @@ jobs:
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -758,6 +820,13 @@ jobs:
           - offset: "0x0"
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
     steps:
+      - name: "skip if unwanted"
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.board != '' &&
+          matrix.arduino-platform != github.event.inputs.board
+        run: |
+          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"

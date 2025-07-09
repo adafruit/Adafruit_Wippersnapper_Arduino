@@ -881,7 +881,38 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
-  } else if (strcmp("oled128x32default", msgDeviceInitReq->i2c_device_name) ==
+  } else if (strcmp("fthrwingoled128x64", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("fthrwingoled128x64lg",
+                    msgDeviceInitReq->i2c_device_name) == 0) {
+    WS_DEBUG_PRINTLN("SH1107 display detected!");
+    _sh1107 = new WipperSnapper_I2C_Driver_Out_SH1107(this->_i2c, i2cAddress);
+    WS_DEBUG_PRINTLN("Configuring SH1107 display...");
+    _sh1107->ConfigureSH1107(
+        (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.width,
+        (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
+        (uint8_t)
+            msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size,
+        OLED_128X64_WING_ROTATION_90); // fixed as currently the only screen is
+    // 128x64wing (needs a rotation of 1 / 90degrees and constructor w/h swap).
+    if (!_sh1107->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize sh1107!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    WS_DEBUG_PRINTLN("SH1107 display configured successfully!");
+    _drivers_out.push_back(_sh1107);
+    WS_DEBUG_PRINTLN("SH1107 display initialized Successfully!");
+  } else if (strcmp("oled32x64large", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("oled64x32default", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("oled64x32large", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("fthrwingoled128x32", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("fthrwingoled128x32lg",
+                    msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("oled128x32default", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
              strcmp("oled128x32large", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
