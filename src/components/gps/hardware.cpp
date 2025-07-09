@@ -69,10 +69,10 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
   if (_driver_type == GPS_DRV_MTK) {
     WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
     // Iterate through the command sentences and send them to the GPS module
-    for (size_t i = 0; i < gps_config->commands_count; i++) {
+    for (size_t i = 0; i < gps_config->commands_pmtks_count; i++) {
       // Build the PMTK ACK response for the command
       char msg_resp[MAX_NEMA_SENTENCE_LEN];
-      if (!BuildPmtkAck(gps_config->commands[i], msg_resp)) {
+      if (!BuildPmtkAck(gps_config->commands_pmtks[i], msg_resp)) {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to build PMTK ACK response!");
         return false;
       }
@@ -90,21 +90,21 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
         WS_DEBUG_PRINTLN(" done!");
       }
       WS_DEBUG_PRINT("[gps] TX, CMD: ");
-      WS_DEBUG_PRINTLN(gps_config->commands[i]);
+      WS_DEBUG_PRINTLN(gps_config->commands_pmtks[i]);
       // Send the command to the GPS module
-      _ada_gps->sendCommand(gps_config->commands[i]);
+      _ada_gps->sendCommand(gps_config->commands_pmtks[i]);
       WS_DEBUG_PRINTLN("[gps] Waiting for RX...");
       // and wait for the corresponding response from the GPS module
       if (!_ada_gps->waitForSentence(msg_resp, 255)) {
         WS_DEBUG_PRINT("[gps] ERROR: Failed to get response | cmd:");
-        WS_DEBUG_PRINTLN(gps_config->commands[i]);
+        WS_DEBUG_PRINTLN(gps_config->commands_pmtks[i]);
         return false;
       }
     }
   } else if (_driver_type == GPS_DRV_UBLOX) {
-    WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
+    WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for U-Blox driver...");
     // Iterate through the command sentences and send them to the GPS module
-    for (size_t i = 0; i < gps_config->commands_count; i++) {
+    for (size_t i = 0; i < gps_config->commands_ubxes; i++) {
       // TODO
     }
   } else {
@@ -161,7 +161,7 @@ bool GPSHardware::begin() {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to query GPS module type!");
     return false;
   }
-  WS_DEBUG_PRINTLN("[gps] Module detected, ready for commands!");
+  WS_DEBUG_PRINTLN("[gps] Module detected, ready for commands_pmtks!");
   return true;
 }
 
