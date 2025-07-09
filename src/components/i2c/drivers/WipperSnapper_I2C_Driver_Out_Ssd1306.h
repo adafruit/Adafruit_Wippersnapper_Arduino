@@ -20,10 +20,10 @@
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 
-#define WS_SSD1306_DEFAULT_WIDTH \
-  128  ///< Default width for a ssd1306 128x64 display
-#define WS_SSD1306_DEFAULT_HEIGHT \
-  64  ///< Default height for a ssd1306 128x64 display
+#define WS_SSD1306_DEFAULT_WIDTH                                               \
+  128 ///< Default width for a ssd1306 128x64 display
+#define WS_SSD1306_DEFAULT_HEIGHT                                              \
+  64 ///< Default height for a ssd1306 128x64 display
 
 /*!
     @brief  Class that provides a driver interface for a SSD1306

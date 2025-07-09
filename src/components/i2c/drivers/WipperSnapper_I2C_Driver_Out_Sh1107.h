@@ -21,14 +21,14 @@
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
-#define WS_SH1107_DEFAULT_WIDTH \
-  128  ///< Default width for a sh1107 128x64 display
-#define WS_SH1107_DEFAULT_HEIGHT \
-  64  ///< Default height for a sh1107 128x64 display
+#define WS_SH1107_DEFAULT_WIDTH                                                \
+  128 ///< Default width for a sh1107 128x64 display
+#define WS_SH1107_DEFAULT_HEIGHT                                               \
+  64 ///< Default height for a sh1107 128x64 display
 
-#define OLED_128X64_WING_WIDTH 128  ///< Width of the 128x64 OLED FeatherWing
-#define OLED_128X64_WING_HEIGHT 64  ///< Height of the 128x64 OLED FeatherWing
-#define OLED_128X64_WING_ROTATION_90 1  ///< Rotation of OLED FeatherWing 0-3
+#define OLED_128X64_WING_WIDTH 128 ///< Width of the 128x64 OLED FeatherWing
+#define OLED_128X64_WING_HEIGHT 64 ///< Height of the 128x64 OLED FeatherWing
+#define OLED_128X64_WING_ROTATION_90 1 ///< Rotation of OLED FeatherWing 0-3
 
 /*!
     @brief  Class that provides a driver interface for a SH1107
@@ -84,7 +84,6 @@ public:
     if (!_display->begin(_sensorAddress, true))
       return false;
 
-
     // Clear the buffer.
     _display->clearDisplay();
     _display->display();
@@ -117,7 +116,8 @@ public:
     _width = width;
     _height = height;
     _text_sz = text_size;
-    _rotation = rotation % 90; // SH1107 requires rotation to be 0-3, not degrees
+    _rotation =
+        rotation % 90; // SH1107 requires rotation to be 0-3, not degrees
   }
   /*!
       @brief    Configures a SSD1306 OLED display. Must be called before driver

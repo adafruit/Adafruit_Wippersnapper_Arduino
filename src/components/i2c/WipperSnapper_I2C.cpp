@@ -883,8 +883,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
   } else if (strcmp("fthrwingoled128x64", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
-             strcmp("fthrwingoled128x64lg", msgDeviceInitReq->i2c_device_name) ==
-                 0) {
+             strcmp("fthrwingoled128x64lg",
+                    msgDeviceInitReq->i2c_device_name) == 0) {
     WS_DEBUG_PRINTLN("SH1107 display detected!");
     _sh1107 = new WipperSnapper_I2C_Driver_Out_SH1107(this->_i2c, i2cAddress);
     WS_DEBUG_PRINTLN("Configuring SH1107 display...");
