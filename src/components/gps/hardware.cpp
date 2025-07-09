@@ -44,6 +44,7 @@ GPSHardware::~GPSHardware() {
  * @brief Helper function that reads and discards data requested by the I2C bus.
  */
 void GPSHardware::I2cReadDiscard() {
+  // TODO: Let's hope this works for UBX too! Remove if its ok
   _wire->flush();
   uint8_t bytes_requested = 32;
   _wire->requestFrom(_addr, bytes_requested);
@@ -104,8 +105,37 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
   } else if (_driver_type == GPS_DRV_UBLOX) {
     WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for U-Blox driver...");
     // Iterate through the command sentences and send them to the GPS module
-    for (size_t i = 0; i < gps_config->commands_ubxes; i++) {
-      // TODO
+    for (size_t i = 0; i < gps_config->commands_ubxes_count; i++) {
+      // TODO - We are just printing here to debug
+      WS_DEBUG_PRINT("[gps] UBX CMD #: ");
+      WS_DEBUG_PRINTLN(i);
+      WS_DEBUG_PRINT("[gps] UBX CMDSZ: ");
+      WS_DEBUG_PRINTLN(gps_config->commands_ubxes[i].size);
+      WS_DEBUG_PRINT("[gps] UBX CMD (HEX, spaced out): ");
+      for (pb_size_t i = 0; i < gps_config->commands_ubxes[i].size; i++) {
+        WS_DEBUG_PRINT(gps_config->commands_ubxes[i].bytes[i], HEX);
+        WS_DEBUG_PRINT(" ");
+      }
+      // TODO: Push these to the module and ACK
+      WS_DEBUG_PRINT("[gps] Flushing I2C buffers befor send...");
+      I2cReadDiscard();
+      WS_DEBUG_PRINTLN(" done!");
+      // Write this to the GPS module
+      WS_DEBUG_PRINT("[gps] TX'ing");
+      _sfe_gps->pushRawData(
+          gps_config->commands_ubxes[i].bytes,
+          gps_config->commands_ubxes[i].size);
+      WS_DEBUG_PRINTLN(" done!");
+      // Wait for the ACK response from the GPS module
+      WS_DEBUG_PRINT("[gps] Waiting for ACK response...");
+      ulong start_time = millis();
+      while (millis() - start_time < 1000) {
+        _sfe_gps->checkUblox(); //See if new data is available. Process bytes as they come in.
+        if (_sfe_gps->processedAck()) {
+          WS_DEBUG_PRINTLN(" done!");
+          break; // Exit the loop if ACK is received
+        }
+
     }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
@@ -198,6 +228,11 @@ bool GPSHardware::DetectUbxI2C(uint32_t addr) {
   _sfe_gps = new SFE_UBLOX_GNSS();
   if (!_sfe_gps->begin(*_wire, _addr))
     return false;
+  // Configure the u-blox GPS module
+  _sfe_gps->setI2COutput(COM_TYPE_UBX | COM_TYPE_NMEA); //Set the I2C port to output both NMEA and UBX messages
+  _sfe_gps->saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the communications port settings to flash and BBR
+  _sfe_gps->setProcessNMEAMask(SFE_UBLOX_FILTER_NMEA_ALL); // Make sure the library is passing all NMEA messages to processNMEA
+  _sfe_gps->setProcessNMEAMask(SFE_UBLOX_FILTER_NMEA_GGA); // Or, we can be kind to MicroNMEA and _only_ pass the GGA messages to it
   _driver_type = GPS_DRV_UBLOX;
   return true;
 }
