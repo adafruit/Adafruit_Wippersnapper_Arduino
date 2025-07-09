@@ -28,15 +28,20 @@ GPSHardware::GPSHardware() {
  * @brief Destructor
  */
 GPSHardware::~GPSHardware() {
-  // Clean up GPS instance
+  _iface_type = GPS_IFACE_NONE;
+  _driver_type = GPS_DRV_NONE;
   if (_ada_gps) {
     delete _ada_gps;
     _ada_gps = nullptr;
   }
+  if (_sfe_gps) {
+    delete _sfe_gps;
+    _sfe_gps = nullptr;
+  }
 }
 
 /*!
- * @brief Reads and discards data requested by the I2C bus.
+ * @brief Helper function that reads and discards data requested by the I2C bus.
  */
 void GPSHardware::I2cReadDiscard() {
   _wire->flush();
@@ -57,20 +62,13 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
   WS_DEBUG_PRINTLN("[gps] Handling GPSConfig message...");
   if (gps_config == nullptr)
     return false;
-  // Set the polling period for GPS data
+  // Set the module's polling period for GPS data
   SetPollPeriod(gps_config->period);
 
   // Attempt to decode the GPSConfig message
   if (_driver_type == GPS_DRV_MTK) {
     WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
-    if (gps_config == nullptr) {
-      WS_DEBUG_PRINTLN("[gps] ERROR: No GPSConfig message found!");
-      return false;
-    }
-
     // Iterate through the command sentences and send them to the GPS module
-    // TODO: We may want to break this out into a generic function that supports
-    // MTK, Ublox, etc...
     for (size_t i = 0; i < gps_config->commands_count; i++) {
       // Build the PMTK ACK response for the command
       char msg_resp[MAX_NEMA_SENTENCE_LEN];
@@ -103,11 +101,16 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
         return false;
       }
     }
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for MediaTek driver...");
+    // Iterate through the command sentences and send them to the GPS module
+    for (size_t i = 0; i < gps_config->commands_count; i++) {
+      // TODO
+    }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
     return false;
   }
-
   return true;
 }
 
@@ -159,7 +162,43 @@ bool GPSHardware::begin() {
     return false;
   }
   WS_DEBUG_PRINTLN("[gps] Module detected, ready for commands!");
+  return true;
+}
 
+/*!
+ * @brief Attempts to detect and initialize a MediaTek GPS module over I2C
+ * @returns True if a MediaTek GPS module was detected and initialized, False
+ * otherwise.
+ */
+bool GPSHardware::DetectMtkI2C(uint32_t addr) {
+  if (_addr != PA1010D_I2C_ADDRESS) {
+    WS_DEBUG_PRINTLN(
+        "[gps] ERROR: Only PA1010D i2c module is supported at this time!");
+    return false;
+  }
+  _ada_gps = new Adafruit_GPS(_wire);
+  if (!_ada_gps->begin(_addr))
+    return false;
+  _driver_type = GPS_DRV_MTK;
+  return true;
+}
+
+/*!
+ * @brief Attempts to detect and initialize a U-Blox GPS module over I2C
+ * @param addr
+ *        The I2C address of the GPS module.
+ * @returns True if a u-blox GPS module was detected and initialized, False
+ * otherwise.
+ */
+bool GPSHardware::DetectUbxI2C(uint32_t addr) {
+  if (addr != UBX_I2C_ADDRESS) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Invalid U-Blox I2C address!");
+    return false;
+  }
+  _sfe_gps = new SFE_UBLOX_GNSS();
+  if (!_sfe_gps->begin(*_wire, _addr))
+    return false;
+  _driver_type = GPS_DRV_UBLOX;
   return true;
 }
 
@@ -170,10 +209,9 @@ bool GPSHardware::begin() {
  */
 bool GPSHardware::QueryModuleType() {
   WS_DEBUG_PRINTLN("[gps] Attempting to detect GPS module type...");
-
   if (_iface_type == GPS_IFACE_UART_HW) {
     // Try to detect MediaTek GPS module
-    if (DetectMediatek()) {
+    if (DetectMtkUart()) {
       WS_DEBUG_PRINTLN("[gps] Using MediaTek GPS driver!");
       return true;
     }
@@ -195,18 +233,22 @@ bool GPSHardware::QueryModuleType() {
   } else if (_iface_type == GPS_IFACE_I2C) {
     if (_addr == PA1010D_I2C_ADDRESS) {
       WS_DEBUG_PRINT("[gps] Attempting to use PA1010D driver...");
-      // Attempt to use Adafruit_GPS I2c interface
-      _ada_gps = new Adafruit_GPS(_wire);
-      if (!_ada_gps->begin(_addr)) {
-        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
+      if (!DetectMtkI2C(_addr)) {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to init PA1010D module!");
         return false;
       }
       WS_DEBUG_PRINTLN("ok!");
-      _driver_type = GPS_DRV_MTK;
+      return true;
+    } else if (_addr == UBX_I2C_ADDRESS) {
+      WS_DEBUG_PRINT("[gps] Attempting to use u-blox driver...");
+      if (!DetectUbxI2C(_addr)) {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to init u-blox module!");
+        return false;
+      }
+      WS_DEBUG_PRINTLN("ok!");
       return true;
     } else {
-      WS_DEBUG_PRINTLN(
-          "[gps] ERROR: Only PA1010D i2c module is supported at this time!");
+      WS_DEBUG_PRINTLN("[gps] ERROR: Uknown I2C address provided!");
       return false;
     }
   }
@@ -219,7 +261,7 @@ bool GPSHardware::QueryModuleType() {
  * firmware version.
  * @returns True if a MediaTek GPS module was detected, False otherwise.
  */
-bool GPSHardware::DetectMediatek() {
+bool GPSHardware::DetectMtkUart() {
   if (_iface_type != GPS_IFACE_UART_HW) {
     WS_DEBUG_PRINTLN("[gps] ERROR: MediaTek GPS module only supports Hardware "
                      "Serial interface!");
