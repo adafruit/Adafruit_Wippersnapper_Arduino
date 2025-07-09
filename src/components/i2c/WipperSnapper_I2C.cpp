@@ -881,9 +881,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
-  } else if (strcmp("oled128x64wdefault", msgDeviceInitReq->i2c_device_name) ==
+  } else if (strcmp("fthrwingoled128x64", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
-             strcmp("oled128x64wlarge", msgDeviceInitReq->i2c_device_name) ==
+             strcmp("fthrwingoled128x64lg", msgDeviceInitReq->i2c_device_name) ==
                  0) {
     WS_DEBUG_PRINTLN("SH1107 display detected!");
     _sh1107 = new WipperSnapper_I2C_Driver_Out_SH1107(this->_i2c, i2cAddress);
@@ -908,10 +908,10 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
              strcmp("oled64x32default", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
              strcmp("oled64x32large", msgDeviceInitReq->i2c_device_name) == 0 ||
-             strcmp("oled128x32wdefault", msgDeviceInitReq->i2c_device_name) ==
+             strcmp("fthrwingoled128x32", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
-             strcmp("oled128x32wlarge", msgDeviceInitReq->i2c_device_name) ==
-                 0 ||
+             strcmp("fthrwingoled128x32lg",
+                    msgDeviceInitReq->i2c_device_name) == 0 ||
              strcmp("oled128x32default", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
              strcmp("oled128x32large", msgDeviceInitReq->i2c_device_name) ==
