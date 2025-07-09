@@ -84,11 +84,6 @@ public:
     if (!_display->begin(_sensorAddress, true))
       return false;
 
-    // Show image buffer on the display hardware.
-    // Since the buffer is intialized with an Adafruit splashscreen
-    // internally, this will display the splashscreen.
-    _display->display();
-    delay(1700);
 
     // Clear the buffer.
     _display->clearDisplay();
