@@ -18,7 +18,8 @@
               The 7-bit I2C address of the sensor.
 */
 /*******************************************************************************/
-WipperSnapper_I2C_Driver_INA260::WipperSnapper_I2C_Driver_INA260(TwoWire *i2c, uint16_t sensorAddress)
+WipperSnapper_I2C_Driver_INA260::WipperSnapper_I2C_Driver_INA260(
+    TwoWire *i2c, uint16_t sensorAddress)
     : WipperSnapper_I2C_Driver(i2c, sensorAddress), _ina260(nullptr) {
   _i2c = i2c;
   _sensorAddress = sensorAddress;
@@ -60,7 +61,8 @@ bool WipperSnapper_I2C_Driver_INA260::begin() {
               otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_I2C_Driver_INA260::getEventVoltage(sensors_event_t *voltageEvent) {
+bool WipperSnapper_I2C_Driver_INA260::getEventVoltage(
+    sensors_event_t *voltageEvent) {
   voltageEvent->voltage = _ina260->readBusVoltage();
   return true;
 }
@@ -73,7 +75,8 @@ bool WipperSnapper_I2C_Driver_INA260::getEventVoltage(sensors_event_t *voltageEv
  * @returns True if the sensor event was obtained successfully, False
  * otherwise.
  */
-bool WipperSnapper_I2C_Driver_INA260::getEventCurrent(sensors_event_t *currentEvent) {
+bool WipperSnapper_I2C_Driver_INA260::getEventCurrent(
+    sensors_event_t *currentEvent) {
   currentEvent->current = _ina260->readCurrent();
   return true;
 }

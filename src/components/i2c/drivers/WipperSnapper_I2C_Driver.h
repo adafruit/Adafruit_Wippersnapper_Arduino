@@ -16,10 +16,10 @@
 #ifndef WipperSnapper_I2C_Driver_H
 #define WipperSnapper_I2C_Driver_H
 
+#include "../../../wippersnapper/i2c/v1/i2c.pb.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include "../../../wippersnapper/i2c/v1/i2c.pb.h"
 
 #define PERIOD_24HRS_AGO_MILLIS (millis() - (24 * 60 * 60 * 1000))
 ///< Used for last sensor read time, initially set 24hrs ago (max period)
@@ -1399,8 +1399,8 @@ protected:
   long _ambientTempFPeriod = 0L; ///< The time period between reading the
                                  ///< ambient temp. (°F) sensor's value.
   long _ambientTempFPeriodPrv =
-      PERIOD_24HRS_AGO_MILLIS; ///< The time when the ambient temp. (°F) sensor
-                               ///< was last read.
+      PERIOD_24HRS_AGO_MILLIS;  ///< The time when the ambient temp. (°F) sensor
+                                ///< was last read.
   long _objectTempFPeriod = 0L; ///< The time period between reading the object
                                 ///< temp. (°F) sensor's value.
   long _objectTempFPeriodPrv =

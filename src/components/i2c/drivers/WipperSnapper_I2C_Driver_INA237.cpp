@@ -7,8 +7,8 @@
  */
 
 #include "WipperSnapper_I2C_Driver_INA237.h"
-#include <Adafruit_INA237.h>
 #include "../../../Wippersnapper.h"
+#include <Adafruit_INA237.h>
 
 /*******************************************************************************/
 /*!

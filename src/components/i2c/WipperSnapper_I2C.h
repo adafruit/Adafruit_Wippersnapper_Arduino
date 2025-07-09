@@ -90,7 +90,6 @@ class WipperSnapper_I2C_Driver_INA260;
 class WipperSnapper_I2C_Driver_INA237;
 class WipperSnapper_I2C_Driver_INA238;
 
-
 /**************************************************************************/
 /*!
     @brief  Class that provides an interface with the I2C bus.
