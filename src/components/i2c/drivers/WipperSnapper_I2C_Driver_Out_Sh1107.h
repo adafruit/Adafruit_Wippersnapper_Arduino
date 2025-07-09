@@ -21,8 +21,10 @@
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
-#define WS_SH1107_DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
-#define WS_SH1107_DEFAULT_HEIGHT 64 ///< Default height for a sh1107 128x64 display
+#define WS_SH1107_DEFAULT_WIDTH \
+  128  ///< Default width for a sh1107 128x64 display
+#define WS_SH1107_DEFAULT_HEIGHT \
+  64  ///< Default height for a sh1107 128x64 display
 
 #define OLED_128X64_WING_WIDTH 128  ///< Width of the 128x64 OLED FeatherWing
 #define OLED_128X64_WING_HEIGHT 64  ///< Height of the 128x64 OLED FeatherWing
@@ -135,7 +137,7 @@ public:
                   The rotation of the display in degrees, default is 0.
   */
   void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size,
-                        uint8_t rotation = 0) {
+                        uint8_t rotation) {
     // This is a SH1107, not a SSD1306, so we don't need to do anything here.
     ConfigureSH1107(width, height, text_size, rotation);
   }

@@ -881,7 +881,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
-  } else if (strcmp("oled128x64wdefault", msgDeviceInitReq->i2c_device_name) == 0 ||
+  } else if (strcmp("oled128x64wdefault", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
              strcmp("oled128x64wlarge", msgDeviceInitReq->i2c_device_name) ==
                  0) {
     WS_DEBUG_PRINTLN("SH1107 display detected!");
@@ -892,7 +893,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
         (uint8_t)
             msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size,
-        OLED_128X64_WING_ROTATION_90);  // fixed as currently the only screen is
+        OLED_128X64_WING_ROTATION_90); // fixed as currently the only screen is
     // 128x64wing (needs a rotation of 1 / 90degrees and constructor w/h swap).
     if (!_sh1107->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize sh1107!");
