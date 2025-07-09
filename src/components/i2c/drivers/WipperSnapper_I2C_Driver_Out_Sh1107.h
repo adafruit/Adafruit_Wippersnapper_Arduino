@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell for Adafruit Industries 2025
+ * Copyright (c) Tyeth Gundry for Adafruit Industries 2025
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -17,13 +17,16 @@
 #define WIPPERSNAPPER_I2C_DRIVER_OUT_SH1107_H
 
 #include "WipperSnapper_I2C_Driver_Out.h"
-// #include <Adafruit_GrayOLED.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 
-#define DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
-#define DEFAULT_HEIGHT 64 ///< Default height for a sh1107 128x64 display
+#define WS_SH1107_DEFAULT_WIDTH 128 ///< Default width for a sh1107 128x64 display
+#define WS_SH1107_DEFAULT_HEIGHT 64 ///< Default height for a sh1107 128x64 display
+
+#define OLED_128X64_WING_WIDTH 128  ///< Width of the 128x64 OLED FeatherWing
+#define OLED_128X64_WING_HEIGHT 64  ///< Height of the 128x64 OLED FeatherWing
+#define OLED_128X64_WING_ROTATION_90 1  ///< Rotation of OLED FeatherWing 0-3
 
 /*!
     @brief  Class that provides a driver interface for a SH1107
@@ -35,7 +38,7 @@ class WipperSnapper_I2C_Driver_Out_SH1107
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a  OLED display.
+      @brief    Constructor for an SH1107 OLED display.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -46,8 +49,8 @@ public:
       : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
-    _width = DEFAULT_WIDTH;
-    _height = DEFAULT_HEIGHT;
+    _width = WS_SH1107_DEFAULT_WIDTH;
+    _height = WS_SH1107_DEFAULT_HEIGHT;
   }
 
   /*!
@@ -68,8 +71,10 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() {
-    if (_width == 128 && _height == 64 && _rotation == 1) {
-      // featherwing needs to be rotated 90 degrees and swap w/h
+    if (_width == OLED_128X64_WING_WIDTH &&
+        _height == OLED_128X64_WING_HEIGHT &&
+        _rotation == OLED_128X64_WING_ROTATION_90) {
+      // featherwing needs to be rotated 90 degrees and swap w/h ctor args
       _display = new Adafruit_SH1107(_height, _width, _i2c);
     } else {
       _display = new Adafruit_SH1107(_width, _height, _i2c);
@@ -92,14 +97,8 @@ public:
     _display->setTextSize(_text_sz);
     _display->setTextColor(SH110X_WHITE);
     _display->setCursor(0, 0);
-    // Use full 256 char 'Code Page 437' font
-    // _display->cp437(true);
     // Clear the buffer
     _display->clearDisplay();
-    _display->display();
-    _display->print(char('a'));
-    delay(500);
-    _display->write(char('b'));
     _display->display();
     return true;
   }
@@ -121,9 +120,7 @@ public:
     _width = width;
     _height = height;
     _text_sz = text_size;
-    _rotation = rotation % 90;
-    WS_DEBUG_PRINT("SH1107 text size: ");
-    WS_DEBUG_PRINTLN(text_size);
+    _rotation = rotation % 90; // SH1107 requires rotation to be 0-3, not degrees
   }
   /*!
       @brief    Configures a SSD1306 OLED display. Must be called before driver
@@ -151,8 +148,6 @@ public:
   void WriteMessageSH1107(const char *message) {
     if (_display == nullptr)
       return;
-    WS_DEBUG_PRINT("SH1107 Message:");
-    WS_DEBUG_PRINTLN(message);
     // Start with a fresh display buffer
     // and settings
     int16_t y_idx = 0;
@@ -175,15 +170,11 @@ public:
             message[i + 2] == '\\' && message[i + 3] == 'n') {
           // Skip to the next line
           y_idx += line_height;
-          WS_DEBUG_PRINT("SH1107 Newline at: ");
-          WS_DEBUG_PRINTLN(y_idx);
           _display->setCursor(0, y_idx);
           i += 3;
         } else if (message[i + 1] == 'n') {
           // Skip to the next line
           y_idx += line_height;
-          WS_DEBUG_PRINT("SH1107 Newline at: ");
-          WS_DEBUG_PRINTLN(y_idx);
           _display->setCursor(0, y_idx);
           i++;
         }

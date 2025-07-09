@@ -881,9 +881,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _drivers_out.push_back(_sevenSeg);
     WS_DEBUG_PRINTLN("7-Segement LED Matrix Initialized Successfully!");
-  } else if (strcmp("oled128x64wingdefault",
-                    msgDeviceInitReq->i2c_device_name) == 0 ||
-             strcmp("oled128x64winglarge", msgDeviceInitReq->i2c_device_name) ==
+  } else if (strcmp("oled128x64wdefault", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("oled128x64wlarge", msgDeviceInitReq->i2c_device_name) ==
                  0) {
     WS_DEBUG_PRINTLN("SH1107 display detected!");
     _sh1107 = new WipperSnapper_I2C_Driver_Out_SH1107(this->_i2c, i2cAddress);
@@ -893,8 +892,8 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
         (uint8_t)
             msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size,
-        90); // fixed as currently the only screen is 128x64 featherwing which
-             // needs a rotation of 1 / 90degrees, and constructor w/h swap.
+        OLED_128X64_WING_ROTATION_90);  // fixed as currently the only screen is
+    // 128x64wing (needs a rotation of 1 / 90degrees and constructor w/h swap).
     if (!_sh1107->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize sh1107!");
       _busStatusResponse =
@@ -908,9 +907,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
              strcmp("oled64x32default", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
              strcmp("oled64x32large", msgDeviceInitReq->i2c_device_name) == 0 ||
-             strcmp("oled128x32wingdefault",
-                    msgDeviceInitReq->i2c_device_name) == 0 ||
-             strcmp("oled128x32winglarge", msgDeviceInitReq->i2c_device_name) ==
+             strcmp("oled128x32wdefault", msgDeviceInitReq->i2c_device_name) ==
+                 0 ||
+             strcmp("oled128x32wlarge", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
              strcmp("oled128x32default", msgDeviceInitReq->i2c_device_name) ==
                  0 ||
@@ -927,8 +926,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.width,
         (uint8_t)msgDeviceInitReq->i2c_output_add.config.ssd1306_config.height,
         (uint8_t)
-            msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size,
-        0); // TODO: add rotation to protobuf and IO UI for adapted max len
+            msgDeviceInitReq->i2c_output_add.config.ssd1306_config.text_size);
     if (!_ssd1306->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize ssd1306!");
       _busStatusResponse =

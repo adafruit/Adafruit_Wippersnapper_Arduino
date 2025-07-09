@@ -20,8 +20,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 
-#define DEFAULT_WIDTH 128 ///< Default width for a ssd1306 128x64 display
-#define DEFAULT_HEIGHT 64 ///< Default height for a ssd1306 128x64 display
+#define WS_SSD1306_DEFAULT_WIDTH 128 ///< Default width for a ssd1306 128x64 display
+#define WS_SSD1306_DEFAULT_HEIGHT 64 ///< Default height for a ssd1306 128x64 display
 
 /*!
     @brief  Class that provides a driver interface for a SSD1306
@@ -44,8 +44,8 @@ public:
       : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
-    _width = DEFAULT_WIDTH;
-    _height = DEFAULT_HEIGHT;
+    _width = WS_SSD1306_DEFAULT_WIDTH;
+    _height = WS_SSD1306_DEFAULT_HEIGHT;
   }
 
   /*!
@@ -53,10 +53,8 @@ public:
   */
   ~WipperSnapper_I2C_Driver_Out_Ssd1306() {
     if (_display != nullptr) {
-      WS_DEBUG_PRINTLN("SSD1306 Destructor called, clearing display buffer.");
       _display->clearDisplay();
       _display->display();
-      WS_DEBUG_PRINTLN("SSD1306 display cleared, turning off display.");
       _display->ssd1306_command(SSD1306_DISPLAYOFF);
       delete _display;
       _display = nullptr;
@@ -102,8 +100,6 @@ public:
     _height = height;
     _text_sz = text_size;
     _rotation = rotation;
-    WS_DEBUG_PRINT("SSD1306 text size: ");
-    WS_DEBUG_PRINTLN(text_size);
   }
 
   /*!
@@ -114,9 +110,6 @@ public:
   void WriteMessageSSD1306(const char *message) {
     if (_display == nullptr)
       return;
-
-    WS_DEBUG_PRINT("SSD1306 Message:");
-    WS_DEBUG_PRINTLN(message);
 
     // Start with a fresh display buffer
     // and settings
