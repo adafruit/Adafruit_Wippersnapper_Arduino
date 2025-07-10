@@ -74,6 +74,7 @@ public:
   void SetI2CAddress(uint32_t i2c_address);
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
   Adafruit_GPS *GetAdaGps();
+  SFE_UBLOX_GNSS *GetUbxGps();
   GpsDriverType GetDriverType();
   GpsInterfaceType GetIfaceType();
   void I2cReadDiscard();

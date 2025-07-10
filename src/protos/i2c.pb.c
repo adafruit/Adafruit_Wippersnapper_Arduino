@@ -18,7 +18,7 @@ PB_BIND(wippersnapper_i2c_I2cBusScan, wippersnapper_i2c_I2cBusScan, AUTO)
 PB_BIND(wippersnapper_i2c_I2cBusScanned, wippersnapper_i2c_I2cBusScanned, 4)
 
 
-PB_BIND(wippersnapper_i2c_I2cDeviceAddOrReplace, wippersnapper_i2c_I2cDeviceAddOrReplace, 4)
+PB_BIND(wippersnapper_i2c_I2cDeviceAddOrReplace, wippersnapper_i2c_I2cDeviceAddOrReplace, 2)
 
 
 PB_BIND(wippersnapper_i2c_I2cDeviceAddedOrReplaced, wippersnapper_i2c_I2cDeviceAddedOrReplaced, AUTO)

@@ -345,11 +345,11 @@ extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceOutputWrite_msg;
 #define wippersnapper_i2c_I2cDeviceOutputWrite_fields &wippersnapper_i2c_I2cDeviceOutputWrite_msg
 
 /* Maximum encoded size of messages (where known) */
-#define WIPPERSNAPPER_I2C_I2C_PB_H_MAX_SIZE      wippersnapper_i2c_I2cDeviceAddOrReplace_size
+#define WIPPERSNAPPER_I2C_I2C_PB_H_MAX_SIZE      wippersnapper_i2c_I2cBusScanned_size
 #define wippersnapper_i2c_I2cBusDescriptor_size  32
 #define wippersnapper_i2c_I2cBusScan_size        42
 #define wippersnapper_i2c_I2cBusScanned_size     6242
-#define wippersnapper_i2c_I2cDeviceAddOrReplace_size 9837
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_size 1917
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_size 56
 #define wippersnapper_i2c_I2cDeviceDescriptor_size 50
 #define wippersnapper_i2c_I2cDeviceOutputWrite_size 569
