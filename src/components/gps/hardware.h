@@ -29,7 +29,9 @@
 #define DEFAULT_MTK_NMEA_BAUD_RATE 9600 ///< Default NMEA baud rate in bits per
 #define MAX_NEMA_SENTENCE_LEN 82        ///< Maximum length of a NMEA sentence
 #define PA1010D_I2C_ADDRESS 0x10        ///< I2C address for PA1010D GPS module
-#define UBX_I2C_ADDRESS 0x42 ///< I2C address for all u-Blox GPS products
+#define UBX_I2C_ADDRESS 0x42     ///< I2C address for all u-Blox GPS products
+#define MAX_NMEA_SENTENCES 10    ///< Size of the NMEA buffer
+#define MAX_LEN_NMEA_SENTENCE 82 ///< Maximum length of a NMEA sentence
 
 class Wippersnapper_V2; ///< Forward declaration
 class UARTHardware;     ///< Forward declaration
@@ -47,6 +49,13 @@ enum GpsDriverType {
   GPS_DRV_UBLOX,       ///< u-blox GPS driver
   GPS_DRV_GENERIC_NMEA ///< Generic NMEA GPS driver
 }; ///< Type of GPS driver used
+
+typedef struct {
+  char sentences[MAX_NMEA_SENTENCES][MAX_LEN_NMEA_SENTENCE];
+  int head;
+  int tail;
+  int maxlen;
+} nmea_buffer_t; ///< NMEA sentence ring buffer structure
 
 /*!
     @brief  Low-level hardware interface for WipperSnapper's generic GPS
@@ -77,7 +86,11 @@ public:
   SFE_UBLOX_GNSS *GetUbxGps();
   GpsDriverType GetDriverType();
   GpsInterfaceType GetIfaceType();
-  void I2cReadDiscard();
+  // HAL Abstraction for GPS driver commands
+  // Used to abstract the Adafruit_GPS and SFE_UBLOX_GNSS libraries
+  // and intelligently handle the differences between them
+  void ReadDiscardBuffer();
+  void PollStoreSentences();
 
 private:
   bool QueryModuleType();
@@ -85,6 +98,8 @@ private:
   bool DetectMtkI2C(uint32_t addr);
   bool DetectUbxI2C(uint32_t addr);
   bool BuildPmtkAck(char *msg_cmd, char *msg_resp);
+  void I2cReadDiscard();
+  void UartReadDiscard();
   GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
   GpsDriverType _driver_type;           ///< Type of GPS driver used by GPS
   HardwareSerial *_hw_serial = nullptr; ///< Optional HardwareSerial instance
@@ -100,6 +115,11 @@ private:
   MicroNMEA
       *_micro_nmea; ///< Optional MicroNMEA instance for parsing NMEA sentences
   char _micro_nmea_buf[100]; ///< Optional Buffer for MicroNMEA parsing
+  // NMEA sentence ring buffer
+  int NmeaBufPush(
+      const char *new_sentence);  ///< Push a sentence to the NMEA buffer
+  int NmeaBufPop(char *sentence); ///< Pop a sentence from the NMEA buffer
+  nmea_buffer_t _nmea_buff;       ///< NMEA buffer for storing sentences
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_HARDWARE_H

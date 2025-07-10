@@ -506,3 +506,108 @@ GpsDriverType GPSHardware::GetDriverType() { return _driver_type; }
  * @returns The interface type of the GPS hardware.
  */
 GpsInterfaceType GPSHardware::GetIfaceType() { return _iface_type; }
+
+/*!
+ * @brief Discards any data in the UART RX buffer.
+ */
+void GPSHardware::UartReadDiscard() {
+  if (_driver_type == GPS_DRV_MTK) {
+    size_t bytes_avail = _ada_gps->available();
+    if (bytes_avail > 0) {
+      for (size_t i = 0; i < bytes_avail; i++) {
+        _ada_gps->read();
+      }
+    }
+  }
+  // TODO: Support UBX's UART iface here
+}
+
+/*!
+ * @brief Discards any data in the UART or I2C RX buffer.
+ */
+void GPSHardware::ReadDiscardBuffer() {
+  if (_iface_type == GPS_IFACE_UART_HW) {
+    UartReadDiscard();
+  } else if (_iface_type == GPS_IFACE_I2C) {
+    I2cReadDiscard();
+  } else {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS interface type!");
+  }
+}
+
+/*!
+ * @brief Polls the GPS hardware for new NMEA sentences and stores them in a
+ * circular buffer.
+ */
+void GPSHardware::PollStoreSentences() {
+  if (_driver_type == GPS_DRV_MTK) {
+    // Before we poll, Unset the RX flag
+    if (_ada_gps->newNMEAreceived())
+      _ada_gps->lastNMEA();
+
+    // Read from the GPS module for update_rate milliseconds
+    ulong update_rate = 1000 / _nmea_update_rate;
+    ulong start_time = millis();
+    while (millis() - start_time < update_rate) {
+      char c = _ada_gps->read();
+      // Check if we have a new NMEA sentence
+      if (_ada_gps->newNMEAreceived()) {
+        // If we have a new sentence, push it to the buffer
+        char *last_nmea = _ada_gps->lastNMEA();
+        NmeaBufPush(_ada_gps->lastNMEA());
+      }
+    }
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO!
+  } else {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type for polling!");
+  }
+}
+
+/*!
+ * @brief Pushes a new NMEA sentence into the circular buffer.
+ * @param new_sentence Pointer to the new NMEA sentence to be added.
+ * @return 0 on success, -1 if the buffer is full.
+ */
+int GPSHardware::NmeaBufPush(const char *new_sentence) {
+  if (!new_sentence)
+    return -1;
+
+  int next = _nmea_buff.head + 1; // points to head after the current write
+  if (next >= _nmea_buff.maxlen)
+    next = 0; // wrap around
+
+  // If buffer is full, advance tail to overwrite oldest data
+  if (next == _nmea_buff.tail) {
+    _nmea_buff.tail = (_nmea_buff.tail + 1) % _nmea_buff.maxlen;
+  }
+
+  // Copy the new sentence into the buffer
+  strncpy(_nmea_buff.sentences[_nmea_buff.head], new_sentence,
+          MAX_LEN_NMEA_SENTENCE - 1);
+  _nmea_buff.sentences[_nmea_buff.head][MAX_LEN_NMEA_SENTENCE - 1] = '\0';
+  _nmea_buff.head = next;
+  return 0;
+}
+
+/*!
+ * @brief Pops a NMEA sentence from the circular buffer, FIFO order.
+ * @param sentence Pointer to the buffer where the popped sentence will be
+ * stored.
+ * @return 0 on success, -1 if the buffer is empty.
+ */
+int GPSHardware::NmeaBufPop(char *sentence) {
+  // Is the buffer empty?
+  if (_nmea_buff.head == _nmea_buff.tail)
+    return -1;
+
+  int next =
+      _nmea_buff.tail + 1; // next is where tail will point to after this read.
+  if (next >= _nmea_buff.maxlen)
+    next = 0;
+
+  // Copy sentence from tail
+  strcpy(sentence, _nmea_buff.sentences[_nmea_buff.tail]);
+  _nmea_buff.tail = next; // Advance tail
+  return 0;
+}

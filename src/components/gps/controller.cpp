@@ -107,54 +107,6 @@ bool GPSController::AddGPS(HardwareSerial *serial,
 }
 
 /*!
- * @brief Pushes a new NMEA sentence into the circular buffer.
- * @param new_sentence Pointer to the new NMEA sentence to be added.
- * @return 0 on success, -1 if the buffer is full.
- */
-int GPSController::NmeaBufPush(const char *new_sentence) {
-  if (!new_sentence)
-    return -1;
-
-  int next = _nmea_buff.head + 1; // points to head after the current write
-  if (next >= _nmea_buff.maxlen)
-    next = 0; // wrap around
-
-  // If buffer is full, advance tail to overwrite oldest data
-  if (next == _nmea_buff.tail) {
-    _nmea_buff.tail = (_nmea_buff.tail + 1) % _nmea_buff.maxlen;
-  }
-
-  // Copy the new sentence into the buffer
-  strncpy(_nmea_buff.sentences[_nmea_buff.head], new_sentence,
-          MAX_LEN_NMEA_SENTENCE - 1);
-  _nmea_buff.sentences[_nmea_buff.head][MAX_LEN_NMEA_SENTENCE - 1] = '\0';
-  _nmea_buff.head = next;
-  return 0;
-}
-
-/*!
- * @brief Pops a NMEA sentence from the circular buffer, FIFO order.
- * @param sentence Pointer to the buffer where the popped sentence will be
- * stored.
- * @return 0 on success, -1 if the buffer is empty.
- */
-int GPSController::NmeaBufPop(char *sentence) {
-  // Is the buffer empty?
-  if (_nmea_buff.head == _nmea_buff.tail)
-    return -1;
-
-  int next =
-      _nmea_buff.tail + 1; // next is where tail will point to after this read.
-  if (next >= _nmea_buff.maxlen)
-    next = 0;
-
-  // Copy sentence from tail
-  strcpy(sentence, _nmea_buff.sentences[_nmea_buff.tail]);
-  _nmea_buff.tail = next; // Advance tail
-  return 0;
-}
-
-/*!
  * @brief Updates the GPSController, polling the GPS hardware for data.
  * This function checks if the read period has elapsed and processes the GPS
  * data accordingly.
@@ -203,41 +155,17 @@ void GPSController::update() {
       continue; // Not yet elapsed, skip this driver
 
     // Discard the GPS buffer before we attempt to do a fresh read
-    if (drv->GetIfaceType() == GPS_IFACE_UART_HW) {
-      // TODO: Refactor this into a function within hardware.cpp
-      size_t bytes_avail = ada_gps->available();
-      if (bytes_avail > 0) {
-        for (size_t i = 0; i < bytes_avail; i++) {
-          ada_gps->read();
-        }
-      }
-    } else if (drv->GetIfaceType() == GPS_IFACE_I2C) {
-      drv->I2cReadDiscard();
-    }
+    drv->ReadDiscardBuffer();
 
-    // Unset the RX flag
-    if (ada_gps->newNMEAreceived()) {
-      ada_gps->lastNMEA();
-    }
-
-    // Read from the GPS module for update_rate milliseconds
-    ulong update_rate = 1000 / drv->GetNmeaUpdateRate();
-    ulong start_time = millis();
-    while (millis() - start_time < update_rate) {
-      char c = ada_gps->read();
-      // Check if we have a new NMEA sentence
-      if (ada_gps->newNMEAreceived()) {
-        // If we have a new sentence, push it to the buffer
-        char *last_nmea = ada_gps->lastNMEA();
-        NmeaBufPush(ada_gps->lastNMEA());
-      }
-    }
+    // Poll the GPS hardware for update_rate ms
+    // and store NMEA sentences in a ring buffer
+    drv->PollStoreSentences();
 
     // Parse each NMEA sentence in the buffer
     _gps_model->CreateGPSEvent();
     char nmea_sentence[MAX_LEN_NMEA_SENTENCE];
     bool has_gps_event = false;
-    while (NmeaBufPop(nmea_sentence) != -1) {
+    while (drv->NmeaBufPop(nmea_sentence) != -1) {
       // Parse the NMEA sentence
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
