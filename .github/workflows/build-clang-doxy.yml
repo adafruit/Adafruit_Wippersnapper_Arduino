@@ -24,9 +24,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["funhouse_noota"]
+        arduino-platform:
+          [
+            "funhouse_noota",
+            "esp32s3_devkitc_1_n8"
+          ]
         include:
+          - offset: "0x0"
           - offset: "0x1000"
+            arduino-platform: "funhouse_noota"
     steps:
       - name: "skip if unwanted"
         if: |
@@ -118,6 +124,7 @@ jobs:
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.elf
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.map
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin
+          mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.merged_auto.bin
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin
       - name: Get Board Flash Parameters
         id: get_board_json
@@ -706,6 +713,7 @@ jobs:
       matrix:
         arduino-platform:
           [
+            "esp32s3_devkitc_1_n8_debug",
             "feather_esp32s2_debug",
             "feather_esp32s2_tft_debug",
             "feather_esp32s3_debug",
