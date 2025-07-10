@@ -213,6 +213,7 @@ jobs:
             "qtpy_esp32s2",
             "feather_esp32s3_reverse_tft",
             "qtpy_esp32s3_n4r2",
+            "xiao_esp32s3",
           ]
     steps:
       - name: "skip if unwanted"
