@@ -127,7 +127,7 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
           gps_config->commands_ubxes[i].size);
       WS_DEBUG_PRINTLN(" done!");
       // Wait for the ACK response from the GPS module
-      WS_DEBUG_PRINT("[gps] Waiting for ACK response...");
+/*       WS_DEBUG_PRINT("[gps] Waiting for ACK response...");
       ulong start_time = millis();
       while (millis() - start_time < 1000) {
         _sfe_gps->checkUblox(); //See if new data is available. Process bytes as they come in.
@@ -135,7 +135,7 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
           WS_DEBUG_PRINTLN(" done!");
           break; // Exit the loop if ACK is received
         }
-
+      } */
     }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
