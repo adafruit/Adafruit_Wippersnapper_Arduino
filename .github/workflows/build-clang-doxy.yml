@@ -20,7 +20,6 @@ jobs:
   build-esp32sx-esptool:
     name: 🏗️ESP32-Sx(lvgl)
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -38,6 +37,7 @@ jobs:
             "qtpy_esp32s3_n4r2",
             "feather_esp32s3_4mbflash_2mbpsram",
             "feather_esp32s3_tft",
+            "xiao_esp32s3",
           ]
         include:
           - offset: "0x0"
@@ -57,6 +57,7 @@ jobs:
             arduino-platform: "qtpy_esp32s2"
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -182,14 +183,14 @@ jobs:
       - name: boot_app0 file from esp32 source bsp
         if: steps.check_files.outputs.files_exists == 'false'
         run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
+            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
+            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin \
@@ -217,7 +218,6 @@ jobs:
   build-esp32sx:
     name: 🏗️ESP32-Sx
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -229,6 +229,7 @@ jobs:
           ]
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -319,7 +320,6 @@ jobs:
   build-esp32:
     name: 🏗️ESP32/Cx
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -342,6 +342,7 @@ jobs:
             arduino-platform: "wippersnapper_feather_esp32c6"
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -442,14 +443,14 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
+            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
+            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
@@ -468,7 +469,6 @@ jobs:
   build-samd:
     name: 🏗️SAMD
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -480,6 +480,7 @@ jobs:
           ]
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -555,13 +556,13 @@ jobs:
   build-rp2040:
     name: 🏗️RP2040
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb"]
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -634,13 +635,13 @@ jobs:
   build-esp8266:
     name: 🏗️ESP8266
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         arduino-platform: ["feather_esp8266"]
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -720,7 +721,6 @@ jobs:
   build-esp32sx-dev:
     name: 🏗️ESP32-Sx(DEV)
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -738,6 +738,7 @@ jobs:
           ]
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -828,7 +829,6 @@ jobs:
   build-esp32-dev:
     name: 🏗️ESP32/Cx(DEV)
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -842,6 +842,7 @@ jobs:
             arduino-platform: "wippersnapper_feather_esp32c6_debug"
     steps:
       - name: "skip if unwanted"
+        continue-on-error: true
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.board != '' &&
@@ -944,14 +945,14 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
+            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
+            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.combined.bin \
             ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.bootloader.bin \
             0x8000 wippersnapper.${{ matrix.arduino-platform }}.littlefs.${{ env.WS_VERSION }}.partitions.bin \
