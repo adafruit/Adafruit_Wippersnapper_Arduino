@@ -160,11 +160,11 @@ jobs:
       - name: boot_app0 file from esp32 source bsp
         if: steps.check_files.outputs.files_exists == 'false'
         run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
             --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
             --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
@@ -430,11 +430,11 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
             --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
             --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
@@ -932,11 +932,11 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Create combined binary using Esptool merge_bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
             --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
             --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
