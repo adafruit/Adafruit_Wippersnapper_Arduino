@@ -27,6 +27,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_BME680.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP3XX.h"
+#include "drivers/WipperSnapper_I2C_Driver_D6T1A.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_DS2484.h"
 #include "drivers/WipperSnapper_I2C_Driver_ENS160.h"
@@ -154,6 +155,7 @@ private:
       _drivers_out; ///< List of i2c output drivers
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
+  WipperSnapper_I2C_Driver_D6T1A *_d6t1a = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_DS2484 *_ds2484 = nullptr;
   WipperSnapper_I2C_Driver_ENS160 *_ens160 = nullptr;
