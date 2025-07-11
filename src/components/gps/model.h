@@ -32,6 +32,7 @@ public:
   void CreateGPSEvent();
   bool EncodeGPSEvent();
   wippersnapper_gps_GPSEvent *GetGPSEvent();
+  bool ProcessNMEASentence(char *sentence, GPSHardware *drv);
   wippersnapper_gps_GPSDateTime CreateGpsDatetime(uint8_t hour, uint8_t minute,
                                                   uint8_t seconds,
                                                   uint8_t milliseconds,

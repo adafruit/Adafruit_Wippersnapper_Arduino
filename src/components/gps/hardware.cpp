@@ -611,3 +611,86 @@ int GPSHardware::NmeaBufPop(char *sentence) {
   _nmea_buff.tail = next; // Advance tail
   return 0;
 }
+
+/*!
+ * @brief Parses a NMEA sentence and returns true if it was successfully parsed.
+ * @param sentence Pointer to the NMEA sentence to be parsed.
+ * @returns True if the sentence was parsed successfully, False otherwise.
+ */
+bool GPSHardware::ParseNMEASentence(char *sentence) {
+  if (!sentence)
+    return false;
+  if (_driver_type == GPS_DRV_MTK) {
+    // Parse the NMEA sentence using Adafruit_GPS
+    return _ada_gps->parse(sentence);
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // Parse the NMEA sentence using SFE_UBLOX_GNSS
+    // TODO!
+    // return _sfe_gps->parseNMEA(sentence);
+  }
+
+  return false;
+}
+
+uint8_t GPSHardware::GetHour() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->hour;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0;
+}
+
+uint8_t GPSHardware::GetMinute() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->minute;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0;
+}
+
+uint8_t GPSHardware::GetSeconds() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->seconds;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0;
+}
+
+uint16_t GPSHardware::GetMilliseconds() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->milliseconds;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0;
+}
+
+uint8_t GPSHardware::GetDay() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->day;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0;
+}
+
+uint8_t GPSHardware::GetMonth() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->month;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0;
+}
+
+uint8_t GPSHardware::GetYear() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->year;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0;
+}

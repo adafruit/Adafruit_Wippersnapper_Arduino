@@ -165,12 +165,19 @@ void GPSController::update() {
     _gps_model->CreateGPSEvent();
     char nmea_sentence[MAX_LEN_NMEA_SENTENCE];
     bool has_gps_event = false;
+    // TODO: You were here
+    // Thoughts:
+    // 1. Split out the parsing into the hardware HAL API
+    // 2. Return the sentence back to the controller func, here
+    // 3. Controller will then the sentence to the model for parsing/inclusion
+    // into a GPSEvent
+    // 4. controller sends it
     while (drv->NmeaBufPop(nmea_sentence) != -1) {
       // Parse the NMEA sentence
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
-      if (!ada_gps->parse(nmea_sentence)) {
-        continue; // Skip parsing this sentence if parsing failed
+      if (!drv->ParseNMEASentence(nmea_sentence)) {
+        continue; // Skip this sentence if parsing failed
       }
       has_gps_event = true;
       // Build a GPSEvent message from the sentence

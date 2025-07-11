@@ -194,3 +194,12 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
   _msg_gps_event.gga_responses_count = 1;
   return true;
 }
+
+bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
+  // Build datetime
+  wippersnapper_gps_GPSDateTime datetime = CreateGpsDatetime(
+      drv->GetHour(), drv->GetMinute(), drv->GetSeconds(),
+      drv->GetMilliseconds(), drv->GetDay(), drv->GetMonth(), drv->GetYear());
+
+  return true;
+}

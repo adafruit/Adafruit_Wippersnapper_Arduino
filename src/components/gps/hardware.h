@@ -86,11 +86,20 @@ public:
   SFE_UBLOX_GNSS *GetUbxGps();
   GpsDriverType GetDriverType();
   GpsInterfaceType GetIfaceType();
+  int NmeaBufPop(char *sentence);
   // HAL Abstraction for GPS driver commands
   // Used to abstract the Adafruit_GPS and SFE_UBLOX_GNSS libraries
   // and intelligently handle the differences between them
   void ReadDiscardBuffer();
   void PollStoreSentences();
+  bool ParseNMEASentence(char *sentence);
+  uint8_t GetHour();
+  uint8_t GetMinute();
+  uint8_t GetSeconds();
+  uint16_t GetMilliseconds();
+  uint8_t GetDay();
+  uint8_t GetMonth();
+  uint8_t GetYear();
 
 private:
   bool QueryModuleType();
@@ -117,9 +126,8 @@ private:
   char _micro_nmea_buf[100]; ///< Optional Buffer for MicroNMEA parsing
   // NMEA sentence ring buffer
   int NmeaBufPush(
-      const char *new_sentence);  ///< Push a sentence to the NMEA buffer
-  int NmeaBufPop(char *sentence); ///< Pop a sentence from the NMEA buffer
-  nmea_buffer_t _nmea_buff;       ///< NMEA buffer for storing sentences
+      const char *new_sentence); ///< Push a sentence to the NMEA buffer
+  nmea_buffer_t _nmea_buff;      ///< NMEA buffer for storing sentences
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_HARDWARE_H
