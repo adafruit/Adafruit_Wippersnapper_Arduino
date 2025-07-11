@@ -41,6 +41,9 @@ public:
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
+    _deviceTemp = NAN;
+    _objectTemp = NAN;
+    _lastRead = 0;
   }
 
   /*******************************************************************************/
@@ -130,9 +133,9 @@ public:
   }
 
 protected:
-  float _deviceTemp = NAN;    ///< Device temperature in Celsius
-  float _objectTemp = NAN;    ///< Object temperature in Celsius
-  uint32_t _lastRead = 0;     ///< Last time the sensor was read in milliseconds
+  float _deviceTemp;          ///< Device temperature in Celsius
+  float _objectTemp;          ///< Object temperature in Celsius
+  uint32_t _lastRead;         ///< Last time the sensor was read in milliseconds
   OmronD6T *_d6t1a = nullptr; ///< D6T1A object
 };
 
