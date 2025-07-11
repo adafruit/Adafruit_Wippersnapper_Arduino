@@ -27,52 +27,11 @@ class Adafruit_INA260;
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_INA260 : public WipperSnapper_I2C_Driver {
 public:
-  /*******************************************************************************/
-  /*!
-      @brief    Constructor for a INA260 sensor.
-      @param    i2c
-                The I2C interface.
-      @param    sensorAddress
-                The 7-bit I2C address of the sensor.
-  */
-  /*******************************************************************************/
   WipperSnapper_I2C_Driver_INA260(TwoWire *i2c, uint16_t sensorAddress);
-
-  /*******************************************************************************/
-  /*!
-      @brief    Destructor for an INA260 sensor.
-  */
-  /*******************************************************************************/
   ~WipperSnapper_I2C_Driver_INA260();
 
-  /*******************************************************************************/
-  /*!
-      @brief    Initializes the INA260 sensor and begins I2C.
-      @returns  True if initialized successfully, False otherwise.
-  */
-  /*******************************************************************************/
   bool begin();
-
-  /*******************************************************************************/
-  /*!
-      @brief    Reads a voltage sensor and converts the
-                reading into the expected SI unit.
-      @param    voltageEvent
-                voltage sensor reading, in volts.
-      @returns  True if the sensor event was obtained successfully, False
-                otherwise.
-  */
-  /*******************************************************************************/
   bool getEventVoltage(sensors_event_t *voltageEvent);
-
-  /**
-   * @brief   Get the current sensor event.
-   *
-   * @param   currentEvent  Pointer to the current sensor event.
-   *
-   * @returns True if the sensor event was obtained successfully, False
-   * otherwise.
-   */
   bool getEventCurrent(sensors_event_t *currentEvent);
 
 protected:
