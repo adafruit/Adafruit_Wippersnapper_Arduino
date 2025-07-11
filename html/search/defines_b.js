@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['red',['RED',['../_wippersnapper___status_l_e_d_8h.html#a8d23feea868a983c8c2b661e1e16972f',1,'Wippersnapper_StatusLED.h']]],
-  ['retry_5ffunction_5funtil_5ftimeout',['RETRY_FUNCTION_UNTIL_TIMEOUT',['../_wippersnapper_8h.html#a9a217c765d21043a2ca0fb1260ff6de1',1,'Wippersnapper.h']]]
+  ['period_5f24hrs_5fago_5fmillis',['PERIOD_24HRS_AGO_MILLIS',['../_wipper_snapper___i2_c___driver_8h.html#a77f07f886a8d851d45d1046599df7eeb',1,'WipperSnapper_I2C_Driver.h']]],
+  ['pink',['PINK',['../_wippersnapper___status_l_e_d_8h.html#ada419fe3b48fcf19daed7cc57ccf1174',1,'Wippersnapper_StatusLED.h']]]
 ];

@@ -28,6 +28,7 @@ var searchData=
   ['setaref',['setAref',['../class_wippersnapper___analog_i_o.html#ae715f810b324c90bca4d4bc2dbccb408',1,'Wippersnapper_AnalogIO']]],
   ['setdriverid',['setDriverID',['../classws__uart__drv.html#a91fab7684041e996ef713362740c7af4',1,'ws_uart_drv']]],
   ['setduty',['setDuty',['../classws__ledc.html#aad14bc7db234d2b20e14a939bcbdfeed',1,'ws_ledc']]],
+  ['setledbackpackbrightness',['SetLedBackpackBrightness',['../class_wipper_snapper___i2_c___driver___out.html#acd7b8ccb315c06fda3b07354b331c68a',1,'WipperSnapper_I2C_Driver_Out::SetLedBackpackBrightness()'],['../class_wipper_snapper___i2_c___driver___out__7_seg.html#aebb3c394781b21c6796b12b284a17204',1,'WipperSnapper_I2C_Driver_Out_7Seg::SetLedBackpackBrightness()'],['../class_wipper_snapper___i2_c___driver___out___quad_alpha_num.html#a3f2b6fb4d7eeba1a295360c8ae42cfc4',1,'WipperSnapper_I2C_Driver_Out_QuadAlphaNum::SetLedBackpackBrightness()']]],
   ['setledcdriver',['setLEDCDriver',['../classws__ledc__servo.html#aec305bafbede18153c124dd74a31b46b',1,'ws_ledc_servo']]],
   ['setprvpolltime',['setPrvPollTime',['../classws__uart__drv.html#a9f840f988ccf340751ca635e1c055ad8',1,'ws_uart_drv']]],
   ['setresolution',['setResolution',['../classws__display__driver.html#af8775bdd966f3fe04f9c36fd99c36aab',1,'ws_display_driver']]],

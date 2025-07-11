@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['enablecharlcdbacklight',['EnableCharLcdBacklight',['../class_wipper_snapper___i2_c___driver___out.html#a43a8c3bca64bf30f3d009fc8878b54e0',1,'WipperSnapper_I2C_Driver_Out::EnableCharLcdBacklight()'],['../class_wipper_snapper___i2_c___driver___out___char_lcd.html#afd099607ba4f535ea828bc9166ab13e3',1,'WipperSnapper_I2C_Driver_Out_CharLcd::EnableCharLcdBacklight()']]],
   ['enablelogging',['enableLogging',['../classws__display__driver.html#a9694a17bea3323c03827e212d74c0f89',1,'ws_display_driver']]],
   ['enablesensorproximity',['enableSensorProximity',['../class_wipper_snapper___i2_c___driver.html#a7274f1295546bd78fc1cb12068c9184a',1,'WipperSnapper_I2C_Driver']]],
   ['enablewdt',['enableWDT',['../class_wippersnapper.html#ac2a549c278f3133da60c9f09fe405289',1,'Wippersnapper']]],

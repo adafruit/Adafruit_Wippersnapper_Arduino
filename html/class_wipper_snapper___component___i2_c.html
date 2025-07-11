@@ -102,6 +102,9 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#a1ea4a4a30e5486e4fee944ad54b6ca3d">update</a> ()</td></tr>
 <tr class="memdesc:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queries all I2C device drivers for new values. Fills and sends an I2CSensorEvent with the sensor event data. <br /></td></tr>
 <tr class="separator:a1ea4a4a30e5486e4fee944ad54b6ca3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3b8039336f8091b828c3ea6304fa93e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#ab3b8039336f8091b828c3ea6304fa93e">Handle_I2cDeviceOutputWrite</a> (wippersnapper_i2c_v1_I2CDeviceOutputWrite *msgDeviceWrite)</td></tr>
+<tr class="memdesc:ab3b8039336f8091b828c3ea6304fa93e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles an I2CDeviceOutputWrite message.  <a href="#ab3b8039336f8091b828c3ea6304fa93e">More...</a><br /></td></tr>
+<tr class="separator:ab3b8039336f8091b828c3ea6304fa93e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad920d609d60a86b2a447611e423a7207"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_wipper_snapper___component___i2_c.html#ad920d609d60a86b2a447611e423a7207">sensorEventRead</a> (std::vector&lt; <a class="el" href="class_wipper_snapper___i2_c___driver.html">WipperSnapper_I2C_Driver</a> *&gt;::iterator &amp;iter, unsigned long curTime, wippersnapper_signal_v1_I2CResponse *msgi2cResponse, bool(WipperSnapper_I2C_Driver::*getEventFunc)(sensors_event_t *), long(WipperSnapper_I2C_Driver::*getPeriodFunc)(), long(WipperSnapper_I2C_Driver::*getPeriodPrvFunc)(), void(WipperSnapper_I2C_Driver::*setPeriodPrvFunc)(long), wippersnapper_i2c_v1_SensorType sensorType, const char *sensorName, const char *unit, sensors_event_t event, float sensors_event_t::*valueMember, bool &amp;sensorsReturningFalse, int &amp;retries)</td></tr>
 <tr class="memdesc:ad920d609d60a86b2a447611e423a7207"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads a sensor event from an I2C device driver.  <a href="#ad920d609d60a86b2a447611e423a7207">More...</a><br /></td></tr>
 <tr class="separator:ad920d609d60a86b2a447611e423a7207"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -281,6 +284,33 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ab3b8039336f8091b828c3ea6304fa93e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3b8039336f8091b828c3ea6304fa93e">&#9670;&nbsp;</a></span>Handle_I2cDeviceOutputWrite()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool WipperSnapper_Component_I2C::Handle_I2cDeviceOutputWrite </td>
+          <td>(</td>
+          <td class="paramtype">wippersnapper_i2c_v1_I2CDeviceOutputWrite *&#160;</td>
+          <td class="paramname"><em>msgDeviceWrite</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Handles an I2CDeviceOutputWrite message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msgDeviceWrite</td><td>A decoded I2CDeviceOutputWrite message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the message was handled successfully, false otherwise. </dd></dl>
 
 </div>
 </div>
