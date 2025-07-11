@@ -165,65 +165,39 @@ void GPSController::update() {
     _gps_model->CreateGPSEvent();
     char nmea_sentence[MAX_LEN_NMEA_SENTENCE];
     bool has_gps_event = false;
-    // TODO: You were here
-    // Thoughts:
-    // 1. Split out the parsing into the hardware HAL API
-    // 2. Return the sentence back to the controller func, here
-    // 3. Controller will then the sentence to the model for parsing/inclusion
-    // into a GPSEvent
-    // 4. controller sends it
     while (drv->NmeaBufPop(nmea_sentence) != -1) {
-      // Parse the NMEA sentence
+      // Let the driver parse the NMEA sentence
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
-      if (!drv->ParseNMEASentence(nmea_sentence)) {
+      if (!drv->ParseNMEASentence(nmea_sentence))
         continue; // Skip this sentence if parsing failed
-      }
-      has_gps_event = true;
-      // Build a GPSEvent message from the sentence
-      wippersnapper_gps_GPSDateTime datetime = _gps_model->CreateGpsDatetime(
-          ada_gps->hour, ada_gps->minute, ada_gps->seconds,
-          ada_gps->milliseconds, ada_gps->day, ada_gps->month, ada_gps->year);
-      if (strncmp(nmea_sentence, "$GPRMC", 6) == 0 ||
-          strncmp(nmea_sentence, "$GNRMC", 6) == 0) {
-        _gps_model->AddGpsEventRMC(
-            datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
-            ada_gps->longitude, &ada_gps->lon, ada_gps->speed, ada_gps->angle);
-      } else if (strncmp(nmea_sentence, "$GPGGA", 6) == 0 ||
-                 strncmp(nmea_sentence, "$GNGGA", 6) == 0) {
-        _gps_model->AddGpsEventGGA(
-            datetime, ada_gps->fix, ada_gps->latitude, &ada_gps->lat,
-            ada_gps->longitude, &ada_gps->lon, ada_gps->satellites,
-            ada_gps->HDOP, ada_gps->altitude, ada_gps->geoidheight);
-      } else {
-        WS_DEBUG_PRINTLN(
-            "[gps] WARNING - Parsed sentence is not type RMC or GGA!");
-      }
-    }
+      else
+        has_gps_event = true; // We have a valid NMEA sentence
 
-    // We did not create a GPSEvent because the NMEA sentences were not
-    // GGA/RMC or parsed correctly
-    if (!has_gps_event) {
-      WS_DEBUG_PRINTLN(
-          "[gps] No GPSEvent created from NMEA sentences!"); // TODO: Remove
-                                                             // this in prod
-      continue;
-    }
+      // Using the Model, process the NMEA sentence into a GPSEvent
+      WS_DEBUG_PRINTLN("[gps] Processing NMEA sentence...");
+      _gps_model->ProcessNMEASentence(nmea_sentence, drv);
 
-    // Encode and publish to IO
-    WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
-    bool did_encode = _gps_model->EncodeGPSEvent();
-    if (!did_encode) {
-      WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
-    } else {
-      // Publish the GPSEvent to IO
-      if (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_gps_event_tag,
-                              _gps_model->GetGPSEvent())) {
-        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
+      // We did not create a GPSEvent because the NMEA sentences were not
+      // GGA/RMC or parsed correctly
+      if (!has_gps_event)
+        continue;
+
+      // Encode and publish to IO
+      WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
+      bool did_encode = _gps_model->EncodeGPSEvent();
+      if (!did_encode) {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
       } else {
-        WS_DEBUG_PRINTLN("...ok!");
+        // Publish the GPSEvent to IO
+        if (!WsV2.PublishSignal(
+                wippersnapper_signal_DeviceToBroker_gps_event_tag,
+                _gps_model->GetGPSEvent())) {
+          WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
+        } else {
+          WS_DEBUG_PRINTLN("...ok!");
+        }
       }
+      drv->SetPollPeriodPrv(cur_time);
     }
-    drv->SetPollPeriodPrv(cur_time);
   }
-}

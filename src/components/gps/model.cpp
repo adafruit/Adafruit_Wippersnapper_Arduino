@@ -196,10 +196,32 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
 }
 
 bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
-  // Build datetime
+  // Check for $GP or $GN prefixed sentences
+  if (sentence[0] == '$' && sentence[1] == 'G' &&
+      (sentence[2] == 'P' || sentence[2] == 'N'))
+    return false;
+
   wippersnapper_gps_GPSDateTime datetime = CreateGpsDatetime(
       drv->GetHour(), drv->GetMinute(), drv->GetSeconds(),
       drv->GetMilliseconds(), drv->GetDay(), drv->GetMonth(), drv->GetYear());
+
+  if (sentence[3] == 'R' && sentence[4] == 'M' && sentence[5] == 'C') {
+    // Process RMC sentence
+    if (!AddGpsEventRMC(datetime, drv->GetFix(), drv->GetLat(),
+                        &drv->GetLatDir(), drv->GetLon(), &drv->GetLonDir(),
+                        drv->GetSpeed(), drv->GetAngle()))
+      return false;
+  } else if (sentence[3] == 'G' && sentence[4] == 'G' && sentence[5] == 'A') {
+    // Process GGA sentence
+    if (!AddGpsEventGGA(datetime, drv->GetFix(), drv->GetLat(),
+                        &drv->GetLatDir(), drv->GetLon(), &drv->GetLonDir(),
+                        drv->GetNumSats(), drv->GetHDOP(), drv->GetAltitude(),
+                        drv->GetGeoidHeight()))
+      return false;
+  } else {
+    // Not a recognized RMC or GGA sentence
+    return false;
+  }
 
   return true;
 }

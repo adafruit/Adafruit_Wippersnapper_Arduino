@@ -87,12 +87,14 @@ public:
   GpsDriverType GetDriverType();
   GpsInterfaceType GetIfaceType();
   int NmeaBufPop(char *sentence);
-  // HAL Abstraction for GPS driver commands
-  // Used to abstract the Adafruit_GPS and SFE_UBLOX_GNSS libraries
-  // and intelligently handle the differences between them
+  // "Helpers" for GPS Drivers
+  // Used to abstract common parsing functions from GPS driver libraries (i.e:
+  // Adafruit_GPS, SFE_UBLOX_GNSS, anything in the future) and intelligently
+  // handle the differences between them
   void ReadDiscardBuffer();
   void PollStoreSentences();
   bool ParseNMEASentence(char *sentence);
+  // Datetime getters
   uint8_t GetHour();
   uint8_t GetMinute();
   uint8_t GetSeconds();
@@ -100,6 +102,18 @@ public:
   uint8_t GetDay();
   uint8_t GetMonth();
   uint8_t GetYear();
+  // RMC/GGA getters
+  bool GetFix();
+  float GetLat();
+  char GetLatDir();
+  float GetLon();
+  char GetLonDir();
+  uint8_t GetNumSats();
+  float GetHDOP();
+  float GetAltitude();
+  float GetSpeed();
+  float GetAngle();
+  float GetGeoidHeight();
 
 private:
   bool QueryModuleType();

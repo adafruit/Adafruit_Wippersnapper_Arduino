@@ -632,6 +632,10 @@ bool GPSHardware::ParseNMEASentence(char *sentence) {
   return false;
 }
 
+/*!
+ * @brief Gets the hours from the GPS module.
+ * @returns The hours (0-23), or 0 if the GPS driver type is not set.
+ */
 uint8_t GPSHardware::GetHour() {
   if (_driver_type == GPS_DRV_MTK) {
     return _ada_gps->hour;
@@ -641,6 +645,10 @@ uint8_t GPSHardware::GetHour() {
   return 0;
 }
 
+/*!
+ * @brief Gets the minute from the GPS module.
+ * @returns The minute (0-59), or 0 if the GPS driver type is not set.
+ */
 uint8_t GPSHardware::GetMinute() {
   if (_driver_type == GPS_DRV_MTK) {
     return _ada_gps->minute;
@@ -650,6 +658,10 @@ uint8_t GPSHardware::GetMinute() {
   return 0;
 }
 
+/*!
+ * @brief Gets the seconds from the GPS module.
+ * @returns The seconds (0-59), or 0 if the GPS driver type is not set.
+ */
 uint8_t GPSHardware::GetSeconds() {
   if (_driver_type == GPS_DRV_MTK) {
     return _ada_gps->seconds;
@@ -659,6 +671,11 @@ uint8_t GPSHardware::GetSeconds() {
   return 0;
 }
 
+/*!
+ * @brief Gets the milliseconds from the GPS module.
+ * @returns The milliseconds part of the current time, or 0 if the GPS driver
+ * type is not set.
+ */
 uint16_t GPSHardware::GetMilliseconds() {
   if (_driver_type == GPS_DRV_MTK) {
     return _ada_gps->milliseconds;
@@ -668,6 +685,10 @@ uint16_t GPSHardware::GetMilliseconds() {
   return 0;
 }
 
+/*!
+ * @brief Gets the day from the GPS module.
+ * @returns The day of the month (1-31), or 0 if the GPS driver type is not set.
+ */
 uint8_t GPSHardware::GetDay() {
   if (_driver_type == GPS_DRV_MTK) {
     return _ada_gps->day;
@@ -677,6 +698,11 @@ uint8_t GPSHardware::GetDay() {
   return 0;
 }
 
+/*!
+ * @brief Gets the month from the GPS module.
+ * @returns The month as a number (1-12), or 0 if the GPS driver type is not
+ * set.
+ */
 uint8_t GPSHardware::GetMonth() {
   if (_driver_type == GPS_DRV_MTK) {
     return _ada_gps->month;
@@ -686,6 +712,11 @@ uint8_t GPSHardware::GetMonth() {
   return 0;
 }
 
+/*!
+ * @brief Gets the year from the GPS module.
+ * @returns The year as a 2-digit number (e.g., 23 for 2023), or 0 if the GPS
+ * driver type is not set.
+ */
 uint8_t GPSHardware::GetYear() {
   if (_driver_type == GPS_DRV_MTK) {
     return _ada_gps->year;
@@ -693,4 +724,160 @@ uint8_t GPSHardware::GetYear() {
     // TODO: Implement for UBLOX
   }
   return 0;
+}
+
+/*!
+ * @brief Gets the GPS fix status.
+ * @returns True if the GPS has a fix, False otherwise.
+ */
+bool GPSHardware::GetFix() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->fix;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return false;
+}
+
+/*!
+ * @brief Gets the GPS latitude.
+ * @returns The latitude in degrees, or 0.0 if the GPS driver type is not set.
+ */
+float GPSHardware::GetLat() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->latitude;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return 0.0f;
+}
+
+/*!
+ * @brief Gets the GPS latitude direction.
+ * @returns The latitude direction as a character ('N' or 'S'), or '\0' if the
+ * GPS driver type is not set.
+ */
+char GPSHardware::GetLatDir() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->lat;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+  return '\0';
+}
+
+/*!
+ * @brief Gets the GPS longitude.
+ * @returns The longitude in degrees, or 0.0 if the GPS driver type is not set.
+ */
+float GPSHardware::GetLon() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->longitude;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return 0.0f;
+}
+
+/*!
+ * @brief Gets the GPS longitude direction.
+ * @returns The longitude direction as a character ('E' or 'W'), or '\0' if the
+ * GPS driver type is not set.
+ */
+char GPSHardware::GetLonDir() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->lon;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return '\0';
+}
+
+/*!
+ * @brief Gets the number of satellites in view.
+ * @returns The number of satellites in view, or 0 if the GPS driver type is
+ * not set.
+ */
+uint8_t GPSHardware::GetNumSats() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->satellites;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return 0;
+}
+
+/*!
+ * @brief Gets the horizontal dilution of precision (HDOP).
+ * @returns The HDOP value, or 0.0 if the GPS driver type is not set.
+ */
+float GPSHardware::GetHDOP() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->HDOP;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return 0.0f;
+}
+
+/*!
+ * @brief Gets the altitude from the GPS module.
+ * @returns The altitude in meters, or 0.0 if the GPS driver type is not set.
+ */
+float GPSHardware::GetAltitude() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->altitude;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return 0.0f;
+}
+
+/*!
+ * @brief Gets the speed from the GPS module.
+ * @returns The speed in meters per second, or 0.0 if the GPS driver type is
+ * not set.
+ */
+float GPSHardware::GetSpeed() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->speed;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return 0.0f;
+}
+
+/*!
+ * @brief Gets the angle from the GPS module.
+ * @returns The angle in degrees, or 0.0 if the GPS driver type is not set.
+ */
+float GPSHardware::GetAngle() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->angle;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return 0.0f;
+}
+
+/*!
+ * @brief Gets the geoid height from the GPS module.
+ * @returns The geoid height in meters, or 0.0 if the GPS driver type is not
+ * set.
+ */
+float GPSHardware::GetGeoidHeight() {
+  if (_driver_type == GPS_DRV_MTK) {
+    return _ada_gps->fix;
+  } else if (_driver_type == GPS_DRV_UBLOX) {
+    // TODO: Implement for UBLOX
+  }
+
+  return 0.0f;
 }
