@@ -18,6 +18,8 @@
 #include <protos/gps.pb.h>
 #define MAX_COUNT_RMC_GGA 10 ///< Maximum number of RMC or GGA responses
 
+class GPSHardware; ///< Forward declaration
+
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from GPS.proto.

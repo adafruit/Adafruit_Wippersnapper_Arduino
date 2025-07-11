@@ -14,6 +14,9 @@
  */
 #include "hardware.h"
 
+// Define static member
+GPSHardware *GPSHardware::current_instance = nullptr;
+
 /*!
  * @brief Constructor
  */
@@ -22,6 +25,8 @@ GPSHardware::GPSHardware() {
   _driver_type = GPS_DRV_NONE;
   _nmea_baud_rate = DEFAULT_MTK_NMEA_BAUD_RATE;
   _nmea_update_rate = DEFAULT_MTK_NMEA_UPDATE_RATE;
+  current_instance = this;
+  is_nmea_valid = false;
 }
 
 /*!
@@ -37,6 +42,9 @@ GPSHardware::~GPSHardware() {
   if (_sfe_gps) {
     delete _sfe_gps;
     _sfe_gps = nullptr;
+  }
+  if (current_instance == this) {
+    current_instance = nullptr;
   }
 }
 
@@ -558,7 +566,18 @@ void GPSHardware::PollStoreSentences() {
       }
     }
   } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO!
+    // Read from the GPS module for update_rate milliseconds
+    ulong update_rate = 1000 / _nmea_update_rate;
+    ulong start_time = millis();
+    WS_DEBUG_PRINTLN("[gps] Polling u-blox GPS driver for new sentences...");
+    while (millis() - start_time < update_rate) {
+      WS_DEBUG_PRINT("...");
+      _sfe_gps->checkUblox();
+    }
+    WS_DEBUG_PRINTLN("[gps] Polling complete for u-blox GPS driver!");
+    WS_DEBUG_PRINT("Did We get a NMEA sentence? ");
+    WS_DEBUG_PRINTLN(is_nmea_valid);
+    // MONDAY: There is a crash right here!
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type for polling!");
   }
@@ -620,6 +639,7 @@ int GPSHardware::NmeaBufPop(char *sentence) {
 bool GPSHardware::ParseNMEASentence(char *sentence) {
   if (!sentence)
     return false;
+
   if (_driver_type == GPS_DRV_MTK) {
     // Parse the NMEA sentence using Adafruit_GPS
     return _ada_gps->parse(sentence);
@@ -880,4 +900,51 @@ float GPSHardware::GetGeoidHeight() {
   }
 
   return 0.0f;
+}
+
+// TODO: Untested, leaving for MONDAY
+/*!
+ * @brief Handles incoming NMEA characters for UBlox GPS processing
+ * @param incoming The incoming NMEA character
+ */
+void GPSHardware::HandleNmeaChar(char incoming) {
+  static char nmea_buffer[256];
+  static uint8_t nmea_buf_idx = 0;
+
+  // Add character to buffer
+  if (nmea_buf_idx < sizeof(nmea_buffer) - 1) {
+    nmea_buffer[nmea_buf_idx++] = incoming;
+  }
+
+  // Check for sentence termination
+  if (incoming == '\n' || incoming == '\r') {
+    // Null terminate
+    nmea_buffer[nmea_buf_idx] = '\0';
+
+    // Push complete NMEA sentence if valid
+    if (nmea_buf_idx > 0 && nmea_buffer[0] == '$') {
+      NmeaBufPush(nmea_buffer);
+      is_nmea_valid = true; // Mark NMEA as valid
+      WS_DEBUG_PRINT("[gps] Received NMEA sentence: ");
+      WS_DEBUG_PRINTLN(nmea_buffer);
+    }
+
+    // Reset for next sentence
+    nmea_buf_idx = 0;
+  }
+
+  // Safety reset if buffer gets too full
+  if (nmea_buf_idx >= sizeof(nmea_buffer) - 1) {
+    nmea_buf_idx = 0;
+  }
+}
+
+/*!
+ * @brief Global override of the weak processNMEA function from UBlox library
+ * @param incoming The incoming NMEA character from the UBlox GPS
+ */
+void DevUBLOXGNSS::processNMEA(char incoming) {
+  if (GPSHardware::current_instance) {
+    GPSHardware::current_instance->HandleNmeaChar(incoming);
+  }
 }

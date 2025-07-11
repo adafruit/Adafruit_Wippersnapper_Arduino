@@ -18,12 +18,7 @@
 /*!
  * @brief Constructor for GPSController.
  */
-GPSController::GPSController() {
-  _gps_model = new GPSModel();
-  _nmea_buff.head = 0;
-  _nmea_buff.tail = 0;
-  _nmea_buff.maxlen = MAX_NMEA_SENTENCES;
-}
+GPSController::GPSController() { _gps_model = new GPSModel(); }
 
 /*!
  * @brief Destructor for GPSController.
@@ -201,3 +196,4 @@ void GPSController::update() {
       drv->SetPollPeriodPrv(cur_time);
     }
   }
+}

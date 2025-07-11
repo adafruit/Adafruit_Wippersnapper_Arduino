@@ -204,18 +204,19 @@ bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
   wippersnapper_gps_GPSDateTime datetime = CreateGpsDatetime(
       drv->GetHour(), drv->GetMinute(), drv->GetSeconds(),
       drv->GetMilliseconds(), drv->GetDay(), drv->GetMonth(), drv->GetYear());
-
+  char lat_dir = drv->GetLatDir();
+  char lon_dir = drv->GetLonDir();
   if (sentence[3] == 'R' && sentence[4] == 'M' && sentence[5] == 'C') {
     // Process RMC sentence
-    if (!AddGpsEventRMC(datetime, drv->GetFix(), drv->GetLat(),
-                        &drv->GetLatDir(), drv->GetLon(), &drv->GetLonDir(),
-                        drv->GetSpeed(), drv->GetAngle()))
+    if (!AddGpsEventRMC(datetime, drv->GetFix(), drv->GetLat(), &lat_dir,
+                        drv->GetLon(), &lon_dir, drv->GetSpeed(),
+                        drv->GetAngle()))
       return false;
   } else if (sentence[3] == 'G' && sentence[4] == 'G' && sentence[5] == 'A') {
     // Process GGA sentence
-    if (!AddGpsEventGGA(datetime, drv->GetFix(), drv->GetLat(),
-                        &drv->GetLatDir(), drv->GetLon(), &drv->GetLonDir(),
-                        drv->GetNumSats(), drv->GetHDOP(), drv->GetAltitude(),
+    if (!AddGpsEventGGA(datetime, drv->GetFix(), drv->GetLat(), &lat_dir,
+                        drv->GetLon(), &lon_dir, drv->GetNumSats(),
+                        drv->GetHDOP(), drv->GetAltitude(),
                         drv->GetGeoidHeight()))
       return false;
   } else {

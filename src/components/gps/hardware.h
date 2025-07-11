@@ -94,6 +94,7 @@ public:
   void ReadDiscardBuffer();
   void PollStoreSentences();
   bool ParseNMEASentence(char *sentence);
+  void HandleNmeaChar(char incoming);
   // Datetime getters
   uint8_t GetHour();
   uint8_t GetMinute();
@@ -114,6 +115,10 @@ public:
   float GetSpeed();
   float GetAngle();
   float GetGeoidHeight();
+
+  // Static instance for global processNMEA override
+  static GPSHardware *current_instance;
+  bool is_nmea_valid;
 
 private:
   bool QueryModuleType();
