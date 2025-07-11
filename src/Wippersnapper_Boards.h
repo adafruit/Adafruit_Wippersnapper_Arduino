@@ -208,6 +208,13 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
+#elif defined(ARDUINO_XIAO_ESP32S3)
+#define BOARD_ID "seeed-xiao-esp32s3"
+#define BOARD_HAS_PSRAM
+#define USE_PSRAM
+#define USE_TINYUSB
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

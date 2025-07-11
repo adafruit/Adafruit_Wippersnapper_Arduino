@@ -27,7 +27,8 @@
     defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ESP32S3_DEV) ||            \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_REVTFT) ||                        \
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2_REVTFT) ||                        \
-    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2)
+    defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
+    defined(ARDUINO_XIAO_ESP32S3)
 #include "Wippersnapper_FS.h"
 #include "print_dependencies.h"
 // On-board external flash (QSPI or SPI) macros should already
@@ -552,7 +553,7 @@ bool Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg, bool force_rec
     createDisplayConfig();
 #endif
   }
-  
+
   // Check if display_config.json file exists, if not, generate it
   if (!wipperFatFs.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
