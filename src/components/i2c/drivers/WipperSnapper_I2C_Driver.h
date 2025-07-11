@@ -16,7 +16,7 @@
 #ifndef WipperSnapper_I2C_Driver_H
 #define WipperSnapper_I2C_Driver_H
 
-#include "../../../wippersnapper/i2c/v1/i2c.pb.h"
+#include "wippersnapper/i2c/v1/i2c.pb.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <Wire.h>

@@ -3,10 +3,18 @@
  *
  * Device driver implementation for the INA260 DC Current and Voltage Monitor
  *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Tyeth Gundry 2025 for Adafruit Industries.
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
  */
 
 #include "WipperSnapper_I2C_Driver_INA260.h"
-#include "../../../Wippersnapper.h"
+#include "Wippersnapper.h"
 #include <Adafruit_INA260.h>
 
 /*******************************************************************************/
@@ -43,7 +51,6 @@ WipperSnapper_I2C_Driver_INA260::~WipperSnapper_I2C_Driver_INA260() {
 bool WipperSnapper_I2C_Driver_INA260::begin() {
   _ina260 = new Adafruit_INA260();
   if (!_ina260->begin(_sensorAddress, _i2c)) {
-    WS_DEBUG_PRINTLN("INA260 failed to initialise!");
     return false;
   }
   // TODO: use setCalibration()

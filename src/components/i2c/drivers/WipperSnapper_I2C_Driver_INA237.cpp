@@ -4,10 +4,18 @@
  * Device driver implementation for the INA237 DC Current and Voltage Monitor
  * (Avoids import conflict with INA260 typedef enum _mode etc)
  *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Copyright (c) Tyeth Gundry 2025 for Adafruit Industries.
+ *
+ * MIT license, all text here must be included in any redistribution.
+ *
  */
 
 #include "WipperSnapper_I2C_Driver_INA237.h"
-#include "../../../Wippersnapper.h"
+#include "Wippersnapper.h"
 #include <Adafruit_INA237.h>
 
 /*******************************************************************************/
@@ -44,7 +52,6 @@ WipperSnapper_I2C_Driver_INA237::~WipperSnapper_I2C_Driver_INA237() {
 bool WipperSnapper_I2C_Driver_INA237::begin() {
   _ina237 = new Adafruit_INA237();
   if (!_ina237->begin(_sensorAddress, _i2c)) {
-    WS_DEBUG_PRINTLN("INA237 failed to initialise!");
     return false;
   }
 
