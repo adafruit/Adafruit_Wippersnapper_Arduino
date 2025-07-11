@@ -20,8 +20,10 @@
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 
-#define DEFAULT_WIDTH 128 ///< Default width for a ssd1306 128x64 display
-#define DEFAULT_HEIGHT 64 ///< Default height for a ssd1306 128x64 display
+#define WS_SSD1306_DEFAULT_WIDTH                                               \
+  128 ///< Default width for a ssd1306 128x64 display
+#define WS_SSD1306_DEFAULT_HEIGHT                                              \
+  64 ///< Default height for a ssd1306 128x64 display
 
 /*!
     @brief  Class that provides a driver interface for a SSD1306
@@ -44,8 +46,8 @@ public:
       : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
-    _width = DEFAULT_WIDTH;
-    _height = DEFAULT_HEIGHT;
+    _width = WS_SSD1306_DEFAULT_WIDTH;
+    _height = WS_SSD1306_DEFAULT_HEIGHT;
   }
 
   /*!
@@ -70,7 +72,8 @@ public:
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
     if (!_display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress))
       return false;
-    // Configure the text size and color
+    // Configure the rotation, text size and color
+    _display->setRotation(_rotation);
     _display->setTextSize(_text_sz);
     _display->setTextColor(SSD1306_WHITE);
     // Use full 256 char 'Code Page 437' font
@@ -90,11 +93,15 @@ public:
                   The height of the display in pixels.
       @param    text_size
                   The magnification factor for the text size.
+      @param    rotation
+                  The rotation of the display in degrees, default is 0.
   */
-  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size) {
+  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size,
+                        uint8_t rotation = 0) {
     _width = width;
     _height = height;
     _text_sz = text_size;
+    _rotation = rotation;
   }
 
   /*!
@@ -149,10 +156,11 @@ public:
 
 protected:
   Adafruit_SSD1306 *_display =
-      nullptr;      ///< Pointer to the Adafruit_SSD1306 object
-  uint8_t _width;   ///< Width of the display in pixels
-  uint8_t _height;  ///< Height of the display in pixels
-  uint8_t _text_sz; ///< Text size of the display
+      nullptr;       ///< Pointer to the Adafruit_SSD1306 object
+  uint8_t _width;    ///< Width of the display in pixels
+  uint8_t _height;   ///< Height of the display in pixels
+  uint8_t _rotation; ///< Rotation of the display in degrees
+  uint8_t _text_sz;  ///< Text size of the display
 };
 
 #endif // WIPPERSNAPPER_I2C_DRIVER_OUT_SSD1306_H
