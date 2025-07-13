@@ -186,6 +186,11 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+#elif defined(ARDUINO_DFROBOT_BEETLE_ESP32C3)
+#define BOARD_ID "dfrobot-beetle-esp32c3"
+#define USE_LITTLEFS
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
 #elif defined(ARDUINO_SPARKLEMOTIONMINI_ESP32)
 #define BOARD_ID "sparklemotionmini-esp32"
 #define USE_LITTLEFS
