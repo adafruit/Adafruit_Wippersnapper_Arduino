@@ -29,13 +29,15 @@
  * important  - please switch to using the modern ESP32 (and related models)
  * instead of the ESP8266 to avoid updating the SSL fingerprint every year.
  *
+ * The commented-out fingerprint below was last updated on 07/14/2025.
+ *
  * If you've read through this and still want to use "Secure MQTT" with your
  * ESP8266 project, we've left the "WiFiClientSecure" lines commented out. To
  * use them, uncomment the commented out lines within this file and re-compile
  * the library.
  */
-// static const char *fingerprint PROGMEM =  "4E C1 52 73 24 A8 36 D6 7A 4C 67
-// C7 91 0C 0A 22 B9 2D 5B CA";
+// static const char *fingerprint PROGMEM =  "47 D2 CB 14 DF 38 97 59 C6 65 1A
+// 1F 3E 00 1E 53 CC A5 17 E0";
 
 extern Wippersnapper WS;
 
