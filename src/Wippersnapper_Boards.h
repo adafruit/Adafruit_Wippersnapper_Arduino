@@ -186,7 +186,10 @@
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
 #define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
-#elif defined(ARDUINO_DFROBOT_BEETLE_ESP32C3)
+#elif defined(ARDUINO_ESP32C3_DEV)
+// Note: this board reuses a generic preprocessor define
+// espressif/arduino-esp32@fcd4799c6de6eb5a5a8eba94818adf770238ecc0
+// rather than creating one unique to the device.
 #define BOARD_ID "dfrobot-beetle-esp32c3"
 #define USE_LITTLEFS
 #define USE_STATUS_LED
