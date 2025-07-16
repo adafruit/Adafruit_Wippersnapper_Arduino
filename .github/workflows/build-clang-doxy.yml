@@ -143,7 +143,6 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: fetch tinyuf2 combined.bin
         run: |
-          echo "Downloading tinyuf2 combined.bin for ${matrix.arduino-platform}...(${board_name})"
           if [ "${{ matrix.arduino-platform }}" == "funhouse_noota" ]; then
             wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/adafruit_funhouse_esp32s2/tinyuf2-adafruit_funhouse_esp32s2-0.35.0-combined.bin -O wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.tinyuf2-combined.bin
           elif [ "${{ matrix.arduino-platform }}" == "esp32s3_devkitc_1_n8" ]; then
