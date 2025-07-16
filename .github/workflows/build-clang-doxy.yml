@@ -184,10 +184,12 @@ jobs:
           ls /home/runner/Arduino/hardware/espressif/esp32/tools/partitions
       - name: boot_app0 file from arduino-cli core
         if: steps.check_files.outputs.files_exists == 'true'
-        run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+        run: cp /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
       - name: boot_app0 file from esp32 source bsp
         if: steps.check_files.outputs.files_exists == 'false'
-        run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+        run: cp /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+      - name: Copy boot_app0 file to ota_data_initial.bin (overwrite tinyuf2 boot preference)
+        run: cp wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin ota_data_initial.bin
       - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
