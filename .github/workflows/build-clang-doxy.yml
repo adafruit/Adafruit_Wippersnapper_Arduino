@@ -141,6 +141,16 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
+      - name: fetch tinyuf2 combined.bin
+        run: |
+          echo "Downloading tinyuf2 combined.bin for ${matrix.arduino-platform}...(${board_name})"
+          if [ "${{ matrix.arduino-platform }}" == "funhouse_noota" ]; then
+            wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/adafruit_funhouse_esp32s2/tinyuf2-adafruit_funhouse_esp32s2-0.35.0-combined.bin -O wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.tinyuf2-combined.bin
+          elif [ "${{ matrix.arduino-platform }}" == "esp32s3_devkitc_1_n8" ]; then
+            wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/espressif_esp32s3_devkitc_1/tinyuf2-espressif_esp32s3_devkitc_1-0.35.0-combined.bin -O wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.tinyuf2-combined.bin
+          elif [ "${{ matrix.arduino-platform }}" == "xiao_esp32s3" ]; then
+            wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/espressif_xiao_esp32s3/tinyuf2-espressif_xiao_esp32s3-0.35.0-combined.bin -O wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.tinyuf2-combined.bin
+          fi
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
         uses: andstor/file-existence-action@v3
@@ -169,10 +179,22 @@ jobs:
             --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
             --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
             -o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin \
-            ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin \
-            0x8000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin \
+            0x0 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.tinyuf2-combined.bin \
             0xe000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin \
             0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin
+      # - name: Create combined binary using Esptool merge-bin
+      #   run: |
+      #     echo ${{ steps.get_board_json.outputs.boardJson }}
+      #     echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
+      #     python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
+      #       --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
+      #       --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
+      #       --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
+      #       -o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin \
+      #       ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin \
+      #       0x8000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin \
+      #       0xe000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin \
+      #       0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin
       - name: Zip build artifacts
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.*
