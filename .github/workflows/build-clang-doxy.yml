@@ -151,6 +151,13 @@ jobs:
             wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/seeed_xiao_esp32s3/tinyuf2-seeed_xiao_esp32s3-0.35.0.zip -O tinyuf2.zip
           fi
           unzip -o tinyuf2.zip -d .
+          
+          # Copy files where they're expected to make flash_args happy
+          mkdir bootloader
+          cp bootloader.bin bootloader/bootloader.bin
+          mkdir partition_table
+          cp partition-table.bin partition_table/partition-table.bin
+
           # Append main app to flash_args file
           echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> flash_args
           
