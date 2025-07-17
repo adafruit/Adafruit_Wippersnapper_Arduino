@@ -318,11 +318,14 @@ jobs:
             "sparklemotionstick_esp32",
             "feather_esp32_v2",
             "itsybitsy_esp32",
+            "dfrobot_beetle_esp32c3",
             "wippersnapper_qtpy_esp32c3",
             "wippersnapper_feather_esp32c6"
           ]
         include:
           - offset: "0x1000"
+          - offset: "0x0"
+            arduino-platform: "dfrobot_beetle_esp32c3"
           - offset: "0x0"
             arduino-platform: "wippersnapper_qtpy_esp32c3"
           - offset: "0x0"
