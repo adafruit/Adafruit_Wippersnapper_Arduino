@@ -147,10 +147,8 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: fetch tinyuf2 combined.bin
         run: |
-          echo "Fetching tinyuf2 bootloader..."
           DOWNLOAD_URL=$(curl -s https://api.github.com/repos/adafruit/tinyuf2/releases/latest | \
-          grep -o "\"browser_download_url\": \"[^\"]*tinyuf2-${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}-[^\"]*\.zip\"" | \
-          cut -d '"' -f 4)
+          jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}'-") and endswith(".zip")) | .browser_download_url')
           if [ -z "$DOWNLOAD_URL" ]; then
             echo "Error: Could not find the latest tinyuf2 release for board ${fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}."
             exit 1
@@ -158,23 +156,27 @@ jobs:
           wget "$DOWNLOAD_URL" -O tinyuf2.zip
           unzip -o tinyuf2.zip -d .
 
+      - name: move partition and bootloader files for tinyuf2 (to match flash_args)
+        run: |
           # Copy files where they're expected to make flash_args happy
           mkdir bootloader
           cp bootloader.bin bootloader/bootloader.bin
           mkdir partition_table
           cp partition-table.bin partition_table/partition-table.bin
 
-          # Append main app to flash_args file
-          echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> flash_args
-
+      - name: Create new_flash_args file from flash_args with added app bin + output file
+        run: |
           # Create new_flash_args with esptool parameters first and output file
           echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
           echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}}" >> new_flash_args
           echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}}" >> new_flash_args
           echo "-o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin" >> new_flash_args
 
-          # Append flash_args content skipping the first line
+          # Append flash_args content to new_flash_args, skipping the first line
           tail -n +2 flash_args >> new_flash_args
+
+          # Append main app to flash_args file
+          echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> new_flash_args
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
         uses: andstor/file-existence-action@v3
