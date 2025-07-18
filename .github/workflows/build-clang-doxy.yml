@@ -145,20 +145,14 @@ jobs:
       - name: fetch tinyuf2 combined.bin
         run: |
           echo "Fetching tinyuf2 bootloader..."
-          # if [ "${{ matrix.arduino-platform }}" == "funhouse_noota" ]; then
-          #   wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/adafruit_funhouse_esp32s2/tinyuf2-adafruit_funhouse_esp32s2-0.35.0.zip -O tinyuf2.zip
-          # elif [ "${{ matrix.arduino-platform }}" == "esp32s3_devkitc_1_n8" ]; then
-          #   wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/espressif_esp32s3_devkitc_1/tinyuf2-espressif_esp32s3_devkitc_1-0.35.0.zip -O tinyuf2.zip
-          # elif [ "${{ matrix.arduino-platform }}" == "xiao_esp32s3" ]; then
-          #   wget https://adafruit-circuit-python.s3.amazonaws.com/bootloaders/esp32/seeed_xiao_esp32s3/tinyuf2-seeed_xiao_esp32s3-0.35.0.zip -O tinyuf2.zip
-          # fi
-
           DOWNLOAD_URL=$(curl -s https://api.github.com/repos/adafruit/tinyuf2/releases/latest | \
           grep -o "\"browser_download_url\": \"[^\"]*tinyuf2-${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}-[^\"]*\.zip\"" | \
           cut -d '"' -f 4)
-        
+          if [ -z "$DOWNLOAD_URL" ]; then
+            echo "Error: Could not find the latest tinyuf2 release for board ${fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}."
+            exit 1
+          fi
           wget "$DOWNLOAD_URL" -O tinyuf2.zip
-
           unzip -o tinyuf2.zip -d .
           
           # Copy files where they're expected to make flash_args happy
@@ -170,7 +164,7 @@ jobs:
           # Append main app to flash_args file
           echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> flash_args
           
-          # Create new_flash_args with esptool parameters first
+          # Create new_flash_args with esptool parameters first and output file
           echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
           echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}}" >> new_flash_args
           echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}}" >> new_flash_args
