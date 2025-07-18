@@ -25,6 +25,7 @@ jobs:
       matrix:
         arduino-platform:
           [
+            "feather_esp32s2",
             "funhouse_noota",
             "esp32s3_devkitc_1_n8",
             "xiao_esp32s3",
@@ -33,6 +34,8 @@ jobs:
           - offset: "0x0"
           - offset: "0x1000"
             arduino-platform: "funhouse_noota"
+          - offset: "0x1000"
+            arduino-platform: "feather_esp32s2"
     steps:
       - name: "skip if unwanted"
         continue-on-error: true
@@ -154,7 +157,7 @@ jobs:
           fi
           wget "$DOWNLOAD_URL" -O tinyuf2.zip
           unzip -o tinyuf2.zip -d .
-          
+
           # Copy files where they're expected to make flash_args happy
           mkdir bootloader
           cp bootloader.bin bootloader/bootloader.bin
@@ -163,13 +166,13 @@ jobs:
 
           # Append main app to flash_args file
           echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> flash_args
-          
+
           # Create new_flash_args with esptool parameters first and output file
           echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
           echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}}" >> new_flash_args
           echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}}" >> new_flash_args
           echo "-o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin" >> new_flash_args
-          
+
           # Append flash_args content skipping the first line
           tail -n +2 flash_args >> new_flash_args
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
@@ -228,7 +231,6 @@ jobs:
             "magtag",
             "metroesp32s2",
             "metro_esp32s3",
-            "feather_esp32s2",
             "feather_esp32s2_tft",
             "feather_esp32s2_reverse_tft",
             "feather_esp32s3",
