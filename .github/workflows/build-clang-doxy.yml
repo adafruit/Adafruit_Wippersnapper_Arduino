@@ -146,8 +146,7 @@ jobs:
         run: |
           echo "Fetching tinyuf2 bootloader..."
           DOWNLOAD_URL=$(curl -s https://api.github.com/repos/adafruit/tinyuf2/releases/latest | \
-          grep -o "\"browser_download_url\": \"[^\"]*tinyuf2-${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}-[^\"]*\.zip\"" | \
-          cut -d '"' -f 4)
+          jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}'-") and endswith(".zip")) | .browser_download_url')
           if [ -z "$DOWNLOAD_URL" ]; then
             echo "Error: Could not find the latest tinyuf2 release for board ${fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}."
             exit 1
