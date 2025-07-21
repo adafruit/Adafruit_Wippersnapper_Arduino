@@ -16,8 +16,8 @@
 #define WS_GPS_HARDWARE_H
 #include "Wippersnapper_V2.h"
 #include <Adafruit_GPS.h>
-#include <MicroNMEA.h>
-#include <SparkFun_u-blox_GNSS_v3.h>
+#include <Adafruit_UBloxDDC.h>
+#include <Adafruit_UBX.h>
 
 #define CMD_MTK_QUERY_FW                                                       \
   "$PMTK605*31" ///< Request to query MediaTek firmware version
@@ -83,7 +83,6 @@ public:
   void SetI2CAddress(uint32_t i2c_address);
   bool Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config);
   Adafruit_GPS *GetAdaGps();
-  SFE_UBLOX_GNSS *GetUbxGps();
   GpsDriverType GetDriverType();
   GpsInterfaceType GetIfaceType();
   int NmeaBufPop(char *sentence);
@@ -115,11 +114,6 @@ public:
   float GetSpeed();
   float GetAngle();
   float GetGeoidHeight();
-
-  // Static instance for global processNMEA override
-  static GPSHardware *current_instance;
-  bool is_nmea_valid;
-
 private:
   bool QueryModuleType();
   bool DetectMtkUart();
@@ -128,25 +122,22 @@ private:
   bool BuildPmtkAck(char *msg_cmd, char *msg_resp);
   void I2cReadDiscard();
   void UartReadDiscard();
-  GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
-  GpsDriverType _driver_type;           ///< Type of GPS driver used by GPS
-  HardwareSerial *_hw_serial = nullptr; ///< Optional HardwareSerial instance
-  TwoWire *_wire = nullptr;             ///< Optional TwoWire instance
-  Adafruit_GPS *_ada_gps = nullptr;     ///< Optional Adafruit GPS instance
-  SFE_UBLOX_GNSS *_sfe_gps; ///< Optional Sparkfun u-blox GPS instance
-  uint32_t _addr;           ///< Optional i2c address
-  ulong _period;     ///< Polling period for GPS data (Specified by IO), in ms
-  ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in ms
-  ulong _kat_prv;    ///< Last time the GPS hardware was polled, in ms
-  int _nmea_update_rate; ///< NMEA update rate for GPS data, in Hz
-  int _nmea_baud_rate;   ///< NMEA baud rate for GPS data, in bits per second
-  MicroNMEA
-      *_micro_nmea; ///< Optional MicroNMEA instance for parsing NMEA sentences
-  char _micro_nmea_buf[100]; ///< Optional Buffer for MicroNMEA parsing
-  // NMEA sentence ring buffer
+  GpsInterfaceType _iface_type;              ///< Type of interface used by GPS
+  GpsDriverType _driver_type;                ///< Type of GPS driver used by GPS
+  HardwareSerial *_hw_serial = nullptr;      ///< Optional HardwareSerial instance
+  TwoWire *_wire = nullptr;                  ///< Optional TwoWire instance
+  Adafruit_GPS *_ada_gps = nullptr;          ///< Optional Adafruit GPS instance
+  Adafruit_UBloxDDC *_ubx_gps_ddc = nullptr; ///< Optional Adafruit UBlox DDC instance
+  Adafruit_UBX *_ubx_gps = nullptr;           ///< Optional Adafruit UBX instance
+  uint32_t _addr;                            ///< Optional i2c address
+  ulong _period;                             ///< Polling period for GPS data (Specified by IO), in ms
+  ulong _period_prv;                         ///< Previous period for GPS data (Specified by IO), in ms
+  ulong _kat_prv;                            ///< Last time the GPS hardware was polled, in ms
+  int _nmea_update_rate;                     ///< NMEA update rate for GPS data, in Hz
+  int _nmea_baud_rate;                       ///< NMEA baud rate for GPS data, in bits per second
   int NmeaBufPush(
-      const char *new_sentence); ///< Push a sentence to the NMEA buffer
-  nmea_buffer_t _nmea_buff;      ///< NMEA buffer for storing sentences
+      const char *new_sentence); ///< Push a sentence to the NMEA ring buffer
+  nmea_buffer_t _nmea_buff;      ///< NMEA ring buffer for storing sentences
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_GPS_HARDWARE_H

@@ -14,9 +14,6 @@
  */
 #include "hardware.h"
 
-// Define static member
-GPSHardware *GPSHardware::current_instance = nullptr;
-
 /*!
  * @brief Constructor
  */
@@ -25,8 +22,6 @@ GPSHardware::GPSHardware() {
   _driver_type = GPS_DRV_NONE;
   _nmea_baud_rate = DEFAULT_MTK_NMEA_BAUD_RATE;
   _nmea_update_rate = DEFAULT_MTK_NMEA_UPDATE_RATE;
-  current_instance = this;
-  is_nmea_valid = false;
 }
 
 /*!
@@ -38,13 +33,6 @@ GPSHardware::~GPSHardware() {
   if (_ada_gps) {
     delete _ada_gps;
     _ada_gps = nullptr;
-  }
-  if (_sfe_gps) {
-    delete _sfe_gps;
-    _sfe_gps = nullptr;
-  }
-  if (current_instance == this) {
-    current_instance = nullptr;
   }
 }
 
@@ -112,56 +100,62 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
     }
   } else if (_driver_type == GPS_DRV_UBLOX) {
     WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for U-Blox driver...");
+    I2cReadDiscard();
     // Iterate through the command sentences and send them to the GPS module
     for (size_t i = 0; i < gps_config->commands_ubxes_count; i++) {
-      I2cReadDiscard();
-      // Write this to the GPS module
-      // TODO - We are just printing here to debug
-      WS_DEBUG_PRINT("[gps] Sending UBX CMD #: ");
-      WS_DEBUG_PRINTLN(i);
-      WS_DEBUG_PRINT("\tUBX CMDSZ: ");
-      WS_DEBUG_PRINTLN(gps_config->commands_ubxes[i].size);
-      WS_DEBUG_PRINT("\tUBX CMD: ");
-      for (pb_size_t j = 0; j < gps_config->commands_ubxes[i].size; j++) {
-        WS_DEBUG_PRINT(gps_config->commands_ubxes[i].bytes[j], HEX);
-        WS_DEBUG_PRINT(" ");
+        // TODO: Tuesday fix this frame decoder! 
+/*       pb_bytes_array_t *ubx_frame = &gps_config->commands_ubxes[i];
+      // Validate minimum frame size
+      if (ubx_frame->size < 8) {
+        WS_DEBUG_PRINT("[gps] Invalid UBX frame size: ");
+        WS_DEBUG_PRINTLN(ubx_frame->size);
+        continue;
       }
-      if (!_sfe_gps->pushRawData(gps_config->commands_ubxes[i].bytes,
-                                 gps_config->commands_ubxes[i].size)) {
-        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to push bytes to module!");
-        return false;
-      }
-      WS_DEBUG_PRINTLN("Sent!");
-      // Wait for the ACK response from the GPS module
-      // Build a dummy packet for the ACK response
-      uint8_t payloadAck[2];
-      ubxPacket packetAck = {0,
-                             0,
-                             0,
-                             0,
-                             0,
-                             payloadAck,
-                             0,
-                             0,
-                             SFE_UBLOX_PACKET_VALIDITY_NOT_DEFINED,
-                             SFE_UBLOX_PACKET_VALIDITY_NOT_DEFINED};
-      uint8_t cmdClass = gps_config->commands_ubxes[i].bytes[2];
-      uint8_t cmdId = gps_config->commands_ubxes[i].bytes[3];
 
-      // Wait for ACK response with timeout
-      sfe_ublox_status_e rc =
-          _sfe_gps->waitForACKResponse(&packetAck, cmdClass, cmdId, 1000);
-      WS_DEBUG_PRINT("waitForACKResponse res: ");
-      WS_DEBUG_PRINTLN(rc);
-      if (rc == SFE_UBLOX_STATUS_DATA_RECEIVED ||
-          rc == SFE_UBLOX_STATUS_DATA_SENT) {
-        WS_DEBUG_PRINTLN("UBX RX'd!");
-        // TODO: We don't need this, we can just check rc != above instead of ==
-        // and handle that case only
-      } else {
-        WS_DEBUG_PRINTLN("UBX timeout or error!");
-        return false;
+      // Validate sync bytes
+      if (ubx_frame->bytes[0] != 0xB5 || ubx_frame->bytes[1] != 0x62) {
+        WS_DEBUG_PRINTLN("[gps] Invalid UBX sync bytes");
+        continue;
       }
+
+      // Validate frame size
+      size_t expectedSize = 8 + payloadLength;
+      if (ubx_frame->size != expectedSize) {
+        WS_DEBUG_PRINT("[gps] Frame size mismatch. Expected: ");
+        WS_DEBUG_PRINT(expectedSize);
+        WS_DEBUG_PRINT(", Got: ");
+        WS_DEBUG_PRINTLN(ubx_frame->size);
+        continue;
+      }
+
+      // Extract message components
+      uint8_t msgClass = ubx_frame->bytes[2];
+      uint8_t msgId = ubx_frame->bytes[3];
+      uint16_t payloadLength = ubx_frame->bytes[4] | (ubx_frame->bytes[5] << 8);
+
+      // Get payload
+      uint8_t *payload = NULL;
+      if (payloadLength > 0) {
+        payload = &ubx_frame->bytes[6];
+      }
+
+      WS_DEBUG_PRINT("[gps] Sending UBX CMD #");
+      WS_DEBUG_PRINT(i);
+      WS_DEBUG_PRINT(" - Class: 0x");
+      WS_DEBUG_PRINT(msgClass, HEX);
+      WS_DEBUG_PRINT(", ID: 0x");
+      WS_DEBUG_PRINT(msgId, HEX);
+      WS_DEBUG_PRINT(", Payload len: ");
+      WS_DEBUG_PRINTLN(payloadLength);
+
+      // Send the message
+      UBXSendStatus status = _ubx_gps->sendMessageWithAck(msgClass, msgId, payload, payloadLength);
+
+      if (status != UBXSendStatus::UBX_SEND_SUCCESS) {
+        WS_DEBUG_PRINTLN("[gps] Failed to send UBX message");
+      } else {
+        WS_DEBUG_PRINTLN("[gps] OK");
+      } */
     }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
@@ -247,26 +241,13 @@ bool GPSHardware::DetectMtkI2C(uint32_t addr) {
  * otherwise.
  */
 bool GPSHardware::DetectUbxI2C(uint32_t addr) {
-  if (addr != UBX_I2C_ADDRESS) {
-    WS_DEBUG_PRINTLN("[gps] ERROR: Invalid U-Blox I2C address!");
+  _ubx_gps_ddc = new Adafruit_UBloxDDC(addr, *_wire);
+  if (!_ubx_gps_ddc->begin())
     return false;
-  }
-  _sfe_gps = new SFE_UBLOX_GNSS();
-  if (!_sfe_gps->begin(*_wire, _addr))
+  _ubx_gps = new Adafruit_UBX(_ubx_gps_ddc);
+  if (!_ubx_gps->begin())
     return false;
-  // Configure the u-blox GPS module
-  _sfe_gps->setI2COutput(
-      COM_TYPE_UBX |
-      COM_TYPE_NMEA); // Set the I2C port to output both NMEA and UBX messages
-  _sfe_gps->saveConfigSelective(
-      VAL_CFG_SUBSEC_IOPORT); // Save (only) the communications port settings to
-                              // flash and BBR
-  _sfe_gps->setProcessNMEAMask(
-      SFE_UBLOX_FILTER_NMEA_ALL); // Make sure the library is passing all NMEA
-                                  // messages to processNMEA
-  _sfe_gps->setProcessNMEAMask(
-      SFE_UBLOX_FILTER_NMEA_GGA); // Or, we can be kind to MicroNMEA and _only_
-                                  // pass the GGA messages to it
+  _ubx_gps->verbose_debug = 3; // TODO: Set this to 1 in production
   _driver_type = GPS_DRV_UBLOX;
   return true;
 }
@@ -285,19 +266,9 @@ bool GPSHardware::QueryModuleType() {
       return true;
     }
 
-    WS_DEBUG_PRINTLN("[gps] Failed to detect MTK GPS, attempting to detect "
-                     "u-blox GPS module...");
-    // TODO: Implement u-blox detection here
-    // if (DetectUblox()) {
-    //   return true;
-    // }
-
-    WS_DEBUG_PRINTLN(
-        "[gps] ERROR: Failed to detect GPS driver type, attempting "
-        "to use generic driver!");
-    // TODO: Implement generic NMEA GPS driver detection
-
-    // No responses from the GPS module over the defined iface, so we bail out
+    WS_DEBUG_PRINTLN("[gps] Failed to detect MTK GPS module!");
+    // Future TODO: Implement u-blox detection here for UART
+    // Future TODO: Implement generic NMEA GPS driver detection fallback
     WS_DEBUG_PRINTLN("[gps] ERROR: No GPS driver type detected!");
   } else if (_iface_type == GPS_IFACE_I2C) {
     if (_addr == PA1010D_I2C_ADDRESS) {
@@ -442,12 +413,6 @@ ulong GPSHardware::GetPollPeriodPrv() { return _period_prv; }
 Adafruit_GPS *GPSHardware::GetAdaGps() { return _ada_gps; }
 
 /*!
- * @brief Returns the SFE_UBLOX_GNSS instance.
- * @returns Pointer to the SFE_UBLOX_GNSS instance.
- */
-SFE_UBLOX_GNSS *GPSHardware::GetUbxGps() { return _sfe_gps; }
-
-/*!
  * @brief Sets the NMEA update rate for GPS data.
  * @param nmea_update_rate
  *        The NMEA update rate, in Hz.
@@ -567,17 +532,41 @@ void GPSHardware::PollStoreSentences() {
     }
   } else if (_driver_type == GPS_DRV_UBLOX) {
     // Read from the GPS module for update_rate milliseconds
+    // TODO: Too many calls to WS_DEBUG
+    // TOO: Maybe just delay for update_rate instead of constantly polling the
+    // hw serial for avability? more performant
     ulong update_rate = 1000 / _nmea_update_rate;
     ulong start_time = millis();
     WS_DEBUG_PRINTLN("[gps] Polling u-blox GPS driver for new sentences...");
     while (millis() - start_time < update_rate) {
-      WS_DEBUG_PRINT("...");
-      _sfe_gps->checkUblox();
+      _ubx_gps_ddc->available();
     }
-    WS_DEBUG_PRINTLN("[gps] Polling complete for u-blox GPS driver!");
+    WS_DEBUG_PRINTLN("[gps] Polling completed!");
     WS_DEBUG_PRINT("Did We get a NMEA sentence? ");
-    WS_DEBUG_PRINTLN(is_nmea_valid);
-    // MONDAY: There is a crash right here!
+    uint8_t buffer[MAX_LEN_NMEA_SENTENCE];
+    String nmeaBuffer = "";
+    int bytesAvailable = gps.available();
+    if (bytesAvailable > 0) {
+      size_t bytesToRead = min(bytesAvailable, MAX_NEMA_SENTENCE_LEN);
+      size_t bytesRead = gps.readBytes(buffer, bytesToRead);
+    }
+    // Build NMEA sentences and parse when complete
+    for (size_t i = 0; i < bytesRead; i++) {
+      char c = buffer[i];
+      nmeaBuffer += c;
+      // Check for end of NMEA sentence
+      if (c == '\n') {
+        WS_DEBUG_PRINT("[gps] NMEA sentence: ");
+        WS_DEBUG_PRINTLN(nmeaBuffer.c_str());
+        // Push the NMEA sentence to the buffer
+        if (NmeaBufPush(nmeaBuffer.c_str()) == 0) {
+          WS_DEBUG_PRINTLN("[gps] NMEA sentence pushed to buffer.");
+        } else {
+          WS_DEBUG_PRINTLN(
+              "[gps] ERROR: Unable to push NMEA sentence to buffer!");
+        }
+      }
+    }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type for polling!");
   }
@@ -639,312 +628,121 @@ int GPSHardware::NmeaBufPop(char *sentence) {
 bool GPSHardware::ParseNMEASentence(char *sentence) {
   if (!sentence)
     return false;
-
-  if (_driver_type == GPS_DRV_MTK) {
-    // Parse the NMEA sentence using Adafruit_GPS
-    return _ada_gps->parse(sentence);
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // Parse the NMEA sentence using SFE_UBLOX_GNSS
-    // TODO!
-    // return _sfe_gps->parseNMEA(sentence);
-  }
-
-  return false;
+  return _ada_gps->parse(sentence);
 }
 
 /*!
  * @brief Gets the hours from the GPS module.
  * @returns The hours (0-23), or 0 if the GPS driver type is not set.
  */
-uint8_t GPSHardware::GetHour() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->hour;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0;
-}
+uint8_t GPSHardware::GetHour() { return _ada_gps->hour; }
 
 /*!
  * @brief Gets the minute from the GPS module.
  * @returns The minute (0-59), or 0 if the GPS driver type is not set.
  */
-uint8_t GPSHardware::GetMinute() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->minute;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0;
-}
+uint8_t GPSHardware::GetMinute() { return _ada_gps->minute; }
 
 /*!
  * @brief Gets the seconds from the GPS module.
  * @returns The seconds (0-59), or 0 if the GPS driver type is not set.
  */
-uint8_t GPSHardware::GetSeconds() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->seconds;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0;
-}
+uint8_t GPSHardware::GetSeconds() { return _ada_gps->seconds; }
 
 /*!
  * @brief Gets the milliseconds from the GPS module.
  * @returns The milliseconds part of the current time, or 0 if the GPS driver
  * type is not set.
  */
-uint16_t GPSHardware::GetMilliseconds() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->milliseconds;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0;
-}
+uint16_t GPSHardware::GetMilliseconds() { return _ada_gps->milliseconds; }
 
 /*!
  * @brief Gets the day from the GPS module.
  * @returns The day of the month (1-31), or 0 if the GPS driver type is not set.
  */
-uint8_t GPSHardware::GetDay() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->day;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0;
-}
+uint8_t GPSHardware::GetDay() { return _ada_gps->day; }
 
 /*!
  * @brief Gets the month from the GPS module.
  * @returns The month as a number (1-12), or 0 if the GPS driver type is not
  * set.
  */
-uint8_t GPSHardware::GetMonth() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->month;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0;
-}
+uint8_t GPSHardware::GetMonth() { return _ada_gps->month; }
 
 /*!
  * @brief Gets the year from the GPS module.
  * @returns The year as a 2-digit number (e.g., 23 for 2023), or 0 if the GPS
  * driver type is not set.
  */
-uint8_t GPSHardware::GetYear() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->year;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0;
-}
+uint8_t GPSHardware::GetYear() { return _ada_gps->year; }
 
 /*!
  * @brief Gets the GPS fix status.
  * @returns True if the GPS has a fix, False otherwise.
  */
-bool GPSHardware::GetFix() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->fix;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return false;
-}
+bool GPSHardware::GetFix() { return _ada_gps->fix; }
 
 /*!
  * @brief Gets the GPS latitude.
  * @returns The latitude in degrees, or 0.0 if the GPS driver type is not set.
  */
-float GPSHardware::GetLat() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->latitude;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return 0.0f;
-}
+float GPSHardware::GetLat() { return _ada_gps->latitude; }
 
 /*!
  * @brief Gets the GPS latitude direction.
  * @returns The latitude direction as a character ('N' or 'S'), or '\0' if the
  * GPS driver type is not set.
  */
-char GPSHardware::GetLatDir() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->lat;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-  return '\0';
-}
+char GPSHardware::GetLatDir() { return _ada_gps->lat; }
 
 /*!
  * @brief Gets the GPS longitude.
  * @returns The longitude in degrees, or 0.0 if the GPS driver type is not set.
  */
-float GPSHardware::GetLon() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->longitude;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return 0.0f;
-}
+float GPSHardware::GetLon() { return _ada_gps->longitude; }
 
 /*!
  * @brief Gets the GPS longitude direction.
  * @returns The longitude direction as a character ('E' or 'W'), or '\0' if the
  * GPS driver type is not set.
  */
-char GPSHardware::GetLonDir() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->lon;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return '\0';
-}
+char GPSHardware::GetLonDir() { return _ada_gps->lon; }
 
 /*!
  * @brief Gets the number of satellites in view.
  * @returns The number of satellites in view, or 0 if the GPS driver type is
  * not set.
  */
-uint8_t GPSHardware::GetNumSats() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->satellites;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return 0;
-}
+uint8_t GPSHardware::GetNumSats() { return _ada_gps->satellites; }
 
 /*!
  * @brief Gets the horizontal dilution of precision (HDOP).
  * @returns The HDOP value, or 0.0 if the GPS driver type is not set.
  */
-float GPSHardware::GetHDOP() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->HDOP;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return 0.0f;
-}
+float GPSHardware::GetHDOP() { return _ada_gps->HDOP; }
 
 /*!
  * @brief Gets the altitude from the GPS module.
  * @returns The altitude in meters, or 0.0 if the GPS driver type is not set.
  */
-float GPSHardware::GetAltitude() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->altitude;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return 0.0f;
-}
+float GPSHardware::GetAltitude() { return _ada_gps->altitude; }
 
 /*!
  * @brief Gets the speed from the GPS module.
  * @returns The speed in meters per second, or 0.0 if the GPS driver type is
  * not set.
  */
-float GPSHardware::GetSpeed() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->speed;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return 0.0f;
-}
+float GPSHardware::GetSpeed() { return _ada_gps->speed; }
 
 /*!
  * @brief Gets the angle from the GPS module.
  * @returns The angle in degrees, or 0.0 if the GPS driver type is not set.
  */
-float GPSHardware::GetAngle() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->angle;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return 0.0f;
-}
+float GPSHardware::GetAngle() { return _ada_gps->angle; }
 
 /*!
  * @brief Gets the geoid height from the GPS module.
  * @returns The geoid height in meters, or 0.0 if the GPS driver type is not
  * set.
  */
-float GPSHardware::GetGeoidHeight() {
-  if (_driver_type == GPS_DRV_MTK) {
-    return _ada_gps->fix;
-  } else if (_driver_type == GPS_DRV_UBLOX) {
-    // TODO: Implement for UBLOX
-  }
-
-  return 0.0f;
-}
-
-// TODO: Untested, leaving for MONDAY
-/*!
- * @brief Handles incoming NMEA characters for UBlox GPS processing
- * @param incoming The incoming NMEA character
- */
-void GPSHardware::HandleNmeaChar(char incoming) {
-  static char nmea_buffer[256];
-  static uint8_t nmea_buf_idx = 0;
-
-  // Add character to buffer
-  if (nmea_buf_idx < sizeof(nmea_buffer) - 1) {
-    nmea_buffer[nmea_buf_idx++] = incoming;
-  }
-
-  // Check for sentence termination
-  if (incoming == '\n' || incoming == '\r') {
-    // Null terminate
-    nmea_buffer[nmea_buf_idx] = '\0';
-
-    // Push complete NMEA sentence if valid
-    if (nmea_buf_idx > 0 && nmea_buffer[0] == '$') {
-      NmeaBufPush(nmea_buffer);
-      is_nmea_valid = true; // Mark NMEA as valid
-      WS_DEBUG_PRINT("[gps] Received NMEA sentence: ");
-      WS_DEBUG_PRINTLN(nmea_buffer);
-    }
-
-    // Reset for next sentence
-    nmea_buf_idx = 0;
-  }
-
-  // Safety reset if buffer gets too full
-  if (nmea_buf_idx >= sizeof(nmea_buffer) - 1) {
-    nmea_buf_idx = 0;
-  }
-}
-
-/*!
- * @brief Global override of the weak processNMEA function from UBlox library
- * @param incoming The incoming NMEA character from the UBlox GPS
- */
-void DevUBLOXGNSS::processNMEA(char incoming) {
-  if (GPSHardware::current_instance) {
-    GPSHardware::current_instance->HandleNmeaChar(incoming);
-  }
-}
+float GPSHardware::GetGeoidHeight() { return _ada_gps->geoidheight; }
