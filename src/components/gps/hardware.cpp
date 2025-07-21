@@ -241,10 +241,10 @@ bool GPSHardware::DetectMtkI2C(uint32_t addr) {
  * otherwise.
  */
 bool GPSHardware::DetectUbxI2C(uint32_t addr) {
-  _ubx_gps_ddc = new Adafruit_UBloxDDC(addr, *_wire);
+  _ubx_gps_ddc = new Adafruit_UBloxDDC(addr, _wire);
   if (!_ubx_gps_ddc->begin())
     return false;
-  _ubx_gps = new Adafruit_UBX(_ubx_gps_ddc);
+  _ubx_gps = new Adafruit_UBX(&_ubx_gps_ddc);
   if (!_ubx_gps->begin())
     return false;
   _ubx_gps->verbose_debug = 3; // TODO: Set this to 1 in production
@@ -545,10 +545,12 @@ void GPSHardware::PollStoreSentences() {
     WS_DEBUG_PRINT("Did We get a NMEA sentence? ");
     uint8_t buffer[MAX_LEN_NMEA_SENTENCE];
     String nmeaBuffer = "";
-    int bytesAvailable = gps.available();
+    size_t bytesToRead;
+    size_t bytesRead;
+    int bytesAvailable = _ubx_gps_ddc->available();
     if (bytesAvailable > 0) {
-      size_t bytesToRead = min(bytesAvailable, MAX_NEMA_SENTENCE_LEN);
-      size_t bytesRead = gps.readBytes(buffer, bytesToRead);
+      min(bytesAvailable, MAX_NEMA_SENTENCE_LEN);
+      _ubx_gps_ddc->readBytes(buffer, bytesToRead);
     }
     // Build NMEA sentences and parse when complete
     for (size_t i = 0; i < bytesRead; i++) {

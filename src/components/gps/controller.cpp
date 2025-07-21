@@ -111,31 +111,6 @@ void GPSController::update() {
     return; // bail-out!
 
   for (GPSHardware *drv : _gps_drivers) {
-    // Get the GPS driver interface from the hardware instance
-    WS_DEBUG_PRINTLN("[gps] Updating GPS driver...");
-    Adafruit_GPS *ada_gps = nullptr;
-    if (drv->GetDriverType() == GPS_DRV_MTK) {
-      // Interface shouldn't matter here because we already set it up in the
-      // initialization phase, so we can just grab the Adafruit_GPS instance
-      ada_gps = drv->GetAdaGps();
-      if (ada_gps == nullptr) {
-        WS_DEBUG_PRINTLN(
-            "[gps] ERROR: Can't read - GPS instance not initialized!");
-        continue;
-      }
-    } else if (drv->GetDriverType() == GPS_DRV_UBLOX) {
-      SFE_UBLOX_GNSS *sfe_gps = drv->GetUbxGps();
-      if (sfe_gps == nullptr) {
-        WS_DEBUG_PRINTLN(
-            "[gps] ERROR: Can't read - UBLOX instance not initialized!");
-        continue;
-      }
-    } else {
-      WS_DEBUG_PRINTLN(
-          "[gps] ERROR: Unsupported GPS driver type, skipping update()!");
-      continue;
-    }
-
     // TODO: Commented out due to parsing failures, stability issue (failed to
     // parse NMEA acks for this) Perform a keep-alive check by sending an
     // antenna check command every 2 seconds
