@@ -22,7 +22,7 @@ GPSHardware::GPSHardware() {
   _driver_type = GPS_DRV_NONE;
   _nmea_baud_rate = DEFAULT_MTK_NMEA_BAUD_RATE;
   _nmea_update_rate = DEFAULT_MTK_NMEA_UPDATE_RATE;
-  
+
   // Initialize NMEA buffer
   _nmea_buff.head = 0;
   _nmea_buff.tail = 0;
@@ -108,59 +108,61 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
     I2cReadDiscard();
     // Iterate through the command sentences and send them to the GPS module
     for (size_t i = 0; i < gps_config->commands_ubxes_count; i++) {
-        // TODO: Tuesday fix this frame decoder! 
-/*       pb_bytes_array_t *ubx_frame = &gps_config->commands_ubxes[i];
-      // Validate minimum frame size
-      if (ubx_frame->size < 8) {
-        WS_DEBUG_PRINT("[gps] Invalid UBX frame size: ");
-        WS_DEBUG_PRINTLN(ubx_frame->size);
-        continue;
-      }
+      // TODO: Tuesday fix this frame decoder!
+      /*       pb_bytes_array_t *ubx_frame = &gps_config->commands_ubxes[i];
+            // Validate minimum frame size
+            if (ubx_frame->size < 8) {
+              WS_DEBUG_PRINT("[gps] Invalid UBX frame size: ");
+              WS_DEBUG_PRINTLN(ubx_frame->size);
+              continue;
+            }
 
-      // Validate sync bytes
-      if (ubx_frame->bytes[0] != 0xB5 || ubx_frame->bytes[1] != 0x62) {
-        WS_DEBUG_PRINTLN("[gps] Invalid UBX sync bytes");
-        continue;
-      }
+            // Validate sync bytes
+            if (ubx_frame->bytes[0] != 0xB5 || ubx_frame->bytes[1] != 0x62) {
+              WS_DEBUG_PRINTLN("[gps] Invalid UBX sync bytes");
+              continue;
+            }
 
-      // Validate frame size
-      size_t expectedSize = 8 + payloadLength;
-      if (ubx_frame->size != expectedSize) {
-        WS_DEBUG_PRINT("[gps] Frame size mismatch. Expected: ");
-        WS_DEBUG_PRINT(expectedSize);
-        WS_DEBUG_PRINT(", Got: ");
-        WS_DEBUG_PRINTLN(ubx_frame->size);
-        continue;
-      }
+            // Validate frame size
+            size_t expectedSize = 8 + payloadLength;
+            if (ubx_frame->size != expectedSize) {
+              WS_DEBUG_PRINT("[gps] Frame size mismatch. Expected: ");
+              WS_DEBUG_PRINT(expectedSize);
+              WS_DEBUG_PRINT(", Got: ");
+              WS_DEBUG_PRINTLN(ubx_frame->size);
+              continue;
+            }
 
-      // Extract message components
-      uint8_t msgClass = ubx_frame->bytes[2];
-      uint8_t msgId = ubx_frame->bytes[3];
-      uint16_t payloadLength = ubx_frame->bytes[4] | (ubx_frame->bytes[5] << 8);
+            // Extract message components
+            uint8_t msgClass = ubx_frame->bytes[2];
+            uint8_t msgId = ubx_frame->bytes[3];
+            uint16_t payloadLength = ubx_frame->bytes[4] | (ubx_frame->bytes[5]
+         << 8);
 
-      // Get payload
-      uint8_t *payload = NULL;
-      if (payloadLength > 0) {
-        payload = &ubx_frame->bytes[6];
-      }
+            // Get payload
+            uint8_t *payload = NULL;
+            if (payloadLength > 0) {
+              payload = &ubx_frame->bytes[6];
+            }
 
-      WS_DEBUG_PRINT("[gps] Sending UBX CMD #");
-      WS_DEBUG_PRINT(i);
-      WS_DEBUG_PRINT(" - Class: 0x");
-      WS_DEBUG_PRINT(msgClass, HEX);
-      WS_DEBUG_PRINT(", ID: 0x");
-      WS_DEBUG_PRINT(msgId, HEX);
-      WS_DEBUG_PRINT(", Payload len: ");
-      WS_DEBUG_PRINTLN(payloadLength);
+            WS_DEBUG_PRINT("[gps] Sending UBX CMD #");
+            WS_DEBUG_PRINT(i);
+            WS_DEBUG_PRINT(" - Class: 0x");
+            WS_DEBUG_PRINT(msgClass, HEX);
+            WS_DEBUG_PRINT(", ID: 0x");
+            WS_DEBUG_PRINT(msgId, HEX);
+            WS_DEBUG_PRINT(", Payload len: ");
+            WS_DEBUG_PRINTLN(payloadLength);
 
-      // Send the message
-      UBXSendStatus status = _ubx_gps->sendMessageWithAck(msgClass, msgId, payload, payloadLength);
+            // Send the message
+            UBXSendStatus status = _ubx_gps->sendMessageWithAck(msgClass, msgId,
+         payload, payloadLength);
 
-      if (status != UBXSendStatus::UBX_SEND_SUCCESS) {
-        WS_DEBUG_PRINTLN("[gps] Failed to send UBX message");
-      } else {
-        WS_DEBUG_PRINTLN("[gps] OK");
-      } */
+            if (status != UBXSendStatus::UBX_SEND_SUCCESS) {
+              WS_DEBUG_PRINTLN("[gps] Failed to send UBX message");
+            } else {
+              WS_DEBUG_PRINTLN("[gps] OK");
+            } */
     }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
@@ -544,24 +546,17 @@ void GPSHardware::PollStoreSentences() {
     // hw serial for avability? more performant
     ulong update_rate = 1000 / _nmea_update_rate;
     ulong start_time = millis();
-    WS_DEBUG_PRINTLN("[gps] Polling u-blox GPS driver for new sentences...");
     while (millis() - start_time < update_rate) {
       _ubx_gps_ddc->available();
     }
-    WS_DEBUG_PRINTLN("[gps] Polling completed!");
     uint8_t buffer[MAX_LEN_NMEA_SENTENCE];
     String nmeaBuffer = "";
     int bytesAvailable = _ubx_gps_ddc->available();
-    WS_DEBUG_PRINT("[gps] Reading u-blox GPS data, bytes available: ");
-    WS_DEBUG_PRINTLN(bytesAvailable);
-    size_t bytesToRead = min(bytesAvailable, 82);
     size_t bytesRead;
+    size_t bytesToRead = min(bytesAvailable, 82);
     if (bytesAvailable > 0) {
       bytesRead = _ubx_gps_ddc->readBytes(buffer, bytesToRead);
     }
-    WS_DEBUG_PRINT("[gps] Read ");
-    WS_DEBUG_PRINT(bytesAvailable);
-    WS_DEBUG_PRINTLN(" bytes from u-blox GPS, parsing sentences...\n");
     // Build NMEA sentences and parse when complete
     for (size_t i = 0; i < bytesRead; i++) {
       char c = buffer[i];
@@ -572,18 +567,14 @@ void GPSHardware::PollStoreSentences() {
         WS_DEBUG_PRINTLN(nmeaBuffer.c_str());
         // Push the NMEA sentence to the buffer
         WS_DEBUG_PRINTLN("[gps] Pushing NMEA sentence to buffer...");
-        if (NmeaBufPush(nmeaBuffer.c_str()) == 0) {
-          WS_DEBUG_PRINTLN("[gps] NMEA sentence pushed to buffer.");
-        } else {
+        if (NmeaBufPush(nmeaBuffer.c_str()) != 0) {
           WS_DEBUG_PRINTLN(
               "[gps] ERROR: Unable to push NMEA sentence to buffer!");
+        } else {
+          nmeaBuffer = ""; // Reset buffer for next sentence
         }
-        // Reset buffer for next sentence
-        nmeaBuffer = "";
       }
     }
-    // Done
-    WS_DEBUG_PRINTLN("[gps] u-blox GPS polling completed!");
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type for polling!");
   }
@@ -595,37 +586,23 @@ void GPSHardware::PollStoreSentences() {
  * @return 0 on success, -1 if the buffer is full.
  */
 int GPSHardware::NmeaBufPush(const char *new_sentence) {
-  WS_DEBUG_PRINT("[gps] NmeaBufPush called with sentence: ");
-  if (!new_sentence) {
-    WS_DEBUG_PRINTLN("NULL");
+  if (!new_sentence)
     return -1;
-  }
-  WS_DEBUG_PRINTLN(new_sentence);
-  
-  WS_DEBUG_PRINT("[gps] Buffer state - head: ");
-  WS_DEBUG_PRINT(_nmea_buff.head);
-  WS_DEBUG_PRINT(", tail: ");
-  WS_DEBUG_PRINT(_nmea_buff.tail);
-  WS_DEBUG_PRINT(", maxlen: ");
-  WS_DEBUG_PRINTLN(_nmea_buff.maxlen);
 
   int next = _nmea_buff.head + 1; // points to head after the current write
   if (next >= _nmea_buff.maxlen)
     next = 0; // wrap around
 
-  // If buffer is full, advance tail to overwrite oldest data
+  // If buffer is full, overwrite oldest data
   if (next == _nmea_buff.tail) {
     _nmea_buff.tail = (_nmea_buff.tail + 1) % _nmea_buff.maxlen;
   }
 
-  WS_DEBUG_PRINTLN("[gps] About to call strncpy...");
   // Copy the new sentence into the buffer
   strncpy(_nmea_buff.sentences[_nmea_buff.head], new_sentence,
           MAX_LEN_NMEA_SENTENCE - 1);
-  WS_DEBUG_PRINTLN("[gps] strncpy completed, setting null terminator...");
   _nmea_buff.sentences[_nmea_buff.head][MAX_LEN_NMEA_SENTENCE - 1] = '\0';
   _nmea_buff.head = next;
-  WS_DEBUG_PRINTLN("[gps] NmeaBufPush completed successfully");
   return 0;
 }
 
@@ -659,8 +636,6 @@ int GPSHardware::NmeaBufPop(char *sentence) {
 bool GPSHardware::ParseNMEASentence(char *sentence) {
   if (!sentence)
     return false;
-  WS_DEBUG_PRINT("[gps] ParseNMEASentence: ");
-  WS_DEBUG_PRINTLN(sentence);
   return _ada_gps->parse(sentence);
 }
 

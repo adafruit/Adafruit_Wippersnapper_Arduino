@@ -16,8 +16,8 @@
 #define WS_GPS_HARDWARE_H
 #include "Wippersnapper_V2.h"
 #include <Adafruit_GPS.h>
-#include <Adafruit_UBloxDDC.h>
 #include <Adafruit_UBX.h>
+#include <Adafruit_UBloxDDC.h>
 
 #define CMD_MTK_QUERY_FW                                                       \
   "$PMTK605*31" ///< Request to query MediaTek firmware version
@@ -114,6 +114,7 @@ public:
   float GetSpeed();
   float GetAngle();
   float GetGeoidHeight();
+
 private:
   bool QueryModuleType();
   bool DetectMtkUart();
@@ -122,19 +123,20 @@ private:
   bool BuildPmtkAck(char *msg_cmd, char *msg_resp);
   void I2cReadDiscard();
   void UartReadDiscard();
-  GpsInterfaceType _iface_type;              ///< Type of interface used by GPS
-  GpsDriverType _driver_type;                ///< Type of GPS driver used by GPS
-  HardwareSerial *_hw_serial = nullptr;      ///< Optional HardwareSerial instance
-  TwoWire *_wire = nullptr;                  ///< Optional TwoWire instance
-  Adafruit_GPS *_ada_gps = nullptr;          ///< Optional Adafruit GPS instance
-  Adafruit_UBloxDDC *_ubx_gps_ddc = nullptr; ///< Optional Adafruit UBlox DDC instance
-  Adafruit_UBX *_ubx_gps = nullptr;           ///< Optional Adafruit UBX instance
-  uint32_t _addr;                            ///< Optional i2c address
-  ulong _period;                             ///< Polling period for GPS data (Specified by IO), in ms
-  ulong _period_prv;                         ///< Previous period for GPS data (Specified by IO), in ms
-  ulong _kat_prv;                            ///< Last time the GPS hardware was polled, in ms
-  int _nmea_update_rate;                     ///< NMEA update rate for GPS data, in Hz
-  int _nmea_baud_rate;                       ///< NMEA baud rate for GPS data, in bits per second
+  GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
+  GpsDriverType _driver_type;           ///< Type of GPS driver used by GPS
+  HardwareSerial *_hw_serial = nullptr; ///< Optional HardwareSerial instance
+  TwoWire *_wire = nullptr;             ///< Optional TwoWire instance
+  Adafruit_GPS *_ada_gps = nullptr;     ///< Optional Adafruit GPS instance
+  Adafruit_UBloxDDC *_ubx_gps_ddc =
+      nullptr;                      ///< Optional Adafruit UBlox DDC instance
+  Adafruit_UBX *_ubx_gps = nullptr; ///< Optional Adafruit UBX instance
+  uint32_t _addr;                   ///< Optional i2c address
+  ulong _period;     ///< Polling period for GPS data (Specified by IO), in ms
+  ulong _period_prv; ///< Previous period for GPS data (Specified by IO), in ms
+  ulong _kat_prv;    ///< Last time the GPS hardware was polled, in ms
+  int _nmea_update_rate; ///< NMEA update rate for GPS data, in Hz
+  int _nmea_baud_rate;   ///< NMEA baud rate for GPS data, in bits per second
   int NmeaBufPush(
       const char *new_sentence); ///< Push a sentence to the NMEA ring buffer
   nmea_buffer_t _nmea_buff;      ///< NMEA ring buffer for storing sentences

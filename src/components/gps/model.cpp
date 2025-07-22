@@ -196,9 +196,8 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
 }
 
 bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
-  // Check for $GP or $GN prefixed sentences
-  if (sentence[0] == '$' && sentence[1] == 'G' &&
-      (sentence[2] == 'P' || sentence[2] == 'N'))
+  // Check for prefix: $GP or $GN
+  if (strncmp(sentence, "$GP", 3) != 0 && strncmp(sentence, "$GN", 3) != 0)
     return false;
 
   wippersnapper_gps_GPSDateTime datetime = CreateGpsDatetime(
@@ -207,6 +206,34 @@ bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
   char lat_dir = drv->GetLatDir();
   char lon_dir = drv->GetLonDir();
   if (sentence[3] == 'R' && sentence[4] == 'M' && sentence[5] == 'C') {
+    // Debug prints for Sentence variabesl
+    WS_DEBUG_PRINTLN("[gps] Processing RMC sentence...");
+    WS_DEBUG_PRINT("[gps] Hour: ");
+    WS_DEBUG_PRINTLN(drv->GetHour());
+    WS_DEBUG_PRINT("[gps] Minute: ");
+    WS_DEBUG_PRINTLN(drv->GetMinute());
+    WS_DEBUG_PRINT("[gps] Seconds: ");
+    WS_DEBUG_PRINTLN(drv->GetSeconds());
+    WS_DEBUG_PRINT("[gps] Milliseconds: ");
+    WS_DEBUG_PRINTLN(drv->GetMilliseconds());
+    WS_DEBUG_PRINT("[gps] Day: ");
+    WS_DEBUG_PRINTLN(drv->GetDay());
+    WS_DEBUG_PRINT("[gps] Month: ");
+    WS_DEBUG_PRINTLN(drv->GetMonth());
+    WS_DEBUG_PRINT("[gps] Year: ");
+    WS_DEBUG_PRINTLN(drv->GetYear());
+    WS_DEBUG_PRINT("[gps] Latitude: ");
+    WS_DEBUG_PRINTLN(drv->GetLat());
+    WS_DEBUG_PRINT("[gps] Latitude Direction: ");
+    WS_DEBUG_PRINTLN(lat_dir);
+    WS_DEBUG_PRINT("[gps] Longitude: ");
+    WS_DEBUG_PRINTLN(drv->GetLon());
+    WS_DEBUG_PRINT("[gps] Longitude Direction: ");
+    WS_DEBUG_PRINTLN(lon_dir);
+    WS_DEBUG_PRINT("[gps] Speed: ");
+    WS_DEBUG_PRINTLN(drv->GetSpeed());
+    WS_DEBUG_PRINT("[gps] Angle: ");
+    WS_DEBUG_PRINTLN(drv->GetAngle());
     // Process RMC sentence
     if (!AddGpsEventRMC(datetime, drv->GetFix(), drv->GetLat(), &lat_dir,
                         drv->GetLon(), &lon_dir, drv->GetSpeed(),
