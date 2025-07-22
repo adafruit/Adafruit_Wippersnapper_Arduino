@@ -29,6 +29,11 @@ jobs:
             "funhouse_noota",
             "esp32s3_devkitc_1_n8",
             "xiao_esp32s3",
+            "magtag",
+            "metroesp32s2",
+            "feather_esp32s2_tft",
+            "feather_esp32s2_reverse_tft",
+            "qtpy_esp32s2",
           ]
         include:
           - offset: "0x0"
@@ -36,6 +41,17 @@ jobs:
             arduino-platform: "funhouse_noota"
           - offset: "0x1000"
             arduino-platform: "feather_esp32s2"
+          - offset: "0x1000"
+            arduino-platform: "metroesp32s2"
+          - offset: "0x1000"
+            arduino-platform: "magtag"
+          - offset: "0x1000"
+            arduino-platform: "feather_esp32s2_tft"
+          - offset: "0x1000"
+            arduino-platform: "feather_esp32s2_reverse_tft"
+          - offset: "0x1000"
+            arduino-platform: "qtpy_esp32s2"
+
     steps:
       - name: "skip if unwanted"
         continue-on-error: true
@@ -230,17 +246,12 @@ jobs:
       matrix:
         arduino-platform:
           [
-            "magtag",
-            "metroesp32s2",
             "metro_esp32s3",
-            "feather_esp32s2_tft",
-            "feather_esp32s2_reverse_tft",
             "feather_esp32s3",
             "feather_esp32s3_4mbflash_2mbpsram",
+            "feather_esp32s3_reverse_tft",
             "feather_esp32s3_tft",
             "qtpy_esp32s3",
-            "qtpy_esp32s2",
-            "feather_esp32s3_reverse_tft",
             "qtpy_esp32s3_n4r2",
           ]
     steps:
