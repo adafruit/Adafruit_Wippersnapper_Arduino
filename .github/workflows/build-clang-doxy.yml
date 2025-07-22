@@ -154,7 +154,7 @@ jobs:
           BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
           for attempt in 1 2; do
             echo "Attempt $attempt: Fetching tinyuf2 release info for board $BOARD_NAME"
-            API_RESPONSE=$(curl -s https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
+            API_RESPONSE=$(curl --silent --fail https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
             if [ $? -ne 0 ]; then
               echo "Attempt $attempt: curl failed to fetch release info."
               if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; continue; fi
