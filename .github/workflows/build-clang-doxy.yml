@@ -151,15 +151,29 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: fetch tinyuf2 combined.bin
         run: |
-          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/adafruit/tinyuf2/releases/latest | \
-          jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}'-") and endswith(".zip")) | .browser_download_url')
-          if [ -z "$DOWNLOAD_URL" ]; then
-            echo "Error: Could not find the latest tinyuf2 release for board ${fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}."
-            exit 1
-          fi
-          wget "$DOWNLOAD_URL" -O tinyuf2.zip
-          unzip -o tinyuf2.zip -d .
-
+          BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
+          for attempt in 1 2; do
+            echo "Attempt $attempt: Fetching tinyuf2 release info for board $BOARD_NAME"
+            API_RESPONSE=$(curl -s https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
+            if [ $? -ne 0 ]; then
+              echo "Attempt $attempt: curl failed to fetch release info."
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; continue; fi
+            fi
+            DOWNLOAD_URL=$(echo "$API_RESPONSE" | jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'$BOARD_NAME'-") and endswith(".zip")) | .browser_download_url // empty')
+            if [ -z "$DOWNLOAD_URL" ]; then
+              echo "Attempt $attempt: No matching tinyuf2 zip found for board $BOARD_NAME."
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; continue; fi
+            fi
+            echo "Attempt $attempt: Downloading $DOWNLOAD_URL"
+            wget "$DOWNLOAD_URL" -O tinyuf2.zip
+            if [ $? -eq 0 ]; then
+              unzip -o tinyuf2.zip -d .
+              break
+            else
+              echo "Attempt $attempt: wget failed to download $DOWNLOAD_URL"
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; fi
+            fi
+          done
       - name: move partition and bootloader files for tinyuf2 (to match flash_args)
         run: |
           # Copy files where they're expected to make flash_args happy
