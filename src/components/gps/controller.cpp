@@ -139,10 +139,13 @@ void GPSController::update() {
       // Let the driver parse the NMEA sentence
       WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
       WS_DEBUG_PRINTLN(nmea_sentence);
-      if (!drv->ParseNMEASentence(nmea_sentence))
+      if (!drv->ParseNMEASentence(nmea_sentence)) {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to parse NMEA sentence!");
         continue; // Skip this sentence if parsing failed
-      else
+      }
+      else {
         has_gps_event = true; // We have a valid NMEA sentence
+      }
 
       // Using the Model, process the NMEA sentence into a GPSEvent
       WS_DEBUG_PRINTLN("[gps] Processing NMEA sentence...");

@@ -22,6 +22,11 @@ GPSHardware::GPSHardware() {
   _driver_type = GPS_DRV_NONE;
   _nmea_baud_rate = DEFAULT_MTK_NMEA_BAUD_RATE;
   _nmea_update_rate = DEFAULT_MTK_NMEA_UPDATE_RATE;
+  
+  // Initialize NMEA buffer
+  _nmea_buff.head = 0;
+  _nmea_buff.tail = 0;
+  _nmea_buff.maxlen = MAX_NMEA_SENTENCES;
 }
 
 /*!
@@ -244,10 +249,12 @@ bool GPSHardware::DetectUbxI2C(uint32_t addr) {
   _ubx_gps_ddc = new Adafruit_UBloxDDC(addr, _wire);
   if (!_ubx_gps_ddc->begin())
     return false;
-  _ubx_gps = new Adafruit_UBX(&_ubx_gps_ddc);
+  _ubx_gps = new Adafruit_UBX(*_ubx_gps_ddc);
   if (!_ubx_gps->begin())
     return false;
   _ubx_gps->verbose_debug = 3; // TODO: Set this to 1 in production
+  // Configure Adafruit_GPS instance for parsing NMEA sentences only
+  _ada_gps = new Adafruit_GPS();
   _driver_type = GPS_DRV_UBLOX;
   return true;
 }
@@ -542,33 +549,41 @@ void GPSHardware::PollStoreSentences() {
       _ubx_gps_ddc->available();
     }
     WS_DEBUG_PRINTLN("[gps] Polling completed!");
-    WS_DEBUG_PRINT("Did We get a NMEA sentence? ");
     uint8_t buffer[MAX_LEN_NMEA_SENTENCE];
     String nmeaBuffer = "";
-    size_t bytesToRead;
-    size_t bytesRead;
     int bytesAvailable = _ubx_gps_ddc->available();
+    WS_DEBUG_PRINT("[gps] Reading u-blox GPS data, bytes available: ");
+    WS_DEBUG_PRINTLN(bytesAvailable);
+    size_t bytesToRead = min(bytesAvailable, 82);
+    size_t bytesRead;
     if (bytesAvailable > 0) {
-      min(bytesAvailable, MAX_NEMA_SENTENCE_LEN);
-      _ubx_gps_ddc->readBytes(buffer, bytesToRead);
+      bytesRead = _ubx_gps_ddc->readBytes(buffer, bytesToRead);
     }
+    WS_DEBUG_PRINT("[gps] Read ");
+    WS_DEBUG_PRINT(bytesAvailable);
+    WS_DEBUG_PRINTLN(" bytes from u-blox GPS, parsing sentences...\n");
     // Build NMEA sentences and parse when complete
     for (size_t i = 0; i < bytesRead; i++) {
       char c = buffer[i];
       nmeaBuffer += c;
       // Check for end of NMEA sentence
       if (c == '\n') {
-        WS_DEBUG_PRINT("[gps] NMEA sentence: ");
+        WS_DEBUG_PRINT("[gps] GOT NMEA sentence: ");
         WS_DEBUG_PRINTLN(nmeaBuffer.c_str());
         // Push the NMEA sentence to the buffer
+        WS_DEBUG_PRINTLN("[gps] Pushing NMEA sentence to buffer...");
         if (NmeaBufPush(nmeaBuffer.c_str()) == 0) {
           WS_DEBUG_PRINTLN("[gps] NMEA sentence pushed to buffer.");
         } else {
           WS_DEBUG_PRINTLN(
               "[gps] ERROR: Unable to push NMEA sentence to buffer!");
         }
+        // Reset buffer for next sentence
+        nmeaBuffer = "";
       }
     }
+    // Done
+    WS_DEBUG_PRINTLN("[gps] u-blox GPS polling completed!");
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type for polling!");
   }
@@ -580,8 +595,19 @@ void GPSHardware::PollStoreSentences() {
  * @return 0 on success, -1 if the buffer is full.
  */
 int GPSHardware::NmeaBufPush(const char *new_sentence) {
-  if (!new_sentence)
+  WS_DEBUG_PRINT("[gps] NmeaBufPush called with sentence: ");
+  if (!new_sentence) {
+    WS_DEBUG_PRINTLN("NULL");
     return -1;
+  }
+  WS_DEBUG_PRINTLN(new_sentence);
+  
+  WS_DEBUG_PRINT("[gps] Buffer state - head: ");
+  WS_DEBUG_PRINT(_nmea_buff.head);
+  WS_DEBUG_PRINT(", tail: ");
+  WS_DEBUG_PRINT(_nmea_buff.tail);
+  WS_DEBUG_PRINT(", maxlen: ");
+  WS_DEBUG_PRINTLN(_nmea_buff.maxlen);
 
   int next = _nmea_buff.head + 1; // points to head after the current write
   if (next >= _nmea_buff.maxlen)
@@ -592,11 +618,14 @@ int GPSHardware::NmeaBufPush(const char *new_sentence) {
     _nmea_buff.tail = (_nmea_buff.tail + 1) % _nmea_buff.maxlen;
   }
 
+  WS_DEBUG_PRINTLN("[gps] About to call strncpy...");
   // Copy the new sentence into the buffer
   strncpy(_nmea_buff.sentences[_nmea_buff.head], new_sentence,
           MAX_LEN_NMEA_SENTENCE - 1);
+  WS_DEBUG_PRINTLN("[gps] strncpy completed, setting null terminator...");
   _nmea_buff.sentences[_nmea_buff.head][MAX_LEN_NMEA_SENTENCE - 1] = '\0';
   _nmea_buff.head = next;
+  WS_DEBUG_PRINTLN("[gps] NmeaBufPush completed successfully");
   return 0;
 }
 
@@ -630,6 +659,8 @@ int GPSHardware::NmeaBufPop(char *sentence) {
 bool GPSHardware::ParseNMEASentence(char *sentence) {
   if (!sentence)
     return false;
+  WS_DEBUG_PRINT("[gps] ParseNMEASentence: ");
+  WS_DEBUG_PRINTLN(sentence);
   return _ada_gps->parse(sentence);
 }
 
