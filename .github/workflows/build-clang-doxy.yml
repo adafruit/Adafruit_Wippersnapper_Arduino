@@ -39,22 +39,6 @@ jobs:
             "qtpy_esp32s3_n4r2",
             "xiao_esp32s3",
           ]
-        # include:
-        #   - offset: "0x0"
-        #   - offset: "0x1000"
-        #     arduino-platform: "funhouse_noota"
-        #   - offset: "0x1000"
-        #     arduino-platform: "feather_esp32s2"
-        #   - offset: "0x1000"
-        #     arduino-platform: "metroesp32s2"
-        #   - offset: "0x1000"
-        #     arduino-platform: "magtag"
-        #   - offset: "0x1000"
-        #     arduino-platform: "feather_esp32s2_tft"
-        #   - offset: "0x1000"
-        #     arduino-platform: "feather_esp32s2_reverse_tft"
-        #   - offset: "0x1000"
-        #     arduino-platform: "qtpy_esp32s2"
 
     steps:
       - name: "skip if unwanted"
