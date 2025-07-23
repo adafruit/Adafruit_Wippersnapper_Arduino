@@ -1185,7 +1185,6 @@ bool I2cController::ScanI2cBus(bool default_bus = true) {
   }
 }
 
-
 /*!
     @brief    Enables a MUX channel on the appropriate I2C bus.
     @param    mux_channel
