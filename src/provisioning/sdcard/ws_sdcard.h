@@ -32,12 +32,16 @@
 #define SPI_SD_CLOCK SD_SCK_MHZ(50) ///< Default SPI clock speed
 #endif
 
-#define SD_FAT_TYPE 3           ///< SD type (3 = FAT16/FAT32 and exFAT)
-#define PIN_SD_CS_ERROR 255     ///< Error code for invalid SD card CS pin
+#define SD_FAT_TYPE 3 ///< SD type (3 = FAT16/FAT32 and exFAT)
+#define SD_CS_CFG_NOT_FOUND                                                    \
+  255 ///< Error code if CS pin not found in config.json file
 #define UNKNOWN_VALUE "unknown" ///< Default unknown JSON field value
 #define MAX_SZ_LOG_FILE (512 * 1024 * 1024) ///< Maximum log file size, in Bytes
 #define MAX_LEN_CFG_JSON                                                       \
   4096 ///< Maximum length of the configuration JSON file, in Bytes
+
+// auto-config
+#define UNKNOWN_DRIVER_NAME "UNKNOWN_SCAN" ///< Default unknown driver name
 
 // forward decl.
 class Wippersnapper_V2;
@@ -50,8 +54,9 @@ class ws_sdcard {
 public:
   ws_sdcard();
   ~ws_sdcard();
+  bool InitSdCard(uint8_t pin_cs);
   bool isSDCardInitialized() { return is_mode_offline; }
-  bool parseConfigFile();
+  bool ParseFileConfig();
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
   void waitForSerialConfig();
@@ -65,9 +70,9 @@ public:
   bool LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
 
 private:
-  void calculateFileLimits();
+  bool ParseExportedFromDevice(JsonDocument &doc);
+  void ConfigureSDCard();
   bool ValidateChecksum(JsonDocument &doc);
-  bool ValidateJSONKey(const char *key, const char *error_msg);
   void CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
                float ref_voltage);
   bool ConfigureRTC(const char *rtc_type);
@@ -79,19 +84,21 @@ private:
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
-  bool ParseDigitalIOAdd(wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd,
-                         const char *pin, float period, bool value,
-                         const char *sample_mode, const char *direction,
-                         const char *pull);
-  bool ParseAnalogIOAdd(wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd,
-                        const char *pin, float period, const char *mode);
-  bool ParseDS18X20Add(wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add,
-                       const char *pin, int resolution, float period,
-                       int num_sensors, const char *sensor_type_1,
-                       const char *sensor_type_2);
+  bool ParseComponents(JsonArray &components);
+  bool
+  ParseDigitalIOAdd(JsonObject &component,
+                    wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd);
+  bool ParseAnalogIOAdd(JsonObject &component,
+                        wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd);
+  bool ParseDS18xAdd(JsonObject &component,
+                     wippersnapper_ds18x20_Ds18x20Add &msg_ds18x20_add);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
       wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);
+  bool AddI2cScanResultsToBuffer();
+  void ParseI2cAddScanned(
+      wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add_scanned,
+      size_t scan_result_idx);
   uint32_t HexStrToInt(const char *hex_str);
 
   void BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
@@ -103,8 +110,6 @@ private:
   bool LogJSONDoc(JsonDocument &doc);
   bool AddSignalMessageToSharedBuffer(
       wippersnapper_signal_BrokerToDevice &msg_signal);
-
-  SdSpiConfig _sd_spi_cfg; ///< SPI configuration for the SD card
   SdFat _sd;               ///< SD object from Adafruit SDFat library
   size_t _sd_capacity;     ///< Capacity of the SD card, in Bytes
   size_t _sz_cur_log_file; ///< Size of the current log file, in Bytes
@@ -123,6 +128,7 @@ private:
   bool _is_soft_rtc; ///< True if a "soft rtc" is being used, False otherwise
   uint32_t _soft_rtc_counter; ///< Holds the counter for a "soft rtc"
   bool _use_test_data;        ///< True if sample data is being used for testing
+  std::vector<uint32_t> _cfg_i2c_addresses;
 };
 extern Wippersnapper_V2 WsV2;
 #endif // WS_SDCARD_H

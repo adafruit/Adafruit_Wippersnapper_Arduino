@@ -81,6 +81,13 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 2;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_VOC_INDEX;
+    _default_sensor_types[1] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+  }
+
 protected:
   Adafruit_SGP40 *_sgp40; ///< SEN5X driver object
 };

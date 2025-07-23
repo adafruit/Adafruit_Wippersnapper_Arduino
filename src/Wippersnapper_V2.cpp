@@ -79,28 +79,27 @@ void Wippersnapper_V2::provision() {
 
 // Initialize the filesystem
 #ifdef USE_TINYUSB
-  _fileSystemV2 = new Wippersnapper_FS();
+  WsV2._fileSystemV2 = new Wippersnapper_FS();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2 = new WipperSnapper_LittleFS();
+  WsV2._littleFSV2 = new WipperSnapper_LittleFS();
 #endif
 
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
-  _fileSystemV2->GetSDCSPin();
+  WsV2._fileSystemV2->GetPinSDCS();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2->GetSDCSPin();
+  WsV2._littleFSV2->GetPinSDCS();
 #elif defined(OFFLINE_MODE_WOKWI)
   WsV2.pin_sd_cs = 15;
 #endif
+
   WsV2._sdCardV2 = new ws_sdcard();
   if (WsV2._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()
   } else {
-#ifdef BUILD_OFFLINE_ONLY
     haltErrorV2("SD initialization failed.\nDo not reformat the card!\nIs the "
                 "card correctly inserted?\nIs there a wiring/soldering "
                 "problem\nIs the config.json file malformed?");
-#endif
     // SD card not initialized, so just continue with online-mode provisioning
   }
 
@@ -126,9 +125,9 @@ void Wippersnapper_V2::provision() {
 #endif
 
 #ifdef USE_TINYUSB
-  _fileSystemV2->parseSecrets();
+  WsV2._fileSystemV2->ParseFileSecrets();
 #elif defined(USE_LITTLEFS)
-  _littleFSV2->parseSecrets();
+  WsV2._littleFSV2->ParseFileSecrets();
 #else
   check_valid_ssid(); // non-fs-backed, sets global credentials within network
                       // iface
@@ -1275,28 +1274,33 @@ void Wippersnapper_V2::connect() {
   // If we are running in offline mode, we skip the network setup
   // and MQTT connection process and jump to the offline device config process
   // NOTE: After this, bail out of this function and run the app loop!!!
-  if (WsV2._sdCardV2->isModeOffline() == true) {
-    WS_DEBUG_PRINTLN("[Offline] Running device configuration...");
+  if (WsV2._sdCardV2->isModeOffline()) {
+    WS_DEBUG_PRINTLN("[APP] Running device configuration...");
 // If debug mode, wait for serial config
 #ifdef OFFLINE_MODE_DEBUG
     WsV2._sdCardV2->waitForSerialConfig();
 #endif
+    WS_DEBUG_PRINTLN("[APP] Performing I2C Autoscan...");
+    WsV2._i2c_controller->ScanI2cBus(true);
     // Parse the JSON file
-    if (!WsV2._sdCardV2->parseConfigFile())
-      haltErrorV2("Failed to parse config.json!");
-    WS_DEBUG_PRINTLN("[Offline] Attempting to configure hardware...");
+    if (!WsV2._sdCardV2->ParseFileConfig())
+      haltErrorV2("[APP] Failed to parse config.json!");
+    WS_DEBUG_PRINTLN("[APP] Attempting to configure hardware...");
 #ifndef OFFLINE_MODE_DEBUG
     if (!WsV2._sdCardV2->CreateNewLogFile())
       haltErrorV2("Unable to create new .log file on SD card!");
 #endif
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
-    WS_DEBUG_PRINTLN("[Offline] Hardware configured, skipping network setup "
-                     "and running app...");
+#ifndef OFFLINE_MODE_WOKWI
+    WsV2._fileSystemV2->WriteFileConfig();
+#endif // OFFLINE_MODE_WOKWI used for CI test simulations, lacks TinyUSB
+    WS_DEBUG_PRINTLN("[APP] Hardware configured!");
     // Blink status LED to green to indicate successful configuration
-    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2 * 255.0);
+    setStatusLEDColor(0x00A300, WsV2.status_pixel_brightnessV2);
     delay(500);
-    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2 * 255.0);
+    setStatusLEDColor(0x000000, WsV2.status_pixel_brightnessV2);
+    WS_DEBUG_PRINTLN("[APP] Begin loop()");
     return;
   } else {
     WS_DEBUG_PRINTLN("Running in online mode...");

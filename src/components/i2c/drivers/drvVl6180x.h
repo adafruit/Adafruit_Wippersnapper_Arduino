@@ -115,6 +115,14 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 2;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT;
+  }
+
 protected:
   Adafruit_VL6180X *_vl6180x; ///< Pointer to VL6180X temperature sensor object
 };

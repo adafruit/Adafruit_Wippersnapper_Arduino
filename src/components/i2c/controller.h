@@ -72,6 +72,14 @@
 #include "drivers/drvVncl4020.h"
 #include "drivers/drvVncl4040.h"
 
+#define SCAN_DEVICE                                                            \
+  "UNKNOWN_SCAN" ///< Name for I2C devices found by an i2c scan
+
+typedef struct {
+  uint32_t address;     ///< I2C address of the device
+  bool is_initialized;  ///< Flag to indicate if the device is initialized
+} initialized_device_t; ///< Struct to hold initialized device info
+
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
 class I2cOutputModel;   ///< Forward declaration
@@ -100,6 +108,12 @@ public:
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
   bool RemoveDriver(uint32_t address, bool is_output_device);
+  bool ScanI2cBus(bool default_bus);
+  bool WasDeviceScanned(uint32_t address);
+  uint32_t GetScanDeviceAddress(int index);
+  size_t GetScanDeviceCount();
+  bool
+  IsDriverInitialized(wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor);
 
 private:
   I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
@@ -110,6 +124,8 @@ private:
   std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C input drivers
   std::vector<drvOutputBase *>
       _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
+  wippersnapper_i2c_I2cBusScanned
+      _scan_results; ///< Stores results of I2C bus scan
 };
 extern Wippersnapper_V2 WsV2; ///< Wippersnapper V2 instance
 #endif                        // WS_I2C_CONTROLLER_H

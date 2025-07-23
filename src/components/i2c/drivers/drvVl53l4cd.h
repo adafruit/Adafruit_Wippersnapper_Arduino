@@ -151,6 +151,12 @@ public:
     return false;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 1;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY;
+  }
+
 protected:
   VL53L4CD *_VL53L4CD; ///< Pointer to VL53L4CD temperature sensor object
 };

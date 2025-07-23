@@ -69,6 +69,14 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 2;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE;
+    _default_sensor_types[1] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT;
+  }
+
 protected:
   Adafruit_MCP9808 *_mcp9808; ///< Pointer to MCP9808 temperature sensor object
 };

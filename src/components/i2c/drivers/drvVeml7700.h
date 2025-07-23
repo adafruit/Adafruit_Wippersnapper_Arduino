@@ -67,8 +67,13 @@ public:
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event populated in lux via AUTO integration and gain
     lightEvent->light = _veml->readLux(VEML_LUX_AUTO);
-
     return true;
+  }
+
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 1;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT;
   }
 
 protected:

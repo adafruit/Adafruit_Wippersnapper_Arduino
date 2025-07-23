@@ -85,6 +85,12 @@ public:
     return true;
   }
 
+  void ConfigureDefaultSensorTypes() override {
+    _default_sensor_types_count = 1;
+    _default_sensor_types[0] =
+        wippersnapper_sensor_SensorType_SENSOR_TYPE_LIGHT;
+  }
+
 protected:
   Adafruit_TSL2591 *_tsl; ///< Pointer to TSL2591 light sensor object
 };
