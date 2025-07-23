@@ -14,7 +14,6 @@
  */
 #include "ws_sdcard.h"
 
-/**************************************************************************/
 /*!
     @brief    Initializes the SD card.
     @param    pin_cs
@@ -44,6 +43,15 @@ bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
 /*!
     @brief    Constructs an instance of the Wippersnapper SD card class.
 */
+<<<<<<< HEAD
+ws_sdcard::ws_sdcard()
+#ifdef SD_USE_SPI_1
+    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1) {
+#else
+    : _sd_spi_cfg(WsV2.pin_sd_cs, DEDICATED_SPI, SPI_SD_CLOCK) {
+#endif
+  is_mode_offline = false;
+=======
 /**************************************************************************/
 ws_sdcard::ws_sdcard() {
   _use_test_data = false;
@@ -81,11 +89,9 @@ ws_sdcard::ws_sdcard() {
   is_mode_offline = did_init;
 }
 
-/**************************************************************************/
 /*!
     @brief    Destructs an instance of the Wippersnapper SD card class.
 */
-/**************************************************************************/
 ws_sdcard::~ws_sdcard() {
   if (is_mode_offline) {
     _sd.end(); // Close the SD card interface
@@ -114,12 +120,10 @@ void ws_sdcard::ConfigureSDCard() {
   }
   _sd_max_num_log_files = sd_capacity_usable / _max_sz_log_file;
 }
-/**************************************************************************/
 /*!
     @brief    Initializes a DS1307 RTC
     @returns  True if the RTC was successfully initialized, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::InitDS1307() {
   _rtc_ds1307 = new RTC_DS1307();
   if (!_rtc_ds1307->begin(WsV2._i2c_controller->GetI2cBus())) {
@@ -129,6 +133,7 @@ bool ws_sdcard::InitDS1307() {
       delete _rtc_ds1307;
       return false;
     }
+#endif
   }
   if (!_rtc_ds1307->isrunning())
     _rtc_ds1307->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -136,13 +141,11 @@ bool ws_sdcard::InitDS1307() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes a DS3231 RTC.
     @returns  True if the RTC was successfully initialized, False
               otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::InitDS3231() {
   WS_DEBUG_PRINTLN("Begin DS3231 init");
   _rtc_ds3231 = new RTC_DS3231();
@@ -153,6 +156,7 @@ bool ws_sdcard::InitDS3231() {
       delete _rtc_ds3231;
       return false;
     }
+#endif
   }
   if (_rtc_ds3231->lostPower())
     _rtc_ds3231->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -160,13 +164,11 @@ bool ws_sdcard::InitDS3231() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes a PCF8523 RTC.
     @returns  True if the RTC was successfully initialized, False
               otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::InitPCF8523() {
   _rtc_pcf8523 = new RTC_PCF8523();
   if (!_rtc_pcf8523->begin(WsV2._i2c_controller->GetI2cBus())) {
@@ -176,6 +178,7 @@ bool ws_sdcard::InitPCF8523() {
       delete _rtc_pcf8523;
       return false;
     }
+#endif
   }
   if (!_rtc_pcf8523->initialized() || _rtc_pcf8523->lostPower()) {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
@@ -185,43 +188,35 @@ bool ws_sdcard::InitPCF8523() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes a "soft" RTC for devices without a physical
               RTC module attached.
     @returns  True if the soft RTC was successfully initialized, False
               otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::InitSoftRTC() {
   _is_soft_rtc = true;
   _soft_rtc_counter = 0;
   return _is_soft_rtc;
 }
 
-/**************************************************************************/
 /*!
     @brief    Increments the "soft" RTC.
 */
-/**************************************************************************/
 void ws_sdcard::TickSoftRTC() { _soft_rtc_counter++; }
 
-/**************************************************************************/
 /*!
     @brief    Returns the current timestamp from the RTC.
     @returns  The current timestamp from the RTC.
 */
-/**************************************************************************/
 uint32_t ws_sdcard::GetSoftRTCTime() { return _soft_rtc_counter; }
 
-/**************************************************************************/
 /*!
     @brief  Initializes and configures a RTC for logging.
     @param  rtc_type
             The desired type of RTC to configure.
     @returns True if the RTC was successfully configured, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
   if (strcmp(rtc_type, "DS1307") == 0) {
     return InitDS1307();
@@ -238,7 +233,6 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
   return InitSoftRTC();
 }
 
-/**************************************************************************/
 /*!
     @brief  Configure's the hardware from the JSON's exportedFromDevice
             object.
@@ -249,7 +243,6 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
     @param  ref_voltage
             The reference voltage of the device, in Volts.
 */
-/**************************************************************************/
 void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
                         float ref_voltage) {
   WsV2.digital_io_controller->SetMaxDigitalPins(max_digital_pins);
@@ -257,14 +250,12 @@ void ws_sdcard::CheckIn(uint8_t max_digital_pins, uint8_t max_analog_pins,
   WsV2.analogio_controller->SetRefVoltage(ref_voltage);
 }
 
-/**************************************************************************/
 /*!
     @brief  Parses a sensor type from the JSON configuration file.
     @param  sensor_type
             The sensor type to parse.
     @returns The corresponding SensorType
 */
-/**************************************************************************/
 wippersnapper_sensor_SensorType
 ws_sdcard::ParseSensorType(const char *sensor_type) {
   if (strcmp(sensor_type, "raw") == 0) {
@@ -346,6 +337,35 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   }
 }
 
+<<<<<<< HEAD
+bool ws_sdcard::ValidateJSONKey(const char *key, const char *error_msg) {
+  if (strcmp(key, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN(error_msg);
+    return false;
+  }
+  return true;
+}
+
+/*!
+    @brief  Parses a DigitalIOAdd message from the JSON configuration file.
+    @param  msg_DigitalIOAdd
+            The DigitalIOAdd message to populate.
+    @param  pin
+            The GPIO pin name.
+    @param  period
+            The desired period to read the sensor, in seconds.
+    @param  value
+            The sensor value.
+    @param  sample_mode
+            The sample mode.
+    @param  direction
+            The GPIO pin direction.
+    @param  pull
+            The GPIO pin pull.
+    @returns True if the DigitalIOAdd message was successfully parsed,
+             False otherwise.
+*/
+=======
 bool ws_sdcard::ParseDigitalIOAdd(
     JsonObject &component,
     wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd) {
@@ -410,6 +430,21 @@ bool ws_sdcard::ParseDigitalIOAdd(
   return true;
 }
 
+<<<<<<< HEAD
+/*!
+    @brief  Parses an AnalogIOAdd message from the JSON configuration file.
+    @param  msg_AnalogIOAdd
+            The AnalogIOAdd message to populate.
+    @param  pin
+            The GPIO pin name.
+    @param  period
+            The desired period to read the sensor, in seconds.
+    @param  mode
+            The sensor read mode.
+    @returns True if the AnalogIOAdd message was successfully parsed,
+             False otherwise.
+*/
+=======
 bool ws_sdcard::ParseAnalogIOAdd(
     JsonObject &component,
     wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd) {
@@ -431,6 +466,55 @@ bool ws_sdcard::ParseAnalogIOAdd(
   return true;
 }
 
+<<<<<<< HEAD
+bool ws_sdcard::ParseDS18X20Add(
+    wippersnapper_ds18x20_Ds18x20Add &msg_DS18X20Add, const char *pin,
+    int resolution, float period, int num_sensors, const char *sensor_type_1,
+    const char *sensor_type_2) {
+
+  if (strcmp(pin, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 pin name not found!");
+    return false;
+  }
+  strcpy(msg_DS18X20Add.onewire_pin, pin);
+
+  if (resolution == 0) {
+    WS_DEBUG_PRINTLN(
+        "[SD] Parsing Error: DS18X20 sensor resolution not found!");
+    return false;
+  }
+  msg_DS18X20Add.sensor_resolution = resolution;
+
+  if (period == 0.0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor period not found!");
+    return false;
+  }
+  msg_DS18X20Add.period = period;
+
+  if (num_sensors == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor count not found!");
+    return false;
+  }
+  msg_DS18X20Add.sensor_types_count = num_sensors;
+
+  // Parse the first sensor type
+  if (strcmp(sensor_type_1, UNKNOWN_VALUE) == 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 1 not found!");
+    return false;
+  }
+  msg_DS18X20Add.sensor_types[0] = ParseSensorType(sensor_type_1);
+  // Parse the second sensor type, if it exists
+  if (num_sensors == 2) {
+    if (strcmp(sensor_type_2, UNKNOWN_VALUE) == 0) {
+      WS_DEBUG_PRINTLN("[SD] Parsing Error: DS18X20 sensor type 2 not found!");
+      return false;
+    }
+    msg_DS18X20Add.sensor_types[1] = ParseSensorType(sensor_type_2);
+  }
+  return true;
+}
+
+=======
 /**************************************************************************/
 /*!
     @brief  Converts a string-encoded hex value to an integer.
@@ -438,12 +522,10 @@ bool ws_sdcard::ParseAnalogIOAdd(
             The string-encoded hex value to convert.
     @returns The integer value of the hex string.
 */
-/**************************************************************************/
 uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
   return std::stoi(hex_str, nullptr, 16);
 }
 
-/**************************************************************************/
 /*!
     @brief  Parses a DS18x20Add message from the JSON configuration file.
     @param  component
@@ -480,7 +562,6 @@ bool ws_sdcard::ParseDS18xAdd(
     @returns True if the I2cDeviceAddOrReplace message was successfully
              parsed, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::ParseI2cDeviceAddReplace(
     JsonObject &component,
     wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add) {
@@ -529,6 +610,8 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   return true;
 }
 
+<<<<<<< HEAD
+=======
 void ws_sdcard::ParseI2cAddScanned(
     wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add_scanned,
     size_t scan_result_idx) {
@@ -591,7 +674,6 @@ bool ws_sdcard::AddI2cScanResultsToBuffer() {
     @returns True if the signal message was successfully pushed to the shared
              buffer, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::AddSignalMessageToSharedBuffer(
     wippersnapper_signal_BrokerToDevice &msg_signal) {
   // Create a temporary buffer to hold the encoded signal message
@@ -619,14 +701,12 @@ bool ws_sdcard::AddSignalMessageToSharedBuffer(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Creates a new logging file on the SD card using the RTC's
             timestamp and sets the current log file path to reflect this
             file.
     @returns True if a log file was successfully created, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::CreateNewLogFile() {
   if (_sd_cur_log_files >= _sd_max_num_log_files) {
     WS_DEBUG_PRINTLN("[SD] Error: Maximum number of log files for SD "
@@ -674,7 +754,6 @@ bool ws_sdcard::ValidateChecksum(JsonDocument &doc) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Parses the exportedFromDevice object from the JSON configuration
             file.
@@ -715,6 +794,9 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
     @returns True if the JSON file was successfully parsed and the hardware
              was successfully configured. False otherwise.
 */
+<<<<<<< HEAD
+bool ws_sdcard::parseConfigFile() {
+=======
 /**************************************************************************/
 bool ws_sdcard::ParseFileConfig() {
   DeserializationError error;
@@ -860,12 +942,10 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Obtains a timestamp from the hardware (or software) RTC.
     @returns The current timestamp, in unixtime format.
 */
-/**************************************************************************/
 uint32_t ws_sdcard::GetTimestamp() {
   DateTime now;
   if (_rtc_ds3231 != nullptr)
@@ -886,14 +966,12 @@ uint32_t ws_sdcard::GetTimestamp() {
   return now.unixtime();
 }
 
-/**************************************************************************/
 /*!
     @brief  Converts a SensorType enum to a string.
     @param  sensorType
             The SensorType enum to convert.
     @returns A string representation of the SensorType enum.
 */
-/**************************************************************************/
 const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   switch (sensorType) {
   case wippersnapper_sensor_SensorType_SENSOR_TYPE_UNSPECIFIED:
@@ -975,7 +1053,6 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief  Builds a JSON document for a sensor event.
     @param  doc
@@ -987,7 +1064,6 @@ const char *SensorTypeToSIUnit(wippersnapper_sensor_SensorType sensorType) {
     @param  read_type
             The sensor type.
 */
-/**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
                              wippersnapper_sensor_SensorType read_type) {
   doc["timestamp"] = GetTimestamp();
@@ -996,7 +1072,6 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
   doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
-/**************************************************************************/
 /*!
     @brief  Builds a JSON document for a sensor event.
     @param  doc
@@ -1008,7 +1083,6 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, float value,
     @param  read_type
             The sensor type.
 */
-/**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
                              wippersnapper_sensor_SensorType read_type) {
   doc["timestamp"] = GetTimestamp();
@@ -1017,7 +1091,6 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
   doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
-/**************************************************************************/
 /*!
     @brief  Builds a JSON document for a sensor event.
     @param  doc
@@ -1029,7 +1102,6 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, uint16_t value,
     @param  read_type
             The sensor type.
 */
-/**************************************************************************/
 void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
                              wippersnapper_sensor_SensorType read_type) {
   doc["timestamp"] = GetTimestamp();
@@ -1038,14 +1110,12 @@ void ws_sdcard::BuildJSONDoc(JsonDocument &doc, uint8_t pin, bool value,
   doc["si_unit"] = SensorTypeToSIUnit(read_type);
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs a JSON document to the SD card.
     @param  doc
             The JSON document to log.
     @returns True if the document was successfully logged, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   size_t szJson;
 
@@ -1083,7 +1153,6 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs a GPIO sensor event to the SD card.
     @param  pin
@@ -1094,7 +1163,6 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
@@ -1104,7 +1172,6 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs a GPIO sensor event to the SD card.
     @param  pin
@@ -1115,7 +1182,6 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, uint16_t value, wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
@@ -1125,7 +1191,6 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs a GPIO sensor event to the SD card.
     @param  pin
@@ -1136,7 +1201,6 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::LogGPIOSensorEventToSD(
     uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
@@ -1146,7 +1210,6 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs a GPIO sensor event to the SD card.
     @param  pin
@@ -1157,7 +1220,6 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
             The sensor type.
     @returns True if the event was successfully logged, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::LogDS18xSensorEventToSD(
     wippersnapper_ds18x20_Ds18x20Event *event_msg) {
   JsonDocument doc;
@@ -1174,14 +1236,12 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs an I2C sensor event to the SD card.
     @param  msg_device_event
             The I2cDeviceEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::LogI2cDeviceEvent(
     wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
   JsonDocument doc;
@@ -1212,13 +1272,11 @@ bool ws_sdcard::LogI2cDeviceEvent(
 }
 
 #ifdef OFFLINE_MODE_DEBUG
-/**************************************************************************/
 /*!
     @brief  Waits for a valid JSON string to be received via the hardware's
             serial input or from a hardcoded test JSON string.
     @returns True if a valid JSON string was received, False otherwise.
 */
-/**************************************************************************/
 void ws_sdcard::waitForSerialConfig() {
   json_test_data = "{"
                    "\"exportVersion\": \"1.0.0\","

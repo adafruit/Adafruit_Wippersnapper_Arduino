@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/analogIO/controller.cpp
  *
  * Controller for the analogio.proto API
  *
@@ -14,11 +14,9 @@
  */
 #include "controller.h"
 
-/***********************************************************************/
 /*!
     @brief  AnalogIO controller constructor
 */
-/***********************************************************************/
 AnalogIOController::AnalogIOController() {
   _analogio_hardware = new AnalogIOHardware();
   _analogio_model = new AnalogIOModel();
@@ -26,40 +24,33 @@ AnalogIOController::AnalogIOController() {
   SetRefVoltage(3.3);                    // Default to 3.3V
 }
 
-/***********************************************************************/
 /*!
     @brief  AnalogIO controller destructor
 */
-/***********************************************************************/
 AnalogIOController::~AnalogIOController() {
   delete _analogio_hardware;
   delete _analogio_model;
 }
 
-/***********************************************************************/
 /*!
     @brief  Set the reference voltage for the analog pins
     @param  voltage
             The reference voltage.
 */
-/***********************************************************************/
 void AnalogIOController::SetRefVoltage(float voltage) {
   // To set the reference voltage, we call into the hardware
   _analogio_hardware->SetReferenceVoltage(voltage);
 }
 
-/***********************************************************************/
 /*!
     @brief  Set the total number of analog pins present on the hardware.
     @param  total_pins
             The hardware's total number of analog pins.
 */
-/***********************************************************************/
 void AnalogIOController::SetTotalAnalogPins(uint8_t total_pins) {
   _total_analogio_pins = total_pins;
 }
 
-/***********************************************************************/
 /*!
     @brief  Handles an AnalogIOAdd message from the broker and adds a
             new analog pin to the controller.
@@ -67,7 +58,6 @@ void AnalogIOController::SetTotalAnalogPins(uint8_t total_pins) {
             The nanopb input stream.
     @return True if the pin was successfully added, False otherwise.
 */
-/***********************************************************************/
 bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   // Attempt to decode the incoming message into an AnalogIOAdd object
   if (!_analogio_model->DecodeAnalogIOAdd(stream)) {
@@ -105,7 +95,6 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
   return true;
 }
 
-/***************************************************************************/
 /*!
     @brief  Handles an AnalogIORemove message from the broker and removes
             the requested analog pin from the controller.
@@ -113,7 +102,6 @@ bool AnalogIOController::Handle_AnalogIOAdd(pb_istream_t *stream) {
             The nanopb input stream.
     @return True if the pin was successfully removed, False otherwise.
 */
-/***************************************************************************/
 bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
   // Attempt to decode the incoming message into an AnalogIORemove object
   if (!_analogio_model->DecodeAnalogIORemove(stream)) {
@@ -138,7 +126,6 @@ bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
   return true;
 }
 
-/***************************************************************************/
 /*!
     @brief  Checks if a pin's periodic timer has expired.
     @param  pin
@@ -147,12 +134,10 @@ bool AnalogIOController::Handle_AnalogIORemove(pb_istream_t *stream) {
             The current time (called from millis()).
     @return True if the pin's period has expired, False otherwise.
 */
-/***************************************************************************/
 bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
   return cur_time - pin->prv_period > pin->period;
 }
 
-/***************************************************************************/
 /*!
     @brief  Encodes and publishes an AnalogIOEvent message to the broker.
     @param  pin
@@ -163,7 +148,6 @@ bool AnalogIOController::IsPinTimerExpired(analogioPin *pin, ulong cur_time) {
             The type of read to perform on the pin.
     @return True if the message was successfully encoded and published.
 */
-/***************************************************************************/
 bool AnalogIOController::EncodePublishPinEvent(
     uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
   char c_pin_name[12];
@@ -198,7 +182,6 @@ bool AnalogIOController::EncodePublishPinEvent(
   return true;
 }
 
-/***************************************************************************/
 /*!
     @brief  Encodes and publishes an AnalogIOEvent message to the broker.
     @param  pin
@@ -208,7 +191,6 @@ bool AnalogIOController::EncodePublishPinEvent(
     @return True if the message was successfully encoded and published,
             False othewise.
 */
-/***************************************************************************/
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
   if (WsV2._sdCardV2->isModeOffline()) {
     return WsV2._sdCardV2->LogGPIOSensorEventToSD(
@@ -219,7 +201,6 @@ bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
   }
 }
 
-/***************************************************************************/
 /*!
     @brief  Encodes and publishes an AnalogIOEvent message to the broker.
     @param  pin
@@ -229,7 +210,6 @@ bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
     @return True if the message was successfully encoded and published,
             False othewise.
 */
-/***************************************************************************/
 bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
   if (WsV2._sdCardV2->isModeOffline()) {
     return WsV2._sdCardV2->LogGPIOSensorEventToSD(
@@ -240,11 +220,9 @@ bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
   }
 }
 
-/***************************************************************************/
 /*!
     @brief  Update/polling loop for the AnalogIO controller.
 */
-/***************************************************************************/
 void AnalogIOController::update() {
   // Bail-out if the vector is empty
   if (_analogio_pins.empty()) {

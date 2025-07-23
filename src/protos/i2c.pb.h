@@ -4,6 +4,8 @@
 #ifndef PB_WIPPERSNAPPER_I2C_I2C_PB_H_INCLUDED
 #define PB_WIPPERSNAPPER_I2C_I2C_PB_H_INCLUDED
 #include <pb.h>
+#include "gps.pb.h"
+#include "i2c_output.pb.h"
 #include "sensor.pb.h"
 
 #if PB_PROTO_HEADER_VERSION != 40
@@ -53,6 +55,14 @@ typedef struct _wippersnapper_i2c_I2cBusDescriptor {
 
 /* *
  I2cBusScan represents a command for a device to perform an i2c scan. */
+ I2cBusDescriptor represents the I2c bus' SDA and SCL pins. */
+typedef struct _wippersnapper_i2c_I2cBusDescriptor {
+    char i2c_bus_sda[15]; /* * SDA pin for an i2c bus.* */
+    char i2c_bus_scl[15]; /* * SCL pin for an i2c bus.* */
+} wippersnapper_i2c_I2cBusDescriptor;
+
+/* *
+ I2cBusScan represents a command for a device to perform an i2c scan. */
 typedef struct _wippersnapper_i2c_I2cBusScan {
     bool scan_default_bus; /* * Default - Scan for i2c devices on the hardware's default I2C bus.* */
     bool scan_alt_bus; /* * Optional - Scan for i2c devices on an alternative I2C bus.* */
@@ -82,6 +92,12 @@ https://github.com/adafruit/Wippersnapper_Components. */
     pb_size_t i2c_device_sensor_types_count;
     wippersnapper_sensor_SensorType i2c_device_sensor_types[15]; /* * SI Types for each sensor on the I2c device. */
     bool is_persistent; /* * Offline-Mode ONLY - True if the device exits in the config file, False otherwise. * */
+    bool is_output; /* * Required by the device to determine if the component is an output.* */
+    bool has_i2c_output_add;
+    wippersnapper_i2c_output_I2cOutputAdd i2c_output_add; /* * Optional - If the I2C device is an output device, fill this field. * */
+    bool is_gps; /* * Required by the device to determine if the component is a GPS.* */
+    bool has_gps_config;
+    wippersnapper_gps_GPSConfig gps_config; /* * Optional - If the I2C device is a GPS driver, fill this field with the GPS config. * */
 } wippersnapper_i2c_I2cDeviceAddOrReplace;
 
 /* *
@@ -98,6 +114,7 @@ typedef struct _wippersnapper_i2c_I2cDeviceAddedOrReplaced {
 typedef struct _wippersnapper_i2c_I2cDeviceRemove {
     bool has_i2c_device_description;
     wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description; /* * The I2c device's address and metadata. */
+    bool is_output_device; /* * Determines if the device is an output device.* */
 } wippersnapper_i2c_I2cDeviceRemove;
 
 /* *
@@ -116,8 +133,21 @@ typedef struct _wippersnapper_i2c_I2cDeviceEvent {
     bool has_i2c_device_description;
     wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description; /* * The I2c device's address and metadata. */
     pb_size_t i2c_device_events_count;
-    wippersnapper_sensor_SensorEvent i2c_device_events[15]; /* * A, optionally repeated, SensorEvent from a sensor. */
+    wippersnapper_sensor_SensorEvent i2c_device_events[15]; /* * Required, but optionally repeated, SensorEvent from a sensor. */
 } wippersnapper_i2c_I2cDeviceEvent;
+
+/* *
+ I2cDeviceOutputWrite represents a request to write to an I2C output device. */
+typedef struct _wippersnapper_i2c_I2cDeviceOutputWrite {
+    bool has_i2c_device_description;
+    wippersnapper_i2c_I2cDeviceDescriptor i2c_device_description; /* * Required - The I2c device's address and metadata. */
+    pb_size_t which_output_msg;
+    union {
+        wippersnapper_i2c_output_LedBackpackWrite write_led_backpack; /* * Optional - If the I2C device is a LED backpack, fill this field. * */
+        wippersnapper_i2c_output_CharLCDWrite write_char_lcd; /* * Optional - If the I2C device is a character LCD, fill this field. * */
+        wippersnapper_i2c_output_OLEDWrite write_oled; /* * Optional - If the I2C device is an OLED display, fill this field. * */
+    } output_msg;
+} wippersnapper_i2c_I2cDeviceOutputWrite;
 
 
 #ifdef __cplusplus
@@ -147,25 +177,30 @@ extern "C" {
 
 
 
+
 /* Initializer values for message structs */
 #define wippersnapper_i2c_I2cDeviceDescriptor_init_default {"", "", 0, 0, 0}
 #define wippersnapper_i2c_I2cBusDescriptor_init_default {"", ""}
 #define wippersnapper_i2c_I2cBusScan_init_default {0, 0, false, wippersnapper_i2c_I2cBusDescriptor_init_default, 0, 0}
 #define wippersnapper_i2c_I2cBusScanned_init_default {0, {wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default, wippersnapper_i2c_I2cDeviceDescriptor_init_default}, _wippersnapper_i2c_I2cBusStatus_MIN}
-#define wippersnapper_i2c_I2cDeviceAddOrReplace_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, "", 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}, 0}
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, "", 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}, 0, 0, false, wippersnapper_i2c_output_I2cOutputAdd_init_default, 0, false, wippersnapper_gps_GPSConfig_init_default}
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, _wippersnapper_i2c_I2cBusStatus_MIN, _wippersnapper_i2c_I2cDeviceStatus_MIN}
-#define wippersnapper_i2c_I2cDeviceRemove_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default}
+#define wippersnapper_i2c_I2cDeviceRemove_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, 0}
 #define wippersnapper_i2c_I2cDeviceRemoved_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, 0}
 #define wippersnapper_i2c_I2cDeviceEvent_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, 0, {wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default, wippersnapper_sensor_SensorEvent_init_default}}
+#define wippersnapper_i2c_I2cDeviceOutputWrite_init_default {false, wippersnapper_i2c_I2cDeviceDescriptor_init_default, 0, {wippersnapper_i2c_output_LedBackpackWrite_init_default}}
 #define wippersnapper_i2c_I2cDeviceDescriptor_init_zero {"", "", 0, 0, 0}
 #define wippersnapper_i2c_I2cBusDescriptor_init_zero {"", ""}
 #define wippersnapper_i2c_I2cBusScan_init_zero   {0, 0, false, wippersnapper_i2c_I2cBusDescriptor_init_zero, 0, 0}
+#define wippersnapper_i2c_I2cBusDescriptor_init_zero {"", ""}
+#define wippersnapper_i2c_I2cBusScan_init_zero   {0, 0, false, wippersnapper_i2c_I2cBusDescriptor_init_zero, 0, 0}
 #define wippersnapper_i2c_I2cBusScanned_init_zero {0, {wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, wippersnapper_i2c_I2cDeviceDescriptor_init_zero}, _wippersnapper_i2c_I2cBusStatus_MIN}
-#define wippersnapper_i2c_I2cDeviceAddOrReplace_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, "", 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}, 0}
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, "", 0, 0, {_wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN, _wippersnapper_sensor_SensorType_MIN}, 0, 0, false, wippersnapper_i2c_output_I2cOutputAdd_init_zero, 0, false, wippersnapper_gps_GPSConfig_init_zero}
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, _wippersnapper_i2c_I2cBusStatus_MIN, _wippersnapper_i2c_I2cDeviceStatus_MIN}
-#define wippersnapper_i2c_I2cDeviceRemove_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero}
+#define wippersnapper_i2c_I2cDeviceRemove_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, 0}
 #define wippersnapper_i2c_I2cDeviceRemoved_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, 0}
 #define wippersnapper_i2c_I2cDeviceEvent_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, 0, {wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero, wippersnapper_sensor_SensorEvent_init_zero}}
+#define wippersnapper_i2c_I2cDeviceOutputWrite_init_zero {false, wippersnapper_i2c_I2cDeviceDescriptor_init_zero, 0, {wippersnapper_i2c_output_LedBackpackWrite_init_zero}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define wippersnapper_i2c_I2cDeviceDescriptor_i2c_bus_sda_tag 1
@@ -187,14 +222,24 @@ extern "C" {
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_i2c_device_period_tag 3
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_i2c_device_sensor_types_tag 4
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_is_persistent_tag 5
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_is_output_tag 6
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_i2c_output_add_tag 7
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_is_gps_tag 8
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_gps_config_tag 9
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_i2c_device_description_tag 1
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_i2c_bus_status_tag 2
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_i2c_device_status_tag 3
 #define wippersnapper_i2c_I2cDeviceRemove_i2c_device_description_tag 1
+#define wippersnapper_i2c_I2cDeviceRemove_is_output_device_tag 2
 #define wippersnapper_i2c_I2cDeviceRemoved_i2c_device_description_tag 1
+#define wippersnapper_i2c_I2cDeviceRemoved_did_remove_tag 2
 #define wippersnapper_i2c_I2cDeviceRemoved_did_remove_tag 2
 #define wippersnapper_i2c_I2cDeviceEvent_i2c_device_description_tag 1
 #define wippersnapper_i2c_I2cDeviceEvent_i2c_device_events_tag 2
+#define wippersnapper_i2c_I2cDeviceOutputWrite_i2c_device_description_tag 1
+#define wippersnapper_i2c_I2cDeviceOutputWrite_write_led_backpack_tag 2
+#define wippersnapper_i2c_I2cDeviceOutputWrite_write_char_lcd_tag 3
+#define wippersnapper_i2c_I2cDeviceOutputWrite_write_oled_tag 4
 
 /* Struct field encoding specification for nanopb */
 #define wippersnapper_i2c_I2cDeviceDescriptor_FIELDLIST(X, a) \
@@ -234,10 +279,16 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1) \
 X(a, STATIC,   SINGULAR, STRING,   i2c_device_name,   2) \
 X(a, STATIC,   SINGULAR, FLOAT,    i2c_device_period,   3) \
 X(a, STATIC,   REPEATED, UENUM,    i2c_device_sensor_types,   4) \
-X(a, STATIC,   SINGULAR, BOOL,     is_persistent,     5)
+X(a, STATIC,   SINGULAR, BOOL,     is_persistent,     5) \
+X(a, STATIC,   SINGULAR, BOOL,     is_output,         6) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_output_add,    7) \
+X(a, STATIC,   SINGULAR, BOOL,     is_gps,            8) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  gps_config,        9)
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_CALLBACK NULL
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_DEFAULT NULL
 #define wippersnapper_i2c_I2cDeviceAddOrReplace_i2c_device_description_MSGTYPE wippersnapper_i2c_I2cDeviceDescriptor
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_i2c_output_add_MSGTYPE wippersnapper_i2c_output_I2cOutputAdd
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_gps_config_MSGTYPE wippersnapper_gps_GPSConfig
 
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1) \
@@ -248,7 +299,8 @@ X(a, STATIC,   SINGULAR, UENUM,    i2c_device_status,   3)
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_i2c_device_description_MSGTYPE wippersnapper_i2c_I2cDeviceDescriptor
 
 #define wippersnapper_i2c_I2cDeviceRemove_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1)
+X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1) \
+X(a, STATIC,   SINGULAR, BOOL,     is_output_device,   2)
 #define wippersnapper_i2c_I2cDeviceRemove_CALLBACK NULL
 #define wippersnapper_i2c_I2cDeviceRemove_DEFAULT NULL
 #define wippersnapper_i2c_I2cDeviceRemove_i2c_device_description_MSGTYPE wippersnapper_i2c_I2cDeviceDescriptor
@@ -268,6 +320,18 @@ X(a, STATIC,   REPEATED, MESSAGE,  i2c_device_events,   2)
 #define wippersnapper_i2c_I2cDeviceEvent_i2c_device_description_MSGTYPE wippersnapper_i2c_I2cDeviceDescriptor
 #define wippersnapper_i2c_I2cDeviceEvent_i2c_device_events_MSGTYPE wippersnapper_sensor_SensorEvent
 
+#define wippersnapper_i2c_I2cDeviceOutputWrite_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  i2c_device_description,   1) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (output_msg,write_led_backpack,output_msg.write_led_backpack),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (output_msg,write_char_lcd,output_msg.write_char_lcd),   3) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (output_msg,write_oled,output_msg.write_oled),   4)
+#define wippersnapper_i2c_I2cDeviceOutputWrite_CALLBACK NULL
+#define wippersnapper_i2c_I2cDeviceOutputWrite_DEFAULT NULL
+#define wippersnapper_i2c_I2cDeviceOutputWrite_i2c_device_description_MSGTYPE wippersnapper_i2c_I2cDeviceDescriptor
+#define wippersnapper_i2c_I2cDeviceOutputWrite_output_msg_write_led_backpack_MSGTYPE wippersnapper_i2c_output_LedBackpackWrite
+#define wippersnapper_i2c_I2cDeviceOutputWrite_output_msg_write_char_lcd_MSGTYPE wippersnapper_i2c_output_CharLCDWrite
+#define wippersnapper_i2c_I2cDeviceOutputWrite_output_msg_write_oled_MSGTYPE wippersnapper_i2c_output_OLEDWrite
+
 extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceDescriptor_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_I2cBusDescriptor_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_I2cBusScan_msg;
@@ -277,6 +341,7 @@ extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceAddedOrReplaced_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceRemove_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceRemoved_msg;
 extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceEvent_msg;
+extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceOutputWrite_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define wippersnapper_i2c_I2cDeviceDescriptor_fields &wippersnapper_i2c_I2cDeviceDescriptor_msg
@@ -288,16 +353,18 @@ extern const pb_msgdesc_t wippersnapper_i2c_I2cDeviceEvent_msg;
 #define wippersnapper_i2c_I2cDeviceRemove_fields &wippersnapper_i2c_I2cDeviceRemove_msg
 #define wippersnapper_i2c_I2cDeviceRemoved_fields &wippersnapper_i2c_I2cDeviceRemoved_msg
 #define wippersnapper_i2c_I2cDeviceEvent_fields &wippersnapper_i2c_I2cDeviceEvent_msg
+#define wippersnapper_i2c_I2cDeviceOutputWrite_fields &wippersnapper_i2c_I2cDeviceOutputWrite_msg
 
 /* Maximum encoded size of messages (where known) */
 #define WIPPERSNAPPER_I2C_I2C_PB_H_MAX_SIZE      wippersnapper_i2c_I2cBusScanned_size
 #define wippersnapper_i2c_I2cBusDescriptor_size  32
 #define wippersnapper_i2c_I2cBusScan_size        42
 #define wippersnapper_i2c_I2cBusScanned_size     6242
-#define wippersnapper_i2c_I2cDeviceAddOrReplace_size 105
+#define wippersnapper_i2c_I2cDeviceAddOrReplace_size 1917
 #define wippersnapper_i2c_I2cDeviceAddedOrReplaced_size 56
 #define wippersnapper_i2c_I2cDeviceDescriptor_size 50
-#define wippersnapper_i2c_I2cDeviceRemove_size   52
+#define wippersnapper_i2c_I2cDeviceOutputWrite_size 569
+#define wippersnapper_i2c_I2cDeviceRemove_size   54
 #define wippersnapper_i2c_I2cDeviceRemoved_size  54
 #if defined(wippersnapper_sensor_SensorEvent_size)
 #define wippersnapper_i2c_I2cDeviceEvent_size    (142 + 15*wippersnapper_sensor_SensorEvent_size)

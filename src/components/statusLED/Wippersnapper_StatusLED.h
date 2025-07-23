@@ -60,7 +60,7 @@ typedef enum ws_led_status_t {
 
 // Status LED
 void initStatusLED();
-void releaseStatusLED();
+void ReleaseStatusPixel();
 int16_t getStatusNeoPixelPin();
 int16_t getStatusDotStarDataPin();
 uint32_t ledStatusStateToColor(ws_led_status_t statusState);

@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_TSL2591.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a TSL2591 sensor.
 */
-/**************************************************************************/
 class drvTsl2591 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a TSL2591 sensor.
       @param    i2c
@@ -37,26 +34,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvTsl2591(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an TSL2591 sensor.
   */
-  /*******************************************************************************/
   ~drvTsl2591() { delete _tsl; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the TSL2591 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _tsl = new Adafruit_TSL2591(2591);
     // Attempt to initialize TSL2591
@@ -71,7 +63,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Performs a light sensor read using the Adafruit
                 Unified Sensor API.
@@ -80,7 +71,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event
     _tsl->getEvent(lightEvent);

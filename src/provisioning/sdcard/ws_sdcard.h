@@ -46,12 +46,10 @@
 // forward decl.
 class Wippersnapper_V2;
 
-/***************************************************************************/
 /*!
     @brief  Class that handles Wippersnapper's optional filesystem commands
                 and storage.
 */
-/***************************************************************************/
 class ws_sdcard {
 public:
   ws_sdcard();

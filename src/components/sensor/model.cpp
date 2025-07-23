@@ -1,5 +1,5 @@
 /*!
- * @file model.cpp
+ * @file src/components/sensor/model.cpp
  *
  * Model for the sensor.proto message.
  *
@@ -14,21 +14,18 @@
  */
 #include "model.h"
 
-/***********************************************************************/
 /*!
     @brief  SensorModel constructor
 */
-/***********************************************************************/
 SensorModel::SensorModel() {
-  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_zero;
+  memset(&_msg_sensor_event, 0, sizeof(_msg_sensor_event));
+  // no-op
 }
 
-/***********************************************************************/
 /*!
     @brief  SensorModel destructor
 */
-/***********************************************************************/
 SensorModel::~SensorModel() {
   // Zero-out the SensorEvent message
-  _msg_sensor_event = wippersnapper_sensor_SensorEvent_init_zero;
+  memset(&_msg_sensor_event, 0, sizeof(_msg_sensor_event));
 }

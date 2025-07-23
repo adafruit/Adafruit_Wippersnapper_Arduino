@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/ds18x20/model.h
  *
  * Model interface for the DS18X20.proto message.
  *
@@ -16,12 +16,10 @@
 #define WS_DS18X20_MODEL_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from DS18X20.proto.
 */
-/**************************************************************************/
 class DS18X20Model {
 public:
   DS18X20Model();

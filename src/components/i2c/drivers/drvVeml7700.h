@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_VEML7700.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VEML7700 sensor.
 */
-/**************************************************************************/
 class drvVeml7700 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a VEML7700 sensor.
       @param    i2c
@@ -37,33 +34,27 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvVeml7700(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an VEML7700 sensor.
   */
-  /*******************************************************************************/
   ~drvVeml7700() { delete _veml; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the VEML7700 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _veml = new Adafruit_VEML7700();
     // Attempt to initialize and configure VEML7700
     return _veml->begin(_i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Performs a light sensor read using the Adafruit
                 Unified Sensor API. Always uses VEML_LUX_AUTO,
@@ -73,7 +64,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event populated in lux via AUTO integration and gain
     lightEvent->light = _veml->readLux(VEML_LUX_AUTO);

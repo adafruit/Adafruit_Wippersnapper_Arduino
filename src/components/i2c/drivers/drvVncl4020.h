@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_VCNL4020.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VCNL4020 sensor.
 */
-/**************************************************************************/
 class drvVncl4020 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a VCNL4020 sensor.
       @param    i2c
@@ -37,33 +34,27 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvVncl4020(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an VCNL4020 sensor.
   */
-  /*******************************************************************************/
   ~drvVncl4020() { delete _vcnl4020; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the VCNL4020 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _vcnl4020 = new Adafruit_VCNL4020();
     // Attempt to initialize and configure VCNL4020
     return _vcnl4020->begin(_i2c, _address);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Performs a light sensor read using the Adafruit
                 Unified Sensor API.
@@ -72,14 +63,12 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     // Get sensor event populated in lux via AUTO integration and gain
     lightEvent->light = _vcnl4020->readAmbient();
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the VCNL4020's proximity value into an event (no unit).
       @param    proximityEvent
@@ -87,7 +76,6 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     proximityEvent->data[0] = (float)_vcnl4020->readProximity();
     return true;

@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/ds18x20/controller.cpp
  *
  * Controller for the ds18x20.proto API
  *
@@ -14,27 +14,22 @@
  */
 #include "controller.h"
 
-/***********************************************************************/
 /*!
     @brief  DS18X20Controller constructor
 */
-/***********************************************************************/
 DS18X20Controller::DS18X20Controller() {
   _num_drivers = 0;
   _DS18X20_model = new DS18X20Model();
 }
 
-/***********************************************************************/
 /*!
     @brief  DS18X20Controller destructor
 */
-/***********************************************************************/
 DS18X20Controller::~DS18X20Controller() {
   _num_drivers = 0;
   delete _DS18X20_model;
 }
 
-/***********************************************************************/
 /*!
     @brief  Handles a Ds18x20Add message from the broker. Attempts to
             initialize a  OneWire bus on the requested pin, attempts to
@@ -47,7 +42,6 @@ DS18X20Controller::~DS18X20Controller() {
             added to the controller, and a response was succesfully
             published to the broker. False otherwise.
 */
-/***********************************************************************/
 bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   // Attempt to decode the incoming message into a Ds18x20Add message
   if (!_DS18X20_model->DecodeDS18x20Add(stream)) {
@@ -64,9 +58,13 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   // Extract the OneWire pin from the message
   uint8_t pin_name = atoi(_DS18X20_model->GetDS18x20AddMsg()->onewire_pin + 1);
 
-  // Initialize the DS18X20Hardware object
+#ifdef ARDUINO_ARCH_SAMD
+  auto new_dsx_driver = new DS18X20Hardware(pin_name, _num_drivers);
+  std::unique_ptr<DS18X20Hardware> unique_driver(new_dsx_driver);
+#else
   auto new_dsx_driver =
       std::make_unique<DS18X20Hardware>(pin_name, _num_drivers);
+#endif
   // Attempt to get the sensor's ID on the OneWire bus to show it's been init'd
   bool is_initialized = new_dsx_driver->GetSensor();
 
@@ -103,7 +101,11 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
 
     // If the sensor was successfully initialized, add it to the controller
     if (is_initialized == true) {
+#ifdef ARDUINO_ARCH_SAMD
+      _DS18X20_pins.push_back(std::move(unique_driver));
+#else
       _DS18X20_pins.push_back(std::move(new_dsx_driver));
+#endif
       _num_drivers++;
     }
 
@@ -150,7 +152,6 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Handles a Ds18x20Remove message from the broker. Attempts to
             remove a DS18X20Hardware object from the controller and
@@ -160,7 +161,6 @@ bool DS18X20Controller::Handle_Ds18x20Add(pb_istream_t *stream) {
     @return True if the sensor was successfully removed from the
             controller, False otherwise.
 */
-/***********************************************************************/
 bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
   WS_DEBUG_PRINT("Removing DS18X20 sensor...");
   // Attempt to decode the stream
@@ -185,11 +185,9 @@ bool DS18X20Controller::Handle_Ds18x20Remove(pb_istream_t *stream) {
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Update/polling loop for the DS18X20 controller.
 */
-/***********************************************************************/
 void DS18X20Controller::update() {
 #ifdef DEBUG_PROFILE
   unsigned long total_start_time = millis();

@@ -23,13 +23,11 @@
 #define WS_DEBUG          /**< Define to enable debugging to serial terminal */
 #define WS_PRINTER Serial /**< Where debug messages will be printed */
 
-/**************************************************************************/
 /*!
     @brief  Debug print macros for WipperSnapper debugging output
     @details These macros provide debug output functionality when WS_DEBUG is
    defined
 */
-/**************************************************************************/
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
   { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
@@ -49,20 +47,18 @@
   {} /**< Debug println */
 #endif
 
-/**************************************************************************/
 /*!
     @brief  delay() function for use with a watchdog timer
     @param  timeout
             Delay duration in milliseconds
 */
-/**************************************************************************/
 #define WS_DELAY_WITH_WDT(timeout)                                             \
   {                                                                            \
     unsigned long start = millis();                                            \
     while (millis() - start < timeout) {                                       \
       delay(10);                                                               \
       yield();                                                                 \
-      feedWDT();                                                               \
+      WsV2.feedWDTV2();                                                        \
       if (millis() < start) {                                                  \
         start = millis();                                                      \
       }                                                                        \
@@ -71,23 +67,18 @@
 
 // Cpp STD
 #include <algorithm>
+#include <algorithm>
 #include <functional>
 #include <map>
 #include <string>
 #include <vector>
 
-// Nanopb dependencies
+// Nanopb messages and dependencies
+#include "protos/signal.pb.h"
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_decode.h>
 #include <nanopb/pb_encode.h>
 #include <nanopb/ws_pb_helpers.h>
-#include <pb.h>
-
-// Include Signal Proto
-#include "protos/checkin.pb.h"
-#include "protos/digitalio.pb.h"
-#include "protos/ds18x20.pb.h"
-#include "protos/signal.pb.h"
 
 // External libraries
 #include "Adafruit_MQTT.h"      // MQTT Client
@@ -109,8 +100,13 @@
 #include "components/checkin/model.h"
 #include "components/digitalIO/controller.h"
 #include "components/ds18x20/controller.h"
+#include "components/gps/controller.h"
 #include "components/i2c/controller.h"
+#include "components/pixels/controller.h"
+#include "components/pwm/controller.h"
 #include "components/sensor/model.h"
+#include "components/servo/controller.h"
+#include "components/uart/controller.h"
 
 // Display
 #ifdef USE_DISPLAY
@@ -150,14 +146,17 @@ class SensorModel;
 class DigitalIOController;
 class AnalogIOController;
 class DS18X20Controller;
+class GPSController;
 class I2cController;
+class PixelsController;
+class PWMController;
+class ServoController;
+class UARTController;
 
-/**************************************************************************/
 /*!
     @brief  Class that provides storage and functions for the Adafruit IO
             Wippersnapper interface.
 */
-/**************************************************************************/
 class Wippersnapper_V2 {
 public:
   Wippersnapper_V2();
@@ -215,10 +214,10 @@ public:
   void BlinkKATStatus();
 
   // Error handling helpers
-  void haltErrorV2(String error,
+  void haltErrorV2(const char* error,
                    ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME,
-                   bool reboot = true, bool reattach_usb_filesystem = true);
-  void errorWriteHangV2(String error);
+                   bool reboot = true);
+  void errorWriteHangV2(const char* error);
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode
 
@@ -237,10 +236,6 @@ public:
   ws_display_ui_helper *_ui_helperV2 =
       nullptr; ///< Instance of display UI helper class
 #endif
-  // ws_pixels *_ws_pixelsComponentV2; ///< ptr to instance of ws_pixels class
-  // ws_pwm *_pwmComponentV2;          ///< Instance of pwm class
-  // ws_servo *_servoComponentV2;      ///< Instance of servo class
-  // ws_uart *_uartComponentV2;        ///< Instance of UART class
 
   // API v2 Components
   CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
@@ -251,7 +246,14 @@ public:
       nullptr; ///< Instance of AnalogIO controller
   DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
+  GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
   I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
+  PixelsController *_pixels_controller =
+      nullptr;                              ///< Instance of Pixels controller
+  PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
+  ServoController *_servo_controller =
+      nullptr; ///< Instance of Servo controller
+  UARTController *_uart_controller = nullptr; ///< Instance of UART controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */

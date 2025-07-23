@@ -1,5 +1,5 @@
 /*!
- * @file controller.h
+ * @file src/components/i2c/controller.h
  *
  * Routing controller for WipperSnapper's I2C component.
  *
@@ -20,7 +20,7 @@
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
 #include "drivers/drvAhtx0.h"
-#include "drivers/drvBase.h" ///< Base driver class
+#include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
 #include "drivers/drvBme680.h"
@@ -49,6 +49,11 @@
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
 #include "drivers/drvNau7802.h"
+#include "drivers/drvOut7Seg.h"
+#include "drivers/drvOutCharLcd.h"
+#include "drivers/drvOutQuadAlphaNum.h"
+#include "drivers/drvOutSsd1306.h"
+#include "drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
 #include "drivers/drvScd30.h"
@@ -84,14 +89,13 @@ typedef struct {
 
 class Wippersnapper_V2; ///< Forward declaration
 class I2cModel;         ///< Forward declaration
+class I2cOutputModel;   ///< Forward declaration
 class I2cHardware;      ///< Forward declaration
 
-/**************************************************************************/
 /*!
     @brief  Routes messages using the i2c.proto API to the
             appropriate hardware, model, and device driver classes.
 */
-/**************************************************************************/
 class I2cController {
 public:
   I2cController();
@@ -99,17 +103,18 @@ public:
   void update();
   // Routing //
   bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
-  // TODO [Online]: These are for Online mode and not yet implemented
+  bool Handle_I2cBusScan(pb_istream_t *stream);
   bool Handle_I2cDeviceRemove(pb_istream_t *stream);
-  // bool Handle_I2cBusScan(pb_istream_t *stream);
+  bool Handle_I2cDeviceOutputWrite(pb_istream_t *stream);
   // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
       const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
       const wippersnapper_i2c_I2cDeviceStatus &device_status);
   // Helpers //
-  bool IsBusStatusOK(bool is_alt_bus);
+  bool IsBusStatusOK(bool is_alt_bus = false);
   bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
+  bool RemoveDriver(uint32_t address, bool is_output_device);
   bool ScanI2cBus(bool default_bus);
   bool WasDeviceScanned(uint32_t address);
   uint32_t GetScanDeviceAddress(int index);
@@ -120,10 +125,14 @@ public:
   void PrintAllDrivers();
 
 private:
-  I2cModel *_i2c_model;                ///< Pointer to an I2C model object
-  I2cHardware *_i2c_bus_default;       ///< Pointer to the default I2C bus
-  I2cHardware *_i2c_bus_alt;           ///< Pointer to an alternative I2C bus
-  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C device drivers
+  I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
+  I2cOutputModel *_i2c_output_model =
+      nullptr; ///< Pointer to an I2C output model object
+  I2cHardware *_i2c_bus_default = nullptr; ///< Pointer to the default I2C bus
+  I2cHardware *_i2c_bus_alt = nullptr; ///< Pointer to an alternative I2C bus
+  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C input drivers
+  std::vector<drvOutputBase *>
+      _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
   wippersnapper_i2c_I2cBusScanned
       _scan_results; ///< Stores results of I2C bus scan
 };

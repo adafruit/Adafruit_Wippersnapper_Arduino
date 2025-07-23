@@ -18,15 +18,13 @@
     defined(ARDUINO_ADAFRUIT_FEATHER_ESP32_V2) ||                              \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32_PICO) ||                               \
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32C3) || defined(ARDUINO_ESP32_DEV) ||    \
-    defined(ESP32_DEV)
+    defined(ESP32_DEV) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32C6)
 #include "WipperSnapper_LittleFS.h"
 
-/**************************************************************************/
 /*!
     @brief    Attempts to set up and initialize a pre-existing LittleFS
               filesystem.
 */
-/**************************************************************************/
 WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   // Attempt to initialize filesystem
   if (!LittleFS.begin()) {
@@ -35,20 +33,16 @@ WipperSnapper_LittleFS::WipperSnapper_LittleFS() {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Destructor for LittleFS
 */
-/**************************************************************************/
 WipperSnapper_LittleFS::~WipperSnapper_LittleFS() { LittleFS.end(); }
 
-/**************************************************************************/
 /*!
     @brief    Locates, opens and parses the WipperSnapper secrets file
               on the LittleFS filesystem.
 */
-/**************************************************************************/
-void WipperSnapper_LittleFS::ParseFileSecrets() {
+void WipperSnapper_LittleFS::parseSecrets() {
   // Check if `secrets.json` file exists on FS
   if (!LittleFS.exists("/secrets.json")) {
     HaltFilesystem(
@@ -140,15 +134,12 @@ void WipperSnapper_LittleFS::ParseFileSecrets() {
   LittleFS.end();
 }
 
-/**************************************************************************/
 /*!
     @brief    Halts execution and blinks the status LEDs yellow.
     @param    msg
                 Error message to print to serial console.
 */
-/**************************************************************************/
-void WipperSnapper_LittleFS::HaltFilesystem(String msg,
-                                            ws_led_status_t status_state) {
+void WipperSnapper_LittleFS::fsHalt(String msg, ws_led_status_t status_state) {
   statusLEDSolid(status_state);
   while (1) {
     WS_DEBUG_PRINTLN("Fatal Error: Halted execution!");
@@ -158,15 +149,17 @@ void WipperSnapper_LittleFS::HaltFilesystem(String msg,
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Attempts to obtain the hardware's CS pin from the
               config.json file.
 */
-/**************************************************************************/
-void WipperSnapper_LittleFS::GetPinSDCS() {
+void WipperSnapper_LittleFS::GetSDCSPin() {
   // Attempt to open and deserialize the config.json file
+#if defined(ARDUINO_ESP8266_ADAFRUIT_HUZZAH)
+  File file_cfg = LittleFS.open("/config.json", "r");
+#else
   File file_cfg = LittleFS.open("/config.json");
+#endif
   if (!file_cfg)
     WsV2.pin_sd_cs = 255;
 
