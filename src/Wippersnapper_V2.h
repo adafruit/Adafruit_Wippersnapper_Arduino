@@ -128,7 +128,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-offline-beta.3" ///< WipperSnapper app. version
+  "1.0.0-offline-beta.4" ///< WipperSnapper app. version
                          ///< (semver-formatted)
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
