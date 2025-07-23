@@ -30,7 +30,9 @@
 */
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
@@ -42,9 +44,11 @@
   } /**< Print debug message in hexadecimal */
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} /**< Debug print */
+  {                                                                            \
+  } /**< Debug print */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} /**< Debug println */
+  {                                                                            \
+  } /**< Debug println */
 #endif
 
 /*!
@@ -66,7 +70,6 @@
   }
 
 // Cpp STD
-#include <algorithm>
 #include <algorithm>
 #include <functional>
 #include <map>
@@ -214,10 +217,10 @@ public:
   void BlinkKATStatus();
 
   // Error handling helpers
-  void haltErrorV2(const char* error,
+  void haltErrorV2(const char *error,
                    ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME,
                    bool reboot = true);
-  void errorWriteHangV2(const char* error);
+  void errorWriteHangV2(const char *error);
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode
 
@@ -252,7 +255,7 @@ public:
       nullptr;                              ///< Instance of Pixels controller
   PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
   ServoController *_servo_controller =
-      nullptr; ///< Instance of Servo controller
+      nullptr;                                ///< Instance of Servo controller
   UARTController *_uart_controller = nullptr; ///< Instance of UART controller
 
   // TODO: does this really need to be global?

@@ -105,6 +105,7 @@ public:
   uint32_t GetScanDeviceAddress(int index);
   size_t GetScanDeviceCount();
   void PrintAllDrivers();
+
 private:
   I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
   I2cOutputModel *_i2c_output_model =

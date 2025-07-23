@@ -98,9 +98,10 @@ void Wippersnapper_V2::provision() {
     return; // SD card initialized, cede control back to loop()
   } else {
     haltErrorV2(("SD initialization failed.\nDo not reformat the card!\nIs the "
-                "card correctly inserted?\nIs there a wiring/soldering "
-                "problem\nIs the config.json file malformed?\nSD CS Pin: " +
-                String(WsV2.pin_sd_cs)).c_str());
+                 "card correctly inserted?\nIs there a wiring/soldering "
+                 "problem\nIs the config.json file malformed?\nSD CS Pin: " +
+                 String(WsV2.pin_sd_cs))
+                    .c_str());
   }
 
 #ifdef USE_DISPLAY
@@ -750,7 +751,7 @@ bool Wippersnapper_V2::generateWSTopics() {
     @param    error
               The error message to write to the serial and filesystem.
 */
-void Wippersnapper_V2::errorWriteHangV2(const char* error) {
+void Wippersnapper_V2::errorWriteHangV2(const char *error) {
   // Print error
   WS_DEBUG_PRINTLN(error);
 #ifdef USE_TINYUSB
@@ -918,7 +919,8 @@ void Wippersnapper_V2::runNetFSMV2() {
               If false, the device will not allow the WDT to bite and
               instead hang indefinitely, holding the WIPPER drive open
 */
-void Wippersnapper_V2::haltErrorV2(const char* error, ws_led_status_t ledStatusColor,
+void Wippersnapper_V2::haltErrorV2(const char *error,
+                                   ws_led_status_t ledStatusColor,
                                    bool reboot) {
   WS_DEBUG_PRINT("ERROR ");
   if (reboot) {
