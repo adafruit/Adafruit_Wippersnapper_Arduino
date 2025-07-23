@@ -217,6 +217,26 @@ public:
   /*******************************************************************************/
   wippersnapper_sensor_SensorType *GetSensorTypes() { return _sensors; }
 
+
+  size_t GetNumSensorTypes() {
+    return _sensors_count;
+  }
+
+    /*!
+      @brief    Configures an i2c device's sensors.
+      @param    sensor_types
+                Pointer to an array of SensorType objects.
+      @param    sensor_types_count
+                The number of active sensors to read from the device.
+  */
+  void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
+                         size_t sensor_types_count) {
+    _sensors_count = sensor_types_count;
+    for (size_t i = 0; i < _sensors_count; i++) {
+      _sensors[i] = sensor_types[i];
+    }
+  }
+
   /*******************************************************************************/
   /*!
       @brief    Gets the sensor's previous period.

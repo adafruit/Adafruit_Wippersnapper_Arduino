@@ -86,9 +86,9 @@ void Wippersnapper_V2::provision() {
 
 // Determine if app is in SDLogger mode
 #ifdef USE_TINYUSB
-  WsV2._fileSystemV2->GetPinSDCS();
+  WsV2._fileSystemV2->GetSDCSPin();
 #elif defined(USE_LITTLEFS)
-  WsV2._littleFSV2->GetPinSDCS();
+  WsV2._littleFSV2->GetSDCSPin();
 #elif defined(OFFLINE_MODE_WOKWI)
   WsV2.pin_sd_cs = 15;
 #endif
@@ -97,10 +97,10 @@ void Wippersnapper_V2::provision() {
   if (WsV2._sdCardV2->isSDCardInitialized()) {
     return; // SD card initialized, cede control back to loop()
   } else {
-    haltErrorV2("SD initialization failed.\nDo not reformat the card!\nIs the "
+    haltErrorV2(("SD initialization failed.\nDo not reformat the card!\nIs the "
                 "card correctly inserted?\nIs there a wiring/soldering "
                 "problem\nIs the config.json file malformed?\nSD CS Pin: " +
-                String(WsV2.pin_sd_cs));
+                String(WsV2.pin_sd_cs)).c_str());
   }
 
 #ifdef USE_DISPLAY
@@ -125,9 +125,9 @@ void Wippersnapper_V2::provision() {
 #endif
 
 #ifdef USE_TINYUSB
-  WsV2._fileSystemV2->ParseFileSecrets();
+  WsV2._fileSystemV2->parseSecrets();
 #elif defined(USE_LITTLEFS)
-  WsV2._littleFSV2->ParseFileSecrets();
+  WsV2._littleFSV2->parseSecrets();
 #else
   check_valid_ssid(); // non-fs-backed, sets global credentials within network
                       // iface
