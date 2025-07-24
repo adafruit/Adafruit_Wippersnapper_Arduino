@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper-2025-07-10-noota
+          ref: ci-wippersnapper
           path: ci
       - name: Checkout Board Definitions
         uses: actions/checkout@v4
