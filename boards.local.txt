@@ -1,6 +1,13 @@
 # This is to allow providing extra defines like WS_MY_BOARD_NAME for any boards using generic module board definitions.
-# e.g. See if the board.txt already has extra defines anywhere, or only the basic empty board.defines= 
+# Instead of the MY_BOARD_NAME suffix, it should match the unique Board ID in Wippersnapper_Boards.h, but
+# uppercase with underscores for dashes. e.g. "dfrobot-beetle-esp32c3" becomes WS_DFROBOT_BEETLE_ESP32C3 with -D for define.
+# 
+# See if the board.txt already has extra board.defines= in any menu entries, or only the basic empty board.defines= 
 # so for example this existing one dfrobot_romeo_esp32s3.menu.PSRAM.enabled.build.defines=-DBOARD_HAS_PSRAM
-# then add a replacement entry with the existing plus new -DWS_MY_BOARD_NAME define.
+# then you would add a replacement entry with the existing plus additionally the new -DWS_UNIQUE_BOARD_NAME define:
+# dfrobot_romeo_esp32s3.menu.PSRAM.enabled.build.defines=-DBOARD_HAS_PSRAM -DWS_DFROBOT_UNIQUE_BOARD_ID
+#
+# Do the same for the board entry in the platformio.ini file:    build_flags = -DWS_YOUR_UNIQUE_BOARD_ID
 
+# DF Robot ESP32-C3 shares define with Espressif ESP32_C3 Devkit/Module, so needs unique define:
 dfrobot_beetle_esp32c3.build.defines=-DWS_DFROBOT_BEETLE_ESP32C3
