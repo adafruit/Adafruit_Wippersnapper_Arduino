@@ -94,6 +94,7 @@ private:
                         wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd);
   bool ParseDS18xAdd(JsonObject &component,
                      wippersnapper_ds18x20_Ds18x20Add &msg_ds18x20_add);
+  bool ParseUartAdd(JsonObject &component, wippersnapper_uart_UartAdd &msg_uart_add);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
       wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);

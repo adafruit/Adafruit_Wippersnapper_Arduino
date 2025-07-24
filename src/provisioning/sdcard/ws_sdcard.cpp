@@ -443,6 +443,52 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
   return std::stoi(hex_str, nullptr, 16);
 }
 
+
+/*!
+    @brief  Parses a Uartadd message from the JSON configuration file.
+    @param  component
+            The JSON object to parse.
+    @param  msg_uart_add
+            The UartAdd message to populate.
+    @returns True if the message was successfully populated, False otherwise.
+*/
+bool ws_sdcard::ParseUartAdd(JsonObject &component, wippersnapper_uart_UartAdd &msg_uart_add) {
+  // Configure the Serial
+  msg_uart_add.has_cfg_serial = true;
+  strncpy(msg_uart_add.cfg_serial.pin_rx, component["pinRx"] | UNKNOWN_VALUE, sizeof(msg_uart_add.cfg_serial.pin_rx) - 1);
+  strncpy(msg_uart_add.cfg_serial.pin_tx, component["pinTx"] | UNKNOWN_VALUE, sizeof(msg_uart_add.cfg_serial.pin_tx) - 1);
+  msg_uart_add.cfg_serial.uart_nbr = component["uartNbr"] | 0;
+  msg_uart_add.cfg_serial.baud_rate = component["baudRate"] | 9600;
+  msg_uart_add.cfg_serial.format = wippersnapper_uart_UartPacketFormat_UART_PACKET_FORMAT_8N1; // Stick to default 8N1 for now
+  msg_uart_add.cfg_serial.timeout = component["timeout"] | 1000; // Use a default UART timeout of 1000ms
+  msg_uart_add.cfg_serial.use_sw_serial = component["useSwSerial"] | false;
+  msg_uart_add.cfg_serial.sw_serial_invert = component["swSerialInvert"] | false;
+  // Configure the UART device
+  msg_uart_add.has_cfg_device = true;
+  strncpy(msg_uart_add.cfg_device.device_id, component["deviceId"] | UNKNOWN_VALUE, sizeof(msg_uart_add.cfg_device.device_id) - 1);
+  // set UartDeviceType
+  const char *device_type = component["deviceType"] | "UNKNOWN";
+  if (strcmp(device_type, "GPS") == 0) {
+    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
+    // Fill the config field
+  } else if (strcmp(device_type, "PM25AQI") == 0) {
+    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
+  } else if (strcmp(device_type, "GENERIC-INPUT") == 0) {
+    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT;
+    msg_uart_add.cfg_device.config.generic_uart_input.period = component["period"] | 0.0;
+    // Fill sensor types
+    // TODO: Needs new PB!
+    // msg_uart_add.cfg_device.config.generic_uart_input.i2c_ = 0;
+
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown UART device type found: " + String(device_type));
+    return false;
+  }
+
+
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief  Parses a DS18x20Add message from the JSON configuration file.
@@ -839,6 +885,15 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
         _cfg_i2c_addresses.push_back(
             msg_add.i2c_device_description.i2c_device_address);
       }
+    } else if (strcmp(component_api_type, "uart") ==0) {
+        WS_DEBUG_PRINTLN("[SD] UART component found in cfg");
+        wippersnapper_uart_UartAdd msg_uart_add = wippersnapper_uart_UartAdd_init_default;
+        success = ParseUartAdd(component, msg_uart_add);
+        if (success) {
+            WS_DEBUG_PRINTLN("[SD] UART component parsed successfully, adding to shared buffer..");
+            msg_signal_b2d.which_payload =  wippersnapper_signal_BrokerToDevice_uart_add_tag;
+            msg_signal_b2d.payload.uart_add = msg_uart_add;
+        }
     } else {
       WS_DEBUG_PRINTLN("[SD] Error: Unknown Component API: " +
                        String(component_api_type));
