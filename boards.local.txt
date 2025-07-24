@@ -8,6 +8,10 @@
 # dfrobot_romeo_esp32s3.menu.PSRAM.enabled.build.defines=-DBOARD_HAS_PSRAM -DWS_DFROBOT_UNIQUE_BOARD_ID
 #
 # Do the same for the board entry in the platformio.ini file:    build_flags = -DWS_YOUR_UNIQUE_BOARD_ID
+#
+# Note: If needed we can do a version of this file for each board build target in case boards don't have a
+# unique definition in boards.txt to add an override. Then in CI pass filename with --boards-local-txt file
+
 
 # DF Robot ESP32-C3 shares define with Espressif ESP32_C3 Devkit/Module, so needs unique define:
 dfrobot_beetle_esp32c3.build.defines=-DWS_DFROBOT_BEETLE_ESP32C3
