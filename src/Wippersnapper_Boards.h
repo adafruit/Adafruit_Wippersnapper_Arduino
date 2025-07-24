@@ -190,12 +190,12 @@
 // Note: this board reuses a generic preprocessor define
 // espressif/arduino-esp32@fcd4799c6de6eb5a5a8eba94818adf770238ecc0
 // rather than creating one unique to the device.
-#define BOARD_ID "dfrobot-beetle-esp32c3"
+#define BOARD_ID "dfrobotbeetle-esp32c3"
 #define USE_LITTLEFS
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
 #elif defined(ARDUINO_ESP32C3_DEV)
-#define BOARD_ID "dfrobotbeetle-esp32c3"
+#define BOARD_ID "dfrobot-beetle-esp32c3"
 #define USE_LITTLEFS
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
