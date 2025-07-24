@@ -25,36 +25,21 @@ jobs:
       matrix:
         arduino-platform:
           [
+            "feather_esp32s2",
+            "feather_esp32s2_reverse_tft",
+            "feather_esp32s2_tft",
             "funhouse_noota",
-            "esp32s3_devkitc_1_n8",
             "magtag",
             "metroesp32s2",
-            "feather_esp32s2",
-            "feather_esp32s2_tft",
-            "feather_esp32s2_reverse_tft",
             "qtpy_esp32s2",
-            "feather_esp32s3_reverse_tft",
-            "qtpy_esp32s3_n4r2",
+            "esp32s3_devkitc_1_n8",
             "feather_esp32s3_4mbflash_2mbpsram",
+            "feather_esp32s3_reverse_tft",
             "feather_esp32s3_tft",
+            "qtpy_esp32s3_n4r2",
             "xiao_esp32s3",
           ]
-        include:
-          - offset: "0x0"
-          - offset: "0x1000"
-            arduino-platform: "funhouse_noota"
-          - offset: "0x1000"
-            arduino-platform: "magtag"
-          - offset: "0x1000"
-            arduino-platform: "metroesp32s2"
-          - offset: "0x1000"
-            arduino-platform: "feather_esp32s2"
-          - offset: "0x1000"
-            arduino-platform: "feather_esp32s2_tft"
-          - offset: "0x1000"
-            arduino-platform: "feather_esp32s2_reverse_tft"
-          - offset: "0x1000"
-            arduino-platform: "qtpy_esp32s2"
+
     steps:
       - name: "skip if unwanted"
         continue-on-error: true
@@ -83,12 +68,13 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
+          ref: migrate-4mb-to-esptool
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet --branch 2.2.54 https://github.com/adafruit/SdFat.git /home/runner/Arduino/libraries/SdFat
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
           git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
@@ -163,6 +149,58 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
+      - name: fetch tinyuf2 combined.bin
+        run: |
+          BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
+          set +e
+          for attempt in 1 2 3; do
+            echo "Attempt $attempt: Fetching tinyuf2 release info for board $BOARD_NAME"
+            API_RESPONSE=$(curl --silent --fail https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
+            if [ $? -ne 0 ]; then
+              echo "Attempt $attempt: curl failed to fetch release info."
+              if [ "$attempt" -eq 3 ]; then exit 1; else sleep $((60 + RANDOM % 40)); continue; fi
+            fi
+            DOWNLOAD_URL=$(echo "$API_RESPONSE" | jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'$BOARD_NAME'-") and endswith(".zip")) | .browser_download_url // empty'); JQ_EXIT=$?
+            if [ $JQ_EXIT -ne 0 ] || [ -z "$DOWNLOAD_URL" ]; then
+              echo "Attempt $attempt: jq failed or no matching zip found."
+              if [ "$attempt" -eq 3 ]; then exit 1; else sleep $((60 + RANDOM % 40)); continue; fi
+            fi
+            echo "Attempt $attempt: Downloading $DOWNLOAD_URL"
+            wget "$DOWNLOAD_URL" -O tinyuf2.zip
+            if [ $? -eq 0 ]; then
+              unzip -o tinyuf2.zip -d .
+              if [ $? -ne 0 ]; then
+                echo "Attempt $attempt: unzip failed"
+                if [ "$attempt" -eq 3 ]; then exit 1; else sleep $((60 + RANDOM % 40)); continue; fi
+              fi
+              break
+            else
+              echo "Attempt $attempt: wget failed to download $DOWNLOAD_URL"
+              if [ "$attempt" -eq 3 ]; then exit 1; else sleep $((60 + RANDOM % 40)); fi
+            fi
+          done
+          set -e
+      - name: move partition and bootloader files for tinyuf2 (to match flash_args)
+        run: |
+          # Copy files where they're expected to make flash_args happy
+          mkdir bootloader
+          cp bootloader.bin bootloader/bootloader.bin
+          mkdir partition_table
+          cp partition-table.bin partition_table/partition-table.bin
+
+      - name: Create new_flash_args file from flash_args with added app bin + output file
+        run: |
+          # Create new_flash_args with esptool parameters first and output file
+          echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
+          echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}}" >> new_flash_args
+          echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}}" >> new_flash_args
+          echo "-o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin" >> new_flash_args
+
+          # Append flash_args content to new_flash_args, skipping the first line
+          tail -n +2 flash_args >> new_flash_args
+
+          # Append main app to flash_args file
+          echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> new_flash_args
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
         uses: andstor/file-existence-action@v3
@@ -178,23 +216,17 @@ jobs:
           ls /home/runner/Arduino/hardware/espressif/esp32/tools/partitions
       - name: boot_app0 file from arduino-cli core
         if: steps.check_files.outputs.files_exists == 'true'
-        run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+        run: cp /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
       - name: boot_app0 file from esp32 source bsp
         if: steps.check_files.outputs.files_exists == 'false'
-        run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+        run: cp /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+      - name: Copy boot_app0 file to ota_data_initial.bin (overwrite tinyuf2 boot preference)
+        run: cp wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin ota_data_initial.bin
       - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin \
-            --flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
-            -o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin \
-            ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin \
-            0x8000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin \
-            0xe000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin \
-            0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin @new_flash_args
       - name: Zip build artifacts
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.*
@@ -253,7 +285,7 @@ jobs:
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
           git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
@@ -371,7 +403,7 @@ jobs:
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
       - name: Download stable Nanopb
         id: download-nanopb
@@ -506,7 +538,7 @@ jobs:
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet https://github.com/adafruit/WiFiNINA.git /home/runner/Arduino/libraries/WiFiNINA
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
       - name: Download stable Nanopb
@@ -665,7 +697,7 @@ jobs:
         run: bash ci/actions_install.sh
       - name: Install extra Arduino library
         run: |
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/PaulStoffregen/OneWire.git /home/runner/Arduino/libraries/OneWire
       - name: Download stable Nanopb
         id: download-nanopb
@@ -762,7 +794,7 @@ jobs:
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
           git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
@@ -871,7 +903,7 @@ jobs:
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
         run: |
-          git clone --quiet https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet --branch v4.0.3 https://github.com/milesburton/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
       - name: Download stable Nanopb
         id: download-nanopb
