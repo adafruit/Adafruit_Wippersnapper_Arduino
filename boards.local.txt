@@ -1,0 +1,6 @@
+# This is to allow providing extra defines like WS_MY_BOARD_NAME for any boards using generic module board definitions.
+# e.g. See if the board.txt already has extra defines anywhere, or only the basic empty board.defines= 
+# so for example this existing one dfrobot_romeo_esp32s3.menu.PSRAM.enabled.build.defines=-DBOARD_HAS_PSRAM
+# then add a replacement entry with the existing plus new -DWS_MY_BOARD_NAME define.
+
+dfrobot_beetle_esp32c3.build.defines=-DWS_DFROBOT_BEETLE_ESP32C3
