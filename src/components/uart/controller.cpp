@@ -88,8 +88,8 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
                                      cfg_device.device_id, cfg_serial.uart_nbr);
       uart_driver->ConfigureDriver(cfg_device);
       uart_driver->EnableSensorEvents(
-          cfg_device.config.generic_uart_input.i2c_device_sensor_types,
-          cfg_device.config.generic_uart_input.i2c_device_sensor_types_count);
+          cfg_device.config.generic_uart_input.sensor_types,
+          cfg_device.config.generic_uart_input.sensor_types_count);
       uart_driver->SetSensorPeriod(cfg_device.config.generic_uart_input.period);
       WS_DEBUG_PRINT("added!");
     } else {
@@ -122,8 +122,8 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
                                   cfg_device.device_id, cfg_serial.uart_nbr);
     uart_driver->ConfigureDriver(cfg_device);
     uart_driver->EnableSensorEvents(
-        cfg_device.config.pm25aqi.i2c_device_sensor_types,
-        cfg_device.config.pm25aqi.i2c_device_sensor_types_count);
+        cfg_device.config.pm25aqi.sensor_types,
+        cfg_device.config.pm25aqi.sensor_types_count);
     uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
     WS_DEBUG_PRINT("added!");
     break;
@@ -173,7 +173,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   /*   if
     (!WsV2.PublishSignal(wippersnapper_signal_DeviceToBroker_uart_added_tag,
                             _uart_model->GetUartAddedMsg())) {
-      WS_DEBUG_PRINTLN("[i2c] ERROR: Unable to publish UartAdded message to
+      WS_DEBUG_PRINTLN("[uart] ERROR: Unable to publish UartAdded message to
     IO!"); return false;
     } */
   WS_DEBUG_PRINTLN("[uart] UartAdded message published successfully!");

@@ -86,7 +86,8 @@ private:
   void TickSoftRTC();
   uint32_t GetSoftRTCTime();
   wippersnapper_sensor_SensorType ParseSensorType(const char *sensor_type);
-  wippersnapper_uart_GenericDeviceLineEnding ParseUartLineEnding(const char *line_ending);
+  wippersnapper_uart_GenericDeviceLineEnding
+  ParseUartLineEnding(const char *line_ending);
   bool ParseComponents(JsonArray &components);
   bool
   ParseDigitalIOAdd(JsonObject &component,
@@ -95,7 +96,10 @@ private:
                         wippersnapper_analogio_AnalogIOAdd &msg_AnalogIOAdd);
   bool ParseDS18xAdd(JsonObject &component,
                      wippersnapper_ds18x20_Ds18x20Add &msg_ds18x20_add);
-  bool ParseUartAdd(JsonObject &component, wippersnapper_uart_UartAdd &msg_uart_add);
+  bool ParseUartAdd(JsonObject &component,
+                    wippersnapper_uart_UartAdd &msg_uart_add);
+  bool ParseGPSConfig(JsonObject &gps_config,
+                      wippersnapper_gps_GPSConfig *cfg_gps);
   bool ParseI2cDeviceAddReplace(
       JsonObject &component,
       wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_device_add_replace);

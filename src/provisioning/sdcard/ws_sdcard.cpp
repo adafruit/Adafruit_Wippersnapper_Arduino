@@ -466,7 +466,6 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
   return std::stoi(hex_str, nullptr, 16);
 }
 
-
 /*!
     @brief  Parses a Uartadd message from the JSON configuration file.
     @param  component
@@ -475,56 +474,143 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
             The UartAdd message to populate.
     @returns True if the message was successfully populated, False otherwise.
 */
-bool ws_sdcard::ParseUartAdd(JsonObject &component, wippersnapper_uart_UartAdd &msg_uart_add) {
+bool ws_sdcard::ParseUartAdd(JsonObject &component,
+                             wippersnapper_uart_UartAdd &msg_uart_add) {
   // Configure the Serial
   msg_uart_add.has_cfg_serial = true;
-  strncpy(msg_uart_add.cfg_serial.pin_rx, component["pinRx"] | UNKNOWN_VALUE, sizeof(msg_uart_add.cfg_serial.pin_rx) - 1);
-  strncpy(msg_uart_add.cfg_serial.pin_tx, component["pinTx"] | UNKNOWN_VALUE, sizeof(msg_uart_add.cfg_serial.pin_tx) - 1);
+  strncpy(msg_uart_add.cfg_serial.pin_rx, component["pinRx"] | UNKNOWN_VALUE,
+          sizeof(msg_uart_add.cfg_serial.pin_rx) - 1);
+  strncpy(msg_uart_add.cfg_serial.pin_tx, component["pinTx"] | UNKNOWN_VALUE,
+          sizeof(msg_uart_add.cfg_serial.pin_tx) - 1);
   msg_uart_add.cfg_serial.uart_nbr = component["uartNbr"] | 0;
   msg_uart_add.cfg_serial.baud_rate = component["baudRate"] | 9600;
-  msg_uart_add.cfg_serial.format = wippersnapper_uart_UartPacketFormat_UART_PACKET_FORMAT_8N1; // Stick to default 8N1 for now
-  msg_uart_add.cfg_serial.timeout = component["timeout"] | 1000; // Use a default UART timeout of 1000ms
+  msg_uart_add.cfg_serial.format =
+      wippersnapper_uart_UartPacketFormat_UART_PACKET_FORMAT_8N1; // Stick to
+                                                                  // default 8N1
+                                                                  // for now
+  msg_uart_add.cfg_serial.timeout =
+      component["timeout"] | 1000; // Use a default UART timeout of 1000ms
   msg_uart_add.cfg_serial.use_sw_serial = component["useSwSerial"] | false;
-  msg_uart_add.cfg_serial.sw_serial_invert = component["swSerialInvert"] | false;
-  // Configure the UART device
+  msg_uart_add.cfg_serial.sw_serial_invert =
+      component["swSerialInvert"] | false;
+  // Configure the Device
   msg_uart_add.has_cfg_device = true;
-  strncpy(msg_uart_add.cfg_device.device_id, component["deviceId"] | UNKNOWN_VALUE, sizeof(msg_uart_add.cfg_device.device_id) - 1);
-  // set UartDeviceType
+  strncpy(msg_uart_add.cfg_device.device_id,
+          component["deviceId"] | UNKNOWN_VALUE,
+          sizeof(msg_uart_add.cfg_device.device_id) - 1);
   const char *device_type = component["deviceType"] | "UNKNOWN";
   if (strcmp(device_type, "GPS") == 0) {
-    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
-    // Fill the config field
+    msg_uart_add.cfg_device.device_type =
+        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
+    msg_uart_add.cfg_device.which_config =
+        wippersnapper_uart_UartDeviceConfig_gps_tag;
+    if (!ParseGPSConfig(component, &msg_uart_add.cfg_device.config.gps)) {
+      WS_DEBUG_PRINTLN(
+          "[SD] Parsing Error: Failed to parse GPS configuration!");
+      return false;
+    }
   } else if (strcmp(device_type, "PM25AQI") == 0) {
-    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
-    msg_uart_add.cfg_device.which_config = wippersnapper_uart_UartDeviceConfig_pm25aqi_tag;
+    WS_DEBUG_PRINTLN("[SD] Parsing PM25AQI device type");
+    msg_uart_add.cfg_device.device_type =
+        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
+    msg_uart_add.cfg_device.which_config =
+        wippersnapper_uart_UartDeviceConfig_pm25aqi_tag;
     msg_uart_add.cfg_device.config.pm25aqi.period = component["period"] | 0.0;
-    msg_uart_add.cfg_device.config.pm25aqi.is_pm1006 = component["isPm1006"] | false;
+    msg_uart_add.cfg_device.config.pm25aqi.is_pm1006 =
+        component["isPm1006"] | false;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
     for (JsonObject sensor_type : component["SensorTypes"].as<JsonArray>()) {
-        msg_uart_add.cfg_device.config.pm25aqi.sensor_types[sensor_type_count] = ParseSensorType(sensor_type["type"]);
-        sensor_type_count++;
+      msg_uart_add.cfg_device.config.pm25aqi.sensor_types[sensor_type_count] =
+          ParseSensorType(sensor_type["type"]);
+      sensor_type_count++;
     }
-    msg_uart_add.cfg_device.config.pm25aqi.sensor_types_count = sensor_type_count;
+    msg_uart_add.cfg_device.config.pm25aqi.sensor_types_count =
+        sensor_type_count;
   } else if (strcmp(device_type, "GENERIC-INPUT") == 0) {
-    // TODO: Fill device name (requires an update to uart.pb.h so it's not a pb_callback field)
-    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT;
-    msg_uart_add.cfg_device.which_config = wippersnapper_uart_UartDeviceConfig_generic_uart_input_tag;
-    msg_uart_add.cfg_device.config.generic_uart_input.line_ending = ParseUartLineEnding(component["lineEnding"] | "LF");
-    msg_uart_add.cfg_device.config.generic_uart_input.period = component["period"] | 0.0;
+    WS_DEBUG_PRINTLN("[SD] Parsing GENERIC-INPUT device type");
+    // TODO: Fill device name (requires an update to uart.pb.h so it's not a
+    // pb_callback field)
+    msg_uart_add.cfg_device.device_type =
+        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT;
+    msg_uart_add.cfg_device.which_config =
+        wippersnapper_uart_UartDeviceConfig_generic_uart_input_tag;
+    msg_uart_add.cfg_device.config.generic_uart_input.line_ending =
+        ParseUartLineEnding(component["lineEnding"] | "LF");
+    msg_uart_add.cfg_device.config.generic_uart_input.period =
+        component["period"] | 0.0;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
     for (JsonObject sensor_type : component["SensorTypes"].as<JsonArray>()) {
-        msg_uart_add.cfg_device.config.generic_uart_input.sensor_types[sensor_type_count] = ParseSensorType(sensor_type["type"]);
-        sensor_type_count++;
+      msg_uart_add.cfg_device.config.generic_uart_input
+          .sensor_types[sensor_type_count] =
+          ParseSensorType(sensor_type["type"]);
+      sensor_type_count++;
     }
-    msg_uart_add.cfg_device.config.generic_uart_input.sensor_types_count = sensor_type_count;
+    msg_uart_add.cfg_device.config.generic_uart_input.sensor_types_count =
+        sensor_type_count;
   } else {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown UART device type found: " + String(device_type));
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown UART device type found: " +
+                     String(device_type));
     return false;
   }
+  return true;
+}
 
-
+/*!
+    @brief  Parses a GPS configuration from the JSON configuration file.
+    @param  gps_config
+            The JSON object containing GPS configuration.
+    @param  cfg_gps
+            The GPSConfig structure to populate.
+    @returns True if the GPS configuration was successfully parsed, False
+   otherwise.
+*/
+bool ws_sdcard::ParseGPSConfig(JsonObject &gps_config,
+                               wippersnapper_gps_GPSConfig *cfg_gps) {
+  cfg_gps->period = gps_config["period"] | 15000; // Default period 15 seconds
+  // Parse PMTK or UBX commands if they exist
+  if (gps_config["commands_pmtks"].is<JsonArray>() &&
+      sizeof(cfg_gps->commands_pmtks) > 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing PMTK commands...");
+    pb_size_t pmtk_cmd_count = 0;
+    JsonArray pmtk_array = gps_config["commands_pmtks"];
+    for (JsonVariant pmtk_cmd : pmtk_array) {
+      if (pmtk_cmd_count >= 8) {
+        WS_DEBUG_PRINTLN("[SD] Warning: Too many PMTK commands, skipping...");
+        break;
+      }
+      strlcpy(cfg_gps->commands_pmtks[pmtk_cmd_count],
+              pmtk_cmd.as<const char *>(), 90);
+      pmtk_cmd_count++;
+    }
+    cfg_gps->commands_pmtks_count = pmtk_cmd_count;
+  } else if (gps_config["commands_ubxes"].is<JsonArray>() &&
+             sizeof(cfg_gps->commands_ubxes) > 0) {
+    WS_DEBUG_PRINTLN("[SD] Parsing UBX commands...");
+    pb_size_t ubx_cmd_count = 0;
+    JsonArray ubx_array = gps_config["commands_ubxes"];
+    for (JsonVariant ubx_cmd : ubx_array) {
+      if (ubx_cmd_count >= 8) {
+        WS_DEBUG_PRINTLN("[SD] Warning: Too many UBX commands, skipping...");
+        break;
+      }
+      JsonArray ubx_bytes = ubx_cmd.as<JsonArray>();
+      for (JsonVariant byte_val : ubx_bytes) {
+        if (cfg_gps->commands_ubxes[ubx_cmd_count].size >= 128) {
+          WS_DEBUG_PRINTLN("[SD] Warning: UBX command too long, skipping...");
+          break;
+        }
+        cfg_gps->commands_ubxes[ubx_cmd_count]
+            .bytes[cfg_gps->commands_ubxes[ubx_cmd_count].size] =
+            byte_val.as<uint8_t>();
+        cfg_gps->commands_ubxes[ubx_cmd_count].size++;
+      }
+    }
+    cfg_gps->commands_ubxes_count = ubx_cmd_count;
+  } else {
+    WS_DEBUG_PRINTLN("[SD] No PMTK or UBX commands found for GPS!");
+  }
   return true;
 }
 
@@ -924,15 +1010,18 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
         _cfg_i2c_addresses.push_back(
             msg_add.i2c_device_description.i2c_device_address);
       }
-    } else if (strcmp(component_api_type, "uart") ==0) {
-        WS_DEBUG_PRINTLN("[SD] UART component found in cfg");
-        wippersnapper_uart_UartAdd msg_uart_add = wippersnapper_uart_UartAdd_init_default;
-        success = ParseUartAdd(component, msg_uart_add);
-        if (success) {
-            WS_DEBUG_PRINTLN("[SD] UART component parsed successfully, adding to shared buffer..");
-            msg_signal_b2d.which_payload =  wippersnapper_signal_BrokerToDevice_uart_add_tag;
-            msg_signal_b2d.payload.uart_add = msg_uart_add;
-        }
+    } else if (strcmp(component_api_type, "uart") == 0) {
+      WS_DEBUG_PRINTLN("[SD] UART component found in cfg");
+      wippersnapper_uart_UartAdd msg_uart_add =
+          wippersnapper_uart_UartAdd_init_default;
+      success = ParseUartAdd(component, msg_uart_add);
+      if (success) {
+        WS_DEBUG_PRINTLN("[SD] UART component parsed successfully, adding to "
+                         "shared buffer..");
+        msg_signal_b2d.which_payload =
+            wippersnapper_signal_BrokerToDevice_uart_add_tag;
+        msg_signal_b2d.payload.uart_add = msg_uart_add;
+      }
     } else {
       WS_DEBUG_PRINTLN("[SD] Error: Unknown Component API: " +
                        String(component_api_type));
