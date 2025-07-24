@@ -346,6 +346,29 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   }
 }
 
+/*!
+    @brief  Parses a UART device's generic device line ending option
+            from the JSON configuration file.
+    @param  line_ending
+            The line ending string to parse.
+    @returns The corresponding GenericDeviceLineEnding enum value
+*/
+wippersnapper_uart_GenericDeviceLineEnding
+ws_sdcard::ParseUartLineEnding(const char *line_ending) {
+  if (strcmp(line_ending, "LF") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_LF;
+  } else if (strcmp(line_ending, "CRLF") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_CRLF;
+  } else if (strcmp(line_ending, "TIMEOUT_100MS") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_TIMEOUT_100MS;
+  } else if (strcmp(line_ending, "TIMEOUT_1000MS") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_TIMEOUT_1000MS;
+  }
+  WS_DEBUG_PRINT("[SD] ERROR: Found unspecified LineEnding - ");
+  WS_DEBUG_PRINTLN(line_ending);
+  return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_UNSPECIFIED;
+}
+
 bool ws_sdcard::ParseDigitalIOAdd(
     JsonObject &component,
     wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd) {
@@ -473,13 +496,29 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component, wippersnapper_uart_UartAdd &
     // Fill the config field
   } else if (strcmp(device_type, "PM25AQI") == 0) {
     msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
+    msg_uart_add.cfg_device.which_config = wippersnapper_uart_UartDeviceConfig_pm25aqi_tag;
+    msg_uart_add.cfg_device.config.pm25aqi.period = component["period"] | 0.0;
+    msg_uart_add.cfg_device.config.pm25aqi.is_pm1006 = component["isPm1006"] | false;
+    // Fill sensor types
+    pb_size_t sensor_type_count = 0;
+    for (JsonObject sensor_type : component["SensorTypes"].as<JsonArray>()) {
+        msg_uart_add.cfg_device.config.pm25aqi.sensor_types[sensor_type_count] = ParseSensorType(sensor_type["type"]);
+        sensor_type_count++;
+    }
+    msg_uart_add.cfg_device.config.pm25aqi.sensor_types_count = sensor_type_count;
   } else if (strcmp(device_type, "GENERIC-INPUT") == 0) {
+    // TODO: Fill device name (requires an update to uart.pb.h so it's not a pb_callback field)
     msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT;
+    msg_uart_add.cfg_device.which_config = wippersnapper_uart_UartDeviceConfig_generic_uart_input_tag;
+    msg_uart_add.cfg_device.config.generic_uart_input.line_ending = ParseUartLineEnding(component["lineEnding"] | "LF");
     msg_uart_add.cfg_device.config.generic_uart_input.period = component["period"] | 0.0;
     // Fill sensor types
-    // TODO: Needs new PB!
-    // msg_uart_add.cfg_device.config.generic_uart_input.i2c_ = 0;
-
+    pb_size_t sensor_type_count = 0;
+    for (JsonObject sensor_type : component["SensorTypes"].as<JsonArray>()) {
+        msg_uart_add.cfg_device.config.generic_uart_input.sensor_types[sensor_type_count] = ParseSensorType(sensor_type["type"]);
+        sensor_type_count++;
+    }
+    msg_uart_add.cfg_device.config.generic_uart_input.sensor_types_count = sensor_type_count;
   } else {
     WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown UART device type found: " + String(device_type));
     return false;
