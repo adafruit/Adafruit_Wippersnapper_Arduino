@@ -628,7 +628,8 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   WS_DEBUG_PRINTLN(is_gps ? "true" : "false");
   if (is_gps) {
     msg_i2c_add.is_gps = true;
-    msg_i2c_add.has_gps_config = false; // TODO: Set to true!
+    msg_i2c_add.gps_config.period = component["period"] | 15.0;
+    msg_i2c_add.has_gps_config = true;
     return true; // early-out, we don't need to set sensor types for GPS
   }
 
@@ -903,6 +904,7 @@ bool ws_sdcard::ParseFileConfig() {
 */
 /**************************************************************************/
 bool ws_sdcard::ParseComponents(JsonArray &components) {
+  delay(9000);
   if (components.isNull()) {
     WS_DEBUG_PRINTLN("[SD] Error: File missing required components[] array");
     return false;
@@ -1229,8 +1231,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
+bool ws_sdcard::LogEventGpio(uint8_t pin, float value,
+                             wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1250,8 +1252,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, uint16_t value, wippersnapper_sensor_SensorType read_type) {
+bool ws_sdcard::LogEventGpio(uint8_t pin, uint16_t value,
+                             wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1271,8 +1273,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
+bool ws_sdcard::LogEventGpio(uint8_t pin, bool value,
+                             wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1292,8 +1294,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogDS18xSensorEventToSD(
-    wippersnapper_ds18x20_Ds18x20Event *event_msg) {
+bool ws_sdcard::LogEventDs18x(wippersnapper_ds18x20_Ds18x20Event *event_msg) {
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
@@ -1314,7 +1315,7 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
             The I2cDeviceEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogI2cDeviceEvent(
+bool ws_sdcard::LogEventI2c(
     wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
   JsonDocument doc;
   // Pull the DeviceDescriptor out
@@ -1349,56 +1350,85 @@ bool ws_sdcard::LogI2cDeviceEvent(
             The GPSEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-bool ws_sdcard::LogGPSEventToSD(wippersnapper_gps_GPSEvent *msg_gps_event) {
-    JsonDocument doc;
+bool ws_sdcard::LogEventGps(wippersnapper_gps_GPSEvent *msg_gps_event) {
+  JsonDocument doc;
 
-    // Log RMC responses
-    for (pb_size_t rmc_resp = 0; rmc_resp < msg_gps_event->rmc_responses_count; rmc_resp++) {
-        WS_DEBUG_PRINTLN("[SD] Logging RMC response...");
-        // Log GPS DateTime
-        if (msg_gps_event->rmc_responses[rmc_resp].has_datetime) {
-            wippersnapper_gps_GPSDateTime gps_dt = msg_gps_event->rmc_responses[rmc_resp].datetime;
-            DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, 
-                                  gps_dt.hour, gps_dt.minute, gps_dt.seconds);
-            doc["timestamp"] = gps_datetime.unixtime();
-        }
-        // Log GPS data
-        doc["fix_status"] = msg_gps_event->rmc_responses[rmc_resp].fix_status;
-        doc["latitude"] = msg_gps_event->rmc_responses[rmc_resp].lat;
-        doc["lat_dir"] = msg_gps_event->rmc_responses[rmc_resp].lat_dir;
-        doc["longitude"] = msg_gps_event->rmc_responses[rmc_resp].lon;
-        doc["lon_dir"] = msg_gps_event->rmc_responses[rmc_resp].lon_dir;
-        doc["speed"] = msg_gps_event->rmc_responses[rmc_resp].speed;
-        doc["angle"] = msg_gps_event->rmc_responses[rmc_resp].angle;
-        if (!LogJSONDoc(doc))
-            return false;
+  // Log RMC responses
+  for (pb_size_t rmc_resp = 0; rmc_resp < msg_gps_event->rmc_responses_count;
+       rmc_resp++) {
+    WS_DEBUG_PRINTLN("[SD] Logging RMC response...");
+    // Log GPS DateTime
+    if (msg_gps_event->rmc_responses[rmc_resp].has_datetime) {
+      wippersnapper_gps_GPSDateTime gps_dt =
+          msg_gps_event->rmc_responses[rmc_resp].datetime;
+      DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, gps_dt.hour,
+                            gps_dt.minute, gps_dt.seconds);
+      doc["timestamp"] = gps_datetime.unixtime();
     }
+    // Log GPS data
+    doc["fix_status"] = msg_gps_event->rmc_responses[rmc_resp].fix_status;
+    doc["latitude"] = msg_gps_event->rmc_responses[rmc_resp].lat;
+    doc["lat_dir"] = msg_gps_event->rmc_responses[rmc_resp].lat_dir;
+    doc["longitude"] = msg_gps_event->rmc_responses[rmc_resp].lon;
+    doc["lon_dir"] = msg_gps_event->rmc_responses[rmc_resp].lon_dir;
+    doc["speed"] = msg_gps_event->rmc_responses[rmc_resp].speed;
+    doc["angle"] = msg_gps_event->rmc_responses[rmc_resp].angle;
+    if (!LogJSONDoc(doc))
+      return false;
+  }
 
-    // Log GGA responses
-    for (pb_size_t gga_resp = 0; gga_resp < msg_gps_event->gga_responses_count; gga_resp++) {
-        WS_DEBUG_PRINTLN("[SD] Logging GGA response...");
-        // Log GPS DateTime
-        if (msg_gps_event->gga_responses[gga_resp].has_datetime) {
-            wippersnapper_gps_GPSDateTime gps_dt = msg_gps_event->gga_responses[gga_resp].datetime;
-            DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, 
-                                  gps_dt.hour, gps_dt.minute, gps_dt.seconds);
-            doc["timestamp"] = gps_datetime.unixtime();
-        }
-        // Log GPS data
-        doc["latitude"] = msg_gps_event->gga_responses[gga_resp].lat;
-        doc["lat_dir"] = msg_gps_event->gga_responses[gga_resp].lat_dir;
-        doc["longitude"] = msg_gps_event->gga_responses[gga_resp].lon;
-        doc["lon_dir"] = msg_gps_event->gga_responses[gga_resp].lon_dir;
-        doc["fix_quality"] = msg_gps_event->gga_responses[gga_resp].fix_quality;
-        doc["num_satellites"] = msg_gps_event->gga_responses[gga_resp].num_satellites;
-        doc["hdop"] = msg_gps_event->gga_responses[gga_resp].hdop;
-        doc["altitude"] = msg_gps_event->gga_responses[gga_resp].altitude;
-        doc["geoid_height"] = msg_gps_event->gga_responses[gga_resp].geoid_height;
-        if (!LogJSONDoc(doc))
-            return false;
+  // Log GGA responses
+  for (pb_size_t gga_resp = 0; gga_resp < msg_gps_event->gga_responses_count;
+       gga_resp++) {
+    WS_DEBUG_PRINTLN("[SD] Logging GGA response...");
+    // Log GPS DateTime
+    if (msg_gps_event->gga_responses[gga_resp].has_datetime) {
+      wippersnapper_gps_GPSDateTime gps_dt =
+          msg_gps_event->gga_responses[gga_resp].datetime;
+      DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, gps_dt.hour,
+                            gps_dt.minute, gps_dt.seconds);
+      doc["timestamp"] = gps_datetime.unixtime();
     }
+    // Log GPS data
+    doc["latitude"] = msg_gps_event->gga_responses[gga_resp].lat;
+    doc["lat_dir"] = msg_gps_event->gga_responses[gga_resp].lat_dir;
+    doc["longitude"] = msg_gps_event->gga_responses[gga_resp].lon;
+    doc["lon_dir"] = msg_gps_event->gga_responses[gga_resp].lon_dir;
+    doc["fix_quality"] = msg_gps_event->gga_responses[gga_resp].fix_quality;
+    doc["num_satellites"] =
+        msg_gps_event->gga_responses[gga_resp].num_satellites;
+    doc["hdop"] = msg_gps_event->gga_responses[gga_resp].hdop;
+    doc["altitude"] = msg_gps_event->gga_responses[gga_resp].altitude;
+    doc["geoid_height"] = msg_gps_event->gga_responses[gga_resp].geoid_height;
+    if (!LogJSONDoc(doc))
+      return false;
+  }
 
-    return true;
+  return true;
+}
+
+/*!
+    @brief  Logs a UART input event to the SD card.
+    @param  msg_uart_input_event
+            The UartInputEvent message to log.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogEventUart(
+    wippersnapper_uart_UartInputEvent *msg_uart_input_event) {
+  JsonDocument doc;
+  doc["timestamp"] = GetTimestamp();
+  doc["uart_device_id"] = msg_uart_input_event->device_id;
+  doc["uart_port"] = msg_uart_input_event->uart_nbr;
+
+  // Log each event
+  for (pb_size_t i = 0; i < msg_uart_input_event->events_count; i++) {
+    doc["value"] = msg_uart_input_event->events[i].value.float_value;
+    doc["si_unit"] = SensorTypeToSIUnit(msg_uart_input_event->events[i].type);
+  }
+
+  if (!LogJSONDoc(doc))
+    return false;
+  return true;
 }
 
 #ifdef OFFLINE_MODE_DEBUG

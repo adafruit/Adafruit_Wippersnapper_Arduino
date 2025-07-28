@@ -193,7 +193,7 @@ bool AnalogIOController::EncodePublishPinEvent(
 */
 bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
   if (WsV2._sdCardV2->isModeOffline()) {
-    return WsV2._sdCardV2->LogGPIOSensorEventToSD(
+    return WsV2._sdCardV2->LogEventGpio(
         pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW);
   } else {
     return EncodePublishPinEvent(
@@ -212,7 +212,7 @@ bool AnalogIOController::EncodePublishPinValue(uint8_t pin, uint16_t value) {
 */
 bool AnalogIOController::EncodePublishPinVoltage(uint8_t pin, float value) {
   if (WsV2._sdCardV2->isModeOffline()) {
-    return WsV2._sdCardV2->LogGPIOSensorEventToSD(
+    return WsV2._sdCardV2->LogEventGpio(
         pin, value, wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE);
   } else {
     return EncodePublishPinEvent(

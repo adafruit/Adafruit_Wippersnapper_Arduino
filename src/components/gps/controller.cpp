@@ -120,7 +120,15 @@ void GPSController::update() {
         } */
 
     // Did read period elapse?
+    // TODO: Why is it constantly polling the GPS hardware from the config.json?
+    // Is this a bug with setting the poll period? Print it out
     ulong cur_time = millis();
+    WS_DEBUG_PRINT("drv->GetPollPeriodPrv(): ");
+    WS_DEBUG_PRINT(drv->GetPollPeriodPrv());
+    WS_DEBUG_PRINT(" drv->GetPollPeriod(): ");
+    WS_DEBUG_PRINTLN(drv->GetPollPeriod());
+    WS_DEBUG_PRINT("cur_time: ");
+    WS_DEBUG_PRINTLN(cur_time);
     if (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod())
       continue; // Not yet elapsed, skip this driver
 
@@ -154,13 +162,12 @@ void GPSController::update() {
       if (!has_gps_event)
         continue;
 
-      // Encode and publish to IO
-      WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
+      // Encode and process the GPSEvent
       bool did_encode = _gps_model->EncodeGPSEvent();
       if (did_encode) {
-
         if (!WsV2._sdCardV2->isModeOffline()) {
           // Publish the GPSEvent to IO
+          WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
           if (!WsV2.PublishSignal(
                   wippersnapper_signal_DeviceToBroker_gps_event_tag,
                   _gps_model->GetGPSEvent())) {
@@ -171,12 +178,12 @@ void GPSController::update() {
         } else {
           // Log the GPSEvent to SD card
           WS_DEBUG_PRINT("[gps] Logging GPSEvent to SD card...");
-/*           if (!WsV2._sdCardV2->LogGPSEventToSD(_gps_model->GetGPSEvent())) {
-              WS_DEBUG_PRINTLN("[gps] ERROR: Failed to log GPSEvent to SD!");
-              statusLEDSolid(WS_LED_STATUS_FS_WRITE);
-          } else {
-              WS_DEBUG_PRINTLN("OK!");
-          } */
+          /*           if
+             (!WsV2._sdCardV2->LogEventGps(_gps_model->GetGPSEvent())) {
+                        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to log GPSEvent to
+             SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE); } else {
+                        WS_DEBUG_PRINTLN("OK!");
+                    } */
         }
       } else {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");

@@ -62,15 +62,17 @@ public:
   bool CreateNewLogFile();
   bool isModeOffline() { return is_mode_offline; }
   void waitForSerialConfig();
-  bool LogGPIOSensorEventToSD(uint8_t pin, float value,
-                              wippersnapper_sensor_SensorType read_type);
-  bool LogGPIOSensorEventToSD(uint8_t pin, bool value,
-                              wippersnapper_sensor_SensorType read_type);
-  bool LogGPIOSensorEventToSD(uint8_t pin, uint16_t value,
-                              wippersnapper_sensor_SensorType read_type);
-  bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
-  bool LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
-  bool LogGPSEventToSD(wippersnapper_gps_GPSEvent *msg_gps_event);
+  bool LogEventGpio(uint8_t pin, float value,
+                    wippersnapper_sensor_SensorType read_type);
+  bool LogEventGpio(uint8_t pin, bool value,
+                    wippersnapper_sensor_SensorType read_type);
+  bool LogEventGpio(uint8_t pin, uint16_t value,
+                    wippersnapper_sensor_SensorType read_type);
+  bool LogEventDs18x(wippersnapper_ds18x20_Ds18x20Event *event_msg);
+  bool LogEventI2c(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
+  bool LogEventGps(wippersnapper_gps_GPSEvent *msg_gps_event);
+  bool LogEventUart(wippersnapper_uart_UartInputEvent *msg_uart_input_event);
+
 private:
   bool ParseExportedFromDevice(JsonDocument &doc);
   void ConfigureSDCard();

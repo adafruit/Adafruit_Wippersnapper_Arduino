@@ -1403,7 +1403,7 @@ void I2cController::update() {
 
     // Handle the DeviceEvent message
     if (WsV2._sdCardV2->isModeOffline()) {
-      if (!WsV2._sdCardV2->LogI2cDeviceEvent(_i2c_model->GetI2cDeviceEvent())) {
+      if (!WsV2._sdCardV2->LogEventI2c(_i2c_model->GetI2cDeviceEvent())) {
         WS_DEBUG_PRINTLN(
             "[i2c] ERROR: Unable to log the I2cDeviceEvent to SD!");
         statusLEDSolid(WS_LED_STATUS_FS_WRITE);

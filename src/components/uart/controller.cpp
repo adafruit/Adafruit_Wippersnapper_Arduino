@@ -246,7 +246,6 @@ void UARTController::update() {
     return; // bail-out
 
   for (drvUartBase *drv : _uart_drivers) {
-
     size_t num_sensors = drv->GetNumSensors();
     if (num_sensors == 0) {
       WS_DEBUG_PRINTLN("[uart] No sensors available for driver: " +
@@ -275,30 +274,29 @@ void UARTController::update() {
     }
 
     // Encode the UART input event message
-    if (_uart_model->EncodeUartInputEvent()) {
-      // Handle the UartInputEvent message
-      if (WsV2._sdCardV2->isModeOffline()) {
-        // TODO: This is UNIMPLEMENTED!
-        // In offline mode, log to SD card
-        /* if
-        (!WsV2._sdCardV2->LogUartInputEvent(_uart_model->GetUartInputEventMsg()))
-        { WS_DEBUG_PRINTLN("[uart] ERROR: Unable to log the UartInputEvent to
-        SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE);
-        } */
-      } else {
-        // In online mode, publish to Adafruit IO
-        if (!WsV2.PublishSignal(
-                wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
-                _uart_model->GetUartInputEventMsg())) {
-          WS_DEBUG_PRINTLN(
-              "[uart] ERROR: Unable to publish UartInputEvent to IO!");
-        }
-      }
-    } else {
-      WS_DEBUG_PRINTLN(
-          "[uart] ERROR: Failed to encode UartInputEvent message!");
+    if (!_uart_model->EncodeUartInputEvent()) {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Failed to encode UartInputEvent!");
+      continue; // skip this driver if encoding failed
     }
-    // Update the driver's previous period timestamp
+    // Process the UartInputEvent message
+    if (!WsV2._sdCardV2->isModeOffline()) {
+      WS_DEBUG_PRINT("[uart] Publishing UartInputEvent to IO...");
+      if (!WsV2.PublishSignal(
+              wippersnapper_signal_DeviceToBroker_uart_input_event_tag,
+              _uart_model->GetUartInputEventMsg())) {
+        WS_DEBUG_PRINTLN(
+            "[uart] ERROR: Unable to publish UartInputEvent to IO!");
+      }
+      WS_DEBUG_PRINTLN("OK!");
+    } else {
+      WS_DEBUG_PRINT("[uart] Logging UartInputEvent to SD card...");
+      if (!WsV2._sdCardV2->LogEventUart(_uart_model->GetUartInputEventMsg())) {
+        WS_DEBUG_PRINTLN(
+            "[uart] ERROR: Unable to log UartInputEvent to SD card!");
+      }
+      WS_DEBUG_PRINTLN("OK!");
+    }
+    // Update the timestamp
     cur_time = millis();
     drv->SetSensorPeriodPrv(cur_time);
   }

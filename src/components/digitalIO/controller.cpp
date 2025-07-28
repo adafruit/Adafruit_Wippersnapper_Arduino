@@ -305,7 +305,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     WS_DEBUG_PRINTLN("[digitalio] Published DigitalIOEvent to broker!")
   } else {
     // let's log the event to the SD card
-    if (!WsV2._sdCardV2->LogGPIOSensorEventToSD(
+    if (!WsV2._sdCardV2->LogEventGpio(
             pin_name, pin_value,
             wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN))
       return false;

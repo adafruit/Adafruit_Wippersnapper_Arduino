@@ -269,7 +269,7 @@ void DS18X20Controller::update() {
       }
       WS_DEBUG_PRINTLN("Published!");
     } else {
-      if (!WsV2._sdCardV2->LogDS18xSensorEventToSD(
+      if (!WsV2._sdCardV2->LogEventDs18x(
               _DS18X20_model->GetDS18x20EventMsg())) {
         WS_DEBUG_PRINTLN(
             "ERROR | DS18x20: Failed to log DS18x20 event to SD card");
