@@ -142,10 +142,21 @@ public:
       @param    sensor_types_count
                 The number of active sensors to read from the device.
   */
-  void EnableSensorReads(bool use_default_types,
-                         wippersnapper_sensor_SensorType *sensor_types,
-                         size_t sensor_types_count) {
-    _sensors_count = sensor_types_count;
+  void
+  EnableSensorReads(bool use_default_types = false,
+                    wippersnapper_sensor_SensorType *sensor_types = nullptr,
+                    size_t sensor_types_count = 0) {
+    // Assign number of sensors
+    if (use_default_types) {
+      // Configure the driver with values from THE DRIVER
+      ConfigureDefaultSensorTypes();
+      _sensors_count = _default_sensor_types_count;
+    } else {
+      // Configure the driver with values from THE CONFIG FILE
+      _sensors_count = sensor_types_count;
+    }
+
+    // Fill sensor types with default values
     for (size_t i = 0; i < _sensors_count; i++) {
       if (use_default_types)
         _sensors[i] = _default_sensor_types[i];
@@ -218,21 +229,6 @@ public:
   wippersnapper_sensor_SensorType *GetSensorTypes() { return _sensors; }
 
   size_t GetNumSensorTypes() { return _sensors_count; }
-
-  /*!
-    @brief    Configures an i2c device's sensors.
-    @param    sensor_types
-              Pointer to an array of SensorType objects.
-    @param    sensor_types_count
-              The number of active sensors to read from the device.
-*/
-  void EnableSensorReads(wippersnapper_sensor_SensorType *sensor_types,
-                         size_t sensor_types_count) {
-    _sensors_count = sensor_types_count;
-    for (size_t i = 0; i < _sensors_count; i++) {
-      _sensors[i] = sensor_types[i];
-    }
-  }
 
   /*******************************************************************************/
   /*!

@@ -72,11 +72,10 @@ bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
  * @param gps_config Pointer to the GPS configuration message.
  * @return True if the GPS was added successfully, false otherwise.
  */
-bool GPSController::AddGPS(HardwareSerial *serial,
-                           wippersnapper_gps_GPSConfig *gps_config) {
+bool GPSController::AddGPS(HardwareSerial *serial, uint32_t baudrate, wippersnapper_gps_GPSConfig *gps_config) {
   GPSHardware *gps_hw = new GPSHardware();
 
-  if (!gps_hw->SetInterface(serial)) {
+  if (!gps_hw->SetInterface(serial, baudrate)) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to set GPS UART interface!");
     delete gps_hw;
     return false;

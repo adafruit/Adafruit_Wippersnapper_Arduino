@@ -177,12 +177,13 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
  *        Pointer to a HardwareSerial instance.
  * @returns True if the interface was set successfully, False otherwise.
  */
-bool GPSHardware::SetInterface(HardwareSerial *serial) {
+bool GPSHardware::SetInterface(HardwareSerial *serial, uint32_t baudrate) {
   if (serial == nullptr)
     return false;
   // Configure the hardware serial interface
   _hw_serial = serial;
   _iface_type = GPS_IFACE_UART_HW;
+  _baudrate = baudrate;
   return true;
 }
 
@@ -357,7 +358,7 @@ bool GPSHardware::DetectMtkUart() {
 
   // Attempt to use Adafruit_GPS
   _ada_gps = new Adafruit_GPS(_hw_serial);
-  if (!_ada_gps->begin(_hw_serial->baudRate())) {
+  if (!_ada_gps->begin(_baudrate)) {
     WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize Mediatek!");
     return false;
   }

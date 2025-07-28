@@ -137,12 +137,8 @@ bool UARTHardware::ConfigureSerial() {
 #if ARDUINO_ARCH_ESP32
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg, rx_pin,
                      tx_pin, false, (unsigned long)_config.timeout);
-#elif ARDUINO_ARCH_RP2040
-    _hwSerial->setRx(rx_pin);
-    _hwSerial->setTx(tx_pin);
-    _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #else
-    // ESP8266, SAMD, and other platforms
+    // RP2040, ESP8266, SAMD, and other platforms
     // take the default Arduino/Wiring API arguments
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #endif

@@ -106,6 +106,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS:
     WS_DEBUG_PRINTLN("[uart] Adding GPS device..");
     if (!WsV2._gps_controller->AddGPS(uart_hardware->GetHardwareSerial(),
+                                      uart_hardware->GetBaudRate(),
                                       &cfg_device.config.gps)) {
       WS_DEBUG_PRINTLN("[uart] ERROR: Failed to initialize GPS device!");
       delete uart_hardware; // cleanup

@@ -29,8 +29,8 @@
     defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_N4R2) ||                             \
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
-    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) || \
-    defined(ARDUINO_ADAFRUIT_METRO_RP2350) || \
+    defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350) ||                                  \
     defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
@@ -59,7 +59,7 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
-bool _fs_changed = false; ///< Flag to indicate filesystem changes
+bool _fs_changed = false;     ///< Flag to indicate filesystem changes
 
 /*!
     @brief    Formats the flash filesystem as FAT12.
@@ -165,6 +165,8 @@ Wippersnapper_FS::~Wippersnapper_FS() {
   // Unmount filesystem
   wipperFatFs_v2.end();
 }
+
+void refreshMassStorage(void) { _fs_changed = true; }
 
 /*!
     @brief    Attempts to obtain the hardware's CS pin from the
@@ -389,7 +391,36 @@ bool Wippersnapper_FS::AddSDCSPinToFileConfig(uint8_t pin) {
   return true;
 }
 
-void refreshMassStorage(void) { _fs_changed = true; }
+/********************************************************************************/
+/*!
+    @brief    Adds an I2C device to the `config.json` file.
+    @param    address
+                The I2C device's address.
+    @param    period
+                The period at which the device should be polled.
+    @param    driver_name
+                The name of the driver.
+*/
+/********************************************************************************/
+void Wippersnapper_FS::AddI2cDeviceToFileConfig(
+    uint32_t address, const char *driver_name, const char **sensor_type_strings,
+    size_t sensor_types_count) {
+  // Write to components[] on the in-memory config document
+  JsonObject new_component = _doc_cfg["components"].add<JsonObject>();
+  new_component["name"] = driver_name;
+  new_component["componentAPI"] = "i2c";
+  new_component["i2cDeviceName"] = driver_name;
+  new_component["period"] = 30;
+  new_component["autoConfig"] = "true";
+  char address_str[6];
+  sprintf(address_str, "0x%02X", address);
+  new_component["i2cDeviceAddress"] = address_str;
+  JsonArray new_component_sensor_types =
+      new_component["i2cDeviceSensorTypes"].to<JsonArray>();
+  for (size_t i = 0; i < sensor_types_count; i++) {
+    new_component_sensor_types[i]["type"] = sensor_type_strings[i];
+  }
+}
 
 /*!
     @brief    Writes the in-memory config document to the filesystem.
@@ -422,11 +453,11 @@ bool Wippersnapper_FS::WriteFileConfig() {
   initUSBMSC();
   WS_PRINTER.flush();
   delay(2500);
-  WS_PRINTER.println("Config file written to flash!"); // List current config / components and periods
+  WS_PRINTER.println("Config file written to flash!"); // List current config /
+                                                       // components and periods
   WsV2._i2c_controller->PrintAllDrivers();
   return true;
 }
-
 
 /*!
     @brief    Parses a secrets.json file on the flash filesystem.
@@ -622,9 +653,6 @@ void Wippersnapper_FS::createDisplayConfig() {
   displayFile.close();
   delay(2500); // give FS some time to write the file
 }
-
-
-
 
 /*!
     @brief    Parses a display_config.json file on the flash filesystem.

@@ -19,8 +19,8 @@
 #include "Adafruit_TinyUSB.h"
 #include "SdFat_Adafruit_Fork.h"
 // using f_mkfs() for formatting
-#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 #include "fatfs/diskio.h"
+#include "fatfs/ff.h" // NOTE: This should be #included before fatfs/diskio.h!!!
 
 #include "Wippersnapper_V2.h"
 
@@ -54,6 +54,9 @@ public:
   bool createBootFile();
   void writeToBootOut(PGM_P str);
   void eraseBootFile();
+  void AddI2cDeviceToFileConfig(uint32_t address, const char *driver_name,
+                                const char **sensor_type_strings,
+                                size_t sensor_types_count);
   bool WriteFileConfig();
   bool AddSDCSPinToFileConfig(uint8_t pin);
   JsonDocument &GetDocCfg() { return _doc_cfg; }

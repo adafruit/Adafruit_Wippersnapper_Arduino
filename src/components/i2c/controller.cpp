@@ -344,6 +344,71 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
        return new drvVl6180x(i2c, addr, mux_channel, driver_name);
      }}}; ///< I2C driver factory
 
+static const std::unordered_map<uint16_t, std::vector<const char *>>
+    map_address_to_drivers = {
+        {0x0B, {"lc709203f"}},
+        {0x12, {"pmsa003i"}},
+        {0x13, {"vncl4020"}},
+        {0x18, {"ds2484", "mcp9808", "mprls"}},
+        {0x19, {"mcp9808"}},
+        {0x1A, {"mcp9808"}},
+        {0x1B, {"mcp9808"}},
+        {0x1C, {"mcp9808"}},
+        {0x1D, {"mcp9808"}},
+        {0x1E, {"mcp9808"}},
+        {0x1F, {"mcp9808"}},
+        {0x23, {"bh1750"}},
+        {0x28, {"pct2075"}},
+        {0x29,
+         {"ltr303", "pct2075", "tsl2591", "veml7700", "vl53l1x", "vl53l4cd",
+          "vl53l4cx", "vl6180x"}},
+        {0x2A, {"nau7802"}},
+        {0x38, {"aht20", "max17048"}},
+        {0x39, {"tsl2591"}},
+        {0x40,
+         {"htu21d", "htu31d", "ina219", "ina260", "ms8607", "si7021",
+          "stemma_soil"}},
+        {0x41, {"htu31d", "ina219", "ina260"}},
+        {0x44, {"hdc302x", "ina260", "sht3x", "sht4x"}},
+        {0x45, {"hdc302x", "ina260", "sht3x"}},
+        {0x46, {"hdc302x"}},
+        {0x47, {"hdc302x"}},
+        {0x48, {"adt7410", "pct2075", "tmp117"}},
+        {0x49, {"adt7410", "pct2075", "tmp117", "tsl2591"}},
+        {0x4A, {"adt7410", "pct2075", "tmp117"}},
+        {0x4B, {"adt7410", "pct2075", "tmp117"}},
+        {0x4C, {"pct2075"}},
+        {0x4D, {"pct2075"}},
+        {0x4E, {"pct2075"}},
+        {0x4F, {"pct2075"}},
+        {0x51, {"vcnl4200"}},
+        {0x52, {"ens160"}},
+        {0x53, {"ens160", "ltr390"}},
+        {0x58, {"sgp30"}},
+        {0x59, {"sgp40"}},
+        {0x5C,
+         {"bh1750", "lps22hb", "lps25hb", "lps28dfw", "lps33hw", "lps35hw"}},
+        {0x5D, {"lps22hb", "lps25hb", "lps28dfw", "lps33hw", "lps35hw"}},
+        {0x5F, {"hts2221"}},
+        {0x60, {"mpl115a2", "vncl4040"}},
+        {0x61, {"scd30"}},
+        {0x62, {"scd40"}},
+        {0x68, {"mcp3421"}},
+        {0x69, {"sen55"}},
+        {0x6B, {"sen66"}},
+        {0x70, {"pct2075", "shtc3"}},
+        {0x71, {"pct2075"}},
+        {0x72, {"pct2075"}},
+        {0x73, {"pct2075"}},
+        {0x74, {"pct2075"}},
+        {0x75, {"pct2075"}},
+        {0x76,
+         {"bme280", "bme680", "bmp280", "bmp388", "bmp390", "dps310", "ms8607",
+          "pct2075"}},
+        {0x77,
+         {"bme280", "bme680", "bmp280", "bmp388", "bmp390", "dps310",
+          "pct2075"}}}; ///< I2C address to driver map
+
 /*!
     @brief     Lambda function to create a drvOutputBase instance
       @param    i2c
@@ -436,6 +501,26 @@ drvOutputBase *CreateI2cOutputDrv(const char *driver_name, TwoWire *i2c,
 
   status = wippersnapper_i2c_I2cDeviceStatus_I2C_DEVICE_STATUS_SUCCESS;
   return it->second(i2c, addr, i2c_mux_channel, driver_name);
+}
+
+/***********************************************************************/
+/*!
+    @brief  Obtains possible candidate drivers for a given I2C address.
+    @param    addr
+                The desired I2C address.
+    @returns  A vector of pointers to candidate drivers.
+*/
+/***********************************************************************/
+std::vector<const char *> GetDriversForAddress(uint16_t addr) {
+  std::vector<const char *> candidates;
+  std::unordered_map<uint16_t, std::vector<const char *>>::const_iterator
+      candidate = map_address_to_drivers.find(addr);
+
+  if (candidate != map_address_to_drivers.end()) {
+    candidates = candidate->second;
+  }
+
+  return candidates;
 }
 
 /*!
@@ -882,6 +967,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
 
   // Is this a i2c GPS?
   bool is_gps = _i2c_model->GetI2cDeviceAddOrReplaceMsg()->is_gps;
+  WS_DEBUG_PRINT("[i2c] Device name: ");
+  WS_DEBUG_PRINTLN(device_name);
+  WS_DEBUG_PRINT("[i2c] Device address: 0x");
+  WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address, HEX);
+  WS_DEBUG_PRINT("[i2c] Is GPS? ");
+  WS_DEBUG_PRINTLN(is_gps ? "Yes" : "No");
 
   // TODO [Online]: Handle Replace messages by implementing the Remove handler
   // first...then proceed to adding a new device
@@ -956,7 +1047,58 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   drvOutputBase *drv_out = nullptr;
   GPSController *drv_uart_gps = nullptr;
 
-  if (is_output) {
+  if (strcmp(device_name, "UNKNOWN_SCAN") == 0) {
+    WS_DEBUG_PRINTLN("Attempting to autoconfig device found in scan...");
+    if (device_descriptor.i2c_device_address == 0x68 ||
+        device_descriptor.i2c_device_address == 0x70) {
+      WS_DEBUG_PRINTLN("[i2c] Device address is shared with RTC/MUX, can not "
+                       "auto-init, skipping!");
+      return true;
+    }
+    // Get all possible driver candidates for this address
+    WS_DEBUG_PRINT("[i2c] Obtaining driver candidates @ 0x");
+    WS_DEBUG_PRINTLN(device_descriptor.i2c_device_address, HEX);
+
+    // Probe each candidate to see if it communicates
+    bool did_find_driver = false;
+    for (const char *driverName :
+         GetDriversForAddress(device_descriptor.i2c_device_address)) {
+      WS_DEBUG_PRINT("[i2c] Attempting to initialize candidate: ");
+      WS_DEBUG_PRINTLN(driverName);
+      drv = CreateI2cSensorDrv(
+          driverName, bus, device_descriptor.i2c_device_address,
+          device_descriptor.i2c_mux_channel, device_status);
+      // Probe the driver to check if it communicates its init. sequence
+      if (!drv->begin()) {
+        WS_DEBUG_PRINTLN("[i2c] Failed to initialize candidate: ");
+        WS_DEBUG_PRINTLN(driverName);
+        delete drv;
+        drv = nullptr;
+      } else {
+        WS_DEBUG_PRINT("[i2c] Successfully initialized candidate: ");
+        WS_DEBUG_PRINTLN(driverName);
+        // set device_name to driverName
+        strcpy(device_name, driverName);
+        // Use the "default" types from the sensor driver
+        drv->EnableSensorReads(true);
+        drv->SetSensorPeriod(DEFAULT_SENSOR_PERIOD);
+#ifndef OFFLINE_MODE_WOKWI
+        WsV2._fileSystemV2->AddI2cDeviceToFileConfig(
+            device_descriptor.i2c_device_address, driverName,
+            drv->GetSensorTypeStrings(), drv->GetNumSensorTypes());
+#endif
+        did_find_driver = true;
+        _i2c_drivers.push_back(drv);
+        return true;
+      }
+    }
+    if (!did_find_driver) {
+      WS_DEBUG_PRINTLN("[i2c] ERROR - Candidates exhausted, driver not found!");
+      return true; // dont cause an error in the app
+    }
+  }
+
+  else if (is_output) {
     WS_DEBUG_PRINT("[i2c] Creating an I2C output driver...");
     drv_out = CreateI2cOutputDrv(
         device_name, bus, device_descriptor.i2c_device_address,
@@ -1023,11 +1165,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
     }
     WS_DEBUG_PRINTLN("[i2c] Set driver to use Alt I2C bus");
   }
-  // Configure the driver
 
+  // Configure the driver
   if (!is_output) {
     // Configure Input-driver settings
     drv->EnableSensorReads(
+        false,
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()->i2c_device_sensor_types,
         _i2c_model->GetI2cDeviceAddOrReplaceMsg()
             ->i2c_device_sensor_types_count);
