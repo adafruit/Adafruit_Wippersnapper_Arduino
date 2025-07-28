@@ -70,7 +70,7 @@ public:
                               wippersnapper_sensor_SensorType read_type);
   bool LogDS18xSensorEventToSD(wippersnapper_ds18x20_Ds18x20Event *event_msg);
   bool LogI2cDeviceEvent(wippersnapper_i2c_I2cDeviceEvent *msg_device_event);
-
+  bool LogGPSEventToSD(wippersnapper_gps_GPSEvent *msg_gps_event);
 private:
   bool ParseExportedFromDevice(JsonDocument &doc);
   void ConfigureSDCard();

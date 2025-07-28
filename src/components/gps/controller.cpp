@@ -72,7 +72,8 @@ bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
  * @param gps_config Pointer to the GPS configuration message.
  * @return True if the GPS was added successfully, false otherwise.
  */
-bool GPSController::AddGPS(HardwareSerial *serial, uint32_t baudrate, wippersnapper_gps_GPSConfig *gps_config) {
+bool GPSController::AddGPS(HardwareSerial *serial, uint32_t baudrate,
+                           wippersnapper_gps_GPSConfig *gps_config) {
   GPSHardware *gps_hw = new GPSHardware();
 
   if (!gps_hw->SetInterface(serial, baudrate)) {
@@ -156,17 +157,29 @@ void GPSController::update() {
       // Encode and publish to IO
       WS_DEBUG_PRINT("[gps] Encoding and publishing GPSEvent to IO...");
       bool did_encode = _gps_model->EncodeGPSEvent();
-      if (!did_encode) {
-        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
-      } else {
-        // Publish the GPSEvent to IO
-        if (!WsV2.PublishSignal(
-                wippersnapper_signal_DeviceToBroker_gps_event_tag,
-                _gps_model->GetGPSEvent())) {
-          WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
+      if (did_encode) {
+
+        if (!WsV2._sdCardV2->isModeOffline()) {
+          // Publish the GPSEvent to IO
+          if (!WsV2.PublishSignal(
+                  wippersnapper_signal_DeviceToBroker_gps_event_tag,
+                  _gps_model->GetGPSEvent())) {
+            WS_DEBUG_PRINTLN("[gps] ERROR: Failed to publish GPSEvent!");
+          } else {
+            WS_DEBUG_PRINTLN("...ok!");
+          }
         } else {
-          WS_DEBUG_PRINTLN("...ok!");
+          // Log the GPSEvent to SD card
+          WS_DEBUG_PRINT("[gps] Logging GPSEvent to SD card...");
+/*           if (!WsV2._sdCardV2->LogGPSEventToSD(_gps_model->GetGPSEvent())) {
+              WS_DEBUG_PRINTLN("[gps] ERROR: Failed to log GPSEvent to SD!");
+              statusLEDSolid(WS_LED_STATUS_FS_WRITE);
+          } else {
+              WS_DEBUG_PRINTLN("OK!");
+          } */
         }
+      } else {
+        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");
       }
       drv->SetPollPeriodPrv(cur_time);
     }

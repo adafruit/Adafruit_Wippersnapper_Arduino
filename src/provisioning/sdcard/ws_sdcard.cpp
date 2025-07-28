@@ -14,7 +14,6 @@
  */
 #include "ws_sdcard.h"
 
-/**************************************************************************/
 /*!
     @brief    Initializes the SD card.
     @param    pin_cs
@@ -22,7 +21,6 @@
     @returns  True if the SD card was successfully initialized, False
               otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
   WsV2.pin_sd_cs = pin_cs;
 #ifdef SD_USE_SPI_1
@@ -1310,14 +1308,12 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs an I2C sensor event to the SD card.
     @param  msg_device_event
             The I2cDeviceEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::LogI2cDeviceEvent(
     wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
   JsonDocument doc;
@@ -1347,14 +1343,70 @@ bool ws_sdcard::LogI2cDeviceEvent(
   return true;
 }
 
+/*!
+    @brief  Logs a GPS event to the SD card.
+    @param  msg_gps_event
+            The GPSEvent message to log.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogGPSEventToSD(wippersnapper_gps_GPSEvent *msg_gps_event) {
+    JsonDocument doc;
+
+    // Log RMC responses
+    for (pb_size_t rmc_resp = 0; rmc_resp < msg_gps_event->rmc_responses_count; rmc_resp++) {
+        WS_DEBUG_PRINTLN("[SD] Logging RMC response...");
+        // Log GPS DateTime
+        if (msg_gps_event->rmc_responses[rmc_resp].has_datetime) {
+            wippersnapper_gps_GPSDateTime gps_dt = msg_gps_event->rmc_responses[rmc_resp].datetime;
+            DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, 
+                                  gps_dt.hour, gps_dt.minute, gps_dt.seconds);
+            doc["timestamp"] = gps_datetime.unixtime();
+        }
+        // Log GPS data
+        doc["fix_status"] = msg_gps_event->rmc_responses[rmc_resp].fix_status;
+        doc["latitude"] = msg_gps_event->rmc_responses[rmc_resp].lat;
+        doc["lat_dir"] = msg_gps_event->rmc_responses[rmc_resp].lat_dir;
+        doc["longitude"] = msg_gps_event->rmc_responses[rmc_resp].lon;
+        doc["lon_dir"] = msg_gps_event->rmc_responses[rmc_resp].lon_dir;
+        doc["speed"] = msg_gps_event->rmc_responses[rmc_resp].speed;
+        doc["angle"] = msg_gps_event->rmc_responses[rmc_resp].angle;
+        if (!LogJSONDoc(doc))
+            return false;
+    }
+
+    // Log GGA responses
+    for (pb_size_t gga_resp = 0; gga_resp < msg_gps_event->gga_responses_count; gga_resp++) {
+        WS_DEBUG_PRINTLN("[SD] Logging GGA response...");
+        // Log GPS DateTime
+        if (msg_gps_event->gga_responses[gga_resp].has_datetime) {
+            wippersnapper_gps_GPSDateTime gps_dt = msg_gps_event->gga_responses[gga_resp].datetime;
+            DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, 
+                                  gps_dt.hour, gps_dt.minute, gps_dt.seconds);
+            doc["timestamp"] = gps_datetime.unixtime();
+        }
+        // Log GPS data
+        doc["latitude"] = msg_gps_event->gga_responses[gga_resp].lat;
+        doc["lat_dir"] = msg_gps_event->gga_responses[gga_resp].lat_dir;
+        doc["longitude"] = msg_gps_event->gga_responses[gga_resp].lon;
+        doc["lon_dir"] = msg_gps_event->gga_responses[gga_resp].lon_dir;
+        doc["fix_quality"] = msg_gps_event->gga_responses[gga_resp].fix_quality;
+        doc["num_satellites"] = msg_gps_event->gga_responses[gga_resp].num_satellites;
+        doc["hdop"] = msg_gps_event->gga_responses[gga_resp].hdop;
+        doc["altitude"] = msg_gps_event->gga_responses[gga_resp].altitude;
+        doc["geoid_height"] = msg_gps_event->gga_responses[gga_resp].geoid_height;
+        if (!LogJSONDoc(doc))
+            return false;
+    }
+
+    return true;
+}
+
 #ifdef OFFLINE_MODE_DEBUG
-/**************************************************************************/
 /*!
     @brief  Waits for a valid JSON string to be received via the hardware's
             serial input or from a hardcoded test JSON string.
     @returns True if a valid JSON string was received, False otherwise.
 */
-/**************************************************************************/
 void ws_sdcard::waitForSerialConfig() {
   json_test_data = "{"
                    "\"exportVersion\": \"1.0.0\","
