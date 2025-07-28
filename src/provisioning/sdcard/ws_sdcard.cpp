@@ -499,9 +499,12 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
   // set UartDeviceType
   const char *device_type = component["deviceType"] | "UNKNOWN";
   if (strcmp(device_type, "GPS") == 0) {
-    msg_uart_add.cfg_device.device_type =
-        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
-    // Fill the config field
+    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
+    msg_uart_add.cfg_device.which_config = wippersnapper_uart_UartDeviceConfig_gps_tag;
+    msg_uart_add.cfg_device.config.gps.period = component["period"] | 0.0;
+    // TODO: We do not have parsing for GPS PMTK or UBX implemented yet
+    // This is a minimum possible implementation
+    // TODO: We will want to add parsing for GPS PMTK, at least
   } else if (strcmp(device_type, "PM25AQI") == 0) {
     msg_uart_add.cfg_device.device_type =
         wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
