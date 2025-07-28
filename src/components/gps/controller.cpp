@@ -120,15 +120,7 @@ void GPSController::update() {
         } */
 
     // Did read period elapse?
-    // TODO: Why is it constantly polling the GPS hardware from the config.json?
-    // Is this a bug with setting the poll period? Print it out
     ulong cur_time = millis();
-    WS_DEBUG_PRINT("drv->GetPollPeriodPrv(): ");
-    WS_DEBUG_PRINT(drv->GetPollPeriodPrv());
-    WS_DEBUG_PRINT(" drv->GetPollPeriod(): ");
-    WS_DEBUG_PRINTLN(drv->GetPollPeriod());
-    WS_DEBUG_PRINT("cur_time: ");
-    WS_DEBUG_PRINTLN(cur_time);
     if (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod())
       continue; // Not yet elapsed, skip this driver
 
@@ -145,8 +137,6 @@ void GPSController::update() {
     bool has_gps_event = false;
     while (drv->NmeaBufPop(nmea_sentence) != -1) {
       // Let the driver parse the NMEA sentence
-      WS_DEBUG_PRINT("[gps] Parsing NMEA sentence: ");
-      WS_DEBUG_PRINTLN(nmea_sentence);
       if (!drv->ParseNMEASentence(nmea_sentence)) {
         continue; // Skip this sentence if parsing failed
       } else {
@@ -154,7 +144,6 @@ void GPSController::update() {
       }
 
       // Using the Model, process the NMEA sentence into a GPSEvent
-      WS_DEBUG_PRINTLN("[gps] Processing NMEA sentence...");
       _gps_model->ProcessNMEASentence(nmea_sentence, drv);
 
       // We did not create a GPSEvent because the NMEA sentences were not
@@ -177,13 +166,9 @@ void GPSController::update() {
           }
         } else {
           // Log the GPSEvent to SD card
-          WS_DEBUG_PRINT("[gps] Logging GPSEvent to SD card...");
-          /*           if
-             (!WsV2._sdCardV2->LogEventGps(_gps_model->GetGPSEvent())) {
-                        WS_DEBUG_PRINTLN("[gps] ERROR: Failed to log GPSEvent to
-             SD!"); statusLEDSolid(WS_LED_STATUS_FS_WRITE); } else {
-                        WS_DEBUG_PRINTLN("OK!");
-                    } */
+          if (!WsV2._sdCardV2->LogEventGps(_gps_model->GetGPSEvent())) {
+            WS_DEBUG_PRINTLN("[gps] ERROR: Failed to log GPSEvent!");
+          }
         }
       } else {
         WS_DEBUG_PRINTLN("[gps] ERROR: Failed to encode GPSEvent!");

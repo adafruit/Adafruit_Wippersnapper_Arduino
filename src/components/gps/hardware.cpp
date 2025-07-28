@@ -542,9 +542,6 @@ void GPSHardware::PollStoreSentences() {
     }
   } else if (_driver_type == GPS_DRV_UBLOX) {
     // Read from the GPS module for update_rate milliseconds
-    // TODO: Too many calls to WS_DEBUG
-    // TOO: Maybe just delay for update_rate instead of constantly polling the
-    // hw serial for avability? more performant
     ulong update_rate = 1000 / _nmea_update_rate;
     ulong start_time = millis();
     while (millis() - start_time < update_rate) {
@@ -564,10 +561,7 @@ void GPSHardware::PollStoreSentences() {
       nmeaBuffer += c;
       // Check for end of NMEA sentence
       if (c == '\n') {
-        WS_DEBUG_PRINT("[gps] GOT NMEA sentence: ");
-        WS_DEBUG_PRINTLN(nmeaBuffer.c_str());
         // Push the NMEA sentence to the buffer
-        WS_DEBUG_PRINTLN("[gps] Pushing NMEA sentence to buffer...");
         if (NmeaBufPush(nmeaBuffer.c_str()) != 0) {
           WS_DEBUG_PRINTLN(
               "[gps] ERROR: Unable to push NMEA sentence to buffer!");

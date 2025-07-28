@@ -1378,7 +1378,6 @@ void I2cController::update() {
 
     // Optionally configure the I2C MUX
     uint32_t mux_channel = drv->GetMuxChannel();
-    WS_DEBUG_PRINTLN(mux_channel);
     if (drv->HasMux())
       ConfigureMuxChannel(mux_channel, drv->HasAltI2CBus());
 

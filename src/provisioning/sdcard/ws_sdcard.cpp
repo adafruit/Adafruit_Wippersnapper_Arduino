@@ -499,8 +499,10 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
   // set UartDeviceType
   const char *device_type = component["deviceType"] | "UNKNOWN";
   if (strcmp(device_type, "GPS") == 0) {
-    msg_uart_add.cfg_device.device_type = wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
-    msg_uart_add.cfg_device.which_config = wippersnapper_uart_UartDeviceConfig_gps_tag;
+    msg_uart_add.cfg_device.device_type =
+        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
+    msg_uart_add.cfg_device.which_config =
+        wippersnapper_uart_UartDeviceConfig_gps_tag;
     msg_uart_add.cfg_device.config.gps.period = component["period"] | 0.0;
     // TODO: We do not have parsing for GPS PMTK or UBX implemented yet
     // This is a minimum possible implementation
@@ -907,7 +909,6 @@ bool ws_sdcard::ParseFileConfig() {
 */
 /**************************************************************************/
 bool ws_sdcard::ParseComponents(JsonArray &components) {
-  delay(9000);
   if (components.isNull()) {
     WS_DEBUG_PRINTLN("[SD] Error: File missing required components[] array");
     return false;
@@ -1359,7 +1360,6 @@ bool ws_sdcard::LogEventGps(wippersnapper_gps_GPSEvent *msg_gps_event) {
   // Log RMC responses
   for (pb_size_t rmc_resp = 0; rmc_resp < msg_gps_event->rmc_responses_count;
        rmc_resp++) {
-    WS_DEBUG_PRINTLN("[SD] Logging RMC response...");
     // Log GPS DateTime
     if (msg_gps_event->rmc_responses[rmc_resp].has_datetime) {
       wippersnapper_gps_GPSDateTime gps_dt =
@@ -1376,14 +1376,15 @@ bool ws_sdcard::LogEventGps(wippersnapper_gps_GPSEvent *msg_gps_event) {
     doc["lon_dir"] = msg_gps_event->rmc_responses[rmc_resp].lon_dir;
     doc["speed"] = msg_gps_event->rmc_responses[rmc_resp].speed;
     doc["angle"] = msg_gps_event->rmc_responses[rmc_resp].angle;
-    if (!LogJSONDoc(doc))
+    if (!LogJSONDoc(doc)) {
+      WS_DEBUG_PRINTLN("[SD] Error: Unable to log RMC response!");
       return false;
+    }
   }
 
   // Log GGA responses
   for (pb_size_t gga_resp = 0; gga_resp < msg_gps_event->gga_responses_count;
        gga_resp++) {
-    WS_DEBUG_PRINTLN("[SD] Logging GGA response...");
     // Log GPS DateTime
     if (msg_gps_event->gga_responses[gga_resp].has_datetime) {
       wippersnapper_gps_GPSDateTime gps_dt =
@@ -1403,8 +1404,10 @@ bool ws_sdcard::LogEventGps(wippersnapper_gps_GPSEvent *msg_gps_event) {
     doc["hdop"] = msg_gps_event->gga_responses[gga_resp].hdop;
     doc["altitude"] = msg_gps_event->gga_responses[gga_resp].altitude;
     doc["geoid_height"] = msg_gps_event->gga_responses[gga_resp].geoid_height;
-    if (!LogJSONDoc(doc))
+    if (!LogJSONDoc(doc)) {
+      WS_DEBUG_PRINTLN("[SD] Error: Unable to log GGA response!");
       return false;
+    }
   }
 
   return true;
