@@ -24,6 +24,7 @@
 #define CMD_MTK_QUERY_FW_RESP                                                  \
   "$PMTK705" ///< Response from querying MediaTek firmware version without the
              ///< ReleaseStr
+#define MTK_QUERY_FW_TIMEOUT 2000 ///< Timeout for MediaTek firmware query in ms
 #define CMD_MTK_CHECK_ANTENNA "$PGCMD,33,1*6C" ///< Command to check antenna
 #define DEFAULT_MTK_NMEA_UPDATE_RATE 1  ///< Default NMEA update rate in Hz
 #define DEFAULT_MTK_NMEA_BAUD_RATE 9600 ///< Default NMEA baud rate in bits per

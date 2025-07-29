@@ -323,14 +323,12 @@ bool GPSHardware::DetectMtkUart() {
   while (_hw_serial->available() > 0) {
     _hw_serial->read();
   }
-  _hw_serial->println(CMD_MTK_QUERY_FW);
+
   // Query MediaTek firmware version
-  // Wait for response
-  uint16_t timeout = 2000; // 1 second timeout
+  uint16_t timeout = MTK_QUERY_FW_TIMEOUT;
   while (_hw_serial->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
     delay(1);
   }
-
   if (timeout == 0)
     return false;
 
