@@ -76,9 +76,14 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() override {
-    delay(3000); // Wait for the sensor to boot up
-                 /*     if (IsSoftwareSerial)
-                       return _pm25->begin_UART(_sw_serial); */
+    if (_hw_serial == nullptr)
+      return false;
+
+    _pm25 = new Adafruit_PM25AQI();
+    if (_pm25 == nullptr)
+        return false;
+
+    delay(1000); // Wait for the sensor to boot
     return _pm25->begin_UART(_hw_serial);
   }
 

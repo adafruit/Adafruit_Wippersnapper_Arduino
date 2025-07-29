@@ -474,7 +474,6 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
 */
 bool ws_sdcard::ParseUartAdd(JsonObject &component,
                              wippersnapper_uart_UartAdd &msg_uart_add) {
-  delay(5500);
   // Configure the Serial
   msg_uart_add.has_cfg_serial = true;
   snprintf(msg_uart_add.cfg_serial.pin_rx, sizeof(msg_uart_add.cfg_serial.pin_rx), 
@@ -523,7 +522,7 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
           ParseSensorType(sensor_type["type"]);
       sensor_type_count++;
     }
-    msg_uart_add.cfg_device.config.generic_uart_input.sensor_types_count =
+    msg_uart_add.cfg_device.config.pm25aqi.sensor_types_count =
         sensor_type_count;
   } else if (strcmp(device_type, "GENERIC-INPUT") == 0) {
     // TODO: Fill device name (requires an update to uart.pb.h so it's not a
@@ -1427,16 +1426,10 @@ bool ws_sdcard::LogEventUart(
   doc["uart_device_id"] = msg_uart_input_event->device_id;
   doc["uart_port"] = msg_uart_input_event->uart_nbr;
 
-  WS_DEBUG_PRINT("UART Events: ");
-  WS_DEBUG_PRINTLN(msg_uart_input_event->events_count);
   // Log each event
   for (pb_size_t i = 0; i < msg_uart_input_event->events_count; i++) {
     doc["value"] = msg_uart_input_event->events[i].value.float_value;
     doc["si_unit"] = SensorTypeToSIUnit(msg_uart_input_event->events[i].type);
-    WS_DEBUG_PRINT("Logging UART Event: ");
-    WS_DEBUG_PRINTLN(doc["value"].as<float>());
-    WS_DEBUG_PRINT("SI Unit: ");
-    WS_DEBUG_PRINTLN(doc["si_unit"].as<const char *>());
   }
 
   if (!LogJSONDoc(doc))

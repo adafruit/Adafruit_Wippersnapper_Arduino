@@ -57,6 +57,22 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   // TODO: Have we already configured this UART hardware instance?!
   WS_DEBUG_PRINTLN("[uart] Configuring UART hardware instance...");
   wippersnapper_uart_UartSerialConfig cfg_serial = add_msg->cfg_serial;
+  // Print out the UART configuration for debugging
+  WS_DEBUG_PRINTLN("[uart] UART Serial Configuration:");
+  WS_DEBUG_PRINT("[uart] RX Pin: ");
+  WS_DEBUG_PRINTLN(cfg_serial.pin_rx);
+  WS_DEBUG_PRINT("[uart] TX Pin: ");
+  WS_DEBUG_PRINTLN(cfg_serial.pin_tx);
+  WS_DEBUG_PRINT("[uart] UART Number: ");
+  WS_DEBUG_PRINTLN(cfg_serial.uart_nbr);
+  WS_DEBUG_PRINT("[uart] Baud Rate: ");
+  WS_DEBUG_PRINTLN(cfg_serial.baud_rate);
+  WS_DEBUG_PRINT("[uart] Packet Format: ");
+  WS_DEBUG_PRINTLN(cfg_serial.format);
+  WS_DEBUG_PRINT("[uart] Timeout: ");
+  WS_DEBUG_PRINTLN(cfg_serial.timeout);
+  WS_DEBUG_PRINT("[uart] Use Software Serial: ");
+  WS_DEBUG_PRINTLN(cfg_serial.use_sw_serial ? "True" : "False");
   UARTHardware *uart_hardware = new UARTHardware(cfg_serial);
   if (!uart_hardware->ConfigureSerial()) {
     WS_DEBUG_PRINTLN("[uart] ERROR: Failed to configure UART hardware!");
@@ -128,7 +144,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
         cfg_device.config.pm25aqi.sensor_types,
         cfg_device.config.pm25aqi.sensor_types_count);
     uart_driver->SetSensorPeriod(cfg_device.config.pm25aqi.period);
-    WS_DEBUG_PRINT("added!");
+    WS_DEBUG_PRINTLN("added!");
     break;
   case wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_TM22XX:
     WS_DEBUG_PRINTLN("[uart] TM22XX device type not implemented!");
@@ -146,6 +162,7 @@ bool UARTController::Handle_UartAdd(pb_istream_t *stream) {
   if (!is_gps_drv) {
     WS_DEBUG_PRINTLN("[uart] STD UART drv...");
     did_begin = uart_driver->begin();
+    WS_DEBUG_PRINTLN("[uart] STD UART driver initialized!");
     if (did_begin) {
       WS_DEBUG_PRINTLN("[uart] UART driver initialized successfully!");
       _uart_drivers.push_back(uart_driver);
