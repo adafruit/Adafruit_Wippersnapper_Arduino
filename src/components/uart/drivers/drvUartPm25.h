@@ -96,16 +96,10 @@ public:
   */
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
     PM25_AQI_Data data;
-    if (!_pm25->read(&data)) {
-      // TODO: Debug - remove for production PR
-      WS_DEBUG_PRINTLN("Failed to read PM10STD data");
+    if (!_pm25->read(&data))
       return false; // couldn't read data
-    }
 
     pm10StdEvent->pm10_std = (float)data.pm10_standard;
-    // TODO: Debug - remove for production PR
-    WS_DEBUG_PRINT("PM10STD: ");
-    WS_DEBUG_PRINTLN(pm10StdEvent->pm10_std);
     return true;
   }
 
@@ -119,14 +113,9 @@ public:
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
     PM25_AQI_Data data;
     if (!_pm25->read(&data)) {
-      // TODO: Debug - remove for production PR
-      WS_DEBUG_PRINTLN("Failed to read PM25STD data");
       return false; // couldn't read data
-    }
+
     pm25StdEvent->pm25_std = (float)data.pm25_standard;
-    // TODO: Debug - remove for production PR
-    WS_DEBUG_PRINT("PM25STD: ");
-    WS_DEBUG_PRINTLN(pm25StdEvent->pm25_std);
     return true;
   }
 
@@ -139,16 +128,10 @@ public:
   */
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
     PM25_AQI_Data data;
-    if (!_pm25->read(&data)) {
-      // TODO: Debug - remove for production PR
-      WS_DEBUG_PRINTLN("Failed to read PM100STD data");
+    if (!_pm25->read(&data))
       return false; // couldn't read data
-    }
 
     pm100StdEvent->pm100_std = (float)data.pm100_standard;
-    // TODO: Debug - remove for production PR
-    WS_DEBUG_PRINT("PM100STD: ");
-    WS_DEBUG_PRINTLN(pm100StdEvent->pm100_std);
     return true;
   }
 

@@ -422,6 +422,7 @@ void Wippersnapper_FS::AddI2cDeviceToFileConfig(
   }
 }
 
+
 /*!
     @brief    Writes the in-memory config document to the filesystem.
     @returns  True if the file was successfully written, False otherwise.
@@ -438,7 +439,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
-    fsHalt("Could not create the config file!");
+    HaltFilesystem("Could not create the config file!");
     return false;
   }
   _doc_cfg.shrinkToFit();
@@ -450,11 +451,10 @@ bool Wippersnapper_FS::WriteFileConfig() {
   flash_v2.syncBlocks();
   refreshMassStorage();
   delay(500);
-  initUSBMSC();
+  InitUsbMsc();
   WS_PRINTER.flush();
   delay(2500);
-  WS_PRINTER.println("Config file written to flash!"); // List current config /
-                                                       // components and periods
+  WS_PRINTER.println("Config file written to flash!"); // List current config / components and periods
   WsV2._i2c_controller->PrintAllDrivers();
   return true;
 }
