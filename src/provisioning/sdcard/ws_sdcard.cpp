@@ -476,10 +476,12 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
                              wippersnapper_uart_UartAdd &msg_uart_add) {
   // Configure the Serial
   msg_uart_add.has_cfg_serial = true;
-  snprintf(msg_uart_add.cfg_serial.pin_rx, sizeof(msg_uart_add.cfg_serial.pin_rx), 
-           "%d", component["pinRx"] | -1);
-  snprintf(msg_uart_add.cfg_serial.pin_tx, sizeof(msg_uart_add.cfg_serial.pin_tx), 
-           "%d", component["pinTx"] | -1);
+  snprintf(msg_uart_add.cfg_serial.pin_rx,
+           sizeof(msg_uart_add.cfg_serial.pin_rx), "%d",
+           component["pinRx"] | -1);
+  snprintf(msg_uart_add.cfg_serial.pin_tx,
+           sizeof(msg_uart_add.cfg_serial.pin_tx), "%d",
+           component["pinTx"] | -1);
   msg_uart_add.cfg_serial.uart_nbr = component["uartNbr"] | 0;
   msg_uart_add.cfg_serial.baud_rate = component["baudRate"] | 9600;
   msg_uart_add.cfg_serial.format =

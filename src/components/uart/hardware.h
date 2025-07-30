@@ -56,12 +56,12 @@ public:
 
 private:
   wippersnapper_uart_UartSerialConfig
-      _config;                         ///< The UART serial configuration
-  #ifdef ARDUINO_ARCH_RP2040
+      _config; ///< The UART serial configuration
+#ifdef ARDUINO_ARCH_RP2040
   SerialUART *_hwSerial = nullptr; ///< Pointer to the SerialUART instance
-  #else
+#else
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance for this bus
-  #endif
+#endif
 #if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
 #endif                                 // HAS_SW_SERIAL

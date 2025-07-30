@@ -54,8 +54,8 @@ public:
               The port number for the UART device corresponding to the Serial
     instance.
 */
-  drvUartPm25(SoftwareSerial *sw_serial,
-              const char *driver_name, uint32_t port_num)
+  drvUartPm25(SoftwareSerial *sw_serial, const char *driver_name,
+              uint32_t port_num)
       : drvUartBase(sw_serial, driver_name, port_num) {
     // Handled by drvUartBase constructor
   }
@@ -81,7 +81,7 @@ public:
 
     _pm25 = new Adafruit_PM25AQI();
     if (_pm25 == nullptr)
-        return false;
+      return false;
 
     delay(1000); // Wait for the sensor to boot
     return _pm25->begin_UART(_hw_serial);
