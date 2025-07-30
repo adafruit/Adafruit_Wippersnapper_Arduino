@@ -17,6 +17,9 @@
 #include "Wippersnapper_V2.h"
 #include <Arduino.h>
 #include <HardwareSerial.h>
+#ifdef ARDUINO_ARCH_RP2040
+#include <SerialUART.h>
+#endif
 
 #if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_SAMD) ||              \
     defined(ARDUINO_ARCH_ESP8266)
@@ -54,7 +57,11 @@ public:
 private:
   wippersnapper_uart_UartSerialConfig
       _config;                         ///< The UART serial configuration
+  #ifdef ARDUINO_ARCH_RP2040
+  SerialUART *_hwSerial = nullptr; ///< Pointer to the SerialUART instance
+  #else
   HardwareSerial *_hwSerial = nullptr; ///< HardwareSerial instance for this bus
+  #endif
 #if HAS_SW_SERIAL
   SoftwareSerial *_swSerial = nullptr; ///< SoftwareSerial instance for this bus
 #endif                                 // HAS_SW_SERIAL

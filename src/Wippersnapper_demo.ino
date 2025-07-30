@@ -10,7 +10,8 @@
 // All text above must be included in any redistribution.
 
 #include "ws_adapters.h"
-ws_adapter_wifi wipper;
+//ws_adapter_wifi wipper;
+ws_adapter_offline wipper;
 #define WS_DEBUG // Enable debug output!
 
 void setup() {

@@ -112,7 +112,7 @@ public:
   */
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
     PM25_AQI_Data data;
-    if (!_pm25->read(&data)) {
+    if (!_pm25->read(&data))
       return false; // couldn't read data
 
     pm25StdEvent->pm25_std = (float)data.pm25_standard;

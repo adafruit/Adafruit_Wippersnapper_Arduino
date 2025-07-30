@@ -439,7 +439,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
-    HaltFilesystem("Could not create the config file!");
+    fsHalt("Could not create the config file!");
     return false;
   }
   _doc_cfg.shrinkToFit();
@@ -451,7 +451,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   flash_v2.syncBlocks();
   refreshMassStorage();
   delay(500);
-  InitUsbMsc();
+  initUSBMSC();
   WS_PRINTER.flush();
   delay(2500);
   WS_PRINTER.println("Config file written to flash!"); // List current config / components and periods

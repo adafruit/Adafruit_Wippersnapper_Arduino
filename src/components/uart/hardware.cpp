@@ -126,20 +126,37 @@ bool UARTHardware::ConfigureSerial() {
     _baud_rate = _config.baud_rate;
 #endif // HAS_SW_SERIAL
   } else {
+#if ARDUINO_ARCH_ESP32
     // Create a new HardwareSerial instance
     _hwSerial = new HardwareSerial(_config.uart_nbr);
-    if (_hwSerial == nullptr) {
-      WS_DEBUG_PRINTLN(
-          "[uart] ERROR: Failed to allocate HardwareSerial instance!");
+    if (_hwSerial == nullptr)
       return false;
-    }
-// Calls to HardwareSerial begin() differ based on the platform
-#if ARDUINO_ARCH_ESP32
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg, rx_pin,
                      tx_pin, false, (unsigned long)_config.timeout);
+#elif ARDUINO_ARCH_RP2040
+    // Create a new SerialUART instance
+    uart_inst_t *uart_hw = nullptr;
+    // determine which bus to use (RP2040 only supports 2 hardware UARTs)
+    if (_config.uart_nbr == 0) {
+      uart_hw = uart0;
+    } else if (_config.uart_nbr == 1) {
+      uart_hw = uart1;
+    } else {
+      WS_DEBUG_PRINTLN("[uart] ERROR: Invalid UART bus number specified!");
+      return false;
+    }
+    _hwSerial = new SerialUART(uart_hw, tx_pin, rx_pin);
+    if (_hwSerial == nullptr) {
+      return false;
+    }
+    _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #else
-    // RP2040, ESP8266, SAMD, and other platforms
+    // ESP8266, SAMD, and other platforms
     // take the default Arduino/Wiring API arguments
+    // Create a new HardwareSerial instance
+    _hwSerial = new HardwareSerial(_config.uart_nbr);
+    if (_hwSerial == nullptr)
+      return false;
     _hwSerial->begin((unsigned long)_config.baud_rate, (uint32_t)cfg);
 #endif
     _baud_rate = _config.baud_rate;
