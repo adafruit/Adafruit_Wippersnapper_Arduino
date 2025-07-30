@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_INA219.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a INA219 sensor.
 */
-/**************************************************************************/
 class drvIna219 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a INA219 sensor.
       @param    i2c
@@ -37,26 +34,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvIna219(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an INA219 sensor.
   */
-  /*******************************************************************************/
   ~drvIna219() { delete _ina219; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the INA219 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() {
     _ina219 = new Adafruit_INA219(_address);
     if (!_ina219->begin(_i2c))
@@ -67,7 +59,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a voltage sensor and converts the
                 reading into the expected SI unit.
@@ -76,7 +67,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventVoltage(sensors_event_t *voltageEvent) {
     float shuntvoltage_mV = _ina219->getShuntVoltage_mV();
     float busvoltage_V = _ina219->getBusVoltage_V();

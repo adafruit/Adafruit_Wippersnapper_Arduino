@@ -29,33 +29,26 @@
 
 extern Wippersnapper_V2 WsV2;
 
-/****************************************************************************/
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
-/****************************************************************************/
 class ws_offline_pico : public Wippersnapper_V2 {
 
 public:
-  /**************************************************************************/
   /*!
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
-  /**************************************************************************/
   ws_offline_pico() : Wippersnapper_V2() {
     // Do-nothing
   }
 
-  /**************************************************************************/
   /*!
   @brief  Destructor
   */
-  /**************************************************************************/
   ~ws_offline_pico() {
     // Do-nothing - this class has no resources to release
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   @param  ssid
@@ -63,74 +56,61 @@ public:
   @param  ssidPassword
             WiFi network's password.
   */
-  /********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: set_ssid_pass() is not "
                      "supported in this implementation!");
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   */
-  /**********************************************************/
   void set_ssid_pass() {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: set_ssid_pass() is not "
                      "supported in this implementation!");
   }
 
-  /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
   @returns True if `_network_ssid` is found, False otherwise.
   */
-  /***********************************************************/
   bool check_valid_ssid() {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: check_valid_ssid() is not "
                      "supported in this implementation!");
     return false; // return an invalid value
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the RPi Pico's unique client identifier
   @note   On RPi Pico, the UID is the MAC address.
   */
-  /********************************************************/
   void getMacAddr() {
     // Do Nothing
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the current network RSSI value
   @return int32_t RSSI value
   */
-  /********************************************************/
   int32_t getRSSI() {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: getRSSI() is not supported in "
                      "this implementation!");
     return -9999; // return an invalid value
   }
 
-  /********************************************************/
   /*!
   @brief  Initializes the MQTT client
   @param  clientID
           MQTT client identifier
   */
-  /********************************************************/
   void setupMQTTClient(const char *clientID) {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: setupMQTTClient() is not "
                      "supported in this implementation!");
   }
 
-  /********************************************************/
   /*!
   @brief  Returns the network status of an RPi Pico.
   @return ws_status_t
   */
-  /********************************************************/
   ws_status_t networkStatus() {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: networkStatus() is not "
                      "supported in this implementation!");
@@ -138,12 +118,10 @@ public:
                                 // a network
   }
 
-  /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
   @return Pico
   */
-  /*******************************************************************/
   const char *connectionType() {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: connectionType() is not "
                      "supported in this implementation!");
@@ -151,21 +129,17 @@ public:
   }
 
 protected:
-  /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
   */
-  /**************************************************************************/
   void _connect() {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: _connect() is not supported in "
                      "this implementation!");
   }
 
-  /**************************************************************************/
   /*!
       @brief  Disconnects from the wireless network.
   */
-  /**************************************************************************/
   void _disconnect() {
     WS_DEBUG_PRINTLN("[ws_offline_pico] Error: _disconnect() is not supported "
                      "in this implementation!");

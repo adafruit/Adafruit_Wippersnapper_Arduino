@@ -21,16 +21,13 @@
 
 #define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the BME680 temperature
             and humidity sensor.
 */
-/**************************************************************************/
 class drvBme680 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an BME680 sensor.
       @param    i2c
@@ -42,26 +39,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvBme680(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an BME680 sensor.
   */
-  /*******************************************************************************/
   ~drvBme680() { delete _bme; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the BME680 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _bme = new Adafruit_BME680(_i2c);
 
@@ -87,15 +79,12 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Performs a reading in blocking mode.
       @returns  True if the reading succeeded, False otherwise.
   */
-  /*******************************************************************************/
   bool bmePerformReading() { return _bme->performReading(); }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the BME680's current temperature.
       @param    tempEvent
@@ -103,7 +92,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     if (!bmePerformReading())
       return false;
@@ -111,7 +99,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the BME680's current relative humidity reading.
       @param    humidEvent
@@ -119,7 +106,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     if (!bmePerformReading())
       return false;
@@ -127,7 +113,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a pressure sensor and converts
                 the reading into the expected SI unit.
@@ -136,7 +121,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     if (!bmePerformReading())
       return false;
@@ -144,7 +128,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a the BME680's altitude sensor into an event.
       @param    altitudeEvent
@@ -152,7 +135,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     if (!bmePerformReading())
       return false;
@@ -160,7 +142,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Base implementation - Reads a gas resistance sensor and converts
                 the reading into the expected SI unit.
@@ -169,7 +150,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   virtual bool getEventGasResistance(sensors_event_t *gasEvent) {
     if (!bmePerformReading())
       return false;

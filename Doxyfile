@@ -90,7 +90,7 @@ CREATE_SUBDIRS         = NO
 # Minimum value: 0, maximum value: 8, default value: 8.
 # This tag requires that the tag CREATE_SUBDIRS is set to YES.
 
-CREATE_SUBDIRS_LEVEL   = 8
+# CREATE_SUBDIRS_LEVEL   = 8 # Unsupported by current Doxygen version
 
 # If the ALLOW_UNICODE_NAMES tag is set to YES, doxygen will allow non-ASCII
 # characters to appear in the names of generated files. If set to NO, non-ASCII
@@ -219,7 +219,7 @@ JAVADOC_AUTOBRIEF      = NO
 # interpreted by doxygen.
 # The default value is: NO.
 
-JAVADOC_BANNER         = NO
+# JAVADOC_BANNER         = NO # Unsupported by current Doxygen version
 
 # If the QT_AUTOBRIEF tag is set to YES then doxygen will interpret the first
 # line (until the first dot) of a Qt-style comment as the brief description. If
@@ -247,7 +247,7 @@ MULTILINE_CPP_IS_BRIEF = NO
 # documentation blocks is shown as doxygen documentation.
 # The default value is: YES.
 
-PYTHON_DOCSTRING       = YES
+# PYTHON_DOCSTRING       = YES # Unsupported by current Doxygen version
 
 # If the INHERIT_DOCS tag is set to YES then an undocumented member inherits the
 # documentation from any documented member that it re-implements.
@@ -319,7 +319,7 @@ OPTIMIZE_OUTPUT_VHDL   = NO
 # separated into more groups, etc.
 # The default value is: NO.
 
-OPTIMIZE_OUTPUT_SLICE  = NO
+# OPTIMIZE_OUTPUT_SLICE  = NO # Unsupported by current Doxygen version
 
 # Doxygen selects the parser to use depending on the extension of the files it
 # parses. With this tag you can assign which parser to use for a given
@@ -372,7 +372,7 @@ TOC_INCLUDE_HEADINGS   = 0
 # The default value is: DOXYGEN.
 # This tag requires that the tag MARKDOWN_SUPPORT is set to YES.
 
-MARKDOWN_ID_STYLE      = DOXYGEN
+# MARKDOWN_ID_STYLE      = DOXYGEN # Unsupported by current Doxygen version
 
 # When enabled doxygen tries to link words that correspond to documented
 # classes, or namespaces to their corresponding documentation. Such a link can
@@ -496,7 +496,7 @@ LOOKUP_CACHE_SIZE      = 0
 # DOT_NUM_THREADS setting.
 # Minimum value: 0, maximum value: 32, default value: 1.
 
-NUM_PROC_THREADS       = 1
+# NUM_PROC_THREADS       = 1 # Unsupported by current Doxygen version
 
 # If the TIMESTAMP tag is set different from NO then each generated page will
 # contain the date or date and time when the page was generated. Setting this to
@@ -504,7 +504,7 @@ NUM_PROC_THREADS       = 1
 # Possible values are: YES, NO, DATETIME and DATE.
 # The default value is: NO.
 
-TIMESTAMP              = NO
+# TIMESTAMP              = NO # Unsupported by current Doxygen version
 
 #---------------------------------------------------------------------------
 # Build related configuration options
@@ -530,7 +530,7 @@ EXTRACT_PRIVATE        = NO
 # methods of a class will be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PRIV_VIRTUAL   = NO
+# EXTRACT_PRIV_VIRTUAL   = NO # Unsupported by current Doxygen version
 
 # If the EXTRACT_PACKAGE tag is set to YES, all members with package or internal
 # scope will be included in the documentation.
@@ -574,7 +574,7 @@ EXTRACT_ANON_NSPACES   = NO
 # parameters remain unnamed in the output.
 # The default value is: YES.
 
-RESOLVE_UNNAMED_PARAMS = YES
+# RESOLVE_UNNAMED_PARAMS = YES # Unsupported by current Doxygen version
 
 # If the HIDE_UNDOC_MEMBERS tag is set to YES, doxygen will hide all
 # undocumented members inside documented classes or files. If set to NO these
@@ -649,7 +649,7 @@ HIDE_COMPOUND_REFERENCE= NO
 # will show which file needs to be included to use the class.
 # The default value is: YES.
 
-SHOW_HEADERFILE        = YES
+# SHOW_HEADERFILE        = YES # Unsupported by current Doxygen version
 
 # If the SHOW_INCLUDE_FILES tag is set to YES then doxygen will put a list of
 # the files that are included by a file in the documentation of that file.
@@ -867,7 +867,7 @@ WARN_IF_DOC_ERROR      = YES
 # parameters have no documentation without warning.
 # The default value is: YES.
 
-WARN_IF_INCOMPLETE_DOC = YES
+# WARN_IF_INCOMPLETE_DOC = YES # Unsupported by current Doxygen version
 
 # This WARN_NO_PARAMDOC option can be enabled to get warnings for functions that
 # are documented, but have no documentation for their parameters or return
@@ -885,7 +885,7 @@ WARN_NO_PARAMDOC       = YES
 # will automatically be disabled.
 # The default value is: NO.
 
-WARN_IF_UNDOC_ENUM_VAL = NO
+# WARN_IF_UNDOC_ENUM_VAL = NO # Unsupported by current Doxygen version
 
 # If the WARN_AS_ERROR tag is set to YES then doxygen will immediately stop when
 # a warning is encountered. If the WARN_AS_ERROR tag is set to FAIL_ON_WARNINGS
@@ -922,7 +922,7 @@ WARN_FORMAT            = "$file:$line: $text"
 # See also: WARN_FORMAT
 # The default value is: at line $line of file $file.
 
-WARN_LINE_FORMAT       = "at line $line of file $file"
+# WARN_LINE_FORMAT       = "at line $line of file $file" # Unsupported by current Doxygen version
 
 # The WARN_LOGFILE tag can be used to specify a file to which warning and error
 # messages should be written. If left blank the output is written to standard
@@ -963,7 +963,7 @@ INPUT_ENCODING         = UTF-8
 # form: pattern=encoding (like *.php=ISO-8859-1). See cfg_input_encoding
 # "INPUT_ENCODING" for further information on supported encodings.
 
-INPUT_FILE_ENCODING    =
+# INPUT_FILE_ENCODING    = # Unsupported by current Doxygen version
 
 # If the value of the INPUT tag contains directories, you can use the
 # FILE_PATTERNS tag to specify one or more wildcard patterns (like *.cpp and
@@ -1134,7 +1134,7 @@ USE_MDFILE_AS_MAINPAGE =
 # be processed before the automatic comment starts.
 # Minimum value: 7, maximum value: 10000, default value: 72.
 
-FORTRAN_COMMENT_AFTER  = 72
+# FORTRAN_COMMENT_AFTER  = 72 # Unsupported by current Doxygen version
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -1347,7 +1347,7 @@ HTML_EXTRA_FILES       =
 # The default value is: AUTO_LIGHT.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE        = AUTO_LIGHT
+# HTML_COLORSTYLE        = AUTO_LIGHT # Unsupported by current Doxygen version
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. Doxygen
 # will adjust the colors in the style sheet and background images according to
@@ -1388,7 +1388,7 @@ HTML_COLORSTYLE_GAMMA  = 80
 # The default value is: YES.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_DYNAMIC_MENUS     = YES
+# HTML_DYNAMIC_MENUS     = YES # Unsupported by current Doxygen version
 
 # If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML
 # documentation will contain sections that can be hidden and shown after the
@@ -1403,7 +1403,7 @@ HTML_DYNAMIC_SECTIONS  = NO
 # The default value is: YES.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_CODE_FOLDING      = YES
+# HTML_CODE_FOLDING      = YES # Unsupported by current Doxygen version
 
 # With HTML_INDEX_NUM_ENTRIES one can control the preferred number of entries
 # shown in the various tree structured indices initially; the user can expand
@@ -1446,7 +1446,7 @@ DOCSET_FEEDNAME        = "Doxygen generated docs"
 # (such as a company or product suite) can be grouped.
 # This tag requires that the tag GENERATE_DOCSET is set to YES.
 
-DOCSET_FEEDURL         =
+# DOCSET_FEEDURL         = # Unsupported by current Doxygen version
 
 # This tag specifies a string that should uniquely identify the documentation
 # set bundle. This should be a reverse domain-name style string, e.g.
@@ -1543,7 +1543,7 @@ TOC_EXPAND             = NO
 # protocol see https://www.sitemaps.org
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-SITEMAP_URL            =
+# SITEMAP_URL            = # Unsupported by current Doxygen version
 
 # If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and
 # QHP_VIRTUAL_FOLDER are set, an additional index file will be generated that
@@ -1667,7 +1667,7 @@ GENERATE_TREEVIEW      = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-FULL_SIDEBAR           = NO
+# FULL_SIDEBAR           = NO # Unsupported by current Doxygen version
 
 # The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values that
 # doxygen will group on one line in the generated HTML documentation.
@@ -1698,7 +1698,7 @@ EXT_LINKS_IN_WINDOW    = NO
 # The default value is: YES.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-OBFUSCATE_EMAILS       = YES
+# OBFUSCATE_EMAILS       = YES # Unsupported by current Doxygen version
 
 # If the HTML_FORMULA_FORMAT option is set to svg, doxygen will use the pdf2svg
 # tool (see https://github.com/dawbarton/pdf2svg) or inkscape (see
@@ -1709,7 +1709,7 @@ OBFUSCATE_EMAILS       = YES
 # The default value is: png.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_FORMULA_FORMAT    = png
+# HTML_FORMULA_FORMAT    = png # Unsupported by current Doxygen version
 
 # Use this tag to change the font size of LaTeX formulas included as images in
 # the HTML documentation. When you change the font size after a successful
@@ -1724,7 +1724,7 @@ FORMULA_FONTSIZE       = 10
 # to create new LaTeX commands to be used in formulas as building blocks. See
 # the section "Including formulas" for details.
 
-FORMULA_MACROFILE      =
+# FORMULA_MACROFILE      = # Unsupported by current Doxygen version
 
 # Enable the USE_MATHJAX option to render LaTeX formulas using MathJax (see
 # https://www.mathjax.org) which uses client side JavaScript for the rendering
@@ -1746,7 +1746,7 @@ USE_MATHJAX            = NO
 # The default value is: MathJax_2.
 # This tag requires that the tag USE_MATHJAX is set to YES.
 
-MATHJAX_VERSION        = MathJax_2
+# MATHJAX_VERSION        = MathJax_2 # Unsupported by current Doxygen version
 
 # When MathJax is enabled you can set the default output format to be used for
 # the MathJax output. For more details about the output format see MathJax
@@ -1935,7 +1935,7 @@ MAKEINDEX_CMD_NAME     = makeindex
 # The default value is: makeindex.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-LATEX_MAKEINDEX_CMD    = makeindex
+# LATEX_MAKEINDEX_CMD    = makeindex # Unsupported by current Doxygen version
 
 # If the COMPACT_LATEX tag is set to YES, doxygen generates more compact LaTeX
 # documents. This may be useful for small projects and may help to save some
@@ -2069,7 +2069,7 @@ LATEX_BIB_STYLE        = plain
 # LATEX_OUTPUT directory will be used.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-LATEX_EMOJI_DIRECTORY  =
+# LATEX_EMOJI_DIRECTORY  = # Unsupported by current Doxygen version
 
 #---------------------------------------------------------------------------
 # Configuration options related to the RTF output
@@ -2203,7 +2203,7 @@ XML_PROGRAMLISTING     = YES
 # The default value is: NO.
 # This tag requires that the tag GENERATE_XML is set to YES.
 
-XML_NS_MEMB_FILE_SCOPE = NO
+# XML_NS_MEMB_FILE_SCOPE = NO # Unsupported by current Doxygen version
 
 #---------------------------------------------------------------------------
 # Configuration options related to the DOCBOOK output
@@ -2243,7 +2243,7 @@ GENERATE_AUTOGEN_DEF   = NO
 # database with symbols found by doxygen stored in tables.
 # The default value is: NO.
 
-GENERATE_SQLITE3       = NO
+# GENERATE_SQLITE3       = NO # Unsupported by current Doxygen version
 
 # The SQLITE3_OUTPUT tag is used to specify where the Sqlite3 database will be
 # put. If a relative path is entered the value of OUTPUT_DIRECTORY will be put
@@ -2251,7 +2251,7 @@ GENERATE_SQLITE3       = NO
 # The default directory is: sqlite3.
 # This tag requires that the tag GENERATE_SQLITE3 is set to YES.
 
-SQLITE3_OUTPUT         = sqlite3
+# SQLITE3_OUTPUT         = sqlite3 # Unsupported by current Doxygen version
 
 # The SQLITE3_OVERWRITE_DB tag is set to YES, the existing doxygen_sqlite3.db
 # database file will be recreated with each doxygen run. If set to NO, doxygen
@@ -2259,7 +2259,7 @@ SQLITE3_OUTPUT         = sqlite3
 # The default value is: YES.
 # This tag requires that the tag GENERATE_SQLITE3 is set to YES.
 
-SQLITE3_RECREATE_DB    = YES
+# SQLITE3_RECREATE_DB    = YES # Unsupported by current Doxygen version
 
 #---------------------------------------------------------------------------
 # Configuration options related to the Perl module output
@@ -2466,7 +2466,7 @@ DOT_NUM_THREADS        = 0
 # The default value is: fontname=Helvetica,fontsize=10.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_COMMON_ATTR        = "fontname=Helvetica,fontsize=10"
+# DOT_COMMON_ATTR        = "fontname=Helvetica,fontsize=10" # Unsupported by current Doxygen version
 
 # DOT_EDGE_ATTR is concatenated with DOT_COMMON_ATTR. For elegant style you can
 # add 'arrowhead=open, arrowtail=open, arrowsize=0.5'. <a
@@ -2475,7 +2475,7 @@ DOT_COMMON_ATTR        = "fontname=Helvetica,fontsize=10"
 # The default value is: labelfontname=Helvetica,labelfontsize=10.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_EDGE_ATTR          = "labelfontname=Helvetica,labelfontsize=10"
+# DOT_EDGE_ATTR          = "labelfontname=Helvetica,labelfontsize=10" # Unsupported by current Doxygen version
 
 # DOT_NODE_ATTR is concatenated with DOT_COMMON_ATTR. For view without boxes
 # around nodes set 'shape=plain' or 'shape=plaintext' <a
@@ -2483,7 +2483,7 @@ DOT_EDGE_ATTR          = "labelfontname=Helvetica,labelfontsize=10"
 # The default value is: shape=box,height=0.2,width=0.4.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_NODE_ATTR          = "shape=box,height=0.2,width=0.4"
+# DOT_NODE_ATTR          = "shape=box,height=0.2,width=0.4" # Unsupported by current Doxygen version
 
 # You can set the path where dot can find font specified with fontname in
 # DOT_COMMON_ATTR and others dot attributes.
@@ -2559,7 +2559,7 @@ UML_LIMIT_NUM_FIELDS   = 10
 # The default value is: NO.
 # This tag requires that the tag UML_LOOK is set to YES.
 
-DOT_UML_DETAILS        = NO
+# DOT_UML_DETAILS        = NO # Unsupported by current Doxygen version
 
 # The DOT_WRAP_THRESHOLD tag can be used to set the maximum number of characters
 # to display on a single line. If the actual line length exceeds this threshold
@@ -2568,7 +2568,7 @@ DOT_UML_DETAILS        = NO
 # Minimum value: 0, maximum value: 1000, default value: 17.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_WRAP_THRESHOLD     = 17
+# DOT_WRAP_THRESHOLD     = 17 # Unsupported by current Doxygen version
 
 # If the TEMPLATE_RELATIONS tag is set to YES then the inheritance and
 # collaboration graphs will show the relations between templates and their
@@ -2649,7 +2649,7 @@ DIRECTORY_GRAPH        = YES
 # Minimum value: 1, maximum value: 25, default value: 1.
 # This tag requires that the tag DIRECTORY_GRAPH is set to YES.
 
-DIR_GRAPH_MAX_DEPTH    = 1
+# DIR_GRAPH_MAX_DEPTH    = 1 # Unsupported by current Doxygen version
 
 # The DOT_IMAGE_FORMAT tag can be used to set the image format of the images
 # generated by dot. For an explanation of the image formats see the section
@@ -2782,7 +2782,7 @@ DOT_CLEANUP            = YES
 # <outfile_format> -o <outputfile> <inputfile>. The external tool should support
 # output file formats "png", "eps", "svg", and "ismap".
 
-MSCGEN_TOOL            =
+# MSCGEN_TOOL            = # Unsupported by current Doxygen version
 
 # The MSCFILE_DIRS tag can be used to specify one or more directories that
 # contain msc files that are included in the documentation (see the \mscfile

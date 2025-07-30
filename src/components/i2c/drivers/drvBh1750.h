@@ -18,7 +18,6 @@
 #include "drvBase.h"
 #include <hp_BH1750.h> //include the library for the BH1750 sensor
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a BH1750 Light sensor.
 
@@ -30,10 +29,8 @@
             This driver uses the One Time Measurement feature of the BH1750. The
             sensor returns to Power Down mode after each reading.
 */
-/**************************************************************************/
 class drvBh1750 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a BH1750 sensor.
       @param    i2c
@@ -45,30 +42,25 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvBh1750(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for a BH1750 sensor.
   */
-  /*******************************************************************************/
   ~drvBh1750() {
     // Called when a BH1750 component is deleted.
     delete _bh1750;
   }
 
-  /*******************************************************************************/
   /*!
       @brief  Initializes the BH1750 sensor and begins I2C.
               The set the quality to the H-Resolution Mode.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _bh1750 = new hp_BH1750();
     // attempt to initialize BH1750
@@ -79,7 +71,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Performs a light sensor read using the One Time Measurement
                 feature of the BH1750. The sensor goes to Power Down mode after
@@ -89,7 +80,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     _bh1750->start();
     lightEvent->light = _bh1750->getLux();

@@ -16,7 +16,7 @@
 #ifndef WS_DISPLAY_UI_HELPER_H
 #define WS_DISPLAY_UI_HELPER_H
 
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 #include "ws_display_driver.h"
 #include "ws_display_tooltips.h"
 #include <lvgl.h>
@@ -54,21 +54,17 @@ enum loadBarIcons {
 
 class ws_display_driver;
 
-/**************************************************************************/
 /*!
     @brief    Helps build and manage the LVGL objects and screens for
                 the application code.
 */
-/**************************************************************************/
 class ws_display_ui_helper {
 public:
-  /**************************************************************************/
   /*!
       @brief    Constructor for the ws_display_ui_helper class.
       @param    drv
                   Pointer to the display driver.
   */
-  /**************************************************************************/
   ws_display_ui_helper(ws_display_driver *drv) { _dispDriver = drv; };
   ~ws_display_ui_helper(){};
 

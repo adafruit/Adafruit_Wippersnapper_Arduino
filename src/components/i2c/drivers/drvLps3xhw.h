@@ -19,16 +19,13 @@
 #include "drvBase.h"
 #include <Adafruit_LPS35HW.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the LPS3XHW temperature
             and pressure sensor.
 */
-/**************************************************************************/
 class drvLps3xhw : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an LPS3XHW sensor.
       @param    i2c
@@ -40,26 +37,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvLps3xhw(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an LPS3XHW sensor.
   */
-  /*******************************************************************************/
   ~drvLps3xhw() { delete _lps3xhw; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the LPS3XHW sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _lps3xhw = new Adafruit_LPS35HW();
     // attempt to initialize LPS3XHW
@@ -73,7 +65,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the LPS3XHW's current temperature.
       @param    tempEvent
@@ -81,14 +72,12 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     _lps3xhw->takeMeasurement();
     tempEvent->temperature = _lps3xhw->readTemperature();
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a pressure sensor and converts
                 the reading into the expected SI unit.
@@ -97,7 +86,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     _lps3xhw->takeMeasurement();
     pressureEvent->pressure = _lps3xhw->readPressure();

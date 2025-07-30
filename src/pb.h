@@ -16,7 +16,7 @@
 /* Define this if your CPU / compiler combination does not support
  * unaligned memory access to packed structures. Note that packed
  * structures are only used when requested in .proto options. */
-/* #define PB_NO_PACKED_STRUCTS 1 */
+#define PB_NO_PACKED_STRUCTS 1
 
 /* Increase the number of required fields that are tracked.
  * A compiler warning will tell if you need this. */
@@ -26,14 +26,14 @@
 /* #define PB_FIELD_32BIT 1 */
 
 /* Disable support for error messages in order to save some code space. */
-/* #define PB_NO_ERRMSG 1 */
+#define PB_NO_ERRMSG 1
 
 /* Disable support for custom streams (support only memory buffers). */
-/* #define PB_BUFFER_ONLY 1 */
+#define PB_BUFFER_ONLY 1
 
 /* Disable support for 64-bit datatypes, for compilers without int64_t
    or to save some code space. */
-/* #define PB_WITHOUT_64BIT 1 */
+#define PB_WITHOUT_64BIT 1
 
 /* Don't encode scalar arrays as packed. This is only to be used when
  * the decoder on the receiving side cannot process packed scalar arrays.

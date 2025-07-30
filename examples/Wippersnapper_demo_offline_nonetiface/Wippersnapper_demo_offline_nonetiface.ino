@@ -1,5 +1,5 @@
-// Adafruit IO WipperSnapper - Offline Mode
-// USE ONLY WITH DEVICES WITH A NETWORK ADAPTER LIKE ESP32-x
+// Adafruit IO WipperSnapper - Offline Mode without Network Interface
+// USE ONLY WITH DEVICES WITHOUT A NETWORK ADAPTER LIKE RP2040 PICO
 //
 // Adafruit invests time and resources providing this open source code.
 // Please support Adafruit and open source hardware by purchasing

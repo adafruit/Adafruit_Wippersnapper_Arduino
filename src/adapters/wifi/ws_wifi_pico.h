@@ -17,7 +17,8 @@
 #ifndef WS_WIFI_PICO_H
 #define WS_WIFI_PICO_H
 
-#ifdef ARDUINO_RASPBERRY_PI_PICO_W
+#if defined(ARDUINO_RASPBERRY_PI_PICO_W) ||                                    \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 
 #define PICO_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define PICO_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
@@ -31,29 +32,23 @@
 #include <WiFiClientSecure.h>
 extern Wippersnapper_V2 WsV2;
 
-/****************************************************************************/
 /*!
     @brief  Class for using the Raspberry Pi Pico network interface.
 */
-/****************************************************************************/
 class ws_wifi_pico : public Wippersnapper_V2 {
 
 public:
-  /**************************************************************************/
   /*!
   @brief  Initializes the WipperSnapper class for RPi Pico.
   */
-  /**************************************************************************/
   ws_wifi_pico() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
   }
 
-  /**************************************************************************/
   /*!
   @brief  Destructor
   */
-  /**************************************************************************/
   ~ws_wifi_pico() {
     if (_mqtt_client_secure)
       delete _mqtt_client_secure;
@@ -61,7 +56,6 @@ public:
       delete _mqtt_client_secure;
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   @param  ssid
@@ -69,7 +63,6 @@ public:
   @param  ssidPassword
             WiFi network's password.
   */
-  /********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
 
@@ -82,22 +75,18 @@ public:
     }
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   */
-  /**********************************************************/
   void set_ssid_pass() {
     _ssid = WsV2._configV2.network.ssid;
     _pass = WsV2._configV2.network.pass;
   }
 
-  /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
   @returns True if `_network_ssid` is found, False otherwise.
   */
-  /***********************************************************/
   bool check_valid_ssid() {
     // Set WiFi to station mode and disconnect from an AP if it was previously
     // connected
@@ -148,33 +137,27 @@ public:
     return false;
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the RPi Pico's unique client identifier
   @note   On RPi Pico, the UID is the MAC address.
   */
-  /********************************************************/
   void getMacAddr() {
     uint8_t mac[6] = {0};
     WiFi.macAddress(mac);
     memcpy(WsV2._macAddrV2, mac, sizeof(mac));
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the current network RSSI value
   @return int32_t RSSI value
   */
-  /********************************************************/
   int32_t getRSSI() { return WiFi.RSSI(); }
 
-  /********************************************************/
   /*!
   @brief  Initializes the MQTT client
   @param  clientID
           MQTT client identifier
   */
-  /********************************************************/
   void setupMQTTClient(const char *clientID) {
     if (strcmp(WsV2._configV2.aio_url, "io.adafruit.com") == 0 ||
         strcmp(WsV2._configV2.aio_url, "io.adafruit.us") == 0) {
@@ -194,12 +177,10 @@ public:
     }
   }
 
-  /********************************************************/
   /*!
   @brief  Returns the network status of an RPi Pico.
   @return ws_status_t
   */
-  /********************************************************/
   ws_status_t networkStatus() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
@@ -213,12 +194,10 @@ public:
     }
   }
 
-  /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
   @return Pico
   */
-  /*******************************************************************/
   const char *connectionType() { return "Pico"; }
 
 protected:
@@ -287,11 +266,9 @@ protected:
       "7h4SeM6Y8l/7MBRpPCz6l8Y=\n"
       "-----END CERTIFICATE-----\n"; ///< Root certificate for io.adafruit.com
 
-  /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
   */
-  /**************************************************************************/
   void _connect() {
 
     if (WiFi.status() == WL_CONNECTED)
@@ -349,11 +326,9 @@ protected:
     }
   }
 
-  /**************************************************************************/
   /*!
       @brief  Disconnects from the wireless network.
   */
-  /**************************************************************************/
   void _disconnect() {
     WsV2.feedWDTV2();
     WiFi.disconnect();

@@ -21,17 +21,14 @@
 #include <SensirionI2CSen5x.h>
 #include <Wire.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SEN5X sensor.
 */
-/**************************************************************************/
 class drvSen5x : public drvBase {
 
   const float OVERFLOW_SEN55 = (0xFFFF / 10); // maxes out at u_int16 / 10
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a SEN5X sensor.
       @param    i2c
@@ -43,19 +40,16 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvSen5x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the SEN5X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _sen = new SensirionI2CSen5x();
     _sen->begin(*_i2c);
@@ -73,7 +67,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X's current temperature.
       @param    tempEvent
@@ -81,7 +74,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
@@ -100,7 +92,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X's current relative humidity reading.
       @param    humidEvent
@@ -108,7 +99,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
@@ -127,7 +117,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X's current NOX reading.
                 Note: If this value is unknown, which is true for SEN54,
@@ -138,7 +127,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventNOxIndex(sensors_event_t *noxIndexEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
@@ -157,7 +145,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X's current VOC reading.
       @param    vocIndexEvent
@@ -165,7 +152,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
@@ -184,7 +170,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X sensor's PM1.0 STD reading.
       @param    pm10StdEvent
@@ -192,7 +177,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPM10_STD(sensors_event_t *pm10StdEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
@@ -212,7 +196,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X sensor's PM2.5 STD reading.
       @param    pm25StdEvent
@@ -220,7 +203,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPM25_STD(sensors_event_t *pm25StdEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
@@ -240,7 +222,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X sensor's PM4.0 STD reading.
       @param    pm40StdEvent
@@ -248,7 +229,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPM40_STD(sensors_event_t *pm40StdEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,
@@ -268,7 +248,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SEN5X sensor's PM10.0 STD reading.
       @param    pm100StdEvent
@@ -276,7 +255,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPM100_STD(sensors_event_t *pm100StdEvent) {
     float massConcentrationPm1p0, massConcentrationPm2p5,
         massConcentrationPm4p0, massConcentrationPm10p0, ambientHumidity,

@@ -21,11 +21,9 @@
 // forward decl.
 class Wippersnapper_V2;
 
-/***************************************************************************/
 /*!
     @brief  Class that handles WipperSnapper's LittleFS filesystem.
 */
-/***************************************************************************/
 class WipperSnapper_LittleFS {
 public:
   WipperSnapper_LittleFS();

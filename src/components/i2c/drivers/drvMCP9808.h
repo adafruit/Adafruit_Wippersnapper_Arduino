@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_MCP9808.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a MCP9808 sensor.
 */
-/**************************************************************************/
 class drvMcp9808 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a MCP9808 sensor.
       @param    i2c
@@ -37,35 +34,29 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvMcp9808(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an MCP9808 sensor.
   */
-  /*******************************************************************************/
   ~drvMcp9808() {
     // Called when a MCP9808 component is deleted.
     delete _mcp9808;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the MCP9808 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _mcp9808 = new Adafruit_MCP9808();
     return _mcp9808->begin((uint8_t)_address, _i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the MCP9808's current temperature.
       @param    tempEvent
@@ -73,7 +64,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     tempEvent->temperature = _mcp9808->readTempC();
     return true;

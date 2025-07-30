@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_LTR329_LTR303.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a LTR329/303 sensor.
 */
-/**************************************************************************/
 class drvLtr329_Ltr303 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a LTR329/303 sensor.
       @param    i2c
@@ -37,26 +34,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvLtr329_Ltr303(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
                    const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an LTR329/303 sensor.
   */
-  /*******************************************************************************/
   ~drvLtr329_Ltr303() { delete _LTR329; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the LTR329/303 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _LTR329 = new Adafruit_LTR329();
     // Attempt to initialize LTR329
@@ -72,7 +64,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the LTR329's ambient light level ([Visible+IR] - IR-only)
       @param    lightEvent
@@ -80,7 +71,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     if (!_LTR329->newDataAvailable())
       return false;
@@ -91,7 +81,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the LTR329's infrared value into an event.
       @param    rawEvent
@@ -99,7 +88,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
 
     if (!_LTR329->newDataAvailable()) {

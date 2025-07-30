@@ -22,15 +22,12 @@
 #include <SHTSensor.h>
 #include <Wire.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SHTC3 sensor.
 */
-/**************************************************************************/
 class drvShtc3 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a SHTC3 sensor.
       @param    i2c
@@ -42,25 +39,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvShtc3(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the SHTC3 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _shtc3 = new SHTSensor(SHTSensor::SHTC3);
     return _shtc3->init(*_i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SHTC3's current temperature.
       @param    tempEvent
@@ -68,7 +61,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // populate temp and humidity objects with fresh data
     if (!_shtc3->readSample())
@@ -77,7 +69,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SHTC3's current relative humidity reading.
       @param    humidEvent
@@ -85,7 +76,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // populate temp and humidity objects with fresh data
     if (!_shtc3->readSample())

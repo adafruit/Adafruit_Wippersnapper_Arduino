@@ -19,14 +19,11 @@
 #include "drvBase.h"
 #include <Adafruit_VL53L0X.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VL53L0X sensor.
 */
-/**************************************************************************/
 class drvVl53l0x : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a VL53L0X sensor.
       @param    i2c
@@ -38,29 +35,24 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvVl53l0x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an VL53L0X sensor.
   */
-  /*******************************************************************************/
   ~drvVl53l0x() {
     // Called when a VL53L0X component is deleted.
     delete _vl53l0x;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the VL53L0X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() {
     _vl53l0x = new Adafruit_VL53L0X();
     bool isInit =
@@ -69,7 +61,6 @@ public:
     return isInit;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the VL53L0X's current proximity.
       @param    proximityEvent
@@ -77,7 +68,6 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     u_int16_t proximityMM = _vl53l0x->readRange();
     if (proximityMM == 0xffff) {

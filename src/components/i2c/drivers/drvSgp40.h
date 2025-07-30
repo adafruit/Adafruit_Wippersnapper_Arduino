@@ -20,14 +20,11 @@
 #include <Adafruit_SGP40.h>
 #include <Wire.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SGP40 sensor.
 */
-/**************************************************************************/
 class drvSgp40 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a SGP40 sensor.
       @param    i2c
@@ -39,19 +36,16 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvSgp40(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the SGP40 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _sgp40 = new Adafruit_SGP40();
     if (!_sgp40->begin(_i2c)) {
@@ -63,7 +57,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's current raw unprocessed value.
       @param    rawEvent
@@ -71,13 +64,11 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
     rawEvent->data[0] = (float)_sgp40->measureRaw();
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SGP40's current VOC reading.
       @param    vocIndexEvent
@@ -85,7 +76,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) {
     vocIndexEvent->voc_index = (float)_sgp40->measureVocIndex();
     return true;

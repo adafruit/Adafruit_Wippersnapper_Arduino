@@ -21,16 +21,13 @@
 
 #define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the BME280 temperature
             and humidity sensor.
 */
-/**************************************************************************/
 class drvBme280 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an BME280 sensor.
       @param    i2c
@@ -42,26 +39,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvBme280(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an BME280 sensor.
   */
-  /*******************************************************************************/
   ~drvBme280() { delete _bme; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the BME280 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _bme = new Adafruit_BME280();
     // attempt to initialize BME280
@@ -83,7 +75,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the BME280's current temperature.
       @param    tempEvent
@@ -91,12 +82,10 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     return _bme_temp->getEvent(tempEvent);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the BME280's current relative humidity reading.
       @param    humidEvent
@@ -104,12 +93,10 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     return _bme_humidity->getEvent(humidEvent);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a pressure sensor and converts
                 the reading into the expected SI unit.
@@ -118,12 +105,10 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     return _bme_pressure->getEvent(pressureEvent);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a the BME280's altitude sensor into an event.
       @param    altitudeEvent
@@ -131,7 +116,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
     altitudeEvent->altitude = _bme->readAltitude(SEALEVELPRESSURE_HPA);
     return true;

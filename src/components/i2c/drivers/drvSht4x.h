@@ -21,15 +21,12 @@
 #include "Adafruit_SHT4x.h"
 #include "drvBase.h"
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SHT4X sensor.
 */
-/**************************************************************************/
 class drvSht4x : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a SHT4X sensor.
       @param    i2c
@@ -41,19 +38,16 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvSht4x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the SHT4X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _sht4x = new Adafruit_SHT4x();
     if (!_sht4x->begin())
@@ -65,7 +59,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SHT4X's current temperature.
       @param    tempEvent
@@ -73,14 +66,12 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     sensors_event_t humid;
     _sht4x->getEvent(&humid, tempEvent);
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SHT4X's current relative humidity reading.
       @param    humidEvent
@@ -88,7 +79,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     sensors_event_t temp;
     _sht4x->getEvent(humidEvent, &temp);

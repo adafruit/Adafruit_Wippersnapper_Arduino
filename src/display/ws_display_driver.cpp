@@ -15,14 +15,12 @@
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
 #include "ws_display_driver.h"
 
-/**************************************************************************/
 /*!
     @brief    Creates a new WipperSnapper display driver object from a
               configuration struct.
     @param    config
               Configuration struct., from FS.ParseFileDisplayCfg();
 */
-/**************************************************************************/
 ws_display_driver::ws_display_driver(displayConfig config) {
   // dynamically create the display driver from the configuration file
   if (strcmp(config.driver, "ST7789") == 0) {
@@ -40,37 +38,30 @@ ws_display_driver::ws_display_driver(displayConfig config) {
   setRotation(config.rotation);
 }
 
-/**************************************************************************/
 /*!
     @brief    Deletes a new WipperSnapper display driver object.
 */
-/**************************************************************************/
 ws_display_driver::~ws_display_driver() {
   if (_tft_st7789 != nullptr) {
     delete _tft_st7789;
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Enables LVGL logging using the usb serial. Must be called
               AFTER calling Serial.begin().
 */
-/**************************************************************************/
 void ws_display_driver::enableLogging() {}
 
-/**************************************************************************/
 /*!
     @brief    Sets the display's rotation mode.
     @param    rotationMode
               The index for rotation (0-3 inclusive).
 */
-/**************************************************************************/
 void ws_display_driver::setRotation(uint8_t rotationMode) {
   _displayRotationMode = rotationMode;
 }
 
-/**************************************************************************/
 /*!
     @brief    Sets the display resolution, must be called BEFORE begin()!
     @param    displayWidth
@@ -78,19 +69,16 @@ void ws_display_driver::setRotation(uint8_t rotationMode) {
     @param    displayHeight
               The height of the display, in pixels.
 */
-/**************************************************************************/
 void ws_display_driver::setResolution(uint16_t displayWidth,
                                       uint16_t displayHeight) {
   _displayWidth = displayWidth;
   _displayHeight = displayHeight;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes the display and the lvgl_glue driver.
     @returns  True if LVGL_Glue began successfully, False otherwise.
 */
-/**************************************************************************/
 bool ws_display_driver::begin() {
   // initialize display driver
   if (_tft_st7789 != nullptr) {
@@ -126,18 +114,14 @@ bool ws_display_driver::begin() {
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Acquires the LVGL_Glue lock.
 */
-/**************************************************************************/
 void ws_display_driver::esp32_lvgl_acquire() { _glue->lvgl_acquire(); }
 
-/**************************************************************************/
 /*!
     @brief    Releases the LVGL_Glue lock.
 */
-/**************************************************************************/
 void ws_display_driver::esp32_lvgl_release() { _glue->lvgl_release(); }
 
 #endif
