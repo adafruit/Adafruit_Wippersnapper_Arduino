@@ -500,7 +500,7 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
           sizeof(msg_uart_add.cfg_device.device_id) - 1);
   // set UartDeviceType
   const char *device_type = component["deviceType"] | "UNKNOWN";
-  if (strcmp(device_type, "GPS") == 0) {
+  if (strcmp(device_type, "gps") == 0) {
     msg_uart_add.cfg_device.device_type =
         wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
     msg_uart_add.cfg_device.which_config =
@@ -509,7 +509,7 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
     // TODO: We do not have parsing for GPS PMTK or UBX implemented yet
     // This is a minimum possible implementation
     // TODO: We will want to add parsing for GPS PMTK, at least
-  } else if (strcmp(device_type, "PM25AQI") == 0) {
+  } else if (strcmp(device_type, "pm25aqi") == 0) {
     msg_uart_add.cfg_device.device_type =
         wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
     msg_uart_add.cfg_device.which_config =
@@ -519,14 +519,14 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
         component["isPm1006"] | false;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
-    for (JsonObject sensor_type : component["SensorTypes"].as<JsonArray>()) {
+    for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
       msg_uart_add.cfg_device.config.pm25aqi.sensor_types[sensor_type_count] =
           ParseSensorType(sensor_type["type"]);
       sensor_type_count++;
     }
     msg_uart_add.cfg_device.config.pm25aqi.sensor_types_count =
         sensor_type_count;
-  } else if (strcmp(device_type, "GENERIC-INPUT") == 0) {
+  } else if (strcmp(device_type, "generic_input") == 0) {
     // TODO: Fill device name (requires an update to uart.pb.h so it's not a
     // pb_callback field)
     msg_uart_add.cfg_device.device_type =
@@ -539,7 +539,7 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
         component["period"] | 0.0;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
-    for (JsonObject sensor_type : component["SensorTypes"].as<JsonArray>()) {
+    for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
       msg_uart_add.cfg_device.config.generic_uart_input
           .sensor_types[sensor_type_count] =
           ParseSensorType(sensor_type["type"]);
