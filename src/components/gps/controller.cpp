@@ -18,7 +18,10 @@
 /*!
  * @brief Constructor for GPSController.
  */
-GPSController::GPSController() { _gps_model = new GPSModel(); }
+GPSController::GPSController() {
+  _gps_model = new GPSModel();
+  has_gps = false;
+}
 
 /*!
  * @brief Destructor for GPSController.
@@ -29,6 +32,7 @@ GPSController::~GPSController() {
     delete _gps_model;
     _gps_model = nullptr;
   }
+  has_gps = false;
 }
 
 /*!
@@ -63,6 +67,7 @@ bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
 
   _gps_drivers.push_back(gps_hw);
   WS_DEBUG_PRINTLN("[gps] GPS hardware added successfully!");
+  has_gps = true;
   return true;
 }
 
@@ -98,7 +103,16 @@ bool GPSController::AddGPS(HardwareSerial *serial, uint32_t baudrate,
 
   _gps_drivers.push_back(gps_hw);
   WS_DEBUG_PRINTLN("[gps] GPS hardware added successfully!");
+  has_gps = true;
   return true;
+}
+
+/*!
+ * @brief Gets the current GPS datetime.
+ * @return The current GPS datetime.
+ */
+DateTime GPSController::GetGPSDateTime() {
+  return _gps_model->GetPrvGPSDateTime();
 }
 
 /*!
@@ -165,6 +179,7 @@ void GPSController::update() {
             WS_DEBUG_PRINTLN("...ok!");
           }
         } else {
+          // Set the Datetime for the GPSEvent
           // Log the GPSEvent to SD card
           if (!WsV2._sdCardV2->LogEventGps(_gps_model->GetGPSEvent())) {
             WS_DEBUG_PRINTLN("[gps] ERROR: Failed to log GPSEvent!");

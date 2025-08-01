@@ -36,6 +36,8 @@ public:
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr,
               wippersnapper_gps_GPSConfig *gps_config);
   void update();
+  bool has_gps;
+  DateTime GetGPSDateTime();
 
 private:
   GPSModel *_gps_model;                    ///< GPS model instance

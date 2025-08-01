@@ -195,26 +195,37 @@ bool GPSModel::AddGpsEventGGA(wippersnapper_gps_GPSDateTime datetime,
   return true;
 }
 
+/*!
+ * @brief Returns the previous GPS datetime as a DateTime object.
+ * @returns A DateTime object representing the previous GPS datetime.
+ */
+DateTime GPSModel::GetPrvGPSDateTime() {
+  // Create a DateTime object from the previous GPS datetime
+  return DateTime(_prv_msg_gps_datetime.year, _prv_msg_gps_datetime.month,
+                  _prv_msg_gps_datetime.day, _prv_msg_gps_datetime.hour,
+                  _prv_msg_gps_datetime.minute, _prv_msg_gps_datetime.seconds);
+}
+
 bool GPSModel::ProcessNMEASentence(char *sentence, GPSHardware *drv) {
   // Check for prefix: $GP or $GN
   if (strncmp(sentence, "$GP", 3) != 0 && strncmp(sentence, "$GN", 3) != 0)
     return false;
 
-  wippersnapper_gps_GPSDateTime datetime = CreateGpsDatetime(
+  _prv_msg_gps_datetime = CreateGpsDatetime(
       drv->GetHour(), drv->GetMinute(), drv->GetSeconds(),
       drv->GetMilliseconds(), drv->GetDay(), drv->GetMonth(), drv->GetYear());
   char lat_dir = drv->GetLatDir();
   char lon_dir = drv->GetLonDir();
   if (sentence[3] == 'R' && sentence[4] == 'M' && sentence[5] == 'C') {
     // Process RMC sentence
-    if (!AddGpsEventRMC(datetime, drv->GetFix(), drv->GetLat(), &lat_dir,
-                        drv->GetLon(), &lon_dir, drv->GetSpeed(),
+    if (!AddGpsEventRMC(_prv_msg_gps_datetime, drv->GetFix(), drv->GetLat(),
+                        &lat_dir, drv->GetLon(), &lon_dir, drv->GetSpeed(),
                         drv->GetAngle()))
       return false;
   } else if (sentence[3] == 'G' && sentence[4] == 'G' && sentence[5] == 'A') {
     // Process GGA sentence
-    if (!AddGpsEventGGA(datetime, drv->GetFix(), drv->GetLat(), &lat_dir,
-                        drv->GetLon(), &lon_dir, drv->GetNumSats(),
+    if (!AddGpsEventGGA(_prv_msg_gps_datetime, drv->GetFix(), drv->GetLat(),
+                        &lat_dir, drv->GetLon(), &lon_dir, drv->GetNumSats(),
                         drv->GetHDOP(), drv->GetAltitude(),
                         drv->GetGeoidHeight()))
       return false;

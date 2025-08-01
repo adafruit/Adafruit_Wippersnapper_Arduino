@@ -1021,6 +1021,8 @@ uint32_t ws_sdcard::GetTimestamp() {
     TickSoftRTC();
     return cur_time; // early-return as we are not converting this "soft rtc" to
                      // unixtime
+  } else if (WsV2._gps_controller->has_gps) {
+    now = WsV2._gps_controller->GetGPSDateTime();
   } else { // we're either using a simulator or have undefined behavior
     return 0;
   }

@@ -48,9 +48,12 @@ public:
                       uint8_t fix_status, float lat, char *lat_dir, float lon,
                       char *lon_dir, uint8_t num_sats, float hdop, float alt,
                       float geoid_height);
+  DateTime GetPrvGPSDateTime();
 
 private:
   wippersnapper_gps_GPSConfig _msg_gps_config; ///< GPS configuration message
   wippersnapper_gps_GPSEvent _msg_gps_event;   ///< GPS event message
+  wippersnapper_gps_GPSDateTime
+      _prv_msg_gps_datetime; ///< Previous GPS datetime
 };
 #endif // WS_GPS_MODEL_H

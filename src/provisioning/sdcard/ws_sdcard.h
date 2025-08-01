@@ -14,7 +14,6 @@
  */
 #ifndef WS_SDCARD_H
 #define WS_SDCARD_H
-#include "RTClib.h"
 #include "SdFat_Adafruit_Fork.h"
 #include "StreamUtils.h"
 #include "Wippersnapper_V2.h"

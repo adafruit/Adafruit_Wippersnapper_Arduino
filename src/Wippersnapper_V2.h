@@ -30,7 +30,9 @@
 */
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } /**< Print debug message to serial */
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } /**< Print debug message to serial */
 #define WS_DEBUG_PRINTLN(...)                                                  \
   {                                                                            \
     WS_PRINTER.println(__VA_ARGS__);                                           \
@@ -42,9 +44,11 @@
   } /**< Print debug message in hexadecimal */
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} /**< Debug print */
+  {                                                                            \
+  } /**< Debug print */
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} /**< Debug println */
+  {                                                                            \
+  } /**< Debug println */
 #endif
 
 /*!
@@ -83,6 +87,7 @@
 #include "Adafruit_MQTT.h"      // MQTT Client
 #include "Adafruit_SleepyDog.h" // Watchdog
 #include "Arduino.h"            // Wiring
+#include "RTClib.h"             // RTC
 #include <SPI.h>                // SPI
 #include <Wire.h>               // I2C
 
