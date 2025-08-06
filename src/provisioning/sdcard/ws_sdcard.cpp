@@ -505,7 +505,8 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
         wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
     msg_uart_add.cfg_device.which_config =
         wippersnapper_uart_UartDeviceConfig_gps_tag;
-    msg_uart_add.cfg_device.config.gps.period = component["gps"]["period"] | 30.0;
+    msg_uart_add.cfg_device.config.gps.period =
+        component["gps"]["period"] | 30.0;
     // TODO: We do not have parsing for GPS PMTK or UBX implemented yet
     // This is a minimum possible implementation
   } else if (strcmp(device_type, "pm25aqi") == 0) {
@@ -515,7 +516,8 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
         wippersnapper_uart_UartDeviceConfig_pm25aqi_tag;
     msg_uart_add.cfg_device.config.pm25aqi.is_pm1006 =
         component["isPm1006"] | false;
-    msg_uart_add.cfg_device.config.pm25aqi.period = component["pm25aqi"]["period"] | 30.0;
+    msg_uart_add.cfg_device.config.pm25aqi.period =
+        component["pm25aqi"]["period"] | 30.0;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
     for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
@@ -532,7 +534,8 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
         wippersnapper_uart_UartDeviceConfig_generic_uart_input_tag;
     msg_uart_add.cfg_device.config.generic_uart_input.line_ending =
         ParseUartLineEnding(component["lineEnding"] | "LF");
-    msg_uart_add.cfg_device.config.generic_uart_input.period = component["generic_input"]["period"] | 30.0;
+    msg_uart_add.cfg_device.config.generic_uart_input.period =
+        component["generic_input"]["period"] | 30.0;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
     for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
@@ -629,7 +632,7 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
     msg_i2c_add.has_gps_config = true;
     return true; // early-out, we don't need to set sensor types for GPS
   } else {
-      msg_i2c_add.i2c_device_period = component["period"] | 0.0;
+    msg_i2c_add.i2c_device_period = component["period"] | 0.0;
   }
 
   msg_i2c_add.i2c_device_sensor_types_count = 0;
