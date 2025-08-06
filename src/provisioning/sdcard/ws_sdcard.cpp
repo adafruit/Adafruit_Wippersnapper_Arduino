@@ -474,7 +474,7 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
 */
 bool ws_sdcard::ParseUartAdd(JsonObject &component,
                              wippersnapper_uart_UartAdd &msg_uart_add) {
-  // Configure the Serial
+  // Configure the UART Serial
   msg_uart_add.has_cfg_serial = true;
   snprintf(msg_uart_add.cfg_serial.pin_rx,
            sizeof(msg_uart_add.cfg_serial.pin_rx), "%d",
@@ -493,30 +493,29 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
   msg_uart_add.cfg_serial.use_sw_serial = component["useSwSerial"] | false;
   msg_uart_add.cfg_serial.sw_serial_invert =
       component["swSerialInvert"] | false;
-  // Configure the UART device
+
+  // Configure the UART Device
   msg_uart_add.has_cfg_device = true;
   strncpy(msg_uart_add.cfg_device.device_id,
           component["deviceId"] | UNKNOWN_VALUE,
           sizeof(msg_uart_add.cfg_device.device_id) - 1);
-  // set UartDeviceType
   const char *device_type = component["deviceType"] | "UNKNOWN";
   if (strcmp(device_type, "gps") == 0) {
     msg_uart_add.cfg_device.device_type =
         wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
     msg_uart_add.cfg_device.which_config =
         wippersnapper_uart_UartDeviceConfig_gps_tag;
-    msg_uart_add.cfg_device.config.gps.period = component["period"] | 0.0;
+    msg_uart_add.cfg_device.config.gps.period = component["gps"]["period"] | 30.0;
     // TODO: We do not have parsing for GPS PMTK or UBX implemented yet
     // This is a minimum possible implementation
-    // TODO: We will want to add parsing for GPS PMTK, at least
   } else if (strcmp(device_type, "pm25aqi") == 0) {
     msg_uart_add.cfg_device.device_type =
         wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
     msg_uart_add.cfg_device.which_config =
         wippersnapper_uart_UartDeviceConfig_pm25aqi_tag;
-    msg_uart_add.cfg_device.config.pm25aqi.period = component["period"] | 0.0;
     msg_uart_add.cfg_device.config.pm25aqi.is_pm1006 =
         component["isPm1006"] | false;
+    msg_uart_add.cfg_device.config.pm25aqi.period = component["pm25aqi"]["period"] | 30.0;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
     for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
@@ -527,16 +526,13 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
     msg_uart_add.cfg_device.config.pm25aqi.sensor_types_count =
         sensor_type_count;
   } else if (strcmp(device_type, "generic_input") == 0) {
-    // TODO: Fill device name (requires an update to uart.pb.h so it's not a
-    // pb_callback field)
     msg_uart_add.cfg_device.device_type =
         wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT;
     msg_uart_add.cfg_device.which_config =
         wippersnapper_uart_UartDeviceConfig_generic_uart_input_tag;
     msg_uart_add.cfg_device.config.generic_uart_input.line_ending =
         ParseUartLineEnding(component["lineEnding"] | "LF");
-    msg_uart_add.cfg_device.config.generic_uart_input.period =
-        component["period"] | 0.0;
+    msg_uart_add.cfg_device.config.generic_uart_input.period = component["generic_input"]["period"] | 30.0;
     // Fill sensor types
     pb_size_t sensor_type_count = 0;
     for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
@@ -599,11 +595,6 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
     wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add) {
   strcpy(msg_i2c_add.i2c_device_name,
          component["i2cDeviceName"] | UNKNOWN_VALUE);
-  msg_i2c_add.i2c_device_period = component["period"] | 0.0;
-  if (msg_i2c_add.i2c_device_period < 0.0) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid I2C device period!");
-    return false;
-  }
 
   msg_i2c_add.has_i2c_device_description = true;
   strcpy(msg_i2c_add.i2c_device_description.i2c_bus_scl,
@@ -630,14 +621,15 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   const char *mux_channel = component["i2cMuxChannel"] | "0xFFFF";
   msg_i2c_add.i2c_device_description.i2c_mux_channel = HexStrToInt(mux_channel);
 
+  // Set the period
   bool is_gps = component["isGps"] | false;
-  WS_DEBUG_PRINT("[SD] is_gps = ");
-  WS_DEBUG_PRINTLN(is_gps ? "true" : "false");
   if (is_gps) {
     msg_i2c_add.is_gps = true;
-    msg_i2c_add.gps_config.period = component["period"] | 15.0;
+    msg_i2c_add.gps_config.period = component["gps"]["period"] | 15.0;
     msg_i2c_add.has_gps_config = true;
     return true; // early-out, we don't need to set sensor types for GPS
+  } else {
+      msg_i2c_add.i2c_device_period = component["period"] | 0.0;
   }
 
   msg_i2c_add.i2c_device_sensor_types_count = 0;
