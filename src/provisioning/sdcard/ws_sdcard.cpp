@@ -490,9 +490,12 @@ bool ws_sdcard::ParseUartAdd(JsonObject &component,
                                                                   // for now
   msg_uart_add.cfg_serial.timeout =
       component["timeout"] | 1000; // Use a default UART timeout of 1000ms
+
+#ifdef HAS_SOFTWARE_SERIAL
   msg_uart_add.cfg_serial.use_sw_serial = component["useSwSerial"] | false;
   msg_uart_add.cfg_serial.sw_serial_invert =
       component["swSerialInvert"] | false;
+#endif // HAS_SOFTWARE_SERIAL
 
   // Configure the UART Device
   msg_uart_add.has_cfg_device = true;

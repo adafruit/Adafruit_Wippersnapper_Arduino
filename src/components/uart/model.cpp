@@ -183,7 +183,25 @@ bool UARTModel::AddUartInputEvent(sensors_event_t &event,
     sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
     sensor_event.value.float_value = event.pm100_std;
     break;
-  // TODO: Add more cases for other sensor types
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.temperature;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.temperature;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_AMBIENT_TEMPERATURE_FAHRENHEIT:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.temperature;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE_FAHRENHEIT:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.temperature;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_PROXIMITY:
+    sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
+    sensor_event.value.float_value = event.distance;
+    break;
   default:
     sensor_event.which_value = wippersnapper_sensor_SensorEvent_float_value_tag;
     sensor_event.value.float_value = event.data[0];

@@ -125,14 +125,6 @@ void GPSController::update() {
     return; // bail-out!
 
   for (GPSHardware *drv : _gps_drivers) {
-    // TODO: Commented out due to parsing failures, stability issue (failed to
-    // parse NMEA acks for this) Perform a keep-alive check by sending an
-    // antenna check command every 2 seconds
-    /*     if (millis() - drv->GetPrvKat() > 2000) {
-          drv->GetAdaGps()->sendCommand(CMD_MTK_CHECK_ANTENNA);
-          drv->SetPrvKat(millis());
-        } */
-
     // Did read period elapse?
     ulong cur_time = millis();
     if (cur_time - drv->GetPollPeriodPrv() < drv->GetPollPeriod())

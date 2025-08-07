@@ -104,66 +104,7 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
       }
     }
   } else if (_driver_type == GPS_DRV_UBLOX) {
-    WS_DEBUG_PRINTLN("[gps] Handling GPSConfig for U-Blox driver...");
     I2cReadDiscard();
-    // Iterate through the command sentences and send them to the GPS module
-    for (size_t i = 0; i < gps_config->commands_ubxes_count; i++) {
-      // TODO: Tuesday fix this frame decoder!
-      /*       pb_bytes_array_t *ubx_frame = &gps_config->commands_ubxes[i];
-            // Validate minimum frame size
-            if (ubx_frame->size < 8) {
-              WS_DEBUG_PRINT("[gps] Invalid UBX frame size: ");
-              WS_DEBUG_PRINTLN(ubx_frame->size);
-              continue;
-            }
-
-            // Validate sync bytes
-            if (ubx_frame->bytes[0] != 0xB5 || ubx_frame->bytes[1] != 0x62) {
-              WS_DEBUG_PRINTLN("[gps] Invalid UBX sync bytes");
-              continue;
-            }
-
-            // Validate frame size
-            size_t expectedSize = 8 + payloadLength;
-            if (ubx_frame->size != expectedSize) {
-              WS_DEBUG_PRINT("[gps] Frame size mismatch. Expected: ");
-              WS_DEBUG_PRINT(expectedSize);
-              WS_DEBUG_PRINT(", Got: ");
-              WS_DEBUG_PRINTLN(ubx_frame->size);
-              continue;
-            }
-
-            // Extract message components
-            uint8_t msgClass = ubx_frame->bytes[2];
-            uint8_t msgId = ubx_frame->bytes[3];
-            uint16_t payloadLength = ubx_frame->bytes[4] | (ubx_frame->bytes[5]
-         << 8);
-
-            // Get payload
-            uint8_t *payload = NULL;
-            if (payloadLength > 0) {
-              payload = &ubx_frame->bytes[6];
-            }
-
-            WS_DEBUG_PRINT("[gps] Sending UBX CMD #");
-            WS_DEBUG_PRINT(i);
-            WS_DEBUG_PRINT(" - Class: 0x");
-            WS_DEBUG_PRINT(msgClass, HEX);
-            WS_DEBUG_PRINT(", ID: 0x");
-            WS_DEBUG_PRINT(msgId, HEX);
-            WS_DEBUG_PRINT(", Payload len: ");
-            WS_DEBUG_PRINTLN(payloadLength);
-
-            // Send the message
-            UBXSendStatus status = _ubx_gps->sendMessageWithAck(msgClass, msgId,
-         payload, payloadLength);
-
-            if (status != UBXSendStatus::UBX_SEND_SUCCESS) {
-              WS_DEBUG_PRINTLN("[gps] Failed to send UBX message");
-            } else {
-              WS_DEBUG_PRINTLN("[gps] OK");
-            } */
-    }
   } else {
     WS_DEBUG_PRINTLN("[gps] ERROR: Unsupported GPS driver type!");
     return false;
