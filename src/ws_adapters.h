@@ -56,11 +56,16 @@ typedef ws_wifi_ninafw ws_adapter_wifi;
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
     defined(ARDUINO_ADAFRUIT_METRO_RP2350)
+#define WS_OFFLINE_ADAPTER
 #define SD_CS_PIN 23
 #include "adapters/offline/ws_offline_pico.h"
 typedef ws_offline_pico ws_adapter_offline;
 #else
 #warning "Transport adapter not defined within ws_adapters.h!"
+#endif
+
+#ifndef WS_OFFLINE_ADAPTER
+#define WS_WIFI_ADAPTER
 #endif
 
 #endif // WS_ADAPTERS_H

@@ -10,7 +10,15 @@
 // All text above must be included in any redistribution.
 
 #include "ws_adapters.h"
+#if defined(OFFLINE_MODE_WOKWI)
+ws_adapter_wifi wipper; // Wokwi offline mode uses a wifi adapter
+#elif defined(WS_WIFI_ADAPTER)
 ws_adapter_wifi wipper;
+#elif defined(WS_OFFLINE_ADAPTER)
+ws_adapter_offline wipper;
+#else
+#error "No valid ws_adapter_wifi or ws_adapter_offline defined! Please check your board configuration."
+#endif
 #define WS_DEBUG // Enable debug output!
 
 void setup() {
