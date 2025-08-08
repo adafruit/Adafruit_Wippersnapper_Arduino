@@ -72,7 +72,7 @@ bool GPSController::AddGPS(TwoWire *wire, uint32_t i2c_addr,
 }
 
 /*!
- * @brief Adds a GPS hardware instance to the controller.
+ * @brief Adds a GPS hardware serial instance to the controller.
  * @param serial Pointer to the HardwareSerial instance for GPS communication.
  * @param gps_config Pointer to the GPS configuration message.
  * @return True if the GPS was added successfully, false otherwise.
@@ -106,6 +106,44 @@ bool GPSController::AddGPS(HardwareSerial *serial, uint32_t baudrate,
   has_gps = true;
   return true;
 }
+
+#ifdef HAS_SW_SERIAL
+/*!
+ * @brief Adds a GPS software serial instance to the controller.
+ * @param serial Pointer to the SoftwareSerial instance for GPS communication.
+ * @param gps_config Pointer to the GPS configuration message.
+ * @return True if the GPS was added successfully, false otherwise.
+ */
+bool GPSController::AddGPS(SoftwareSerial *serial_sw, uint32_t baudrate,
+                           wippersnapper_gps_GPSConfig *gps_config) {
+  GPSHardware *gps_hw = new GPSHardware();
+
+  if (!gps_hw->SetInterface(serial_sw, baudrate)) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to set GPS UART interface!");
+    delete gps_hw;
+    return false;
+  }
+
+  if (!gps_hw->begin()) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to initialize GPS hardware!");
+    delete gps_hw;
+    return false;
+  }
+  // Required - let the GPS spit out its initial data
+  delay(1000);
+
+  if (!gps_hw->Handle_GPSConfig(gps_config)) {
+    WS_DEBUG_PRINTLN("[gps] ERROR: Failed to configure GPS!");
+    delete gps_hw;
+    return false;
+  }
+
+  _gps_drivers.push_back(gps_hw);
+  WS_DEBUG_PRINTLN("[gps] GPS hardware added successfully!");
+  has_gps = true;
+  return true;
+}
+#endif // HAS_SW_SERIAL
 
 /*!
  * @brief Gets the current GPS datetime.

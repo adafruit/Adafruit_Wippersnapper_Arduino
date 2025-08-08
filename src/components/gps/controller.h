@@ -33,6 +33,10 @@ public:
   ~GPSController();
   bool AddGPS(HardwareSerial *serial, uint32_t baudrate,
               wippersnapper_gps_GPSConfig *gps_config);
+#ifdef HAS_SW_SERIAL
+  bool AddGPS(SoftwareSerial *serial, uint32_t baudrate,
+              wippersnapper_gps_GPSConfig *gps_config);
+#endif // HAS_SW_SERIAL
   bool AddGPS(TwoWire *wire, uint32_t i2c_addr,
               wippersnapper_gps_GPSConfig *gps_config);
   void update();
