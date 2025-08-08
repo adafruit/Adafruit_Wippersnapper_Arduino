@@ -112,6 +112,12 @@ jobs:
           repository: adafruit/ci-arduino
           ref: ci-wippersnapper
           path: ci
+      - name: Checkout Board Definitions
+        uses: actions/checkout@v4
+        with:
+          repository: adafruit/Wippersnapper_Boards
+          path: ws-boards
+          ref: rebased-rp2040_datalogger_feather
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
@@ -161,23 +167,154 @@ jobs:
       - name: Copy lv_conf.h file in Adafruit_LittlevGL_Glue_Library to the arduino library folder
         run: |
           cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
+      - name: Install Dependencies (esptool)
+        run: |
+          pip3 install esptool
       - name: Build for ESP32-SX
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
       - name: list files (tree)
         run: |
-          tree
+          tree -L 7 -h
       - name: Rename build artifacts to reflect the platform name
         run: |
           mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.uf2 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
           mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
+          mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.elf wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.elf
+          mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.map wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.map
+          mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bootloader.bin
+          mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.merged_auto.bin
+          mv examples/*/build/*/Wippersnapper_demo_offline_netiface.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.partitions.bin
+      - name: Get Board Flash Parameters
+        id: get_board_json
+        run: |
+          board_name=${{ matrix.arduino-platform }}
+          # Remove '_noota' suffix if present
+          board_name=${board_name%_noota}
+          # Remove 'wippersnapper_' prefix if present
+          board_name=${board_name#wippersnapper_}
+          # check folder name exists, otherwise do replace of underscore with dash, or blank
+          if [ ! -d "ws-boards/boards/${board_name}" ]; then
+            echo "Board definition folder ws-boards/boards/${board_name} does not exist, checking for alternative names."
+            if [ -d "ws-boards/boards/${board_name//_/-}" ]; then
+              board_name=${board_name//_/-}
+              echo "Found alternative board definition folder ws-boards/boards/${board_name//_/-}."
+            # Remove all underscores if still not found
+            elif [ -d "ws-boards/boards/${board_name//_}" ]; then
+              board_name=${board_name//_}
+              echo "Found alternative board definition folder ws-boards/boards/${board_name//_}."
+            else
+              echo "Error: Board definition folder ws-boards/boards/${board_name} does not exist."
+              exit 1
+            fi
+          fi
+          content=$(cat ws-boards/boards/${board_name}/definition.json)
+          {
+            echo 'boardJson<<EOF'
+            echo $content
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+      - name: fetch tinyuf2 combined.bin
+        id: get_tinyuf2
+        continue-on-error: true
+        run: |
+          # check ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} is not empty
+          if [ -z "${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" ]; then
+            echo "Error: esptool.flashMode is not set in board definition."
+            exit 1
+          fi
+          BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
+          for attempt in 1 2; do
+            echo "Attempt $attempt: Fetching tinyuf2 release info for board $BOARD_NAME"
+            API_RESPONSE=$(curl --silent --fail https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
+            if [ $? -ne 0 ]; then
+              echo "Attempt $attempt: curl failed to fetch release info."
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; continue; fi
+            fi
+            DOWNLOAD_URL=$(echo "$API_RESPONSE" | jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'$BOARD_NAME'-") and endswith(".zip")) | .browser_download_url // empty')
+            if [ -z "$DOWNLOAD_URL" ]; then
+              echo "Attempt $attempt: No matching tinyuf2 zip found for board $BOARD_NAME."
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; continue; fi
+            fi
+            echo "Attempt $attempt: Downloading $DOWNLOAD_URL"
+            wget "$DOWNLOAD_URL" -O tinyuf2.zip
+            if [ $? -eq 0 ]; then
+              unzip -o tinyuf2.zip -d .
+              break
+            else
+              echo "Attempt $attempt: wget failed to download $DOWNLOAD_URL"
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; fi
+            fi
+          done
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
+        name: move partition and bootloader files for tinyuf2 (to match flash_args)
+        run: |
+          # Copy files where they're expected to make flash_args happy
+          mkdir bootloader
+          cp bootloader.bin bootloader/bootloader.bin
+          mkdir partition_table
+          cp partition-table.bin partition_table/partition-table.bin
+
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
+        name: Create new_flash_args file from flash_args with added app bin + output file
+        run: |
+          # Create new_flash_args with esptool parameters first and output file
+          echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
+          echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}}" >> new_flash_args
+          echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}}" >> new_flash_args
+          echo "-o wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.combined.bin" >> new_flash_args
+
+          # Append flash_args content to new_flash_args, skipping the first line
+          tail -n +2 flash_args >> new_flash_args
+
+          # Append main app to flash_args file
+          echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin" >> new_flash_args
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
+        name: Check boot_app0 file existence (esp32sx built from core, not-source)
+        id: check_files
+        uses: andstor/file-existence-action@v3
+        with:
+          files: "/home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin"
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' && steps.check_files.outputs.files_exists == 'true' }}
+        name: list arduino esp32 core files
+        run: |
+          ls /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' && steps.check_files.outputs.files_exists == 'false' }}
+        name: list arduino esp32 bsp core files
+        run: |
+          ls /home/runner/Arduino/hardware/espressif/esp32/tools/partitions
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' && steps.check_files.outputs.files_exists == 'true' }}
+        name: boot_app0 file from arduino-cli core
+        run: cp /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.boot_app0.bin
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' && steps.check_files.outputs.files_exists == 'false' }}
+        name: boot_app0 file from esp32 source bsp
+        run: cp /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.boot_app0.bin
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
+        name: Copy boot_app0 file to ota_data_initial.bin (overwrite tinyuf2 boot preference)
+        run: cp wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.boot_app0.bin ota_data_initial.bin
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
+        name: Create combined binary using Esptool merge-bin
+        run: |
+          echo ${{ steps.get_board_json.outputs.boardJson }}
+          echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin @new_flash_args
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
+        name: Zip build artifacts
+        run: |
+          zip -r wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.*
+      - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
+        name: Upload build artifacts zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files-${{ matrix.arduino-platform }}-zip
+          path: |
+            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.zip
       - name: upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files-${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}
           path: |
             wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.uf2
-            wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.bin
 
   build-rp2040:
     name: 🏗️ RP2040, RP2350
