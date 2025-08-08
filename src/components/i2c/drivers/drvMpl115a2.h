@@ -19,16 +19,13 @@
 #include "drvBase.h"
 #include <Adafruit_MPL115A2.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the MPL115A2 temperature
             and pressure sensor.
 */
-/**************************************************************************/
 class drvMpl115a2 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an MPL115A2 sensor.
       @param    i2c
@@ -40,32 +37,26 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvMpl115a2(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
               const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an MPL115A2 sensor.
   */
-  /*******************************************************************************/
   ~drvMpl115a2() { delete _mpl115a2; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the MPL115A2 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _mpl115a2 = new Adafruit_MPL115A2();
     return _mpl115a2->begin(_address, _i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the MPL115A2's current temperature.
       @param    tempEvent
@@ -73,13 +64,11 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     tempEvent->temperature = _mpl115a2->getTemperature();
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a pressure sensor and converts
                 the reading into the expected SI unit (hPa).
@@ -88,7 +77,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     pressureEvent->pressure = _mpl115a2->getPressure() * 10;
     return true;

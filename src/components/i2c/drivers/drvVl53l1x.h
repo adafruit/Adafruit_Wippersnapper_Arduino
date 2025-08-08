@@ -19,14 +19,11 @@
 #include "drvBase.h"
 #include <Adafruit_VL53L1X.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a VL53L1X sensor.
 */
-/**************************************************************************/
 class drvVl53l1x : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a VL53L1X sensor.
       @param    i2c
@@ -38,29 +35,24 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvVl53l1x(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
              const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an VL53L1X sensor.
   */
-  /*******************************************************************************/
   ~drvVl53l1x() {
     // Called when a VL53L1X component is deleted.
     delete _VL53L1X;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the VL53L1X sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() {
     _VL53L1X = new Adafruit_VL53L1X();
     if (_VL53L1X->begin((uint8_t)_address, _i2c, false)) {
@@ -71,7 +63,6 @@ public:
     return false;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the VL53L1X's current proximity.
       @param    proximityEvent
@@ -79,7 +70,6 @@ public:
       @returns  True if the proximity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventProximity(sensors_event_t *proximityEvent) {
     if (!_VL53L1X->dataReady()) {
       return false;

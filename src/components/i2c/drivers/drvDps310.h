@@ -18,16 +18,13 @@
 #include "drvBase.h"
 #include <Adafruit_DPS310.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the DPS310 barometric
             pressure sensor.
 */
-/**************************************************************************/
 class drvDps310 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a DPS310 sensor.
       @param    i2c
@@ -39,7 +36,6 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvDps310(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
@@ -51,19 +47,15 @@ public:
     _last_read = 0;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an DPS310 sensor.
   */
-  /*******************************************************************************/
   ~drvDps310() { delete _dps310; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the DPS310 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     // initialize DPS310
     _dps310 = new Adafruit_DPS310();
@@ -85,24 +77,20 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the DPS310's temperature and pressure.
       @returns  True if the measurements were read successfully, False
      otherwise.
   */
-  /*******************************************************************************/
   bool alreadyRecentlyRead() {
     return (_last_read != 0 && (millis() - _last_read < 1000));
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the DPS310's temperature and pressure.
       @returns  True if the measurements were read successfully, False
      otherwise.
   */
-  /*******************************************************************************/
   bool ReadMeasurements() {
     if (alreadyRecentlyRead())
       return true;
@@ -117,7 +105,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the DPS310's current temperature.
       @param    tempEvent
@@ -125,7 +112,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     if (!ReadMeasurements()) {
       return false;
@@ -134,7 +120,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the DPS310's pressure reading.
       @param    pressureEvent
@@ -142,7 +127,6 @@ public:
       @returns  True if the pressure was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     if (!ReadMeasurements()) {
       return false;

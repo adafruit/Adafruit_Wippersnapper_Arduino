@@ -19,14 +19,11 @@
 #include "drvBase.h"
 #include <Adafruit_LC709203F.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a LC709203F sensor.
 */
-/**************************************************************************/
 class drvLc709203f : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a LC709203F sensor.
       @param    i2c
@@ -38,26 +35,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvLc709203f(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
                const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an LC709203F sensor.
   */
-  /*******************************************************************************/
   ~drvLc709203f() { delete _lc; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the LC709203F sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _lc = new Adafruit_LC709203F();
     if (!_lc->begin(_i2c))
@@ -76,7 +68,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a voltage sensor and converts the
                 reading into the expected SI unit.
@@ -85,13 +76,11 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventVoltage(sensors_event_t *voltageEvent) {
     voltageEvent->voltage = _lc->cellVoltage();
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads a sensor's unitless % reading and
                 converts the reading into the expected SI unit.
@@ -100,7 +89,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventUnitlessPercent(sensors_event_t *unitlessPercentEvent) {
     unitlessPercentEvent->unitless_percent = _lc->cellPercent();
     return true;

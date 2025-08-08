@@ -28,11 +28,9 @@ Adafruit_DotStar *statusPixelDotStar =
                          STATUS_DOTSTAR_PIN_CLK, DOTSTAR_BRG);
 #endif
 
-/****************************************************************************/
 /*!
     @brief    Initializes board-specific status LED pixel
 */
-/****************************************************************************/
 void initStatusLED() {
 #ifdef USE_STATUS_NEOPIXEL
   if (WsV2.lockStatusNeoPixelV2 == false) {
@@ -94,12 +92,10 @@ void initStatusLED() {
 #endif
 }
 
-/****************************************************************************/
 /*!
     @brief    De-initializes the status LED and releases pin.
 */
-/****************************************************************************/
-void releaseStatusLED() {
+void ReleaseStatusPixel() {
 #ifdef USE_STATUS_NEOPIXEL
   delete statusPixel; // Deallocate Adafruit_NeoPixel object, set data pin back
                       // to INPUT.
@@ -120,13 +116,11 @@ void releaseStatusLED() {
 #endif
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets the status pixel's brightness
     @param    brightness
               Desired pixel brightness, from 0.0 (0%) to 1.0 (100%).
 */
-/****************************************************************************/
 void setStatusLEDBrightness(float brightness) {
   // Clamp brightness between 0.0-1.0 (0% to 100%)
   if (brightness > 1.0)
@@ -136,13 +130,11 @@ void setStatusLEDBrightness(float brightness) {
   WsV2.status_pixel_brightnessV2 = brightness;
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets a status RGB LED's color
     @param    color
               Desired RGB color.
 */
-/****************************************************************************/
 void setStatusLEDColor(uint32_t color) {
 #ifdef USE_STATUS_NEOPIXEL
   if (!WsV2.lockStatusNeoPixelV2)
@@ -195,7 +187,6 @@ void setStatusLEDColor(uint32_t color) {
 #endif
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets a status RGB LED's color
     @param    color
@@ -203,7 +194,6 @@ void setStatusLEDColor(uint32_t color) {
     @param    brightness
               Brightness level, as an integer
 */
-/****************************************************************************/
 void setStatusLEDColor(uint32_t color, int brightness) {
 #ifdef USE_STATUS_NEOPIXEL
   if (!WsV2.lockStatusNeoPixelV2)
@@ -256,12 +246,10 @@ void setStatusLEDColor(uint32_t color, int brightness) {
 #endif
 }
 
-/****************************************************************************/
 /*!
     @brief   Retrieve the pin number used for NeoPixel data output.
     @return  Arduino pin number (-2 if not set).
 */
-/****************************************************************************/
 int16_t getStatusNeoPixelPin() {
 #ifdef USE_STATUS_NEOPIXEL
   return statusPixel->getPin();
@@ -269,12 +257,10 @@ int16_t getStatusNeoPixelPin() {
   return -2;
 }
 
-/****************************************************************************/
 /*!
     @brief   Retrieve the pin number used for DotStar data output.
     @return  Arduino pin number (-2 if not set).
 */
-/****************************************************************************/
 int16_t getStatusDotStarDataPin() {
 #ifdef USE_STATUS_DOTSTAR
   return STATUS_DOTSTAR_PIN_DATA;
@@ -282,7 +268,6 @@ int16_t getStatusDotStarDataPin() {
   return -2;
 }
 
-/****************************************************************************/
 /*!
     @brief    Fades the status LED.
     @param    color
@@ -290,7 +275,6 @@ int16_t getStatusDotStarDataPin() {
     @param    numFades
               The amount of time to fade/pulse the status LED.
 */
-/****************************************************************************/
 void statusLEDFade(uint32_t color, int numFades = 3) {
   // don't fade if our pixel is off
   if (WsV2.status_pixel_brightnessV2 == 0.0)
@@ -319,14 +303,12 @@ void statusLEDFade(uint32_t color, int numFades = 3) {
 #endif
 }
 
-/****************************************************************************/
 /*!
     @brief    Converts the a ws_led_status_t status state to color.
     @param    statusState
               Hardware's status state.
     @return   Color as a uint32_t
 */
-/****************************************************************************/
 uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
   uint32_t ledColor;
   switch (statusState) {
@@ -355,14 +337,12 @@ uint32_t ledStatusStateToColor(ws_led_status_t statusState) {
   return ledColor;
 }
 
-/****************************************************************************/
 /*!
     @brief    Sets the status LED to a specific color depending on
               the hardware's state.
     @param    statusState
               Hardware's status state.
 */
-/****************************************************************************/
 void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
 #ifdef USE_STATUS_LED
   if (!WsV2.lockStatusLEDV2)
@@ -378,14 +358,12 @@ void statusLEDSolid(ws_led_status_t statusState = WS_LED_STATUS_ERROR_RUNTIME) {
   setStatusLEDColor(ledColor);
 }
 
-/****************************************************************************/
 /*!
     @brief    Blinks a status LED a specific color depending on
               the hardware's state.
     @param    statusState
               Hardware's status state.
 */
-/****************************************************************************/
 void statusLEDBlink(ws_led_status_t statusState) {
 #ifdef USE_STATUS_LED
   if (!WsV2.lockStatusLEDV2)

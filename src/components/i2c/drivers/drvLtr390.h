@@ -18,14 +18,11 @@
 #include "drvBase.h"
 #include <Adafruit_LTR390.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for a LTR390 sensor.
 */
-/**************************************************************************/
 class drvLtr390 : public drvBase {
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a LTR390 sensor.
       @param    i2c
@@ -37,26 +34,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvLtr390(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an LTR390 sensor.
   */
-  /*******************************************************************************/
   ~drvLtr390() { delete _ltr390; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the LTR390 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _ltr390 = new Adafruit_LTR390();
     // Attempt to initialize LTR390
@@ -72,7 +64,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Performs a light sensor read using the Adafruit
                 Unified Sensor API.
@@ -81,7 +72,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventLight(sensors_event_t *lightEvent) {
     if (_ltr390->getMode() != LTR390_MODE_ALS) {
       _ltr390->setMode(LTR390_MODE_ALS);
@@ -95,7 +85,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the LTR390's UV value into an event.
       @param    rawEvent
@@ -103,7 +92,6 @@ public:
       @returns  True if the sensor event was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
     if (_ltr390->getMode() != LTR390_MODE_UVS) {
       _ltr390->setMode(LTR390_MODE_UVS);

@@ -19,15 +19,12 @@
 #include "drvBase.h"
 #include <Adafruit_SCD30.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a driver interface for the SCD30 sensor.
 */
-/**************************************************************************/
 class drvScd30 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for a SCD30 sensor.
       @param    i2c
@@ -39,25 +36,21 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvScd30(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the SCD30 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool begin() override {
     _scd = new Adafruit_SCD30();
     return _scd->begin((uint8_t)_address, _i2c);
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Checks if sensor was read within last 1s, or is the first read.
       @returns  True if the sensor was recently read, False otherwise.
@@ -66,12 +59,10 @@ public:
     return _lastRead != 0 && millis() - _lastRead < 1000;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Checks if the sensor is ready to be read
       @returns  True if the sensor is ready, False otherwise.
   */
-  /*******************************************************************************/
   bool isSensorReady() {
     if (!_scd->dataReady()) {
       // failed, one more quick attempt
@@ -83,12 +74,10 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Reads the SCD30 sensor.
       @returns  True if the sensor was read successfully, False otherwise.
   */
-  /*******************************************************************************/
   bool readSensorData() {
     // dont read sensor more than once per second
     if (hasBeenReadInLastSecond()) {
@@ -109,7 +98,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SCD30's current temperature.
       @param    tempEvent
@@ -117,7 +105,6 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     // check if sensor is enabled and data is available
     if (!readSensorData()) {
@@ -128,7 +115,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SCD30's current relative humidity reading.
       @param    humidEvent
@@ -136,7 +122,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     // check if sensor is enabled and data is available
     if (!readSensorData()) {
@@ -147,7 +132,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the SCD30's current CO2 reading.
       @param    co2Event
@@ -155,7 +139,6 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventCO2(sensors_event_t *co2Event) {
     // check if sensor is enabled and data is available
     if (!readSensorData()) {

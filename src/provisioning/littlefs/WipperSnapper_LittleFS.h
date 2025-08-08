@@ -21,19 +21,16 @@
 // forward decl.
 class Wippersnapper_V2;
 
-/***************************************************************************/
 /*!
     @brief  Class that handles WipperSnapper's LittleFS filesystem.
 */
-/***************************************************************************/
 class WipperSnapper_LittleFS {
 public:
   WipperSnapper_LittleFS();
   ~WipperSnapper_LittleFS();
   void ParseFileSecrets();
-  void
-  HaltFilesystem(String msg,
-                 ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
+  void fsHalt(String msg,
+              ws_led_status_t status_state = WS_LED_STATUS_ERROR_RUNTIME);
   void GetPinSDCS();
 };
 extern Wippersnapper_V2 WsV2;

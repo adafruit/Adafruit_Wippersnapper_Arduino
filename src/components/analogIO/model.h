@@ -1,5 +1,5 @@
 /*!
- * @file model.h
+ * @file src/components/analogIO/model.h
  *
  * Model interface for the analogio.proto message.
  *
@@ -16,12 +16,10 @@
 #define WS_ANALOGIO_MODEL_H
 #include "Wippersnapper_V2.h"
 
-/**************************************************************************/
 /*!
     @brief  Provides an interface for creating, encoding, and parsing
             messages from analogio.proto.
 */
-/**************************************************************************/
 class AnalogIOModel {
 public:
   AnalogIOModel();

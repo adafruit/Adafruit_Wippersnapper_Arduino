@@ -11,7 +11,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -20,35 +20,33 @@
 #ifndef WS_WIFI_AIRLIFT_H
 #define WS_WIFI_AIRLIFT_H
 
+#include "../../helpers/ws_helper_macros.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include "SPI.h"
 #include "WiFiNINA.h"
-#include "Wippersnapper.h"
+#include "Wippersnapper_V2.h"
 
 #define NINAFWVER                                                              \
-  "1.7.7" /*!< min. nina-fw version compatible with this library. */
+  "2.0.0-rc.0+adafruit" /*!< min. nina-fw version compatible with this         \
+                           library. */
 #define AIRLIFT_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define AIRLIFT_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
 
-extern Wippersnapper WS; ///< Global Wippersnapper instance
-/****************************************************************************/
+extern Wippersnapper_V2 WsV2; ///< Wippersnapper client instance
 /*!
     @brief  Class for using the AirLift Co-Processor network iface.
 */
-/****************************************************************************/
-class ws_wifi_airlift : public Wippersnapper {
+class ws_wifi_airlift : public Wippersnapper_V2 {
 
 public:
-  /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for AirLift devices.
   */
-  /**************************************************************************/
-  ws_wifi_airlift() : Wippersnapper() {
+  ws_wifi_airlift() : Wippersnapper_V2() {
     _ssPin = SPIWIFI_SS;     // 10;
     _ackPin = SPIWIFI_ACK;   // 7;
     _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
@@ -66,17 +64,14 @@ public:
     WiFi.setPins(_ssPin, _ackPin, _rstPin, _gpio0Pin, _wifi);
   }
 
-  /**************************************************************************/
   /*!
   @brief  Destructor for the Adafruit IO AirLift class.
   */
-  /**************************************************************************/
   ~ws_wifi_airlift() {
-    if (_mqtt)
-      delete _mqtt;
+    if (_mqttV2)
+      delete _mqttV2;
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   @param  ssid
@@ -84,29 +79,24 @@ public:
   @param  ssidPassword
             Wireless network's password.
   */
-  /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
     _pass = ssidPassword;
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password from the
             secrets.json provisioning file.
   */
-  /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._config.network.ssid;
-    _pass = WS._config.network.pass;
+    _ssid = WsV2._configV2.network.ssid;
+    _pass = WsV2._configV2.network.pass;
   }
 
-  /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
   @returns True if `_network_ssid` is found, False otherwise.
   */
-  /***********************************************************/
   bool check_valid_ssid() {
     // Disconnect WiFi from an AP if it was previously connected
     WiFi.disconnect();
@@ -141,19 +131,16 @@ public:
     return false;
   }
 
-  /********************************************************/
   /*!
   @brief  Sets the WiFi client.
   @param  wifi
           Instance of SPIClass.
   */
-  /********************************************************/
   void set_wifi(SPIClass *wifi) {
     _wifi = wifi;
     _mqtt_client = new WiFiSSLClient;
   }
 
-  /********************************************************/
   /*!
   @brief  Configures ESP32 "AirLift" pins.
   @param  ssPin
@@ -165,7 +152,6 @@ public:
   @param  gpio0Pin
             ESP32 GPIO0 pin.
   */
-  /********************************************************/
   void set_airlift_pins(int ssPin, int ackPin, int rstPin, int gpio0Pin) {
     _ssPin = ssPin;
     _ackPin = ackPin;
@@ -173,20 +159,17 @@ public:
     _gpio0Pin = gpio0Pin;
   }
 
-  /********************************************************/
   /*!
   @brief    Checks the version of an ESP32 module running
             nina-fw.
   @returns  True if matches min. required to run
             WipperSnapper, False otherwise.
   */
-  /********************************************************/
   bool firmwareCheck() {
     _fv = WiFi.firmwareVersion();
     return compareVersions(_fv, NINAFWVER);
   }
 
-  /********************************************************/
   /*!
   @brief  Compares two version strings.
   @param  currentVersion
@@ -196,7 +179,6 @@ public:
   @returns True if the current version is greater than or
           equal to the required version, False otherwise.
   */
-  /********************************************************/
   bool compareVersions(const char *currentVersion,
                        const char *requiredVersion) {
     int curMajor = 0, curMinor = 0, curPatch = 0;
@@ -222,45 +204,37 @@ public:
     return curPatch >= reqPatch;
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the ESP32's unique client identifier.
   @note   For the ESP32, the UID is the MAC address.
   */
-  /********************************************************/
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
-    memcpy(WS._macAddr, mac, sizeof(mac));
+    memcpy(WsV2._macAddrV2, mac, sizeof(mac));
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the current network RSSI value
   @return int32_t RSSI value
   */
-  /********************************************************/
   int32_t getRSSI() { return WiFi.RSSI(); }
 
-  /********************************************************/
   /*!
   @brief  Initializes the MQTT client.
   @param  clientID
           MQTT client identifier
   */
-  /********************************************************/
   void setupMQTTClient(const char *clientID) {
-    WS._mqtt = new Adafruit_MQTT_Client(
-        _mqtt_client, WS._config.aio_url, WS._config.io_port, clientID,
-        WS._config.aio_user, WS._config.aio_key);
+    WsV2._mqttV2 = new Adafruit_MQTT_Client(
+        _mqtt_client, WsV2._configV2.aio_url, WsV2._configV2.io_port, clientID,
+        WsV2._configV2.aio_user, WsV2._configV2.aio_key);
   }
 
-  /********************************************************/
   /*!
   @brief  Returns the network status of an ESP32 module.
   @return ws_status_t
   */
-  /********************************************************/
   ws_status_t networkStatus() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
@@ -274,12 +248,10 @@ public:
     }
   }
 
-  /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper
   @return AIRLIFT
   */
-  /*******************************************************************/
   const char *connectionType() { return "AIRLIFT"; }
 
 protected:
@@ -293,15 +265,13 @@ protected:
   WiFiSSLClient *_mqtt_client; /*!< Instance of a secure WiFi client. */
   SPIClass *_wifi; /*!< Instance of the SPI bus used by the AirLift. */
 
-  /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
   */
-  /**************************************************************************/
   void _connect() {
     if (strlen(_ssid) == 0) {
-      _status = WS_SSID_INVALID; // possibly unneccesary  as already checking
-                                 // elsewhere
+      _statusV2 = WS_SSID_INVALID; // possibly unneccesary  as already checking
+                                   // elsewhere
     } else {
       // disconnect from possible previous connection
       _disconnect();
@@ -310,16 +280,16 @@ protected:
       _wifi->end();
       delay(100);
       _wifi->begin();
-      feedWDT();
+      WsV2.feedWDTV2();
       // reset the esp32 if possible
       resetAirLift();
-      feedWDT();
+      WsV2.feedWDTV2();
 
       WS_DEBUG_PRINT("ESP32 booted, version: ");
       WS_PRINTER.flush();
       WS_DEBUG_PRINTLN(WiFi.firmwareVersion());
       WS_PRINTER.flush();
-      feedWDT();
+      WsV2.feedWDTV2();
 
       // validate co-processor's firmware version
       if (!firmwareCheck()) {
@@ -330,35 +300,32 @@ protected:
       WS_DEBUG_PRINT("Connecting to ");
       WS_DEBUG_PRINTLN(_ssid);
       WS_PRINTER.flush();
-      feedWDT();
+      WsV2.feedWDTV2();
       WiFi.begin(_ssid, _pass);
-      _status = WS_NET_DISCONNECTED;
+      _statusV2 = WS_NET_DISCONNECTED;
 
       // Use the macro to retry the status check until connected / timed out
       int lastResult = -1;
       RETRY_FUNCTION_UNTIL_TIMEOUT(
           []() -> int { return WiFi.status(); }, // Function call each cycle
-          int,                                   // return type
           lastResult,                            // return variable
           [](int status) { return status == WL_CONNECTED; }, // check
           AIRLIFT_CONNECT_TIMEOUT_MS,      // timeout interval (ms)
           AIRLIFT_CONNECT_RETRY_DELAY_MS); // interval between retries
 
       if (lastResult == WL_CONNECTED) {
-        _status = WS_NET_CONNECTED;
+        _statusV2 = WS_NET_CONNECTED;
         // wait 2seconds for connection to stabilize
         WS_DELAY_WITH_WDT(2000);
       } else {
-        _status = WS_NET_DISCONNECTED; // maybe connect failed instead?
+        _statusV2 = WS_NET_DISCONNECTED; // maybe connect failed instead?
       }
     }
   }
 
-  /**************************************************************************/
   /*!
       @brief  Resets the ESP32 module.
   */
-  /**************************************************************************/
   void resetAirLift() {
     if (_rstPin != -1) {
       WS_DEBUG_PRINTLN("Resetting ESP32...");
@@ -383,11 +350,9 @@ protected:
     }
   }
 
-  /**************************************************************************/
   /*!
       @brief  Disconnects from the wireless network.
   */
-  /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
     delay(500);

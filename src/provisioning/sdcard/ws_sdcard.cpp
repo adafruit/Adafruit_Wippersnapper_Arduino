@@ -14,7 +14,6 @@
  */
 #include "ws_sdcard.h"
 
-/**************************************************************************/
 /*!
     @brief    Initializes the SD card.
     @param    pin_cs
@@ -22,7 +21,6 @@
     @returns  True if the SD card was successfully initialized, False
               otherwise.
 */
-/**************************************************************************/
 bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
   WsV2.pin_sd_cs = pin_cs;
 #ifdef SD_USE_SPI_1
@@ -346,6 +344,29 @@ ws_sdcard::ParseSensorType(const char *sensor_type) {
   }
 }
 
+/*!
+    @brief  Parses a UART device's generic device line ending option
+            from the JSON configuration file.
+    @param  line_ending
+            The line ending string to parse.
+    @returns The corresponding GenericDeviceLineEnding enum value
+*/
+wippersnapper_uart_GenericDeviceLineEnding
+ws_sdcard::ParseUartLineEnding(const char *line_ending) {
+  if (strcmp(line_ending, "LF") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_LF;
+  } else if (strcmp(line_ending, "CRLF") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_CRLF;
+  } else if (strcmp(line_ending, "TIMEOUT_100MS") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_TIMEOUT_100MS;
+  } else if (strcmp(line_ending, "TIMEOUT_1000MS") == 0) {
+    return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_TIMEOUT_1000MS;
+  }
+  WS_DEBUG_PRINT("[SD] ERROR: Found unspecified LineEnding - ");
+  WS_DEBUG_PRINTLN(line_ending);
+  return wippersnapper_uart_GenericDeviceLineEnding_GENERIC_DEVICE_LINE_ENDING_UNSPECIFIED;
+}
+
 bool ws_sdcard::ParseDigitalIOAdd(
     JsonObject &component,
     wippersnapper_digitalio_DigitalIOAdd &msg_DigitalIOAdd) {
@@ -443,6 +464,100 @@ uint32_t ws_sdcard::HexStrToInt(const char *hex_str) {
   return std::stoi(hex_str, nullptr, 16);
 }
 
+/*!
+    @brief  Parses a Uartadd message from the JSON configuration file.
+    @param  component
+            The JSON object to parse.
+    @param  msg_uart_add
+            The UartAdd message to populate.
+    @returns True if the message was successfully populated, False otherwise.
+*/
+bool ws_sdcard::ParseUartAdd(JsonObject &component,
+                             wippersnapper_uart_UartAdd &msg_uart_add) {
+  // Configure the UART Serial
+  msg_uart_add.has_cfg_serial = true;
+  snprintf(msg_uart_add.cfg_serial.pin_rx,
+           sizeof(msg_uart_add.cfg_serial.pin_rx), "%d",
+           component["pinRx"] | -1);
+  snprintf(msg_uart_add.cfg_serial.pin_tx,
+           sizeof(msg_uart_add.cfg_serial.pin_tx), "%d",
+           component["pinTx"] | -1);
+  msg_uart_add.cfg_serial.uart_nbr = component["uartNbr"] | 0;
+  msg_uart_add.cfg_serial.baud_rate = component["baudRate"] | 9600;
+  msg_uart_add.cfg_serial.format =
+      wippersnapper_uart_UartPacketFormat_UART_PACKET_FORMAT_8N1; // Stick to
+                                                                  // default 8N1
+                                                                  // for now
+  msg_uart_add.cfg_serial.timeout =
+      component["timeout"] | 1000; // Use a default UART timeout of 1000ms
+
+#ifdef HAS_SOFTWARE_SERIAL
+  msg_uart_add.cfg_serial.use_sw_serial = component["useSwSerial"] | false;
+  msg_uart_add.cfg_serial.sw_serial_invert =
+      component["swSerialInvert"] | false;
+#endif // HAS_SOFTWARE_SERIAL
+
+  // Configure the UART Device
+  msg_uart_add.has_cfg_device = true;
+  strncpy(msg_uart_add.cfg_device.device_id,
+          component["deviceId"] | UNKNOWN_VALUE,
+          sizeof(msg_uart_add.cfg_device.device_id) - 1);
+  const char *device_type = component["deviceType"] | "UNKNOWN";
+  if (strcmp(device_type, "gps") == 0) {
+    msg_uart_add.cfg_device.device_type =
+        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GPS;
+    msg_uart_add.cfg_device.which_config =
+        wippersnapper_uart_UartDeviceConfig_gps_tag;
+    msg_uart_add.cfg_device.config.gps.period =
+        component["gps"]["period"] | 30.0;
+    // TODO: We do not have parsing for GPS PMTK or UBX implemented yet
+    // This is a minimum possible implementation
+  } else if (strcmp(device_type, "pm25aqi") == 0) {
+    msg_uart_add.cfg_device.device_type =
+        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_PM25AQI;
+    msg_uart_add.cfg_device.which_config =
+        wippersnapper_uart_UartDeviceConfig_pm25aqi_tag;
+    msg_uart_add.cfg_device.config.pm25aqi.is_pm1006 =
+        component["isPm1006"] | false;
+    msg_uart_add.cfg_device.config.pm25aqi.period =
+        component["pm25aqi"]["period"] | 30.0;
+    // Fill sensor types
+    pb_size_t sensor_type_count = 0;
+    for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
+      msg_uart_add.cfg_device.config.pm25aqi.sensor_types[sensor_type_count] =
+          ParseSensorType(sensor_type["type"]);
+      sensor_type_count++;
+    }
+    msg_uart_add.cfg_device.config.pm25aqi.sensor_types_count =
+        sensor_type_count;
+  } else if (strcmp(device_type, "generic_input") == 0) {
+    msg_uart_add.cfg_device.device_type =
+        wippersnapper_uart_UartDeviceType_UART_DEVICE_TYPE_GENERIC_INPUT;
+    msg_uart_add.cfg_device.which_config =
+        wippersnapper_uart_UartDeviceConfig_generic_uart_input_tag;
+    msg_uart_add.cfg_device.config.generic_uart_input.line_ending =
+        ParseUartLineEnding(component["lineEnding"] | "LF");
+    msg_uart_add.cfg_device.config.generic_uart_input.period =
+        component["generic_input"]["period"] | 30.0;
+    // Fill sensor types
+    pb_size_t sensor_type_count = 0;
+    for (JsonObject sensor_type : component["sensorTypes"].as<JsonArray>()) {
+      msg_uart_add.cfg_device.config.generic_uart_input
+          .sensor_types[sensor_type_count] =
+          ParseSensorType(sensor_type["type"]);
+      sensor_type_count++;
+    }
+    msg_uart_add.cfg_device.config.generic_uart_input.sensor_types_count =
+        sensor_type_count;
+  } else {
+    WS_DEBUG_PRINTLN("[SD] Parsing Error: Unknown UART device type found: " +
+                     String(device_type));
+    return false;
+  }
+
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief  Parses a DS18x20Add message from the JSON configuration file.
@@ -486,11 +601,6 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
     wippersnapper_i2c_I2cDeviceAddOrReplace &msg_i2c_add) {
   strcpy(msg_i2c_add.i2c_device_name,
          component["i2cDeviceName"] | UNKNOWN_VALUE);
-  msg_i2c_add.i2c_device_period = component["period"] | 0.0;
-  if (msg_i2c_add.i2c_device_period < 0.0) {
-    WS_DEBUG_PRINTLN("[SD] Parsing Error: Invalid I2C device period!");
-    return false;
-  }
 
   msg_i2c_add.has_i2c_device_description = true;
   strcpy(msg_i2c_add.i2c_device_description.i2c_bus_scl,
@@ -516,6 +626,17 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
 
   const char *mux_channel = component["i2cMuxChannel"] | "0xFFFF";
   msg_i2c_add.i2c_device_description.i2c_mux_channel = HexStrToInt(mux_channel);
+
+  // Set the period
+  bool is_gps = component["isGps"] | false;
+  if (is_gps) {
+    msg_i2c_add.is_gps = true;
+    msg_i2c_add.gps_config.period = component["gps"]["period"] | 15.0;
+    msg_i2c_add.has_gps_config = true;
+    return true; // early-out, we don't need to set sensor types for GPS
+  } else {
+    msg_i2c_add.i2c_device_period = component["period"] | 0.0;
+  }
 
   msg_i2c_add.i2c_device_sensor_types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
@@ -558,7 +679,10 @@ bool ws_sdcard::AddI2cScanResultsToBuffer() {
     }
 
     if (skip_device) {
-      WS_DEBUG_PRINTLN("[SD] Skipping I2C device - already in config file");
+      WS_DEBUG_PRINT("[SD] Skipping I2C device - already in config file: ");
+      // print address
+      WS_DEBUG_PRINT("0x");
+      WS_DEBUG_PRINTLN(WsV2._i2c_controller->GetScanDeviceAddress(i), HEX);
       continue;
     }
 
@@ -577,7 +701,7 @@ bool ws_sdcard::AddI2cScanResultsToBuffer() {
                        "to shared buffer!");
       return false;
     }
-    WS_DEBUG_PRINT("[SD] Added I2C Device to shared buffer: 0x");
+    WS_DEBUG_PRINT("[SD] Added Scanned I2C Device to shared buffer: 0x");
     WS_DEBUG_PRINTLN(WsV2._i2c_controller->GetScanDeviceAddress(i), HEX);
   }
   return true;
@@ -721,7 +845,11 @@ bool ws_sdcard::ParseFileConfig() {
 
 #ifndef OFFLINE_MODE_DEBUG
   WS_DEBUG_PRINTLN("[SD] Deserializing config.json...");
-  JsonDocument &doc = WsV2._fileSystemV2->GetDocCfg();
+  // JsonDocument &doc = WsV2._fileSystemV2->GetDocCfg();
+  JsonDocument &doc = WsV2._config_doc;
+  // print config.json using ArduinoJson's pretty print
+  WS_DEBUG_PRINTLN("[SD] Config JSON:");
+  serializeJsonPretty(doc, Serial);
 #else
   JsonDocument doc;
   // Use test data, not data from the filesystem
@@ -839,6 +967,18 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
         _cfg_i2c_addresses.push_back(
             msg_add.i2c_device_description.i2c_device_address);
       }
+    } else if (strcmp(component_api_type, "uart") == 0) {
+      WS_DEBUG_PRINTLN("[SD] UART component found in cfg");
+      wippersnapper_uart_UartAdd msg_uart_add =
+          wippersnapper_uart_UartAdd_init_default;
+      success = ParseUartAdd(component, msg_uart_add);
+      if (success) {
+        WS_DEBUG_PRINTLN("[SD] UART component parsed successfully, adding to "
+                         "shared buffer..");
+        msg_signal_b2d.which_payload =
+            wippersnapper_signal_BrokerToDevice_uart_add_tag;
+        msg_signal_b2d.payload.uart_add = msg_uart_add;
+      }
     } else {
       WS_DEBUG_PRINTLN("[SD] Error: Unknown Component API: " +
                        String(component_api_type));
@@ -879,6 +1019,8 @@ uint32_t ws_sdcard::GetTimestamp() {
     TickSoftRTC();
     return cur_time; // early-return as we are not converting this "soft rtc" to
                      // unixtime
+  } else if (WsV2._gps_controller->has_gps) {
+    now = WsV2._gps_controller->GetGPSDateTime();
   } else { // we're either using a simulator or have undefined behavior
     return 0;
   }
@@ -1095,8 +1237,8 @@ bool ws_sdcard::LogJSONDoc(JsonDocument &doc) {
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, float value, wippersnapper_sensor_SensorType read_type) {
+bool ws_sdcard::LogEventGpio(uint8_t pin, float value,
+                             wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1116,8 +1258,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, uint16_t value, wippersnapper_sensor_SensorType read_type) {
+bool ws_sdcard::LogEventGpio(uint8_t pin, uint16_t value,
+                             wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1137,8 +1279,8 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogGPIOSensorEventToSD(
-    uint8_t pin, bool value, wippersnapper_sensor_SensorType read_type) {
+bool ws_sdcard::LogEventGpio(uint8_t pin, bool value,
+                             wippersnapper_sensor_SensorType read_type) {
   JsonDocument doc;
   BuildJSONDoc(doc, pin, value, read_type);
   if (!LogJSONDoc(doc))
@@ -1158,8 +1300,7 @@ bool ws_sdcard::LogGPIOSensorEventToSD(
     @returns True if the event was successfully logged, False otherwise.
 */
 /**************************************************************************/
-bool ws_sdcard::LogDS18xSensorEventToSD(
-    wippersnapper_ds18x20_Ds18x20Event *event_msg) {
+bool ws_sdcard::LogEventDs18x(wippersnapper_ds18x20_Ds18x20Event *event_msg) {
   JsonDocument doc;
   // Iterate over the event message's sensor events
   // TODO: Standardize this Event with I2C
@@ -1174,15 +1315,13 @@ bool ws_sdcard::LogDS18xSensorEventToSD(
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief  Logs an I2C sensor event to the SD card.
     @param  msg_device_event
             The I2cDeviceEvent message to log.
     @returns True if the event was successfully logged, False otherwise.
 */
-/**************************************************************************/
-bool ws_sdcard::LogI2cDeviceEvent(
+bool ws_sdcard::LogEventI2c(
     wippersnapper_i2c_I2cDeviceEvent *msg_device_event) {
   JsonDocument doc;
   // Pull the DeviceDescriptor out
@@ -1211,14 +1350,101 @@ bool ws_sdcard::LogI2cDeviceEvent(
   return true;
 }
 
+/*!
+    @brief  Logs a GPS event to the SD card.
+    @param  msg_gps_event
+            The GPSEvent message to log.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogEventGps(wippersnapper_gps_GPSEvent *msg_gps_event) {
+  JsonDocument doc;
+
+  // Log RMC responses
+  for (pb_size_t rmc_resp = 0; rmc_resp < msg_gps_event->rmc_responses_count;
+       rmc_resp++) {
+    // Log GPS DateTime
+    if (msg_gps_event->rmc_responses[rmc_resp].has_datetime) {
+      wippersnapper_gps_GPSDateTime gps_dt =
+          msg_gps_event->rmc_responses[rmc_resp].datetime;
+      DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, gps_dt.hour,
+                            gps_dt.minute, gps_dt.seconds);
+      doc["timestamp"] = gps_datetime.unixtime();
+    }
+    // Log GPS data
+    doc["fix_status"] = msg_gps_event->rmc_responses[rmc_resp].fix_status;
+    doc["latitude"] = msg_gps_event->rmc_responses[rmc_resp].lat;
+    doc["lat_dir"] = msg_gps_event->rmc_responses[rmc_resp].lat_dir;
+    doc["longitude"] = msg_gps_event->rmc_responses[rmc_resp].lon;
+    doc["lon_dir"] = msg_gps_event->rmc_responses[rmc_resp].lon_dir;
+    doc["speed"] = msg_gps_event->rmc_responses[rmc_resp].speed;
+    doc["angle"] = msg_gps_event->rmc_responses[rmc_resp].angle;
+    if (!LogJSONDoc(doc)) {
+      WS_DEBUG_PRINTLN("[SD] Error: Unable to log RMC response!");
+      return false;
+    }
+  }
+
+  // Log GGA responses
+  for (pb_size_t gga_resp = 0; gga_resp < msg_gps_event->gga_responses_count;
+       gga_resp++) {
+    // Log GPS DateTime
+    if (msg_gps_event->gga_responses[gga_resp].has_datetime) {
+      wippersnapper_gps_GPSDateTime gps_dt =
+          msg_gps_event->gga_responses[gga_resp].datetime;
+      DateTime gps_datetime(gps_dt.year, gps_dt.month, gps_dt.day, gps_dt.hour,
+                            gps_dt.minute, gps_dt.seconds);
+      doc["timestamp"] = gps_datetime.unixtime();
+    }
+    // Log GPS data
+    doc["latitude"] = msg_gps_event->gga_responses[gga_resp].lat;
+    doc["lat_dir"] = msg_gps_event->gga_responses[gga_resp].lat_dir;
+    doc["longitude"] = msg_gps_event->gga_responses[gga_resp].lon;
+    doc["lon_dir"] = msg_gps_event->gga_responses[gga_resp].lon_dir;
+    doc["fix_quality"] = msg_gps_event->gga_responses[gga_resp].fix_quality;
+    doc["num_satellites"] =
+        msg_gps_event->gga_responses[gga_resp].num_satellites;
+    doc["hdop"] = msg_gps_event->gga_responses[gga_resp].hdop;
+    doc["altitude"] = msg_gps_event->gga_responses[gga_resp].altitude;
+    doc["geoid_height"] = msg_gps_event->gga_responses[gga_resp].geoid_height;
+    if (!LogJSONDoc(doc)) {
+      WS_DEBUG_PRINTLN("[SD] Error: Unable to log GGA response!");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/*!
+    @brief  Logs a UART input event to the SD card.
+    @param  msg_uart_input_event
+            The UartInputEvent message to log.
+    @returns True if the event was successfully logged, False otherwise.
+*/
+bool ws_sdcard::LogEventUart(
+    wippersnapper_uart_UartInputEvent *msg_uart_input_event) {
+  JsonDocument doc;
+  doc["timestamp"] = GetTimestamp();
+  doc["uart_device_id"] = msg_uart_input_event->device_id;
+  doc["uart_port"] = msg_uart_input_event->uart_nbr;
+
+  // Log each event
+  for (pb_size_t i = 0; i < msg_uart_input_event->events_count; i++) {
+    doc["value"] = msg_uart_input_event->events[i].value.float_value;
+    doc["si_unit"] = SensorTypeToSIUnit(msg_uart_input_event->events[i].type);
+  }
+
+  if (!LogJSONDoc(doc))
+    return false;
+  return true;
+}
+
 #ifdef OFFLINE_MODE_DEBUG
-/**************************************************************************/
 /*!
     @brief  Waits for a valid JSON string to be received via the hardware's
             serial input or from a hardcoded test JSON string.
     @returns True if a valid JSON string was received, False otherwise.
 */
-/**************************************************************************/
 void ws_sdcard::waitForSerialConfig() {
   json_test_data = "{"
                    "\"exportVersion\": \"1.0.0\","
