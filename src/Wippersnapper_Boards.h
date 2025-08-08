@@ -218,11 +218,13 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 64
+#define SD_CS_PIN 17
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #define BOARD_ID "rpi-pico-2w"
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN 64
+#define SD_CS_PIN 17
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 #define BOARD_ID "rpi-pico"
 #define USE_TINYUSB
@@ -257,6 +259,25 @@
 #define USE_STATUS_NEOPIXEL
 #define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
 #define STATUS_NEOPIXEL_NUM 1
+#elif defined(ARDUINO_ESP32S3_DEV)
+#define BOARD_ID "esp32s3-devkitc-1-n8"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN 48
+#define STATUS_NEOPIXEL_NUM 1
+#ifdef BOARD_HAS_PSRAM
+#define USE_PSRAM ///< Board has PSRAM, use it for dynamic memory allocation
+// Update board ID if PSRAM is present, needs new board definition
+#endif
+#elif defined(ARDUINO_XIAO_ESP32S3)
+#define BOARD_ID "xiao-esp32s3"
+#define BOARD_HAS_PSRAM
+#define USE_PSRAM
+#define USE_TINYUSB
+#define USE_STATUS_LED
+#define STATUS_LED_PIN LED_BUILTIN
+// XIAO S3 Sense Camera addon SD card CS pin GPIO21, or D2/GPIO3 on grove breakout
+#define SD_CS_PIN 21 
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif
