@@ -70,7 +70,7 @@ public:
   ~GPSHardware();
   bool begin();
   bool SetInterface(HardwareSerial *serial, uint32_t baudrate);
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   bool SetInterface(SoftwareSerial *serial, uint32_t baudrate);
 #endif // HAS_SW_SERIAL
   bool SetInterface(TwoWire *wire);
@@ -130,7 +130,7 @@ private:
   GpsInterfaceType _iface_type;         ///< Type of interface used by GPS
   GpsDriverType _driver_type;           ///< Type of GPS driver used by GPS
   HardwareSerial *_hw_serial = nullptr; ///< Optional HardwareSerial instance
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   SoftwareSerial *_sw_serial = nullptr; ///< Optional SoftwareSerial instance
 #endif                                  // HAS_SW_SERIAL
   TwoWire *_wire = nullptr;             ///< Optional TwoWire instance

@@ -90,7 +90,7 @@ public:
 
     delay(1000); // Wait for the sensor to boot
 
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
     return _pm25->begin_UART(_sw_serial);
 #else
     return _pm25->begin_UART(_hw_serial);

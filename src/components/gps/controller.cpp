@@ -107,7 +107,7 @@ bool GPSController::AddGPS(HardwareSerial *serial, uint32_t baudrate,
   return true;
 }
 
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
 /*!
  * @brief Adds a GPS software serial instance to the controller.
  * @param serial Pointer to the SoftwareSerial instance for GPS communication.

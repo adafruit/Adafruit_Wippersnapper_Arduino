@@ -83,7 +83,7 @@ bool GPSHardware::Handle_GPSConfig(wippersnapper_gps_GPSConfig *gps_config) {
       if (_iface_type == GPS_IFACE_UART_HW ||
           _iface_type == GPS_IFACE_UART_SW) {
 // Flush the RX/TX buffers before sending
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
         _sw_serial->flush();
         while (_sw_serial->available() > 0) {
           _sw_serial->read();
@@ -136,7 +136,7 @@ bool GPSHardware::SetInterface(HardwareSerial *serial, uint32_t baudrate) {
   return true;
 }
 
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
 /*!
  * @brief Sets a UART software serial interface for the GPS controller.
  * @param serial
@@ -286,7 +286,7 @@ bool GPSHardware::DetectMtkUart() {
   }
 
 // Clear the tx and rx buffers before sending the command
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   _sw_serial->flush();
   while (_sw_serial->available() > 0) {
     _sw_serial->read();
@@ -301,7 +301,7 @@ bool GPSHardware::DetectMtkUart() {
   // Query MediaTek firmware version
   uint16_t timeout = MTK_QUERY_FW_TIMEOUT;
 
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   while (_sw_serial->available() < MAX_NEMA_SENTENCE_LEN && timeout--) {
     delay(1);
   }
@@ -319,7 +319,7 @@ bool GPSHardware::DetectMtkUart() {
   size_t buf_len = MAX_NEMA_SENTENCE_LEN * 4; // +3 for \r\n and null terminator
   char buffer[buf_len];
   size_t available;
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   available = _sw_serial->available();
 #else
   available = _hw_serial->available();
@@ -331,7 +331,7 @@ bool GPSHardware::DetectMtkUart() {
   WS_DEBUG_PRINT(" bytes, reading ");
   WS_DEBUG_PRINTLN(bytes_to_read);
   for (size_t i = 0; i < bytes_to_read; i++) {
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
     buffer[i] = _sw_serial->read();
 #else
     buffer[i] = _hw_serial->read();
@@ -346,7 +346,7 @@ bool GPSHardware::DetectMtkUart() {
   }
 
 // Attempt to use Adafruit_GPS
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   _ada_gps = new Adafruit_GPS(_sw_serial);
 #else
   _ada_gps = new Adafruit_GPS(_hw_serial);

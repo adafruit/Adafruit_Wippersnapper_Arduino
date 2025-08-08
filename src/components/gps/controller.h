@@ -15,6 +15,7 @@
  */
 #ifndef WS_GPS_CONTROLLER_H
 #define WS_GPS_CONTROLLER_H
+#include "../uart/serial_config.h"
 #include "Wippersnapper_V2.h"
 #include "hardware.h"
 #include "model.h"
@@ -33,7 +34,7 @@ public:
   ~GPSController();
   bool AddGPS(HardwareSerial *serial, uint32_t baudrate,
               wippersnapper_gps_GPSConfig *gps_config);
-#ifdef HAS_SW_SERIAL
+#if HAS_SW_SERIAL
   bool AddGPS(SoftwareSerial *serial, uint32_t baudrate,
               wippersnapper_gps_GPSConfig *gps_config);
 #endif // HAS_SW_SERIAL
