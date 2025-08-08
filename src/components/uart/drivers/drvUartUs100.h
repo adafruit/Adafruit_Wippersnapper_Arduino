@@ -114,28 +114,30 @@ public:
   /*!
       @brief    Destructor for a US-100 UART device.
   */
-  ~drvUartUs100() { /* TODO: Add back CTOR */ }
+  ~drvUartUs100() {
+    if (_uart_dev) {
+      delete _uart_dev; // Clean up the UARTDevice instance
+      _uart_dev = nullptr;
+    }
+  }
 
   /*!
       @brief    Initializes the US-100 UART device.
       @returns  True if initialized successfully, False otherwise.
   */
   bool begin() override {
-    // is _hw_serial nullptr?
-    if (_hw_serial == nullptr) {
-      WS_DEBUG_PRINTLN("[uart] ERROR: _hw_serial is null!");
+#if HAS_SW_SERIAL
+    if (_sw_serial == nullptr)
       return false;
-    } else {
-      WS_DEBUG_PRINTLN("[uart] _hw_serial is not null, proceeding...");
-    }
-
-    WS_DEBUG_PRINTLN(
-        "[uart] Initializing US-100 Ultrasonic Distance Sensor...");
+    _uart_dev = new UARTDevice(_sw_serial);
+#else
+    if (_hw_serial == nullptr)
+      return false;
     _uart_dev = new UARTDevice(_hw_serial);
-    WS_DEBUG_PRINTLN("[uart] Creating GenericDevice...");
+#endif // HAS_SW_SERIAL
+
     // Create a GenericDevice instance using the UARTDevice
     return _uart_dev->CreateDevice();
-    WS_DEBUG_PRINTLN("[uart] US-100 device initialized successfully.");
     return true;
   }
 
