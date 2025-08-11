@@ -103,6 +103,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvDps310(i2c, addr, mux_channel, driver_name);
      }},
+    {"d6t1a",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvD6t1a(i2c, addr, mux_channel, driver_name);
+     }},
     {"ds2484",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -346,6 +351,7 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
 
 static const std::unordered_map<uint16_t, std::vector<const char *>>
     map_address_to_drivers = {
+        {0x0A, {"d6t1a"}},
         {0x0B, {"lc709203f"}},
         {0x12, {"pmsa003i"}},
         {0x13, {"vncl4020"}},

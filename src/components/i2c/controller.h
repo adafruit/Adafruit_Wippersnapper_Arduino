@@ -27,6 +27,7 @@
 #include "drivers/drvBmp280.h"
 #include "drivers/drvBmp3xx.h"
 #include "drivers/drvDps310.h"
+#include "drivers/drvD6t1a.h"
 #include "drivers/drvDs2484.h"
 #include "drivers/drvEns160.h"
 #include "drivers/drvHts221.h"
