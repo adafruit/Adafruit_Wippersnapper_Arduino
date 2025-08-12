@@ -220,6 +220,7 @@ public:
   void errorWriteHangV2(const char *error);
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode
+  bool _global_auto_config = true; ///< Support no auto config for exportedDevice
 
   // TODO: Do we need this?
   ws_board_status_t _boardStatusV2 =

@@ -829,6 +829,10 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
     return false;
   }
 
+  if (exportedFromDevice["autoConfig"].as<bool>() == false) {
+    WsV2._global_auto_config = false;
+  }
+
   return true;
 }
 
@@ -887,6 +891,12 @@ bool ws_sdcard::ParseFileConfig() {
   if (!ParseComponents(components)) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to parse components[]!");
     return false;
+  }
+
+  // If global skip (exportedFromDevice.autoConfig == false) then just continue
+  if (!WsV2._global_auto_config) {
+    WS_DEBUG_PRINTLN("[SD] Auto config is disabled, skipping I2C scan.");
+    return true;
   }
 
   // Add the results of I2C scan to the shared buffer
