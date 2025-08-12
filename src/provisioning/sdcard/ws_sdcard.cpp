@@ -179,7 +179,32 @@ bool ws_sdcard::InitPCF8523() {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
   _rtc_pcf8523->start();
-  _cfg_i2c_addresses.push_back(0x68); // Disable auto-config for DS3231
+  _cfg_i2c_addresses.push_back(0x68); // Disable auto-config for PCF8523
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes a PCF8563 RTC.
+    @returns  True if the RTC was successfully initialized, False
+              otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::InitPCF8563() {
+  _rtc_pcf8563 = new RTC_PCF8563();
+  if (!_rtc_pcf8563->begin(WsV2._i2c_controller->GetI2cBus())) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8563 RTC on WIRE");
+    if (!_rtc_pcf8563->begin(WsV2._i2c_controller->GetI2cBus(true))) {
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8563 RTC on WIRE1");
+      delete _rtc_pcf8563;
+      return false;
+    }
+  }
+  if (!_rtc_pcf8563->isrunning() || _rtc_pcf8563->lostPower()) {
+    _rtc_pcf8563->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+  _rtc_pcf8563->start();
+  _cfg_i2c_addresses.push_back(0x51); // Disable auto-config for PCF8563
   return true;
 }
 
@@ -227,6 +252,8 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
     return InitDS3231();
   } else if (strcmp(rtc_type, "PCF8523") == 0) {
     return InitPCF8523();
+  } else if (strcmp(rtc_type, "PCF8563") == 0) {
+    return InitPCF8563();
   } else if (strcmp(rtc_type, "SOFT") == 0) {
     return InitSoftRTC();
   }
@@ -1024,6 +1051,8 @@ uint32_t ws_sdcard::GetTimestamp() {
     now = _rtc_ds1307->now();
   else if (_rtc_pcf8523 != nullptr)
     now = _rtc_pcf8523->now();
+  else if (_rtc_pcf8563 != nullptr)
+    now = _rtc_pcf8563->now();
   else if (_is_soft_rtc) {
     uint32_t cur_time = GetSoftRTCTime();
     TickSoftRTC();
