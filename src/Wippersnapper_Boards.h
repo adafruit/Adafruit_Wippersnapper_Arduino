@@ -276,8 +276,9 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
-// XIAO S3 Sense Camera addon SD card CS pin GPIO21, or D2/GPIO3 on grove breakout
-#define SD_CS_PIN 21 
+// XIAO S3 Sense Camera addon SD card CS pin GPIO21, or D2/GPIO3 on grove
+// expansion board breakout (OLED/SD/RTC-PCF8563)
+#define SD_CS_PIN 21
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif

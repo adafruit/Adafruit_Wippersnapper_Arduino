@@ -15,15 +15,16 @@
 
 #ifndef DRV_D6T1A_H
 #define DRV_D6T1A_H
-#include "drvBase.h"
 #include <OmronD6T.h>
 
+#include "drvBase.h"
+
 /*!
-    @brief  Class that provides a sensor driver for the D6T1A temperature sensor.
+    @brief  Class that provides a sensor driver for the D6T1A temperature
+   sensor.
 */
 class drvD6t1a : public drvBase {
-
-public:
+ public:
   /*!
       @brief    Constructor for a D6T1A sensor.
       @param    i2c
@@ -35,8 +36,8 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  drvD6t1a(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
-            const char *driver_name)
+  drvD6t1a(TwoWire* i2c, uint16_t sensorAddress, uint32_t mux_channel,
+           const char* driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -52,7 +53,9 @@ public:
   /*!
       @brief    Destructor for a D6T1A sensor.
   */
-  ~drvD6t1a() { delete _d6t1a; }
+  ~drvD6t1a() {
+    delete _d6t1a;
+  }
 
   /*!
       @brief    Initializes the D6T1A sensor and begins I2C.
@@ -92,9 +95,10 @@ public:
       @brief    Gets the D6T1A's current ambient temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the temperature was obtained successfully, False otherwise.
+      @returns  True if the temperature was obtained successfully, False
+     otherwise.
   */
-  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t* tempEvent) {
     if (ReadSensorData() && !isnan(_deviceTemp)) {
       tempEvent->temperature = _deviceTemp;
       return true;
@@ -106,9 +110,10 @@ public:
       @brief    Gets the D6T1A's object temperature.
       @param    tempEvent
                 Pointer to an Adafruit_Sensor event.
-      @returns  True if the temperature was obtained successfully, False otherwise.
+      @returns  True if the temperature was obtained successfully, False
+     otherwise.
   */
-  bool getEventObjectTemp(sensors_event_t *tempEvent) {
+  bool getEventObjectTemp(sensors_event_t* tempEvent) {
     if (ReadSensorData() && !isnan(_objectTemp)) {
       tempEvent->temperature = _objectTemp;
       return true;
@@ -124,11 +129,11 @@ public:
         wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
   }
 
-protected:
-  float _deviceTemp;          ///< Device temperature in Celsius
-  float _objectTemp;          ///< Object temperature in Celsius
-  uint32_t _lastRead;         ///< Last time the sensor was read in milliseconds
-  OmronD6T *_d6t1a;           ///< D6T1A object
+ protected:
+  float _deviceTemp;  ///< Device temperature in Celsius
+  float _objectTemp;  ///< Object temperature in Celsius
+  uint32_t _lastRead; ///< Last time the sensor was read in milliseconds
+  OmronD6T* _d6t1a;   ///< D6T1A object
 };
 
 #endif // DRV_D6T1A_H

@@ -26,8 +26,8 @@
 #include "drivers/drvBme680.h"
 #include "drivers/drvBmp280.h"
 #include "drivers/drvBmp3xx.h"
-#include "drivers/drvDps310.h"
 #include "drivers/drvD6t1a.h"
+#include "drivers/drvDps310.h"
 #include "drivers/drvDs2484.h"
 #include "drivers/drvEns160.h"
 #include "drivers/drvHts221.h"
@@ -83,38 +83,38 @@ class I2cHardware;      ///< Forward declaration
             appropriate hardware, model, and device driver classes.
 */
 class I2cController {
-public:
+ public:
   I2cController();
   ~I2cController();
   void update();
   // Routing //
-  bool Handle_I2cDeviceAddOrReplace(pb_istream_t *stream);
-  bool Handle_I2cBusScan(pb_istream_t *stream);
-  bool Handle_I2cDeviceRemove(pb_istream_t *stream);
-  bool Handle_I2cDeviceOutputWrite(pb_istream_t *stream);
+  bool Handle_I2cDeviceAddOrReplace(pb_istream_t* stream);
+  bool Handle_I2cBusScan(pb_istream_t* stream);
+  bool Handle_I2cDeviceRemove(pb_istream_t* stream);
+  bool Handle_I2cDeviceOutputWrite(pb_istream_t* stream);
   // Publishing //
   bool PublishI2cDeviceAddedorReplaced(
-      const wippersnapper_i2c_I2cDeviceDescriptor &device_descriptor,
-      const wippersnapper_i2c_I2cDeviceStatus &device_status);
+      const wippersnapper_i2c_I2cDeviceDescriptor& device_descriptor,
+      const wippersnapper_i2c_I2cDeviceStatus& device_status);
   // Helpers //
   bool IsBusStatusOK(bool is_alt_bus = false);
-  bool InitMux(const char *name, uint32_t address, bool is_alt_bus);
+  bool InitMux(const char* name, uint32_t address, bool is_alt_bus);
   void ConfigureMuxChannel(uint32_t mux_channel, bool is_alt_bus);
   bool RemoveDriver(uint32_t address, bool is_output_device);
   bool ScanI2cBus(bool default_bus);
-  TwoWire *GetI2cBus(bool is_alt_bus = false);
+  TwoWire* GetI2cBus(bool is_alt_bus = false);
   uint32_t GetScanDeviceAddress(int index);
   size_t GetScanDeviceCount();
   void PrintAllDrivers();
 
-private:
-  I2cModel *_i2c_model = nullptr; ///< Pointer to an I2C model object
-  I2cOutputModel *_i2c_output_model =
+ private:
+  I2cModel* _i2c_model = nullptr; ///< Pointer to an I2C model object
+  I2cOutputModel* _i2c_output_model =
       nullptr; ///< Pointer to an I2C output model object
-  I2cHardware *_i2c_bus_default = nullptr; ///< Pointer to the default I2C bus
-  I2cHardware *_i2c_bus_alt = nullptr; ///< Pointer to an alternative I2C bus
-  std::vector<drvBase *> _i2c_drivers; ///< Vector of ptrs to I2C input drivers
-  std::vector<drvOutputBase *>
+  I2cHardware* _i2c_bus_default = nullptr; ///< Pointer to the default I2C bus
+  I2cHardware* _i2c_bus_alt = nullptr; ///< Pointer to an alternative I2C bus
+  std::vector<drvBase*> _i2c_drivers;  ///< Vector of ptrs to I2C input drivers
+  std::vector<drvOutputBase*>
       _i2c_drivers_output; ///< Vector of ptrs to I2C output drivers
   wippersnapper_i2c_I2cBusScanned
       _scan_results; ///< Stores results of I2C bus scan
