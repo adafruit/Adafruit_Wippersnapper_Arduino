@@ -19,16 +19,13 @@
 #include "drvBase.h"
 #include <Adafruit_AHTX0.h>
 
-/**************************************************************************/
 /*!
     @brief  Class that provides a sensor driver for the AHTX0 temperature
             and humidity sensor.
 */
-/**************************************************************************/
 class drvAhtx0 : public drvBase {
 
 public:
-  /*******************************************************************************/
   /*!
       @brief    Constructor for an AHTX0 sensor.
       @param    i2c
@@ -40,27 +37,22 @@ public:
       @param    driver_name
                 The name of the driver.
   */
-  /*******************************************************************************/
   drvAhtx0(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     // Initialization handled by drvBase constructor
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Destructor for an AHTX0 sensor.
   */
-  /*******************************************************************************/
   ~drvAhtx0() { delete _aht; }
 
-  /*******************************************************************************/
   /*!
       @brief    Initializes the AHTX0 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
 
   */
-  /*******************************************************************************/
   bool begin() override {
     // attempt to initialize the driver
     _aht = new Adafruit_AHTX0();
@@ -78,7 +70,6 @@ public:
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the AHTX0's current temperature.
       @param    tempEvent
@@ -86,13 +77,11 @@ public:
       @returns  True if the temperature was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     _aht_temp->getEvent(tempEvent);
     return true;
   }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the AHTX0's current humidity.
       @param    humidEvent
@@ -100,7 +89,6 @@ public:
       @returns  True if the humidity was obtained successfully, False
                 otherwise.
   */
-  /*******************************************************************************/
   bool getEventRelativeHumidity(sensors_event_t *humidEvent) {
     _aht_humidity->getEvent(humidEvent);
     return true;

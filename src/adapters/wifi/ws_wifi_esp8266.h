@@ -8,7 +8,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2020-2021 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2020-2025 for Adafruit Industries.
  *
  * MIT license, all text here must be included in any redistribution.
  *
@@ -39,16 +39,13 @@
 
 extern Wippersnapper_V2 WsV2;
 
-/******************************************************************************/
 /*!
     @brief  Class for interacting with the Espressif ESP8266's network
    interface.
 */
-/******************************************************************************/
 class ws_wifi_esp8266 : public Wippersnapper_V2 {
 
 public:
-  /**************************************************************************/
   /*!
   @brief  Initializes the Adafruit IO class for ESP8266 devices.
   @param  aioUsername
@@ -60,7 +57,6 @@ public:
   @param  netPass
           Wireless Network password
   */
-  /**************************************************************************/
   ws_wifi_esp8266() : Wippersnapper_V2() {
     _ssid = 0;
     _pass = 0;
@@ -69,19 +65,16 @@ public:
     WiFi.mode(WIFI_STA);
   }
 
-  /**************************************************************************/
   /*!
   @brief  Destructor for the ESP8266's network iface.
   */
-  /**************************************************************************/
   ~ws_wifi_esp8266() {
     if (_wifi_client)
       delete _wifi_client;
-    if (_mqtt)
-      delete _mqtt;
+    if (_mqttV2)
+      delete _mqttV2;
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password.
   @param  ssid
@@ -89,7 +82,6 @@ public:
   @param  ssidPassword
             Wireless network's password.
   */
-  /**********************************************************/
   void set_ssid_pass(const char *ssid, const char *ssidPassword) {
     _ssid = ssid;
 
@@ -102,23 +94,19 @@ public:
     }
   }
 
-  /**********************************************************/
   /*!
   @brief  Sets the WiFi client's ssid and password from the
             ESP8266's LittleFS.
   */
-  /**********************************************************/
   void set_ssid_pass() {
-    _ssid = WS._config.network.ssid;
-    _pass = WS._config.network.pass;
+    _ssid = WsV2._configV2.network.ssid;
+    _pass = WsV2._configV2.network.pass;
   }
 
-  /***********************************************************/
   /*!
   @brief   Performs a scan of local WiFi networks.
   @returns True if `_network_ssid` is found, False otherwise.
   */
-  /***********************************************************/
   bool check_valid_ssid() {
     // Set WiFi to station mode and disconnect from an AP if it was previously
     // connected
@@ -142,7 +130,7 @@ public:
         WS_DEBUG_PRINTLN(WiFi.RSSI(i));
         return true;
       }
-      if (WS._isWiFiMultiV2) {
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         for (int j = 0; j < WS_MAX_ALT_WIFI_NETWORKS; j++) {
           if (strcmp(WsV2._multiNetworksV2[j].ssid, WiFi.SSID(i).c_str()) ==
@@ -170,38 +158,33 @@ public:
     return false;
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the ESP8266's unique client identifier.
   @note   For the ESP8266, the UID is the MAC address.
   */
-  /********************************************************/
   void getMacAddr() {
     uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     WiFi.macAddress(mac);
     memcpy(WsV2._macAddrV2, mac, sizeof(mac));
   }
 
-  /********************************************************/
   /*!
   @brief  Gets the current network RSSI value
   @return int32_t RSSI value
   */
-  /********************************************************/
   int32_t getRSSI() { return WiFi.RSSI(); }
 
-  /*******************************************************************/
   /*!
   @brief  Sets up an Adafruit_MQTT_Client
   @param  clientID
           MQTT client identifier
   */
-  /*******************************************************************/
   void setupMQTTClient(const char *clientID) {
     // Uncomment the following lines to use MQTT/SSL. You will need to
-    // re-compile after. _wifi_client->setFingerprint(fingerprint); WS._mqtt =
-    // new Adafruit_MQTT_Client(_wifi_client, WS._config.aio_url,
-    // WS._config.io_port, clientID, WS._config.aio_user, WS._config.aio_key);
+    // re-compile after. _wifi_client->setFingerprint(fingerprint); WsV2._mqttV2
+    // = new Adafruit_MQTT_Client(_wifi_client, WsV2._configV2.aio_url,
+    // WsV2._configV2.io_port, clientID, WsV2._configV2.aio_user,
+    // WsV2._configV2.aio_key);
     if (WsV2._configV2.io_port == 8883)
       WsV2._configV2.io_port = 1883;
     WsV2._mqttV2 = new Adafruit_MQTT_Client(
@@ -209,12 +192,10 @@ public:
         WsV2._configV2.aio_user, WsV2._configV2.aio_key);
   }
 
-  /********************************************************/
   /*!
   @brief  Returns the network status of an ESP8266 module.
   @return ws_status_t
   */
-  /********************************************************/
   ws_status_t networkStatus() {
     switch (WiFi.status()) {
     case WL_CONNECTED:
@@ -228,12 +209,10 @@ public:
     }
   }
 
-  /*******************************************************************/
   /*!
   @brief  Returns the type of network connection used by Wippersnapper_V2
   @return "ESP8266"
   */
-  /*******************************************************************/
   const char *connectionType() { return "ESP8266"; }
 
 protected:
@@ -242,12 +221,10 @@ protected:
   WiFiClient *_wifi_client;
   ESP8266WiFiMulti _wifiMulti;
 
-  /**************************************************************************/
   /*!
   @brief  Establishes a connection with the wireless network.
   */
-  /**************************************************************************/
-  void _connect()() {
+  void _connect() {
 
     if (WiFi.status() == WL_CONNECTED)
       return;
@@ -265,7 +242,7 @@ protected:
       _statusV2 = WS_NET_DISCONNECTED;
       delay(100);
 
-      if (WS._isWiFiMultiV2) {
+      if (WsV2._isWiFiMultiV2) {
         // multi network mode
         for (int i = 0; i < WS_MAX_ALT_WIFI_NETWORKS; i++) {
           if (strlen(WsV2._multiNetworksV2[i].ssid) > 0 &&
@@ -307,15 +284,13 @@ protected:
           _statusV2 = WS_NET_DISCONNECTED;
         }
       }
-      WsV2.feedWDT();
+      WsV2.feedWDTV2();
     }
   }
 
-  /**************************************************************************/
   /*!
       @brief  Disconnects from the wireless network.
   */
-  /**************************************************************************/
   void _disconnect() {
     WiFi.disconnect();
     delay(500);

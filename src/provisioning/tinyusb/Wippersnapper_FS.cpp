@@ -7,7 +7,7 @@
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2024-2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell 2024 for Adafruit Industries.
  *
  * BSD license, all text here must be included in any redistribution.
  *
@@ -30,7 +30,8 @@
     defined(ARDUINO_RASPBERRY_PI_PICO) ||                                      \
     defined(ARDUINO_RASPBERRY_PI_PICO_2) ||                                    \
     defined(ARDUINO_ADAFRUIT_FEATHER_RP2040_ADALOGGER) ||                      \
-    defined(ARDUINO_ADAFRUIT_METRO_RP2350)
+    defined(ARDUINO_ADAFRUIT_METRO_RP2350) ||                                  \
+    defined(ARDUINO_RASPBERRY_PI_PICO_2W)
 #include "Wippersnapper_FS.h"
 // On-board external flash (QSPI or SPI) macros should already
 // defined in your board variant if supported
@@ -58,16 +59,13 @@ Adafruit_FlashTransport_RP2040 flashTransport_v2;
 Adafruit_SPIFlash flash_v2(&flashTransport_v2); ///< SPIFlash object
 FatVolume wipperFatFs_v2; ///< File system object from Adafruit SDFat library
 Adafruit_USBD_MSC usb_msc_v2; /*!< USB mass storage object */
-static bool _fs_changed = false;
-static bool _did_init_msc = false;
+bool _fs_changed = false;     ///< Flag to indicate filesystem changes
 
-/**************************************************************************/
 /*!
     @brief    Formats the flash filesystem as FAT12.
     @returns  FR_OK if filesystem formatted correctly,
                 otherwise any FRESULT enum.
 */
-/**************************************************************************/
 FRESULT format_fs_fat12(void) {
   FATFS elmchamFatfs_v2;
   uint8_t workbuf_v2[4096];
@@ -98,67 +96,83 @@ FRESULT format_fs_fat12(void) {
   return r;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes USB-MSC and the QSPI flash filesystem.
 */
-/**************************************************************************/
 Wippersnapper_FS::Wippersnapper_FS() {
-  _fs_changed = false;
-  _did_init_msc = false;
-
-  // Re-enumerate to allow cdc class begin() to take effect
-  if (TinyUSBDevice.mounted()) {
-    TinyUSBDevice.detach();
-    delay(10);
-    TinyUSBDevice.attach();
-  }
+  // Detach USB device during init.
+  TinyUSBDevice.detach();
+  // Wait for detach
+  delay(500);
 
   // Attempt to initialize the flash chip
   if (!flash_v2.begin()) {
     setStatusLEDColor(RED);
-    HaltFilesystem("Failed to initialize the flash chip!");
+    fsHalt("Failed to initialize the flash chip!");
   }
 
+  // Attempt to initialize the filesystem
+  bool is_fs_formatted = wipperFatFs_v2.begin(&flash_v2);
+
   // If we are not formatted, attempt to format the filesystem as fat12
-  if (!wipperFatFs_v2.begin(&flash_v2)) {
+  if (!is_fs_formatted) {
     FRESULT rc = format_fs_fat12();
+
     if (rc != FR_OK) {
       setStatusLEDColor(RED);
-      HaltFilesystem("FATAL ERROR: Failed to format the filesystem!");
+      fsHalt("FATAL ERROR: Failed to format the filesystem!");
     }
 
     // Now that we have a formatted filesystem, we need to inititalize it
     if (!wipperFatFs_v2.begin(&flash_v2)) {
       setStatusLEDColor(RED);
-      HaltFilesystem("FATAL ERROR: Failed to mount newly created filesystem!");
+      fsHalt("FATAL ERROR: Failed to mount newly created filesystem!");
     }
   }
 
   // Write contents to the formatted filesystem
-  if (!MakeDefaultFilesystem()) {
+  if (!writeFSContents()) {
     setStatusLEDColor(RED);
-    HaltFilesystem("FATAL ERROR: Could not write filesystem contents!");
+    fsHalt("FATAL ERROR: Could not write filesystem contents!");
+  }
+
+  // Initialize USB-MSC
+  initUSBMSC();
+
+  // If we wrote a fresh secrets.json file, halt until user edits the file and
+  // RESETs the device Signal to user that action must be taken (edit
+  // secrets.json)
+  if (_is_secrets_file_empty) {
+    writeToBootOut(
+        "Please edit the secrets.json file. Then, reset your board.\n");
+#ifdef USE_DISPLAY
+    WsV2._ui_helperV2->show_scr_error(
+        "INVALID SETTINGS FILE",
+        "The settings.json file on the WIPPER drive contains default values. "
+        "Please edit it to reflect your Adafruit IO and network credentials. "
+        "When you're done, press RESET on the board.");
+#endif
+    fsHalt("The settings.json file on the WIPPER drive contains default "
+           "values\n. Using a text editor, edit it to reflect your Adafruit IO "
+           "and WiFi credentials. Then, reset the board.");
   }
 }
 
-/************************************************************/
 /*!
     @brief    Filesystem destructor
 */
-/************************************************************/
 Wippersnapper_FS::~Wippersnapper_FS() {
   // Unmount filesystem
   wipperFatFs_v2.end();
 }
 
-/**************************************************************************/
+void refreshMassStorage(void) { _fs_changed = true; }
+
 /*!
     @brief    Attempts to obtain the hardware's CS pin from the
               config.json file.
 */
-/**************************************************************************/
-void Wippersnapper_FS::GetPinSDCS() {
+void Wippersnapper_FS::GetSDCSPin() {
   File32 file_cfg;
   DeserializationError error;
   // Attempt to open and deserialize the config.json file
@@ -178,16 +192,13 @@ void Wippersnapper_FS::GetPinSDCS() {
   // Parse config.json and save the SD CS pin
   JsonObject exportedFromDevice = WsV2._config_doc["exportedFromDevice"];
   WsV2.pin_sd_cs = exportedFromDevice["sd_cs_pin"] | 255;
-  file_cfg.flush();
   file_cfg.close();
 }
 
-/**************************************************************************/
 /*!
     @brief    Writes files to the filesystem to disable macOS from indexing.
     @returns  True if files written successfully, false otherwise.
 */
-/**************************************************************************/
 bool disableMacOSIndexing() {
   wipperFatFs_v2.mkdir("/.fseventsd/");
   File32 writeFile = wipperFatFs_v2.open("/.fseventsd/no_log", FILE_WRITE);
@@ -205,53 +216,48 @@ bool disableMacOSIndexing() {
     return false;
   writeFile.close();
 
-  refreshMassStorage();
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes the flash filesystem.
     @param    force_format
                 If true, forces a new filesystem to be created. [DESTRUCTIVE]
     @return   True if filesystem initialized correctly, false otherwise.
 */
-/**************************************************************************/
-bool Wippersnapper_FS::MakeDefaultFilesystem() {
+bool Wippersnapper_FS::writeFSContents() {
   // If CircuitPython was previously installed - erase CircuitPython's default
   // filesystem
-  EraseCircuitPythonFS();
+  eraseCPFS();
 
   // If WipperSnapper was previously installed - remove the old
   // wippersnapper_boot_out.txt file
-  EraseFileBoot();
+  eraseBootFile();
 
   // Disble indexing on macOS
   disableMacOSIndexing();
 
   // Create wippersnapper_boot_out.txt file
-  if (!CreateFileBoot())
+  if (!createBootFile())
     return false;
 
   // Check if secrets.json file already exists
-  if (!GetFileSecrets()) {
-    CreateFileSecrets();
+  if (!getSecretsFile()) {
+    // Create new secrets.json file and halt
+    createSecretsFile();
+    _is_secrets_file_empty = true;
   }
-
-  CreateFileConfig();
   return true;
 }
 
-/**************************************************************************/
 /*!
     @brief    Initializes the USB MSC device.
 */
-/**************************************************************************/
-void Wippersnapper_FS::InitUsbMsc() {
+void Wippersnapper_FS::initUSBMSC() {
   // Set disk vendor id, product id and revision with string up to 8, 16, 4
   // characters respectively
   usb_msc_v2.setID("Adafruit", "External Flash", "1.0");
-  // Set r/w callbacks
+  // Set callback
   usb_msc_v2.setReadWriteCallback(qspi_msc_read_cb_v2, qspi_msc_write_cb_v2,
                                   qspi_msc_flush_cb_v2);
 
@@ -261,28 +267,29 @@ void Wippersnapper_FS::InitUsbMsc() {
   // MSC is ready for read/write
   usb_msc_v2.setUnitReady(true);
 
-  // Setup callback for when MSC ready
-  _fs_changed = false;
-  usb_msc_v2.setReadyCallback(0, msc_ready_callback);
-
   // init MSC
   usb_msc_v2.begin();
 
-  // Re-enumerate to allow msc class begin() to take effect
-  if (TinyUSBDevice.mounted()) {
-    TinyUSBDevice.detach();
-    delay(10);
-    TinyUSBDevice.attach();
-  }
-  _did_init_msc = true;
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi
+  // won't take effect until re-enumeration
+  // Attach MSC and wait for enumeration
+  TinyUSBDevice.attach();
+  delay(500);
 }
 
-/**************************************************************************/
+/*!
+    @brief    Checks if secrets.json file exists on the flash filesystem.
+    @returns  True if secrets.json file exists, False otherwise.
+*/
+bool Wippersnapper_FS::getSecretsFile() {
+  // Does secrets.json file exist?
+  return wipperFatFs_v2.exists("/secrets.json");
+}
+
 /*!
     @brief    Erases the default CircuitPython filesystem if it exists.
 */
-/**************************************************************************/
-void Wippersnapper_FS::EraseCircuitPythonFS() {
+void Wippersnapper_FS::eraseCPFS() {
   if (wipperFatFs_v2.exists("/boot_out.txt")) {
     wipperFatFs_v2.remove("/boot_out.txt");
     wipperFatFs_v2.remove("/code.py");
@@ -291,23 +298,19 @@ void Wippersnapper_FS::EraseCircuitPythonFS() {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Erases the existing "wipper_boot_out.txt" file from the FS.
 */
-/**************************************************************************/
-void Wippersnapper_FS::EraseFileBoot() {
+void Wippersnapper_FS::eraseBootFile() {
   // overwrite previous boot_out file on each boot
   if (wipperFatFs_v2.exists("/wipper_boot_out.txt"))
     wipperFatFs_v2.remove("/wipper_boot_out.txt");
 }
 
-/**************************************************************************/
 /*!
     @brief    Creates or overwrites `wipper_boot_out.txt` file to FS.
 */
-/**************************************************************************/
-bool Wippersnapper_FS::CreateFileBoot() {
+bool Wippersnapper_FS::createBootFile() {
   bool is_success = false;
   char sMAC[18] = {0};
 
@@ -339,7 +342,6 @@ bool Wippersnapper_FS::CreateFileBoot() {
 
     bootFile.flush();
     bootFile.close();
-    refreshMassStorage();
     is_success = true;
   } else {
     bootFile.close();
@@ -347,55 +349,32 @@ bool Wippersnapper_FS::CreateFileBoot() {
   return is_success;
 }
 
-/**************************************************************************/
 /*!
-    @brief    Creates a default config document in memory.
+    @brief    Creates a default secrets.json file on the filesystem.
 */
-/**************************************************************************/
-void Wippersnapper_FS::CreateFileConfig() {
-  // Load config.json into memory, if it already exists on the FS
-  if (wipperFatFs_v2.exists("/config.json")) {
-    File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_READ);
-    if (file_cfg) {
-      DeserializationError error = deserializeJson(_doc_cfg, file_cfg);
-      if (error) {
-        // If we can't deserialize, just raise
-        HaltFilesystem(
-            "[fs] Error: Unable to deserialize config.json, is it corrupted?");
-      }
-      file_cfg.close();
-      // Check if the config.json file has the required keys
-      if (!_doc_cfg.containsKey("exportedFromDevice")) {
-        // Build exportedFromDevice object
-        JsonObject exportedFromDevice =
-            _doc_cfg["exportedFromDevice"].to<JsonObject>();
-        exportedFromDevice["sd_cs_pin"] = 255;
-        exportedFromDevice["referenceVoltage"] = 0;
-        exportedFromDevice["totalGPIOPins"] = 0;
-        exportedFromDevice["totalAnalogPins"] = 0;
-        exportedFromDevice["statusLEDBrightness"] = 0.3;
-      }
+void Wippersnapper_FS::createSecretsFile() {
+  // Open file for writing
+  File32 secretsFile = wipperFatFs_v2.open("/secrets.json", FILE_WRITE);
 
-      if (!_doc_cfg.containsKey("components")) {
-        // Build components array
-        _doc_cfg["components"].to<JsonArray>();
-      }
+  // Create a default secretsConfig structure
+  secretsConfig secretsConfig;
+  strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
+  strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
+  strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
+  strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
+  secretsConfig.status_pixel_brightness = 0.2;
 
-      return;
-    }
-    file_cfg.close();
-  }
+  // Create and fill JSON document from secretsConfig
+  JsonDocument doc;
+  doc.set(secretsConfig);
 
-  // Create a default configConfig structure in a new doc
-  _doc_cfg.clear();
-  JsonObject exportedFromDevice =
-      _doc_cfg["exportedFromDevice"].to<JsonObject>();
-  exportedFromDevice["sd_cs_pin"] = 255;
-  exportedFromDevice["referenceVoltage"] = 0;
-  exportedFromDevice["totalGPIOPins"] = 0;
-  exportedFromDevice["totalAnalogPins"] = 0;
-  exportedFromDevice["statusLEDBrightness"] = 0.3;
-  JsonArray components = _doc_cfg["components"].to<JsonArray>();
+  // Serialize JSON to file
+  serializeJsonPretty(doc, secretsFile);
+
+  // Flush and close file
+  secretsFile.flush();
+  secretsFile.close();
+  delay(2500);
 }
 
 /**************************************************************************/
@@ -443,12 +422,11 @@ void Wippersnapper_FS::AddI2cDeviceToFileConfig(
   }
 }
 
-/**************************************************************************/
+
 /*!
     @brief    Writes the in-memory config document to the filesystem.
     @returns  True if the file was successfully written, False otherwise.
 */
-/**************************************************************************/
 bool Wippersnapper_FS::WriteFileConfig() {
   // If it exists, remove the existing config.json file
   // as we're about to write the new one into memory
@@ -461,7 +439,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   // Write the document to the filesystem
   File32 file_cfg = wipperFatFs_v2.open("/config.json", FILE_WRITE);
   if (!file_cfg) {
-    HaltFilesystem("Could not create the config file!");
+    fsHalt("Could not create the config file!");
     return false;
   }
   _doc_cfg.shrinkToFit();
@@ -473,7 +451,7 @@ bool Wippersnapper_FS::WriteFileConfig() {
   flash_v2.syncBlocks();
   refreshMassStorage();
   delay(500);
-  InitUsbMsc();
+  initUSBMSC();
   WS_PRINTER.flush();
   delay(2500);
   WS_PRINTER.println("Config file written to flash!"); // List current config / components and periods
@@ -481,67 +459,23 @@ bool Wippersnapper_FS::WriteFileConfig() {
   return true;
 }
 
-/**************************************************************************/
-/*!
-    @brief    Checks if secrets.json file exists on the flash filesystem.
-    @returns  True if secrets.json file exists, False otherwise.
-*/
-/**************************************************************************/
-bool Wippersnapper_FS::GetFileSecrets() {
-  // Does secrets.json file exist?
-  return wipperFatFs_v2.exists("/secrets.json");
-}
-
-/**************************************************************************/
-/*!
-    @brief    Creates a default secrets.json file on the filesystem.
-*/
-/**************************************************************************/
-void Wippersnapper_FS::CreateFileSecrets() {
-  // Open file for writing
-  File32 secretsFile = wipperFatFs_v2.open("/secrets.json", FILE_WRITE);
-
-  // Create a default secretsConfig structure
-  secretsConfig secretsConfig;
-  strcpy(secretsConfig.aio_user, "YOUR_IO_USERNAME_HERE");
-  strcpy(secretsConfig.aio_key, "YOUR_IO_KEY_HERE");
-  strcpy(secretsConfig.network.ssid, "YOUR_WIFI_SSID_HERE");
-  strcpy(secretsConfig.network.pass, "YOUR_WIFI_PASS_HERE");
-  secretsConfig.status_pixel_brightness = 0.2;
-
-  // Create and fill JSON document from secretsConfig
-  JsonDocument doc;
-  doc.set(secretsConfig);
-
-  // Serialize JSON to file
-  serializeJsonPretty(doc, secretsFile);
-
-  // Flush and close file
-  secretsFile.flush();
-  secretsFile.close();
-  refreshMassStorage();
-  delay(2500);
-}
-
-/**************************************************************************/
 /*!
     @brief    Parses a secrets.json file on the flash filesystem.
 */
-/**************************************************************************/
-void Wippersnapper_FS::ParseFileSecrets() {
+void Wippersnapper_FS::parseSecrets() {
   // Attempt to open the secrets.json file for reading
   File32 secretsFile = wipperFatFs_v2.open("/secrets.json");
   if (!secretsFile) {
-    HaltFilesystem("ERROR: Could not open secrets.json file for reading!");
+    fsHalt("ERROR: Could not open secrets.json file for reading!");
   }
 
   // Attempt to deserialize the file's JSON document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, secretsFile);
   if (error) {
-    HaltFilesystem(String("ERROR: Unable to parse secrets.json file - "
-                          "deserializeJson() failed with code") +
-                   error.c_str());
+    fsHalt(String("ERROR: Unable to parse secrets.json file - "
+                  "deserializeJson() failed with code") +
+           error.c_str());
   }
 
   if (doc.containsKey("network_type_wifi")) {
@@ -562,9 +496,8 @@ void Wippersnapper_FS::ParseFileSecrets() {
       WS_DEBUG_PRINT("Network count: ");
       WS_DEBUG_PRINTLN(altNetworkCount);
       if (altNetworkCount == 0) {
-        HaltFilesystem(
-            "ERROR: No alternative network entries found under "
-            "network_type_wifi.alternative_networks in secrets.json!");
+        fsHalt("ERROR: No alternative network entries found under "
+               "network_type_wifi.alternative_networks in secrets.json!");
       }
       // check if over 3, warn user and take first three
       for (int i = 0; i < altNetworkCount; i++) {
@@ -582,11 +515,11 @@ void Wippersnapper_FS::ParseFileSecrets() {
       }
       WsV2._isWiFiMultiV2 = true;
     } else {
-      HaltFilesystem("ERROR: Unrecognised value type for "
-                     "network_type_wifi.alternative_networks in secrets.json!");
+      fsHalt("ERROR: Unrecognised value type for "
+             "network_type_wifi.alternative_networks in secrets.json!");
     }
   } else {
-    HaltFilesystem("ERROR: Could not find network_type_wifi in secrets.json!");
+    fsHalt("ERROR: Could not find network_type_wifi in secrets.json!");
   }
 
   // Extract a config struct from the JSON document
@@ -595,82 +528,71 @@ void Wippersnapper_FS::ParseFileSecrets() {
   // Validate the config struct is not filled with default values
   if (strcmp(WsV2._configV2.aio_user, "YOUR_IO_USERNAME_HERE") == 0 ||
       strcmp(WsV2._configV2.aio_key, "YOUR_IO_KEY_HERE") == 0) {
-    WriteFileBoot(
+    writeToBootOut(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
 #ifdef USE_DISPLAY
-    WsV2._ui_helper->show_scr_error(
+    WsV2._ui_helperV2->show_scr_error(
         "INVALID IO CREDS",
         "The \"io_username/io_key\" fields within secrets.json are invalid, "
         "please "
         "change it to match your Adafruit IO credentials. Then, press RESET.");
 #endif
-    HaltFilesystem(
+    fsHalt(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!");
   }
 
   if (strcmp(WsV2._configV2.network.ssid, "YOUR_WIFI_SSID_HERE") == 0 ||
       strcmp(WsV2._configV2.network.pass, "YOUR_WIFI_PASS_HERE") == 0) {
-    WriteFileBoot("ERROR: Invalid network credentials in secrets.json! TO "
-                  "FIX: Please change network_ssid and network_password to "
-                  "match your Adafruit IO credentials!\n");
+    writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO "
+                   "FIX: Please change network_ssid and network_password to "
+                   "match your Adafruit IO credentials!\n");
 #ifdef USE_DISPLAY
-    WsV2._ui_helper->show_scr_error(
+    WsV2._ui_helperV2->show_scr_error(
         "INVALID NETWORK",
         "The \"network_ssid and network_password\" fields within secrets.json "
         "are invalid, please change it to match your WiFi credentials. Then, "
         "press RESET.");
 #endif
-    HaltFilesystem(
-        "ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
-        "change network_ssid and network_password to match your Adafruit IO "
-        "credentials!");
+    fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
+           "change network_ssid and network_password to match your Adafruit IO "
+           "credentials!");
   }
 
-  WriteFileBoot("Secrets Contents\n");
-  WriteFileBoot("Network Info\n: ");
-  WriteFileBoot(WsV2._configV2.network.ssid);
-  WriteFileBoot(WsV2._configV2.network.pass);
-  WriteFileBoot("IO Creds.\n: ");
-  WriteFileBoot(WsV2._configV2.aio_user);
-  WriteFileBoot(WsV2._configV2.aio_key);
+  writeToBootOut("Secrets Contents\n");
+  writeToBootOut("Network Info\n: ");
+  writeToBootOut(WsV2._configV2.network.ssid);
+  writeToBootOut(WsV2._configV2.network.pass);
+  writeToBootOut("IO Creds.\n: ");
+  writeToBootOut(WsV2._configV2.aio_user);
+  writeToBootOut(WsV2._configV2.aio_key);
 
   // Close secrets.json file
   secretsFile.close();
-  refreshMassStorage();
 }
 
-/**************************************************************************/
 /*!
     @brief    Appends message string to wipper_boot_out.txt file.
     @param    str
                 PROGMEM string.
 */
-/**************************************************************************/
-void Wippersnapper_FS::WriteFileBoot(PGM_P str) {
+void Wippersnapper_FS::writeToBootOut(PGM_P str) {
   // Append error output to FS
   File32 bootFile = wipperFatFs_v2.open("/wipper_boot_out.txt", FILE_WRITE);
   if (!bootFile)
-    HaltFilesystem("ERROR: Unable to open wipper_boot_out.txt for logging!");
+    fsHalt("ERROR: Unable to open wipper_boot_out.txt for logging!");
   bootFile.print(str);
   bootFile.flush();
   bootFile.close();
-  refreshMassStorage();
 }
 
-/**************************************************************************/
 /*!
     @brief    Halts execution and blinks the status LEDs yellow.
     @param    msg
                 Error message to print to serial console.
 */
-/**************************************************************************/
-void Wippersnapper_FS::HaltFilesystem(String msg) {
-  if (!_did_init_msc) {
-    WS_DEBUG_PRINTLN("HaltFilesystem: InitUsbMsc");
-    InitUsbMsc();
-  }
+void Wippersnapper_FS::fsHalt(String msg) {
   TinyUSBDevice.attach();
   delay(500);
   statusLEDSolid(WS_LED_STATUS_FS_WRITE);
@@ -682,19 +604,12 @@ void Wippersnapper_FS::HaltFilesystem(String msg) {
   }
 }
 
-/**************************************************************************/
 /*!
     @brief    Halts execution and blinks the status LEDs yellow.
     @param    msg
                 Error message to print to serial console.
 */
-/**************************************************************************/
-void Wippersnapper_FS::HaltFilesystem(String msg,
-                                      ws_led_status_t ledStatusColor) {
-  if (!_did_init_msc) {
-    WS_DEBUG_PRINTLN("HaltFilesystem: InitUsbMsc");
-    InitUsbMsc();
-  }
+void Wippersnapper_FS::fsHalt(String msg, ws_led_status_t ledStatusColor) {
   TinyUSBDevice.attach();
   delay(500);
   statusLEDSolid(ledStatusColor);
@@ -707,12 +622,10 @@ void Wippersnapper_FS::HaltFilesystem(String msg,
 }
 
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
-/**************************************************************************/
 /*!
     @brief    Creates a default display_config.json file on the filesystem.
 */
-/**************************************************************************/
-void Wippersnapper_FS::CreateDisplayCfg() {
+void Wippersnapper_FS::createDisplayConfig() {
   // Open file for writing
   File32 displayFile = wipperFatFs_v2.open("/display_config.json", FILE_WRITE);
 
@@ -731,58 +644,52 @@ void Wippersnapper_FS::CreateDisplayCfg() {
   // Create and fill JSON document from displayConfig
   JsonDocument doc;
   if (!doc.set(displayConfig)) {
-    HaltFilesystem(
-        "ERROR: Unable to set displayConfig, no space in arduinoJSON "
-        "document!");
+    fsHalt("ERROR: Unable to set displayConfig, no space in arduinoJSON "
+           "document!");
   }
   // Write the file out to the filesystem
   serializeJsonPretty(doc, displayFile);
   displayFile.flush();
   displayFile.close();
-  refreshMassStorage();
+  delay(2500); // give FS some time to write the file
 }
 
-/**************************************************************************/
 /*!
     @brief    Parses a display_config.json file on the flash filesystem.
     @param    dispCfg
                 displayConfig struct to populate.
 */
-/**************************************************************************/
-void Wippersnapper_FS::ParseFileDisplayCfg(displayConfig &dispCfg) {
+void Wippersnapper_FS::parseDisplayConfig(displayConfig &dispCfg) {
   // Check if display_config.json file exists, if not, generate it
   if (!wipperFatFs_v2.exists("/display_config.json")) {
     WS_DEBUG_PRINTLN("Could not find display_config.json, generating...");
 #ifdef ARDUINO_FUNHOUSE_ESP32S2
-    CreateDisplayCfg(); // generate a default display_config.json for
-                        // FunHouse
+    createDisplayConfig(); // generate a default display_config.json for
+                           // FunHouse
 #endif
   }
 
   // Attempt to open file for JSON parsing
   File32 file = wipperFatFs_v2.open("/display_config.json", FILE_READ);
   if (!file) {
-    HaltFilesystem(
-        "FATAL ERROR: Unable to open display_config.json for parsing");
+    fsHalt("FATAL ERROR: Unable to open display_config.json for parsing");
   }
 
   // Attempt to deserialize the file's json document
   JsonDocument doc;
   DeserializationError error = deserializeJson(doc, file);
   if (error) {
-    HaltFilesystem(String("FATAL ERROR: Unable to parse display_config.json - "
-                          "deserializeJson() failed with code") +
-                   error.c_str());
+    fsHalt(String("FATAL ERROR: Unable to parse display_config.json - "
+                  "deserializeJson() failed with code") +
+           error.c_str());
   }
   // Close the file, we're done with it
   file.close();
-  refreshMassStorage();
   // Extract a displayConfig struct from the JSON document
   dispCfg = doc.as<displayConfig>();
 }
 #endif // ARDUINO_FUNHOUSE_ESP32S2
 
-/**************************************************************************/
 /*!
     @brief    Callback invoked when received READ10 command. Copies disk's
               data up to buffer.
@@ -794,7 +701,6 @@ void Wippersnapper_FS::ParseFileDisplayCfg(displayConfig &dispCfg) {
                 Desired size of buffer to read.
     @returns  Number of written bytes (must be multiple of block size)
 */
-/**************************************************************************/
 int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize) {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it,
@@ -803,7 +709,6 @@ int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize) {
                                                                     : -1;
 }
 
-/**************************************************************************/
 /*!
     @brief    Callback invoked when received WRITE command. Process data
               in buffer to disk's storage.
@@ -815,7 +720,6 @@ int32_t qspi_msc_read_cb_v2(uint32_t lba, void *buffer, uint32_t bufsize) {
                 Desired size of buffer to write.
     @returns  Number of written bytes (must be multiple of block size)
 */
-/**************************************************************************/
 int32_t qspi_msc_write_cb_v2(uint32_t lba, uint8_t *buffer, uint32_t bufsize) {
   // Note: SPIFLash Bock API: readBlocks/writeBlocks/syncBlocks
   // already include 4K sector caching internally. We don't need to cache it,
@@ -823,28 +727,10 @@ int32_t qspi_msc_write_cb_v2(uint32_t lba, uint8_t *buffer, uint32_t bufsize) {
   return flash_v2.writeBlocks(lba, buffer, bufsize / 512) ? bufsize : -1;
 }
 
-/**************************************************************************/
-/*!
-    @brief  Callback invoked when the host sends a Test Unit Ready command.
-    @returns True if the host can read/write the LUN.
-*/
-/**************************************************************************/
-bool msc_ready_callback(void) {
-  // if fs has changed, mark unit as not ready temporarily
-  // to force PC to flush cache
-  bool ret = !_fs_changed;
-  _fs_changed = false;
-  return ret;
-}
-
-void refreshMassStorage(void) { _fs_changed = true; }
-
-/***************************************************************************/
 /*!
     @brief  Callback invoked when WRITE10 command is completed (status
             received and accepted by host). Used to flush any pending cache.
 */
-/***************************************************************************/
 void qspi_msc_flush_cb_v2(void) {
   // sync w/flash
   flash_v2.syncBlocks();

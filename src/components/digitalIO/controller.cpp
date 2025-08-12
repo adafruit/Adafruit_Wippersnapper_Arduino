@@ -1,5 +1,5 @@
 /*!
- * @file controller.cpp
+ * @file src/components/digitalIO/controller.cpp
  *
  * Controller for the digitalio.proto API
  *
@@ -14,11 +14,9 @@
  */
 #include "controller.h"
 
-/***********************************************************************/
 /*!
     @brief  DigitalIOController constructor
 */
-/***********************************************************************/
 DigitalIOController::DigitalIOController() {
   _dio_model = new DigitalIOModel();
   _dio_hardware = new DigitalIOHardware();
@@ -27,35 +25,29 @@ DigitalIOController::DigitalIOController() {
   SetMaxDigitalPins(0);
 }
 
-/***********************************************************************/
 /*!
     @brief  DigitalIOController destructor
 */
-/***********************************************************************/
 DigitalIOController::~DigitalIOController() {
   delete _dio_model;
   delete _dio_hardware;
 }
 
-/***********************************************************************/
 /*!
     @brief  Set the maximum number of digital pins
     @param  max_digital_pins
             The maximum number of digital pins
 */
-/***********************************************************************/
 void DigitalIOController::SetMaxDigitalPins(uint8_t max_digital_pins) {
   _max_digitalio_pins = max_digital_pins;
 }
 
-/***********************************************************************/
 /*!
     @brief  Add a new digital pin to the controller
     @param  stream
             The nanopb input stream.
     @return True if the digital pin was successfully added.
 */
-/***********************************************************************/
 bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   // Early-out if we have reached the maximum number of digital pins
   if (_digitalio_pins.size() >= _max_digitalio_pins) {
@@ -76,7 +68,7 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
 
   // Check if the provided pin is also the status LED pin
   if (_dio_hardware->IsStatusLEDPin(pin_name))
-    releaseStatusLED();
+    ReleaseStatusPixel();
 
   // Deinit the pin if it's already in use
   if (GetPinIdx(pin_name) != -1)
@@ -115,14 +107,12 @@ bool DigitalIOController::Handle_DigitalIO_Add(pb_istream_t *stream) {
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Removes a digital pin from the controller, if it exists
     @param  stream
             The nanopb input stream.
     @return True if the digital pin was successfully removed.
 */
-/***********************************************************************/
 bool DigitalIOController::Handle_DigitalIO_Remove(pb_istream_t *stream) {
   // Attempt to decode the DigitalIORemove message
   if (!_dio_model->DecodeDigitalIORemove(stream)) {
@@ -146,14 +136,12 @@ bool DigitalIOController::Handle_DigitalIO_Remove(pb_istream_t *stream) {
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Get the index of a digital output pin
     @param  pin_name
             The pin's name.
     @return The index of the digital output pin.
 */
-/***********************************************************************/
 int DigitalIOController::GetPinIdx(uint8_t pin_name) {
   for (int i = 0; i < _digitalio_pins.size(); i++) {
     if (_digitalio_pins[i].pin_name == pin_name) {
@@ -163,14 +151,12 @@ int DigitalIOController::GetPinIdx(uint8_t pin_name) {
   return -1; // Pin not found
 }
 
-/***********************************************************************/
 /*!
     @brief  Write a digital pin
     @param  stream
             The nanopb input stream.
     @return True if the digital pin was successfully written.
 */
-/***********************************************************************/
 bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
   // Attempt to decode the DigitalIOWrite message
   if (!_dio_model->DecodeDigitalIOWrite(stream)) {
@@ -218,7 +204,6 @@ bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Check if a pin's timer has expired
     @param  pin
@@ -227,18 +212,15 @@ bool DigitalIOController::Handle_DigitalIO_Write(pb_istream_t *stream) {
             The current time.
     @return True if the pin's timer has expired.
 */
-/***********************************************************************/
 bool DigitalIOController::IsPinTimerExpired(DigitalIOPin *pin, ulong cur_time) {
   return cur_time - pin->prv_pin_time > pin->pin_period;
 }
 
-/***********************************************************************/
 /*!
     @brief  Print a pin's ID and value
     @param  pin
             The specified pin.
 */
-/***********************************************************************/
 void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
   if (WsV2._sdCardV2->isModeOffline())
     return;
@@ -248,14 +230,12 @@ void DigitalIOController::PrintPinValue(DigitalIOPin *pin) {
   WS_DEBUG_PRINTLN(pin->prv_pin_value);
 }
 
-/***********************************************************************/
 /*!
     @brief  Check if a pin's timer has expired
     @param  pin
             The pin to check.
     @return True if the pin's timer has expired.
 */
-/***********************************************************************/
 bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   ulong cur_time = millis();
   // Bail out if the pin's timer has not expired
@@ -270,14 +250,12 @@ bool DigitalIOController::CheckTimerPin(DigitalIOPin *pin) {
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Check if a pin's value has changed
     @param  pin
             The pin to check.
     @return True if the pin's value has changed.
 */
-/***********************************************************************/
 bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   // Get the pin's current value
   pin->pin_value = _dio_hardware->GetValue(pin->pin_name);
@@ -291,7 +269,6 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Encode and publish a pin event
     @param  pin_name
@@ -300,7 +277,6 @@ bool DigitalIOController::CheckEventPin(DigitalIOPin *pin) {
             The pin's value.
     @return True if the pin event was successfully encoded and published.
 */
-/***********************************************************************/
 bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
                                                 bool pin_value) {
   // Prefix pin_name with "D" to match the expected pin name format
@@ -329,7 +305,7 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
     WS_DEBUG_PRINTLN("[digitalio] Published DigitalIOEvent to broker!")
   } else {
     // let's log the event to the SD card
-    if (!WsV2._sdCardV2->LogGPIOSensorEventToSD(
+    if (!WsV2._sdCardV2->LogEventGpio(
             pin_name, pin_value,
             wippersnapper_sensor_SensorType_SENSOR_TYPE_BOOLEAN))
       return false;
@@ -338,12 +314,10 @@ bool DigitalIOController::EncodePublishPinEvent(uint8_t pin_name,
   return true;
 }
 
-/***********************************************************************/
 /*!
     @brief  Iterates through the digital pins and updates their values
       (if necessary) and publishes the event to the broker.
 */
-/***********************************************************************/
 void DigitalIOController::Update() {
   // Bail out if we have no digital pins to poll
   if (_digitalio_pins.empty())

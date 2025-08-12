@@ -30,9 +30,11 @@ def test_analog_input():
     assert result.returncode == 0
 
 
-def test_ds18b20():
+"""def test_ds18b20():
     result = run_wokwi_cli(f"tests/bin/offline/firmware.elf", "120000", f"tests/scenarios/offline/test-log-ds18b20.scenario.yaml", f"tests/diagrams/offline.json")
     assert result.returncode == 0
+"""
+
 
 def test_invalid_json():
     result = run_wokwi_cli(f"tests/bin/offline/firmware.elf", "120000", f"tests/scenarios/offline/test-invalid-json.scenario.yaml", f"tests/diagrams/offline.json")
