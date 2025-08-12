@@ -1054,6 +1054,9 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   GPSController *drv_uart_gps = nullptr;
 
   if (strcmp(device_name, "UNKNOWN_SCAN") == 0) {
+    if (!WsV2._global_auto_config) {
+      return true;
+    }
     WS_DEBUG_PRINTLN("Attempting to autoconfig device found in scan...");
     if (device_descriptor.i2c_device_address == 0x68 ||
         device_descriptor.i2c_device_address == 0x70) {

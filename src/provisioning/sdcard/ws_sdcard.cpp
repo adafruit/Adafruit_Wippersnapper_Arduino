@@ -856,9 +856,9 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
     return false;
   }
 
-  if (exportedFromDevice["autoConfig"].as<bool>() == false) {
-    WsV2._global_auto_config = false;
-  }
+  bool global_auto_config = true;
+  global_auto_config = exportedFromDevice["autoConfig"].as<bool>();
+  WsV2._global_auto_config = global_auto_config;
 
   return true;
 }
