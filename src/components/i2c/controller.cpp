@@ -1058,7 +1058,8 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
       return true;
     }
     WS_DEBUG_PRINTLN("Attempting to autoconfig device found in scan...");
-    if (device_descriptor.i2c_device_address == 0x68 ||
+    if (device_descriptor.i2c_device_address == 0x51 ||
+        device_descriptor.i2c_device_address == 0x68 ||
         device_descriptor.i2c_device_address == 0x70) {
       WS_DEBUG_PRINTLN("[i2c] Device address is shared with RTC/MUX, can not "
                        "auto-init, skipping!");
