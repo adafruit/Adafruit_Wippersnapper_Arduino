@@ -24,7 +24,7 @@
    sensor.
 */
 class drvD6t1a : public drvBase {
- public:
+public:
   /*!
       @brief    Constructor for a D6T1A sensor.
       @param    i2c
@@ -36,8 +36,8 @@ class drvD6t1a : public drvBase {
       @param    driver_name
                 The name of the driver.
   */
-  drvD6t1a(TwoWire* i2c, uint16_t sensorAddress, uint32_t mux_channel,
-           const char* driver_name)
+  drvD6t1a(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+           const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _i2c = i2c;
     _address = sensorAddress;
@@ -53,9 +53,7 @@ class drvD6t1a : public drvBase {
   /*!
       @brief    Destructor for a D6T1A sensor.
   */
-  ~drvD6t1a() {
-    delete _d6t1a;
-  }
+  ~drvD6t1a() { delete _d6t1a; }
 
   /*!
       @brief    Initializes the D6T1A sensor and begins I2C.
@@ -98,7 +96,7 @@ class drvD6t1a : public drvBase {
       @returns  True if the temperature was obtained successfully, False
      otherwise.
   */
-  bool getEventAmbientTemp(sensors_event_t* tempEvent) {
+  bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     if (ReadSensorData() && !isnan(_deviceTemp)) {
       tempEvent->temperature = _deviceTemp;
       return true;
@@ -113,7 +111,7 @@ class drvD6t1a : public drvBase {
       @returns  True if the temperature was obtained successfully, False
      otherwise.
   */
-  bool getEventObjectTemp(sensors_event_t* tempEvent) {
+  bool getEventObjectTemp(sensors_event_t *tempEvent) {
     if (ReadSensorData() && !isnan(_objectTemp)) {
       tempEvent->temperature = _objectTemp;
       return true;
@@ -129,11 +127,11 @@ class drvD6t1a : public drvBase {
         wippersnapper_sensor_SensorType_SENSOR_TYPE_OBJECT_TEMPERATURE;
   }
 
- protected:
+protected:
   float _deviceTemp;  ///< Device temperature in Celsius
   float _objectTemp;  ///< Object temperature in Celsius
   uint32_t _lastRead; ///< Last time the sensor was read in milliseconds
-  OmronD6T* _d6t1a;   ///< D6T1A object
+  OmronD6T *_d6t1a;   ///< D6T1A object
 };
 
 #endif // DRV_D6T1A_H

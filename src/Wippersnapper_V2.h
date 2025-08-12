@@ -29,25 +29,25 @@
    defined
 */
 #ifdef WS_DEBUG
-#define WS_DEBUG_PRINT(...)        \
-  {                                \
-    WS_PRINTER.print(__VA_ARGS__); \
+#define WS_DEBUG_PRINT(...)                                                    \
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
   } /**< Print debug message to serial */
-#define WS_DEBUG_PRINTLN(...)             \
-  {                                       \
-    WS_PRINTER.println(__VA_ARGS__);      \
-  } /**< Print debug message with newline \
+#define WS_DEBUG_PRINTLN(...)                                                  \
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+  } /**< Print debug message with newline                                      \
      */
-#define WS_DEBUG_PRINTHEX(...)          \
-  {                                     \
-    WS_PRINTER.print(__VA_ARGS__, HEX); \
+#define WS_DEBUG_PRINTHEX(...)                                                 \
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
   } /**< Print debug message in hexadecimal */
 #else
-#define WS_DEBUG_PRINT(...) \
-  {                         \
+#define WS_DEBUG_PRINT(...)                                                    \
+  {                                                                            \
   } /**< Debug print */
-#define WS_DEBUG_PRINTLN(...) \
-  {                           \
+#define WS_DEBUG_PRINTLN(...)                                                  \
+  {                                                                            \
   } /**< Debug println */
 #endif
 
@@ -56,17 +56,17 @@
     @param  timeout
             Delay duration in milliseconds
 */
-#define WS_DELAY_WITH_WDT(timeout)       \
-  {                                      \
-    unsigned long start = millis();      \
-    while (millis() - start < timeout) { \
-      delay(10);                         \
-      yield();                           \
-      WsV2.feedWDTV2();                  \
-      if (millis() < start) {            \
-        start = millis();                \
-      }                                  \
-    }                                    \
+#define WS_DELAY_WITH_WDT(timeout)                                             \
+  {                                                                            \
+    unsigned long start = millis();                                            \
+    while (millis() - start < timeout) {                                       \
+      delay(10);                                                               \
+      yield();                                                                 \
+      WsV2.feedWDTV2();                                                        \
+      if (millis() < start) {                                                  \
+        start = millis();                                                      \
+      }                                                                        \
+    }                                                                          \
   }
 
 // Cpp STD
@@ -129,14 +129,14 @@
 #include "provisioning/littlefs/WipperSnapper_LittleFS.h"
 #endif
 
-#define WS_VERSION \
+#define WS_VERSION                                                             \
   "1.0.0-offline-beta.4" ///< WipperSnapper app. version
                          ///< (semver-formatted)
 
 #define WS_WDT_TIMEOUT 60000       ///< WDT timeout
 #define WS_MAX_ALT_WIFI_NETWORKS 3 ///< Maximum number of alternative networks
 /* MQTT Configuration */
-#define WS_KEEPALIVE_INTERVAL_MS \
+#define WS_KEEPALIVE_INTERVAL_MS                                               \
   5000 ///< Session keepalive interval time, in milliseconds
 
 // Forward declarations
@@ -164,7 +164,7 @@ class UARTController;
             Wippersnapper interface.
 */
 class Wippersnapper_V2 {
- public:
+public:
   Wippersnapper_V2();
   virtual ~Wippersnapper_V2();
 
@@ -180,7 +180,7 @@ class Wippersnapper_V2 {
                                        ///< (from 0.0 to 1.0)
 
   virtual void set_user_key();
-  virtual void set_ssid_pass(const char* ssid, const char* ssidPassword);
+  virtual void set_ssid_pass(const char *ssid, const char *ssidPassword);
   virtual void set_ssid_pass();
   virtual bool check_valid_ssid();
 
@@ -191,7 +191,7 @@ class Wippersnapper_V2 {
 
   virtual void getMacAddr();
   virtual int32_t getRSSI();
-  virtual void setupMQTTClient(const char* clientID);
+  virtual void setupMQTTClient(const char *clientID);
 
   virtual ws_status_t networkStatus();
 
@@ -200,7 +200,7 @@ class Wippersnapper_V2 {
   bool generateWSTopics();
 
   // High-level MQTT Publish
-  bool PublishSignal(pb_size_t which_payload, void* payload);
+  bool PublishSignal(pb_size_t which_payload, void *payload);
 
   // Checkin API
   bool CreateCheckinRequest();
@@ -220,10 +220,10 @@ class Wippersnapper_V2 {
   void BlinkKATStatus();
 
   // Error handling helpers
-  void haltErrorV2(const char* error,
+  void haltErrorV2(const char *error,
                    ws_led_status_t ledStatusColor = WS_LED_STATUS_ERROR_RUNTIME,
                    bool reboot = true);
-  void errorWriteHangV2(const char* error);
+  void errorWriteHangV2(const char *error);
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode
   bool _global_auto_config =
@@ -235,39 +235,39 @@ class Wippersnapper_V2 {
 
   // TODO: We really should look at making these static definitions, not dynamic
   // to free up space on the heap
-  Wippersnapper_FS* _fileSystemV2; ///< Instance of Filesystem (native USB)
-  WipperSnapper_LittleFS*
-      _littleFSV2;      ///< Instance of LittleFS Filesystem (non-native USB)
-  ws_sdcard* _sdCardV2; ///< Instance of SD card class
+  Wippersnapper_FS *_fileSystemV2; ///< Instance of Filesystem (native USB)
+  WipperSnapper_LittleFS
+      *_littleFSV2;     ///< Instance of LittleFS Filesystem (non-native USB)
+  ws_sdcard *_sdCardV2; ///< Instance of SD card class
 #ifdef USE_DISPLAY
-  ws_display_driver* _displayV2 = nullptr; ///< Instance of display driver class
-  ws_display_ui_helper* _ui_helperV2 =
+  ws_display_driver *_displayV2 = nullptr; ///< Instance of display driver class
+  ws_display_ui_helper *_ui_helperV2 =
       nullptr; ///< Instance of display UI helper class
 #endif
 
   // API v2 Components
-  CheckinModel* CheckInModel = nullptr; ///< Instance of CheckinModel class
-  SensorModel* sensorModel = nullptr;   ///< Instance of SensorModel class
-  DigitalIOController* digital_io_controller =
+  CheckinModel *CheckInModel = nullptr; ///< Instance of CheckinModel class
+  SensorModel *sensorModel = nullptr;   ///< Instance of SensorModel class
+  DigitalIOController *digital_io_controller =
       nullptr; ///< Instance of DigitalIO controller class
-  AnalogIOController* analogio_controller =
+  AnalogIOController *analogio_controller =
       nullptr; ///< Instance of AnalogIO controller
-  DS18X20Controller* _ds18x20_controller =
+  DS18X20Controller *_ds18x20_controller =
       nullptr;                              ///< Instance of DS18X20 controller
-  GPSController* _gps_controller = nullptr; ///< Instance of GPS controller
-  I2cController* _i2c_controller = nullptr; ///< Instance of I2C controller
-  PixelsController* _pixels_controller =
+  GPSController *_gps_controller = nullptr; ///< Instance of GPS controller
+  I2cController *_i2c_controller = nullptr; ///< Instance of I2C controller
+  PixelsController *_pixels_controller =
       nullptr;                              ///< Instance of Pixels controller
-  PWMController* _pwm_controller = nullptr; ///< Instance of PWM controller
-  ServoController* _servo_controller =
+  PWMController *_pwm_controller = nullptr; ///< Instance of PWM controller
+  ServoController *_servo_controller =
       nullptr;                                ///< Instance of Servo controller
-  UARTController* _uart_controller = nullptr; ///< Instance of UART controller
+  UARTController *_uart_controller = nullptr; ///< Instance of UART controller
 
   // TODO: does this really need to be global?
   uint8_t _macAddrV2[6];  /*!< Unique network iface identifier */
   char sUIDV2[13];        /*!< Unique hardware identifier */
-  const char* _boardIdV2; /*!< Adafruit IO+ board string */
-  Adafruit_MQTT* _mqttV2; /*!< Reference to Adafruit_MQTT, _mqtt. */
+  const char *_boardIdV2; /*!< Adafruit IO+ board string */
+  Adafruit_MQTT *_mqttV2; /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   // TODO: Audit this, does it need to be here?
   secretsConfig _configV2; /*!< Wippersnapper secrets.json as a struct. */
@@ -278,7 +278,7 @@ class Wippersnapper_V2 {
   int32_t totalDigitalPinsV2; /*!< Total number of digital-input capable pins */
 
   // TODO: Do these need to be here or can they sit within their function?
-  char* throttleMessageV2; /*!< Pointer to throttle message data. */
+  char *throttleMessageV2; /*!< Pointer to throttle message data. */
   int throttleTimeV2;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */
 
@@ -292,21 +292,21 @@ class Wippersnapper_V2 {
       _sharedConfigBuffers; ///< Shared JSON config buffers for offline mode
   JsonDocument _config_doc; ///< Storage for the config.json file
   uint8_t pin_sd_cs;        ///< SD card chip select pin
- private:
+private:
   void _initV2();
 
   // MQTT topics
-  char* _topicB2d;
-  char* _topicD2b;
-  char* _topicError;
-  char* _topicThrottle;
+  char *_topicB2d;
+  char *_topicD2b;
+  char *_topicError;
+  char *_topicThrottle;
 
   // Adafruit_MQTT Subscription objects
-  Adafruit_MQTT_Subscribe* _subscribeB2d;
-  Adafruit_MQTT_Subscribe* _subscribeError;
-  Adafruit_MQTT_Subscribe* _subscribeThrottle;
+  Adafruit_MQTT_Subscribe *_subscribeB2d;
+  Adafruit_MQTT_Subscribe *_subscribeError;
+  Adafruit_MQTT_Subscribe *_subscribeThrottle;
 
- protected:
+protected:
   ws_status_t _statusV2 = WS_IDLE; ///< Wippersnapper status
 
   uint32_t _last_mqtt_connectV2 = 0; /*!< Previous time when client connected to
@@ -317,8 +317,8 @@ class Wippersnapper_V2 {
                              IO's MQTT broker, in milliseconds. */
 
   // Device information
-  const char* _deviceIdV2; /*!< Adafruit IO+ device identifier string */
-  char* _device_uidV2;     /*!< Unique device identifier  */
+  const char *_deviceIdV2; /*!< Adafruit IO+ device identifier string */
+  char *_device_uidV2;     /*!< Unique device identifier  */
 };
 extern Wippersnapper_V2 WsV2; ///< Global member variable for callbacks
 
