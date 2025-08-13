@@ -1307,7 +1307,7 @@ void WipperSnapper_Component_I2C::update() {
 
     std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
     for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
-      // Number of events which occured for this driver
+      // Number of events which occurred for this driver
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 
       // Event struct - zero-initialise on each iteration
