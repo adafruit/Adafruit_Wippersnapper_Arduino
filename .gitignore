@@ -42,6 +42,7 @@ src/.vscode/settings.json
 .DS_STORE
 examples/Wippersnapper_demo/build/
 src/Wippersnapper_demo.ino.cpp
+build_output_*.txt
 
 # Virtual environment directories
 .venv/
