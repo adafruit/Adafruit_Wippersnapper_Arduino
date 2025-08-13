@@ -15,12 +15,12 @@
 
 #ifndef DRV_BASE_H
 #define DRV_BASE_H
+#include "helpers/ws_helper_macros.h"
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <Wire.h>
 #include <map>
 #include <protos/i2c.pb.h>
-#include "helpers/ws_helper_macros.h"
 
 #define NO_MUX_CH 0xFFFF;           ///< No MUX channel specified
 #define DEFAULT_SENSOR_PERIOD 15.0f ///< Default sensor period, in seconds
