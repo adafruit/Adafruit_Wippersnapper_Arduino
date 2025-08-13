@@ -493,7 +493,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 /**************************************************************************/
 /*!
     @brief    Decodes a signal buffer protobuf message.
-        NOTE: Should be executed in-order after a new _buffer is recieved.
+        NOTE: Should be executed in-order after a new _buffer is received.
     @param    encodedSignalMsg
               Encoded signal message.
     @return   true if successfully decoded signal message, false otherwise.
