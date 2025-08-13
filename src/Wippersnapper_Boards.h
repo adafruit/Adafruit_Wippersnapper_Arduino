@@ -223,6 +223,12 @@
 #define USE_TINYUSB
 #define USE_STATUS_LED
 #define STATUS_LED_PIN LED_BUILTIN
+#elif defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
+#define BOARD_ID "fruitjam"
+#define USE_TINYUSB
+#define USE_STATUS_NEOPIXEL
+#define STATUS_NEOPIXEL_PIN PIN_NEOPIXEL
+#define STATUS_NEOPIXEL_NUM 5
 #else
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif
