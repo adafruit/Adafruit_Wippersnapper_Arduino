@@ -2736,7 +2736,7 @@ void print_reset_reason(int reason) {
     break; /**<13, RTC Watch dog Reset CPU*/
   case 14:
     WS_DEBUG_PRINTLN("EXT_CPU_RESET");
-    break; /**<14, for APP CPU, reseted by PRO CPU*/
+    break; /**<14, for APP CPU, reset by PRO CPU*/
   case 15:
     WS_DEBUG_PRINTLN("RTCWDT_BROWN_OUT_RESET");
     break; /**<15, Reset when the vdd voltage is not stable*/
