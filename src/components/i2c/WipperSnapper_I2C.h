@@ -36,6 +36,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_HTU21D.h"
 #include "drivers/WipperSnapper_I2C_Driver_HTU31D.h"
 #include "drivers/WipperSnapper_I2C_Driver_INA219.h"
+#include "drivers/WipperSnapper_I2C_Driver_INA228.h"
 #include "drivers/WipperSnapper_I2C_Driver_INA237.h"
 #include "drivers/WipperSnapper_I2C_Driver_INA238.h"
 #include "drivers/WipperSnapper_I2C_Driver_INA260.h"
@@ -91,6 +92,7 @@ class Wippersnapper;
 class WipperSnapper_I2C_Driver_INA260;
 class WipperSnapper_I2C_Driver_INA237;
 class WipperSnapper_I2C_Driver_INA238;
+class WipperSnapper_I2C_Driver_INA228;
 
 /**************************************************************************/
 /*!
@@ -172,6 +174,7 @@ private:
   WipperSnapper_I2C_Driver_INA219 *_ina219 = nullptr;
   WipperSnapper_I2C_Driver_INA237 *_ina237 = nullptr;
   WipperSnapper_I2C_Driver_INA238 *_ina238 = nullptr;
+  WipperSnapper_I2C_Driver_INA228 *_ina228 = nullptr;
   WipperSnapper_I2C_Driver_INA260 *_ina260 = nullptr;
   WipperSnapper_I2C_Driver_LTR329_LTR303 *_ltr329 = nullptr;
   WipperSnapper_I2C_Driver_LTR390 *_ltr390 = nullptr;

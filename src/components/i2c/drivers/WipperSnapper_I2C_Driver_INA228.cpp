@@ -1,7 +1,8 @@
 /*!
- * @file WipperSnapper_I2C_Driver_INA260.cpp
+ * @file WipperSnapper_I2C_Driver_INA228.cpp
  *
- * Device driver implementation for the INA260 DC Current and Voltage Monitor
+ * Device driver implementation for the INA228 High Precision DC Current and
+ * Voltage Monitor (Avoids import conflict with INA260 typedef enum _mode etc)
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,47 +14,53 @@
  *
  */
 
-#include "WipperSnapper_I2C_Driver_INA260.h"
+#include "WipperSnapper_I2C_Driver_INA228.h"
 #include "Wippersnapper.h"
-#include <Adafruit_INA260.h>
+#include <Adafruit_INA228.h>
 
 /*******************************************************************************/
 /*!
-    @brief    Constructor for a INA260 sensor.
+    @brief    Constructor for a INA228 sensor.
     @param    i2c
               The I2C interface.
     @param    sensorAddress
               The 7-bit I2C address of the sensor.
 */
 /*******************************************************************************/
-WipperSnapper_I2C_Driver_INA260::WipperSnapper_I2C_Driver_INA260(
+WipperSnapper_I2C_Driver_INA228::WipperSnapper_I2C_Driver_INA228(
     TwoWire *i2c, uint16_t sensorAddress)
-    : WipperSnapper_I2C_Driver(i2c, sensorAddress), _ina260(nullptr) {
+    : WipperSnapper_I2C_Driver(i2c, sensorAddress), _ina228(nullptr) {
   _i2c = i2c;
   _sensorAddress = sensorAddress;
 }
 
 /*******************************************************************************/
 /*!
-    @brief    Destructor for an INA260 sensor.
+    @brief    Destructor for an INA228 sensor.
 */
 /*******************************************************************************/
-WipperSnapper_I2C_Driver_INA260::~WipperSnapper_I2C_Driver_INA260() {
-  delete _ina260;
+WipperSnapper_I2C_Driver_INA228::~WipperSnapper_I2C_Driver_INA228() {
+  delete _ina228;
 }
 
 /*******************************************************************************/
 /*!
-    @brief    Initializes the INA260 sensor and begins I2C.
+    @brief    Initializes the INA228 sensor and begins I2C.
     @returns  True if initialized successfully, False otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_I2C_Driver_INA260::begin() {
-  _ina260 = new Adafruit_INA260();
-  if (!_ina260->begin(_sensorAddress, _i2c)) {
+bool WipperSnapper_I2C_Driver_INA228::begin() {
+  _ina228 = new Adafruit_INA228();
+  if (!_ina228->begin(_sensorAddress, _i2c)) {
     return false;
   }
-  // TODO: use setCalibration()
+
+  // Default shunt: 0.015 ohm, 10A max current
+  _ina228->setShunt(0.015, 10.0);
+
+  _ina228->setAveragingCount(INA228_COUNT_16);
+  _ina228->setVoltageConversionTime(INA228_TIME_150_us);
+  _ina228->setCurrentConversionTime(INA228_TIME_280_us);
 
   return true;
 }
@@ -68,9 +75,9 @@ bool WipperSnapper_I2C_Driver_INA260::begin() {
               otherwise.
 */
 /*******************************************************************************/
-bool WipperSnapper_I2C_Driver_INA260::getEventVoltage(
+bool WipperSnapper_I2C_Driver_INA228::getEventVoltage(
     sensors_event_t *voltageEvent) {
-  voltageEvent->voltage = _ina260->readBusVoltage() / 1000.0f;
+  voltageEvent->voltage = _ina228->getBusVoltage_V();
   return true;
 }
 
@@ -82,8 +89,21 @@ bool WipperSnapper_I2C_Driver_INA260::getEventVoltage(
  * @returns True if the sensor event was obtained successfully, False
  * otherwise.
  */
-bool WipperSnapper_I2C_Driver_INA260::getEventCurrent(
+bool WipperSnapper_I2C_Driver_INA228::getEventCurrent(
     sensors_event_t *currentEvent) {
-  currentEvent->current = _ina260->readCurrent();
+  currentEvent->current = _ina228->getCurrent_mA();
+  return true;
+}
+
+/**
+ * @brief   Get the raw (power) sensor event.
+ *
+ * @param   powerEvent  Pointer to the power sensor event.
+ *
+ * @returns True if the sensor event was obtained successfully, False
+ * otherwise.
+ */
+bool WipperSnapper_I2C_Driver_INA228::getEventRaw(sensors_event_t *powerEvent) {
+  powerEvent->data[0] = _ina228->getPower_mW();
   return true;
 }
