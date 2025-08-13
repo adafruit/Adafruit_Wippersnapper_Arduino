@@ -222,8 +222,7 @@ jobs:
         run: |
           # check ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} is not empty
           if [ -z "${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" ]; then
-            echo "Error: esptool.flashMode is not set in board definition."
-            exit 1
+            echo "Error: esptool.flashMode is not set in board definition, using KEEP for all settings."
           fi
           BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
           for attempt in 1 2; do
