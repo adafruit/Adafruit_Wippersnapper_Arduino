@@ -188,7 +188,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
       continue;
     } else {
       WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: Unknown bus error has occured!");
+          "[i2c] Did not find device: Unknown bus error has occurred!");
       continue;
     }
 #endif
