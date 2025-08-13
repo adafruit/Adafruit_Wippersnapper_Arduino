@@ -22,6 +22,11 @@
               otherwise.
 */
 bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
+  if (pin_cs == SD_CS_CFG_NOT_FOUND) {
+    WS_DEBUG_PRINT("[SD] Init Error: CS pin is undefined. Add \"sd_cs_pin\" to "
+                   "exportedFromDevice section of config.json file.");
+    return false;
+  }
   WsV2.pin_sd_cs = pin_cs;
 #ifdef SD_USE_SPI_1
   SdSpiConfig _sd_spi_cfg(pin_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1);

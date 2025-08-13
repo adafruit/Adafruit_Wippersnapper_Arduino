@@ -283,4 +283,10 @@
 #warning "Board type not identified within Wippersnapper_Boards.h!"
 #endif
 
+#ifndef SD_CS_PIN
+#warning                                                                       \
+    "SD_CS_PIN not defined! Double check board definition in Wippersnapper_Boards.h as user will be forced to specify in config.json"
+#define SD_CS_PIN SD_CS_CFG_NOT_FOUND // No default CS pin
+#endif
+
 #endif // ADAFRUIT_WIPPERSNAPPER_BOARDS_H
