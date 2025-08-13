@@ -256,7 +256,7 @@ bool Wippersnapper::check_valid_ssid() {
 /*!
     @brief    Configures the device's Adafruit IO credentials. This method
               should be used only if filesystem-backed provisioning is
-              not avaliable.
+              not available.
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
