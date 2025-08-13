@@ -1215,7 +1215,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 #endif
       return false; // fail out if we can't decode the request
     }
-    // execute PWM pin detatch request
+    // execute PWM pin detach request
     char *pwmPin = msgPWMDetachRequest.pin + 1;
     WS._pwmComponent->detach(atoi(pwmPin));
 
