@@ -592,7 +592,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb"]
+        arduino-platform: ["picow_rp2040_tinyusb", "picow_rp2350_tinyusb", "fruit_jam_tinyusb"]
     steps:
       - name: "skip if unwanted"
         continue-on-error: true
