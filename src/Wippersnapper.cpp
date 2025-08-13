@@ -1298,7 +1298,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
 /**************************************************************************/
 /*!
-    @brief    Called when the device recieves a new message from the
+    @brief    Called when the device receives a new message from the
               /pwm/ topic.
     @param    data
               Incoming data from MQTT broker.
