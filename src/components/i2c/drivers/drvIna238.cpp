@@ -40,7 +40,17 @@ bool drvIna238::begin() {
     WS_DEBUG_PRINTLN("INA238 failed to initialise!");
     return false;
   }
-  // TODO: use setCalibration()
+
+  _ina238->setShunt(0.015, 10.0);
+  if (_ina238->getCurrentConversionTime() != INA2XX_TIME_280_us) {
+    _ina238->setCurrentConversionTime(INA2XX_TIME_280_us);
+  }
+  if (_ina238->getAveragingCount() != INA2XX_COUNT_16) {
+    _ina238->setAveragingCount(INA2XX_COUNT_16);
+  }
+  if (_ina238->getVoltageConversionTime() != INA2XX_TIME_150_us) {
+    _ina238->setVoltageConversionTime(INA2XX_TIME_150_us);
+  }
 
   return true;
 }

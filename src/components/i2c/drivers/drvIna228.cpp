@@ -1,7 +1,7 @@
 /*!
- * @file drvIna237.cpp
+ * @file drvIna228.cpp
  *
- * Device driver for the INA237 High Precision DC Current and Voltage Monitor
+ * Device driver for the INA228 High Precision DC Current and Voltage Monitor
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -13,45 +13,44 @@
  *
  */
 
-#include "drvIna237.h"
-#include <Adafruit_INA237.h>
+#include "drvIna228.h"
+#include <Adafruit_INA228.h>
 
 /*******************************************************************************/
 /*!
-    @brief    Destructor for an INA237 sensor.
+    @brief    Destructor for an INA228 sensor.
 */
 /*******************************************************************************/
-drvIna237::~drvIna237() {
-  if (_ina237) {
-    delete _ina237;
-    _ina237 = nullptr;
+drvIna228::~drvIna228() {
+  if (_ina228) {
+    delete _ina228;
+    _ina228 = nullptr;
   }
 }
 
 /*******************************************************************************/
 /*!
-    @brief    Initializes the INA237 sensor and begins I2C.
+    @brief    Initializes the INA228 sensor and begins I2C.
     @returns  True if initialized successfully, False otherwise.
 */
 /*******************************************************************************/
-bool drvIna237::begin() {
-  _ina237 = new Adafruit_INA237();
-  if (!_ina237->begin(_address, _i2c)) {
-    WS_DEBUG_PRINTLN("INA237 failed to initialise!");
+bool drvIna228::begin() {
+  _ina228 = new Adafruit_INA228();
+  if (!_ina228->begin(_address, _i2c)) {
+    WS_DEBUG_PRINTLN("INA228 failed to initialise!");
     return false;
   }
-
-  _ina237->setShunt(0.015, 10.0);
-  if (_ina237->getCurrentConversionTime() != INA2XX_TIME_280_us) {
-    _ina237->setCurrentConversionTime(INA2XX_TIME_280_us);
+  
+  _ina228->setShunt(0.015, 10.0);
+  if (_ina228->getCurrentConversionTime() != INA228_TIME_280_us) {
+    _ina228->setCurrentConversionTime(INA228_TIME_280_us);
   }
-  if (_ina237->getAveragingCount() != INA2XX_COUNT_16) {
-    _ina237->setAveragingCount(INA2XX_COUNT_16);
+  if (_ina228->getAveragingCount() != INA228_COUNT_16) {
+    _ina228->setAveragingCount(INA228_COUNT_16);
   }
-  if (_ina237->getVoltageConversionTime() != INA2XX_TIME_150_us) {
-    _ina237->setVoltageConversionTime(INA2XX_TIME_150_us);
+  if (_ina228->getVoltageConversionTime() != INA228_TIME_150_us) {
+    _ina228->setVoltageConversionTime(INA228_TIME_150_us);
   }
-
   return true;
 }
 
@@ -65,8 +64,8 @@ bool drvIna237::begin() {
               otherwise.
 */
 /*******************************************************************************/
-bool drvIna237::getEventVoltage(sensors_event_t *voltageEvent) {
-  voltageEvent->voltage = _ina237->getBusVoltage_V();
+bool drvIna228::getEventVoltage(sensors_event_t *voltageEvent) {
+  voltageEvent->voltage = _ina228->getBusVoltage_V();
   return true;
 }
 
@@ -78,12 +77,12 @@ bool drvIna237::getEventVoltage(sensors_event_t *voltageEvent) {
  * @returns True if the sensor event was obtained successfully, False
  * otherwise.
  */
-bool drvIna237::getEventCurrent(sensors_event_t *currentEvent) {
-  currentEvent->current = _ina237->getCurrent_mA();
+bool drvIna228::getEventCurrent(sensors_event_t *currentEvent) {
+  currentEvent->current = _ina228->getCurrent_mA();
   return true;
 }
 
-void drvIna237::ConfigureDefaultSensorTypes() {
+void drvIna228::ConfigureDefaultSensorTypes() {
   _default_sensor_types_count = 2;
   _default_sensor_types[0] =
       wippersnapper_sensor_SensorType_SENSOR_TYPE_VOLTAGE;

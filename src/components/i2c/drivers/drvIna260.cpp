@@ -40,7 +40,10 @@ bool drvIna260::begin() {
     WS_DEBUG_PRINTLN("INA260 failed to initialise!");
     return false;
   }
-  // TODO: use setCalibration()
+
+  _ina260->setAveragingCount(INA260_COUNT_16);
+  _ina260->setVoltageConversionTime(INA260_TIME_140_us);
+  _ina260->setCurrentConversionTime(INA260_TIME_140_us);
 
   return true;
 }

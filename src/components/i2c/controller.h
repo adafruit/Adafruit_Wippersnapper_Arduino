@@ -33,6 +33,7 @@
 #include "drivers/drvHts221.h"
 #include "drivers/drvHtu21d.h"
 #include "drivers/drvIna219.h"
+#include "drivers/drvIna228.h"
 #include "drivers/drvIna237.h"
 #include "drivers/drvIna238.h"
 #include "drivers/drvIna260.h"

@@ -133,6 +133,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvIna219(i2c, addr, mux_channel, driver_name);
      }},
+    {"ina228",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna228(i2c, addr, mux_channel, driver_name);
+     }},
     {"ina237",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -387,11 +392,11 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x38, {"aht20", "max17048"}},
         {0x39, {"tsl2591"}},
         {0x40,
-         {"htu21d", "htu31d", "ina219", "ina237", "ina238", "ina260",
+         {"htu21d", "htu31d", "ina219", "ina228", "ina237", "ina238", "ina260",
           "ms8607", "si7021", "stemma_soil"}},
-        {0x41, {"htu31d", "ina219", "ina237", "ina238", "ina260"}},
-        {0x44, {"hdc302x", "ina237", "ina238", "ina260", "sht3x", "sht4x"}},
-        {0x45, {"hdc302x", "ina237", "ina238", "ina260", "sht3x"}},
+        {0x41, {"htu31d", "ina219", "ina228", "ina237", "ina238", "ina260"}},
+        {0x44, {"hdc302x", "ina228", "ina237", "ina238", "ina260", "sht3x", "sht4x"}},
+        {0x45, {"hdc302x", "ina228", "ina237", "ina238", "ina260", "sht3x"}},
         {0x46, {"hdc302x"}},
         {0x47, {"hdc302x"}},
         {0x48, {"adt7410", "pct2075", "tmp117"}},
