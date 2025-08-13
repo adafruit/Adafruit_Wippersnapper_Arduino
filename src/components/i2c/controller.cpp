@@ -395,7 +395,7 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
          {"htu21d", "htu31d", "ina219", "ina228", "ina237", "ina238", "ina260",
           "ms8607", "si7021", "stemma_soil"}},
         {0x41, {"htu31d", "ina219", "ina228", "ina237", "ina238", "ina260"}},
-        {0x44, 
+        {0x44,
          {"hdc302x", "ina228", "ina237", "ina238", "ina260", "sht3x", "sht4x"}},
         {0x45, {"hdc302x", "ina228", "ina237", "ina238", "ina260", "sht3x"}},
         {0x46, {"hdc302x"}},

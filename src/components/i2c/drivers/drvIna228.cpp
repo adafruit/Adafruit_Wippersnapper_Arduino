@@ -40,7 +40,7 @@ bool drvIna228::begin() {
     WS_DEBUG_PRINTLN("INA228 failed to initialise!");
     return false;
   }
-  
+
   _ina228->setShunt(0.015, 10.0);
   if (_ina228->getCurrentConversionTime() != INA228_TIME_280_us) {
     _ina228->setCurrentConversionTime(INA228_TIME_280_us);
