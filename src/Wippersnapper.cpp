@@ -2796,7 +2796,7 @@ void Wippersnapper::connect() {
     haltError("Unable to generate Device UID");
   }
 
-  // Initialize MQTT client with device identifer
+  // Initialize MQTT client with device identifier
   setupMQTTClient(_device_uid);
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");
