@@ -47,16 +47,24 @@
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+  } ///< Prints line from debug output.
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
+  } ///< Prints debug output.
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} ///< Prints debug output
+  {                                                                            \
+  } ///< Prints debug output
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} ///< Prints line from debug output.
+  {                                                                            \
+  } ///< Prints line from debug output.
 #endif
 
 #define WS_DELAY_WITH_WDT(timeout)                                             \
@@ -142,7 +150,7 @@
 #endif
 
 #define WS_VERSION                                                             \
-  "1.0.0-beta.110" ///< WipperSnapper app. version (semver-formatted)
+  "1.0.0-beta.111" ///< WipperSnapper app. version (semver-formatted)
 
 // Reserved Adafruit IO MQTT topics
 #define TOPIC_IO_THROTTLE "/throttle" ///< Adafruit IO Throttle MQTT Topic

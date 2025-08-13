@@ -32,7 +32,9 @@
 #define AIRLIFT_CONNECT_TIMEOUT_MS 20000   /*!< Connection timeout (in ms) */
 #define AIRLIFT_CONNECT_RETRY_DELAY_MS 200 /*!< delay time between retries. */
 
+#ifndef SPIWIFI
 #define SPIWIFI SPI /*!< Instance of SPI interface used by an AirLift. */
+#endif
 
 extern Wippersnapper WS;
 /****************************************************************************/
@@ -49,9 +51,13 @@ public:
   */
   /**************************************************************************/
   Wippersnapper_AIRLIFT() : Wippersnapper() {
-    _ssPin = SPIWIFI_SS;     // 10;
-    _ackPin = SPIWIFI_ACK;   // 7;
-    _rstPin = SPIWIFI_RESET; // 5; // should be 7 on PyPortals
+    _ssPin = SPIWIFI_SS;
+    _ackPin = SPIWIFI_ACK;
+#ifdef ESP32_RESETN
+    _rstPin = ESP32_RESETN; // FruitJam
+#else
+    _rstPin = SPIWIFI_RESET;
+#endif // ESP32_RESETN
 #ifdef ESP32_GPIO0
     _gpio0Pin = ESP32_GPIO0;
 #else
@@ -236,7 +242,7 @@ public:
   */
   /********************************************************/
   void getMacAddr() {
-    uint8_t mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    byte mac[6] = {0};
     WiFi.macAddress(mac);
     memcpy(WS._macAddr, mac, sizeof(mac));
   }
