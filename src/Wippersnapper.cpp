@@ -176,7 +176,7 @@ void Wippersnapper::_disconnect() {
 
 /****************************************************************************/
 /*!
-    @brief    Sets the network interface's unique identifer, typically the
+    @brief    Sets the network interface's unique identifier, typically the
               MAC address.
 */
 /****************************************************************************/
