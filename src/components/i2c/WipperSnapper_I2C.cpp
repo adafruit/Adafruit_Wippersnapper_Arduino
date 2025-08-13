@@ -181,7 +181,7 @@ WipperSnapper_Component_I2C::scanAddresses() {
       continue;
     } else if (endTransmissionRC == 4) {
       WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: Unspecified bus error occured!");
+          "[i2c] Did not find device: Unspecified bus error occurred!");
       continue;
     } else if (endTransmissionRC == 5) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
