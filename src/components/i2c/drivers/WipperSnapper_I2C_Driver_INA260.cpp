@@ -70,7 +70,7 @@ bool WipperSnapper_I2C_Driver_INA260::begin() {
 /*******************************************************************************/
 bool WipperSnapper_I2C_Driver_INA260::getEventVoltage(
     sensors_event_t *voltageEvent) {
-  voltageEvent->voltage = _ina260->readBusVoltage();
+  voltageEvent->voltage = _ina260->readBusVoltage() / 1000.0f;
   return true;
 }
 
