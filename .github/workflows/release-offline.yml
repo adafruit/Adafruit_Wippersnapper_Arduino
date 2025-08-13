@@ -96,6 +96,8 @@ jobs:
             "qtpy_esp32s2",
             "feather_esp32s3_reverse_tft",
             "qtpy_esp32s3_n4r2",
+            "esp32s3_devkitc_1_n8",
+            "xiao_esp32s3",
           ]
     steps:
       - uses: actions/setup-python@v5
@@ -259,9 +261,9 @@ jobs:
         name: Create new_flash_args file from flash_args with added app bin + output file
         run: |
           # Create new_flash_args with esptool parameters first and output file
-          echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
-          echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}}" >> new_flash_args
-          echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}}" >> new_flash_args
+          echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode || 'keep'}}" > new_flash_args
+          echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq || 'keep'}}" >> new_flash_args
+          echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize || 'keep'}}" >> new_flash_args
           echo "-o wippersnapper.${{ matrix.arduino-platform }}.${{ env.WS_VERSION }}.combined.bin" >> new_flash_args
 
           # Append flash_args content to new_flash_args, skipping the first line
