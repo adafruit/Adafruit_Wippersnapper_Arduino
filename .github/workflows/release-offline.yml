@@ -224,7 +224,7 @@ jobs:
           if [ -z "${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" ]; then
             echo "Error: esptool.flashMode is not set in board definition, using KEEP for all settings."
           fi
-          BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
+          BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName || matrix.arduino-platform}}"
           for attempt in 1 2; do
             echo "Attempt $attempt: Fetching tinyuf2 release info for board $BOARD_NAME"
             API_RESPONSE=$(curl --silent --fail https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
@@ -298,7 +298,7 @@ jobs:
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin @new_flash_args
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip || fromJson(steps.get_board_json.outputs.boardJson).mcuName}} merge-bin @new_flash_args
       - if: ${{ steps.get_tinyuf2.outcome == 'success' }}
         name: Zip build artifacts
         run: |
