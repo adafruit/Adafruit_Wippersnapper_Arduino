@@ -119,7 +119,7 @@ jobs:
         with:
           repository: adafruit/Wippersnapper_Boards
           path: ws-boards
-          ref: rebased-rp2040_datalogger_feather
+          ref: offline-mode
       - name: Install CI-Arduino
         run: bash ci/actions_install.sh
       - name: Install extra Arduino libraries
