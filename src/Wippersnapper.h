@@ -433,6 +433,8 @@ public:
   wippersnapper_signal_v1_UARTRequest
       msgSignalUART; ///< UARTReq wrapper message
 
+  wippersnapper_signal_v1_DisplayRequest msgSignalDisplay;
+
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
                             milliseconds. */

@@ -1656,6 +1656,21 @@ void cbSignalUARTReq(char *data, uint16_t len) {
 }
 
 /*!
+    @brief    Deserializes a DisplayRequest message and sends it to the display component.
+    @param    stream
+                Incoming data stream from buffer.
+    @param    field
+                Protobuf message's tag type.
+    @param    arg
+                Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  // TODO: Need to write deserializer logic here
+  return true;
+}
+
+/*!
     @brief    Called when the device receives a new message from the
               /display/ topic.
     @param    data
@@ -1675,14 +1690,12 @@ void cbDisplayMessage(char *data, uint16_t len) {
 
   // Set up the payload callback, which will set up the callbacks for
   // each oneof payload field once the field tag is known
-  // TODO:
-  // WS.msgPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
+  WS.msgSignalDisplay.cb_payload.funcs.decode = cbDecodeDisplayMsg;
 
   // Decode pixel message from buffer
   pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
-  // TODO: Change fields and message type here
-  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_PixelsRequest_fields,
-                    &WS.msgPixels))
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_DisplayRequest_fields,
+                    &WS.msgSignalDisplay))
     WS_DEBUG_PRINTLN("ERROR: Unable to decode display message");
 }
 
