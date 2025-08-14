@@ -39,11 +39,6 @@ public:
   drvD6t1a(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
            const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
-    _i2c = i2c;
-    _address = sensorAddress;
-    _i2c_mux_channel = mux_channel;
-    strncpy(_name, driver_name, sizeof(_name) - 1);
-    _name[sizeof(_name) - 1] = '\0';
     _deviceTemp = NAN;
     _objectTemp = NAN;
     _lastRead = 0;
@@ -61,9 +56,7 @@ public:
   */
   bool begin() override {
     _d6t1a = new OmronD6T(OmronD6T::D6T_1A, _i2c);
-    if (!_d6t1a->begin(_address))
-      return false;
-    return true;
+    return _d6t1a->begin(_address);
   }
 
   /*!

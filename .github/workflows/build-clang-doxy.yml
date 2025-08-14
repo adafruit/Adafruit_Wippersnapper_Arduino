@@ -38,14 +38,6 @@ jobs:
           ]
 
     steps:
-      - name: "skip if unwanted"
-        continue-on-error: true
-        if: |
-          github.event_name == 'workflow_dispatch' &&
-          github.event.inputs.board != '' &&
-          matrix.arduino-platform != github.event.inputs.board
-        run: |
-          echo "don't build this one!"; exit 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -70,7 +62,7 @@ jobs:
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
-          git clone --quiet --branch 2.2.54 https://github.com/adafruit/SdFat.git /home/runner/Arduino/libraries/SdFat
+          git clone --quiet https://github.com/adafruit/SdFat.git /home/runner/Arduino/libraries/SdFat
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
           git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341

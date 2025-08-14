@@ -83,7 +83,7 @@ public:
   void ConfigureDefaultSensorTypes() override;
 
 protected:
-  Adafruit_INA228 *_ina228; ///< Pointer to INA228 sensor object
+  Adafruit_INA228 *_ina228 = nullptr; ///< Pointer to INA228 sensor object
 };
 
 #endif // DRV_INA228_H
