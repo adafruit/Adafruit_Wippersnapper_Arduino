@@ -1655,6 +1655,37 @@ void cbSignalUARTReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode UART Signal message");
 }
 
+/*!
+    @brief    Called when the device receives a new message from the
+              /display/ topic.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+void cbDisplayMessage(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Display]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  // TODO:
+  // WS.msgPixels.cb_payload.funcs.decode = cbDecodePixelsMsg;
+
+  // Decode pixel message from buffer
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  // TODO: Change fields and message type here
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_PixelsRequest_fields,
+                    &WS.msgPixels))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode display message");
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -2344,6 +2375,61 @@ bool Wippersnapper::generateWSTopics() {
     WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
     return false;
   }
+
+// Create d2b display topic
+#ifdef USE_PSRAM
+  WS._topic_signal_display_brkr = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("broker") + strlen(TOPIC_DISPLAY) + 1);
+#else
+  WS._topic_signal_display_brkr = (char *)malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("broker") + strlen(TOPIC_DISPLAY) + 1);
+#endif
+  if (WS._topic_signal_display_brkr != NULL) {
+    strcpy(WS._topic_signal_display_brkr, WS._config.aio_user);
+    strcat(WS._topic_signal_display_brkr, TOPIC_WS);
+    strcat(WS._topic_signal_display_brkr, _device_uid);
+    strcat(WS._topic_signal_display_brkr, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_display_brkr, "broker");
+    strcat(WS._topic_signal_display_brkr, TOPIC_DISPLAY);
+  } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to add a display topic!");
+    return false;
+  }
+
+  // Subscribe to the display sub-topic
+  _topic_signal_display_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_display_brkr, 1);
+  WS._mqtt->subscribe(_topic_signal_display_sub);
+  _topic_signal_display_sub->setCallback(cbDisplayMessage);
+
+// Create a b2d display topic
+#ifdef USE_PSRAM
+  WS._topic_signal_display_device = (char *)ps_malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device") + strlen(TOPIC_DISPLAY) + 1);
+#else
+  WS._topic_signal_display_device = (char *)malloc(
+      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
+      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
+      strlen("device") + strlen(TOPIC_DISPLAY) + 1);
+#endif
+  if (WS._topic_signal_display_device != NULL) {
+    strcpy(WS._topic_signal_display_device, WS._config.aio_user);
+    strcat(WS._topic_signal_display_device, TOPIC_WS);
+    strcat(WS._topic_signal_display_device, _device_uid);
+    strcat(WS._topic_signal_display_device, TOPIC_SIGNALS);
+    strcat(WS._topic_signal_display_device, "device");
+    strcat(WS._topic_signal_display_device, TOPIC_DISPLAY);
+  } else { // malloc failed
+    WS_DEBUG_PRINTLN("ERROR: Failed to add a display topic!");
+    return false;
+  }
+
   return true;
 }
 

@@ -153,6 +153,7 @@
 #define TOPIC_INFO "/info/"       ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
+#define TOPIC_DISPLAY "/display" ///< Display sub-topic (EPD, OLED, TFT, etc.)
 #define MQTT_TOPIC_PIXELS_DEVICE                                               \
   "/signals/device/pixel" ///< Pixels device->broker topic
 #define MQTT_TOPIC_PIXELS_BROKER                                               \
@@ -404,6 +405,8 @@ public:
   char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
   char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
   char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
+  char *_topic_signal_display_brkr = NULL; /*!< Topic carries messages from a device to a broker. */
+  char *_topic_signal_display_device = NULL;   /*!< Topic carries messages from a broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -490,6 +493,8 @@ protected:
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
+  Adafruit_MQTT_Subscribe
+      *_topic_signal_display_sub; /*!< Subscription callback for display topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */
