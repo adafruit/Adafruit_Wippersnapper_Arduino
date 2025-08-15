@@ -132,6 +132,7 @@
 #include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
 #include "components/uart/ws_uart.h"
+#include "components/display/controller.h"
 
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -246,6 +247,7 @@ class ws_pwm;
 class ws_ds18x20;
 class ws_pixels;
 class ws_uart;
+class DisplayController;
 
 /**************************************************************************/
 /*!
@@ -369,6 +371,7 @@ public:
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
   ws_uart *_uartComponent;        ///< Instance of UART class
+  DisplayController *_displayController; ///< Instance of display controller class
 
   // TODO: does this really need to be global?
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */

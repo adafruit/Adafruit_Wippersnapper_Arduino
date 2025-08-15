@@ -69,6 +69,9 @@ Wippersnapper::Wippersnapper() {
 
   // DallasSemi (OneWire)
   WS._ds18x20Component = new ws_ds18x20();
+
+  // Display controller
+  WS._displayController = new DisplayController();
 };
 
 /**************************************************************************/
@@ -1666,7 +1669,21 @@ void cbSignalUARTReq(char *data, uint16_t len) {
     @returns  True if decoded successfully, False otherwise.
 */
 bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  // TODO: Need to write deserializer logic here
+  if (field->tag == wippersnapper_signal_v1_DisplayRequest_display_add_tag) {
+
+    // Decode message into a DisplayAddRequest
+    wippersnapper_display_v1_DisplayAddOrReplace msgAddReq = wippersnapper_display_v1_DisplayAddOrReplace_init_zero;
+    if (!ws_pb_decode(stream,
+                      wippersnapper_display_v1_DisplayAddOrReplace_fields,
+                      &msgAddReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Failure decoding DisplayAddOrReplace message!");
+      return false;
+    }
+
+    // Attempt to add or replace a display component
+    bool did_add = WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
+    // TODO: Add response handling and publishing here
+
   return true;
 }
 
