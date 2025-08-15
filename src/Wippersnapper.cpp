@@ -1682,8 +1682,8 @@ bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field, void **ar
 
     // Attempt to add or replace a display component
     bool did_add = WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
-    // TODO: Add response handling and publishing here
-
+    // TODO: Add response handling and publishing here, for now it always returns true and doesnt publish back to the broker
+  }
   return true;
 }
 

@@ -31,9 +31,11 @@ public:
   DisplayHardware(const char *name);
   ~DisplayHardware();
   // High-level API functions
+  const char *getName();
   void setType(wippersnapper_display_v1_DisplayType type);
   wippersnapper_display_v1_DisplayType getType();
-  bool beginEPD(wippersnapper_display_v1_EPDConfig *config, wippersnapper_display_v1_EpdSpiConfig *spi_config);
+  bool beginEPD(wippersnapper_display_v1_EPDConfig *config,
+                wippersnapper_display_v1_EpdSpiConfig *spi_config);
   bool begin(bool reset = true);
   // API functions to abstract Adafruit_GFX
   void setTextSize(uint8_t sz);

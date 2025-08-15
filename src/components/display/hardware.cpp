@@ -171,6 +171,12 @@ bool DisplayHardware::begin(bool reset) {
     @param  sz
             The size of the text to set.
 */
-void setTextSize(uint8_t sz) {
+void DisplayHardware::setTextSize(uint8_t sz) {
   // Placeholder for setting text size on the display TODO
 }
+
+/*!
+    @brief  Gets the name of the display hardware instance.
+    @return The name of the display hardware instance.
+*/
+const char *DisplayHardware::getName() { return _name; }

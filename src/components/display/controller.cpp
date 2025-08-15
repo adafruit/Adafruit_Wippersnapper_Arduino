@@ -24,7 +24,7 @@ DisplayController::DisplayController() {
 /*!
     @brief  Destructor
 */
-DisplayController::DisplayController() {
+DisplayController::~DisplayController() {
   // TODO
 }
 
@@ -32,31 +32,56 @@ DisplayController::DisplayController() {
     @brief  Handles a Display_AddOrReplace message.
     @param  msgAdd
             Pointer to a DisplayAddOrReplace message structure.
-    @return True if the display was added or replaced successfully, false otherwise.
+    @return True if the display was added or replaced successfully, false
+   otherwise.
 */
-bool DisplayController::Handle_Display_AddOrReplace(wippersnapper_display_v1_DisplayAddOrReplace *msgAdd) {
-    DisplayHardware *display = new DisplayHardware(msgAdd->name);
+bool DisplayController::Handle_Display_AddOrReplace(
+    wippersnapper_display_v1_DisplayAddOrReplace *msgAdd) {
+  DisplayHardware *display = new DisplayHardware(msgAdd->name);
 
-    // Configure display type
-    display->setType(msgAdd->type);
+  // Configure display type
+  display->setType(msgAdd->type);
 
-    // Attempt to initialize display hardware instance
-    bool did_begin = false;
-    if (msgAdd->which_config == wippersnapper_display_v1_DisplayAddOrReplace_epd_config_tag) {
-        did_begin = display->beginEPD(&msgAdd->config.epd_config, &msgAdd->interface_type.spi_epd);
-    } else {
-      WS_DEBUG_PRINTLN("[display] Unsupported display configuration type!");
-      return false;
+  // Attempt to initialize display hardware instance
+  bool did_begin = false;
+  if (msgAdd->which_config ==
+      wippersnapper_display_v1_DisplayAddOrReplace_epd_config_tag) {
+    did_begin = display->beginEPD(&msgAdd->config.epd_config,
+                                  &msgAdd->interface_type.spi_epd);
+  } else {
+    WS_DEBUG_PRINTLN("[display] Unsupported display configuration type!");
+    return false;
+  }
+
+  // Check if the display began successfully
+  if (!did_begin) {
+    WS_DEBUG_PRINTLN("[display] Failed to initialize display!");
+    delete display; // Clean up if initialization failed
+    return false;
+  }
+
+  _hw_instances.push_back(display); // Store the display instance
+  WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
+  return true; // Placeholder
+}
+
+/*!
+    @brief  Handles a Display_Remove message.
+    @param  msgRemove
+            Pointer to a DisplayRemove message structure.
+    @return True if the display was removed successfully, false otherwise.
+*/
+bool DisplayController::Handle_Display_Remove(
+    wippersnapper_display_v1_DisplayRemove *msgRemove) {
+  // Find the display instance by name
+  for (auto it = _hw_instances.begin(); it != _hw_instances.end(); ++it) {
+    if (strcmp((*it)->getName(), msgRemove->name) == 0) {
+      delete *it;
+      _hw_instances.erase(it);
+      WS_DEBUG_PRINTLN("[display] Display removed successfully!");
+      return true;
     }
-
-    // Check if the display began successfully
-    if (!did_begin) {
-      WS_DEBUG_PRINTLN("[display] Failed to initialize display!");
-      delete display; // Clean up if initialization failed
-      return false;
-    }
-
-    _hw_instances.push_back(display); // Store the display instance
-    WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
-    return true; // Placeholder
+  }
+  WS_DEBUG_PRINTLN("[display] Could not remove display, not found!");
+  return false;
 }

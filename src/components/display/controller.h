@@ -31,11 +31,13 @@ class DisplayController {
 public:
   DisplayController();
   ~DisplayController();
-  bool Handle_Display_AddOrReplace(wippersnapper_display_v1_DisplayAddOrReplace *msgAdd);
-  //bool Handle_Display_Remove(...);
-  //bool Handle_Display_Write(...);
+  bool Handle_Display_AddOrReplace(
+      wippersnapper_display_v1_DisplayAddOrReplace *msgAdd);
+  bool Handle_Display_Remove(wippersnapper_display_v1_DisplayRemove *msgRemove);
+  // bool Handle_Display_Write(...);
 private:
-  std::vector<DisplayHardware*> _hw_instances; ///< Holds pointers to DisplayHardware instances
+  std::vector<DisplayHardware *>
+      _hw_instances; ///< Holds pointers to DisplayHardware instances
 };
 extern Wippersnapper Ws; ///< Global WS instance
 #endif
