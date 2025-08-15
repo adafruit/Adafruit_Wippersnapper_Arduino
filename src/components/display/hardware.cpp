@@ -17,15 +17,16 @@
 /*!
     @brief  Constructs a new DisplayHardware object
 */
-DisplayHardware::DisplayHardware() {
+DisplayHardware::DisplayHardware(const char *name) {
+  _name = name; ///< Set the name of the hardware instance
   _type = wippersnapper_display_v1_DisplayType_DISPLAY_TYPE_UNSPECIFIED;
 }
 
 /*!
     @brief  Destructor
 */
-DisplayHardware::DisplayHardware() {
-  // TODO: Clean up display drivers
+DisplayHardware::~DisplayHardware() {
+  // TODO
 }
 
 /*!

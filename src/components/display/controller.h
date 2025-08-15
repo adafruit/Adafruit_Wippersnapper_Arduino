@@ -32,10 +32,10 @@ public:
   DisplayController();
   ~DisplayController();
   bool Handle_Display_AddOrReplace(wippersnapper_display_v1_DisplayAddOrReplace *msgAdd);
-  //bool Handle_Display_Write(pb_istream_t *stream);
-  //bool Handle_Display_Remove(pb_istream_t *stream);
+  //bool Handle_Display_Remove(...);
+  //bool Handle_Display_Write(...);
 private:
-  //DisplayHardware *_display_strands[MAX_DISPLAY_STRANDS] = {
+  std::vector<DisplayHardware*> _hw_instances; ///< Holds pointers to DisplayHardware instances
 };
 extern Wippersnapper Ws; ///< Global WS instance
 #endif

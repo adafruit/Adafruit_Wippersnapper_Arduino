@@ -28,18 +28,18 @@
 /**************************************************************************/
 class DisplayHardware {
 public:
-  DisplayHardware();
+  DisplayHardware(const char *name);
   ~DisplayHardware();
   // High-level API functions
   void setType(wippersnapper_display_v1_DisplayType type);
   wippersnapper_display_v1_DisplayType getType();
-  void beginEPD(wippersnapper_display_v1_EPDConfig *config,
-                wippersnapper_display_v1_EpdSpiConfig *spi_config);
+  bool beginEPD(wippersnapper_display_v1_EPDConfig *config, wippersnapper_display_v1_EpdSpiConfig *spi_config);
   bool begin(bool reset = true);
   // API functions to abstract Adafruit_GFX
   void setTextSize(uint8_t sz);
 
 private:
+  const char *_name; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
   wippersnapper_display_v1_EPDThinkInkPanel
       _thinkink_driver; ///< ThinkInk driver type
