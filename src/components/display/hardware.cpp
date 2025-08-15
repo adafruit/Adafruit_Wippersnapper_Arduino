@@ -34,7 +34,7 @@ DisplayHardware::DisplayHardware() {
             The display type to set.
 */
 void DisplayHardware::setType(wippersnapper_display_v1_DisplayType type) {
-    _type = type;
+  _type = type;
 }
 
 /*!
@@ -42,7 +42,7 @@ void DisplayHardware::setType(wippersnapper_display_v1_DisplayType type) {
     @return The current display type.
 */
 wippersnapper_display_v1_DisplayType DisplayHardware::getType() {
-    return _type;
+  return _type;
 }
 
 /*!
@@ -53,37 +53,106 @@ wippersnapper_display_v1_DisplayType DisplayHardware::getType() {
             Pointer to the SPI configuration structure for EPD.
     @return True if configuration was successful, False otherwise.
 */
-bool DisplayHardware::beginEPD(wippersnapper_display_v1_EPDConfig *config, wippersnapper_display_v1_EpdSpiConfig *spi_config) {
-    // Convert pins in config to int16_t instances
-    int16_t dc = -1, rst = -1, cs = -1, srcs = -1, busy = -1;
-    dc = (int16_t)atoi(spi_config->pin_dc+ 1);
-    rst = (int16_t)atoi(spi_config->pin_rst+ 1);
-    cs = (int16_t)atoi(spi_config->pin_cs+ 1);
-    srcs = (int16_t)atoi(spi_config->pin_sram_cs+ 1);
-    busy = (int16_t)atoi(spi_config->pin_busy+ 1);
+bool DisplayHardware::beginEPD(
+    wippersnapper_display_v1_EPDConfig *config,
+    wippersnapper_display_v1_EpdSpiConfig *spi_config) {
+  // Validate pointers
+  if (config == nullptr || spi_config == nullptr) {
+    return false;
+  }
 
-    // Configure EPD mode
-    thinkinkmode_t epd_mode;
-    if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4) {
-        epd_mode = THINKINK_GRAYSCALE4;
-    } else if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_MONO) {
-        epd_mode = THINKINK_MONO;
-    } else {
-        epd_mode = THINKINK_MONO; // Default to mono
-    }
+  // Validate panel type
+  if (config->panel ==
+      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED) {
+    return false; // Unsupported panel type
+  }
 
-    // Assign driver instance based on panel type
-    if (config->panel == wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_213_GRAYSCALE4_MFGN) {
-        _disp_thinkink_grayscale4_eaamfgn = new ThinkInk_290_Grayscale4_EAAMFGN(dc, rst, cs, srcs, busy);
-        _disp_thinkink_grayscale4_eaamfgn->begin(epd_mode);
-    } else if (config->panel == wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_213_GRAYSCALE4_T5) {
-        _disp_thinkink_grayscale4_t5 = new ThinkInk_290_Grayscale4_T5(dc, rst, cs, srcs, busy);
-        _disp_thinkink_grayscale4_t5->begin(epd_mode);
-    } else {
-        return false; // Unsupported panel type
-    }
+  // Validate mode is a correct EPD mode
+  if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
+    return false; // Unsupported mode
+  }
 
-    return true; // Configuration successful
+  // If we already have a display driver assigned to this hardware instance,
+  // clean it up!
+  if (_thinkink_driver ==
+      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN) {
+    delete _disp_thinkink_grayscale4_eaamfgn;
+    _disp_thinkink_grayscale4_eaamfgn = nullptr;
+    _thinkink_driver =
+        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED;
+  } else if (
+      _thinkink_driver ==
+      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_T5) {
+    delete _disp_thinkink_grayscale4_t5;
+    _disp_thinkink_grayscale4_t5 = nullptr;
+    _thinkink_driver =
+        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED;
+  }
+
+  // Parse all SPI bus pins
+  // Check length
+  if (strlen(spi_config->pin_dc) < 2 || strlen(spi_config->pin_rst) < 2 ||
+      strlen(spi_config->pin_cs) < 2) {
+    return false;
+  }
+  // SPI pins must start with 'D'
+  if (spi_config->pin_dc[0] != 'D' || spi_config->pin_rst[0] != 'D' ||
+      spi_config->pin_cs[0] != 'D') {
+    return false;
+  }
+
+  // Parse and assign pins
+  int16_t srcs = -1, busy = -1;
+  int16_t dc = (int16_t)atoi(spi_config->pin_dc + 1);
+  int16_t rst = (int16_t)atoi(spi_config->pin_rst + 1);
+  int16_t cs = (int16_t)atoi(spi_config->pin_cs + 1);
+
+  // Optionally parse SRAM CS and BUSY pins
+  if (strlen(spi_config->pin_sram_cs) >= 2 &&
+      spi_config->pin_sram_cs[0] == 'D') {
+    srcs = (int16_t)atoi(spi_config->pin_sram_cs + 1);
+  }
+  if (strlen(spi_config->pin_busy) >= 2 && spi_config->pin_busy[0] == 'D') {
+    busy = (int16_t)atoi(spi_config->pin_busy + 1);
+  }
+
+  // TODO: Configure SPI bus selection (UNUSED AS OF RIGHT NOW)
+
+  // Configure EPD mode
+  thinkinkmode_t epd_mode;
+  if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4) {
+    epd_mode = THINKINK_GRAYSCALE4;
+  } else if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_MONO) {
+    epd_mode = THINKINK_MONO;
+  }
+
+  // Assign driver instance based on panel type
+  if (config->panel ==
+      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN) {
+    _disp_thinkink_grayscale4_eaamfgn =
+        new ThinkInk_290_Grayscale4_EAAMFGN(dc, rst, cs, srcs, busy);
+    if (!_disp_thinkink_grayscale4_eaamfgn)
+      return false; // Allocation failed
+    // Initialize the display
+    _disp_thinkink_grayscale4_eaamfgn->begin(epd_mode);
+    _thinkink_driver =
+        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN;
+  } else if (
+      config->panel ==
+      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_T5) {
+    _disp_thinkink_grayscale4_t5 =
+        new ThinkInk_290_Grayscale4_T5(dc, rst, cs, srcs, busy);
+    if (!_disp_thinkink_grayscale4_t5)
+      return false; // Allocation failed
+    // Initialize the display
+    _disp_thinkink_grayscale4_t5->begin(epd_mode);
+    _thinkink_driver =
+        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_T5;
+  } else {
+    return false; // Unsupported panel type
+  }
+
+  return true; // Configuration successful
 }
 
 /*!
@@ -93,7 +162,7 @@ bool DisplayHardware::beginEPD(wippersnapper_display_v1_EPDConfig *config, wippe
     @return True if initialization was successful, false otherwise.
 */
 bool DisplayHardware::begin(bool reset) {
-    return true; // Placeholder for actual initialization logic
+  return true; // Placeholder for actual initialization logic
 }
 
 /*!
@@ -102,6 +171,5 @@ bool DisplayHardware::begin(bool reset) {
             The size of the text to set.
 */
 void setTextSize(uint8_t sz) {
-    // Placeholder for setting text size on the display TODO
+  // Placeholder for setting text size on the display TODO
 }
-
