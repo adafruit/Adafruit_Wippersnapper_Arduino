@@ -32,6 +32,9 @@ bool DisplayController::Handle_Display_AddOrReplace(wippersnapper_display_v1_Dis
     DisplayHardware *display = new DisplayHardware();
     // Configure display type
     display->setType(msgAdd->type);
-
+    // Configure display based on config type
+    if (msgAdd->which_config == wippersnapper_display_v1_DisplayAddOrReplace_epd_config_tag) {
+        display->configureEPD(&msgAdd->config.epd_config, &msgAdd->interface_type.spi_epd);
+    }
     return true; // Placeholder
 }
