@@ -1,7 +1,7 @@
 /*!
- * @file drvIna260.h
+ * @file drvIna237.h
  *
- * Device driver for the INA260 DC Current and Voltage Monitor
+ * Device driver for the INA237 High Precision DC Current and Voltage Monitor
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -12,23 +12,23 @@
  * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef DRV_INA260_H
-#define DRV_INA260_H
+#ifndef DRV_INA237_H
+#define DRV_INA237_H
 
 #include "drvBase.h"
 
-class Adafruit_INA260;
+class Adafruit_INA237;
 
 /**************************************************************************/
 /*!
-    @brief  Class that provides a driver interface for a INA260 sensor.
+    @brief  Class that provides a driver interface for a INA237 sensor.
 */
 /**************************************************************************/
-class drvIna260 : public drvBase {
+class drvIna237 : public drvBase {
 public:
   /*******************************************************************************/
   /*!
-      @brief    Constructor for a INA260 sensor.
+      @brief    Constructor for a INA237 sensor.
       @param    i2c
                 The I2C interface.
       @param    sensorAddress
@@ -39,20 +39,20 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvIna260(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+  drvIna237(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {}
 
   /*******************************************************************************/
   /*!
-      @brief    Destructor for an INA260 sensor.
+      @brief    Destructor for an INA237 sensor.
   */
   /*******************************************************************************/
-  ~drvIna260();
+  ~drvIna237();
 
   /*******************************************************************************/
   /*!
-      @brief    Initializes the INA260 sensor and begins I2C.
+      @brief    Initializes the INA237 sensor and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
@@ -83,7 +83,7 @@ public:
   void ConfigureDefaultSensorTypes() override;
 
 protected:
-  Adafruit_INA260 *_ina260 = nullptr; ///< Pointer to INA260 sensor object
+  Adafruit_INA237 *_ina237 = nullptr; ///< Pointer to INA237 sensor object
 };
 
-#endif // DRV_INA260_H
+#endif // DRV_INA237_H

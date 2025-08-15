@@ -73,19 +73,21 @@
 #include <vector>
 
 // Nanopb messages and dependencies
-#include "protos/signal.pb.h"
 #include <nanopb/pb_common.h>
 #include <nanopb/pb_decode.h>
 #include <nanopb/pb_encode.h>
 #include <nanopb/ws_pb_helpers.h>
 
+#include "protos/signal.pb.h"
+
 // External libraries
+#include <SPI.h>  // SPI
+#include <Wire.h> // I2C
+
 #include "Adafruit_MQTT.h"      // MQTT Client
 #include "Adafruit_SleepyDog.h" // Watchdog
 #include "Arduino.h"            // Wiring
 #include "RTClib.h"             // RTC
-#include <SPI.h>                // SPI
-#include <Wire.h>               // I2C
 
 // Wippersnapper API Helpers
 #include "Wippersnapper_Boards.h"
@@ -220,6 +222,8 @@ public:
   void errorWriteHangV2(const char *error);
 
   bool _is_offline_mode; ///< Global flag for if the device is in offline mode
+  bool _global_auto_config =
+      true; ///< Support no auto config for exportedDevice
 
   // TODO: Do we need this?
   ws_board_status_t _boardStatusV2 =

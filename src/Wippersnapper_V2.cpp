@@ -845,7 +845,8 @@ void Wippersnapper_V2::runNetFSMV2() {
 #ifdef USE_DISPLAY
         WsV2._ui_helperV2->show_scr_error(
             "CONNECTION ERROR",
-            "Unable to connect to WiFi Network. Please check that you entered "
+            "Unable to connect to WiFi Network. Please check that you "
+            "entered "
             "the WiFi credentials correctly. Rebooting in 5 seconds...");
 #endif
         haltErrorV2("ERROR: Unable to connect to WiFi, rebooting soon...",
@@ -882,8 +883,8 @@ void Wippersnapper_V2::runNetFSMV2() {
         WS_DEBUG_PRINT("MQTT Connection Error: ");
         WS_DEBUG_PRINTLN(mqttRC);
         WS_DEBUG_PRINTLN(WsV2._mqttV2->connectErrorString(mqttRC));
-        WS_DEBUG_PRINTLN(
-            "Unable to connect to Adafruit IO MQTT, retrying in 3 seconds...");
+        WS_DEBUG_PRINTLN("Unable to connect to Adafruit IO MQTT, retrying in 3 "
+                         "seconds...");
         delay(3000);
         maxAttempts--;
       }
@@ -892,7 +893,8 @@ void Wippersnapper_V2::runNetFSMV2() {
         WsV2._ui_helperV2->show_scr_error(
             "CONNECTION ERROR",
             "Unable to connect to Adafruit.io. If you are repeatedly having "
-            "this issue, please check that your IO Username and IO Key are set "
+            "this issue, please check that your IO Username and IO Key are "
+            "set "
             "correctly in the secrets file. This device will reboot in 5 "
             "seconds...");
 #endif
@@ -957,7 +959,6 @@ void Wippersnapper_V2::haltErrorV2(const char *error,
               False otherwise.
 */
 bool Wippersnapper_V2::PublishSignal(pb_size_t which_payload, void *payload) {
-
 #ifdef DEBUG_PROFILE
   unsigned long total_start_time = micros();
 #endif
@@ -1295,7 +1296,10 @@ void Wippersnapper_V2::connect() {
     // Call the TL signal decoder to parse the incoming JSON data
     callDecodeB2D();
 #ifndef OFFLINE_MODE_WOKWI
-    WsV2._fileSystemV2->WriteFileConfig();
+    // TODO: Don't write the config file if unchanged versus current config
+    if (WsV2._global_auto_config) {
+      WsV2._fileSystemV2->WriteFileConfig();
+    }
 #endif // OFFLINE_MODE_WOKWI used for CI test simulations, lacks TinyUSB
     WS_DEBUG_PRINTLN("[APP] Hardware configured!");
     // Blink status LED to green to indicate successful configuration

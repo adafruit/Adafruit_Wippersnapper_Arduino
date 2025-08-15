@@ -20,9 +20,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["funhouse_noota"]
-        include:
-          - offset: "0x1000"
+        arduino-platform:
+          [
+            "feather_esp32s2",
+            "feather_esp32s2_reverse_tft",
+            "feather_esp32s2_tft",
+            "funhouse_noota",
+            "magtag",
+            "metroesp32s2",
+            "qtpy_esp32s2",
+            "esp32s3_devkitc_1_n8",
+            "feather_esp32s3_4mbflash_2mbpsram",
+            "feather_esp32s3_reverse_tft",
+            "feather_esp32s3_tft",
+            "qtpy_esp32s3_n4r2",
+            "xiao_esp32s3",
+          ]
+
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -48,6 +62,7 @@ jobs:
       - name: Install extra Arduino libraries
         run: |
           git clone --quiet https://github.com/pstolarz/Arduino-Temperature-Control-Library.git /home/runner/Arduino/libraries/Arduino-Temperature-Control-Library
+          git clone --quiet https://github.com/adafruit/SdFat.git /home/runner/Arduino/libraries/SdFat
           git clone --quiet https://github.com/pstolarz/OneWireNg.git /home/runner/Arduino/libraries/OneWireNg
           git clone --quiet https://github.com/adafruit/Adafruit_HX8357_Library.git /home/runner/Arduino/libraries/Adafruit_HX8357_Library
           git clone --quiet https://github.com/adafruit/Adafruit_ILI9341.git /home/runner/Arduino/libraries/Adafruit_ILI9341
@@ -106,6 +121,7 @@ jobs:
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.elf wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.elf
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.map wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.map
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.bootloader.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin
+          mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.merged.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.merged_auto.bin
           mv examples/Wippersnapper_demo/build/*/Wippersnapper_demo.ino.partitions.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin
       - name: Get Board Flash Parameters
         id: get_board_json
@@ -121,6 +137,52 @@ jobs:
             echo $content
             echo EOF
           } >> "$GITHUB_OUTPUT"
+      - name: fetch tinyuf2 combined.bin
+        run: |
+          BOARD_NAME="${{fromJson(steps.get_board_json.outputs.boardJson).bootloaderBoardName}}"
+          for attempt in 1 2; do
+            echo "Attempt $attempt: Fetching tinyuf2 release info for board $BOARD_NAME"
+            API_RESPONSE=$(curl --silent --fail https://api.github.com/repos/adafruit/tinyuf2/releases/latest)
+            if [ $? -ne 0 ]; then
+              echo "Attempt $attempt: curl failed to fetch release info."
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; continue; fi
+            fi
+            DOWNLOAD_URL=$(echo "$API_RESPONSE" | jq -r '.assets[] | select(.browser_download_url | contains("tinyuf2-'$BOARD_NAME'-") and endswith(".zip")) | .browser_download_url // empty')
+            if [ -z "$DOWNLOAD_URL" ]; then
+              echo "Attempt $attempt: No matching tinyuf2 zip found for board $BOARD_NAME."
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; continue; fi
+            fi
+            echo "Attempt $attempt: Downloading $DOWNLOAD_URL"
+            wget "$DOWNLOAD_URL" -O tinyuf2.zip
+            if [ $? -eq 0 ]; then
+              unzip -o tinyuf2.zip -d .
+              break
+            else
+              echo "Attempt $attempt: wget failed to download $DOWNLOAD_URL"
+              if [ "$attempt" -eq 2 ]; then exit 1; else sleep 2; fi
+            fi
+          done
+      - name: move partition and bootloader files for tinyuf2 (to match flash_args)
+        run: |
+          # Copy files where they're expected to make flash_args happy
+          mkdir bootloader
+          cp bootloader.bin bootloader/bootloader.bin
+          mkdir partition_table
+          cp partition-table.bin partition_table/partition-table.bin
+
+      - name: Create new_flash_args file from flash_args with added app bin + output file
+        run: |
+          # Create new_flash_args with esptool parameters first and output file
+          echo "--flash-mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}}" > new_flash_args
+          echo "--flash-freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}}" >> new_flash_args
+          echo "--flash-size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}}" >> new_flash_args
+          echo "-o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin" >> new_flash_args
+
+          # Append flash_args content to new_flash_args, skipping the first line
+          tail -n +2 flash_args >> new_flash_args
+
+          # Append main app to flash_args file
+          echo "0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin" >> new_flash_args
       - name: Check boot_app0 file existence (esp32sx built from core, not-source)
         id: check_files
         uses: andstor/file-existence-action@v3
@@ -136,23 +198,17 @@ jobs:
           ls /home/runner/Arduino/hardware/espressif/esp32/tools/partitions
       - name: boot_app0 file from arduino-cli core
         if: steps.check_files.outputs.files_exists == 'true'
-        run: mv /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+        run: cp /home/runner/.arduino15/packages/esp32/hardware/esp32/*/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
       - name: boot_app0 file from esp32 source bsp
         if: steps.check_files.outputs.files_exists == 'false'
-        run: mv /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
-      - name: Create combined binary using Esptool merge_bin
+        run: cp /home/runner/Arduino/hardware/espressif/esp32/tools/partitions/boot_app0.bin wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin
+      - name: Copy boot_app0 file to ota_data_initial.bin (overwrite tinyuf2 boot preference)
+        run: cp wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin ota_data_initial.bin
+      - name: Create combined binary using Esptool merge-bin
         run: |
           echo ${{ steps.get_board_json.outputs.boardJson }}
           echo ${{ fromJson(steps.get_board_json.outputs.boardJson) }}
-          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge_bin \
-            --flash_mode ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashMode}} \
-            --flash_freq ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashFreq}} \
-            --flash_size ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.flashSize}} \
-            -o wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.combined.bin \
-            ${{ matrix.offset }} wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bootloader.bin \
-            0x8000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.partitions.bin \
-            0xe000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.boot_app0.bin \
-            0x10000 wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.bin
+          python3 -m esptool --chip ${{fromJson(steps.get_board_json.outputs.boardJson).esptool.chip}} merge-bin @new_flash_args
       - name: Zip build artifacts
         run: |
           zip -r wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.zip wippersnapper.${{ matrix.arduino-platform }}.fatfs.${{ env.WS_VERSION }}.*
@@ -180,19 +236,9 @@ jobs:
       matrix:
         arduino-platform:
           [
-            "magtag",
-            "metroesp32s2",
             "metro_esp32s3",
-            "feather_esp32s2",
-            "feather_esp32s2_tft",
-            "feather_esp32s2_reverse_tft",
             "feather_esp32s3",
-            "feather_esp32s3_4mbflash_2mbpsram",
-            "feather_esp32s3_tft",
             "qtpy_esp32s3",
-            "qtpy_esp32s2",
-            "feather_esp32s3_reverse_tft",
-            "qtpy_esp32s3_n4r2",
           ]
     steps:
       - uses: actions/setup-python@v5

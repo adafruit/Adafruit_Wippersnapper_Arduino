@@ -103,6 +103,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
         const char *driver_name) -> drvBase * {
        return new drvDps310(i2c, addr, mux_channel, driver_name);
      }},
+    {"d6t1a",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvD6t1a(i2c, addr, mux_channel, driver_name);
+     }},
     {"ds2484",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
@@ -112,6 +117,11 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvEns160(i2c, addr, mux_channel, driver_name);
+     }},
+    {"hdc302x",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvHdc302x(i2c, addr, mux_channel, driver_name);
      }},
     {"hts221",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -127,6 +137,26 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
        return new drvIna219(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina228",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna228(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina237",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna237(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina238",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna238(i2c, addr, mux_channel, driver_name);
+     }},
+    {"ina260",
+     [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
+        const char *driver_name) -> drvBase * {
+       return new drvIna260(i2c, addr, mux_channel, driver_name);
      }},
     {"lc709203f",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
@@ -346,6 +376,7 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
 
 static const std::unordered_map<uint16_t, std::vector<const char *>>
     map_address_to_drivers = {
+        {0x0A, {"d6t1a"}},
         {0x0B, {"lc709203f"}},
         {0x12, {"pmsa003i"}},
         {0x13, {"vncl4020"}},
@@ -366,11 +397,12 @@ static const std::unordered_map<uint16_t, std::vector<const char *>>
         {0x38, {"aht20", "max17048"}},
         {0x39, {"tsl2591"}},
         {0x40,
-         {"htu21d", "htu31d", "ina219", "ina260", "ms8607", "si7021",
-          "stemma_soil"}},
-        {0x41, {"htu31d", "ina219", "ina260"}},
-        {0x44, {"hdc302x", "ina260", "sht3x", "sht4x"}},
-        {0x45, {"hdc302x", "ina260", "sht3x"}},
+         {"htu21d", "htu31d", "ina219", "ina228", "ina237", "ina238", "ina260",
+          "ms8607", "si7021", "stemma_soil"}},
+        {0x41, {"htu31d", "ina219", "ina228", "ina237", "ina238", "ina260"}},
+        {0x44,
+         {"hdc302x", "ina228", "ina237", "ina238", "ina260", "sht3x", "sht4x"}},
+        {0x45, {"hdc302x", "ina228", "ina237", "ina238", "ina260", "sht3x"}},
         {0x46, {"hdc302x"}},
         {0x47, {"hdc302x"}},
         {0x48, {"adt7410", "pct2075", "tmp117"}},
@@ -1048,8 +1080,12 @@ bool I2cController::Handle_I2cDeviceAddOrReplace(pb_istream_t *stream) {
   GPSController *drv_uart_gps = nullptr;
 
   if (strcmp(device_name, "UNKNOWN_SCAN") == 0) {
+    if (!WsV2._global_auto_config) {
+      return true;
+    }
     WS_DEBUG_PRINTLN("Attempting to autoconfig device found in scan...");
-    if (device_descriptor.i2c_device_address == 0x68 ||
+    if (device_descriptor.i2c_device_address == 0x51 ||
+        device_descriptor.i2c_device_address == 0x68 ||
         device_descriptor.i2c_device_address == 0x70) {
       WS_DEBUG_PRINTLN("[i2c] Device address is shared with RTC/MUX, can not "
                        "auto-init, skipping!");

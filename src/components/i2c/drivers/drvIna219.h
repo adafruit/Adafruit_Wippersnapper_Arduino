@@ -100,7 +100,7 @@ public:
   }
 
 protected:
-  Adafruit_INA219 *_ina219; ///< Pointer to INA219 sensor object
+  Adafruit_INA219 *_ina219 = nullptr; ///< Pointer to INA219 sensor object
 };
 
 #endif // drvIna219

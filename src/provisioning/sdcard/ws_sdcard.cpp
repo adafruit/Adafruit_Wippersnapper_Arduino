@@ -22,6 +22,11 @@
               otherwise.
 */
 bool ws_sdcard::InitSdCard(uint8_t pin_cs) {
+  if (pin_cs == SD_CS_CFG_NOT_FOUND) {
+    WS_DEBUG_PRINT("[SD] Init Error: CS pin is undefined. Add \"sd_cs_pin\" to "
+                   "exportedFromDevice section of config.json file.");
+    return false;
+  }
   WsV2.pin_sd_cs = pin_cs;
 #ifdef SD_USE_SPI_1
   SdSpiConfig _sd_spi_cfg(pin_cs, DEDICATED_SPI, SPI_SD_CLOCK, &SPI1);
@@ -179,7 +184,32 @@ bool ws_sdcard::InitPCF8523() {
     _rtc_pcf8523->adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
   _rtc_pcf8523->start();
-  _cfg_i2c_addresses.push_back(0x68); // Disable auto-config for DS3231
+  _cfg_i2c_addresses.push_back(0x68); // Disable auto-config for PCF8523
+  return true;
+}
+
+/**************************************************************************/
+/*!
+    @brief    Initializes a PCF8563 RTC.
+    @returns  True if the RTC was successfully initialized, False
+              otherwise.
+*/
+/**************************************************************************/
+bool ws_sdcard::InitPCF8563() {
+  _rtc_pcf8563 = new RTC_PCF8563();
+  if (!_rtc_pcf8563->begin(WsV2._i2c_controller->GetI2cBus())) {
+    WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8563 RTC on WIRE");
+    if (!_rtc_pcf8563->begin(WsV2._i2c_controller->GetI2cBus(true))) {
+      WS_DEBUG_PRINTLN("[SD] Error: Failed to initialize PCF8563 RTC on WIRE1");
+      delete _rtc_pcf8563;
+      return false;
+    }
+  }
+  if (!_rtc_pcf8563->isrunning() || _rtc_pcf8563->lostPower()) {
+    _rtc_pcf8563->adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
+  _rtc_pcf8563->start();
+  _cfg_i2c_addresses.push_back(0x51); // Disable auto-config for PCF8563
   return true;
 }
 
@@ -227,6 +257,8 @@ bool ws_sdcard::ConfigureRTC(const char *rtc_type) {
     return InitDS3231();
   } else if (strcmp(rtc_type, "PCF8523") == 0) {
     return InitPCF8523();
+  } else if (strcmp(rtc_type, "PCF8563") == 0) {
+    return InitPCF8563();
   } else if (strcmp(rtc_type, "SOFT") == 0) {
     return InitSoftRTC();
   }
@@ -829,6 +861,10 @@ bool ws_sdcard::ParseExportedFromDevice(JsonDocument &doc) {
     return false;
   }
 
+  bool global_auto_config = true;
+  global_auto_config = exportedFromDevice["autoConfig"].as<bool>();
+  WsV2._global_auto_config = global_auto_config;
+
   return true;
 }
 
@@ -887,6 +923,12 @@ bool ws_sdcard::ParseFileConfig() {
   if (!ParseComponents(components)) {
     WS_DEBUG_PRINTLN("[SD] Error: Failed to parse components[]!");
     return false;
+  }
+
+  // If global skip (exportedFromDevice.autoConfig == false) then just continue
+  if (!WsV2._global_auto_config) {
+    WS_DEBUG_PRINTLN("[SD] Auto config is disabled, skipping I2C scan.");
+    return true;
   }
 
   // Add the results of I2C scan to the shared buffer
@@ -1014,6 +1056,8 @@ uint32_t ws_sdcard::GetTimestamp() {
     now = _rtc_ds1307->now();
   else if (_rtc_pcf8523 != nullptr)
     now = _rtc_pcf8523->now();
+  else if (_rtc_pcf8563 != nullptr)
+    now = _rtc_pcf8563->now();
   else if (_is_soft_rtc) {
     uint32_t cur_time = GetSoftRTCTime();
     TickSoftRTC();
