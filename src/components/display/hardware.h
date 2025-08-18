@@ -32,21 +32,25 @@ class DisplayHardware {
 public:
   DisplayHardware(const char *name);
   ~DisplayHardware();
-  // High-level API functions
+
+  //
+  // API for configuring the display hardware //
+  //
   const char *getName();
   void setType(wippersnapper_display_v1_DisplayType type);
   wippersnapper_display_v1_DisplayType getType();
   bool beginEPD(wippersnapper_display_v1_EPDConfig *config,
                 wippersnapper_display_v1_EpdSpiConfig *spi_config);
-  bool begin(bool reset = true);
-  // API functions to abstract Adafruit_GFX
-  void setTextSize(uint8_t sz);
+
+  //
+  // API for Adafruit_GFX that abstracts hardware functionality
+  // NOTE: These methods are meant to be implemented within dispDrvBase and exposed within dispDrv driver instances
+  //
+  // TODO
 
 private:
   const char *_name; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
-  wippersnapper_display_v1_EPDThinkInkPanel
-      _thinkink_driver;                  ///< ThinkInk driver type
   dispDrvBase *_disp_drv_base = nullptr; ///< Base display driver
 };
 #endif // WS_DISPLAY_HARDWARE_H

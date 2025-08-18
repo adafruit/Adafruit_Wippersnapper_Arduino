@@ -176,24 +176,6 @@ bool DisplayHardware::beginEPD(
   return true; // Configuration successful
 }
 
-/*!
-    @brief  Initializes the display hardware.
-    @param  reset
-            Whether to reset the display hardware.
-    @return True if initialization was successful, false otherwise.
-*/
-bool DisplayHardware::begin(bool reset) {
-  return true; // Placeholder for actual initialization logic
-}
-
-/*!
-    @brief  Sets the text size for the display.
-    @param  sz
-            The size of the text to set.
-*/
-void DisplayHardware::setTextSize(uint8_t sz) {
-  // Placeholder for setting text size on the display TODO
-}
 
 /*!
     @brief  Gets the name of the display hardware instance.
