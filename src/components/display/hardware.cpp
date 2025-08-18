@@ -59,17 +59,20 @@ bool DisplayHardware::beginEPD(
     wippersnapper_display_v1_EpdSpiConfig *spi_config) {
   // Validate pointers
   if (config == nullptr || spi_config == nullptr) {
+    WS_DEBUG_PRINTLN("[display] EPD config or SPI config is null!");
     return false;
   }
 
   // Validate panel type
   if (config->panel ==
       wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[display] Unsupported EPD panel type!");
     return false; // Unsupported panel type
   }
 
   // Validate mode is a correct EPD mode
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
+    WS_DEBUG_PRINTLN("[display] Unsupported EPD mode!");
     return false; // Unsupported mode
   }
 
@@ -81,24 +84,19 @@ bool DisplayHardware::beginEPD(
     _disp_thinkink_grayscale4_eaamfgn = nullptr;
     _thinkink_driver =
         wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED;
-  } else if (
-      _thinkink_driver ==
-      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_T5) {
-    delete _disp_thinkink_grayscale4_t5;
-    _disp_thinkink_grayscale4_t5 = nullptr;
-    _thinkink_driver =
-        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED;
   }
 
   // Parse all SPI bus pins
   // Check length
   if (strlen(spi_config->pin_dc) < 2 || strlen(spi_config->pin_rst) < 2 ||
       strlen(spi_config->pin_cs) < 2) {
+    WS_DEBUG_PRINTLN("[display] Invalid SPI pin len!");
     return false;
   }
   // SPI pins must start with 'D'
   if (spi_config->pin_dc[0] != 'D' || spi_config->pin_rst[0] != 'D' ||
       spi_config->pin_cs[0] != 'D') {
+    WS_DEBUG_PRINTLN("[display] SPI pins must start with 'D'!");
     return false;
   }
 
@@ -123,33 +121,35 @@ bool DisplayHardware::beginEPD(
   thinkinkmode_t epd_mode;
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4) {
     epd_mode = THINKINK_GRAYSCALE4;
+    WS_DEBUG_PRINTLN("[display] EPD mode: GRAYSCALE4");
   } else if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_MONO) {
     epd_mode = THINKINK_MONO;
+    WS_DEBUG_PRINTLN("[display] EPD mode: MONO");
   }
 
-  // Assign driver instance based on panel type
+  // Configure the EPD driver based on panel type
   if (config->panel ==
       wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN) {
-    _disp_thinkink_grayscale4_eaamfgn =
-        new ThinkInk_290_Grayscale4_EAAMFGN(dc, rst, cs, srcs, busy);
-    if (!_disp_thinkink_grayscale4_eaamfgn)
-      return false; // Allocation failed
-    // Initialize the display
-    _disp_thinkink_grayscale4_eaamfgn->begin(epd_mode);
+    WS_DEBUG_PRINTLN("[display] EPD panel: ThinkInk 290 Grayscale4 MFGN");
     _thinkink_driver =
         wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN;
-  } else if (
-      config->panel ==
-      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_T5) {
-    _disp_thinkink_grayscale4_t5 =
-        new ThinkInk_290_Grayscale4_T5(dc, rst, cs, srcs, busy);
-    if (!_disp_thinkink_grayscale4_t5)
+    _disp_thinkink_grayscale4_eaamfgn =
+        new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, srcs, busy);
+    if (!_disp_thinkink_grayscale4_eaamfgn) {
+      WS_DEBUG_PRINTLN("[display] Failed to allocate ThinkInk driver!");
       return false; // Allocation failed
-    // Initialize the display
-    _disp_thinkink_grayscale4_t5->begin(epd_mode);
-    _thinkink_driver =
-        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_T5;
+    }
+    if (!_disp_thinkink_grayscale4_eaamfgn->begin(epd_mode)) {
+      WS_DEBUG_PRINTLN("[display] Failed to initialize ThinkInk driver!");
+      delete _disp_thinkink_grayscale4_eaamfgn; // Clean up if initialization
+                                                // failed
+      _disp_thinkink_grayscale4_eaamfgn = nullptr;
+      return false; // Initialization failed
+    }
+    WS_DEBUG_PRINTLN("[display] ThinkInk 290 Grayscale4 MFGN driver "
+                     "initialized successfully!");
   } else {
+    WS_DEBUG_PRINTLN("[display] Unsupported EPD panel type!");
     return false; // Unsupported panel type
   }
 

@@ -1659,7 +1659,8 @@ void cbSignalUARTReq(char *data, uint16_t len) {
 }
 
 /*!
-    @brief    Deserializes a DisplayRequest message and sends it to the display component.
+    @brief    Deserializes a DisplayRequest message and sends it to the display
+   component.
     @param    stream
                 Incoming data stream from buffer.
     @param    field
@@ -1668,11 +1669,13 @@ void cbSignalUARTReq(char *data, uint16_t len) {
                 Optional arguments from decoder calling function.
     @returns  True if decoded successfully, False otherwise.
 */
-bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field,
+                        void **arg) {
   if (field->tag == wippersnapper_signal_v1_DisplayRequest_display_add_tag) {
 
     // Decode message into a DisplayAddRequest
-    wippersnapper_display_v1_DisplayAddOrReplace msgAddReq = wippersnapper_display_v1_DisplayAddOrReplace_init_zero;
+    wippersnapper_display_v1_DisplayAddOrReplace msgAddReq =
+        wippersnapper_display_v1_DisplayAddOrReplace_init_zero;
     if (!ws_pb_decode(stream,
                       wippersnapper_display_v1_DisplayAddOrReplace_fields,
                       &msgAddReq)) {
@@ -1681,8 +1684,10 @@ bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field, void **ar
     }
 
     // Attempt to add or replace a display component
-    bool did_add = WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
-    // TODO: Add response handling and publishing here, for now it always returns true and doesnt publish back to the broker
+    bool did_add =
+        WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
+    // TODO: Add response handling and publishing here, for now it always
+    // returns true and doesnt publish back to the broker
   }
   return true;
 }
@@ -2406,57 +2411,56 @@ bool Wippersnapper::generateWSTopics() {
     return false;
   }
 
-// Create d2b display topic
+  // /display topic //
+
+  // Pre-determine topic size
+  topicLen = strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
+             strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+             strlen(TOPIC_DISPLAY) + 1;
+
+// Pre-allocate memory for topic
 #ifdef USE_PSRAM
-  WS._topic_signal_display_brkr = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
-      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-      strlen("broker") + strlen(TOPIC_DISPLAY) + 1);
+  WS._topic_signal_display_brkr = (char *)ps_malloc(topicLen);
 #else
-  WS._topic_signal_display_brkr = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
-      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-      strlen("broker") + strlen(TOPIC_DISPLAY) + 1);
+  WS._topic_signal_display_brkr = (char *)malloc(topicLen);
 #endif
+
+  // Generate the topic
   if (WS._topic_signal_display_brkr != NULL) {
-    strcpy(WS._topic_signal_display_brkr, WS._config.aio_user);
-    strcat(WS._topic_signal_display_brkr, TOPIC_WS);
-    strcat(WS._topic_signal_display_brkr, _device_uid);
-    strcat(WS._topic_signal_display_brkr, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_display_brkr, "broker");
-    strcat(WS._topic_signal_display_brkr, TOPIC_DISPLAY);
-  } else { // malloc failed
-    WS_DEBUG_PRINTLN("ERROR: Failed to add a display topic!");
+    snprintf(WS._topic_signal_display_brkr, topicLen, "%s/wprsnpr/%s%sbroker%s",
+             WS._config.aio_user, _device_uid, TOPIC_SIGNALS, TOPIC_DISPLAY);
+  } else {
+    WS_DEBUG_PRINTLN(
+        "FATAL ERROR: Failed to allocate memory for DISPLAY topic!");
     return false;
   }
 
-  // Subscribe to the display sub-topic
+  // Subscribe to signal's DISPLAY sub-topic and set callback
   _topic_signal_display_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_display_brkr, 1);
   WS._mqtt->subscribe(_topic_signal_display_sub);
   _topic_signal_display_sub->setCallback(cbDisplayMessage);
 
-// Create a b2d display topic
+  // Calculate length of the topic for device-to-broker DISPLAY topic
+  topicLen = strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
+             strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+             strlen(TOPIC_DISPLAY) + 1;
+
+// Allocate memory for dynamic MQTT topic
 #ifdef USE_PSRAM
-  WS._topic_signal_display_device = (char *)ps_malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
-      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-      strlen("device") + strlen(TOPIC_DISPLAY) + 1);
+  WS._topic_signal_display_device = (char *)ps_malloc(topicLen);
 #else
-  WS._topic_signal_display_device = (char *)malloc(
-      sizeof(char) * strlen(WS._config.aio_user) + strlen("/") +
-      strlen(_device_uid) + strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) +
-      strlen("device") + strlen(TOPIC_DISPLAY) + 1);
+  WS._topic_signal_display_device = (char *)malloc(topicLen);
 #endif
+
+  // Generate the topic if memory was allocated successfully
   if (WS._topic_signal_display_device != NULL) {
-    strcpy(WS._topic_signal_display_device, WS._config.aio_user);
-    strcat(WS._topic_signal_display_device, TOPIC_WS);
-    strcat(WS._topic_signal_display_device, _device_uid);
-    strcat(WS._topic_signal_display_device, TOPIC_SIGNALS);
-    strcat(WS._topic_signal_display_device, "device");
-    strcat(WS._topic_signal_display_device, TOPIC_DISPLAY);
-  } else { // malloc failed
-    WS_DEBUG_PRINTLN("ERROR: Failed to add a display topic!");
+    snprintf(WS._topic_signal_display_device, topicLen,
+             "%s/wprsnpr/%s%sdevice%s", WS._config.aio_user, _device_uid,
+             TOPIC_SIGNALS, TOPIC_DISPLAY);
+  } else {
+    WS_DEBUG_PRINTLN(
+        "FATAL ERROR: Failed to allocate memory for DISPLAY topic!");
     return false;
   }
 
@@ -2953,6 +2957,14 @@ void Wippersnapper::connect() {
   WS._ui_helper->build_scr_monitor();
 #endif
 
+  WS.pinCfgCompleted = true;
+
+  // Initialize Digital IO class
+  WS._digitalGPIO = new Wippersnapper_DigitalGPIO(20);
+  // Initialize Analog IO class
+  WS._analogIO = new Wippersnapper_AnalogIO(5, 3.3);
+  WS._boardStatus = WS_BOARD_DEF_OK;
+
   // Configure hardware
   while (!WS.pinCfgCompleted) {
     WS_DEBUG_PRINTLN(
@@ -2968,6 +2980,13 @@ void Wippersnapper::connect() {
   statusLEDFade(GREEN, 3);
   WS_DEBUG_PRINTLN(
       "Registration and configuration complete!\nRunning application...");
+
+  // Print out display topics
+  WS_DEBUG_PRINTLN("Device-to-Broker DISPLAY topic: ");
+  WS_DEBUG_PRINTLN(WS._topic_signal_display_device);
+  WS_DEBUG_PRINTLN("Broker-to-Device DISPLAY topic: ");
+  WS_DEBUG_PRINTLN(WS._topic_signal_display_brkr);
+  delay(500);
 }
 
 /**************************************************************************/

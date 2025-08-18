@@ -15,8 +15,8 @@
 #ifndef WS_DISPLAY_HARDWARE_H
 #define WS_DISPLAY_HARDWARE_H
 #include "Wippersnapper.h"
-
-#include "Adafruit_ThinkInk.h"
+#include "drivers/dispDrvBase.h"
+#include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 
 /**************************************************************************/
 /*!
@@ -45,10 +45,6 @@ private:
   wippersnapper_display_v1_DisplayType _type; ///< Display type
   wippersnapper_display_v1_EPDThinkInkPanel
       _thinkink_driver; ///< ThinkInk driver type
-  // TODO: Make these drivers instead?
-  ThinkInk_290_Grayscale4_EAAMFGN *_disp_thinkink_grayscale4_eaamfgn =
-      nullptr; //< 2025 MagTag with SSD1680Z chipset
-  ThinkInk_290_Grayscale4_T5 *_disp_thinkink_grayscale4_t5 =
-      nullptr; ///< Pre-2025 MagTag with IL0373 chipset
+  drvDispThinkInkGrayscale4Eaamfgn *_disp_thinkink_grayscale4_eaamfgn = nullptr;
 };
 #endif // WS_DISPLAY_HARDWARE_H
