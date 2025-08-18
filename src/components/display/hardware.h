@@ -17,6 +17,8 @@
 #include "Wippersnapper.h"
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
+#include <functional>
+#include <map>
 
 /**************************************************************************/
 /*!
@@ -44,7 +46,7 @@ private:
   const char *_name; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
   wippersnapper_display_v1_EPDThinkInkPanel
-      _thinkink_driver; ///< ThinkInk driver type
-  drvDispThinkInkGrayscale4Eaamfgn *_disp_thinkink_grayscale4_eaamfgn = nullptr;
+      _thinkink_driver;                  ///< ThinkInk driver type
+  dispDrvBase *_disp_drv_base = nullptr; ///< Base display driver
 };
 #endif // WS_DISPLAY_HARDWARE_H

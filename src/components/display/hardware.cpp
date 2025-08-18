@@ -15,6 +15,48 @@
 #include "controller.h"
 
 /*!
+    @brief  Lambda function to create a dispDrvBase instance
+*/
+using FnCreateDispDrv =
+    std::function<dispDrvBase *(int16_t, int16_t, int16_t, int16_t, int16_t)>;
+
+// Factory for creating a new display drivers
+// NOTE: When you add a new display driver, make sure to add it to the factory!
+static const std::map<std::string, FnCreateDispDrv> FactoryDrvDisp = {
+    {"grayscale4_eaamfgn",
+     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+        int16_t busy) -> dispDrvBase * {
+       return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
+     }}};
+
+/*!
+    @brief  Creates a new display driver instance based on the driver name.
+    @param  driver_name
+            The name of the display driver to create.
+    @param  dc
+            Data/Command pin number.
+    @param  rst
+            Reset pin number.
+    @param  cs
+            Chip Select pin number.
+    @param  sram_cs
+            Optional SRAM Chip Select pin number (default: -1).
+    @param  busy
+            Optional Busy pin number (default: -1).
+    @return Pointer to the created display driver instance, or nullptr if the
+            driver name is not recognized.
+*/
+dispDrvBase *CreateDrvDisp(const char *driver_name, int16_t dc, int16_t rst,
+                           int16_t cs, int16_t sram_cs = -1,
+                           int16_t busy = -1) {
+  auto it = FactoryDrvDisp.find(driver_name);
+  if (it == FactoryDrvDisp.end()) {
+    return nullptr;
+  }
+  return it->second(dc, rst, cs, sram_cs, busy);
+}
+
+/*!
     @brief  Constructs a new DisplayHardware object
 */
 DisplayHardware::DisplayHardware(const char *name) {
@@ -76,15 +118,8 @@ bool DisplayHardware::beginEPD(
     return false; // Unsupported mode
   }
 
-  // If we already have a display driver assigned to this hardware instance,
-  // clean it up!
-  if (_thinkink_driver ==
-      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN) {
-    delete _disp_thinkink_grayscale4_eaamfgn;
-    _disp_thinkink_grayscale4_eaamfgn = nullptr;
-    _thinkink_driver =
-        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED;
-  }
+  // TODO: If we already have a display driver assigned to this hardware
+  // instance, clean it up!
 
   // Parse all SPI bus pins
   // Check length
@@ -117,40 +152,25 @@ bool DisplayHardware::beginEPD(
 
   // TODO: Configure SPI bus selection (UNUSED AS OF RIGHT NOW)
 
+  // Create display driver object using the factory function
+  _disp_drv_base = CreateDrvDisp(_name, dc, rst, cs, srcs, busy);
+  if (!_disp_drv_base) {
+    WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
+    return false; // Failed to create display driver
+  }
+
   // Configure EPD mode
-  thinkinkmode_t epd_mode;
+  thinkinkmode_t epd_mode = THINKINK_MONO;
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4) {
     epd_mode = THINKINK_GRAYSCALE4;
     WS_DEBUG_PRINTLN("[display] EPD mode: GRAYSCALE4");
-  } else if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_MONO) {
-    epd_mode = THINKINK_MONO;
-    WS_DEBUG_PRINTLN("[display] EPD mode: MONO");
   }
 
-  // Configure the EPD driver based on panel type
-  if (config->panel ==
-      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN) {
-    WS_DEBUG_PRINTLN("[display] EPD panel: ThinkInk 290 Grayscale4 MFGN");
-    _thinkink_driver =
-        wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_290_GRAYSCALE4_MFGN;
-    _disp_thinkink_grayscale4_eaamfgn =
-        new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, srcs, busy);
-    if (!_disp_thinkink_grayscale4_eaamfgn) {
-      WS_DEBUG_PRINTLN("[display] Failed to allocate ThinkInk driver!");
-      return false; // Allocation failed
-    }
-    if (!_disp_thinkink_grayscale4_eaamfgn->begin(epd_mode)) {
-      WS_DEBUG_PRINTLN("[display] Failed to initialize ThinkInk driver!");
-      delete _disp_thinkink_grayscale4_eaamfgn; // Clean up if initialization
-                                                // failed
-      _disp_thinkink_grayscale4_eaamfgn = nullptr;
-      return false; // Initialization failed
-    }
-    WS_DEBUG_PRINTLN("[display] ThinkInk 290 Grayscale4 MFGN driver "
-                     "initialized successfully!");
-  } else {
-    WS_DEBUG_PRINTLN("[display] Unsupported EPD panel type!");
-    return false; // Unsupported panel type
+  if (!_disp_drv_base->begin(epd_mode)) {
+    WS_DEBUG_PRINTLN("[display] Failed to begin display driver!");
+    delete _disp_drv_base; // Clean up if initialization failed
+    _disp_drv_base = nullptr;
+    return false; // Failed to begin display driver
   }
 
   return true; // Configuration successful
