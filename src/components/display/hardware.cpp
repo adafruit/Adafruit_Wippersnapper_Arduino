@@ -32,8 +32,7 @@ static const std::map<std::string, FnCreateDispDrv> FactoryDrvDisp = {
      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
         int16_t busy) -> dispDrvBase * {
        return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-     }}
-    };
+     }}};
 
 /*!
     @brief  Creates a new display driver instance based on the driver name.

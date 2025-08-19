@@ -1,7 +1,8 @@
 /*!
  * @file src/components/display/drivers/drvDispThinkInkGrayscale4Eaamfgn.h
  *
- * Driver for ThinkInk 2.9" Grayscale 4-level EAAMFGN display (present on the 2025 version of the Adafruit MagTag)
+ * Driver for ThinkInk 2.9" Grayscale 4-level EAAMFGN display (present on the
+ * 2025 version of the Adafruit MagTag)
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
