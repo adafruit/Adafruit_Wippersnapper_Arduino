@@ -34,7 +34,8 @@ public:
   bool Handle_Display_AddOrReplace(
       wippersnapper_display_v1_DisplayAddOrReplace *msgAdd);
   bool Handle_Display_Remove(wippersnapper_display_v1_DisplayRemove *msgRemove);
-  // bool Handle_Display_Write(...);
+  bool Handle_Display_Write(wippersnapper_display_v1_DisplayWrite *msgWrite);
+
 private:
   std::vector<DisplayHardware *>
       _hw_instances; ///< Holds pointers to DisplayHardware instances

@@ -1688,6 +1688,17 @@ bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field,
         WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
     // TODO: Add response handling and publishing here, for now it always
     // returns true and doesnt publish back to the broker
+  } else if (field->tag ==
+             wippersnapper_signal_v1_DisplayRequest_display_write_tag) {
+    // Decode message into a DisplayAddRequest
+    wippersnapper_display_v1_DisplayWrite msgWrite =
+        wippersnapper_display_v1_DisplayWrite_init_zero;
+    if (!ws_pb_decode(stream, wippersnapper_display_v1_DisplayWrite_fields,
+                      &msgWrite)) {
+      WS_DEBUG_PRINTLN("ERROR: Failure decoding DisplayWrite message!");
+      return false;
+    }
+    WS._displayController->Handle_Display_Write(&msgWrite);
   }
   return true;
 }

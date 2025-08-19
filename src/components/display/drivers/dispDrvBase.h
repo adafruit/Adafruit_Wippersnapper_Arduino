@@ -31,8 +31,9 @@ public:
     // Destructor implementation (if we need one)
   };
 
-  // Virtual function to be implemented by derived classes
   virtual bool begin(thinkinkmode_t mode, bool reset = true);
+
+  virtual void writeMessage(const char *message) = 0;
 
 protected:
   int16_t _pin_dc;
@@ -40,6 +41,7 @@ protected:
   int16_t _pin_cs;
   int16_t _pin_busy;
   int16_t _pin_sram_cs; // for optional EPD SRAM chip select
+  uint8_t _text_sz = 1; ///< Text size for display messages
 };
 
 #endif // WS_DISP_DRV_BASE_H

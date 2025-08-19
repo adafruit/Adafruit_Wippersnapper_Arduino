@@ -85,3 +85,31 @@ bool DisplayController::Handle_Display_Remove(
   WS_DEBUG_PRINTLN("[display] Could not remove display, not found!");
   return false;
 }
+
+/*!
+    @brief  Handles a Display_Write message.
+    @param  msgWrite
+            Pointer to a DisplayWrite message structure.
+    @return True if the display write was successful, false otherwise.
+*/
+bool DisplayController::Handle_Display_Write(
+    wippersnapper_display_v1_DisplayWrite *msgWrite) {
+  // Get the driver instance for the display
+  DisplayHardware *display = nullptr;
+  for (auto &hw_instance : _hw_instances) {
+    if (strcmp(hw_instance->getName(), msgWrite->name) == 0) {
+      display = hw_instance;
+      break;
+    }
+  }
+
+  // Early-out if display not found
+  if (!display) {
+    WS_DEBUG_PRINTLN("[display] Failed to write, driver not found!");
+    return false;
+  }
+
+  // Write the message to the display
+  display->writeMessage(msgWrite->message);
+  return true;
+}

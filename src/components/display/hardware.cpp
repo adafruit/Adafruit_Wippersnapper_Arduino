@@ -105,13 +105,6 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
-  // Validate panel type
-  if (config->panel ==
-      wippersnapper_display_v1_EPDThinkInkPanel_EPD_THINK_INK_PANEL_UNSPECIFIED) {
-    WS_DEBUG_PRINTLN("[display] Unsupported EPD panel type!");
-    return false; // Unsupported panel type
-  }
-
   // Validate mode is a correct EPD mode
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
     WS_DEBUG_PRINTLN("[display] Unsupported EPD mode!");
@@ -168,17 +161,24 @@ bool DisplayHardware::beginEPD(
 
   if (!_disp_drv_base->begin(epd_mode)) {
     WS_DEBUG_PRINTLN("[display] Failed to begin display driver!");
-    delete _disp_drv_base; // Clean up if initialization failed
+    delete _disp_drv_base;
     _disp_drv_base = nullptr;
-    return false; // Failed to begin display driver
+    return false;
   }
 
   return true; // Configuration successful
 }
-
 
 /*!
     @brief  Gets the name of the display hardware instance.
     @return The name of the display hardware instance.
 */
 const char *DisplayHardware::getName() { return _name; }
+
+void DisplayHardware::writeMessage(const char *message) {
+  if (_disp_drv_base) {
+    _disp_drv_base->writeMessage(message);
+  } else {
+    WS_DEBUG_PRINTLN("[display] No display driver initialized!");
+  }
+}
