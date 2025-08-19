@@ -1,7 +1,7 @@
 /*!
  * @file src/components/display/drivers/drvDispThinkInkGrayscale4Eaamfgn.h
  *
- * Driver for ThinkInk 2.9" Grayscale 4-level EAAMFGN display (2025 MagTag).
+ * Driver for ThinkInk 2.9" Grayscale 4-level EAAMFGN display (present on the 2025 version of the Adafruit MagTag)
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -41,6 +41,7 @@ public:
     // Clear the display buffer
     _display->clearBuffer();
     _display->display();
+    _text_sz = 3; // Configure default magTag text size
 
     return true;
   }
@@ -55,8 +56,8 @@ public:
     _display->clearDisplay();
     _display->setTextSize(_text_sz);
     _display->setTextColor(EPD_BLACK);
+    _display->setTextWrap(true);
     _display->setCursor(0, y_idx);
-    _display->display();
 
     // Calculate the line height based on the text size (NOTE: base height is
     // 8px)
@@ -81,13 +82,12 @@ public:
         }
       } else if (message[i] == 0xC2 && message[i + 1] == 0xB0) {
         _display->write(char(248));
-        _display->display();
         i++;
       } else {
         _display->print(message[i]);
-        _display->display();
       }
     }
+    _display->display();
   }
 
 private:

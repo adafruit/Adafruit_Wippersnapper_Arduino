@@ -50,7 +50,7 @@ public:
   void writeMessage(const char *message);
 
 private:
-  const char *_name; ///< Identifies the hardware instance
+  char _name[64]; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
   dispDrvBase *_disp_drv_base = nullptr;      ///< Base display driver
 };

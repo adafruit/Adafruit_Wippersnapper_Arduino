@@ -27,7 +27,13 @@ static const std::map<std::string, FnCreateDispDrv> FactoryDrvDisp = {
      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
         int16_t busy) -> dispDrvBase * {
        return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-     }}};
+     }},
+    {"magtag_2025",
+     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+        int16_t busy) -> dispDrvBase * {
+       return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
+     }}
+    };
 
 /*!
     @brief  Creates a new display driver instance based on the driver name.
@@ -50,9 +56,9 @@ dispDrvBase *CreateDrvDisp(const char *driver_name, int16_t dc, int16_t rst,
                            int16_t cs, int16_t sram_cs = -1,
                            int16_t busy = -1) {
   auto it = FactoryDrvDisp.find(driver_name);
-  if (it == FactoryDrvDisp.end()) {
+  if (it == FactoryDrvDisp.end())
     return nullptr;
-  }
+
   return it->second(dc, rst, cs, sram_cs, busy);
 }
 
@@ -60,7 +66,8 @@ dispDrvBase *CreateDrvDisp(const char *driver_name, int16_t dc, int16_t rst,
     @brief  Constructs a new DisplayHardware object
 */
 DisplayHardware::DisplayHardware(const char *name) {
-  _name = name; ///< Set the name of the hardware instance
+  strncpy(_name, name, sizeof(_name) - 1);
+  _name[sizeof(_name) - 1] = '\0';
   _type = wippersnapper_display_v1_DisplayType_DISPLAY_TYPE_UNSPECIFIED;
 }
 

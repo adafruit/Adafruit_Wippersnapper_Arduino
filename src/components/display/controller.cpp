@@ -38,6 +38,8 @@ DisplayController::~DisplayController() {
 bool DisplayController::Handle_Display_AddOrReplace(
     wippersnapper_display_v1_DisplayAddOrReplace *msgAdd) {
   DisplayHardware *display = new DisplayHardware(msgAdd->name);
+  WS_DEBUG_PRINT("[display] Adding or replacing display: ");
+  WS_DEBUG_PRINTLN(msgAdd->name);
 
   // Configure display type
   display->setType(msgAdd->type);
@@ -97,6 +99,9 @@ bool DisplayController::Handle_Display_Write(
   // Get the driver instance for the display
   DisplayHardware *display = nullptr;
   for (auto &hw_instance : _hw_instances) {
+    // print hte _hw_instances name
+    WS_DEBUG_PRINT("[display] Checking hardware instance: ");
+    WS_DEBUG_PRINTLN(hw_instance->getName());
     if (strcmp(hw_instance->getName(), msgWrite->name) == 0) {
       display = hw_instance;
       break;

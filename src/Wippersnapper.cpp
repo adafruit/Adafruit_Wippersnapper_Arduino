@@ -2424,7 +2424,7 @@ bool Wippersnapper::generateWSTopics() {
 
   // /display topic //
 
-  // Pre-determine topic size
+// Pre-determine topic size
   topicLen = strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
              strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
              strlen(TOPIC_DISPLAY) + 1;
@@ -2449,7 +2449,10 @@ bool Wippersnapper::generateWSTopics() {
   // Subscribe to signal's DISPLAY sub-topic and set callback
   _topic_signal_display_sub =
       new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_display_brkr, 1);
+  WS_DEBUG_PRINTLN("Subscribing to DISPLAY topic: ");
+  WS_DEBUG_PRINTLN(WS._topic_signal_display_brkr);
   WS._mqtt->subscribe(_topic_signal_display_sub);
+  WS_DEBUG_PRINTLN("Subscribed to DISPLAY topic!");
   _topic_signal_display_sub->setCallback(cbDisplayMessage);
 
   // Calculate length of the topic for device-to-broker DISPLAY topic
