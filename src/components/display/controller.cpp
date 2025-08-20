@@ -99,9 +99,6 @@ bool DisplayController::Handle_Display_Write(
   // Get the driver instance for the display
   DisplayHardware *display = nullptr;
   for (auto &hw_instance : _hw_instances) {
-    // print hte _hw_instances name
-    WS_DEBUG_PRINT("[display] Checking hardware instance: ");
-    WS_DEBUG_PRINTLN(hw_instance->getName());
     if (strcmp(hw_instance->getName(), msgWrite->name) == 0) {
       display = hw_instance;
       break;
@@ -115,6 +112,8 @@ bool DisplayController::Handle_Display_Write(
   }
 
   // Write the message to the display
+  WS_DEBUG_PRINT("[display] Writing message to display: ");
+  WS_DEBUG_PRINTLN(msgWrite->message);
   display->writeMessage(msgWrite->message);
   return true;
 }

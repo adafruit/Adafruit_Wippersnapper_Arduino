@@ -39,10 +39,14 @@ public:
 
     // Initialize the display
     _display->begin(mode);
+    // Configure display settings
+    _text_sz = 3;
+    _display->setTextSize(_text_sz);
+    _display->setTextColor(EPD_BLACK);
+    _display->setTextWrap(false);
     // Clear the display buffer
     _display->clearBuffer();
     _display->display();
-    _text_sz = 3; // Configure default magTag text size
 
     return true;
   }
@@ -52,12 +56,8 @@ public:
       return;
 
     // Start with a fresh display buffer
-    // and settings
+    _display->clearBuffer();
     int16_t y_idx = 0;
-    _display->clearDisplay();
-    _display->setTextSize(_text_sz);
-    _display->setTextColor(EPD_BLACK);
-    _display->setTextWrap(true);
     _display->setCursor(0, y_idx);
 
     // Calculate the line height based on the text size (NOTE: base height is
