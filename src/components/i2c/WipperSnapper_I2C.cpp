@@ -550,10 +550,13 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     drivers.push_back(_mlx90632d);
     WS_DEBUG_PRINTLN("MLX90632 Initialized Successfully!");
   } else if (strcmp("mlx90632d_ext", msgDeviceInitReq->i2c_device_name) == 0) {
-    _mlx90632d_ext = new WipperSnapper_I2C_Driver_MLX90632D(this->_i2c, i2cAddress);
+    _mlx90632d_ext =
+        new WipperSnapper_I2C_Driver_MLX90632D(this->_i2c, i2cAddress);
     // set extended range
-    if (!_mlx90632d_ext->begin() || !_mlx90632d_ext->ConfigureAndPrintSensorInfo(true)) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MLX90632D with extended range!");
+    if (!_mlx90632d_ext->begin() ||
+        !_mlx90632d_ext->ConfigureAndPrintSensorInfo(true)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Failed to initialize MLX90632D with extended range!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
