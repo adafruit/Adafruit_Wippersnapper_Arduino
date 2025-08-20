@@ -40,6 +40,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
+    _mlx90632 = nullptr;
     _deviceTemp = NAN;
     _objectTemp = NAN;
     _lastRead = 0;
@@ -50,7 +51,12 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       @brief    Destructor for an MLX90632 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_MLX90632D() { delete _mlx90632; }
+  ~WipperSnapper_I2C_Driver_MLX90632D() { 
+    if (_mlx90632){
+      delete _mlx90632;
+      _mlx90632 = nullptr;
+    }
+  }
 
   /*******************************************************************************/
   /*!
@@ -125,9 +131,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       // (!_mlx90632->setMode(MLX90632_MODE_SLEEPING_STEP)) {  // Uncomment for
       // sleeping step mode testing
       WS_DEBUG_PRINTLN(F("Failed to set mode"));
-      while (1) {
-        delay(10);
-      }
+      return false;
     }
 
     // TODO: use Step mode?
@@ -157,17 +161,13 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       if (!extendedInsteadOfMedicalRange &&
           !_mlx90632->setMeasurementSelect(MLX90632_MEAS_MEDICAL)) {
         WS_DEBUG_PRINTLN(F("Failed to set measurement select to Medical"));
-        while (1) {
-          delay(10);
-        }
+        return false;
       } else if (extendedInsteadOfMedicalRange &&
                  !_mlx90632->setMeasurementSelect(
                      MLX90632_MEAS_EXTENDED_RANGE)) {
         WS_DEBUG_PRINTLN(
             F("Failed to set measurement select to Extended Range"));
-        while (1) {
-          delay(10);
-        }
+        return false;
       }
 
       mlx90632_meas_select_t currentMeasSelect =
@@ -189,9 +189,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
     WS_DEBUG_PRINTLN(F("\n--- Refresh Rate Settings ---"));
     if (!_mlx90632->setRefreshRate(MLX90632_REFRESH_2HZ)) {
       WS_DEBUG_PRINTLN(F("Failed to set refresh rate to 2Hz"));
-      while (1) {
-        delay(10);
-      }
+      return false;
     }
 
     mlx90632_refresh_rate_t currentRefreshRate = _mlx90632->getRefreshRate();
@@ -229,9 +227,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
     WS_DEBUG_PRINTLN(F("\\n--- Starting Continuous Measurements ---"));
     if (!_mlx90632->resetNewData()) {
       WS_DEBUG_PRINTLN(F("Failed to reset new data flag"));
-      while (1) {
-        delay(10);
-      }
+      return false;
     }
     return true;
   }
