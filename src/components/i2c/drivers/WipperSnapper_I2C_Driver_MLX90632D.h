@@ -79,54 +79,54 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
   bool ConfigureAndPrintSensorInfo(bool extendedInsteadOfMedicalRange = false) {
     // Reset the device
     if (!_mlx90632->reset()) {
-      WS_PRINTER.println(F("Device reset failed"));
+      WS_DEBUG_PRINTLN(F("Device reset failed"));
       while (1) {
         delay(10);
       }
     }
-    WS_PRINTER.println(F("Device reset: SUCCESS"));
+    WS_DEBUG_PRINTLN(F("Device reset: SUCCESS"));
 
     uint64_t productID = _mlx90632->getProductID();
-    WS_PRINTER.print(F("Product ID: 0x"));
-    WS_PRINTER.print((uint32_t)(productID >> 32), HEX);
-    WS_PRINTER.println((uint32_t)(productID & 0xFFFFFFFF), HEX);
+    WS_DEBUG_PRINT(F("Product ID: 0x"));
+    WS_DEBUG_PRINT((uint32_t)(productID >> 32), HEX);
+    WS_DEBUG_PRINTLN((uint32_t)(productID & 0xFFFFFFFF), HEX);
 
     uint16_t productCode = _mlx90632->getProductCode();
-    WS_PRINTER.print(F("Product Code: 0x"));
-    WS_PRINTER.println(productCode, HEX);
+    WS_DEBUG_PRINT(F("Product Code: 0x"));
+    WS_DEBUG_PRINTLN(productCode, HEX);
 
     uint16_t eepromVersion = _mlx90632->getEEPROMVersion();
-    WS_PRINTER.print(F("EEPROM Version: 0x"));
-    WS_PRINTER.println(eepromVersion, HEX);
+    WS_DEBUG_PRINT(F("EEPROM Version: 0x"));
+    WS_DEBUG_PRINTLN(eepromVersion, HEX);
 
     // Decode product code bits
     uint8_t fov = (productCode >> 8) & 0x3;
     uint8_t package = (productCode >> 5) & 0x7;
     uint8_t accuracy = productCode & 0x1F;
 
-    WS_PRINTER.print(F("FOV: "));
-    WS_PRINTER.println(fov == 0 ? F("50°") : F("Unknown"));
+    WS_DEBUG_PRINT(F("FOV: "));
+    WS_DEBUG_PRINTLN(fov == 0 ? F("50°") : F("Unknown"));
 
-    WS_PRINTER.print(F("Package: "));
-    WS_PRINTER.println(package == 1 ? F("SFN 3x3") : F("Unknown"));
+    WS_DEBUG_PRINT(F("Package: "));
+    WS_DEBUG_PRINTLN(package == 1 ? F("SFN 3x3") : F("Unknown"));
 
-    WS_PRINTER.print(F("Accuracy: "));
+    WS_DEBUG_PRINT(F("Accuracy: "));
     if (accuracy == 1) {
-      WS_PRINTER.println(F("Medical"));
+      WS_DEBUG_PRINTLN(F("Medical"));
     } else if (accuracy == 2) {
-      WS_PRINTER.println(F("Standard"));
+      WS_DEBUG_PRINTLN(F("Standard"));
     } else {
-      WS_PRINTER.println(F("Unknown"));
+      WS_DEBUG_PRINTLN(F("Unknown"));
     }
 
     // Set and get mode - choose one:
-    WS_PRINTER.println(F("\n--- Mode Settings ---"));
+    WS_DEBUG_PRINTLN(F("\n--- Mode Settings ---"));
     if (!_mlx90632->setMode(MLX90632_MODE_CONTINUOUS)) {
       // if (!_mlx90632->setMode(MLX90632_MODE_STEP)) {           // Uncomment
       // for step mode testing if
       // (!_mlx90632->setMode(MLX90632_MODE_SLEEPING_STEP)) {  // Uncomment for
       // sleeping step mode testing
-      WS_PRINTER.println(F("Failed to set mode"));
+      WS_DEBUG_PRINTLN(F("Failed to set mode"));
       while (1) {
         delay(10);
       }
@@ -134,38 +134,38 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
 
     // TODO: use Step mode?
     mlx90632_mode_t currentMode = _mlx90632->getMode();
-    WS_PRINTER.print(F("Current mode: "));
+    WS_DEBUG_PRINT(F("Current mode: "));
     switch (currentMode) {
       case MLX90632_MODE_HALT:
-        WS_PRINTER.println(F("Halt"));
+        WS_DEBUG_PRINTLN(F("Halt"));
         break;
       case MLX90632_MODE_SLEEPING_STEP:
-        WS_PRINTER.println(F("Sleeping Step"));
+        WS_DEBUG_PRINTLN(F("Sleeping Step"));
         break;
       case MLX90632_MODE_STEP:
-        WS_PRINTER.println(F("Step"));
+        WS_DEBUG_PRINTLN(F("Step"));
         break;
       case MLX90632_MODE_CONTINUOUS:
-        WS_PRINTER.println(F("Continuous"));
+        WS_DEBUG_PRINTLN(F("Continuous"));
         break;
       default:
-        WS_PRINTER.println(F("Unknown"));
+        WS_DEBUG_PRINTLN(F("Unknown"));
     }
 
     // set accuracy mode based on medical if detected
     if (accuracy == 1) {
       // Set and get measurement select (medical)
-      WS_PRINTER.println(F("\n--- Measurement Select Settings ---"));
+      WS_DEBUG_PRINTLN(F("\n--- Measurement Select Settings ---"));
       if (!extendedInsteadOfMedicalRange &&
           !_mlx90632->setMeasurementSelect(MLX90632_MEAS_MEDICAL)) {
-        WS_PRINTER.println(F("Failed to set measurement select to Medical"));
+        WS_DEBUG_PRINTLN(F("Failed to set measurement select to Medical"));
         while (1) {
           delay(10);
         }
       } else if (extendedInsteadOfMedicalRange &&
                  !_mlx90632->setMeasurementSelect(
                      MLX90632_MEAS_EXTENDED_RANGE)) {
-        WS_PRINTER.println(
+        WS_DEBUG_PRINTLN(
             F("Failed to set measurement select to Extended Range"));
         while (1) {
           delay(10);
@@ -174,63 +174,63 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
 
       mlx90632_meas_select_t currentMeasSelect =
           _mlx90632->getMeasurementSelect();
-      WS_PRINTER.print(F("Current measurement select: "));
+      WS_DEBUG_PRINT(F("Current measurement select: "));
       switch (currentMeasSelect) {
         case MLX90632_MEAS_MEDICAL:
-          WS_PRINTER.println(F("Medical"));
+          WS_DEBUG_PRINTLN(F("Medical"));
           break;
         case MLX90632_MEAS_EXTENDED_RANGE:
-          WS_PRINTER.println(F("Extended Range"));
+          WS_DEBUG_PRINTLN(F("Extended Range"));
           break;
         default:
-          WS_PRINTER.println(F("Unknown"));
+          WS_DEBUG_PRINTLN(F("Unknown"));
       }
     }
 
     // Set and get refresh rate (default to 2Hz)
-    WS_PRINTER.println(F("\n--- Refresh Rate Settings ---"));
+    WS_DEBUG_PRINTLN(F("\n--- Refresh Rate Settings ---"));
     if (!_mlx90632->setRefreshRate(MLX90632_REFRESH_2HZ)) {
-      WS_PRINTER.println(F("Failed to set refresh rate to 2Hz"));
+      WS_DEBUG_PRINTLN(F("Failed to set refresh rate to 2Hz"));
       while (1) {
         delay(10);
       }
     }
 
     mlx90632_refresh_rate_t currentRefreshRate = _mlx90632->getRefreshRate();
-    WS_PRINTER.print(F("Current refresh rate: "));
+    WS_DEBUG_PRINT(F("Current refresh rate: "));
     switch (currentRefreshRate) {
       case MLX90632_REFRESH_0_5HZ:
-        WS_PRINTER.println(F("0.5 Hz"));
+        WS_DEBUG_PRINTLN(F("0.5 Hz"));
         break;
       case MLX90632_REFRESH_1HZ:
-        WS_PRINTER.println(F("1 Hz"));
+        WS_DEBUG_PRINTLN(F("1 Hz"));
         break;
       case MLX90632_REFRESH_2HZ:
-        WS_PRINTER.println(F("2 Hz"));
+        WS_DEBUG_PRINTLN(F("2 Hz"));
         break;
       case MLX90632_REFRESH_4HZ:
-        WS_PRINTER.println(F("4 Hz"));
+        WS_DEBUG_PRINTLN(F("4 Hz"));
         break;
       case MLX90632_REFRESH_8HZ:
-        WS_PRINTER.println(F("8 Hz"));
+        WS_DEBUG_PRINTLN(F("8 Hz"));
         break;
       case MLX90632_REFRESH_16HZ:
-        WS_PRINTER.println(F("16 Hz"));
+        WS_DEBUG_PRINTLN(F("16 Hz"));
         break;
       case MLX90632_REFRESH_32HZ:
-        WS_PRINTER.println(F("32 Hz"));
+        WS_DEBUG_PRINTLN(F("32 Hz"));
         break;
       case MLX90632_REFRESH_64HZ:
-        WS_PRINTER.println(F("64 Hz"));
+        WS_DEBUG_PRINTLN(F("64 Hz"));
         break;
       default:
-        WS_PRINTER.println(F("Unknown"));
+        WS_DEBUG_PRINTLN(F("Unknown"));
     }
 
     // Clear new data flag before starting continuous measurements
-    WS_PRINTER.println(F("\\n--- Starting Continuous Measurements ---"));
+    WS_DEBUG_PRINTLN(F("\\n--- Starting Continuous Measurements ---"));
     if (!_mlx90632->resetNewData()) {
-      WS_PRINTER.println(F("Failed to reset new data flag"));
+      WS_DEBUG_PRINTLN(F("Failed to reset new data flag"));
       while (1) {
         delay(10);
       }
@@ -256,36 +256,39 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
   /*******************************************************************************/
   bool ReadSensorData() {
     bool result = false;
+    if (HasBeenReadInLast200ms()) {
+      WS_DEBUG_PRINTLN(F("Sensor was read recently, using cached data"));
+      return true;
+    }
 
     // Only check new data flag - much more efficient for continuous mode
     if (_mlx90632->isNewData()) {
-      WS_PRINTER.print(F("New Data Available - Cycle Position: "));
-      WS_PRINTER.println(_mlx90632->readCyclePosition());
+      WS_DEBUG_PRINT(F("New Data Available - Cycle Position: "));
+      WS_DEBUG_PRINTLN(_mlx90632->readCyclePosition());
 
       // Read ambient temperature
       _deviceTemp = _mlx90632->getAmbientTemperature();
-      WS_PRINTER.print(F("Ambient Temperature: "));
-      WS_PRINTER.print(_deviceTemp, 4);
-      WS_PRINTER.println(F(" °C"));
+      WS_DEBUG_PRINT(F("Ambient Temperature: "));
+      WS_DEBUG_PRINT(_deviceTemp, 4);
+      WS_DEBUG_PRINTLN(F(" °C"));
 
       // Read object temperature
       _objectTemp = _mlx90632->getObjectTemperature();
-      WS_PRINTER.print(F("Object Temperature: "));
+      WS_DEBUG_PRINT(F("Object Temperature: "));
       if (isnan(_objectTemp)) {
-        WS_PRINTER.println(F("NaN (invalid cycle position)"));
+        WS_DEBUG_PRINTLN(F("NaN (invalid cycle position)"));
       } else {
-        WS_PRINTER.print(_objectTemp, 4);
-        WS_PRINTER.println(F(" °C"));
+        WS_DEBUG_PRINT(_objectTemp, 4);
+        WS_DEBUG_PRINTLN(F(" °C"));
       }
       result = true;
+      _lastRead = millis();
       // Reset new data flag after reading
       if (!_mlx90632->resetNewData()) {
-        WS_PRINTER.println(F("Failed to reset new data flag"));
+        WS_DEBUG_PRINTLN(F("Failed to reset new data flag"));
       }
-
-      WS_PRINTER.println();  // Add blank line between readings
     } else {
-      WS_PRINTER.println(F("No new data available, skipping read"));
+      WS_DEBUG_PRINTLN(F("No new data available, skipping read"));
     }
 
     // Check if we need to trigger a new measurement for step modes
@@ -294,11 +297,9 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
         currentMode == MLX90632_MODE_SLEEPING_STEP) {
       // Trigger single measurement (SOC bit) for step modes
       if (!_mlx90632->startSingleMeasurement()) {
-        WS_PRINTER.println(F("Failed to start single measurement"));
+        WS_DEBUG_PRINTLN(F("Failed to start single measurement"));
       }
     }
-
-    _lastRead = millis();
     return result;
   }
 
@@ -315,7 +316,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
     if (ReadSensorData() && _deviceTemp != NAN) {
       // TODO: check max/min or error values in datasheet
       //  if (_deviceTemp < -40 || _deviceTemp > 125) {
-      //    WS_PRINTER.println(F("Invalid ambient temperature"));
+      //    WS_DEBUG_PRINTLN(F("Invalid ambient temperature"));
       //    return false;
       //  }
       //  if the sensor was read recently, return the cached temperature
