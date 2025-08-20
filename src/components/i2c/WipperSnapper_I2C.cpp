@@ -537,8 +537,9 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _mcp9808->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mcp9808);
     WS_DEBUG_PRINTLN("MCP9808 Initialized Successfully!");
-  } else if (strcmp("mlx90632", msgDeviceInitReq->i2c_device_name) == 0) {
-    _mlx90632 = new WipperSnapper_I2C_Driver_MLX90632(this->_i2c, i2cAddress);
+  } else if (strcmp("mlx90632d_med", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("mlx90632d_ext", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mlx90632 = new WipperSnapper_I2C_Driver_MLX90632D(this->_i2c, i2cAddress);
     if (!_mlx90632->begin()) {
       WS_DEBUG_PRINTLN("ERROR: Failed to initialize MLX90632!");
       _busStatusResponse =

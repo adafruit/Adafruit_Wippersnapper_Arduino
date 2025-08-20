@@ -1,7 +1,7 @@
 /*!
  * @file WipperSnapper_I2C_Driver_MLX90632.h
  *
- * Device driver for a Melexis MLX90632 thermal FIR sensor.
+ * Device driver for a Melexis MLX90632-D (medical) thermal FIR sensor.
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
@@ -22,10 +22,10 @@
 
 /**************************************************************************/
 /*!
-    @brief  Sensor driver for the Melexis MLX90632 temperature sensor.
+    @brief  Sensor driver for the Melexis MLX90632-D temperature sensor.
 */
 /**************************************************************************/
-class WipperSnapper_I2C_Driver_MLX90632 : public WipperSnapper_I2C_Driver {
+class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
 public:
   /*******************************************************************************/
   /*!
@@ -36,7 +36,7 @@ public:
                 7-bit device address.
   */
   /*******************************************************************************/
-  WipperSnapper_I2C_Driver_MLX90632(TwoWire *i2c, uint16_t sensorAddress)
+  WipperSnapper_I2C_Driver_MLX90632D(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
@@ -50,7 +50,7 @@ public:
       @brief    Destructor for an MLX90632 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_MLX90632() { delete _mlx90632; }
+  ~WipperSnapper_I2C_Driver_MLX90632D() { delete _mlx90632; }
 
   /*******************************************************************************/
   /*!
@@ -70,10 +70,12 @@ public:
   /*******************************************************************************/
   /*!
       @brief    Configures the MLX90632 sensor and prints its information.
+      @param    extendedInsteadOfMedicalRange
+                If true, configures the sensor for extended temperature range/acc.
       @returns  True if configuration fetching and setting were successful.
   */
   /*******************************************************************************/
-  bool ConfigureAndPrintSensorInfo() {
+  bool ConfigureAndPrintSensorInfo(bool extendedInsteadOfMedicalRange = false) {
     // Reset the device
     if (!_mlx90632->reset()) {
       WS_PRINTER.println(F("Device reset failed"));

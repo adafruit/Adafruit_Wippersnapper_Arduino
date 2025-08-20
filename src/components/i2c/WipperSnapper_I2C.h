@@ -181,7 +181,7 @@ private:
   WipperSnapper_I2C_Driver_LTR390 *_ltr390 = nullptr;
   WipperSnapper_I2C_Driver_MCP3421 *_mcp3421 = nullptr;
   WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
-  WipperSnapper_I2C_Driver_MLX90632 *_mlx90632 = nullptr;
+  WipperSnapper_I2C_Driver_MLX90632D *_mlx90632 = nullptr;
   WipperSnapper_I2C_Driver_MPL115A2 *_mpl115a2 = nullptr;
   WipperSnapper_I2C_Driver_MPRLS *_mprls = nullptr;
   WipperSnapper_I2C_Driver_MS8607 *_ms8607 = nullptr;
