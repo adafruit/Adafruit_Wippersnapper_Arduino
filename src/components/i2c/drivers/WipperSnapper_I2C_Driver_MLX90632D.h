@@ -149,11 +149,14 @@ public:
     if (accuracy == 1) {
       // Set and get measurement select (medical)
       WS_PRINTER.println(F("\n--- Measurement Select Settings ---"));
-      if (!_mlx90632->setMeasurementSelect(MLX90632_MEAS_MEDICAL)) {
+      if (!extendedInsteadOfMedicalRange && !_mlx90632->setMeasurementSelect(MLX90632_MEAS_MEDICAL)) {
         WS_PRINTER.println(F("Failed to set measurement select to Medical"));
         while (1) { delay(10); }
+      } else if (extendedInsteadOfMedicalRange && !_mlx90632->setMeasurementSelect(MLX90632_MEAS_EXTENDED_RANGE)) {
+        WS_PRINTER.println(F("Failed to set measurement select to Extended Range"));
+        while (1) { delay(10); }
       }
-      
+
       mlx90632_meas_select_t currentMeasSelect = _mlx90632->getMeasurementSelect();
       WS_PRINTER.print(F("Current measurement select: "));
       switch (currentMeasSelect) {
