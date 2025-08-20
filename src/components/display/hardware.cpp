@@ -63,6 +63,8 @@ dispDrvBase *CreateDrvDisp(const char *driver_name, int16_t dc, int16_t rst,
 
 /*!
     @brief  Constructs a new DisplayHardware object
+    @param  name
+            The name of the hardware instance.
 */
 DisplayHardware::DisplayHardware(const char *name) {
   strncpy(_name, name, sizeof(_name) - 1);
@@ -74,7 +76,10 @@ DisplayHardware::DisplayHardware(const char *name) {
     @brief  Destructor
 */
 DisplayHardware::~DisplayHardware() {
-  // TODO
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
 }
 
 /*!
@@ -152,8 +157,8 @@ bool DisplayHardware::beginEPD(
   // TODO: Configure SPI bus selection (UNUSED AS OF RIGHT NOW)
 
   // Create display driver object using the factory function
-  _disp_drv_base = CreateDrvDisp(_name, dc, rst, cs, srcs, busy);
-  if (!_disp_drv_base) {
+  _drvDisp = CreateDrvDisp(_name, dc, rst, cs, srcs, busy);
+  if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false; // Failed to create display driver
   }
@@ -165,10 +170,10 @@ bool DisplayHardware::beginEPD(
     WS_DEBUG_PRINTLN("[display] EPD mode: GRAYSCALE4");
   }
 
-  if (!_disp_drv_base->begin(epd_mode)) {
+  if (!_drvDisp->begin(epd_mode)) {
     WS_DEBUG_PRINTLN("[display] Failed to begin display driver!");
-    delete _disp_drv_base;
-    _disp_drv_base = nullptr;
+    delete _drvDisp;
+    _drvDisp = nullptr;
     return false;
   }
 
@@ -181,9 +186,14 @@ bool DisplayHardware::beginEPD(
 */
 const char *DisplayHardware::getName() { return _name; }
 
+/*!
+    @brief  Writes a message to the display.
+    @param  message
+            The message to display.
+*/
 void DisplayHardware::writeMessage(const char *message) {
-  if (_disp_drv_base) {
-    _disp_drv_base->writeMessage(message);
+  if (_drvDisp) {
+    _drvDisp->writeMessage(message);
   } else {
     WS_DEBUG_PRINTLN("[display] No display driver initialized!");
   }

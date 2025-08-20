@@ -47,16 +47,24 @@
 // Define actual debug output functions when necessary.
 #ifdef WS_DEBUG
 #define WS_DEBUG_PRINT(...)                                                    \
-  { WS_PRINTER.print(__VA_ARGS__); } ///< Prints debug output.
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__);                                             \
+  } ///< Prints debug output.
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  { WS_PRINTER.println(__VA_ARGS__); } ///< Prints line from debug output.
+  {                                                                            \
+    WS_PRINTER.println(__VA_ARGS__);                                           \
+  } ///< Prints line from debug output.
 #define WS_DEBUG_PRINTHEX(...)                                                 \
-  { WS_PRINTER.print(__VA_ARGS__, HEX); } ///< Prints debug output.
+  {                                                                            \
+    WS_PRINTER.print(__VA_ARGS__, HEX);                                        \
+  } ///< Prints debug output.
 #else
 #define WS_DEBUG_PRINT(...)                                                    \
-  {} ///< Prints debug output
+  {                                                                            \
+  } ///< Prints debug output
 #define WS_DEBUG_PRINTLN(...)                                                  \
-  {} ///< Prints line from debug output.
+  {                                                                            \
+  } ///< Prints line from debug output.
 #endif
 
 #define WS_DELAY_WITH_WDT(timeout)                                             \
@@ -127,12 +135,12 @@
 #include "display/ws_display_ui_helper.h"
 #endif
 
+#include "components/display/controller.h"
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
 #include "components/pwm/ws_pwm.h"
 #include "components/servo/ws_servo.h"
 #include "components/uart/ws_uart.h"
-#include "components/display/controller.h"
 
 #if defined(USE_TINYUSB)
 #include "provisioning/tinyusb/Wippersnapper_FS.h"
@@ -154,7 +162,7 @@
 #define TOPIC_INFO "/info/"       ///< Registration sub-topic
 #define TOPIC_SIGNALS "/signals/" ///< Signals sub-topic
 #define TOPIC_I2C "/i2c"          ///< I2C sub-topic
-#define TOPIC_DISPLAY "/display" ///< Display sub-topic (EPD, OLED, TFT, etc.)
+#define TOPIC_DISPLAY "/display"  ///< Display sub-topic (EPD, OLED, TFT, etc.)
 #define MQTT_TOPIC_PIXELS_DEVICE                                               \
   "/signals/device/pixel" ///< Pixels device->broker topic
 #define MQTT_TOPIC_PIXELS_BROKER                                               \
@@ -371,7 +379,8 @@ public:
   ws_servo *_servoComponent;      ///< Instance of servo class
   ws_ds18x20 *_ds18x20Component;  ///< Instance of DS18x20 class
   ws_uart *_uartComponent;        ///< Instance of UART class
-  DisplayController *_displayController; ///< Instance of display controller class
+  DisplayController
+      *_displayController; ///< Instance of display controller class
 
   // TODO: does this really need to be global?
   uint8_t _macAddr[6];  /*!< Unique network iface identifier */
@@ -408,8 +417,10 @@ public:
   char *_topic_signal_pixels_device = NULL; /*!< Topic carries pixel messages */
   char *_topic_signal_uart_brkr = NULL;     /*!< Topic carries UART messages */
   char *_topic_signal_uart_device = NULL;   /*!< Topic carries UART messages */
-  char *_topic_signal_display_brkr = NULL; /*!< Topic carries messages from a device to a broker. */
-  char *_topic_signal_display_device = NULL;   /*!< Topic carries messages from a broker to a device. */
+  char *_topic_signal_display_brkr =
+      NULL; /*!< Topic carries messages from a device to a broker. */
+  char *_topic_signal_display_device =
+      NULL; /*!< Topic carries messages from a broker to a device. */
 
   wippersnapper_signal_v1_CreateSignalRequest
       _incomingSignalMsg; /*!< Incoming signal message from broker */
@@ -436,7 +447,8 @@ public:
   wippersnapper_signal_v1_UARTRequest
       msgSignalUART; ///< UARTReq wrapper message
 
-  wippersnapper_signal_v1_DisplayRequest msgSignalDisplay;
+  wippersnapper_signal_v1_DisplayRequest
+      msgSignalDisplay; ///< DisplayRequest wrapper message
 
   char *throttleMessage; /*!< Pointer to throttle message data. */
   int throttleTime;      /*!< Total amount of time to throttle the device, in
@@ -498,8 +510,8 @@ protected:
       *_topic_signal_pixels_sub; /*!< Subscribes to pixel device topic. */
   Adafruit_MQTT_Subscribe
       *_topic_signal_uart_sub; /*!< Subscribes to signal's UART topic. */
-  Adafruit_MQTT_Subscribe
-      *_topic_signal_display_sub; /*!< Subscription callback for display topic. */
+  Adafruit_MQTT_Subscribe *_topic_signal_display_sub; /*!< Subscription callback
+                                                         for display topic. */
 
   Adafruit_MQTT_Subscribe
       *_err_sub; /*!< Subscription to Adafruit IO Error topic. */

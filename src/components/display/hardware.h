@@ -20,14 +20,12 @@
 #include <functional>
 #include <map>
 
-/**************************************************************************/
 /*!
     @brief  Interface for interacting with display hardware (TFT, eInk,
             OLED, etc.)
             This class provides methods to initialize, write to, and
             manage the state of display hardware.
 */
-/**************************************************************************/
 class DisplayHardware {
 public:
   DisplayHardware(const char *name);
@@ -52,6 +50,6 @@ public:
 private:
   char _name[64]; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
-  dispDrvBase *_disp_drv_base = nullptr;      ///< Base display driver
+  dispDrvBase *_drvDisp = nullptr;            ///< Base display driver
 };
 #endif // WS_DISPLAY_HARDWARE_H
