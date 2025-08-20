@@ -80,9 +80,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
     // Reset the device
     if (!_mlx90632->reset()) {
       WS_DEBUG_PRINTLN(F("Device reset failed"));
-      while (1) {
-        delay(10);
-      }
+      return false;
     }
     WS_DEBUG_PRINTLN(F("Device reset: SUCCESS"));
 
@@ -261,25 +259,25 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       return true;
     }
 
+    // Check if we need to trigger a new measurement for step modes
+    mlx90632_mode_t currentMode = _mlx90632->getMode();
+    if (currentMode == MLX90632_MODE_STEP ||
+        currentMode == MLX90632_MODE_SLEEPING_STEP) {
+      // Trigger single measurement (SOC bit) for step modes
+      if (!_mlx90632->startSingleMeasurement()) {
+        WS_DEBUG_PRINTLN(F("Failed to start single measurement"));
+        return false;
+      }
+      delay(510); // Wait for measurement to complete @ 2Hz
+    }
+
     // Only check new data flag - much more efficient for continuous mode
     if (_mlx90632->isNewData()) {
-      WS_DEBUG_PRINT(F("New Data Available - Cycle Position: "));
-      WS_DEBUG_PRINTLN(_mlx90632->readCyclePosition());
-
-      // Read ambient temperature
       _deviceTemp = _mlx90632->getAmbientTemperature();
-      WS_DEBUG_PRINT(F("Ambient Temperature: "));
-      WS_DEBUG_PRINT(_deviceTemp, 4);
-      WS_DEBUG_PRINTLN(F(" °C"));
-
-      // Read object temperature
       _objectTemp = _mlx90632->getObjectTemperature();
-      WS_DEBUG_PRINT(F("Object Temperature: "));
       if (isnan(_objectTemp)) {
         WS_DEBUG_PRINTLN(F("NaN (invalid cycle position)"));
-      } else {
-        WS_DEBUG_PRINT(_objectTemp, 4);
-        WS_DEBUG_PRINTLN(F(" °C"));
+        return false;
       }
       result = true;
       _lastRead = millis();
@@ -291,15 +289,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       WS_DEBUG_PRINTLN(F("No new data available, skipping read"));
     }
 
-    // Check if we need to trigger a new measurement for step modes
-    mlx90632_mode_t currentMode = _mlx90632->getMode();
-    if (currentMode == MLX90632_MODE_STEP ||
-        currentMode == MLX90632_MODE_SLEEPING_STEP) {
-      // Trigger single measurement (SOC bit) for step modes
-      if (!_mlx90632->startSingleMeasurement()) {
-        WS_DEBUG_PRINTLN(F("Failed to start single measurement"));
-      }
-    }
+
     return result;
   }
 
@@ -314,12 +304,6 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
     if (ReadSensorData() && _deviceTemp != NAN) {
-      // TODO: check max/min or error values in datasheet
-      //  if (_deviceTemp < -40 || _deviceTemp > 125) {
-      //    WS_DEBUG_PRINTLN(F("Invalid ambient temperature"));
-      //    return false;
-      //  }
-      //  if the sensor was read recently, return the cached temperature
       tempEvent->temperature = _deviceTemp;
       return true;
     }
@@ -337,7 +321,6 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
   /*******************************************************************************/
   bool getEventObjectTemp(sensors_event_t *tempEvent) {
     if (ReadSensorData() && _objectTemp != NAN) {
-      // if the sensor was read recently, return the cached temperature
       tempEvent->temperature = _objectTemp;
       return true;
     }
