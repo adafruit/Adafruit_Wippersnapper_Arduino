@@ -15,10 +15,11 @@
 #ifndef WS_DISPLAY_HARDWARE_H
 #define WS_DISPLAY_HARDWARE_H
 #include "Wippersnapper.h"
-#include "drivers/dispDrvBase.h"
-#include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include <functional>
 #include <map>
+#include "drivers/dispDrvBase.h"
+#include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
+#include "drivers/dispDrvThinkInkGrayscale4T5.h"
 
 /*!
     @brief  Interface for interacting with display hardware (TFT, eInk,

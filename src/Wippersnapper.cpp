@@ -1684,10 +1684,30 @@ bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field,
     }
 
     // Attempt to add or replace a display component
-    bool did_add =
-        WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
-    // TODO: Add response handling and publishing here, for now it always
-    // returns true and doesnt publish back to the broker
+    bool did_add = WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
+    
+    // Create a DisplayResponse message
+    wippersnapper_signal_v1_DisplayResponse msgResp =  wippersnapper_signal_v1_DisplayResponse_init_zero;
+    msgResp.which_payload =  wippersnapper_signal_v1_DisplayResponse_display_added_tag;
+    msgResp.payload.display_added.did_add = did_add;
+    strncpy(msgResp.payload.display_added.name, msgAddReq.name, sizeof(msgResp.payload.display_added.name));
+
+  // Encode and publish response back to broker
+  memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+  pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing, sizeof(WS._buffer_outgoing));
+  if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_DisplayResponse_fields, &msgResp)) {
+    WS_DEBUG_PRINTLN("ERROR: Unable to encode display response message!");
+    return false;
+  }
+
+  size_t msgSz;
+  pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_DisplayResponse_fields, &msgResp);
+  WS_DEBUG_PRINT("Publishing DisplayResponse Message...");
+  if (!WS._mqtt->publish(WS._topic_signal_display_device, WS._buffer_outgoing, msgSz, 1)) {
+    WS_DEBUG_PRINTLN("ERROR: Failed to DisplayResponse Response!");
+  } else {
+    WS_DEBUG_PRINTLN("Published!");
+  }
   } else if (field->tag ==
              wippersnapper_signal_v1_DisplayRequest_display_write_tag) {
     // Decode message into a DisplayAddRequest
@@ -1698,7 +1718,23 @@ bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINTLN("ERROR: Failure decoding DisplayWrite message!");
       return false;
     }
+    // Attempt to write to a display
     WS._displayController->Handle_Display_Write(&msgWrite);
+  } else if (field->tag == wippersnapper_signal_v1_DisplayRequest_display_remove_tag) {
+    // Decode message into a DisplayRemoveRequest
+    wippersnapper_display_v1_DisplayRemove msgRemove =
+        wippersnapper_display_v1_DisplayRemove_init_zero;
+    if (!ws_pb_decode(stream,
+                      wippersnapper_display_v1_DisplayRemove_fields,
+                      &msgRemove)) {
+      WS_DEBUG_PRINTLN("ERROR: Failure decoding DisplayRemove message!");
+      return false;
+    }
+    // Attempt to remove a display
+    WS._displayController->Handle_Display_Remove(&msgRemove);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Display message type not found!");
+    return false;
   }
   return true;
 }

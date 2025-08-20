@@ -25,7 +25,11 @@ DisplayController::DisplayController() {
     @brief  Destructor
 */
 DisplayController::~DisplayController() {
-  // TODO
+  // Clean up all display hardware instances
+  for (DisplayHardware *hw_instance : _hw_instances) {
+    delete hw_instance; 
+  }
+  _hw_instances.clear();
 }
 
 /*!

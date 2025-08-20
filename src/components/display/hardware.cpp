@@ -23,17 +23,30 @@ using FnCreateDispDrv =
 // Factory for creating a new display drivers
 // NOTE: When you add a new display driver, make sure to add it to the factory!
 static const std::map<std::string, FnCreateDispDrv> FactoryDrvDisp = {
-    {"grayscale4_eaamfgn",
+    {"thinkink-gs4-eaamfgn",
      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
         int16_t busy) -> dispDrvBase * {
        return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
      }},
-    {"magtag_2025",
+    {"thinkink-magtag-2025",
      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
         int16_t busy) -> dispDrvBase * {
        return new drvDispThinkInkGrayscale4Eaamfgn(dc, rst, cs, sram_cs, busy);
-     }}};
+     }},
+    {"thinkink-gs4-t5",
+     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+        int16_t busy) -> dispDrvBase * {
+       return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+     }},
+    {"thinkink-magtag-pre-2025",
+     [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
+        int16_t busy) -> dispDrvBase * {
+       return new dispDrvThinkInkGrayscale4T5(dc, rst, cs, sram_cs, busy);
+     }}
+    };
 
+
+     
 /*!
     @brief  Creates a new display driver instance based on the driver name.
     @param  driver_name
