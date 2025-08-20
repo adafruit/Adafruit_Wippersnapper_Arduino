@@ -51,8 +51,8 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       @brief    Destructor for an MLX90632 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_MLX90632D() { 
-    if (_mlx90632){
+  ~WipperSnapper_I2C_Driver_MLX90632D() {
+    if (_mlx90632) {
       delete _mlx90632;
       _mlx90632 = nullptr;
     }
@@ -67,8 +67,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
   bool begin() {
     _mlx90632 = new Adafruit_MLX90632();
     // attempt to initialize MLX90632
-    if (!_mlx90632->begin(_sensorAddress, _i2c))
-      return false;
+    if (!_mlx90632->begin(_sensorAddress, _i2c)) return false;
 
     return ConfigureAndPrintSensorInfo();
   }
@@ -264,7 +263,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
         WS_DEBUG_PRINTLN(F("Failed to start single measurement"));
         return false;
       }
-      delay(510); // Wait for measurement to complete @ 2Hz
+      delay(510);  // Wait for measurement to complete @ 2Hz
     }
 
     // Only check new data flag - much more efficient for continuous mode
@@ -284,7 +283,6 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
     } else {
       WS_DEBUG_PRINTLN(F("No new data available, skipping read"));
     }
-
 
     return result;
   }
