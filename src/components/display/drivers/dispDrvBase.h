@@ -15,8 +15,8 @@
 #ifndef WS_DISP_DRV_BASE_H
 #define WS_DISP_DRV_BASE_H
 
-#include "Wippersnapper.h"
 #include "Adafruit_ThinkInk.h"
+#include "Wippersnapper.h"
 
 /*!
     @brief  Abstract base class for display drivers.

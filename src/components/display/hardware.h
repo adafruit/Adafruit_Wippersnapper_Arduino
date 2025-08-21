@@ -15,11 +15,11 @@
 #ifndef WS_DISPLAY_HARDWARE_H
 #define WS_DISPLAY_HARDWARE_H
 #include "Wippersnapper.h"
-#include <functional>
-#include <map>
 #include "drivers/dispDrvBase.h"
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
+#include <functional>
+#include <map>
 
 /*!
     @brief  Interface for interacting with display hardware (TFT, eInk,
@@ -49,6 +49,7 @@ public:
   void writeMessage(const char *message);
 
 private:
+  bool detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst);
   char _name[64]; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type
   dispDrvBase *_drvDisp = nullptr;            ///< Base display driver
