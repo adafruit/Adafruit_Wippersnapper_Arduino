@@ -99,6 +99,7 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
 
   bool readSensor() {
     if (!_as5600->isMagnetDetected()) {
+      WS_DEBUG_PRINTLN("Magnet not detected!");
       return false;
     }
 
@@ -125,6 +126,7 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
       WS_DEBUG_PRINTLN(" | ML: magnet too weak");
       return false;
     }
+    _angle = (float)angle;
     return true;
   }
 
