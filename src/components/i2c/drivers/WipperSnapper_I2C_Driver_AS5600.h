@@ -78,23 +78,19 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
   */
   /*******************************************************************************/
   bool configureSensor() {
-    return _as5600->enableWatchdog(false) ||  // Normal (high) power mode
-           _as5600->setPowerMode(AS5600_POWER_MODE_NOM) ||
+    return _as5600->enableWatchdog(false) &&  
+           // Normal (high) power mode
+           _as5600->setPowerMode(AS5600_POWER_MODE_NOM) &&
            // No Hysteresis
-           _as5600->setHysteresis(AS5600_HYSTERESIS_OFF) ||
-
+           _as5600->setHysteresis(AS5600_HYSTERESIS_OFF) &&
            // analog output (0-VCC for 0-360 degrees)
-           _as5600->setOutputStage(AS5600_OUTPUT_STAGE_ANALOG_FULL) ||
-
+           _as5600->setOutputStage(AS5600_OUTPUT_STAGE_ANALOG_FULL) &&
            // setup filters
-           _as5600->setSlowFilter(AS5600_SLOW_FILTER_16X) ||
-           _as5600->setFastFilterThresh(AS5600_FAST_FILTER_THRESH_SLOW_ONLY) ||
-
+           _as5600->setSlowFilter(AS5600_SLOW_FILTER_16X) &&
+           _as5600->setFastFilterThresh(AS5600_FAST_FILTER_THRESH_SLOW_ONLY) &&
            // Reset position settings to defaults
-           _as5600->setZPosition(0) || _as5600->setMPosition(4095) ||
+           _as5600->setZPosition(0) && _as5600->setMPosition(4095) &&
            _as5600->setMaxAngle(4095);
-
-    return true;
   }
 
   bool readSensor() {
@@ -107,7 +103,7 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
     uint16_t rawAngle = _as5600->getRawAngle();
     uint16_t angle = _as5600->getAngle();
 
-    WS_DEBUG_PRINT("Raw: ");
+    WS_DEBUG_PRINT("AS5600 Raw: ");
     WS_DEBUG_PRINT(rawAngle);
     WS_DEBUG_PRINT(" (0x");
     WS_DEBUG_PRINT(rawAngle, HEX);
