@@ -119,11 +119,15 @@ bool DisplayHardware::beginEPD(
   // Validate mode is a correct EPD mode
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_UNSPECIFIED) {
     WS_DEBUG_PRINTLN("[display] Unsupported EPD mode!");
-    return false; // Unsupported mode
+    return false;
   }
 
-  // TODO: If we already have a display driver assigned to this hardware
-  // instance, clean it up!
+  // If we already have a display driver assigned to this hardware instance,
+  // clean it up!
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
 
   // Parse all SPI bus pins
   // Check length
@@ -154,16 +158,21 @@ bool DisplayHardware::beginEPD(
     busy = (int16_t)atoi(spi_config->pin_busy + 1);
   }
 
-  // TODO: Configure SPI bus selection (UNUSED AS OF RIGHT NOW)
+  // Configure SPI bus
+  if (spi_config->bus != 0) {
+    WS_DEBUG_PRINTLN(
+        "[display] ERROR: Non-default SPI buses are currently not supported!");
+    return false;
+  }
 
-  // For "magtag" component name, attempt to autodetect the driver
+  // For "magtag" component name, attempt to autodetect the driver type
   if (strncmp(_name, "magtag", 6) == 0) {
     if (detect_ssd1680(cs, dc, rst)) {
       // Detected SSD1680, use EAAMFGN driver
       strncpy(_name, "thinkink-gs4-eaamfgn", sizeof(_name) - 1);
       _name[sizeof(_name) - 1] = '\0';
     } else {
-      // Did not detect SSD1680, use T5 driver
+      // Did not detect SSD1680, use IL0373 driver
       strncpy(_name, "thinkink-gs4-t5", sizeof(_name) - 1);
       _name[sizeof(_name) - 1] = '\0';
     }
@@ -205,11 +214,9 @@ const char *DisplayHardware::getName() { return _name; }
             The message to display.
 */
 void DisplayHardware::writeMessage(const char *message) {
-  if (_drvDisp) {
-    _drvDisp->writeMessage(message);
-  } else {
-    WS_DEBUG_PRINTLN("[display] No display driver initialized!");
-  }
+  if (!_drvDisp)
+    return;
+  _drvDisp->writeMessage(message);
 }
 
 /*!

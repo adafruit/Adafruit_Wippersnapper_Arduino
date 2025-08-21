@@ -17,9 +17,7 @@
 /*!
     @brief  Constructs a new DisplayController object
 */
-DisplayController::DisplayController() {
-  // TODO
-}
+DisplayController::DisplayController() {}
 
 /*!
     @brief  Destructor
@@ -68,7 +66,7 @@ bool DisplayController::Handle_Display_AddOrReplace(
 
   _hw_instances.push_back(display); // Store the display instance
   WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
-  return true; // Placeholder
+  return true;
 }
 
 /*!
@@ -109,7 +107,7 @@ bool DisplayController::Handle_Display_Write(
     }
   }
 
-  // Early-out if display not found
+  // Early-out if driver instance not found
   if (!display) {
     WS_DEBUG_PRINTLN("[display] Failed to write, driver not found!");
     return false;
