@@ -15,9 +15,10 @@
 #ifndef WipperSnapper_I2C_Driver_AS5600_H
 #define WipperSnapper_I2C_Driver_AS5600_H
 
+#include <Adafruit_AS5600.h>
+
 #include "WipperSnapper_I2C_Driver.h"
 #include "Wippersnapper.h"
-#include <Adafruit_AS5600.h>
 
 /**************************************************************************/
 /*!
@@ -25,7 +26,7 @@
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
-public:
+ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for the AS5600 sensor.
@@ -78,26 +79,23 @@ public:
   /*******************************************************************************/
   bool configureSensor() {
     return _as5600->enableWatchdog(false) ||  // Normal (high) power mode
-    _as5600->setPowerMode(AS5600_POWER_MODE_NOM) ||
-    // No Hysteresis
-    _as5600->setHysteresis(AS5600_HYSTERESIS_OFF) ||
+           _as5600->setPowerMode(AS5600_POWER_MODE_NOM) ||
+           // No Hysteresis
+           _as5600->setHysteresis(AS5600_HYSTERESIS_OFF) ||
 
-    // analog output (0-VCC for 0-360 degrees)
-    _as5600->setOutputStage(AS5600_OUTPUT_STAGE_ANALOG_FULL) ||
+           // analog output (0-VCC for 0-360 degrees)
+           _as5600->setOutputStage(AS5600_OUTPUT_STAGE_ANALOG_FULL) ||
 
-    // setup filters
-    _as5600->setSlowFilter(AS5600_SLOW_FILTER_16X) ||
-    _as5600->setFastFilterThresh(AS5600_FAST_FILTER_THRESH_SLOW_ONLY) ||
+           // setup filters
+           _as5600->setSlowFilter(AS5600_SLOW_FILTER_16X) ||
+           _as5600->setFastFilterThresh(AS5600_FAST_FILTER_THRESH_SLOW_ONLY) ||
 
-    // Reset position settings to defaults
-    _as5600->setZPosition(0) ||
-    _as5600->setMPosition(4095) ||
-    _as5600->setMaxAngle(4095);
+           // Reset position settings to defaults
+           _as5600->setZPosition(0) || _as5600->setMPosition(4095) ||
+           _as5600->setMaxAngle(4095);
 
     return true;
   }
-
-
 
   bool readSensor() {
     if (!_as5600->isMagnetDetected()) {
@@ -130,7 +128,6 @@ public:
     return true;
   }
 
-
   /*******************************************************************************/
   /*!
       @brief    Reads the Angle sensor with short wait for data.
@@ -149,9 +146,9 @@ public:
     return true;
   }
 
-protected:
-  float _angle; ///< Current angle reading from the AS5600 sensor
-  Adafruit_AS5600 *_as5600; ///< Pointer to AS5600 sensor object
+ protected:
+  float _angle;              ///< Current angle reading from the AS5600 sensor
+  Adafruit_AS5600 *_as5600;  ///< Pointer to AS5600 sensor object
 };
 
-#endif // WipperSnapper_I2C_Driver_AS5600
+#endif  // WipperSnapper_I2C_Driver_AS5600
