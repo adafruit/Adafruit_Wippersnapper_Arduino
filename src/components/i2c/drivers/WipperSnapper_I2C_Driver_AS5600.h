@@ -122,7 +122,7 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
       WS_DEBUG_PRINTLN(" | ML: magnet too weak");
       return false;
     }
-    _angle = (float)angle;
+    _angle = ((float)angle / 4095.0) * 360.0;
     return true;
   }
 
