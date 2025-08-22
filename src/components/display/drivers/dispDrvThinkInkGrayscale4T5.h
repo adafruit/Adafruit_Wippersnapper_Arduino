@@ -1,5 +1,5 @@
 /*!
- * @file src/components/display/drivers/ThinkInk_290_Grayscale4_T5.h
+ * @file src/components/display/drivers/dispDrvThinkInkGrayscale4T5.h
  *
  * Driver for ThinkInk 2.9" Grayscale 4-level T5 display (present on the
  * pre-2025 version of the Adafruit MagTag)
