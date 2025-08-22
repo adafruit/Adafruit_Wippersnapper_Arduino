@@ -26,7 +26,7 @@
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
- public:
+public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an MLX90632 sensor.
@@ -71,7 +71,8 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
     }
     _mlx90632 = new Adafruit_MLX90632();
     // attempt to initialize MLX90632
-    if (!_mlx90632->begin(_sensorAddress, _i2c)) return false;
+    if (!_mlx90632->begin(_sensorAddress, _i2c))
+      return false;
 
     return ConfigureAndPrintSensorInfo();
   }
@@ -164,7 +165,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
         WS_DEBUG_PRINTLN(F("Failed to start single measurement"));
         return false;
       }
-      delay(510);  // Wait for measurement to complete @ 2Hz
+      delay(510); // Wait for measurement to complete @ 2Hz
     }
 
     // Only check new data flag - much more efficient for continuous mode
@@ -202,7 +203,7 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       tempEvent->temperature = _deviceTemp;
       return true;
     }
-    return false;  // sensor not read recently, return false
+    return false; // sensor not read recently, return false
   }
 
   /*******************************************************************************/
@@ -219,14 +220,14 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       tempEvent->temperature = _objectTemp;
       return true;
     }
-    return false;  // sensor not read recently, return false
+    return false; // sensor not read recently, return false
   }
 
- protected:
-  double _deviceTemp;  ///< Device temperature in Celsius
-  double _objectTemp;  ///< Object temperature in Celsius
-  uint32_t _lastRead;  ///< Last time the sensor was read in milliseconds
-  Adafruit_MLX90632 *_mlx90632 = nullptr;  ///< MLX90632 object
+protected:
+  double _deviceTemp; ///< Device temperature in Celsius
+  double _objectTemp; ///< Object temperature in Celsius
+  uint32_t _lastRead; ///< Last time the sensor was read in milliseconds
+  Adafruit_MLX90632 *_mlx90632 = nullptr; ///< MLX90632 object
 };
 
-#endif  // WipperSnapper_I2C_Driver_MLX90632
+#endif // WipperSnapper_I2C_Driver_MLX90632
