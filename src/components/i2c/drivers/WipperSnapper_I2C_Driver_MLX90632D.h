@@ -65,6 +65,10 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
   */
   /*******************************************************************************/
   bool begin() {
+    if (_mlx90632) {
+      delete _mlx90632;
+      _mlx90632 = nullptr;
+    }
     _mlx90632 = new Adafruit_MLX90632();
     // attempt to initialize MLX90632
     if (!_mlx90632->begin(_sensorAddress, _i2c)) return false;
