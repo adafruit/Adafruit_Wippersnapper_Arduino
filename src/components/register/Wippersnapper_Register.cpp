@@ -77,6 +77,7 @@ bool Wippersnapper::encodePubRegistrationReq() {
 /****************************************************************************/
 void Wippersnapper::pollRegistrationResp() {
   // Blocking loop, WDT reset upon failure.
+  WS._boardStatus = WS_BOARD_DEF_OK;
   while (WS._boardStatus != WS_BOARD_DEF_OK) {
     WS_DEBUG_PRINT("Polling for registration message response...");
     WS_DEBUG_PRINTLN(WS._boardStatus);
