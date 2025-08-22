@@ -91,76 +91,21 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
       WS_DEBUG_PRINTLN(F("Device reset failed"));
       return false;
     }
-    WS_DEBUG_PRINTLN(F("Device reset: SUCCESS"));
-
-    uint64_t productID = _mlx90632->getProductID();
-    WS_DEBUG_PRINT(F("Product ID: 0x"));
-    WS_DEBUG_PRINT((uint32_t)(productID >> 32), HEX);
-    WS_DEBUG_PRINTLN((uint32_t)(productID & 0xFFFFFFFF), HEX);
 
     uint16_t productCode = _mlx90632->getProductCode();
-    WS_DEBUG_PRINT(F("Product Code: 0x"));
-    WS_DEBUG_PRINTLN(productCode, HEX);
-
-    uint16_t eepromVersion = _mlx90632->getEEPROMVersion();
-    WS_DEBUG_PRINT(F("EEPROM Version: 0x"));
-    WS_DEBUG_PRINTLN(eepromVersion, HEX);
-
     // Decode product code bits
     uint8_t fov = (productCode >> 8) & 0x3;
     uint8_t package = (productCode >> 5) & 0x7;
     uint8_t accuracy = productCode & 0x1F;
 
-    WS_DEBUG_PRINT(F("FOV: "));
-    WS_DEBUG_PRINTLN(fov == 0 ? F("50°") : F("Unknown"));
-
-    WS_DEBUG_PRINT(F("Package: "));
-    WS_DEBUG_PRINTLN(package == 1 ? F("SFN 3x3") : F("Unknown"));
-
-    WS_DEBUG_PRINT(F("Accuracy: "));
-    if (accuracy == 1) {
-      WS_DEBUG_PRINTLN(F("Medical"));
-    } else if (accuracy == 2) {
-      WS_DEBUG_PRINTLN(F("Standard"));
-    } else {
-      WS_DEBUG_PRINTLN(F("Unknown"));
-    }
-
-    // Set and get mode - choose one:
-    WS_DEBUG_PRINTLN(F("\n--- Mode Settings ---"));
     if (!_mlx90632->setMode(MLX90632_MODE_CONTINUOUS)) {
-      // if (!_mlx90632->setMode(MLX90632_MODE_STEP)) {           // Uncomment
-      // for step mode testing if
-      // (!_mlx90632->setMode(MLX90632_MODE_SLEEPING_STEP)) {  // Uncomment for
-      // sleeping step mode testing
       WS_DEBUG_PRINTLN(F("Failed to set mode"));
       return false;
-    }
-
-    // TODO: use Step mode?
-    mlx90632_mode_t currentMode = _mlx90632->getMode();
-    WS_DEBUG_PRINT(F("Current mode: "));
-    switch (currentMode) {
-      case MLX90632_MODE_HALT:
-        WS_DEBUG_PRINTLN(F("Halt"));
-        break;
-      case MLX90632_MODE_SLEEPING_STEP:
-        WS_DEBUG_PRINTLN(F("Sleeping Step"));
-        break;
-      case MLX90632_MODE_STEP:
-        WS_DEBUG_PRINTLN(F("Step"));
-        break;
-      case MLX90632_MODE_CONTINUOUS:
-        WS_DEBUG_PRINTLN(F("Continuous"));
-        break;
-      default:
-        WS_DEBUG_PRINTLN(F("Unknown"));
     }
 
     // set accuracy mode based on medical if detected
     if (accuracy == 1) {
       // Set and get measurement select (medical)
-      WS_DEBUG_PRINTLN(F("\n--- Measurement Select Settings ---"));
       if (!extendedInsteadOfMedicalRange &&
           !_mlx90632->setMeasurementSelect(MLX90632_MEAS_MEDICAL)) {
         WS_DEBUG_PRINTLN(F("Failed to set measurement select to Medical"));
@@ -172,62 +117,14 @@ class WipperSnapper_I2C_Driver_MLX90632D : public WipperSnapper_I2C_Driver {
             F("Failed to set measurement select to Extended Range"));
         return false;
       }
-
-      mlx90632_meas_select_t currentMeasSelect =
-          _mlx90632->getMeasurementSelect();
-      WS_DEBUG_PRINT(F("Current measurement select: "));
-      switch (currentMeasSelect) {
-        case MLX90632_MEAS_MEDICAL:
-          WS_DEBUG_PRINTLN(F("Medical"));
-          break;
-        case MLX90632_MEAS_EXTENDED_RANGE:
-          WS_DEBUG_PRINTLN(F("Extended Range"));
-          break;
-        default:
-          WS_DEBUG_PRINTLN(F("Unknown"));
-      }
     }
 
     // Set and get refresh rate (default to 2Hz)
-    WS_DEBUG_PRINTLN(F("\n--- Refresh Rate Settings ---"));
     if (!_mlx90632->setRefreshRate(MLX90632_REFRESH_2HZ)) {
       WS_DEBUG_PRINTLN(F("Failed to set refresh rate to 2Hz"));
       return false;
     }
 
-    mlx90632_refresh_rate_t currentRefreshRate = _mlx90632->getRefreshRate();
-    WS_DEBUG_PRINT(F("Current refresh rate: "));
-    switch (currentRefreshRate) {
-      case MLX90632_REFRESH_0_5HZ:
-        WS_DEBUG_PRINTLN(F("0.5 Hz"));
-        break;
-      case MLX90632_REFRESH_1HZ:
-        WS_DEBUG_PRINTLN(F("1 Hz"));
-        break;
-      case MLX90632_REFRESH_2HZ:
-        WS_DEBUG_PRINTLN(F("2 Hz"));
-        break;
-      case MLX90632_REFRESH_4HZ:
-        WS_DEBUG_PRINTLN(F("4 Hz"));
-        break;
-      case MLX90632_REFRESH_8HZ:
-        WS_DEBUG_PRINTLN(F("8 Hz"));
-        break;
-      case MLX90632_REFRESH_16HZ:
-        WS_DEBUG_PRINTLN(F("16 Hz"));
-        break;
-      case MLX90632_REFRESH_32HZ:
-        WS_DEBUG_PRINTLN(F("32 Hz"));
-        break;
-      case MLX90632_REFRESH_64HZ:
-        WS_DEBUG_PRINTLN(F("64 Hz"));
-        break;
-      default:
-        WS_DEBUG_PRINTLN(F("Unknown"));
-    }
-
-    // Clear new data flag before starting continuous measurements
-    WS_DEBUG_PRINTLN(F("\\n--- Starting Continuous Measurements ---"));
     if (!_mlx90632->resetNewData()) {
       WS_DEBUG_PRINTLN(F("Failed to reset new data flag"));
       return false;
