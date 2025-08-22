@@ -26,7 +26,7 @@
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
- public:
+public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for the AS5600 sensor.
@@ -38,8 +38,6 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
   /*******************************************************************************/
   WipperSnapper_I2C_Driver_AS5600(TwoWire *i2c, uint16_t sensorAddress)
       : WipperSnapper_I2C_Driver(i2c, sensorAddress) {
-    _i2c = i2c;
-    _sensorAddress = sensorAddress;
     _as5600 = nullptr;
     _angle = 0;
   }
@@ -78,7 +76,7 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
   */
   /*******************************************************************************/
   bool configureSensor() {
-    return _as5600->enableWatchdog(false) &&  
+    return _as5600->enableWatchdog(false) &&
            // Normal (high) power mode
            _as5600->setPowerMode(AS5600_POWER_MODE_NOM) &&
            // No Hysteresis
@@ -105,13 +103,8 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
 
     WS_DEBUG_PRINT("AS5600 Raw: ");
     WS_DEBUG_PRINT(rawAngle);
-    WS_DEBUG_PRINT(" (0x");
-    WS_DEBUG_PRINT(rawAngle, HEX);
-    WS_DEBUG_PRINT(") | Scaled: ");
+    WS_DEBUG_PRINT(" | Scaled: ");
     WS_DEBUG_PRINT(angle);
-    WS_DEBUG_PRINT(" (0x");
-    WS_DEBUG_PRINT(angle, HEX);
-    WS_DEBUG_PRINT(")");
 
     // Check status conditions
     if (_as5600->isAGCminGainOverflow()) {
@@ -144,9 +137,9 @@ class WipperSnapper_I2C_Driver_AS5600 : public WipperSnapper_I2C_Driver {
     return true;
   }
 
- protected:
-  float _angle;              ///< Current angle reading from the AS5600 sensor
-  Adafruit_AS5600 *_as5600;  ///< Pointer to AS5600 sensor object
+protected:
+  float _angle;             ///< Current angle reading from the AS5600 sensor
+  Adafruit_AS5600 *_as5600; ///< Pointer to AS5600 sensor object
 };
 
-#endif  // WipperSnapper_I2C_Driver_AS5600
+#endif // WipperSnapper_I2C_Driver_AS5600
