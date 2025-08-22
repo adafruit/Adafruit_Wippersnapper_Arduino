@@ -1,5 +1,5 @@
 /*!
- * @file WipperSnapper_I2C_Driver_MLX90632.h
+ * @file WipperSnapper_I2C_Driver_MLX90632D.h
  *
  * Device driver for a Melexis MLX90632-D (medical) thermal FIR sensor.
  *
@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef WipperSnapper_I2C_Driver_MLX90632_H
-#define WipperSnapper_I2C_Driver_MLX90632_H
+#ifndef WipperSnapper_I2C_Driver_MLX90632D_H
+#define WipperSnapper_I2C_Driver_MLX90632D_H
 
 #include <Adafruit_MLX90632.h>
 
@@ -230,4 +230,4 @@ protected:
   Adafruit_MLX90632 *_mlx90632 = nullptr; ///< MLX90632 object
 };
 
-#endif // WipperSnapper_I2C_Driver_MLX90632
+#endif // WipperSnapper_I2C_Driver_MLX90632D_H
