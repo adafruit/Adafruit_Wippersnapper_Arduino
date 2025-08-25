@@ -199,7 +199,20 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
-  return true; // Configuration successful
+  return true;
+}
+
+/*!
+    @brief  Attempts to configure and initialize a TFT display
+    @param  config
+            Pointer to the TFT configuration structure.
+    @param  spi_config
+            Pointer to the SPI configuration structure for TFT.
+    @return True if configuration was successful, False otherwise.
+*/
+bool beginTft(wippersnapper_display_v1_TftConfig *config, wippersnapper_display_v1_TftSpiConfig *spi_config) {
+    // TODO
+return false;
 }
 
 /*!
