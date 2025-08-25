@@ -49,8 +49,8 @@ bool DisplayController::Handle_Display_AddOrReplace(
   // Attempt to initialize display hardware instance
   bool did_begin = false;
   if (msgAdd->which_config ==
-      wippersnapper_display_v1_DisplayAddOrReplace_epd_config_tag) {
-    did_begin = display->beginEPD(&msgAdd->config.epd_config,
+      wippersnapper_display_v1_DisplayAddOrReplace_config_epd_tag) {
+    did_begin = display->beginEPD(&msgAdd->config.config_epd,
                                   &msgAdd->interface_type.spi_epd);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported display configuration type!");
