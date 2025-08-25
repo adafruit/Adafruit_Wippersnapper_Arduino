@@ -78,13 +78,13 @@ public:
               Whether to reset the display before initialization.
       @return True if the display was initialized successfully, false otherwise.
   */
-  virtual bool begin(thinkinkmode_t mode, bool reset = true);
+  virtual bool begin(thinkinkmode_t mode, bool reset = true) { return false; }
 
   /*!
       @brief  Attempts to initialize a SPI TFT driver.
       @return True if the display was initialized successfully, false otherwise.
   */
-  virtual bool begin();
+  virtual bool begin() { return false; }
 
   /*!
       @brief  Writes a message to the display.
