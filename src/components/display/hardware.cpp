@@ -100,6 +100,21 @@ wippersnapper_display_v1_DisplayType DisplayHardware::getType() {
 }
 
 /*!
+    @brief  Parses a pin string (e.g., "D5") and returns the corresponding pin
+   number.
+    @param  pinStr
+            The pin string to parse.
+    @return The pin number, or -1 if the string is invalid.
+*/
+int16_t DisplayHardware::parsePin(const char* pinStr) {
+    if (!pinStr || strlen(pinStr) < 2 || pinStr[0] != 'D') {
+        return -1;
+    }
+    return atoi(pinStr + 1);
+}
+
+
+/*!
     @brief  Configures the EPD display with the provided configuration.
     @param  config
             Pointer to the EPD configuration structure.
@@ -129,33 +144,18 @@ bool DisplayHardware::beginEPD(
     _drvDisp = nullptr;
   }
 
-  // Parse all SPI bus pins
-  // Check length
-  if (strlen(spi_config->pin_dc) < 2 || strlen(spi_config->pin_rst) < 2 ||
-      strlen(spi_config->pin_cs) < 2) {
-    WS_DEBUG_PRINTLN("[display] Invalid SPI pin len!");
-    return false;
-  }
-  // SPI pins must start with 'D'
-  if (spi_config->pin_dc[0] != 'D' || spi_config->pin_rst[0] != 'D' ||
-      spi_config->pin_cs[0] != 'D') {
-    WS_DEBUG_PRINTLN("[display] SPI pins must start with 'D'!");
-    return false;
-  }
-
   // Parse and assign pins
   int16_t srcs = -1, busy = -1;
-  int16_t dc = (int16_t)atoi(spi_config->pin_dc + 1);
-  int16_t rst = (int16_t)atoi(spi_config->pin_rst + 1);
-  int16_t cs = (int16_t)atoi(spi_config->pin_cs + 1);
+  int16_t dc = parsePin(spi_config->pin_dc);
+  int16_t rst = parsePin(spi_config->pin_rst);
+  int16_t cs = parsePin(spi_config->pin_cs);
 
   // Optionally parse SRAM CS and BUSY pins
-  if (strlen(spi_config->pin_sram_cs) >= 2 &&
-      spi_config->pin_sram_cs[0] == 'D') {
-    srcs = (int16_t)atoi(spi_config->pin_sram_cs + 1);
+  if (strlen(spi_config->pin_sram_cs) >= 2) {
+    srcs = parsePin(spi_config->pin_sram_cs);
   }
-  if (strlen(spi_config->pin_busy) >= 2 && spi_config->pin_busy[0] == 'D') {
-    busy = (int16_t)atoi(spi_config->pin_busy + 1);
+  if (strlen(spi_config->pin_busy) >= 2) {
+    busy = parsePin(spi_config->pin_busy);
   }
 
   // Configure SPI bus
@@ -210,8 +210,35 @@ bool DisplayHardware::beginEPD(
             Pointer to the SPI configuration structure for TFT.
     @return True if configuration was successful, False otherwise.
 */
-bool beginTft(wippersnapper_display_v1_TftConfig *config, wippersnapper_display_v1_TftSpiConfig *spi_config) {
-    // TODO
+bool DisplayHardware::beginTft(wippersnapper_display_v1_TftConfig *config, wippersnapper_display_v1_TftSpiConfig *spi_config) {
+  // Validate pointers
+  if (config == nullptr || spi_config == nullptr) {
+    WS_DEBUG_PRINTLN("[display] EPD config or SPI config is null!");
+    return false;
+  }
+
+  // If we already have a display driver assigned to this hardware instance,
+  // clean it up!
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  // Parse and assign pins
+  int16_t rst = -1, miso = -1;
+  int16_t cs = parsePin(spi_config->pin_dc);
+  int16_t dc = parsePin(spi_config->pin_rst);
+  int16_t mosi = parsePin(spi_config->pin_cs);
+  int16_t sck = parsePin(spi_config->pin_sck);
+
+  // Optionally parse SRAM CS and BUSY pins
+  if (strlen(spi_config->pin_rst) >= 2) {
+    rst = parsePin(spi_config->pin_rst);
+  }
+  if (strlen(spi_config->pin_miso) >= 2) {
+    miso = parsePin(spi_config->pin_miso);
+  }
+
 return false;
 }
 
