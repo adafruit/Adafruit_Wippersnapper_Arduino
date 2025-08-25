@@ -76,6 +76,7 @@ public:
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
+    _display->setTextSize(_text_sz);
     return true;
   }
 
