@@ -16,6 +16,7 @@
 #define WS_DISPLAY_HARDWARE_H
 #include "Wippersnapper.h"
 #include "drivers/dispDrvBase.h"
+#include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
 #include <functional>
@@ -51,7 +52,7 @@ public:
   void writeMessage(const char *message);
 
 private:
-  int16_t parsePin(const char* pinStr);
+  int16_t parsePin(const char *pinStr);
   bool detect_ssd1680(uint8_t cs, uint8_t dc, uint8_t rst);
   char _name[64]; ///< Identifies the hardware instance
   wippersnapper_display_v1_DisplayType _type; ///< Display type

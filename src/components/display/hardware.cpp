@@ -17,12 +17,12 @@
 /*!
     @brief  Lambda function to create a dispDrvBase instance
 */
-using FnCreateDispDrv =
+using FnCreateDispDrvEpd =
     std::function<dispDrvBase *(int16_t, int16_t, int16_t, int16_t, int16_t)>;
 
 // Factory for creating a new display drivers
 // NOTE: When you add a new display driver, make sure to add it to the factory!
-static const std::map<std::string, FnCreateDispDrv> FactoryDrvDisp = {
+static const std::map<std::string, FnCreateDispDrvEpd> FactoryDrvDispEpd = {
     {"thinkink-gs4-eaamfgn",
      [](int16_t dc, int16_t rst, int16_t cs, int16_t sram_cs,
         int16_t busy) -> dispDrvBase * {
@@ -35,7 +35,29 @@ static const std::map<std::string, FnCreateDispDrv> FactoryDrvDisp = {
      }}};
 
 /*!
-    @brief  Creates a new display driver instance based on the driver name.
+    @brief  Lambda function to create a dispDrvBase SPI TFT instance
+*/
+using FnCreateDispDrvTft = std::function<dispDrvBase *(
+    int16_t, int16_t, int16_t, int16_t, int16_t, int16_t)>;
+
+// Factory for creating a new SPI TFT display driver
+// NOTE: When you add a new SPI TFT display driver, make sure to add it to the
+// factory!
+static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
+    {"st7735",
+     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
+        int16_t miso) -> dispDrvBase * {
+       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
+     }},
+    {"st7789",
+     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
+        int16_t miso) -> dispDrvBase * {
+       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
+     }}};
+
+/*!
+    @brief  Creates a new E-Ink display driver instance based on the driver
+   name.
     @param  driver_name
             The name of the display driver to create.
     @param  dc
@@ -51,14 +73,30 @@ static const std::map<std::string, FnCreateDispDrv> FactoryDrvDisp = {
     @return Pointer to the created display driver instance, or nullptr if the
             driver name is not recognized.
 */
-dispDrvBase *CreateDrvDisp(const char *driver_name, int16_t dc, int16_t rst,
-                           int16_t cs, int16_t sram_cs = -1,
-                           int16_t busy = -1) {
-  auto it = FactoryDrvDisp.find(driver_name);
-  if (it == FactoryDrvDisp.end())
+dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
+                              int16_t cs, int16_t sram_cs = -1,
+                              int16_t busy = -1) {
+  auto it = FactoryDrvDispEpd.find(driver_name);
+  if (it == FactoryDrvDispEpd.end())
     return nullptr;
 
   return it->second(dc, rst, cs, sram_cs, busy);
+}
+
+/*!
+    @brief  Creates a new SPI TFT display driver instance based on the driver
+   name.
+    @param  driver_name
+            The name of the SPI TFT display driver to create.
+*/
+dispDrvBase *CreateDrvDispTft(const char *driver_name, int16_t cs, int16_t dc,
+                              int16_t mosi, int16_t sck, int16_t rst = -1,
+                              int16_t miso = -1) {
+  auto it = FactoryDrvDispTft.find(driver_name);
+  if (it == FactoryDrvDispTft.end())
+    return nullptr;
+
+  return it->second(cs, dc, mosi, sck, rst, miso);
 }
 
 /*!
@@ -106,13 +144,12 @@ wippersnapper_display_v1_DisplayType DisplayHardware::getType() {
             The pin string to parse.
     @return The pin number, or -1 if the string is invalid.
 */
-int16_t DisplayHardware::parsePin(const char* pinStr) {
-    if (!pinStr || strlen(pinStr) < 2 || pinStr[0] != 'D') {
-        return -1;
-    }
-    return atoi(pinStr + 1);
+int16_t DisplayHardware::parsePin(const char *pinStr) {
+  if (!pinStr || strlen(pinStr) < 2 || pinStr[0] != 'D') {
+    return -1;
+  }
+  return atoi(pinStr + 1);
 }
-
 
 /*!
     @brief  Configures the EPD display with the provided configuration.
@@ -179,7 +216,7 @@ bool DisplayHardware::beginEPD(
   }
 
   // Create display driver object using the factory function
-  _drvDisp = CreateDrvDisp(_name, dc, rst, cs, srcs, busy);
+  _drvDisp = CreateDrvDispEpd(_name, dc, rst, cs, srcs, busy);
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false; // Failed to create display driver
@@ -210,7 +247,9 @@ bool DisplayHardware::beginEPD(
             Pointer to the SPI configuration structure for TFT.
     @return True if configuration was successful, False otherwise.
 */
-bool DisplayHardware::beginTft(wippersnapper_display_v1_TftConfig *config, wippersnapper_display_v1_TftSpiConfig *spi_config) {
+bool DisplayHardware::beginTft(
+    wippersnapper_display_v1_TftConfig *config,
+    wippersnapper_display_v1_TftSpiConfig *spi_config) {
   // Validate pointers
   if (config == nullptr || spi_config == nullptr) {
     WS_DEBUG_PRINTLN("[display] EPD config or SPI config is null!");
@@ -239,7 +278,7 @@ bool DisplayHardware::beginTft(wippersnapper_display_v1_TftConfig *config, wippe
     miso = parsePin(spi_config->pin_miso);
   }
 
-return false;
+  return false;
 }
 
 /*!

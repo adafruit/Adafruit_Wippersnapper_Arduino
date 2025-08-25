@@ -44,6 +44,26 @@ public:
         _pin_busy(busy) {}
 
   /*!
+      @brief  Constructor for the base display driver for SPI TFT displays.
+      @param  cs
+              Chip Select pin for the display.
+      @param  dc
+              Data/Command pin for the display.
+      @param  mosi
+              MOSI pin for the display.
+      @param  sck
+              SCK pin for the display.
+      @param  rst
+              Optional Reset pin for the display.
+      @param  miso
+              Optional MISO pin for the display.
+  */
+  dispDrvBase(int8_t cs, int8_t dc, int8_t mosi, int8_t sck, int8_t rst = -1,
+              int8_t miso = -1)
+      : _pin_cs(cs), _pin_dc(dc), _pin_mosi(mosi), _pin_sck(sck), _pin_rst(rst),
+        _pin_miso(miso) {}
+
+  /*!
       @brief  Destructor for the base display driver.
               This destructor is virtual to allow derived classes to clean up
               resources properly.
@@ -74,6 +94,9 @@ protected:
   int16_t _pin_cs;      ///< Chip Select pin
   int16_t _pin_busy;    ///< Optional Busy pin
   int16_t _pin_sram_cs; ///< Optional EPD SRAM chip select pin
+  uint16_t _pin_mosi;   ///< Optional MOSI pin for SPI TFT displays
+  uint16_t _pin_miso;   ///< Optional MISO pin for SPI TFT displays
+  uint16_t _pin_sck;    ///< Optional SCK pin for SPI TFT displays
   uint8_t _text_sz = 1; ///< Text size for displaying a message
   int16_t _height;      ///< Height of the display
   int16_t _width;       ///< Width of the display
