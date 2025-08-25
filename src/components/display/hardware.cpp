@@ -278,7 +278,20 @@ bool DisplayHardware::beginTft(
     miso = parsePin(spi_config->pin_miso);
   }
 
-  return false;
+  // Create display driver object using the factory function
+  _drvDisp = CreateDrvDispTft(_name, cs, dc, mosi, sck, rst, miso);
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
+    return false;
+  }
+
+  _drvDisp->setWidth(config->width);
+  _drvDisp->setHeight(config->height);
+  _drvDisp->setRotation(config->rotation);
+  _drvDisp->begin();
+
+  WS_DEBUG_PRINTLN("[display] TFT display initialized successfully!");
+  return true;
 }
 
 /*!

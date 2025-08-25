@@ -81,12 +81,22 @@ public:
   virtual bool begin(thinkinkmode_t mode, bool reset = true);
 
   /*!
+      @brief  Attempts to initialize a SPI TFT driver.
+      @return True if the display was initialized successfully, false otherwise.
+  */
+  virtual bool begin();
+
+  /*!
       @brief  Writes a message to the display.
       @param  message
               The message to write to the display.
       @note   MUST be implemented by derived classes.
   */
   virtual void writeMessage(const char *message) = 0;
+
+  void setWidth(int16_t w) { _width = w; }
+  void setHeight(int16_t h) { _height = h; }
+  void setRotation(uint8_t r) { _rotation = r; }
 
 protected:
   int16_t _pin_dc;      ///< Data/Command pin
@@ -100,6 +110,7 @@ protected:
   uint8_t _text_sz = 1; ///< Text size for displaying a message
   int16_t _height;      ///< Height of the display
   int16_t _width;       ///< Width of the display
+  uint8_t _rotation;    ///< Rotation of the display
 };
 
 #endif // WS_DISP_DRV_BASE_H
