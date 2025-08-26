@@ -53,11 +53,6 @@ static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
      [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
         int16_t miso) -> dispDrvBase * {
        return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
-     }},
-    {"st7789-large",
-     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
-        int16_t miso) -> dispDrvBase * {
-       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
      }}};
 
 /*!
@@ -93,6 +88,20 @@ dispDrvBase *CreateDrvDispEpd(const char *driver_name, int16_t dc, int16_t rst,
    name.
     @param  driver_name
             The name of the SPI TFT display driver to create.
+    @param  cs
+            Chip Select pin number.
+    @param  dc
+            Data/Command pin number.
+    @param  mosi
+            MOSI pin number.
+    @param  sck
+            SCK pin number.
+    @param  rst
+            Optional Reset pin number (default: -1).
+    @param  miso
+            Optional MISO pin number (default: -1).
+    @return Pointer to the created display driver instance, or nullptr if the
+            driver name is not recognized.
 */
 dispDrvBase *CreateDrvDispTft(const char *driver_name, int16_t cs, int16_t dc,
                               int16_t mosi, int16_t sck, int16_t rst = -1,
@@ -245,6 +254,18 @@ bool DisplayHardware::beginEPD(
 }
 
 /*!
+    @brief  Removes a suffix from the hardware instance name, if it exists.
+    @param  suffix
+            The suffix to remove (e.g., "-lg", "-md", "-sm").
+*/
+void DisplayHardware::removeSuffix(const char *suffix) {
+  char *suffix_pos = strstr(_name, suffix);
+  if (suffix_pos) {
+    *suffix_pos = '\0'; // Truncate string at suffix position
+  }
+}
+
+/*!
     @brief  Attempts to configure and initialize a TFT display
     @param  config
             Pointer to the TFT configuration structure.
@@ -282,6 +303,20 @@ bool DisplayHardware::beginTft(
     miso = parsePin(spi_config->pin_miso);
   }
 
+  // Configure text size based on suffix in driver name
+  uint8_t text_sz; // Default text size
+  if (strstr(_name, "-lg") != nullptr) {
+    // Larger text size for displays with -lg suffix
+    text_sz = 4;
+    removeSuffix("-lg");
+  } else if (strstr(_name, "-md") != nullptr) {
+    // Larger text size for displays with -md suffix
+    text_sz = 3;
+    removeSuffix("-md");
+  } else {
+    text_sz = 1;
+  }
+
   // Create display driver object using the factory function
   _drvDisp = CreateDrvDispTft(_name, cs, dc, mosi, sck, rst, miso);
   if (!_drvDisp) {
@@ -289,17 +324,12 @@ bool DisplayHardware::beginTft(
     return false;
   }
 
-  // Check if name has -large suffix, and if so, set a larger default text size
-  if (strstr(_name, "-large") != nullptr) {
-    _drvDisp->setTextSize(3); // Large text size for -large displays
-  }
-
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
   _drvDisp->begin();
+  _drvDisp->setTextSize(text_sz);
 
-  WS_DEBUG_PRINTLN("[display] TFT display initialized successfully!");
   return true;
 }
 

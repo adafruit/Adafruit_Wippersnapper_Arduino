@@ -94,10 +94,34 @@ public:
   */
   virtual void writeMessage(const char *message) = 0;
 
+  /*!
+      @brief  Sets the width of the display.
+      @param  w
+              The width of the display in pixels.
+  */
   void setWidth(int16_t w) { _width = w; }
+
+  /*!
+      @brief  Sets the height of the display.
+      @param  h
+              The height of the display in pixels.
+  */
   void setHeight(int16_t h) { _height = h; }
+
+  /*!
+      @brief  Sets the rotation of the display.
+      @param  r
+              The rotation of the display (0-3).
+  */
   void setRotation(uint8_t r) { _rotation = r; }
 
+  /*!
+      @brief  Sets the text size for the display.
+      @param  s
+              The text size to set.
+      @note   This method can be overridden by derived classes to provide
+              specific functionality.
+  */
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
 protected:

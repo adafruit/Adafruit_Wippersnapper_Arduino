@@ -18,7 +18,7 @@
 #include "dispDrvBase.h"
 #include <Adafruit_ST7789.h>
 
-#define ST7789_TEXT_SZ_DEFAULT 2
+#define ST7789_TEXT_SZ_DEFAULT 2 ///< Default text size for ST7789 displays
 
 /*!
     @brief  Driver for ST7789-based TFT displays.
@@ -70,19 +70,27 @@ public:
 #endif
 
     _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_rst);
-
     if (!_display)
       return false;
 
     _display->init(_width, _height);
     _display->setRotation(_rotation);
+    setTextSize(ST7789_TEXT_SZ_DEFAULT);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
-    _display->setTextSize(ST7789_TEXT_SZ_DEFAULT);
     return true;
   }
 
+  /*!
+      @brief  Sets the text size for the display.
+      @param  s
+              The text size to set.
+      @note   This method overrides the base class method to provide specific
+              functionality for the ST7789 driver.
+  */
   void setTextSize(uint8_t s) override {
+    if (!_display)
+      return;
     _text_sz = s;
     _display->setTextSize(s);
   }
@@ -92,7 +100,7 @@ public:
       @param  message
               The message to write to the display.
       @note   This method overrides the base class method to provide specific
-              functionality for the Think Ink Grayscale 4 EAAMGFGN driver.
+              functionality for the ST7789 driver.
   */
   virtual void writeMessage(const char *message) override {
     if (_display == nullptr)
