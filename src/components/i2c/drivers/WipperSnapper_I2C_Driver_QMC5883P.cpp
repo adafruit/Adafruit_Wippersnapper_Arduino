@@ -25,8 +25,8 @@ bool WipperSnapper_I2C_Driver_QMC5883P::begin() {
     return false;
   }
 
-  // Set to normal mode
-  _qmc->setMode(QMC5883P_MODE_NORMAL);
+  // Set to continuous mode
+  _qmc->setMode(QMC5883P_MODE_CONTINUOUS);
   // Set ODR (Output Data Rate) to 50Hz
   _qmc->setODR(QMC5883P_ODR_50HZ);
   // Set OSR (Over Sample Ratio) to 4
