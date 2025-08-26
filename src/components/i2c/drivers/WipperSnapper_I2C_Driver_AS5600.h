@@ -96,6 +96,12 @@ public:
            _as5600->setMaxAngle(4095);
   }
 
+  /*******************************************************************************/
+  /*!
+      @brief    Reads the Angle sensor.
+      @returns  True if the sensor was read successfully, False otherwise.
+  */
+  /*******************************************************************************/
   bool readSensor() {
     if (!_as5600->isMagnetDetected()) {
       WS_DEBUG_PRINTLN("Magnet not detected!");
