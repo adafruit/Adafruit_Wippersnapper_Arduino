@@ -47,7 +47,12 @@ public:
       @brief    Destructor for an AS5600 sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_AS5600() { delete _as5600; }
+  ~WipperSnapper_I2C_Driver_AS5600() {
+    if (_as5600) {
+      delete _as5600;
+      _as5600 = nullptr;
+    }
+  }
 
   /*******************************************************************************/
   /*!
@@ -129,7 +134,6 @@ public:
   */
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) {
-    ulong start = millis();
     if (!readSensor()) {
       return false;
     }
