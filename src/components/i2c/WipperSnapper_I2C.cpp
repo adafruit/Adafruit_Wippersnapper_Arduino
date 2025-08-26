@@ -737,6 +737,17 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _pm25->configureDriver(msgDeviceInitReq);
     drivers.push_back(_pm25);
     WS_DEBUG_PRINTLN("PM2.5 AQI Sensor Initialized Successfully!");
+  } else if (strcmp("qmc5883p", msgDeviceInitReq->i2c_device_name) == 0) {
+    _qmc5883p = new WipperSnapper_I2C_Driver_QMC5883P(this->_i2c, i2cAddress);
+    if (!_qmc5883p->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize QMC5883P Sensor!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _qmc5883p->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_qmc5883p);
+    WS_DEBUG_PRINTLN("QMC5883P Sensor Initialized Successfully!");
   } else if (strcmp("lc709203f", msgDeviceInitReq->i2c_device_name) == 0) {
     _lc = new WipperSnapper_I2C_Driver_LC709203F(this->_i2c, i2cAddress);
     if (!_lc->begin()) {
