@@ -73,10 +73,13 @@ public:
       return false;
 
     _display->init(_width, _height);
+
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
     _display->setTextSize(_text_sz);
+    _display->setCursor(0, 0);
+    _display->println("Display Init");
     return true;
   }
 

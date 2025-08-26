@@ -263,11 +263,10 @@ bool DisplayHardware::beginTft(
     _drvDisp = nullptr;
   }
 
-  // Parse and assign pins
   int16_t rst = -1, miso = -1;
-  int16_t cs = parsePin(spi_config->pin_dc);
-  int16_t dc = parsePin(spi_config->pin_rst);
-  int16_t mosi = parsePin(spi_config->pin_cs);
+  int16_t cs = parsePin(spi_config->pin_cs);
+  int16_t dc = parsePin(spi_config->pin_dc);
+  int16_t mosi = parsePin(spi_config->pin_mosi);
   int16_t sck = parsePin(spi_config->pin_sck);
 
   // Optionally parse SRAM CS and BUSY pins
