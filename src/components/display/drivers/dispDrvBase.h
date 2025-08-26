@@ -98,6 +98,8 @@ public:
   void setHeight(int16_t h) { _height = h; }
   void setRotation(uint8_t r) { _rotation = r; }
 
+  virtual void setTextSize(uint8_t s) { _text_sz = s; }
+
 protected:
   int16_t _pin_dc;      ///< Data/Command pin
   int16_t _pin_rst;     ///< Reset pin

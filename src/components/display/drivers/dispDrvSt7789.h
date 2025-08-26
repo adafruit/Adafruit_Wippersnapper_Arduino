@@ -18,6 +18,8 @@
 #include "dispDrvBase.h"
 #include <Adafruit_ST7789.h>
 
+#define ST7789_TEXT_SZ_DEFAULT 2
+
 /*!
     @brief  Driver for ST7789-based TFT displays.
 */
@@ -73,14 +75,16 @@ public:
       return false;
 
     _display->init(_width, _height);
-
     _display->setRotation(_rotation);
     _display->fillScreen(ST77XX_BLACK);
     _display->setTextColor(ST77XX_WHITE);
-    _display->setTextSize(_text_sz);
-    _display->setCursor(0, 0);
-    _display->println("Display Init");
+    _display->setTextSize(ST7789_TEXT_SZ_DEFAULT);
     return true;
+  }
+
+  void setTextSize(uint8_t s) override {
+    _text_sz = s;
+    _display->setTextSize(s);
   }
 
   /*!

@@ -53,6 +53,11 @@ static const std::map<std::string, FnCreateDispDrvTft> FactoryDrvDispTft = {
      [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
         int16_t miso) -> dispDrvBase * {
        return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
+     }},
+    {"st7789-large",
+     [](int16_t cs, int16_t dc, int16_t mosi, int16_t sck, int16_t rst,
+        int16_t miso) -> dispDrvBase * {
+       return new dispDrvSt7789(cs, dc, mosi, sck, rst, miso);
      }}};
 
 /*!
@@ -282,6 +287,11 @@ bool DisplayHardware::beginTft(
   if (!_drvDisp) {
     WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
     return false;
+  }
+
+  // Check if name has -large suffix, and if so, set a larger default text size
+  if (strstr(_name, "-large") != nullptr) {
+    _drvDisp->setTextSize(3); // Large text size for -large displays
   }
 
   _drvDisp->setWidth(config->width);
