@@ -550,6 +550,33 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _mcp9808->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mcp9808);
     WS_DEBUG_PRINTLN("MCP9808 Initialized Successfully!");
+  } else if (strcmp("mlx90632b", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("mlx90632d_med", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mlx90632d = new WipperSnapper_I2C_Driver_MLX90632D(this->_i2c, i2cAddress);
+    if (!_mlx90632d->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MLX90632!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mlx90632d->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mlx90632d);
+    WS_DEBUG_PRINTLN("MLX90632 Initialized Successfully!");
+  } else if (strcmp("mlx90632d_ext", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mlx90632d_ext =
+        new WipperSnapper_I2C_Driver_MLX90632D(this->_i2c, i2cAddress);
+    // set extended range
+    if (!_mlx90632d_ext->begin() ||
+        !_mlx90632d_ext->ConfigureAndPrintSensorInfo(true)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Failed to initialize MLX90632D with extended range!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mlx90632d_ext->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mlx90632d_ext);
+    WS_DEBUG_PRINTLN("MLX90632D_EXT Initialized Successfully!");
   } else if (strcmp("mpl115a2", msgDeviceInitReq->i2c_device_name) == 0) {
     _mpl115a2 = new WipperSnapper_I2C_Driver_MPL115A2(this->_i2c, i2cAddress);
     if (!_mpl115a2->begin()) {
