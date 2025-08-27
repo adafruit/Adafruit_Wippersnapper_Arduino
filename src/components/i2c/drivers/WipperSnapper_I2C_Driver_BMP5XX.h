@@ -16,10 +16,11 @@
 #ifndef WipperSnapper_I2C_Driver_BMP5XX_H
 #define WipperSnapper_I2C_Driver_BMP5XX_H
 
-#include "WipperSnapper_I2C_Driver.h"
 #include <Adafruit_BMP5XX.h>
 
-#define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
+#include "WipperSnapper_I2C_Driver.h"
+
+#define SEALEVELPRESSURE_HPA (1013.25)  ///< Default sea level pressure, in hPa
 
 /**************************************************************************/
 /*!
@@ -28,8 +29,7 @@
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_BMP5XX : public WipperSnapper_I2C_Driver {
-
-public:
+ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an BMP5XX sensor.
@@ -49,9 +49,9 @@ public:
       @brief    Destructor for an BMP5XX sensor.
   */
   /*******************************************************************************/
-  ~WipperSnapper_I2C_Driver_BMP5XX() { 
+  ~WipperSnapper_I2C_Driver_BMP5XX() {
     if (_bmp5xx) {
-      delete _bmp5xx; 
+      delete _bmp5xx;
       _bmp5xx = nullptr;
     }
   }
@@ -64,8 +64,11 @@ public:
   /*******************************************************************************/
   bool begin() {
     _bmp5xx = new Adafruit_BMP5xx();
-    if (!_bmp5xx->begin(_sensorAddress, _i2c))
+    if (!_bmp5xx->begin(_sensorAddress, _i2c)) {
+      delete _bmp5xx;
+      _bmp5xx = nullptr;
       return false;
+    }
 
     // Set up oversampling and filter initialization
     _bmp5xx->setTemperatureOversampling(BMP5XX_OVERSAMPLING_8X);
@@ -86,8 +89,9 @@ public:
   */
   /*******************************************************************************/
   bool getEventAmbientTemp(sensors_event_t *tempEvent) {
-    if (!_bmp5xx->performReading())
+    if (!_bmp5xx->performReading()) {
       return false;
+    }
     tempEvent->temperature = _bmp5xx->temperature;
     return true;
   }
@@ -103,9 +107,10 @@ public:
   */
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
-    if (!_bmp5xx->performReading())
+    if (!_bmp5xx->performReading()) {
       return false;
-    pressureEvent->pressure = _bmp5xx->pressure / 10.0F;
+    }
+    pressureEvent->pressure = _bmp5xx->pressure;
     return true;
   }
 
@@ -119,14 +124,15 @@ public:
   */
   /*******************************************************************************/
   bool getEventAltitude(sensors_event_t *altitudeEvent) {
-    if (!_bmp5xx->performReading())
+    if (!_bmp5xx->performReading()) {
       return false;
+    }
     altitudeEvent->altitude = _bmp5xx->readAltitude(SEALEVELPRESSURE_HPA);
     return true;
   }
 
-protected:
-  Adafruit_BMP5xx *_bmp5xx; ///< BMP5xx object
+ protected:
+  Adafruit_BMP5xx *_bmp5xx;  ///< BMP5xx object
 };
 
-#endif // WipperSnapper_I2C_Driver_BMP5XX
+#endif  // WipperSnapper_I2C_Driver_BMP5XX
