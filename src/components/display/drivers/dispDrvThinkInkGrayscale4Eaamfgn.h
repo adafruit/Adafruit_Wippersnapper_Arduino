@@ -123,6 +123,7 @@ public:
           i++;
         }
       } else if (message[i] == 0xC2 && message[i + 1] == 0xB0) {
+        // Degree symbol
         _display->write(char(248));
         i++;
       } else {

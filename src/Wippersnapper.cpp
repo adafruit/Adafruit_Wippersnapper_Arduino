@@ -3015,13 +3015,10 @@ void Wippersnapper::connect() {
   WS._ui_helper->build_scr_monitor();
 #endif
 
-  WS.pinCfgCompleted = true;
-
   // Initialize Digital IO class
   WS._digitalGPIO = new Wippersnapper_DigitalGPIO(20);
   // Initialize Analog IO class
   WS._analogIO = new Wippersnapper_AnalogIO(5, 3.3);
-  WS._boardStatus = WS_BOARD_DEF_OK;
 
   // Configure hardware
   while (!WS.pinCfgCompleted) {

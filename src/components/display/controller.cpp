@@ -58,6 +58,7 @@ bool DisplayController::Handle_Display_AddOrReplace(
                                   &msgAdd->interface_type.spi_tft);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported display configuration type!");
+    delete display;
     return false;
   }
 

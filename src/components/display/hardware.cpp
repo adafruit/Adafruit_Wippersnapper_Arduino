@@ -15,7 +15,7 @@
 #include "controller.h"
 
 /*!
-    @brief  Lambda function to create a dispDrvBase instance
+    @brief  Lambda function to create a dispDrvBase EPD instance.
 */
 using FnCreateDispDrvEpd =
     std::function<dispDrvBase *(int16_t, int16_t, int16_t, int16_t, int16_t)>;
