@@ -69,6 +69,9 @@ Wippersnapper::Wippersnapper() {
 
   // DallasSemi (OneWire)
   WS._ds18x20Component = new ws_ds18x20();
+
+  // Display controller
+  WS._displayController = new DisplayController();
 };
 
 /**************************************************************************/
@@ -1655,6 +1658,124 @@ void cbSignalUARTReq(char *data, uint16_t len) {
     WS_DEBUG_PRINTLN("ERROR: Unable to decode UART Signal message");
 }
 
+/*!
+    @brief    Deserializes a DisplayRequest message and sends it to the display
+   component.
+    @param    stream
+                Incoming data stream from buffer.
+    @param    field
+                Protobuf message's tag type.
+    @param    arg
+                Optional arguments from decoder calling function.
+    @returns  True if decoded successfully, False otherwise.
+*/
+bool cbDecodeDisplayMsg(pb_istream_t *stream, const pb_field_t *field,
+                        void **arg) {
+  if (field->tag == wippersnapper_signal_v1_DisplayRequest_display_add_tag) {
+
+    // Decode message into a DisplayAddRequest
+    wippersnapper_display_v1_DisplayAddOrReplace msgAddReq =
+        wippersnapper_display_v1_DisplayAddOrReplace_init_zero;
+    if (!ws_pb_decode(stream,
+                      wippersnapper_display_v1_DisplayAddOrReplace_fields,
+                      &msgAddReq)) {
+      WS_DEBUG_PRINTLN("ERROR: Failure decoding DisplayAddOrReplace message!");
+      return false;
+    }
+
+    // Attempt to add or replace a display component
+    bool did_add =
+        WS._displayController->Handle_Display_AddOrReplace(&msgAddReq);
+
+    // Create a DisplayResponse message
+    wippersnapper_signal_v1_DisplayResponse msgResp =
+        wippersnapper_signal_v1_DisplayResponse_init_zero;
+    msgResp.which_payload =
+        wippersnapper_signal_v1_DisplayResponse_display_added_tag;
+    msgResp.payload.display_added.did_add = did_add;
+    strncpy(msgResp.payload.display_added.name, msgAddReq.name,
+            sizeof(msgResp.payload.display_added.name));
+
+    // Encode and publish response back to broker
+    memset(WS._buffer_outgoing, 0, sizeof(WS._buffer_outgoing));
+    pb_ostream_t ostream = pb_ostream_from_buffer(WS._buffer_outgoing,
+                                                  sizeof(WS._buffer_outgoing));
+    if (!ws_pb_encode(&ostream, wippersnapper_signal_v1_DisplayResponse_fields,
+                      &msgResp)) {
+      WS_DEBUG_PRINTLN("ERROR: Unable to encode display response message!");
+      return false;
+    }
+
+    size_t msgSz;
+    pb_get_encoded_size(&msgSz, wippersnapper_signal_v1_DisplayResponse_fields,
+                        &msgResp);
+    WS_DEBUG_PRINT("Publishing DisplayResponse Message...");
+    if (!WS._mqtt->publish(WS._topic_signal_display_device, WS._buffer_outgoing,
+                           msgSz, 1)) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to DisplayResponse Response!");
+    } else {
+      WS_DEBUG_PRINTLN("Published!");
+    }
+  } else if (field->tag ==
+             wippersnapper_signal_v1_DisplayRequest_display_write_tag) {
+    // Decode message into a DisplayAddRequest
+    wippersnapper_display_v1_DisplayWrite msgWrite =
+        wippersnapper_display_v1_DisplayWrite_init_zero;
+    if (!ws_pb_decode(stream, wippersnapper_display_v1_DisplayWrite_fields,
+                      &msgWrite)) {
+      WS_DEBUG_PRINTLN("ERROR: Failure decoding DisplayWrite message!");
+      return false;
+    }
+    // Attempt to write to a display
+    WS._displayController->Handle_Display_Write(&msgWrite);
+  } else if (field->tag ==
+             wippersnapper_signal_v1_DisplayRequest_display_remove_tag) {
+    // Decode message into a DisplayRemoveRequest
+    wippersnapper_display_v1_DisplayRemove msgRemove =
+        wippersnapper_display_v1_DisplayRemove_init_zero;
+    if (!ws_pb_decode(stream, wippersnapper_display_v1_DisplayRemove_fields,
+                      &msgRemove)) {
+      WS_DEBUG_PRINTLN("ERROR: Failure decoding DisplayRemove message!");
+      return false;
+    }
+    // Attempt to remove a display
+    WS._displayController->Handle_Display_Remove(&msgRemove);
+  } else {
+    WS_DEBUG_PRINTLN("ERROR: Display message type not found!");
+    return false;
+  }
+  return true;
+}
+
+/*!
+    @brief    Called when the device receives a new message from the
+              /display/ topic.
+    @param    data
+              Incoming data from MQTT broker.
+    @param    len
+              Length of incoming data.
+*/
+void cbDisplayMessage(char *data, uint16_t len) {
+  WS_DEBUG_PRINTLN("* NEW MESSAGE [Topic: Display]: ");
+  WS_DEBUG_PRINT(len);
+  WS_DEBUG_PRINTLN(" bytes.");
+  // zero-out current buffer
+  memset(WS._buffer, 0, sizeof(WS._buffer));
+  // copy mqtt data into buffer
+  memcpy(WS._buffer, data, len);
+  WS.bufSize = len;
+
+  // Set up the payload callback, which will set up the callbacks for
+  // each oneof payload field once the field tag is known
+  WS.msgSignalDisplay.cb_payload.funcs.decode = cbDecodeDisplayMsg;
+
+  // Decode pixel message from buffer
+  pb_istream_t istream = pb_istream_from_buffer(WS._buffer, WS.bufSize);
+  if (!ws_pb_decode(&istream, wippersnapper_signal_v1_DisplayRequest_fields,
+                    &WS.msgSignalDisplay))
+    WS_DEBUG_PRINTLN("ERROR: Unable to decode display message");
+}
+
 /****************************************************************************/
 /*!
     @brief    Handles MQTT messages on signal topic until timeout.
@@ -2344,6 +2465,63 @@ bool Wippersnapper::generateWSTopics() {
     WS_DEBUG_PRINTLN("FATAL ERROR: Failed to allocate memory for UART topic!");
     return false;
   }
+
+  // /display topic //
+
+  // Pre-determine topic size
+  topicLen = strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
+             strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("broker") +
+             strlen(TOPIC_DISPLAY) + 1;
+
+// Pre-allocate memory for topic
+#ifdef USE_PSRAM
+  WS._topic_signal_display_brkr = (char *)ps_malloc(topicLen);
+#else
+  WS._topic_signal_display_brkr = (char *)malloc(topicLen);
+#endif
+
+  // Generate the topic
+  if (WS._topic_signal_display_brkr != NULL) {
+    snprintf(WS._topic_signal_display_brkr, topicLen, "%s/wprsnpr/%s%sbroker%s",
+             WS._config.aio_user, _device_uid, TOPIC_SIGNALS, TOPIC_DISPLAY);
+  } else {
+    WS_DEBUG_PRINTLN(
+        "FATAL ERROR: Failed to allocate memory for DISPLAY topic!");
+    return false;
+  }
+
+  // Subscribe to signal's DISPLAY sub-topic and set callback
+  _topic_signal_display_sub =
+      new Adafruit_MQTT_Subscribe(WS._mqtt, WS._topic_signal_display_brkr, 1);
+  WS_DEBUG_PRINTLN("Subscribing to DISPLAY topic: ");
+  WS_DEBUG_PRINTLN(WS._topic_signal_display_brkr);
+  WS._mqtt->subscribe(_topic_signal_display_sub);
+  WS_DEBUG_PRINTLN("Subscribed to DISPLAY topic!");
+  _topic_signal_display_sub->setCallback(cbDisplayMessage);
+
+  // Calculate length of the topic for device-to-broker DISPLAY topic
+  topicLen = strlen(WS._config.aio_user) + strlen("/") + strlen(_device_uid) +
+             strlen("/wprsnpr/") + strlen(TOPIC_SIGNALS) + strlen("device") +
+             strlen(TOPIC_DISPLAY) + 1;
+
+// Allocate memory for dynamic MQTT topic
+#ifdef USE_PSRAM
+  WS._topic_signal_display_device = (char *)ps_malloc(topicLen);
+#else
+  WS._topic_signal_display_device = (char *)malloc(topicLen);
+#endif
+
+  // Generate the topic if memory was allocated successfully
+  if (WS._topic_signal_display_device != NULL) {
+    snprintf(WS._topic_signal_display_device, topicLen,
+             "%s/wprsnpr/%s%sdevice%s", WS._config.aio_user, _device_uid,
+             TOPIC_SIGNALS, TOPIC_DISPLAY);
+  } else {
+    WS_DEBUG_PRINTLN(
+        "FATAL ERROR: Failed to allocate memory for DISPLAY topic!");
+    return false;
+  }
+
   return true;
 }
 
@@ -2836,6 +3014,11 @@ void Wippersnapper::connect() {
   WS_DEBUG_PRINTLN("building monitor screen...");
   WS._ui_helper->build_scr_monitor();
 #endif
+
+  // Initialize Digital IO class
+  WS._digitalGPIO = new Wippersnapper_DigitalGPIO(20);
+  // Initialize Analog IO class
+  WS._analogIO = new Wippersnapper_AnalogIO(5, 3.3);
 
   // Configure hardware
   while (!WS.pinCfgCompleted) {
