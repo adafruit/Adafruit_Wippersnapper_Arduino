@@ -33,8 +33,8 @@ bool WipperSnapper_I2C_Driver_QMC5883P::begin() {
   _qmc->setOSR(QMC5883P_OSR_4);
   // Set DSR (Downsample Ratio) to 2
   _qmc->setDSR(QMC5883P_DSR_2);
-  // Set Range to 8G
-  _qmc->setRange(QMC5883P_RANGE_8G);
+  // Set Range to 30G
+  _qmc->setRange(QMC5883P_RANGE_30G);
   // Set SetReset mode to On
   _qmc->setSetResetMode(QMC5883P_SETRESET_ON);
 
@@ -51,12 +51,21 @@ bool WipperSnapper_I2C_Driver_QMC5883P::getEventRaw(sensors_event_t *magEvent) {
 
   // Get raw magnetic data
   if (!_qmc->getRawMagnetic(&x, &y, &z)) {
+    WS_DEBUG_PRINTLN("Failed to read raw magnetic data");
     return false;
   }
 
   // Get Gauss field data
   if (!_qmc->getGaussField(&gx, &gy, &gz)) {
+    WS_DEBUG_PRINTLN("Failed to read Gauss field data");
+    WS_DEBUG_PRINT("Raw X: "); WS_DEBUG_PRINTLN(x);
+    WS_DEBUG_PRINT("Raw Y: "); WS_DEBUG_PRINTLN(y);
+    WS_DEBUG_PRINT("Raw Z: "); WS_DEBUG_PRINTLN(z);
     return false;
+  } else {
+    WS_DEBUG_PRINT("Gauss X: "); WS_DEBUG_PRINTLN(gx);
+    WS_DEBUG_PRINT("Gauss Y: "); WS_DEBUG_PRINTLN(gy);
+    WS_DEBUG_PRINT("Gauss Z: "); WS_DEBUG_PRINTLN(gz);
   }
 
   // Check for overflow
