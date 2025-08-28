@@ -236,6 +236,16 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _ahtx0->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ahtx0);
+  } else if (strcmp("as5600", msgDeviceInitReq->i2c_device_name) == 0) {
+    _as5600 = new WipperSnapper_I2C_Driver_AS5600(this->_i2c, i2cAddress);
+    if (!_as5600->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize AS5600 chip!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _as5600->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_as5600);
   } else if (strcmp("bh1750", msgDeviceInitReq->i2c_device_name) == 0) {
     _bh1750 = new WipperSnapper_I2C_Driver_BH1750(this->_i2c, i2cAddress);
     if (!_bh1750->begin()) {
