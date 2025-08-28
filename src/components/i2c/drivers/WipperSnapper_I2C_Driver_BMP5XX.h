@@ -20,7 +20,7 @@
 
 #include "WipperSnapper_I2C_Driver.h"
 
-#define SEALEVELPRESSURE_HPA (1013.25)  ///< Default sea level pressure, in hPa
+#define SEALEVELPRESSURE_HPA (1013.25) ///< Default sea level pressure, in hPa
 
 /**************************************************************************/
 /*!
@@ -29,7 +29,7 @@
 */
 /**************************************************************************/
 class WipperSnapper_I2C_Driver_BMP5XX : public WipperSnapper_I2C_Driver {
- public:
+public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for an BMP5XX sensor.
@@ -131,8 +131,8 @@ class WipperSnapper_I2C_Driver_BMP5XX : public WipperSnapper_I2C_Driver {
     return true;
   }
 
- protected:
-  Adafruit_BMP5xx *_bmp5xx;  ///< BMP5xx object
+protected:
+  Adafruit_BMP5xx *_bmp5xx; ///< BMP5xx object
 };
 
 #endif  // WipperSnapper_I2C_Driver_BMP5XX
