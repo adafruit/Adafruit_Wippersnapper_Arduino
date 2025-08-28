@@ -16,7 +16,7 @@
 #ifndef WipperSnapper_I2C_Driver_BMP5XX_H
 #define WipperSnapper_I2C_Driver_BMP5XX_H
 
-#include <Adafruit_BMP5XX.h>
+#include <Adafruit_BMP5xx.h>
 
 #include "WipperSnapper_I2C_Driver.h"
 
