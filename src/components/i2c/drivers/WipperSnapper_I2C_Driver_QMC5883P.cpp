@@ -58,14 +58,20 @@ bool WipperSnapper_I2C_Driver_QMC5883P::getEventRaw(sensors_event_t *magEvent) {
   // Get Gauss field data
   if (!_qmc->getGaussField(&gx, &gy, &gz)) {
     WS_DEBUG_PRINTLN("Failed to read Gauss field data");
-    WS_DEBUG_PRINT("Raw X: "); WS_DEBUG_PRINTLN(x);
-    WS_DEBUG_PRINT("Raw Y: "); WS_DEBUG_PRINTLN(y);
-    WS_DEBUG_PRINT("Raw Z: "); WS_DEBUG_PRINTLN(z);
+    WS_DEBUG_PRINT("Raw X: ");
+    WS_DEBUG_PRINTLN(x);
+    WS_DEBUG_PRINT("Raw Y: ");
+    WS_DEBUG_PRINTLN(y);
+    WS_DEBUG_PRINT("Raw Z: ");
+    WS_DEBUG_PRINTLN(z);
     return false;
   } else {
-    WS_DEBUG_PRINT("Gauss X: "); WS_DEBUG_PRINTLN(gx);
-    WS_DEBUG_PRINT("Gauss Y: "); WS_DEBUG_PRINTLN(gy);
-    WS_DEBUG_PRINT("Gauss Z: "); WS_DEBUG_PRINTLN(gz);
+    WS_DEBUG_PRINT("Gauss X: ");
+    WS_DEBUG_PRINTLN(gx);
+    WS_DEBUG_PRINT("Gauss Y: ");
+    WS_DEBUG_PRINTLN(gy);
+    WS_DEBUG_PRINT("Gauss Z: ");
+    WS_DEBUG_PRINTLN(gz);
   }
 
   // Check for overflow
