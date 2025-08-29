@@ -71,12 +71,12 @@ public:
     }
 
     // Set up oversampling and filter initialization
-    _bmp5xx->setTemperatureOversampling(BMP5XX_OVERSAMPLING_8X);
-    _bmp5xx->setPressureOversampling(BMP5XX_OVERSAMPLING_4X);
-    _bmp5xx->setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3);
-    _bmp5xx->setOutputDataRate(BMP5XX_ODR_50_HZ);
-
-    return true;
+    return _bmp5xx->setTemperatureOversampling(BMP5XX_OVERSAMPLING_8X) &&
+           _bmp5xx->setPressureOversampling(BMP5XX_OVERSAMPLING_16X) &&
+           _bmp5xx->setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3) &&
+           _bmp5xx->setOutputDataRate(BMP5XX_ODR_50_HZ) &&
+           _bmp5xx->setPowerMode(BMP5XX_POWERMODE_NORMAL) &&
+           _bmp5xx->enablePressure(true);
   }
 
   /*******************************************************************************/
