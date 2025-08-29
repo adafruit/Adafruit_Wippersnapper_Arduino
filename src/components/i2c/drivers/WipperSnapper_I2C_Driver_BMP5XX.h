@@ -135,4 +135,4 @@ protected:
   Adafruit_BMP5xx *_bmp5xx; ///< BMP5xx object
 };
 
-#endif  // WipperSnapper_I2C_Driver_BMP5XX
+#endif // WipperSnapper_I2C_Driver_BMP5XX
