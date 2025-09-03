@@ -502,4 +502,3 @@ protected:
 extern Wippersnapper WS; ///< Global member variable for callbacks
 
 #endif // ADAFRUIT_WIPPERSNAPPER_H
-
