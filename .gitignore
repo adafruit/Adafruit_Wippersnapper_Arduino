@@ -53,3 +53,5 @@ data/
 # Misc. Data
 tests/
 venv/
+
+Doxyfile
