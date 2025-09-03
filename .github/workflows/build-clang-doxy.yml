@@ -18,7 +18,7 @@ on:
 
 jobs:
   build-esp32sx-esptool:
-    name: 🏗️ESP32-Sx(lvgl)
+    name: 🏗️ESP32-Sx
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -81,8 +81,6 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
-          git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -112,12 +110,6 @@ jobs:
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: List all files in Adafruit_LittlevGL_Glue_Library folder
-        run: |
-          ls /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
-      - name: Copy lv_conf.h file in Adafruit_LittlevGL_Glue_Library to the arduino library folder
-        run: |
-          cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
       - name: Install Dependencies (esptool)
         run: |
           pip3 install esptool
@@ -292,8 +284,6 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
-          git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
@@ -323,12 +313,6 @@ jobs:
           # Copy files to WipperSnapper's src/nanopb directory
           cp nanopb/pb_common.* nanopb/pb_encode.* nanopb/pb_decode.* src/nanopb
           mv nanopb/pb.h src/nanopb/nanopb.pb.h
-      - name: List all files in Adafruit_LittlevGL_Glue_Library folder
-        run: |
-          ls /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
-      - name: Copy lv_conf.h file in Adafruit_LittlevGL_Glue_Library to the arduino library folder
-        run: |
-          cp /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library/lv_conf.h /home/runner/Arduino/libraries
       - name: Build for ESP32-SX
         run: |
           python3 ci/build_platform.py ${{ matrix.arduino-platform }} --build_timeout 48000
@@ -804,8 +788,6 @@ jobs:
           git clone --quiet https://github.com/adafruit/Adafruit-ST7735-Library.git /home/runner/Arduino/libraries/Adafruit-ST7735-Library
           git clone --quiet https://github.com/adafruit/Adafruit_TouchScreen.git /home/runner/Arduino/libraries/Adafruit_TouchScreen
           git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
-          git clone --depth 1 --branch wippersnapper https://github.com/brentru/lvgl.git /home/runner/Arduino/libraries/lvgl
-          git clone --depth 1 --branch development https://github.com/brentru/Adafruit_LvGL_Glue.git /home/runner/Arduino/libraries/Adafruit_LittlevGL_Glue_Library
       - name: Download stable Nanopb
         id: download-nanopb
         continue-on-error: true
