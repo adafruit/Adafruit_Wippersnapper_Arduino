@@ -13,6 +13,11 @@
 
 class Adafruit_QMC5883P; // forward
 
+/**************************************************************************/
+/*!
+@brief  Class that provides a driver interface for a QMC5883P sensor.
+*/
+/**************************************************************************/
 class WipperSnapper_I2C_Driver_QMC5883P : public WipperSnapper_I2C_Driver {
 public:
   WipperSnapper_I2C_Driver_QMC5883P(TwoWire *i2c, uint16_t sensorAddress);
@@ -22,7 +27,7 @@ public:
   bool getEventRaw(sensors_event_t *magEvent);
 
 private:
-  Adafruit_QMC5883P *_qmc = nullptr;
+  Adafruit_QMC5883P *_qmc = nullptr; ///< Pointer to the QMC5883P sensor object
 };
 
 #endif // WipperSnapper_I2C_Driver_QMC5883P_H

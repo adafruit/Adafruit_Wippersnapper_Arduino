@@ -9,16 +9,31 @@
 #include <Adafruit_QMC5883P.h>
 #include <math.h>
 
+
+/*!
+ * @brief    Constructor for a QMC5883P sensor.
+ * @param    i2c
+ *             The I2C interface.
+ * @param    sensorAddress
+ *             The 7-bit I2C address of the sensor.
+ */
 WipperSnapper_I2C_Driver_QMC5883P::WipperSnapper_I2C_Driver_QMC5883P(
     TwoWire *i2c, uint16_t sensorAddress)
     : WipperSnapper_I2C_Driver(i2c, sensorAddress) {}
 
+/*!
+ * @brief  Destructor for a QMC5883P sensor.
+ */
 WipperSnapper_I2C_Driver_QMC5883P::~WipperSnapper_I2C_Driver_QMC5883P() {
   if (_qmc) {
     delete _qmc;
   }
 }
 
+/*!
+ * @brief  Initializes the QMC5883P sensor and begins I2C.
+ * @return True if initialized successfully, False otherwise.
+ */
 bool WipperSnapper_I2C_Driver_QMC5883P::begin() {
   _qmc = new Adafruit_QMC5883P();
   if (!_qmc->begin(_sensorAddress, _i2c)) {
@@ -41,6 +56,12 @@ bool WipperSnapper_I2C_Driver_QMC5883P::begin() {
   return true;
 }
 
+/*!
+ * @brief   Get the magnetometer's sensor event.
+ * @param   magEvent
+ *          Pointer to the magnetometer sensor event.
+ * @return  True if the event was obtained successfully, False otherwise.
+ */
 bool WipperSnapper_I2C_Driver_QMC5883P::getEventRaw(sensors_event_t *magEvent) {
   if (!_qmc->isDataReady()) {
     return false;
