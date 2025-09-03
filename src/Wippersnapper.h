@@ -121,12 +121,6 @@
 #include <Esp.h>
 #endif
 
-// Display
-#ifdef USE_DISPLAY
-#include "display/ws_display_driver.h"
-#include "display/ws_display_ui_helper.h"
-#endif
-
 #include "components/display/controller.h"
 #include "components/ds18x20/ws_ds18x20.h"
 #include "components/pixels/ws_pixels.h"
@@ -234,10 +228,6 @@ class Wippersnapper_DigitalGPIO;
 class Wippersnapper_AnalogIO;
 class Wippersnapper_FS;
 class WipperSnapper_LittleFS;
-#ifdef USE_DISPLAY
-class ws_display_driver;
-class ws_display_ui_helper;
-#endif
 #ifdef ARDUINO_ARCH_ESP32
 class ws_ledc;
 #endif
@@ -361,11 +351,6 @@ public:
   Wippersnapper_FS *_fileSystem; ///< Instance of Filesystem (native USB)
   WipperSnapper_LittleFS
       *_littleFS; ///< Instance of LittleFS Filesystem (non-native USB)
-#ifdef USE_DISPLAY
-  ws_display_driver *_display = nullptr; ///< Instance of display driver class
-  ws_display_ui_helper *_ui_helper =
-      nullptr; ///< Instance of display UI helper class
-#endif
   ws_pixels *_ws_pixelsComponent; ///< ptr to instance of ws_pixels class
   ws_pwm *_pwmComponent;          ///< Instance of pwm class
   ws_servo *_servoComponent;      ///< Instance of servo class

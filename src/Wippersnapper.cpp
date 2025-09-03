@@ -108,29 +108,6 @@ void Wippersnapper::provision() {
   _littleFS = new WipperSnapper_LittleFS();
 #endif
 
-#ifdef USE_DISPLAY
-  // Initialize the display
-  displayConfig config;
-  if (!WS._fileSystem->parseDisplayConfig(config)) {
-    WS._fileSystem->parseDisplayConfig(config, true);
-  }
-  WS._display = new ws_display_driver(config);
-  // Begin display
-  if (!WS._display->begin()) {
-    WS_DEBUG_PRINTLN("Unable to enable display driver and LVGL");
-    haltError("Unable to enable display driver, please check the json "
-              "configuration!");
-  }
-
-  WS._display->enableLogging();
-  releaseStatusLED(); // don't use status LED if we are using the display
-  // UI Setup
-  WS._ui_helper = new ws_display_ui_helper(WS._display);
-  WS._ui_helper->set_bg_black();
-  WS._ui_helper->show_scr_load();
-  WS._ui_helper->set_label_status("Validating Credentials...");
-#endif
-
   // Parse secrets.json file
 #ifdef USE_TINYUSB
   _fileSystem->parseSecrets();
@@ -143,11 +120,6 @@ void Wippersnapper::provision() {
   setStatusLEDBrightness(WS._config.status_pixel_brightness);
   // Set device's wireless credentials
   set_ssid_pass();
-
-#ifdef USE_DISPLAY
-  WS._ui_helper->set_label_status("");
-  WS._ui_helper->set_load_bar_icon_complete(loadBarIconFile);
-#endif
 }
 
 /**************************************************************************/
@@ -294,24 +266,10 @@ bool Wippersnapper::configAnalogInPinReq(
     WS._analogIO->initAnalogInputPin(pin, pinMsg->period, pinMsg->pull,
                                      pinMsg->analog_read_mode);
 
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[Pin] Reading %s every %0.2f seconds\n",
-             pinMsg->pin_name, pinMsg->period);
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   } else if (
       pinMsg->request_type ==
       wippersnapper_pin_v1_ConfigurePinRequest_RequestType_REQUEST_TYPE_DELETE) {
     WS._analogIO->deinitAnalogPin(pinMsg->direction, pin);
-
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[Pin] De-initialized pin %s\n.", pinMsg->pin_name);
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   } else {
     WS_DEBUG_PRINTLN("ERROR: Could not decode analog pin request!");
     is_success = false;
@@ -966,10 +924,6 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
                       &msgServoAttachReq)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_servo_v1_ServoAttachRequest");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal(
-          "[Servo ERROR] Could not decode servo request from IO!\n");
-#endif
       return false; // fail out if we can't decode the request
     }
     // execute servo attach request
@@ -979,11 +933,6 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
             atoi(servoPin), msgServoAttachReq.min_pulse_width,
             msgServoAttachReq.max_pulse_width, msgServoAttachReq.servo_freq)) {
       WS_DEBUG_PRINTLN("ERROR: Unable to attach servo to pin!");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal(
-          "[Servo ERROR] Unable to attach servo to pin! Is it already in "
-          "use?\n");
-#endif
       attached = false;
     } else {
       WS_DEBUG_PRINT("ATTACHED servo w/minPulseWidth: ");
@@ -992,12 +941,6 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
       WS_DEBUG_PRINT(msgServoAttachReq.min_pulse_width);
       WS_DEBUG_PRINT("uS on pin: ");
       WS_DEBUG_PRINTLN(servoPin);
-#ifdef USE_DISPLAY
-      char buffer[100];
-      snprintf(buffer, 100, "[Servo] Attached servo on pin %s\n.",
-               msgServoAttachReq.servo_pin);
-      WS._ui_helper->add_text_to_terminal(buffer);
-#endif
     }
 
     // Create and fill a servo response message
@@ -1046,14 +989,6 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     WS_DEBUG_PRINT((int)msgServoWriteReq.pulse_width);
     WS_DEBUG_PRINT("uS to servo on pin#: ");
     WS_DEBUG_PRINTLN(servoPin);
-
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[Servo] Writing pulse width of %u uS to pin %s\n.",
-             (int)msgServoWriteReq.pulse_width, msgServoWriteReq.servo_pin);
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
     WS._servoComponent->servo_write(atoi(servoPin),
                                     (int)msgServoWriteReq.pulse_width);
   } else if (field->tag ==
@@ -1074,14 +1009,6 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
     char *servoPin = msgServoDetachReq.servo_pin + 1;
     WS_DEBUG_PRINT("Detaching servo from pin ");
     WS_DEBUG_PRINTLN(servoPin);
-
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[Servo] Detaching from pin %s\n.",
-             msgServoDetachReq.servo_pin);
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
     WS._servoComponent->servo_detach(atoi(servoPin));
   } else {
     WS_DEBUG_PRINTLN("Unable to decode servo message type!");
@@ -1145,10 +1072,6 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                       &msgPWMAttachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMAttachRequest");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal(
-          "[PWM ERROR]: Could not decode pin attach request!\n");
-#endif
       return false; // fail out if we can't decode the request
     }
 
@@ -1159,11 +1082,6 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
         (uint8_t)msgPWMAttachRequest.resolution);
     if (!attached) {
       WS_DEBUG_PRINTLN("ERROR: Unable to attach PWM pin");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal(
-          "[PWM ERROR]: Failed to attach PWM to pin! Is this pin already in "
-          "use?\n");
-#endif
       attached = false;
     }
 
@@ -1194,14 +1112,6 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       return false;
     }
     WS_DEBUG_PRINTLN("Published!");
-
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[PWM] Attached on pin %s\n.",
-             msgPWMResponse.payload.attach_response.pin);
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_detach_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Pin Detach");
@@ -1212,23 +1122,11 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                       &msgPWMDetachRequest)) {
       WS_DEBUG_PRINTLN(
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMDetachRequest");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal(
-          "[PWM ERROR] Failed to decode pin detach request from IO!\n");
-#endif
       return false; // fail out if we can't decode the request
     }
     // execute PWM pin detatch request
     char *pwmPin = msgPWMDetachRequest.pin + 1;
     WS._pwmComponent->detach(atoi(pwmPin));
-
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[PWM] Detached on pin %s\n.",
-             msgPWMDetachRequest.pin);
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_freq_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Tone");
@@ -1240,13 +1138,8 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                       &msgPWMWriteFreqRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteFrequencyRequest");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal(
-          "[PWM ERROR] Failed to decode frequency write request from IO!\n");
-#endif
       return false; // fail out if we can't decode the request
     }
-
     // execute PWM pin duty cycle write request
     char *pwmPin = msgPWMWriteFreqRequest.pin + 1;
     WS_DEBUG_PRINT("Writing frequency:  ");
@@ -1254,14 +1147,6 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     WS_DEBUG_PRINT("Hz to pin ");
     WS_DEBUG_PRINTLN(atoi(pwmPin));
     WS._pwmComponent->writeTone(atoi(pwmPin), msgPWMWriteFreqRequest.frequency);
-
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[PWM] Writing %ld Hz to pin %s\n.",
-             msgPWMWriteFreqRequest.frequency, msgPWMWriteFreqRequest.pin);
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   } else if (field->tag ==
              wippersnapper_signal_v1_PWMRequest_write_duty_request_tag) {
     WS_DEBUG_PRINTLN("GOT: PWM Write Duty Cycle");
@@ -1274,24 +1159,12 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
                       &msgPWMWriteDutyCycleRequest)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode "
                        "wippersnapper_pwm_v1_PWMWriteDutyCycleRequest");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal(
-          "[PWM ERROR] Failed to decode duty cycle write request from IO!\n");
-#endif
       return false; // fail out if we can't decode the request
     }
     // execute PWM duty cycle write request
     char *pwmPin = msgPWMWriteDutyCycleRequest.pin + 1;
     WS._pwmComponent->writeDutyCycle(
         atoi(pwmPin), (int)msgPWMWriteDutyCycleRequest.duty_cycle);
-
-#ifdef USE_DISPLAY
-    char buffer[100];
-    snprintf(buffer, 100, "[PWM] Writing duty cycle %d to pin %d\n.",
-             (int)msgPWMWriteDutyCycleRequest.duty_cycle, atoi(pwmPin));
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   } else {
     WS_DEBUG_PRINTLN("Unable to decode PWM message type!");
     return false;
@@ -1450,9 +1323,6 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
                       &msgPixelsCreateReq)) {
       WS_DEBUG_PRINTLN("ERROR: Could not decode message of type "
                        "wippersnapper_pixels_v1_PixelsCreateRequest!");
-#ifdef USE_DISPLAY
-      WS._ui_helper->add_text_to_terminal("[Pixel] Error decoding message!\n");
-#endif
       return false;
     }
 
@@ -1844,11 +1714,6 @@ void cbErrorTopic(char *errorData, uint16_t len) {
   if (!WS._mqtt->disconnect()) {
     WS_DEBUG_PRINTLN("ERROR: Unable to disconnect from MQTT broker!");
   }
-
-#ifdef USE_DISPLAY
-  WS._ui_helper->show_scr_error("IO Ban Error", errorData);
-#endif
-
   // WDT reset
   WS.haltError("IO MQTT Ban Error");
 }
@@ -1879,15 +1744,6 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
   WS_DEBUG_PRINT(throttleDuration);
   WS_DEBUG_PRINTLN("ms and blocking command execution.");
 
-#ifdef USE_DISPLAY
-  char buffer[100];
-  snprintf(
-      buffer, 100,
-      "[IO ERROR] Device is throttled for %d mS and blocking execution..\n.",
-      throttleDuration);
-  WS._ui_helper->add_text_to_terminal(buffer);
-#endif
-
   // If throttle duration is less than the keepalive interval, delay for the
   // full keepalive interval
   if (throttleDuration < WS_KEEPALIVE_INTERVAL_MS) {
@@ -1904,10 +1760,6 @@ void cbThrottleTopic(char *throttleData, uint16_t len) {
     }
   }
   WS_DEBUG_PRINTLN("Device is un-throttled, resumed command execution");
-#ifdef USE_DISPLAY
-  WS._ui_helper->add_text_to_terminal(
-      "[IO] Device is un-throttled, resuming...\n");
-#endif
 }
 
 /**************************************************************************/
@@ -2576,10 +2428,6 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_CHECK_NETWORK:
       if (networkStatus() == WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("Connected to WiFi!");
-#ifdef USE_DISPLAY
-        if (WS._ui_helper->getLoadingState())
-          WS._ui_helper->set_load_bar_icon_complete(loadBarIconWifi);
-#endif
         fsmNetwork = FSM_NET_ESTABLISH_MQTT;
         break;
       }
@@ -2588,19 +2436,10 @@ void Wippersnapper::runNetFSM() {
     case FSM_NET_ESTABLISH_NETWORK:
       WS_DEBUG_PRINTLN("Establishing network connection...");
       WS_PRINTER.flush();
-#ifdef USE_DISPLAY
-      if (WS._ui_helper->getLoadingState())
-        WS._ui_helper->set_label_status("Connecting to WiFi...");
-#endif
       // Perform a WiFi scan and check if SSID within
       // secrets.json is within the scanned SSIDs
       WS_DEBUG_PRINT("Performing a WiFi scan for SSID...");
       if (!check_valid_ssid()) {
-#ifdef USE_DISPLAY
-        WS._ui_helper->show_scr_error("ERROR",
-                                      "Unable to find WiFi network listed in "
-                                      "the secrets file. Rebooting soon...");
-#endif
         haltError("ERROR: Unable to find WiFi network, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
       }
@@ -2626,12 +2465,6 @@ void Wippersnapper::runNetFSM() {
       // Validate connection
       if (networkStatus() != WS_NET_CONNECTED) {
         WS_DEBUG_PRINTLN("ERROR: Unable to connect to WiFi!");
-#ifdef USE_DISPLAY
-        WS._ui_helper->show_scr_error(
-            "CONNECTION ERROR",
-            "Unable to connect to WiFi Network. Please check that you entered "
-            "the WiFi credentials correctly. Rebooting in 5 seconds...");
-#endif
         haltError("ERROR: Unable to connect to WiFi, rebooting soon...",
                   WS_LED_STATUS_WIFI_CONNECTING);
       }
@@ -2639,10 +2472,6 @@ void Wippersnapper::runNetFSM() {
       fsmNetwork = FSM_NET_CHECK_NETWORK;
       break;
     case FSM_NET_ESTABLISH_MQTT:
-#ifdef USE_DISPLAY
-      if (WS._ui_helper->getLoadingState())
-        WS._ui_helper->set_label_status("Connecting to IO...");
-#endif
       WS._mqtt->setKeepAliveInterval(WS_KEEPALIVE_INTERVAL_MS / 1000);
       // Attempt to connect
       maxAttempts = 5;
@@ -2672,14 +2501,6 @@ void Wippersnapper::runNetFSM() {
         maxAttempts--;
       }
       if (fsmNetwork != FSM_NET_CHECK_MQTT) {
-#ifdef USE_DISPLAY
-        WS._ui_helper->show_scr_error(
-            "CONNECTION ERROR",
-            "Unable to connect to Adafruit.io. If you are repeatedly having "
-            "this issue, please check that your IO Username and IO Key are set "
-            "correctly in the secrets file. This device will reboot in 5 "
-            "seconds...");
-#endif
         haltError(
             "ERROR: Unable to connect to Adafruit.IO MQTT, rebooting soon...",
             WS_LED_STATUS_MQTT_CONNECTING);
@@ -2794,9 +2615,6 @@ void Wippersnapper::pingBroker() {
   // blink status LED every STATUS_LED_KAT_BLINK_TIME millis
   if (millis() > (_prvKATBlink + STATUS_LED_KAT_BLINK_TIME)) {
     WS_DEBUG_PRINTLN("STATUS LED BLINK KAT");
-#ifdef USE_DISPLAY
-    WS._ui_helper->add_text_to_terminal("[NET] Sent KeepAlive ping!\n");
-#endif
     statusLEDBlink(WS_LED_STATUS_KAT);
     _prvKATBlink = millis();
   }
@@ -2994,11 +2812,6 @@ void Wippersnapper::connect() {
   // Enable WDT after wifi connection as wifiMulti doesnt feed WDT
   WS.enableWDT(WS_WDT_TIMEOUT);
 
-#ifdef USE_DISPLAY
-  WS._ui_helper->set_load_bar_icon_complete(loadBarIconCloud);
-  WS._ui_helper->set_label_status("Sending device info...");
-#endif
-
   // Register hardware with Wippersnapper
   WS_DEBUG_PRINTLN("Registering hardware with WipperSnapper...")
   if (!registerBoard()) {
@@ -3006,14 +2819,6 @@ void Wippersnapper::connect() {
   }
   runNetFSM();
   WS.feedWDT();
-
-// switch to monitor screen
-#ifdef USE_DISPLAY
-  WS_DEBUG_PRINTLN("Clearing loading screen...");
-  WS._ui_helper->clear_scr_load();
-  WS_DEBUG_PRINTLN("building monitor screen...");
-  WS._ui_helper->build_scr_monitor();
-#endif
 
   // Initialize Digital IO class
   WS._digitalGPIO = new Wippersnapper_DigitalGPIO(20);

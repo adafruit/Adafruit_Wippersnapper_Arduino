@@ -1233,9 +1233,6 @@ void WipperSnapper_Component_I2C::displayDeviceEventMessage(
     default:
       break;
     }
-#ifdef USE_DISPLAY
-    WS._ui_helper->add_text_to_terminal(buffer);
-#endif
   }
 }
 

@@ -57,16 +57,19 @@ public:
   */
   bool begin() override {
 
-// Special configuration for Feather TFTs
+// Special power control configuration for
+// boards with built-in TFTs 
 #if defined(TFT_BACKLITE)
     // turn on backlite
     pinMode(TFT_BACKLITE, OUTPUT);
     digitalWrite(TFT_BACKLITE, HIGH);
 
+    #if defined(TFT_I2C_POWER)
     // turn on the TFT / I2C power supply
     pinMode(TFT_I2C_POWER, OUTPUT);
     digitalWrite(TFT_I2C_POWER, HIGH);
     delay(10);
+    #endif // TFT_I2C_POWER
 #endif
 
     _display = new Adafruit_ST7789(_pin_cs, _pin_dc, _pin_rst);

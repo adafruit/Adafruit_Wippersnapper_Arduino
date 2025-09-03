@@ -350,15 +350,7 @@ void Wippersnapper_FS::createSecretsFile() {
   secretsFile.flush();
   secretsFile.close();
 
-  writeToBootOut(
-      "ERROR: Please edit the secrets.json file. Then, reset your board.\n");
-#ifdef USE_DISPLAY
-  WS._ui_helper->show_scr_error(
-      "INVALID SETTINGS FILE",
-      "The settings.json file on the WIPPER drive contains default values. "
-      "Please edit it to reflect your Adafruit IO and network credentials. "
-      "When you're done, press RESET on the board.");
-#endif
+  writeToBootOut("ERROR: Please edit the secrets.json file. Then, reset your board.\n");
   // Re-attach the USB device for file access
   delay(500);
   initUSBMSC();
@@ -439,13 +431,7 @@ void Wippersnapper_FS::parseSecrets() {
     writeToBootOut(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!\n");
-#ifdef USE_DISPLAY
-    WS._ui_helper->show_scr_error(
-        "INVALID IO CREDS",
-        "The \"io_username/io_key\" fields within secrets.json are invalid, "
-        "please "
-        "change it to match your Adafruit IO credentials. Then, press RESET.");
-#endif
+
     fsHalt(
         "ERROR: Invalid IO credentials in secrets.json! TO FIX: Please change "
         "io_username and io_key to match your Adafruit IO credentials!");
@@ -456,13 +442,7 @@ void Wippersnapper_FS::parseSecrets() {
     writeToBootOut("ERROR: Invalid network credentials in secrets.json! TO "
                    "FIX: Please change network_ssid and network_password to "
                    "match your Adafruit IO credentials!\n");
-#ifdef USE_DISPLAY
-    WS._ui_helper->show_scr_error(
-        "INVALID NETWORK",
-        "The \"network_ssid and network_password\" fields within secrets.json "
-        "are invalid, please change it to match your WiFi credentials. Then, "
-        "press RESET.");
-#endif
+
     fsHalt("ERROR: Invalid network credentials in secrets.json! TO FIX: Please "
            "change network_ssid and network_password to match your Adafruit IO "
            "credentials!");

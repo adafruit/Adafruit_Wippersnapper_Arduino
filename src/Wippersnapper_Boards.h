@@ -38,7 +38,6 @@
 #define BOARD_ID "funhouse"                      ///< Board ID
 #define USE_TINYUSB                              ///< Enable TinyUSB
 #define USE_STATUS_DOTSTAR                       ///< Enable DotStar
-#define USE_DISPLAY                              ///< Enable Display
 #define STATUS_DOTSTAR_PIN_DATA PIN_DOTSTAR_DATA ///< DotStar Data Pin
 #define STATUS_DOTSTAR_PIN_CLK PIN_DOTSTAR_CLOCK ///< DotStar Clock Pin
 #define STATUS_DOTSTAR_NUM 5                     ///< Number of DotStar LEDs
