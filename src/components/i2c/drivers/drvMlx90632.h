@@ -69,7 +69,7 @@ public:
       _mlx90632 = nullptr;
     }
     _mlx90632 = new Adafruit_MLX90632();
-    if (!_mlx90632->begin(_sensorAddress, _i2c)){
+    if (!_mlx90632->begin(_address, _i2c)) {
       return false;
     }
 

@@ -221,9 +221,9 @@ static const std::map<std::string, FnCreateI2CSensorDriver> I2cFactorySensor = {
     {"mlx90632d_ext",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
         const char *driver_name) -> drvBase * {
-          drvMLX90632 *drv = new drvMLX90632(i2c, addr, mux_channel, driver_name);
-          drv->ConfigureAndPrintSensorInfo(true);
-          return drv;
+       drvMLX90632 *drv = new drvMLX90632(i2c, addr, mux_channel, driver_name);
+       drv->ConfigureAndPrintSensorInfo(true);
+       return drv;
      }},
     {"mpl115a2",
      [](TwoWire *i2c, uint16_t addr, uint32_t mux_channel,
