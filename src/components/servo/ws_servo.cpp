@@ -72,7 +72,7 @@ bool ws_servo::servo_attach(int pin, int minPulseWidth, int maxPulseWidth,
 #ifdef ARDUINO_ARCH_ESP32
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth, freq);
 #else
-  (void)freq; // supress warning when we don't use the frequency parameter
+  (void)freq; // suppress warning when we don't use the frequency parameter
   rc = servo->attach(pin, minPulseWidth, maxPulseWidth);
 #endif
   if (rc == ERR_SERVO_ATTACH)

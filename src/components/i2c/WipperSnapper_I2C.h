@@ -22,11 +22,13 @@
 #include "drivers/WipperSnapper_I2C_Driver.h"
 #include "drivers/WipperSnapper_I2C_Driver_ADT7410.h"
 #include "drivers/WipperSnapper_I2C_Driver_AHTX0.h"
+#include "drivers/WipperSnapper_I2C_Driver_AS5600.h"
 #include "drivers/WipperSnapper_I2C_Driver_BH1750.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BME680.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP280.h"
 #include "drivers/WipperSnapper_I2C_Driver_BMP3XX.h"
+#include "drivers/WipperSnapper_I2C_Driver_BMP5XX.h"
 #include "drivers/WipperSnapper_I2C_Driver_D6T1A.h"
 #include "drivers/WipperSnapper_I2C_Driver_DPS310.h"
 #include "drivers/WipperSnapper_I2C_Driver_DS2484.h"
@@ -50,6 +52,7 @@
 #include "drivers/WipperSnapper_I2C_Driver_MAX17048.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP3421.h"
 #include "drivers/WipperSnapper_I2C_Driver_MCP9808.h"
+#include "drivers/WipperSnapper_I2C_Driver_MLX90632D.h"
 #include "drivers/WipperSnapper_I2C_Driver_MPL115A2.h"
 #include "drivers/WipperSnapper_I2C_Driver_MPRLS.h"
 #include "drivers/WipperSnapper_I2C_Driver_MS8607.h"
@@ -157,6 +160,7 @@ private:
       _drivers_out; ///< List of i2c output drivers
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
+  WipperSnapper_I2C_Driver_AS5600 *_as5600 = nullptr;
   WipperSnapper_I2C_Driver_D6T1A *_d6t1a = nullptr;
   WipperSnapper_I2C_Driver_DPS310 *_dps310 = nullptr;
   WipperSnapper_I2C_Driver_DS2484 *_ds2484 = nullptr;
@@ -166,6 +170,7 @@ private:
   WipperSnapper_I2C_Driver_BME280 *_bme280 = nullptr;
   WipperSnapper_I2C_Driver_BMP280 *_bmp280 = nullptr;
   WipperSnapper_I2C_Driver_BMP3XX *_bmp3xx = nullptr;
+  WipperSnapper_I2C_Driver_BMP5XX *_bmp5xx = nullptr;
   WipperSnapper_I2C_Driver_BME680 *_bme680 = nullptr;
   WipperSnapper_I2C_Driver_HDC302X *_hdc302x = nullptr;
   WipperSnapper_I2C_Driver_HTS221 *_hts221 = nullptr;
@@ -180,6 +185,8 @@ private:
   WipperSnapper_I2C_Driver_LTR390 *_ltr390 = nullptr;
   WipperSnapper_I2C_Driver_MCP3421 *_mcp3421 = nullptr;
   WipperSnapper_I2C_Driver_MCP9808 *_mcp9808 = nullptr;
+  WipperSnapper_I2C_Driver_MLX90632D *_mlx90632d = nullptr;
+  WipperSnapper_I2C_Driver_MLX90632D *_mlx90632d_ext = nullptr;
   WipperSnapper_I2C_Driver_MPL115A2 *_mpl115a2 = nullptr;
   WipperSnapper_I2C_Driver_MPRLS *_mprls = nullptr;
   WipperSnapper_I2C_Driver_MS8607 *_ms8607 = nullptr;

@@ -151,7 +151,7 @@ void Wippersnapper::_disconnect() {
 
 /****************************************************************************/
 /*!
-    @brief    Sets the network interface's unique identifer, typically the
+    @brief    Sets the network interface's unique identifier, typically the
               MAC address.
 */
 /****************************************************************************/
@@ -231,7 +231,7 @@ bool Wippersnapper::check_valid_ssid() {
 /*!
     @brief    Configures the device's Adafruit IO credentials. This method
               should be used only if filesystem-backed provisioning is
-              not avaliable.
+              not available.
 */
 /****************************************************************************/
 void Wippersnapper::set_user_key() {
@@ -454,7 +454,7 @@ bool cbSignalMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 /**************************************************************************/
 /*!
     @brief    Decodes a signal buffer protobuf message.
-        NOTE: Should be executed in-order after a new _buffer is recieved.
+        NOTE: Should be executed in-order after a new _buffer is received.
     @param    encodedSignalMsg
               Encoded signal message.
     @return   true if successfully decoded signal message, false otherwise.
@@ -1019,7 +1019,7 @@ bool cbDecodeServoMsg(pb_istream_t *stream, const pb_field_t *field,
 
 /**************************************************************************/
 /*!
-    @brief    Called when the device recieves a new message from the
+    @brief    Called when the device receives a new message from the
               /servo/ topic.
     @param    data
               Incoming data from MQTT broker.
@@ -1124,7 +1124,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
           "ERROR: Could not decode wippersnapper_pwm_v1_PWMDetachRequest");
       return false; // fail out if we can't decode the request
     }
-    // execute PWM pin detatch request
+    // execute PWM pin detach request
     char *pwmPin = msgPWMDetachRequest.pin + 1;
     WS._pwmComponent->detach(atoi(pwmPin));
   } else if (field->tag ==
@@ -1174,7 +1174,7 @@ bool cbPWMDecodeMsg(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
 /**************************************************************************/
 /*!
-    @brief    Called when the device recieves a new message from the
+    @brief    Called when the device receives a new message from the
               /pwm/ topic.
     @param    data
               Incoming data from MQTT broker.
@@ -1374,7 +1374,7 @@ bool cbDecodePixelsMsg(pb_istream_t *stream, const pb_field_t *field,
 
 /**************************************************************************/
 /*!
-    @brief    Called when the device recieves a new message from the
+    @brief    Called when the device receives a new message from the
               /pixels/ topic.
     @param    data
               Incoming data from MQTT broker.
@@ -2732,7 +2732,7 @@ void print_reset_reason(int reason) {
     break; /**<13, RTC Watch dog Reset CPU*/
   case 14:
     WS_DEBUG_PRINTLN("EXT_CPU_RESET");
-    break; /**<14, for APP CPU, reseted by PRO CPU*/
+    break; /**<14, for APP CPU, reset by PRO CPU*/
   case 15:
     WS_DEBUG_PRINTLN("RTCWDT_BROWN_OUT_RESET");
     break; /**<15, Reset when the vdd voltage is not stable*/
@@ -2792,7 +2792,7 @@ void Wippersnapper::connect() {
     haltError("Unable to generate Device UID");
   }
 
-  // Initialize MQTT client with device identifer
+  // Initialize MQTT client with device identifier
   setupMQTTClient(_device_uid);
 
   WS_DEBUG_PRINTLN("Generating device's MQTT topics...");

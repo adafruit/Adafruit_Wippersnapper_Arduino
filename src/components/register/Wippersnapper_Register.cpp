@@ -55,7 +55,7 @@ bool Wippersnapper::encodePubRegistrationReq() {
   if (!_status)
     return _status;
 
-  // pubish message
+  // publish message
   WS.publish(WS._topic_description, _message_buffer, _message_len, 1);
   WS_DEBUG_PRINTLN("Published!");
   WS._boardStatus = WS_BOARD_DEF_SENT;

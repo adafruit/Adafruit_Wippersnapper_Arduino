@@ -181,14 +181,14 @@ WipperSnapper_Component_I2C::scanAddresses() {
       continue;
     } else if (endTransmissionRC == 4) {
       WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: Unspecified bus error occured!");
+          "[i2c] Did not find device: Unspecified bus error occurred!");
       continue;
     } else if (endTransmissionRC == 5) {
       WS_DEBUG_PRINTLN("[i2c] Did not find device: Bus timed out!");
       continue;
     } else {
       WS_DEBUG_PRINTLN(
-          "[i2c] Did not find device: Unknown bus error has occured!");
+          "[i2c] Did not find device: Unknown bus error has occurred!");
       continue;
     }
 #endif
@@ -236,6 +236,16 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     }
     _ahtx0->configureDriver(msgDeviceInitReq);
     drivers.push_back(_ahtx0);
+  } else if (strcmp("as5600", msgDeviceInitReq->i2c_device_name) == 0) {
+    _as5600 = new WipperSnapper_I2C_Driver_AS5600(this->_i2c, i2cAddress);
+    if (!_as5600->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize AS5600 chip!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _as5600->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_as5600);
   } else if (strcmp("bh1750", msgDeviceInitReq->i2c_device_name) == 0) {
     _bh1750 = new WipperSnapper_I2C_Driver_BH1750(this->_i2c, i2cAddress);
     if (!_bh1750->begin()) {
@@ -272,14 +282,27 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
              (strcmp("bmp390", msgDeviceInitReq->i2c_device_name) == 0)) {
     _bmp3xx = new WipperSnapper_I2C_Driver_BMP3XX(this->_i2c, i2cAddress);
     if (!_bmp3xx->begin()) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to initialize BMP388!");
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize BMP3xx!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
     }
     _bmp3xx->configureDriver(msgDeviceInitReq);
     drivers.push_back(_bmp3xx);
-    WS_DEBUG_PRINTLN("BMP388 Initialized Successfully!");
+    WS_DEBUG_PRINTLN("BMP3xx Initialized Successfully!");
+  } else if ((strcmp("bmp580", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("bmp581", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("bmp585", msgDeviceInitReq->i2c_device_name) == 0)) {
+    _bmp5xx = new WipperSnapper_I2C_Driver_BMP5XX(this->_i2c, i2cAddress);
+    if (!_bmp5xx->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize BMP5xx!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _bmp5xx->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_bmp5xx);
+    WS_DEBUG_PRINTLN("BMP5xx Initialized Successfully!");
   } else if ((strcmp("bme680", msgDeviceInitReq->i2c_device_name) == 0) ||
              (strcmp("bme688", msgDeviceInitReq->i2c_device_name) == 0)) {
     _bme680 = new WipperSnapper_I2C_Driver_BME680(this->_i2c, i2cAddress);
@@ -537,6 +560,33 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _mcp9808->configureDriver(msgDeviceInitReq);
     drivers.push_back(_mcp9808);
     WS_DEBUG_PRINTLN("MCP9808 Initialized Successfully!");
+  } else if (strcmp("mlx90632b", msgDeviceInitReq->i2c_device_name) == 0 ||
+             strcmp("mlx90632d_med", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mlx90632d = new WipperSnapper_I2C_Driver_MLX90632D(this->_i2c, i2cAddress);
+    if (!_mlx90632d->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize MLX90632!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mlx90632d->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mlx90632d);
+    WS_DEBUG_PRINTLN("MLX90632 Initialized Successfully!");
+  } else if (strcmp("mlx90632d_ext", msgDeviceInitReq->i2c_device_name) == 0) {
+    _mlx90632d_ext =
+        new WipperSnapper_I2C_Driver_MLX90632D(this->_i2c, i2cAddress);
+    // set extended range
+    if (!_mlx90632d_ext->begin() ||
+        !_mlx90632d_ext->ConfigureAndPrintSensorInfo(true)) {
+      WS_DEBUG_PRINTLN(
+          "ERROR: Failed to initialize MLX90632D with extended range!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _mlx90632d_ext->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_mlx90632d_ext);
+    WS_DEBUG_PRINTLN("MLX90632D_EXT Initialized Successfully!");
   } else if (strcmp("mpl115a2", msgDeviceInitReq->i2c_device_name) == 0) {
     _mpl115a2 = new WipperSnapper_I2C_Driver_MPL115A2(this->_i2c, i2cAddress);
     if (!_mpl115a2->begin()) {
@@ -1304,7 +1354,7 @@ void WipperSnapper_Component_I2C::update() {
 
     std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
     for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
-      // Number of events which occured for this driver
+      // Number of events which occurred for this driver
       msgi2cResponse.payload.resp_i2c_device_event.sensor_event_count = 0;
 
       // Event struct - zero-initialise on each iteration
