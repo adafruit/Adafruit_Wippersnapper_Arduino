@@ -282,14 +282,27 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
              (strcmp("bmp390", msgDeviceInitReq->i2c_device_name) == 0)) {
     _bmp3xx = new WipperSnapper_I2C_Driver_BMP3XX(this->_i2c, i2cAddress);
     if (!_bmp3xx->begin()) {
-      WS_DEBUG_PRINTLN("ERROR: Failed to initialize BMP388!");
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize BMP3xx!");
       _busStatusResponse =
           wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
       return false;
     }
     _bmp3xx->configureDriver(msgDeviceInitReq);
     drivers.push_back(_bmp3xx);
-    WS_DEBUG_PRINTLN("BMP388 Initialized Successfully!");
+    WS_DEBUG_PRINTLN("BMP3xx Initialized Successfully!");
+  } else if ((strcmp("bmp580", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("bmp581", msgDeviceInitReq->i2c_device_name) == 0) ||
+             (strcmp("bmp585", msgDeviceInitReq->i2c_device_name) == 0)) {
+    _bmp5xx = new WipperSnapper_I2C_Driver_BMP5XX(this->_i2c, i2cAddress);
+    if (!_bmp5xx->begin()) {
+      WS_DEBUG_PRINTLN("ERROR: Failed to initialize BMP5xx!");
+      _busStatusResponse =
+          wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_DEVICE_INIT_FAIL;
+      return false;
+    }
+    _bmp5xx->configureDriver(msgDeviceInitReq);
+    drivers.push_back(_bmp5xx);
+    WS_DEBUG_PRINTLN("BMP5xx Initialized Successfully!");
   } else if ((strcmp("bme680", msgDeviceInitReq->i2c_device_name) == 0) ||
              (strcmp("bme688", msgDeviceInitReq->i2c_device_name) == 0)) {
     _bme680 = new WipperSnapper_I2C_Driver_BME680(this->_i2c, i2cAddress);
