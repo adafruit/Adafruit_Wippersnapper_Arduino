@@ -9,7 +9,6 @@
 #include <Adafruit_QMC5883P.h>
 #include <math.h>
 
-
 /*!
  * @brief    Constructor for a QMC5883P sensor.
  * @param    i2c
