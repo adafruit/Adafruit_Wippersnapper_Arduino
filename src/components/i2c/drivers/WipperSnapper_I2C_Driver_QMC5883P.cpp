@@ -7,7 +7,6 @@
 #include "WipperSnapper_I2C_Driver_QMC5883P.h"
 
 #include <Adafruit_QMC5883P.h>
-#include <math.h>
 
 /*!
  * @brief    Constructor for a QMC5883P sensor.
