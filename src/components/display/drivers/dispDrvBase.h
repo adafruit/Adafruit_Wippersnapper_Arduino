@@ -63,6 +63,18 @@ public:
       : _pin_cs(cs), _pin_dc(dc), _pin_mosi(mosi), _pin_sck(sck), _pin_rst(rst),
         _pin_miso(miso) {}
 
+
+  /*!
+      @brief    Creates a new I2C output component driver.
+      @param    i2c
+                The I2C hardware interface, default is Wire.
+      @param    sensorAddress
+                The I2C sensor's unique address.
+  */
+  dispDrvBase(TwoWire *i2c, uint16_t sensorAddress) {
+    // No-op constructor
+  }
+
   /*!
       @brief  Destructor for the base display driver.
               This destructor is virtual to allow derived classes to clean up
@@ -133,6 +145,8 @@ protected:
   uint16_t _pin_mosi;   ///< Optional MOSI pin for SPI TFT displays
   uint16_t _pin_miso;   ///< Optional MISO pin for SPI TFT displays
   uint16_t _pin_sck;    ///< Optional SCK pin for SPI TFT displays
+  TwoWire *_i2c;           ///< Optional pointer to the I2C driver's Wire object
+  uint16_t _sensorAddress; ///< Optional I2C sensor address
   uint8_t _text_sz = 1; ///< Text size for displaying a message
   int16_t _height;      ///< Height of the display
   int16_t _width;       ///< Width of the display

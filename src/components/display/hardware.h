@@ -43,6 +43,7 @@ public:
                 wippersnapper_display_v1_EpdSpiConfig *spi_config);
   bool beginTft(wippersnapper_display_v1_TftConfig *config,
                 wippersnapper_display_v1_TftSpiConfig *spi_config);
+  // TODO: bool beginOled(...);
 
   //
   // API for Adafruit_GFX that abstracts hardware functionality
