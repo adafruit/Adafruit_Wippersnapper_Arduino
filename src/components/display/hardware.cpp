@@ -362,6 +362,11 @@ bool DisplayHardware::beginOled(
       strcmp(i2c_config->i2c.i2c_device_name, "SSD1306") == 0) {
     _drvDisp = new dispDrvSsd1306(WS._i2cPort0->getBus(),
                                   i2c_config->i2c.i2c_device_address);
+  } else if (strnlen(i2c_config->i2c.i2c_device_name,
+                     sizeof(i2c_config->i2c.i2c_device_name)) <
+                 sizeof(i2c_config->i2c.i2c_device_name) &&
+             strcmp(i2c_config->i2c.i2c_device_name, "SH1107") == 0) {
+    _drvDisp = new dispDrvSh1107(WS._i2cPort0->getBus(), i2c_config->i2c.i2c_device_address);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported OLED driver!");
     return false;
