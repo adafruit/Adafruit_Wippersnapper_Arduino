@@ -57,12 +57,6 @@
 #include "drivers/WipperSnapper_I2C_Driver_MPRLS.h"
 #include "drivers/WipperSnapper_I2C_Driver_MS8607.h"
 #include "drivers/WipperSnapper_I2C_Driver_NAU7802.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out_7Seg.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out_CharLcd.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out_QuadAlphaNum.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out_Sh1107.h"
-#include "drivers/WipperSnapper_I2C_Driver_Out_Ssd1306.h"
 #include "drivers/WipperSnapper_I2C_Driver_PCT2075.h"
 #include "drivers/WipperSnapper_I2C_Driver_PM25.h"
 #include "drivers/WipperSnapper_I2C_Driver_SCD30.h"
@@ -113,6 +107,7 @@ public:
   wippersnapper_i2c_v1_I2CBusScanResponse scanAddresses();
   bool
   initI2CDevice(wippersnapper_i2c_v1_I2CDeviceInitRequest *msgDeviceInitReq);
+  TwoWire *getBus() { return _i2c; }
 
   void updateI2CDeviceProperties(
       wippersnapper_i2c_v1_I2CDeviceUpdateRequest *msgDeviceUpdateReq);
@@ -120,9 +115,6 @@ public:
       wippersnapper_i2c_v1_I2CDeviceDeinitRequest *msgDeviceDeinitReq);
 
   void update();
-
-  bool Handle_I2cDeviceOutputWrite(
-      wippersnapper_i2c_v1_I2CDeviceOutputWrite *msgDeviceWrite);
 
   void sensorEventRead(
       std::vector<WipperSnapper_I2C_Driver *>::iterator &iter,
@@ -141,10 +133,6 @@ public:
                         float value,
                         wippersnapper_i2c_v1_SensorType sensorType);
 
-  void
-  displayDeviceEventMessage(wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
-                            uint32_t sensorAddress);
-
   bool encodePublishI2CDeviceEventMsg(
       wippersnapper_signal_v1_I2CResponse *msgi2cResponse,
       uint32_t sensorAddress);
@@ -156,8 +144,6 @@ private:
   wippersnapper_i2c_v1_BusResponse _busStatusResponse;
   std::vector<WipperSnapper_I2C_Driver *>
       drivers; ///< List of i2c sensor drivers
-  std::vector<WipperSnapper_I2C_Driver_Out *>
-      _drivers_out; ///< List of i2c output drivers
   // Sensor driver objects
   WipperSnapper_I2C_Driver_AHTX0 *_ahtx0 = nullptr;
   WipperSnapper_I2C_Driver_AS5600 *_as5600 = nullptr;
@@ -221,11 +207,6 @@ private:
   WipperSnapper_I2C_Driver_VL6180X *_vl6180x = nullptr;
   WipperSnapper_I2C_Driver_MAX17048 *_max17048 = nullptr;
   WipperSnapper_I2C_Driver_ADT7410 *_adt7410 = nullptr;
-  WipperSnapper_I2C_Driver_Out_QuadAlphaNum *_quadAlphaNum = nullptr;
-  WipperSnapper_I2C_Driver_Out_CharLcd *_charLcd = nullptr;
-  WipperSnapper_I2C_Driver_Out_7Seg *_sevenSeg = nullptr;
-  WipperSnapper_I2C_Driver_Out_SH1107 *_sh1107 = nullptr;
-  WipperSnapper_I2C_Driver_Out_Ssd1306 *_ssd1306 = nullptr;
 };
 extern Wippersnapper WS;
 

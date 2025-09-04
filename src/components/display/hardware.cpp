@@ -173,9 +173,8 @@ int16_t DisplayHardware::parsePin(const char *pinStr) {
             Pointer to the SPI configuration structure for EPD.
     @return True if configuration was successful, False otherwise.
 */
-bool DisplayHardware::beginEPD(
-    wippersnapper_display_v1_EPDConfig *config,
-    wippersnapper_display_v1_EpdSpiConfig *spi_config) {
+bool DisplayHardware::beginEPD(wippersnapper_display_v1_EPDConfig *config,
+                               wippersnapper_display_v1_SpiConfig *spi_config) {
   // Validate pointers
   if (config == nullptr || spi_config == nullptr) {
     WS_DEBUG_PRINTLN("[display] EPD config or SPI config is null!");
@@ -273,9 +272,8 @@ void DisplayHardware::removeSuffix(const char *suffix) {
             Pointer to the SPI configuration structure for TFT.
     @return True if configuration was successful, False otherwise.
 */
-bool DisplayHardware::beginTft(
-    wippersnapper_display_v1_TftConfig *config,
-    wippersnapper_display_v1_TftSpiConfig *spi_config) {
+bool DisplayHardware::beginTft(wippersnapper_display_v1_TftConfig *config,
+                               wippersnapper_display_v1_SpiConfig *spi_config) {
   // Validate pointers
   if (config == nullptr || spi_config == nullptr) {
     WS_DEBUG_PRINTLN("[display] EPD config or SPI config is null!");
@@ -329,6 +327,65 @@ bool DisplayHardware::beginTft(
   _drvDisp->setRotation(config->rotation);
   _drvDisp->begin();
   _drvDisp->setTextSize(text_sz);
+
+  return true;
+}
+
+/*!
+    @brief  Attempts to configure and initialize an OLED display
+    @param  config
+            Pointer to the OLED's configuration structure.
+    @param  i2c_config
+            Pointer to the I2C configuration structure for OLED.
+    @return True if configuration was successful, False otherwise.
+*/
+bool DisplayHardware::beginOled(
+    wippersnapper_display_v1_SSD1306Config *config,
+    wippersnapper_display_v1_I2cConfig *i2c_config) {
+  // Validate pointers
+  if (config == nullptr || i2c_config == nullptr || !i2c_config->has_i2c) {
+    WS_DEBUG_PRINTLN("[display] OLED or I2C config is null!");
+    return false;
+  }
+
+  // If we already have a display driver assigned to this hardware instance,
+  // clean it up!
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  if (strnlen(i2c_config->i2c.i2c_device_name,
+              sizeof(i2c_config->i2c.i2c_device_name)) <
+          sizeof(i2c_config->i2c.i2c_device_name) &&
+      strcmp(i2c_config->i2c.i2c_device_name, "SSD1306") == 0) {
+    _drvDisp = new dispDrvSsd1306(WS._i2cPort0->getBus(),
+                                  i2c_config->i2c.i2c_device_address);
+  } else {
+    WS_DEBUG_PRINTLN("[display] Unsupported OLED driver!");
+    return false;
+  }
+
+  // Validate that the display driver was created successfully
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
+    _drvDisp = nullptr;
+    return false;
+  }
+
+  // Configure display dimensions and text size
+  _drvDisp->setWidth(config->width);
+  _drvDisp->setHeight(config->height);
+  // tODO: Remove the ssd-1306 -specic text size setters
+  // _drvDisp->setTextSize(config->text_size);
+
+  // Initialize the display driver
+  if (!_drvDisp->begin()) {
+    WS_DEBUG_PRINTLN("[display] Failed to begin display driver!");
+    delete _drvDisp;
+    _drvDisp = nullptr;
+    return false;
+  }
 
   return true;
 }
