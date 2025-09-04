@@ -19,6 +19,8 @@
 #define WIPPERSNAPPER_H
 
 // Cpp STD
+#include <math.h>
+
 #include <vector>
 
 // Nanopb dependencies
