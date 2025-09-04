@@ -16,6 +16,7 @@
 #define WS_DISPLAY_HARDWARE_H
 #include "Wippersnapper.h"
 #include "drivers/dispDrvBase.h"
+#include "drivers/dispDrvSh1107.h"
 #include "drivers/dispDrvSsd1306.h"
 #include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
@@ -44,7 +45,7 @@ public:
                 wippersnapper_display_v1_SpiConfig *spi_config);
   bool beginTft(wippersnapper_display_v1_TftConfig *config,
                 wippersnapper_display_v1_SpiConfig *spi_config);
-  bool beginOled(wippersnapper_display_v1_SSD1306Config *config,
+  bool beginOled(wippersnapper_display_v1_OledConfig *config,
                  wippersnapper_display_v1_I2cConfig *i2c_config);
 
   //

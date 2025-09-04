@@ -57,8 +57,8 @@ bool DisplayController::Handle_Display_AddOrReplace(
     did_begin = display->beginTft(&msgAdd->config.config_tft,
                                   &msgAdd->interface_type.cfg_spi);
   } else if (msgAdd->which_config ==
-             wippersnapper_display_v1_DisplayAddOrReplace_config_ssd1306_tag) {
-    did_begin = display->beginOled(&msgAdd->config.config_ssd1306,
+             wippersnapper_display_v1_DisplayAddOrReplace_config_oled_tag) {
+    did_begin = display->beginOled(&msgAdd->config.config_oled,
                                    &msgAdd->interface_type.cfg_i2c);
   } else if (
       msgAdd->which_config ==

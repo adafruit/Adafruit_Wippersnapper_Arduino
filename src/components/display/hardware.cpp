@@ -336,11 +336,11 @@ bool DisplayHardware::beginTft(wippersnapper_display_v1_TftConfig *config,
     @param  config
             Pointer to the OLED's configuration structure.
     @param  i2c_config
-            Pointer to the I2C configuration structure for OLED.
+            Pointer to the I2C configuration structure.
     @return True if configuration was successful, False otherwise.
 */
 bool DisplayHardware::beginOled(
-    wippersnapper_display_v1_SSD1306Config *config,
+    wippersnapper_display_v1_OledConfig *config,
     wippersnapper_display_v1_I2cConfig *i2c_config) {
   // Validate pointers
   if (config == nullptr || i2c_config == nullptr || !i2c_config->has_i2c) {
@@ -355,6 +355,7 @@ bool DisplayHardware::beginOled(
     _drvDisp = nullptr;
   }
 
+  // Initialize OLED display driver based on device name
   if (strnlen(i2c_config->i2c.i2c_device_name,
               sizeof(i2c_config->i2c.i2c_device_name)) <
           sizeof(i2c_config->i2c.i2c_device_name) &&
@@ -376,8 +377,7 @@ bool DisplayHardware::beginOled(
   // Configure display dimensions and text size
   _drvDisp->setWidth(config->width);
   _drvDisp->setHeight(config->height);
-  // tODO: Remove the ssd-1306 -specic text size setters
-  // _drvDisp->setTextSize(config->text_size);
+  _drvDisp->setTextSize(config->text_size);
 
   // Initialize the display driver
   if (!_drvDisp->begin()) {
@@ -387,6 +387,7 @@ bool DisplayHardware::beginOled(
     return false;
   }
 
+  WS_DEBUG_PRINTLN("[display] OLED initialized successfully.");
   return true;
 }
 

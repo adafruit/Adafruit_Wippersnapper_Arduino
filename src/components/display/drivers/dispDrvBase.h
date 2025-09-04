@@ -125,7 +125,7 @@ public:
       @param  r
               The rotation of the display (0-3).
   */
-  void setRotation(uint8_t r) { _rotation = r; }
+  virtual void setRotation(uint8_t r) { _rotation = r; }
 
   /*!
       @brief  Sets the text size for the display.

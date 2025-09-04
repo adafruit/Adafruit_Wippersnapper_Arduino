@@ -1,50 +1,57 @@
 /*!
- * @file src/components/display/drivers/dispDrvSsd1306.h
+ * @file src/components/display/drivers/dispDrvSh1107.h
  *
- * Driver for SSD1306-based OLED displays.
+ *  Device driver for a SH1107 OLED Display
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Tyeth Gundry for Adafruit Industries 2025
  *
- * BSD license, all text here must be included in any redistribution.
+ * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DISP_DRV_SSD1306
-#define WS_DISP_DRV_SSD1306
+#ifndef WS_DISP_DRV_SH1107_H
+#define WS_DISP_DRV_SH1107_H
 
 #include "dispDrvBase.h"
-#include <Arduino.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_SH110X.h>
 
-#define WS_SSD1306_DEFAULT_WIDTH                                               \
-  128 ///< Default width for a ssd1306 128x64 display
-#define WS_SSD1306_DEFAULT_HEIGHT                                              \
-  64 ///< Default height for a ssd1306 128x64 display
+#define WS_SH1107_DEFAULT_WIDTH                                                \
+  128 ///< Default width for a sh1107 128x64 display
+#define WS_SH1107_DEFAULT_HEIGHT                                               \
+  64 ///< Default height for a sh1107 128x64 display
 
+#define OLED_128X64_WING_WIDTH 128 ///< Width of the 128x64 OLED FeatherWing
+#define OLED_128X64_WING_HEIGHT 64 ///< Height of the 128x64 OLED FeatherWing
+#define OLED_128X64_WING_ROTATION_90 1 ///< Rotation of OLED FeatherWing 0-3
 
 /*!
-    @brief  Driver for SSD1306-based TFT displays.
+    @brief  Class that provides a driver interface for a SH1107
+   OLED Display
 */
-class dispDrvSsd1306 : public dispDrvBase {
+class dispDrvSh1107 : public dispDrvBase {
 public:
   /*!
-      @brief  Constructor for the SSD1306 display driver.
+      @brief  Constructor for the SH1107 display driver.
   */
-  dispDrvSsd1306(TwoWire *i2c, uint16_t sensorAddress) : dispDrvBase(i2c, sensorAddress), _display(nullptr) {
+  dispDrvSh1107(TwoWire *i2c, uint16_t sensorAddress)
+      : dispDrvBase(i2c, sensorAddress), _display(nullptr) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
-    _width = WS_SSD1306_DEFAULT_WIDTH;
-    _height = WS_SSD1306_DEFAULT_HEIGHT;
-    }
+    _width = WS_SH1107_DEFAULT_WIDTH;
+    _height = WS_SH1107_DEFAULT_HEIGHT;
+  }
 
-  ~dispDrvSsd1306() {
-    if (_display) {
+  /*!
+      @brief  Destructor for a SH1107 display driver.
+  */
+  ~dispDrvSh1107() {
+    if (_display != nullptr) {
       _display->clearDisplay();
       _display->display();
-      _display->ssd1306_command(SSD1306_DISPLAYOFF);
+      _display->oled_command(SH110X_DISPLAYOFF);
       delete _display;
       _display = nullptr;
     }
@@ -55,18 +62,30 @@ public:
       @return True if the display was initialized successfully, false otherwise.
   */
   bool begin() override {
-    if (_i2c == nullptr)
+    if (!_i2c)
       return false;
-    // Attempt to create and allocate a SSD1306 obj.
-    _display = new Adafruit_SSD1306(_width, _height, _i2c);
-    if (!_display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress))
+
+    // Attempt to create and allocate a SH1107 obj.
+    if (_width == OLED_128X64_WING_WIDTH &&
+        _height == OLED_128X64_WING_HEIGHT &&
+        _rotation == OLED_128X64_WING_ROTATION_90) {
+      // FeatherWing needs to be rotated 90deg and swap w/h ctor args
+      _display = new Adafruit_SH1107(_height, _width, _i2c);
+    } else {
+      _display = new Adafruit_SH1107(_width, _height, _i2c);
+    }
+    if (!_display->begin(_sensorAddress, true))
       return false;
-    // Configure the rotation, text size and color
-    _display->setRotation(_rotation);
+
+    // Clear the buffer.
+    _display->clearDisplay();
+    _display->display();
+    _display->setRotation(_rotation); // 0-3, not degrees for SH1107
+
+    // Configure the text size and color
     _display->setTextSize(_text_sz);
-    _display->setTextColor(SSD1306_WHITE);
-    // Use full 256 char 'Code Page 437' font
-    _display->cp437(true);
+    _display->setTextColor(SH110X_WHITE);
+    _display->setCursor(0, 0);
     // Clear the buffer
     _display->clearDisplay();
     _display->display();
@@ -87,6 +106,13 @@ public:
     _display->setTextSize(s);
   }
 
+  void setRotation(uint8_t r) override {
+    if (!_display)
+      return;
+    _rotation = r % 90; // constrain to 0-3
+    _display->setRotation(r);
+  }
+
   /*!
       @brief  Writes a message to the display.
       @param  message
@@ -97,11 +123,12 @@ public:
   virtual void writeMessage(const char *message) override {
     if (_display == nullptr)
       return;
-
     // Start with a fresh display buffer
     // and settings
     int16_t y_idx = 0;
     _display->clearDisplay();
+    _display->setTextSize(_text_sz);
+    _display->setTextColor(SH110X_WHITE);
     _display->setCursor(0, y_idx);
     _display->display();
 
@@ -135,10 +162,10 @@ public:
         _display->display();
       }
     }
-}
+  }
 
 private:
-  Adafruit_SSD1306 *_display;
+  Adafruit_SH1107 *_display;
 };
 
 #endif // WS_DISP_DRV_SSD1306
