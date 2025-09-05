@@ -450,6 +450,68 @@ public:
   virtual bool getEventMagneticField(sensors_event_t *magneticEvent) { return false; }
 
   /*!
+      @brief    Gets a sensor's gravity vector value.
+      @param    gravityEvent
+                The gravity vector (x, y, z) in m/s^2.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventGravity(sensors_event_t *gravityEvent) { return false; }
+
+  /*!
+      @brief    Gets a sensor's linear acceleration vector value.
+      @param    linearAccelEvent
+                The linear acceleration vector (x, y, z) in m/s^2.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventLinearAcceleration(sensors_event_t *linearAccelEvent) { return false; }
+
+  /*!
+      @brief    Gets a sensor's rotation vector value.
+      @param    rotationEvent
+                The rotation vector (x, y, z, w) in radians.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) { return false; }
+
+  /*!
+      @brief    Gets a sensor's gyroscope value.
+      @param    gyroEvent
+                The gyroscope vector (x, y, z) in rad/s.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventGyroscope(sensors_event_t *gyroEvent) { return false; }
+  /*!
+      @brief    Gets a sensor's accelerometer value.
+      @param    accelEvent
+                The accelerometer vector (x, y, z) in m/s^2.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventAccelerometer(sensors_event_t *accelEvent) { return false; }
+
+  /*!
+      @brief    Gets a sensor's orientation value.
+      @param    orientationEvent
+                The orientation vector (x, y, z) in degrees.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventOrientation(sensors_event_t *orientationEvent) { return false; }
+
+  /*!
+      @brief    Gets a sensor's rotation vector value.
+      @param    rotationEvent
+                The rotation vector (x, y, z, w) in radians.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) { return false; }
+
+  /*!
       @brief    Gets a sensor's Raw value.
       @param    rawEvent
                 The Raw value.
@@ -678,7 +740,32 @@ public:
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD,
        [this](sensors_event_t *event) -> bool {
          return this->getEventMagneticField(event);
-       }}}; ///< SensorType to function call map
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventAccelerometer(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventGyroscope(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventOrientation(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventGravity(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventLinearAcceleration(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventRotationVector(event);
+       }}
+      }; ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< Sensors attached to the device.
