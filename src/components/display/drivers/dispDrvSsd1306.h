@@ -16,14 +16,13 @@
 #define WS_DISP_DRV_SSD1306
 
 #include "dispDrvBase.h"
-#include <Arduino.h>
 #include <Adafruit_SSD1306.h>
+#include <Arduino.h>
 
 #define WS_SSD1306_DEFAULT_WIDTH                                               \
   128 ///< Default width for a ssd1306 128x64 display
 #define WS_SSD1306_DEFAULT_HEIGHT                                              \
   64 ///< Default height for a ssd1306 128x64 display
-
 
 /*!
     @brief  Driver for SSD1306-based TFT displays.
@@ -32,13 +31,18 @@ class dispDrvSsd1306 : public dispDrvBase {
 public:
   /*!
       @brief  Constructor for the SSD1306 display driver.
+        @param  i2c
+                The I2C hardware interface, default is Wire.
+        @param  sensorAddress
+                The I2C sensor's unique address.
   */
-  dispDrvSsd1306(TwoWire *i2c, uint16_t sensorAddress) : dispDrvBase(i2c, sensorAddress), _display(nullptr) {
+  dispDrvSsd1306(TwoWire *i2c, uint16_t sensorAddress)
+      : dispDrvBase(i2c, sensorAddress), _display(nullptr) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
     _width = WS_SSD1306_DEFAULT_WIDTH;
     _height = WS_SSD1306_DEFAULT_HEIGHT;
-    }
+  }
 
   ~dispDrvSsd1306() {
     if (_display) {
@@ -135,7 +139,7 @@ public:
         _display->display();
       }
     }
-}
+  }
 
 private:
   Adafruit_SSD1306 *_display;

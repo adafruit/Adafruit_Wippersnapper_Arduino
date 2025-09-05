@@ -343,10 +343,8 @@ bool DisplayHardware::beginOled(
     wippersnapper_display_v1_OledConfig *config,
     wippersnapper_display_v1_I2cConfig *i2c_config) {
   // Validate pointers
-  if (config == nullptr || i2c_config == nullptr || !i2c_config->has_i2c) {
-    WS_DEBUG_PRINTLN("[display] OLED or I2C config is null!");
+  if (config == nullptr || i2c_config == nullptr || !i2c_config->has_i2c)
     return false;
-  }
 
   // If we already have a display driver assigned to this hardware instance,
   // clean it up!
@@ -393,6 +391,60 @@ bool DisplayHardware::beginOled(
   }
 
   WS_DEBUG_PRINTLN("[display] OLED initialized successfully.");
+  return true;
+}
+
+/*!
+    @brief  Attempts to configure and initialize an LED Backpack display
+    @param  config
+            Pointer to the LED Backpack's configuration structure.
+    @param  i2c_config
+            Pointer to the I2C configuration structure.
+    @return True if configuration was successful, False otherwise.
+*/
+bool DisplayHardware::beginLedBackpack(wippersnapper_display_v1_LEDBackpackConfig *config, wippersnapper_display_v1_I2cConfig *i2c_config) {
+  // Validate pointers
+  if (config == nullptr || i2c_config == nullptr || !i2c_config->has_i2c)
+    return false;
+
+  // If we already have a display driver assigned to this hardware instance,
+  // clean it up!
+  if (_drvDisp) {
+    delete _drvDisp;
+    _drvDisp = nullptr;
+  }
+
+  // Initialize OLED display driver based on device name
+  if (strnlen(i2c_config->i2c.i2c_device_name,
+              sizeof(i2c_config->i2c.i2c_device_name)) <
+          sizeof(i2c_config->i2c.i2c_device_name) &&
+      strcmp(i2c_config->i2c.i2c_device_name, "7seg") == 0) {
+    _drvDisp = new dispDrv7Seg(WS._i2cPort0->getBus(), i2c_config->i2c.i2c_device_address);
+  } else {
+    WS_DEBUG_PRINTLN("[display] Unsupported OLED driver!");
+    return false;
+  }
+
+  // Validate that the display driver was created successfully
+  if (!_drvDisp) {
+    WS_DEBUG_PRINTLN("[display] Failed to create display driver!");
+    _drvDisp = nullptr;
+    return false;
+  }
+
+  // Configure display dimensions and text size
+  _drvDisp->setAlignment(config->alignment);
+  _drvDisp->setBrightness(config->brightness);
+
+  // Initialize the display driver
+  if (!_drvDisp->begin()) {
+    WS_DEBUG_PRINTLN("[display] Failed to begin driver!");
+    delete _drvDisp;
+    _drvDisp = nullptr;
+    return false;
+  }
+
+  WS_DEBUG_PRINTLN("[display] LED backpack initialized successfully.");
   return true;
 }
 
