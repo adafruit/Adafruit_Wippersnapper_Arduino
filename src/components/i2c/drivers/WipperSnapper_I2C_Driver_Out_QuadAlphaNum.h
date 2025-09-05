@@ -1,22 +1,24 @@
 /*!
- * @file src/components/display/drivers/dispDrvQuadAlphaNum.h
+ * @file WipperSnapper_I2C_Driver_Out_QuadAlphaNum.h
  *
- * Driver for Quad Alphanumeric 7-Segment LED Backpack displays.
+ *  Device driver for Quad Alphanumeric Displays w/I2C Backpack
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell for Adafruit Industries 2025
  *
- * BSD license, all text here must be included in any redistribution.
+ * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DISP_DRV_QUADALPHANUM
-#define WS_DISP_DRV_QUADALPHANUM
 
-#include "dispDrvBase.h"
+#ifndef WIPPERSNAPPER_I2C_DRIVER_OUT_QUADALPHANUM_H
+#define WIPPERSNAPPER_I2C_DRIVER_OUT_QUADALPHANUM_H
+
+#include "WipperSnapper_I2C_Driver_Out.h"
 #include <Adafruit_LEDBackpack.h>
+#include <Arduino.h>
 
 #define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0 ///< Unspecified alignment
 #define LED_BACKPACK_ALIGNMENT_LEFT 1        ///< Left alignment
@@ -29,27 +31,34 @@
   0b0000000011100011 ///< Degree symbol for alphanumeric display
 
 /*!
-    @brief  Driver for Quad Alphanumeric LED matrixes.
+    @brief  Class that provides a driver interface for Quad Alphanumeric
+   Displays w/I2C Backpack
 */
-class dispDrvQuadAlphaNum : public dispDrvBase {
+class WipperSnapper_I2C_Driver_Out_QuadAlphaNum
+    : public WipperSnapper_I2C_Driver_Out {
+
 public:
+  /*******************************************************************************/
   /*!
-      @brief  Constructor for Quad Alphanumeric LED matrixes.
-        @param  i2c
-                The I2C hardware interface, default is Wire.
-        @param  sensorAddress
-                The I2C sensor's unique address.
+      @brief    Constructor for an MS8607 sensor.
+      @param    i2c
+                The I2C interface.
+      @param    sensorAddress
+                7-bit device address.
   */
-  dispDrvQuadAlphaNum(TwoWire *i2c, uint16_t sensorAddress)
-      : dispDrvBase(i2c, sensorAddress), _alpha4(nullptr) {
-    _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
+  /*******************************************************************************/
+  WipperSnapper_I2C_Driver_Out_QuadAlphaNum(TwoWire *i2c,
+                                            uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*!
-      @brief  Destructor for the 7-segment LED backpack driver.
+      @brief    Destructor for an MS8607 sensor.
   */
-  ~dispDrvQuadAlphaNum() {
-    if (_alpha4) {
+  ~WipperSnapper_I2C_Driver_Out_QuadAlphaNum() {
+    if (_alpha4 != nullptr) {
       delete _alpha4;
       _alpha4 = nullptr;
     }
@@ -59,7 +68,7 @@ public:
       @brief    Initializes the drvOutQuadAlphaNum component and begins I2C.
       @returns  True if initialized successfully, False otherwise.
   */
-  bool begin() override {
+  bool begin() {
     _alpha4 = new Adafruit_AlphaNum4();
     bool did_begin = _alpha4->begin(_sensorAddress, _i2c);
     _alpha4->setBrightness(_brightness);
@@ -67,29 +76,31 @@ public:
   }
 
   /*!
-      @brief    Sets the brightness of the LED backpack.
-      @param    b
-                  The brightness value, from 0 (off) to 15 (full brightness).
-  */
-  void setBrightness(int32_t brightness) override {
-    if (_alpha4 == nullptr) {
-      return;
-    }
-    _alpha4->setBrightness(brightness);
-  }
-
-  /*!
-      @brief    Sets the alignment of the displayed text.
-      @param    alignment
-                  The alignment value, either LED_BACKPACK_ALIGNMENT_LEFT or
-                  LED_BACKPACK_ALIGNMENT_RIGHT.
-  */
-  void setAlignment(uint32_t alignment) override {
+    @brief    Configures a LED backpack.
+    @param    brightness
+              The brightness of the LED backpack.
+    @param    alignment
+              The alignment of the LED backpack.
+*/
+  void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) {
     if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
       _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
     } else {
       _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
     }
+    _brightness = brightness;
+  }
+
+  /*!
+      @brief    Sets the brightness of the LED backpack.
+      @param    b
+                  The brightness value, from 0 (off) to 15 (full brightness).
+  */
+  void SetLedBackpackBrightness(uint8_t b) {
+    if (_alpha4 == nullptr) {
+      return;
+    }
+    _alpha4->setBrightness(b);
   }
 
   /*!
@@ -98,7 +109,7 @@ public:
       @param    message
                   The message to be displayed.
   */
-  void writeMessage(const char *message) override {
+  void WriteMessage(const char *message) {
     if (_alpha4 == nullptr || message == nullptr) {
       return;
     }
@@ -154,8 +165,14 @@ public:
     _alpha4->writeDisplay();
   }
 
-private:
-  Adafruit_AlphaNum4 *_alpha4; ///< Pointer to an Adafruit AlphaNum4 object
+protected:
+  Adafruit_AlphaNum4 *_alpha4 =
+      nullptr;         ///< ptr to a 4-digit alphanumeric display object
+  int32_t _brightness; ///< Brightness of the LED backpack, from 0 (off) to 15
+                       ///< (full brightness)
+  uint32_t _alignment =
+      LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the
+                                      ///< message displayed
 };
 
-#endif // WS_DISP_DRV_QUADALPHANUM
+#endif // WIPPERSNAPPER_I2C_DRIVER_OUT_QUADALPHANUM_H

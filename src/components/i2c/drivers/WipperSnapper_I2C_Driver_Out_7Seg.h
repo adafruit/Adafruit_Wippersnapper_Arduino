@@ -1,22 +1,29 @@
 /*!
- * @file src/components/display/drivers/dispDrv7Seg.h
+ * @file WipperSnapper_I2C_Driver_Out_7Seg.h
  *
- * Driver for 7-Segment LED Backpack displays.
+ * Device driver designed specifically to work with the Adafruit LED 7-Segment
+ * I2C backpacks:
+ * ----> http://www.adafruit.com/products/881
+ * ----> http://www.adafruit.com/products/880
+ * ----> http://www.adafruit.com/products/879
+ * ----> http://www.adafruit.com/products/878
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell for Adafruit Industries 2025
  *
- * BSD license, all text here must be included in any redistribution.
+ * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DISP_DRV_7Seg
-#define WS_DISP_DRV_7Seg
 
-#include "dispDrvBase.h"
+#ifndef WIPPERSNAPPER_I2C_DRIVER_OUT_7SEG_H
+#define WIPPERSNAPPER_I2C_DRIVER_OUT_7SEG_H
+
+#include "WipperSnapper_I2C_Driver_Out.h"
 #include <Adafruit_LEDBackpack.h>
+#include <Arduino.h>
 
 #define LED_BACKPACK_ALIGNMENT_UNSPECIFIED 0 ///< Unspecified alignment
 #define LED_BACKPACK_ALIGNMENT_LEFT 1        ///< Left alignment
@@ -29,48 +36,79 @@
   0b01100011 ///< Degree symbol for 7-segment display
 
 /*!
-    @brief  Driver for 7-segment LED backpack displays.
+    @brief  Class that provides a driver interface for 7-Segment
+   Displays w/I2C Backpack
 */
-class dispDrv7Seg : public dispDrvBase {
+class WipperSnapper_I2C_Driver_Out_7Seg : public WipperSnapper_I2C_Driver_Out {
+
 public:
+  /*******************************************************************************/
   /*!
-      @brief  Constructor for the 7-segment LED matrix.
+      @brief    Constructor for a 7-Segment display driver.
+      @param    i2c
+                The I2C interface.
+      @param    sensorAddress
+                7-bit device address.
   */
-  dispDrv7Seg(TwoWire *i2c, uint16_t sensorAddress)
-      : dispDrvBase(i2c, sensorAddress), _matrix(nullptr) {
-    _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
+  /*******************************************************************************/
+  WipperSnapper_I2C_Driver_Out_7Seg(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
+    _i2c = i2c;
+    _sensorAddress = sensorAddress;
   }
 
   /*!
-      @brief  Destructor for the 7-segment LED backpack driver.
+      @brief    Destructor for a 7-Segment display driver.
   */
-  ~dispDrv7Seg() {
-    if (_matrix) {
+  ~WipperSnapper_I2C_Driver_Out_7Seg() {
+    if (_matrix != nullptr) {
       delete _matrix;
       _matrix = nullptr;
     }
   }
 
   /*!
-      @brief  Attempts to initialize the 7-segment LED backpack driver.
-      @return True if the matrix was initialized successfully, false otherwise.
+      @brief    Initializes the 7-segment LED matrix and begins I2C
+     communication.
+      @returns  True if initialized successfully, False otherwise.
   */
-  bool begin() override {
+  bool begin() {
     _matrix = new Adafruit_7segment();
-    return _matrix->begin(_sensorAddress, _i2c);
+    bool did_begin = _matrix->begin(_sensorAddress, _i2c);
+    return did_begin;
   }
 
   /*!
-      @brief  Sets the text alignment for the matrix.
-      @param  alignment
-              The desired alignment to set (LEFT or RIGHT).
-  */
-  void setAlignment(uint32_t alignment) override {
+    @brief    Configures the LED matrix's I2C backpack.
+    @param    brightness
+              The brightness of the i2c backpack (0-15).
+    @param    alignment
+              The alignment of the i2c backpack's LED matrix (left/right).
+*/
+  void ConfigureI2CBackpack(int32_t brightness, uint32_t alignment) {
     if (alignment == LED_BACKPACK_ALIGNMENT_RIGHT) {
       _alignment = LED_BACKPACK_ALIGNMENT_RIGHT;
     } else {
       _alignment = LED_BACKPACK_ALIGNMENT_DEFAULT;
     }
+
+    // Note: Adafruit_LEDBackpack normalizes only > 15, but not < 0,
+    // so, here we're normalizing < 0 to 8 (median brightness)
+    if (brightness < 0) {
+      brightness = 8; // Set to median brightness if out of range
+    }
+  }
+
+  /*!
+      @brief    Sets the brightness of the LED backpack.
+      @param    b
+                  The brightness value, from 0 (off) to 15 (full brightness).
+  */
+  void SetLedBackpackBrightness(uint8_t b) {
+    if (_matrix == nullptr) {
+      return;
+    }
+    _matrix->setBrightness(b);
   }
 
   /*!
@@ -79,7 +117,7 @@ public:
       @param    message
                   The message to be displayed.
   */
-  void writeMessage(const char *message) override {
+  void WriteMessage(const char *message) {
     if (_matrix == nullptr || message == nullptr) {
       return;
     }
@@ -158,8 +196,14 @@ public:
     _matrix->writeDisplay();
   }
 
-private:
-  Adafruit_7segment *_matrix;
+protected:
+  Adafruit_7segment *_matrix =
+      nullptr;         ///< ptr to a 7-segment LED matrix object
+  int32_t _brightness; ///< Brightness of the LED backpack, from 0 (off) to 15
+                       ///< (full brightness)
+  uint32_t _alignment =
+      LED_BACKPACK_ALIGNMENT_DEFAULT; ///< Determines L/R alignment of the
+                                      ///< message displayed
 };
 
-#endif // WS_DISP_DRV_7Seg
+#endif // WIPPERSNAPPER_I2C_DRIVER_OUT_7SEG_H

@@ -1,21 +1,22 @@
 /*!
- * @file src/components/display/drivers/dispDrvSsd1306.h
+ * @file WipperSnapper_I2C_Driver_Out_Ssd1306.h
  *
- * Driver for SSD1306-based OLED displays.
+ *  Device driver for a SSD1306 OLED Display
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
  * products from Adafruit!
  *
- * Copyright (c) Brent Rubell 2025 for Adafruit Industries.
+ * Copyright (c) Brent Rubell for Adafruit Industries 2025
  *
- * BSD license, all text here must be included in any redistribution.
+ * MIT license, all text here must be included in any redistribution.
  *
  */
-#ifndef WS_DISP_DRV_SSD1306
-#define WS_DISP_DRV_SSD1306
 
-#include "dispDrvBase.h"
+#ifndef WIPPERSNAPPER_I2C_DRIVER_OUT_SSD1306_H
+#define WIPPERSNAPPER_I2C_DRIVER_OUT_SSD1306_H
+
+#include "WipperSnapper_I2C_Driver_Out.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 
@@ -25,27 +26,35 @@
   64 ///< Default height for a ssd1306 128x64 display
 
 /*!
-    @brief  Driver for SSD1306-based TFT displays.
+    @brief  Class that provides a driver interface for a SSD1306
+   OLED Display
 */
-class dispDrvSsd1306 : public dispDrvBase {
+class WipperSnapper_I2C_Driver_Out_Ssd1306
+    : public WipperSnapper_I2C_Driver_Out {
+
 public:
+  /*******************************************************************************/
   /*!
-      @brief  Constructor for the SSD1306 display driver.
-        @param  i2c
-                The I2C hardware interface, default is Wire.
-        @param  sensorAddress
-                The I2C sensor's unique address.
+      @brief    Constructor for a SSD1306 OLED display.
+      @param    i2c
+                The I2C interface.
+      @param    sensorAddress
+                7-bit device address.
   */
-  dispDrvSsd1306(TwoWire *i2c, uint16_t sensorAddress)
-      : dispDrvBase(i2c, sensorAddress), _display(nullptr) {
+  /*******************************************************************************/
+  WipperSnapper_I2C_Driver_Out_Ssd1306(TwoWire *i2c, uint16_t sensorAddress)
+      : WipperSnapper_I2C_Driver_Out(i2c, sensorAddress) {
     _i2c = i2c;
     _sensorAddress = sensorAddress;
     _width = WS_SSD1306_DEFAULT_WIDTH;
     _height = WS_SSD1306_DEFAULT_HEIGHT;
   }
 
-  ~dispDrvSsd1306() {
-    if (_display) {
+  /*!
+      @brief    Destructor for a SSD1306 OLED display.
+  */
+  ~WipperSnapper_I2C_Driver_Out_Ssd1306() {
+    if (_display != nullptr) {
       _display->clearDisplay();
       _display->display();
       _display->ssd1306_command(SSD1306_DISPLAYOFF);
@@ -55,12 +64,10 @@ public:
   }
 
   /*!
-      @brief  Attempts to initialize the SSD1306 display driver.
-      @return True if the display was initialized successfully, false otherwise.
+      @brief    Initializes the SSD1306 display and begins I2C.
+      @returns  True if initialized successfully, False otherwise.
   */
-  bool begin() override {
-    if (_i2c == nullptr)
-      return false;
+  bool begin() {
     // Attempt to create and allocate a SSD1306 obj.
     _display = new Adafruit_SSD1306(_width, _height, _i2c);
     if (!_display->begin(SSD1306_SWITCHCAPVCC, _sensorAddress))
@@ -78,27 +85,31 @@ public:
   }
 
   /*!
-      @brief  Sets the text size for the display.
-      @param  s
-              The text size to set.
-      @note   This method overrides the base class method to provide specific
-              functionality for the SSD1306 driver.
+      @brief    Configures a SSD1306 OLED display. Must be called before driver
+     begin()
+      @param    width
+                  The width of the display in pixels.
+      @param    height
+                  The height of the display in pixels.
+      @param    text_size
+                  The magnification factor for the text size.
+      @param    rotation
+                  The rotation of the display in degrees, default is 0.
   */
-  void setTextSize(uint8_t s) override {
-    if (!_display)
-      return;
-    _text_sz = s;
-    _display->setTextSize(s);
+  void ConfigureSSD1306(uint8_t width, uint8_t height, uint8_t text_size,
+                        uint8_t rotation = 0) {
+    _width = width;
+    _height = height;
+    _text_sz = text_size;
+    _rotation = rotation;
   }
 
   /*!
-      @brief  Writes a message to the display.
-      @param  message
-              The message to write to the display.
-      @note   This method overrides the base class method to provide specific
-              functionality for the SSD1306 driver.
+      @brief    Writes a message to the SSD1306 display.
+      @param    message
+                  The message to be displayed.
   */
-  virtual void writeMessage(const char *message) override {
+  void WriteMessageSSD1306(const char *message) {
     if (_display == nullptr)
       return;
 
@@ -106,6 +117,8 @@ public:
     // and settings
     int16_t y_idx = 0;
     _display->clearDisplay();
+    _display->setTextSize(_text_sz);
+    _display->setTextColor(SSD1306_WHITE);
     _display->setCursor(0, y_idx);
     _display->display();
 
@@ -141,8 +154,13 @@ public:
     }
   }
 
-private:
-  Adafruit_SSD1306 *_display;
+protected:
+  Adafruit_SSD1306 *_display =
+      nullptr;       ///< Pointer to the Adafruit_SSD1306 object
+  uint8_t _width;    ///< Width of the display in pixels
+  uint8_t _height;   ///< Height of the display in pixels
+  uint8_t _rotation; ///< Rotation of the display in degrees
+  uint8_t _text_sz;  ///< Text size of the display
 };
 
-#endif // WS_DISP_DRV_SSD1306
+#endif // WIPPERSNAPPER_I2C_DRIVER_OUT_SSD1306_H

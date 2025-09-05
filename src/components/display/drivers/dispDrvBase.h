@@ -64,17 +64,6 @@ public:
         _pin_miso(miso) {}
 
   /*!
-      @brief    Creates a new I2C output component driver.
-      @param    i2c
-                The I2C hardware interface, default is Wire.
-      @param    sensorAddress
-                The I2C sensor's unique address.
-  */
-  dispDrvBase(TwoWire *i2c, uint16_t sensorAddress) {
-    // No-op constructor
-  }
-
-  /*!
       @brief  Destructor for the base display driver.
               This destructor is virtual to allow derived classes to clean up
               resources properly.
@@ -124,7 +113,7 @@ public:
       @param  r
               The rotation of the display (0-3).
   */
-  virtual void setRotation(uint8_t r) { _rotation = r; }
+  void setRotation(uint8_t r) { _rotation = r; }
 
   /*!
       @brief  Sets the text size for the display.
@@ -135,42 +124,19 @@ public:
   */
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
-  /*!
-      @brief  Sets the brightness for the display (if supported).
-      @param  brightness
-              The brightness level to set.
-      @note   This method can be overridden by derived classes to provide
-              specific functionality.
-  */
-  virtual void setBrightness(int32_t brightness) { _brightness = brightness; }
-
-  /*!
-      @brief  Sets the alignment for the display (if supported).
-      @param  alignment
-              The alignment to set.
-      @note   This method can be overridden by derived classes to provide
-              specific functionality.
-  */
-  virtual void setAlignment(uint32_t alignment) { _alignment = alignment; }
-
 protected:
-  int16_t _pin_dc;         ///< Data/Command pin
-  int16_t _pin_rst;        ///< Reset pin
-  int16_t _pin_cs;         ///< Chip Select pin
-  int16_t _pin_busy;       ///< Optional Busy pin
-  int16_t _pin_sram_cs;    ///< Optional EPD SRAM chip select pin
-  uint16_t _pin_mosi;      ///< Optional MOSI pin for SPI TFT displays
-  uint16_t _pin_miso;      ///< Optional MISO pin for SPI TFT displays
-  uint16_t _pin_sck;       ///< Optional SCK pin for SPI TFT displays
-  TwoWire *_i2c;           ///< Optional pointer to the I2C driver's Wire object
-  uint16_t _sensorAddress; ///< Optional I2C sensor address
-  uint8_t _text_sz = 1;    ///< Optional Text size for displaying a message
-  int16_t _height;         ///< Optional Height of the display
-  int16_t _width;          ///< Optional Width of the display
-  uint8_t _rotation;       ///< Optional Rotation of the display
-  int32_t _brightness; ///< Optional Brightness of the display (if supported)
-  uint32_t _alignment; ///< Optional Alignment of the display (specific to
-                       ///< drivers like LED backpacks)
+  int16_t _pin_dc;      ///< Data/Command pin
+  int16_t _pin_rst;     ///< Reset pin
+  int16_t _pin_cs;      ///< Chip Select pin
+  int16_t _pin_busy;    ///< Optional Busy pin
+  int16_t _pin_sram_cs; ///< Optional EPD SRAM chip select pin
+  uint16_t _pin_mosi;   ///< Optional MOSI pin for SPI TFT displays
+  uint16_t _pin_miso;   ///< Optional MISO pin for SPI TFT displays
+  uint16_t _pin_sck;    ///< Optional SCK pin for SPI TFT displays
+  uint8_t _text_sz = 1; ///< Text size for displaying a message
+  int16_t _height;      ///< Height of the display
+  int16_t _width;       ///< Width of the display
+  uint8_t _rotation;    ///< Rotation of the display
 };
 
 #endif // WS_DISP_DRV_BASE_H

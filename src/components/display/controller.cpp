@@ -51,26 +51,11 @@ bool DisplayController::Handle_Display_AddOrReplace(
   if (msgAdd->which_config ==
       wippersnapper_display_v1_DisplayAddOrReplace_config_epd_tag) {
     did_begin = display->beginEPD(&msgAdd->config.config_epd,
-                                  &msgAdd->interface_type.cfg_spi);
+                                  &msgAdd->interface_type.spi_epd);
   } else if (msgAdd->which_config ==
              wippersnapper_display_v1_DisplayAddOrReplace_config_tft_tag) {
     did_begin = display->beginTft(&msgAdd->config.config_tft,
-                                  &msgAdd->interface_type.cfg_spi);
-  } else if (msgAdd->which_config ==
-             wippersnapper_display_v1_DisplayAddOrReplace_config_oled_tag) {
-    did_begin = display->beginOled(&msgAdd->config.config_oled,
-                                   &msgAdd->interface_type.cfg_i2c);
-  } else if (
-      msgAdd->which_config ==
-      wippersnapper_display_v1_DisplayAddOrReplace_config_led_backpack_tag) {
-    WS_DEBUG_PRINTLN("[display] LED Backpack support coming soon!");
-    delete display;
-    return false;
-  } else if (msgAdd->which_config ==
-             wippersnapper_display_v1_DisplayAddOrReplace_config_char_lcd_tag) {
-    WS_DEBUG_PRINTLN("[display] Character LCD support coming soon!");
-    delete display;
-    return false;
+                                  &msgAdd->interface_type.spi_tft);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported display configuration type!");
     delete display;
