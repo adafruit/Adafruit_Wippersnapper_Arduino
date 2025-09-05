@@ -512,17 +512,6 @@ public:
   }
 
   /*!
-      @brief    Gets a sensor's rotation vector value.
-      @param    rotationEvent
-                The rotation vector (x, y, z, w) in radians.
-      @returns  True if the sensor value was obtained successfully, False
-                otherwise.
-  */
-  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) {
-    return false;
-  }
-
-  /*!
       @brief    Gets a sensor's Raw value.
       @param    rawEvent
                 The Raw value.
