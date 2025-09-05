@@ -59,6 +59,7 @@
 #include "drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
+#include "drivers/drvQmc5883p.h"
 #include "drivers/drvScd30.h"
 #include "drivers/drvScd4x.h"
 #include "drivers/drvSen5x.h"
