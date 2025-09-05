@@ -776,7 +776,7 @@ public:
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR,
        [this](sensors_event_t *event) -> bool {
          return this->getEventRotationVector(event);
-       }}};  ///< SensorType to function call map
+       }}}; ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< Sensors attached to the device.
