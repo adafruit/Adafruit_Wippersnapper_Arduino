@@ -174,17 +174,14 @@ public:
       @brief    Gets a ptr to an array containing the sensor types, as strings.
       @returns  Pointer to an array of strings.
   */
-  /*******************************************************************************/
   const char **GetSensorTypeStrings() { return _sensor_type_strings; }
 
-  /*******************************************************************************/
   /*!
       @brief    Configures a driver with the default SensorType(s) for the
                 device.
-  /*******************************************************************************/
+  */
   virtual void ConfigureDefaultSensorTypes() { return; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the number of enabled sensors.
       @returns  The number of enabled sensors.
@@ -229,12 +226,14 @@ public:
       @brief    Gets the sensor's types
       @returns  A pointer to an array of SensorTypes.
   */
-  /*******************************************************************************/
   wippersnapper_sensor_SensorType *GetSensorTypes() { return _sensors; }
 
+  /*!
+      @brief    Gets the number of sensor types.
+      @returns  The number of sensor types.
+  */
   size_t GetNumSensorTypes() { return _sensors_count; }
 
-  /*******************************************************************************/
   /*!
       @brief    Gets the sensor's previous period.
       @returns  The sensor's previous period, in milliseconds.
