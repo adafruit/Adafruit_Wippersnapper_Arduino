@@ -69,6 +69,17 @@ public:
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *magEvent);
 
+  /*******************************************************************************/
+  /*!
+      @brief    Gets the QMC5883P's magnetic field vector.
+      @param    magneticEvent
+                Pointer to the magnetic field sensor event.
+      @returns  True if the sensor event was obtained successfully, False
+                otherwise.
+  */
+  /*******************************************************************************/
+  bool getEventMagneticField(sensors_event_t *magneticEvent);
+
   void ConfigureDefaultSensorTypes() override;
 
 protected:

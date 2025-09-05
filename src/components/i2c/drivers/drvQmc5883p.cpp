@@ -65,14 +65,14 @@ bool drvQmc5883p::begin() {
 
 /*******************************************************************************/
 /*!
-    @brief    Gets the QMC5883P's magnetometer sensor event.
-    @param    magEvent
+    @brief    Gets the QMC5883P's magnetometer sensor event as raw magnitude.
+    @param    rawEvent
               Pointer to the magnetometer sensor event.
     @returns  True if the sensor event was obtained successfully, False
               otherwise.
 */
 /*******************************************************************************/
-bool drvQmc5883p::getEventRaw(sensors_event_t *magEvent) {
+bool drvQmc5883p::getEventRaw(sensors_event_t *rawEvent) {
   // Check if data is ready before reading
   if (!_qmc->isDataReady()) {
     return false;
@@ -90,20 +90,7 @@ bool drvQmc5883p::getEventRaw(sensors_event_t *magEvent) {
   // Get Gauss field data
   if (!_qmc->getGaussField(&gx, &gy, &gz)) {
     WS_DEBUG_PRINTLN("Failed to read Gauss field data");
-    WS_DEBUG_PRINT("Raw X: ");
-    WS_DEBUG_PRINTLN(x);
-    WS_DEBUG_PRINT("Raw Y: ");
-    WS_DEBUG_PRINTLN(y);
-    WS_DEBUG_PRINT("Raw Z: ");
-    WS_DEBUG_PRINTLN(z);
     return false;
-  } else {
-    WS_DEBUG_PRINT("Gauss X: ");
-    WS_DEBUG_PRINTLN(gx);
-    WS_DEBUG_PRINT("Gauss Y: ");
-    WS_DEBUG_PRINTLN(gy);
-    WS_DEBUG_PRINT("Gauss Z: ");
-    WS_DEBUG_PRINTLN(gz);
   }
 
   // Check for overflow
@@ -114,12 +101,56 @@ bool drvQmc5883p::getEventRaw(sensors_event_t *magEvent) {
 
   // Calculate magnitude in Gauss
   float magnitude_G = sqrtf(gx * gx + gy * gy + gz * gz);
-  magEvent->data[0] = magnitude_G;
+  rawEvent->data[0] = magnitude_G;
+  return true;
+}
+
+/*******************************************************************************/
+/*!
+    @brief    Gets the QMC5883P's magnetic field vector.
+    @param    magneticEvent
+              Pointer to the magnetic field sensor event.
+    @returns  True if the sensor event was obtained successfully, False
+              otherwise.
+*/
+/*******************************************************************************/
+bool drvQmc5883p::getEventMagneticField(sensors_event_t *magneticEvent) {
+  // Check if data is ready before reading
+  if (!_qmc->isDataReady()) {
+    return false;
+  }
+
+  int16_t x, y, z;
+  float gx, gy, gz;
+
+  // Get raw magnetic data
+  if (!_qmc->getRawMagnetic(&x, &y, &z)) {
+    WS_DEBUG_PRINTLN("Failed to read raw magnetic data");
+    return false;
+  }
+
+  // Get Gauss field data
+  if (!_qmc->getGaussField(&gx, &gy, &gz)) {
+    WS_DEBUG_PRINTLN("Failed to read Gauss field data");
+    return false;
+  }
+
+  // Check for overflow
+  if (_qmc->isOverflow()) {
+    WS_DEBUG_PRINTLN("QMC5883P data overflow - skipping reading");
+    return false;
+  }
+
+  // Convert from Gauss to microTesla (1 Gauss = 100 microTesla)
+  magneticEvent->magnetic.x = gx * 100.0f;
+  magneticEvent->magnetic.y = gy * 100.0f;
+  magneticEvent->magnetic.z = gz * 100.0f;
+
   return true;
 }
 
 void drvQmc5883p::ConfigureDefaultSensorTypes() {
   _default_sensor_types_count = 1;
   _default_sensor_types[0] =
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD;
 }

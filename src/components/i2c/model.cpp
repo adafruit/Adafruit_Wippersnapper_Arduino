@@ -129,6 +129,33 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
 }
 
 /*!
+    @brief    Returns the vector event value mapped to a sensor event.
+    @param    sensor_type
+                The SensorType.
+    @param    event
+                The sensors_event_t event.
+    @returns  The value of the SensorType as an X/Y/Z vector.
+*/
+wippersnapper_sensor_SensorEvent_SensorEvent3DVector
+GetValueFromSensorsEventVector(wippersnapper_sensor_SensorType sensor_type,
+                               sensors_event_t *event) {
+  wippersnapper_sensor_SensorEvent_SensorEvent3DVector value = {0.0, 0.0, 0.0};
+  switch (sensor_type) {
+    case wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD:
+      value.x = event->magnetic.x;
+      value.y = event->magnetic.y;
+      value.z = event->magnetic.z;
+      break;
+    default:
+      value.x = 0.0;
+      value.y = 0.0;
+      value.z = 0.0;
+      break;
+  }
+  return value;
+}
+
+/*!
     @brief  Decodes a I2cDeviceRemove message from an input stream.
     @param    stream
                 A pointer to the pb_istream_t stream.
@@ -355,10 +382,24 @@ bool I2cModel::AddI2cDeviceSensorEvent(
   _msg_i2c_device_event
       .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
       .type = sensor_type;
-  float value = GetValueFromSensorsEvent(sensor_type, &event);
-  _msg_i2c_device_event
-      .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
-      .value.float_value = value;
+  if (sensor_type ==
+      wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD) {
+      wippersnapper_sensor_SensorEvent_SensorEvent3DVector value_vect = GetValueFromSensorsEventVector(sensor_type, &event);
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.vector_value.x = value_vect.x;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.vector_value.y = value_vect.y;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.vector_value.z = value_vect.z;
+  } else {
+    float value = GetValueFromSensorsEvent(sensor_type, &event);
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.float_value = value;
+  }
 
   _msg_i2c_device_event.i2c_device_events_count++;
   return true;

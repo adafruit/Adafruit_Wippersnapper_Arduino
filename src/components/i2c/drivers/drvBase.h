@@ -441,6 +441,15 @@ public:
   virtual bool getEventCurrent(sensors_event_t *currentEvent) { return false; }
 
   /*!
+      @brief    Gets a sensor's magnetic field value.
+      @param    magneticEvent
+                The magnetic field vector (x, y, z) in microTesla.
+      @returns  True if the sensor value was obtained successfully, False
+                otherwise.
+  */
+  virtual bool getEventMagneticField(sensors_event_t *magneticEvent) { return false; }
+
+  /*!
       @brief    Gets a sensor's Raw value.
       @param    rawEvent
                 The Raw value.
@@ -665,6 +674,10 @@ public:
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_TVOC,
        [this](sensors_event_t *event) -> bool {
          return this->getEventTVOC(event);
+       }},
+      {wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD,
+       [this](sensors_event_t *event) -> bool {
+         return this->getEventMagneticField(event);
        }}}; ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType
