@@ -447,7 +447,9 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  virtual bool getEventMagneticField(sensors_event_t *magneticEvent) { return false; }
+  virtual bool getEventMagneticField(sensors_event_t *magneticEvent) {
+    return false;
+  }
 
   /*!
       @brief    Gets a sensor's gravity vector value.
@@ -465,7 +467,9 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  virtual bool getEventLinearAcceleration(sensors_event_t *linearAccelEvent) { return false; }
+  virtual bool getEventLinearAcceleration(sensors_event_t *linearAccelEvent) {
+    return false;
+  }
 
   /*!
       @brief    Gets a sensor's rotation vector value.
@@ -474,7 +478,9 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) { return false; }
+  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) {
+    return false;
+  }
 
   /*!
       @brief    Gets a sensor's gyroscope value.
@@ -491,7 +497,9 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  virtual bool getEventAccelerometer(sensors_event_t *accelEvent) { return false; }
+  virtual bool getEventAccelerometer(sensors_event_t *accelEvent) {
+    return false;
+  }
 
   /*!
       @brief    Gets a sensor's orientation value.
@@ -500,7 +508,9 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  virtual bool getEventOrientation(sensors_event_t *orientationEvent) { return false; }
+  virtual bool getEventOrientation(sensors_event_t *orientationEvent) {
+    return false;
+  }
 
   /*!
       @brief    Gets a sensor's rotation vector value.
@@ -509,7 +519,9 @@ public:
       @returns  True if the sensor value was obtained successfully, False
                 otherwise.
   */
-  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) { return false; }
+  virtual bool getEventRotationVector(sensors_event_t *rotationEvent) {
+    return false;
+  }
 
   /*!
       @brief    Gets a sensor's Raw value.
@@ -764,8 +776,7 @@ public:
       {wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR,
        [this](sensors_event_t *event) -> bool {
          return this->getEventRotationVector(event);
-       }}
-      }; ///< SensorType to function call map
+       }}};  ///< SensorType to function call map
 
   wippersnapper_sensor_SensorType
       _sensors[15]; ///< Sensors attached to the device.

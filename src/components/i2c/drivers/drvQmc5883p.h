@@ -17,7 +17,7 @@
 
 #include "drvBase.h"
 
-class Adafruit_QMC5883P; // forward
+class Adafruit_QMC5883P;  // forward
 
 /**************************************************************************/
 /*!
@@ -25,7 +25,7 @@ class Adafruit_QMC5883P; // forward
 */
 /**************************************************************************/
 class drvQmc5883p : public drvBase {
-public:
+ public:
   /*******************************************************************************/
   /*!
       @brief    Constructor for a QMC5883P sensor.
@@ -82,8 +82,8 @@ public:
 
   void ConfigureDefaultSensorTypes() override;
 
-protected:
-  Adafruit_QMC5883P *_qmc = nullptr; ///< Pointer to QMC5883P sensor object
+ protected:
+  Adafruit_QMC5883P *_qmc = nullptr;  ///< Pointer to QMC5883P sensor object
 };
 
-#endif // DRV_QMC5883P_H
+#endif  // DRV_QMC5883P_H

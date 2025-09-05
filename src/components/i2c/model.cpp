@@ -436,12 +436,15 @@ bool I2cModel::AddI2cDeviceSensorEvent(
       .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
       .type = sensor_type;
   if (sensor_type ==
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD || sensor_type ==
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER || sensor_type ==
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE || sensor_type ==
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY || sensor_type ==
-      wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION) {
-      wippersnapper_sensor_SensorEvent_SensorEvent3DVector value_vect = GetValueFromSensorsEventVector(sensor_type, &event);
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD ||
+      sensor_type ==
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER ||
+      sensor_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE ||
+      sensor_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY ||
+      sensor_type ==
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION) {
+    wippersnapper_sensor_SensorEvent_SensorEvent3DVector value_vect =
+        GetValueFromSensorsEventVector(sensor_type, &event);
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.vector_value.x = value_vect.x;
@@ -451,9 +454,12 @@ bool I2cModel::AddI2cDeviceSensorEvent(
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.vector_value.z = value_vect.z;
-  } else if (sensor_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION || sensor_type ==
-             wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR) {
-    wippersnapper_sensor_SensorEvent_SensorEventOrientation value_vect = GetValueFromSensorsEventOrientation(sensor_type, &event);
+  } else if (sensor_type ==
+                 wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION ||
+             sensor_type ==
+                 wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR) {
+    wippersnapper_sensor_SensorEvent_SensorEventOrientation value_vect =
+        GetValueFromSensorsEventOrientation(sensor_type, &event);
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.orientation_value.heading = value_vect.heading;
@@ -463,7 +469,7 @@ bool I2cModel::AddI2cDeviceSensorEvent(
     _msg_i2c_device_event
         .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
         .value.orientation_value.pitch = value_vect.pitch;
-    //TODO: Add color RGB(A) vector support
+    // TODO: Add color RGB(A) vector support
   } else {
     float value = GetValueFromSensorsEvent(sensor_type, &event);
     _msg_i2c_device_event
