@@ -32,12 +32,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: adafruit/ci-arduino
-          ref: ci-wippersnapper-show-config
+          ref: ci-wippersnapper
           path: ci
       - name: pre-install
         run: bash ci/actions_install.sh
       - name: clang
-        run: python3 ci/run-clang-format.py --show-config -r -e "ci/*" -e "bin/*" -e src/nanopb -e src/protos -e src/pb.h -e src/provisioning/tinyusb src/
+        run: python3 ci/run-clang-format.py -r -e "ci/*" -e "bin/*" -e src/nanopb -e src/protos -e src/pb.h -e src/provisioning/tinyusb src/
 
   test-offline-mode:
     name: 🧪 Test Offline Mode
