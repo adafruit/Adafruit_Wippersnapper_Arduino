@@ -15,13 +15,14 @@
 #ifndef WS_DISPLAY_HARDWARE_H
 #define WS_DISPLAY_HARDWARE_H
 #include "Wippersnapper.h"
+#include "drivers/dispDrv7Seg.h"
 #include "drivers/dispDrvBase.h"
+#include "drivers/dispDrvQuadAlphaNum.h"
 #include "drivers/dispDrvSh1107.h"
 #include "drivers/dispDrvSsd1306.h"
 #include "drivers/dispDrvSt7789.h"
 #include "drivers/dispDrvThinkInkGrayscale4Eaamfgn.h"
 #include "drivers/dispDrvThinkInkGrayscale4T5.h"
-#include "drivers/dispDrv7Seg.h"
 #include <functional>
 #include <map>
 
@@ -48,7 +49,8 @@ public:
                 wippersnapper_display_v1_SpiConfig *spi_config);
   bool beginOled(wippersnapper_display_v1_OledConfig *config,
                  wippersnapper_display_v1_I2cConfig *i2c_config);
-  bool beginLedBackpack(wippersnapper_display_v1_LEDBackpackConfig *config, wippersnapper_display_v1_I2cConfig *i2c_config);
+  bool beginLedBackpack(wippersnapper_display_v1_LEDBackpackConfig *config,
+                        wippersnapper_display_v1_I2cConfig *i2c_config);
 
   //
   // API for Adafruit_GFX that abstracts hardware functionality

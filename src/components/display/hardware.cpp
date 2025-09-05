@@ -364,7 +364,8 @@ bool DisplayHardware::beginOled(
                      sizeof(i2c_config->i2c.i2c_device_name)) <
                  sizeof(i2c_config->i2c.i2c_device_name) &&
              strcmp(i2c_config->i2c.i2c_device_name, "SH1107") == 0) {
-    _drvDisp = new dispDrvSh1107(WS._i2cPort0->getBus(), i2c_config->i2c.i2c_device_address);
+    _drvDisp = new dispDrvSh1107(WS._i2cPort0->getBus(),
+                                 i2c_config->i2c.i2c_device_address);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported OLED driver!");
     return false;
@@ -402,7 +403,9 @@ bool DisplayHardware::beginOled(
             Pointer to the I2C configuration structure.
     @return True if configuration was successful, False otherwise.
 */
-bool DisplayHardware::beginLedBackpack(wippersnapper_display_v1_LEDBackpackConfig *config, wippersnapper_display_v1_I2cConfig *i2c_config) {
+bool DisplayHardware::beginLedBackpack(
+    wippersnapper_display_v1_LEDBackpackConfig *config,
+    wippersnapper_display_v1_I2cConfig *i2c_config) {
   // Validate pointers
   if (config == nullptr || i2c_config == nullptr || !i2c_config->has_i2c)
     return false;
@@ -419,7 +422,14 @@ bool DisplayHardware::beginLedBackpack(wippersnapper_display_v1_LEDBackpackConfi
               sizeof(i2c_config->i2c.i2c_device_name)) <
           sizeof(i2c_config->i2c.i2c_device_name) &&
       strcmp(i2c_config->i2c.i2c_device_name, "7seg") == 0) {
-    _drvDisp = new dispDrv7Seg(WS._i2cPort0->getBus(), i2c_config->i2c.i2c_device_address);
+    _drvDisp = new dispDrv7Seg(WS._i2cPort0->getBus(),
+                               i2c_config->i2c.i2c_device_address);
+  } else if (strnlen(i2c_config->i2c.i2c_device_name,
+                     sizeof(i2c_config->i2c.i2c_device_name)) <
+                 sizeof(i2c_config->i2c.i2c_device_name) &&
+             strcmp(i2c_config->i2c.i2c_device_name, "quadalphanum") == 0) {
+    _drvDisp = new dispDrvQuadAlphaNum(WS._i2cPort0->getBus(),
+                                       i2c_config->i2c.i2c_device_address);
   } else {
     WS_DEBUG_PRINTLN("[display] Unsupported OLED driver!");
     return false;
