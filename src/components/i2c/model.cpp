@@ -129,6 +129,88 @@ float GetValueFromSensorsEvent(wippersnapper_sensor_SensorType sensor_type,
 }
 
 /*!
+    @brief    Returns the vector event value mapped to a sensor event.
+    @param    sensor_type
+                The SensorType.
+    @param    event
+                The sensors_event_t event.
+    @returns  The value of the SensorType as an X/Y/Z vector.
+*/
+wippersnapper_sensor_SensorEvent_SensorEvent3DVector
+GetValueFromSensorsEventVector(wippersnapper_sensor_SensorType sensor_type,
+                               sensors_event_t *event) {
+  wippersnapper_sensor_SensorEvent_SensorEvent3DVector value = {0.0, 0.0, 0.0};
+  switch (sensor_type) {
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD:
+    value.x = event->magnetic.x;
+    value.y = event->magnetic.y;
+    value.z = event->magnetic.z;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER:
+    value.x = event->acceleration.x;
+    value.y = event->acceleration.y;
+    value.z = event->acceleration.z;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE:
+    value.x = event->gyro.x;
+    value.y = event->gyro.y;
+    value.z = event->gyro.z;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY:
+    value.x = event->acceleration.x;
+    value.y = event->acceleration.y;
+    value.z = event->acceleration.z;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION:
+    value.x = event->acceleration.x;
+    value.y = event->acceleration.y;
+    value.z = event->acceleration.z;
+    break;
+
+  default:
+    value.x = 0.0;
+    value.y = 0.0;
+    value.z = 0.0;
+    break;
+  }
+  return value;
+}
+
+/*!
+    @brief    Returns the orientation vector event value mapped to a sensor
+   event.
+    @param    sensor_type
+                The SensorType.
+    @param    event
+                The sensors_event_t event.
+    @returns  The value of the SensorType as an orientation vector.
+*/
+wippersnapper_sensor_SensorEvent_SensorEventOrientation
+GetValueFromSensorsEventOrientation(wippersnapper_sensor_SensorType sensor_type,
+                                    sensors_event_t *event) {
+  wippersnapper_sensor_SensorEvent_SensorEventOrientation value = {0.0, 0.0,
+                                                                   0.0};
+  switch (sensor_type) {
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION:
+    value.roll = event->orientation.roll;
+    value.pitch = event->orientation.pitch;
+    value.heading = event->orientation.heading;
+    break;
+  case wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR:
+    value.roll = event->orientation.roll;
+    value.pitch = event->orientation.pitch;
+    value.heading = event->orientation.heading;
+    break;
+  default:
+    value.roll = 0.0;
+    value.pitch = 0.0;
+    value.heading = 0.0;
+    break;
+  }
+  return value;
+}
+
+/*!
     @brief  Decodes a I2cDeviceRemove message from an input stream.
     @param    stream
                 A pointer to the pb_istream_t stream.
@@ -355,10 +437,47 @@ bool I2cModel::AddI2cDeviceSensorEvent(
   _msg_i2c_device_event
       .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
       .type = sensor_type;
-  float value = GetValueFromSensorsEvent(sensor_type, &event);
-  _msg_i2c_device_event
-      .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
-      .value.float_value = value;
+  if (sensor_type ==
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD ||
+      sensor_type ==
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER ||
+      sensor_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE ||
+      sensor_type == wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY ||
+      sensor_type ==
+          wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION) {
+    wippersnapper_sensor_SensorEvent_SensorEvent3DVector value_vect =
+        GetValueFromSensorsEventVector(sensor_type, &event);
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.vector_value.x = value_vect.x;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.vector_value.y = value_vect.y;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.vector_value.z = value_vect.z;
+  } else if (sensor_type ==
+                 wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION ||
+             sensor_type ==
+                 wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR) {
+    wippersnapper_sensor_SensorEvent_SensorEventOrientation value_vect =
+        GetValueFromSensorsEventOrientation(sensor_type, &event);
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.orientation_value.heading = value_vect.heading;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.orientation_value.roll = value_vect.roll;
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.orientation_value.pitch = value_vect.pitch;
+    // TODO: Add color RGB(A) vector support
+  } else {
+    float value = GetValueFromSensorsEvent(sensor_type, &event);
+    _msg_i2c_device_event
+        .i2c_device_events[_msg_i2c_device_event.i2c_device_events_count]
+        .value.float_value = value;
+  }
 
   _msg_i2c_device_event.i2c_device_events_count++;
   return true;
