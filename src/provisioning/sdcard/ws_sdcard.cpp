@@ -673,9 +673,17 @@ bool ws_sdcard::ParseI2cDeviceAddReplace(
   msg_i2c_add.i2c_device_sensor_types_count = 0;
   for (JsonObject components_0_i2cDeviceSensorType :
        component["i2cDeviceSensorTypes"].as<JsonArray>()) {
-    msg_i2c_add
-        .i2c_device_sensor_types[msg_i2c_add.i2c_device_sensor_types_count] =
-        ParseSensorType(components_0_i2cDeviceSensorType["type"]);
+    if (components_0_i2cDeviceSensorType["type"].is<JsonString>()) {
+      msg_i2c_add
+          .i2c_device_sensor_types[msg_i2c_add.i2c_device_sensor_types_count] =
+          ParseSensorType(components_0_i2cDeviceSensorType["type"]);
+    } else {
+      msg_i2c_add
+          .i2c_device_sensor_types[msg_i2c_add.i2c_device_sensor_types_count] =
+          ParseSensorType(
+              components_0_i2cDeviceSensorType["type"]["sensorType"] |
+              "UNSPECIFIED");
+    }
     msg_i2c_add.i2c_device_sensor_types_count++;
   }
 
@@ -997,7 +1005,11 @@ bool ws_sdcard::ParseComponents(JsonArray &components) {
         msg_signal_b2d.payload.ds18x20_add = msg_add;
       }
     } else if (strcmp(component_api_type, "i2c") == 0) {
-      WS_DEBUG_PRINTLN("[SD] I2C component found in cfg");
+      WS_DEBUG_PRINT("[SD] I2C component (");
+      WS_DEBUG_PRINT(component["name"] | UNKNOWN_VALUE);
+      WS_DEBUG_PRINT(" @ ");
+      WS_DEBUG_PRINT(component["i2cDeviceAddress"] | "0x??");
+      WS_DEBUG_PRINTLN(") found in cfg");
       // Init for use=yes || use=auto
       wippersnapper_i2c_I2cDeviceAddOrReplace msg_add =
           wippersnapper_i2c_I2cDeviceAddOrReplace_init_default;
