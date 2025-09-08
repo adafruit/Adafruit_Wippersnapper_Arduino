@@ -47,6 +47,7 @@
 #include "drivers/drvMCP9808.h"
 #include "drivers/drvMax1704x.h"
 #include "drivers/drvMcp3421.h"
+#include "drivers/drvMlx90632.h"
 #include "drivers/drvMpl115a2.h"
 #include "drivers/drvMprls.h"
 #include "drivers/drvMs8607.h"
@@ -58,6 +59,7 @@
 #include "drivers/drvOutputBase.h" ///< Base i2c output driver class
 #include "drivers/drvPct2075.h"
 #include "drivers/drvPm25.h"
+#include "drivers/drvQmc5883p.h"
 #include "drivers/drvScd30.h"
 #include "drivers/drvScd4x.h"
 #include "drivers/drvSen5x.h"
