@@ -17,6 +17,7 @@
 
 #include "Adafruit_ThinkInk.h"
 #include "Wippersnapper.h"
+#include "../assets/splash.h"
 
 /*!
     @brief  Abstract base class for display drivers.
