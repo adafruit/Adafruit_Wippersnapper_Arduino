@@ -240,7 +240,13 @@ bool DisplayHardware::beginEPD(
   thinkinkmode_t epd_mode = THINKINK_MONO;
   if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_GRAYSCALE4) {
     epd_mode = THINKINK_GRAYSCALE4;
-    WS_DEBUG_PRINTLN("[display] EPD mode: GRAYSCALE4");
+  } else if (config->mode == wippersnapper_display_v1_EPDMode_EPD_MODE_MONO) {
+    epd_mode = THINKINK_MONO;
+  } else {
+    WS_DEBUG_PRINTLN("[display] ERROR: Unsupported EPD mode!");
+    delete _drvDisp;
+    _drvDisp = nullptr;
+    return false;
   }
 
   if (!_drvDisp->begin(epd_mode)) {
@@ -250,6 +256,10 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
+  WS.feedWDT();
+  _drvDisp->showSplash();
+  WS.feedWDT();
+  WS_DEBUG_PRINTLN("[display] Successfully initialized epd display!");
   return true;
 }
 
@@ -328,7 +338,6 @@ bool DisplayHardware::beginTft(
   _drvDisp->setHeight(config->height);
   _drvDisp->setRotation(config->rotation);
   _drvDisp->begin();
-  _drvDisp->setTextSize(text_sz);
 
   return true;
 }

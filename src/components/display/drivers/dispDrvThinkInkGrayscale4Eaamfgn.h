@@ -73,10 +73,20 @@ public:
     _height = _display->height();
     _width = _display->width();
     _display->clearBuffer();
+    return true;
+  }
+
+ virtual void showSplash() override {
+    if (_display == nullptr)
+      return;
+
     // Show splash screen
     _display->drawBitmap(0, 0, epd_bitmap_ws_logo_296128, 296, 128, EPD_BLACK);
     _display->display();
-    return true;
+    delay(1000);
+    _display->clearBuffer();
+    _display->fillScreen(EPD_WHITE);
+    _display->display();
   }
 
   /*!

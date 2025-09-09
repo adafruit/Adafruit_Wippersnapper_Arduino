@@ -125,6 +125,15 @@ public:
   */
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
+
+  /*!
+      @brief  Displays a splash screen on the display.
+      @note   This method can be overridden by derived classes to provide
+              specific functionality.
+  */
+  virtual void showSplash() { // No-op for base class 
+  }
+
 protected:
   int16_t _pin_dc;      ///< Data/Command pin
   int16_t _pin_rst;     ///< Reset pin
