@@ -256,12 +256,20 @@ bool DisplayHardware::beginEPD(
     return false;
   }
 
-  WS.feedWDT();
-  _drvDisp->showSplash();
-  WS.feedWDT();
   WS_DEBUG_PRINTLN("[display] Successfully initialized epd display!");
   return true;
 }
+
+void DisplayHardware::showSplash() {
+  if (!_drvDisp)
+    return; 
+  _drvDisp->showSplash();
+}
+
+void DisplayHardware::drawStatusBar() {
+  _drvDisp->drawStatusBar();
+}
+
 
 /*!
     @brief  Removes a suffix from the hardware instance name, if it exists.

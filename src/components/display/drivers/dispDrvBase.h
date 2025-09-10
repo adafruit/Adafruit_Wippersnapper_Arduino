@@ -134,6 +134,10 @@ public:
   virtual void showSplash() { // No-op for base class 
   }
 
+  virtual void drawStatusBar() {
+    // No-op for base class
+  }
+
 protected:
   int16_t _pin_dc;      ///< Data/Command pin
   int16_t _pin_rst;     ///< Reset pin

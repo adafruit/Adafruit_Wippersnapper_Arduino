@@ -76,16 +76,45 @@ public:
     return true;
   }
 
+  /*!
+      @brief  Displays a splash screen
+  */
  virtual void showSplash() override {
-    if (_display == nullptr)
+    if (! _display)
       return;
-
-    // Show splash screen
     _display->drawBitmap(0, 0, epd_bitmap_ws_logo_296128, 296, 128, EPD_BLACK);
     _display->display();
-    delay(1000);
+    delay(50);
+  }
+
+  /*!
+      @brief  Draws a status bar at the top of the display.
+  */
+  virtual void drawStatusBar() override {
+    if (!_display)
+      return;
     _display->clearBuffer();
     _display->fillScreen(EPD_WHITE);
+    
+    int barHeight = 15;
+    int borderWidth = 1;
+    // Black rect outline
+    _display->fillRect(0, 0, _width, barHeight, EPD_BLACK);
+    // White rect inside for icons/text
+    _display->fillRect(borderWidth, borderWidth, 
+                      _width - (2 * borderWidth), 
+                      barHeight - (2 * borderWidth), 
+                      EPD_WHITE);
+
+    // Vertically center text in the bar
+    _display->setTextSize(1);  // Text size 1 = 8 pixels tall
+    int textHeight = 8;
+    int usableHeight = barHeight - (2 * borderWidth);  // 13px usable
+    int textY = borderWidth + (usableHeight - textHeight) / 2;  // = 1 + (13-8)/2 = 3
+    // Draw status text
+    _display->setTextColor(EPD_BLACK);
+    _display->setCursor(5, textY);
+    _display->print("[IO] OK|[WiFi] OK|[Bat] 100%");
     _display->display();
   }
 

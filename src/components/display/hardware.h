@@ -44,6 +44,9 @@ public:
   bool beginTft(wippersnapper_display_v1_TftConfig *config,
                 wippersnapper_display_v1_TftSpiConfig *spi_config);
 
+
+  void showSplash();
+  void drawStatusBar();
   //
   // API for Adafruit_GFX that abstracts hardware functionality
   // NOTE: These methods are meant to be implemented within dispDrvBase and

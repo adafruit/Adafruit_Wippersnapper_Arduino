@@ -69,6 +69,12 @@ bool DisplayController::Handle_Display_AddOrReplace(
     return false;
   }
 
+  WS.feedWDT();
+  display->showSplash();
+  WS.feedWDT();
+  display->drawStatusBar();
+  WS.feedWDT();
+
   _hw_instances.push_back(display); // Store the display instance
   WS_DEBUG_PRINTLN("[display] Display added or replaced successfully!");
   return true;
