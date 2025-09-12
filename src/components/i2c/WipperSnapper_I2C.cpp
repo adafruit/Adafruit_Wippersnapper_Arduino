@@ -1032,7 +1032,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _drivers_out.push_back(_ssd1306);
     WS_DEBUG_PRINTLN("SSD1306 display initialized Successfully!");
   } else {
-    WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
+    WS_DEBUG_PRINTLN("ERROR: I2C device type not found!");
     _busStatusResponse =
         wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
     return false;

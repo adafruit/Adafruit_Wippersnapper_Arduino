@@ -46,7 +46,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() override {
+  bool begin() {
     _sgp30 = new Adafruit_SGP30();
     if (!_sgp30->begin(_i2c)) {
       delete _sgp30;          // avoid leak on init failure
@@ -88,6 +88,7 @@ public:
   }
 
 protected:
+
   Adafruit_SGP30 *_sgp30; ///< Pointer to SGP30 sensor object
 
   // Fast sampling state
@@ -96,7 +97,7 @@ protected:
   uint32_t _eco2Sum = 0;
   uint32_t _tvocSum = 0;
 
-  inline bool iaqEnabled() const {
+  inline bool iaqEnabled() {
     // Enable IAQ background reads if either metric is requested
     return (getSensorECO2Period() > 0) || (getSensorTVOCPeriod() > 0);
   }

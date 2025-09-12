@@ -63,7 +63,7 @@ public:
       @returns  True if initialized successfully, False otherwise.
   */
   /*******************************************************************************/
-  bool begin() override {
+  bool begin() {
     _sgp40 = new Adafruit_SGP40();
     if (!_sgp40 || !_sgp40->begin(_i2c)) {
       delete _sgp40;
@@ -142,6 +142,7 @@ public:
   }
 
 protected:
+
   Adafruit_SGP40 *_sgp40; ///< SGP40
   // background accumulation state
   uint32_t _lastFastMs = 0;
@@ -150,7 +151,7 @@ protected:
   uint32_t _rawSum = 0;
 
   // enable fast sampling if either output is requested
-  inline bool vocEnabled() const {
+  inline bool vocEnabled() {
     return (getSensorVOCIndexPeriod() > 0) || (getSensorRawPeriod() > 0);
   }
 };
