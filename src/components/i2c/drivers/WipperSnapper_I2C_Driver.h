@@ -57,9 +57,9 @@ public:
   /*!
       @brief    Per-update background hook for drivers that need faster internal
                 sampling than the user publish interval.
-                Default is a no-op; override in concrete drivers (e.g., SGP30/40)
-                to maintain required ~1 Hz reads and accumulate/condition
-                values for later publish.
+                Default is a no-op; override in concrete drivers (e.g.,
+     SGP30/40) to maintain required ~1 Hz reads and accumulate/condition values
+     for later publish.
       @note     Call site: WipperSnapper_Component_I2C::update() will invoke
                 this once per loop for each driver. Implementations must be
                 non-blocking (do not delay); use millis()-based timing.
@@ -1413,8 +1413,8 @@ protected:
   long _ambientTempFPeriod = 0L; ///< The time period between reading the
                                  ///< ambient temp. (°F) sensor's value.
   long _ambientTempFPeriodPrv =
-      PERIOD_24HRS_AGO_MILLIS; ///< The time when the ambient temp. (°F) sensor
-                               ///< was last read.
+      PERIOD_24HRS_AGO_MILLIS;  ///< The time when the ambient temp. (°F) sensor
+                                ///< was last read.
   long _objectTempFPeriod = 0L; ///< The time period between reading the object
                                 ///< temp. (°F) sensor's value.
   long _objectTempFPeriodPrv =

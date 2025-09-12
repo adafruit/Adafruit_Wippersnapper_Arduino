@@ -87,7 +87,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventRaw(sensors_event_t *rawEvent) override {
-    if (!_sgp40) return false;
+    if (!_sgp40)
+      return false;
     if (_n > 0) {
       rawEvent->data[0] = (float)_rawSum / (float)_n;
       _rawSum = 0;
@@ -109,7 +110,8 @@ public:
   */
   /*******************************************************************************/
   bool getEventVOCIndex(sensors_event_t *vocIndexEvent) override {
-    if (!_sgp40) return false;
+    if (!_sgp40)
+      return false;
     if (_n > 0) {
       vocIndexEvent->voc_index = _vocSum / (float)_n;
       _rawSum = 0;
@@ -129,8 +131,10 @@ public:
   */
   /*******************************************************************************/
   void fastTick() override {
-    if (!_sgp40) return;
-    if (!vocEnabled()) return;
+    if (!_sgp40)
+      return;
+    if (!vocEnabled())
+      return;
 
     uint32_t now = millis();
     if (now - _lastFastMs >= 1000) {
@@ -142,7 +146,6 @@ public:
   }
 
 protected:
-
   Adafruit_SGP40 *_sgp40; ///< SGP40
   // background accumulation state
   uint32_t _lastFastMs = 0;

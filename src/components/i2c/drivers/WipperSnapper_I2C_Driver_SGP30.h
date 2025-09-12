@@ -49,27 +49,31 @@ public:
   bool begin() {
     _sgp30 = new Adafruit_SGP30();
     if (!_sgp30->begin(_i2c)) {
-      delete _sgp30;          // avoid leak on init failure
+      delete _sgp30; // avoid leak on init failure
       _sgp30 = nullptr;
       return false;
     }
-    _sgp30->IAQinit();           // start IAQ algorithm
+    _sgp30->IAQinit();            // start IAQ algorithm
     _lastFastMs = millis();       // reset fast sampler
     _n = _eco2Sum = _tvocSum = 0; // clear accumulators
     return true;
   }
 
   bool getEventECO2(sensors_event_t *senseEvent) override {
-    if (!_sgp30) return false;
+    if (!_sgp30)
+      return false;
     bool ok = _sgp30->IAQmeasure();
-    if (ok) senseEvent->eCO2 = _sgp30->eCO2;
+    if (ok)
+      senseEvent->eCO2 = _sgp30->eCO2;
     return ok;
   }
 
   bool getEventTVOC(sensors_event_t *senseEvent) override {
-    if (!_sgp30) return false;
+    if (!_sgp30)
+      return false;
     bool ok = _sgp30->IAQmeasure();
-    if (ok) senseEvent->tvoc = _sgp30->TVOC;
+    if (ok)
+      senseEvent->tvoc = _sgp30->TVOC;
     return ok;
   }
 
@@ -79,8 +83,8 @@ public:
     uint32_t now = millis();
     if (now - _lastFastMs >= 1000) { // ~1 Hz cadence
       if (_sgp30 && _sgp30->IAQmeasure()) {
-        _eco2Sum += _sgp30->eCO2;   // uint16_t in library
-        _tvocSum += _sgp30->TVOC;   // uint16_t in library
+        _eco2Sum += _sgp30->eCO2; // uint16_t in library
+        _tvocSum += _sgp30->TVOC; // uint16_t in library
         _n++;
       }
       _lastFastMs = now;
@@ -88,7 +92,6 @@ public:
   }
 
 protected:
-
   Adafruit_SGP30 *_sgp30; ///< Pointer to SGP30 sensor object
 
   // Fast sampling state

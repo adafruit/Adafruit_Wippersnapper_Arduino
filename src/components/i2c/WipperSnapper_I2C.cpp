@@ -1349,7 +1349,8 @@ void WipperSnapper_Component_I2C::update() {
 
   // one fast pass for all drivers every update() call
   for (auto *drv : drivers) {
-    if (drv) drv->fastTick();
+    if (drv)
+      drv->fastTick();
   }
 
   long curTime;
