@@ -1032,7 +1032,7 @@ bool WipperSnapper_Component_I2C::initI2CDevice(
     _drivers_out.push_back(_ssd1306);
     WS_DEBUG_PRINTLN("SSD1306 display initialized Successfully!");
   } else {
-    WS_DEBUG_PRINTLN("ERROR: I2C device type not found!")
+    WS_DEBUG_PRINTLN("ERROR: I2C device type not found!");
     _busStatusResponse =
         wippersnapper_i2c_v1_BusResponse_BUS_RESPONSE_UNSUPPORTED_SENSOR;
     return false;
@@ -1347,6 +1347,12 @@ void WipperSnapper_Component_I2C::update() {
   msgi2cResponse.which_payload =
       wippersnapper_signal_v1_I2CResponse_resp_i2c_device_event_tag;
 
+  // one fast pass for all drivers every update() call
+  for (auto *drv : drivers) {
+    if (drv)
+      drv->fastTick();
+  }
+
   long curTime;
   bool sensorsReturningFalse = true;
   int retries = 3;
@@ -1354,6 +1360,7 @@ void WipperSnapper_Component_I2C::update() {
   while (sensorsReturningFalse && retries > 0) {
     sensorsReturningFalse = false;
     retries--;
+    curTime = millis();
 
     std::vector<WipperSnapper_I2C_Driver *>::iterator iter, end;
     for (iter = drivers.begin(), end = drivers.end(); iter != end; ++iter) {
