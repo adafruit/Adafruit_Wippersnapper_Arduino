@@ -94,12 +94,24 @@ public:
 protected:
   Adafruit_SGP30 *_sgp30; ///< Pointer to SGP30 sensor object
 
-  // Fast sampling state
+  /** Millis timestamp of last 1 Hz background read. */
   uint32_t _lastFastMs = 0;
+
+  /** Number of samples accumulated since last publish. */
   uint32_t _n = 0;
+
+  /** Running sum of eCO2 samples for averaging. */
   uint32_t _eco2Sum = 0;
+
+  /** Running sum of TVOC samples for averaging. */
   uint32_t _tvocSum = 0;
 
+  /*******************************************************************************/
+  /*!
+      @brief  Returns whether IAQ background sampling should be active.
+      @return True if either eCO2 or TVOC metrics are configured to publish.
+  */
+  /*******************************************************************************/
   inline bool iaqEnabled() {
     // Enable IAQ background reads if either metric is requested
     return (getSensorECO2Period() > 0) || (getSensorTVOCPeriod() > 0);
