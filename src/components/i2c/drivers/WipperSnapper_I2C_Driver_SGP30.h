@@ -59,23 +59,33 @@ public:
     return true;
   }
 
-  bool getEventECO2(sensors_event_t *senseEvent) override {
-    if (!_sgp30)
-      return false;
-    bool ok = _sgp30->IAQmeasure();
-    if (ok)
-      senseEvent->eCO2 = _sgp30->eCO2;
-    return ok;
+bool getEventECO2(sensors_event_t *senseEvent) override {
+  if (!_sgp30) return false;
+  if (_n > 0) {
+    senseEvent->eCO2 = (uint16_t)(_eco2Sum / _n);
+    _eco2Sum = 0; _tvocSum = 0; _n = 0;
+    return true;
   }
+  if (_sgp30->IAQmeasure()) {
+    senseEvent->eCO2 = (uint16_t)_sgp30->eCO2;
+    return true;
+  }
+  return false;
+}
 
-  bool getEventTVOC(sensors_event_t *senseEvent) override {
-    if (!_sgp30)
-      return false;
-    bool ok = _sgp30->IAQmeasure();
-    if (ok)
-      senseEvent->tvoc = _sgp30->TVOC;
-    return ok;
+bool getEventTVOC(sensors_event_t *senseEvent) override {
+  if (!_sgp30) return false;
+  if (_n > 0) {
+    senseEvent->tvoc = (uint16_t)(_tvocSum / _n);
+    _eco2Sum = 0; _tvocSum = 0; _n = 0;
+    return true;
   }
+  if (_sgp30->IAQmeasure()) {
+    senseEvent->tvoc = (uint16_t)_sgp30->TVOC;
+    return true;
+  }
+  return false;
+}
 
   void fastTick() override {
     if (!iaqEnabled())

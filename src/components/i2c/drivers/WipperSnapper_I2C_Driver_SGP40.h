@@ -113,13 +113,13 @@ public:
     if (!_sgp40)
       return false;
     if (_n > 0) {
-      vocIndexEvent->voc_index = _vocSum / (float)_n;
+      vocIndexEvent->voc_index = (uint16_t)(_vocSum / (float)_n);
       _rawSum = 0;
       _vocSum = 0.0f;
       _n = 0;
       return true;
     }
-    vocIndexEvent->voc_index = (float)_sgp40->measureVocIndex();
+    vocIndexEvent->voc_index = (uint16_t)_sgp40->measureVocIndex();
     return true;
   }
 
