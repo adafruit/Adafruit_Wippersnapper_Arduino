@@ -91,6 +91,8 @@ bool drvQmc5883p::getEventRaw(sensors_event_t *rawEvent) {
   // Get Gauss field data
   if (!_qmc->getGaussField(&gx, &gy, &gz)) {
     WS_DEBUG_PRINTLN("Failed to read Gauss field data");
+    WS_DEBUG_PRINTLN("Raw x: " + String(x) + " y: " + String(y) +
+                     " z: " + String(z));
     return false;
   }
 
@@ -101,6 +103,8 @@ bool drvQmc5883p::getEventRaw(sensors_event_t *rawEvent) {
   }
 
   // Calculate magnitude in Gauss
+  WS_DEBUG_PRINTLN("RAW EVENT: Gauss Field (G) X: " + String(gx) +
+                   " Y: " + String(gy) + " Z: " + String(gz));
   float magnitude_G = sqrtf(gx * gx + gy * gy + gz * gz);
   rawEvent->data[0] = magnitude_G;
   return true;
@@ -133,6 +137,8 @@ bool drvQmc5883p::getEventMagneticField(sensors_event_t *magneticEvent) {
   // Get Gauss field data
   if (!_qmc->getGaussField(&gx, &gy, &gz)) {
     WS_DEBUG_PRINTLN("Failed to read Gauss field data");
+    WS_DEBUG_PRINTLN("Raw x: " + String(x) + " y: " + String(y) +
+                     " z: " + String(z));
     return false;
   }
 
@@ -146,7 +152,10 @@ bool drvQmc5883p::getEventMagneticField(sensors_event_t *magneticEvent) {
   magneticEvent->magnetic.x = gx * 100.0f;
   magneticEvent->magnetic.y = gy * 100.0f;
   magneticEvent->magnetic.z = gz * 100.0f;
-
+  WS_DEBUG_PRINTLN(
+      "Magnetic Field (uT) X: " + String(magneticEvent->magnetic.x) +
+      " Y: " + String(magneticEvent->magnetic.y) +
+      " Z: " + String(magneticEvent->magnetic.z));
   return true;
 }
 

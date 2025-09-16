@@ -1400,11 +1400,93 @@ bool ws_sdcard::LogEventI2c(
   // Log each event
   for (pb_size_t i = 0; i < msg_device_event->i2c_device_events_count; i++) {
     doc["timestamp"] = GetTimestamp();
-    doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
-    doc["si_unit"] =
-        SensorTypeToSIUnit(msg_device_event->i2c_device_events[i].type);
-    if (!LogJSONDoc(doc))
-      return false;
+    // if mag/vector/colour etc log all value elements
+    if (msg_device_event->i2c_device_events[i].type ==
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_MAGNETIC_FIELD ||
+        msg_device_event->i2c_device_events[i].type ==
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_ACCELEROMETER ||
+        msg_device_event->i2c_device_events[i].type ==
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_GYROSCOPE ||
+        msg_device_event->i2c_device_events[i].type ==
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_GRAVITY ||
+        msg_device_event->i2c_device_events[i].type ==
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_LINEAR_ACCELERATION) {
+      doc["value_x"] =
+          msg_device_event->i2c_device_events[i].value.vector_value.x;
+      doc["value_y"] =
+          msg_device_event->i2c_device_events[i].value.vector_value.y;
+      doc["value_z"] =
+          msg_device_event->i2c_device_events[i].value.vector_value.z;
+      doc["value"] =
+          String("(") +
+          String(msg_device_event->i2c_device_events[i].value.vector_value.x) +
+          String(", ") +
+          String(msg_device_event->i2c_device_events[i].value.vector_value.y) +
+          String(", ") +
+          String(msg_device_event->i2c_device_events[i].value.vector_value.z) +
+          String(")");
+      doc["si_unit"] =
+          SensorTypeToSIUnit(msg_device_event->i2c_device_events[i].type);
+      if (!LogJSONDoc(doc))
+        return false;
+      continue;
+    } else if (msg_device_event->i2c_device_events[i].type ==
+               wippersnapper_sensor_SensorType_SENSOR_TYPE_COLOR) {
+      doc["value_r"] =
+          msg_device_event->i2c_device_events[i].value.color_value.r;
+      doc["value_g"] =
+          msg_device_event->i2c_device_events[i].value.color_value.g;
+      doc["value_b"] =
+          msg_device_event->i2c_device_events[i].value.color_value.b;
+      doc["value_a"] =
+          msg_device_event->i2c_device_events[i].value.color_value.a;
+      doc["value"] =
+          String("(") +
+          String(msg_device_event->i2c_device_events[i].value.color_value.r) +
+          String(", ") +
+          String(msg_device_event->i2c_device_events[i].value.color_value.g) +
+          String(", ") +
+          String(msg_device_event->i2c_device_events[i].value.color_value.b) +
+          String(", ") +
+          String(msg_device_event->i2c_device_events[i].value.color_value.a) +
+          String(")");
+      doc["si_unit"] = "RGBA";
+      if (!LogJSONDoc(doc))
+        return false;
+      continue;
+    } else if (
+        msg_device_event->i2c_device_events[i].type ==
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_ORIENTATION ||
+        msg_device_event->i2c_device_events[i].type ==
+            wippersnapper_sensor_SensorType_SENSOR_TYPE_ROTATION_VECTOR) {
+      // heading/roll/pitch
+      doc["value_heading"] = msg_device_event->i2c_device_events[i]
+                                 .value.orientation_value.heading;
+      doc["value_roll"] =
+          msg_device_event->i2c_device_events[i].value.orientation_value.roll;
+      doc["value_pitch"] =
+          msg_device_event->i2c_device_events[i].value.orientation_value.pitch;
+      doc["value"] = String("(") +
+                     String(msg_device_event->i2c_device_events[i]
+                                .value.orientation_value.heading) +
+                     String(", ") +
+                     String(msg_device_event->i2c_device_events[i]
+                                .value.orientation_value.roll) +
+                     String(", ") +
+                     String(msg_device_event->i2c_device_events[i]
+                                .value.orientation_value.pitch) +
+                     String(")");
+      doc["si_unit"] = "HPR";
+      if (!LogJSONDoc(doc))
+        return false;
+      continue;
+    } else { // normal scalar float value
+      doc["value"] = msg_device_event->i2c_device_events[i].value.float_value;
+      doc["si_unit"] =
+          SensorTypeToSIUnit(msg_device_event->i2c_device_events[i].type);
+      if (!LogJSONDoc(doc))
+        return false;
+    }
   }
   return true;
 }
