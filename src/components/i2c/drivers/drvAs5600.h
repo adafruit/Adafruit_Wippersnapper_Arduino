@@ -21,7 +21,7 @@
 /*!
     @brief  Class that provides a driver interface for an AS5600 sensor.
 */
-class drvAS5600 : public drvBase {
+class drvAs5600 : public drvBase {
 public:
   /*******************************************************************************/
   /*!
@@ -36,7 +36,7 @@ public:
                 The name of the driver.
   */
   /*******************************************************************************/
-  drvAS5600(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
+  drvAs5600(TwoWire *i2c, uint16_t sensorAddress, uint32_t mux_channel,
             const char *driver_name)
       : drvBase(i2c, sensorAddress, mux_channel, driver_name) {
     _as5600 = nullptr;
@@ -48,7 +48,7 @@ public:
       @brief    Destructor for an AS5600 sensor.
   */
   /*******************************************************************************/
-  ~drvAS5600() {
+  ~drvAs5600() {
     if (_as5600) {
       delete _as5600;
       _as5600 = nullptr;
