@@ -1,5 +1,5 @@
 /*!
- * @file drvAS5600.h
+ * @file drvAs5600.h
  *
  * Device driver for the AS5600 Magnetic Angle sensor.
  *
@@ -150,8 +150,7 @@ public:
 
   void ConfigureDefaultSensorTypes() override {
     _default_sensor_types_count = 1;
-    _default_sensor_types[0] =
-        wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
+    _default_sensor_types[0] = wippersnapper_sensor_SensorType_SENSOR_TYPE_RAW;
   }
 
 protected:

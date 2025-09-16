@@ -19,8 +19,8 @@
 #include "model.h"
 // I2C Drivers
 #include "drivers/drvAdt7410.h"
-#include "drivers/drvAs5600.h"
 #include "drivers/drvAhtx0.h"
+#include "drivers/drvAs5600.h"
 #include "drivers/drvBase.h" ///< Base i2c input driver class
 #include "drivers/drvBh1750.h"
 #include "drivers/drvBme280.h"
