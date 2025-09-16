@@ -813,8 +813,11 @@ bool ws_sdcard::CreateNewLogFile() {
 
   // Attempt to create a new log file
   File32 file;
-  if (!file.open(_log_filename, O_RDWR | O_CREAT | O_AT_END))
+  WS_DEBUG_PRINTLN("[SD] Opening new log file");
+  if (!file.open(_log_filename, O_RDWR | O_CREAT | O_AT_END)) {
+    WS_DEBUG_PRINTLN("[SD] Error: Unable to create new log file on SD card!");
     return false;
+  }
   WS_DEBUG_PRINT("[SD] Created new log file on SD card: ");
   WS_DEBUG_PRINTLN(_log_filename);
   _sd_cur_log_files++;

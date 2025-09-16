@@ -1454,7 +1454,9 @@ void I2cController::update() {
       sensors_event_t event = {0};
       // Attempt to call driver's read handler function
       if (!drv->GetSensorEvent(drv->_sensors[i], &event)) {
-        WS_DEBUG_PRINTLN("[i2c] ERROR: Failed to read sensor!");
+        WS_DEBUG_PRINT("[i2c] ERROR: Failed to read sensor! (");
+        WS_DEBUG_PRINT(drv->GetDrvName());
+        WS_DEBUG_PRINTLN(")");
         continue;
       }
       // Fill the I2cDeviceEvent's sensor_event array submsg.
