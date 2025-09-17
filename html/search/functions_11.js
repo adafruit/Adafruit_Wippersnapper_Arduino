@@ -51,6 +51,7 @@ var searchData=
   ['wippersnapper_5fi2c_5fdriver_5fout_5fssd1306',['WipperSnapper_I2C_Driver_Out_Ssd1306',['../class_wipper_snapper___i2_c___driver___out___ssd1306.html#a5b0c4c71668ae34e3b2459b6ed2b07a9',1,'WipperSnapper_I2C_Driver_Out_Ssd1306']]],
   ['wippersnapper_5fi2c_5fdriver_5fpct2075',['WipperSnapper_I2C_Driver_PCT2075',['../class_wipper_snapper___i2_c___driver___p_c_t2075.html#af1a78808dc3085f486762fdc95ac25db',1,'WipperSnapper_I2C_Driver_PCT2075']]],
   ['wippersnapper_5fi2c_5fdriver_5fpm25',['WipperSnapper_I2C_Driver_PM25',['../class_wipper_snapper___i2_c___driver___p_m25.html#ad081593e7135d845d139d286fc3a773a',1,'WipperSnapper_I2C_Driver_PM25']]],
+  ['wippersnapper_5fi2c_5fdriver_5fqmc5883p',['WipperSnapper_I2C_Driver_QMC5883P',['../class_wipper_snapper___i2_c___driver___q_m_c5883_p.html#a91cbd40811c77b223141d601df64cc92',1,'WipperSnapper_I2C_Driver_QMC5883P']]],
   ['wippersnapper_5fi2c_5fdriver_5fscd30',['WipperSnapper_I2C_Driver_SCD30',['../class_wipper_snapper___i2_c___driver___s_c_d30.html#ab6a369621e4c40a5543caacd84cae708',1,'WipperSnapper_I2C_Driver_SCD30']]],
   ['wippersnapper_5fi2c_5fdriver_5fscd4x',['WipperSnapper_I2C_Driver_SCD4X',['../class_wipper_snapper___i2_c___driver___s_c_d4_x.html#aa920aa4ff9f2a2c8b421273ca11b40c9',1,'WipperSnapper_I2C_Driver_SCD4X']]],
   ['wippersnapper_5fi2c_5fdriver_5fsen5x',['WipperSnapper_I2C_Driver_SEN5X',['../class_wipper_snapper___i2_c___driver___s_e_n5_x.html#af3138b9f21091b5be1abed29ecc6fd20',1,'WipperSnapper_I2C_Driver_SEN5X']]],

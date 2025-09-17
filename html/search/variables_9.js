@@ -1,7 +1,7 @@
 var searchData=
 [
   ['period',['period',['../structanalog_input_pin.html#a9c802b98c645728111732287daedea2b',1,'analogInputPin::period()'],['../structdigital_input_pin.html#a5c96669839f0ee5be8579726497240f8',1,'digitalInputPin::period()']]],
-  ['pin',['pin',['../structservo_component.html#a10177caa27f60f6bff9dbdad120afbc6',1,'servoComponent::pin()'],['../structservo__t.html#a04bcc6cf13ea5cd2c4dabdc977e054cb',1,'servo_t::Pin()']]],
+  ['pin',['Pin',['../structservo__t.html#a04bcc6cf13ea5cd2c4dabdc977e054cb',1,'servo_t::Pin()'],['../structservo_component.html#a10177caa27f60f6bff9dbdad120afbc6',1,'servoComponent::pin()']]],
   ['pincfgcompleted',['pinCfgCompleted',['../class_wippersnapper.html#ae625ae372c5aa19eb0a8713f25b1fca9',1,'Wippersnapper']]],
   ['pindotstarclock',['pinDotStarClock',['../structstrand__s.html#ad7c7f86db3afb63cbb8261179cc4d7be',1,'strand_s']]],
   ['pindotstardata',['pinDotStarData',['../structstrand__s.html#a0c314d917738e634288685b4c3ebad55',1,'strand_s']]],
