@@ -296,6 +296,13 @@ bool Wippersnapper_FS::createBootFile() {
     bootFile.print("Board ID: ");
     bootFile.println(BOARD_ID);
 
+#if defined(ADAFRUIT_PYPORTAL_M4_TITANO) || defined(USE_AIRLIFT) ||          \
+    defined(ADAFRUIT_METRO_M4_AIRLIFT_LITE) || defined(ADAFRUIT_PYPORTAL) || \
+    defined(ARDUINO_ADAFRUIT_FRUITJAM_RP2350)
+    bootFile.print("AirLift FW Revision: ");
+    bootFile.println(WS._airlift_version);
+#endif
+
     sprintf(sMAC, "%02X:%02X:%02X:%02X:%02X:%02X", WS._macAddr[0],
             WS._macAddr[1], WS._macAddr[2], WS._macAddr[3], WS._macAddr[4],
             WS._macAddr[5]);

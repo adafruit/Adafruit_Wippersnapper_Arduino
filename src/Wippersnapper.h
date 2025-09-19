@@ -372,10 +372,11 @@ public:
   ws_uart *_uartComponent;        ///< Instance of UART class
 
   // TODO: does this really need to be global?
-  uint8_t _macAddr[6];  /*!< Unique network iface identifier */
-  char sUID[13];        /*!< Unique network iface identifier */
-  const char *_boardId; /*!< Adafruit IO+ board string */
-  Adafruit_MQTT *_mqtt; /*!< Reference to Adafruit_MQTT, _mqtt. */
+  uint8_t _macAddr[6];          /*!< Unique network iface identifier */
+  char sUID[13];                /*!< Unique network iface identifier */
+  const char *_airlift_version; /*!< AirLift Firmware version */
+  const char *_boardId;         /*!< Adafruit IO+ board string */
+  Adafruit_MQTT *_mqtt;         /*!< Reference to Adafruit_MQTT, _mqtt. */
 
   secretsConfig _config; /*!< Wippersnapper secrets.json as a struct. */
   networkConfig _multiNetworks[3]; /*!< Wippersnapper networks as structs. */
