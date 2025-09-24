@@ -98,8 +98,7 @@ public:
   /*******************************************************************************/
   bool getEventPressure(sensors_event_t *pressureEvent) {
     bool success = false;
-    if (_spa06_003_pressure == NULL ||
-        _spa06_003->isPresDataReady() == false) {
+    if (_spa06_003_pressure == NULL || _spa06_003->isPresDataReady() == false) {
       return false;
     }
     success = _spa06_003_pressure->getEvent(pressureEvent);
