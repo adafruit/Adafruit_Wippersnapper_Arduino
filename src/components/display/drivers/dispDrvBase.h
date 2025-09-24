@@ -15,9 +15,10 @@
 #ifndef WS_DISP_DRV_BASE_H
 #define WS_DISP_DRV_BASE_H
 
+#include "../assets/icons.h"
+#include "../assets/splash.h"
 #include "Adafruit_ThinkInk.h"
 #include "Wippersnapper.h"
-#include "../assets/splash.h"
 
 /*!
     @brief  Abstract base class for display drivers.
@@ -125,32 +126,54 @@ public:
   */
   virtual void setTextSize(uint8_t s) { _text_sz = s; }
 
-
   /*!
       @brief  Displays a splash screen on the display.
       @note   This method can be overridden by derived classes to provide
               specific functionality.
   */
-  virtual void showSplash() { // No-op for base class 
+  virtual void showSplash() { // No-op for base class
   }
 
-  virtual void drawStatusBar() {
+  /*!
+    @brief  Draws a status bar at the top of the display.
+    @param io_username
+            The username to display on the status bar.
+    @note   This method can be overridden by derived classes to provide
+            specific functionality.
+  */
+  virtual void drawStatusBar(const char *io_username) {
+    // No-op for base class
+  }
+
+  /*!
+    @brief  Updates the status bar with current information (battery level,
+    connectivity status, etc).
+    @note   This method can be overridden by derived classes to provide
+            specific functionality.
+  */
+  virtual void updateStatusBar(int8_t rssi, uint8_t bat,
+                               ws_status_t mqtt_connected) {
     // No-op for base class
   }
 
 protected:
-  int16_t _pin_dc;      ///< Data/Command pin
-  int16_t _pin_rst;     ///< Reset pin
-  int16_t _pin_cs;      ///< Chip Select pin
-  int16_t _pin_busy;    ///< Optional Busy pin
-  int16_t _pin_sram_cs; ///< Optional EPD SRAM chip select pin
-  uint16_t _pin_mosi;   ///< Optional MOSI pin for SPI TFT displays
-  uint16_t _pin_miso;   ///< Optional MISO pin for SPI TFT displays
-  uint16_t _pin_sck;    ///< Optional SCK pin for SPI TFT displays
-  uint8_t _text_sz = 1; ///< Text size for displaying a message
-  int16_t _height;      ///< Height of the display
-  int16_t _width;       ///< Width of the display
-  uint8_t _rotation;    ///< Rotation of the display
+  int16_t _pin_dc;        ///< Data/Command pin
+  int16_t _pin_rst;       ///< Reset pin
+  int16_t _pin_cs;        ///< Chip Select pin
+  int16_t _pin_busy;      ///< Optional Busy pin
+  int16_t _pin_sram_cs;   ///< Optional EPD SRAM chip select pin
+  uint16_t _pin_mosi;     ///< Optional MOSI pin for SPI TFT displays
+  uint16_t _pin_miso;     ///< Optional MISO pin for SPI TFT displays
+  uint16_t _pin_sck;      ///< Optional SCK pin for SPI TFT displays
+  uint8_t _text_sz = 1;   ///< Text size for displaying a message
+  int16_t _height;        ///< Height of the display
+  int16_t _width;         ///< Width of the display
+  uint8_t _rotation;      ///< Rotation of the display
+  int8_t _statusbar_rssi; ///< RSSI value for status bar
+  uint8_t
+      _statusbar_bat; ///< Battery level, as a percentage, for the status bar
+  ws_status_t
+      _statusbar_mqtt_connected; ///< MQTT connection status for the status bar
 };
 
 #endif // WS_DISP_DRV_BASE_H

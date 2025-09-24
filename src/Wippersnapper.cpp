@@ -2914,5 +2914,9 @@ ws_status_t Wippersnapper::run() {
   WS._uartComponent->update();
   WS.feedWDT();
 
+  // Process display controller events, if initialized
+  WS._displayController->update();
+  WS.feedWDT();
+
   return WS_NET_CONNECTED; // TODO: Make this funcn void!
 }

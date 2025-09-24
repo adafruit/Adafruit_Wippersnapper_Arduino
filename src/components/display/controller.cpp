@@ -130,3 +130,15 @@ bool DisplayController::Handle_Display_Write(
   display->writeMessage(msgWrite->message);
   return true;
 }
+
+void DisplayController::update() {
+  // if _hw_instances is empty, early out
+  if (_hw_instances.size() == 0)
+    return;
+
+  // Get the driver instance for the display
+  DisplayHardware *display = nullptr;
+  for (auto &hw_instance : _hw_instances) {
+    hw_instance->updateStatusBar(WS.getRSSI(), 100, WS.networkStatus());
+  }
+}

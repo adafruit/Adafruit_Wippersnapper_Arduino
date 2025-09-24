@@ -79,8 +79,8 @@ public:
   /*!
       @brief  Displays a splash screen
   */
- virtual void showSplash() override {
-    if (! _display)
+  virtual void showSplash() override {
+    if (!_display)
       return;
     _display->drawBitmap(0, 0, epd_bitmap_ws_logo_296128, 296, 128, EPD_BLACK);
     _display->display();
@@ -90,32 +90,68 @@ public:
   /*!
       @brief  Draws a status bar at the top of the display.
   */
-  virtual void drawStatusBar() override {
+  virtual void drawStatusBar(const char *io_username) override {
     if (!_display)
       return;
-    _display->clearBuffer();
-    _display->fillScreen(EPD_WHITE);
-    
-    int barHeight = 15;
-    int borderWidth = 1;
-    // Black rect outline
-    _display->fillRect(0, 0, _width, barHeight, EPD_BLACK);
-    // White rect inside for icons/text
-    _display->fillRect(borderWidth, borderWidth, 
-                      _width - (2 * borderWidth), 
-                      barHeight - (2 * borderWidth), 
-                      EPD_WHITE);
 
-    // Vertically center text in the bar
-    _display->setTextSize(1);  // Text size 1 = 8 pixels tall
-    int textHeight = 8;
-    int usableHeight = barHeight - (2 * borderWidth);  // 13px usable
-    int textY = borderWidth + (usableHeight - textHeight) / 2;  // = 1 + (13-8)/2 = 3
-    // Draw status text
+    // Draw status bar
+    int barHeight = 20; // Assumes 16x16 icons
+    int borderWidth = 1;
+    _display->fillRect(0, 0, _display->width(), barHeight, EPD_BLACK);
+    _display->fillRect(borderWidth, borderWidth,
+                       _display->width() - (2 * borderWidth),
+                       barHeight - (2 * borderWidth), EPD_WHITE);
+
+    // Draw username on left side of the status bar
+    _display->setTextSize(1);
     _display->setTextColor(EPD_BLACK);
-    _display->setCursor(5, textY);
-    _display->print("[IO] OK|[WiFi] OK|[Bat] 100%");
-    _display->display();
+    _display->setCursor(5, 6);
+    _display->print(io_username);
+
+    // Calculate icon positions and center vertically
+    int iconSize = 16;
+    int iconSpacing = 4;
+    int rightMargin = 5;
+    int iconY = borderWidth + ((barHeight - 2 * borderWidth - iconSize) / 2);
+    int batteryX = _display->width() - iconSize - rightMargin;
+    int wifiX = batteryX - iconSize - iconSpacing;
+    int cloudX = wifiX - iconSize - iconSpacing;
+    // Draw icons on right side of the status bar
+    _display->drawBitmap(cloudX, iconY, epd_bmp_cloud, iconSize, iconSize,
+                         EPD_BLACK);
+    _display->drawBitmap(wifiX, iconY, epd_bmp_wifi, iconSize, iconSize,
+                         EPD_BLACK);
+    _display->drawBitmap(batteryX, iconY, epd_bmp_bat_full, iconSize, iconSize,
+                         EPD_BLACK);
+  }
+
+  /*!
+    @brief  Updates the status bar with current information (battery level,
+    connectivity status, etc).
+    @param  rssi
+            The current RSSI value to display.
+    @param  bat
+            The current battery level (0-100) to display.
+    @param  mqtt_connected
+            The current MQTT connection status to display.
+  */
+  void updateStatusBar(int8_t rssi, uint8_t bat,
+                       ws_status_t mqtt_connected) override {
+    if (!_display)
+      return;
+
+    if (bat != _statusbar_bat) {
+      // Update battery icon
+      _statusbar_bat = bat;
+    }
+    if (rssi != _statusbar_rssi) {
+      // Update WiFi icon
+      _statusbar_rssi = rssi;
+    }
+    if (mqtt_connected != _statusbar_mqtt_connected) {
+      // Update cloud icon
+      _statusbar_mqtt_connected = mqtt_connected;
+    }
   }
 
   /*!

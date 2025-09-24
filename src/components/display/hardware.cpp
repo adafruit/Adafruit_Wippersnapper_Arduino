@@ -262,14 +262,22 @@ bool DisplayHardware::beginEPD(
 
 void DisplayHardware::showSplash() {
   if (!_drvDisp)
-    return; 
+    return;
   _drvDisp->showSplash();
 }
 
-void DisplayHardware::drawStatusBar() {
-  _drvDisp->drawStatusBar();
+void DisplayHardware::drawStatusBar(const char *io_username) {
+  if (!_drvDisp)
+    return;
+  _drvDisp->drawStatusBar(const char *io_username);
 }
 
+void DisplayHardware::updateStatusBar(int8_t rssi, uint8_t bat,
+                                      ws_status_t mqtt_connected) {
+  if (!_drvDisp)
+    return;
+  _drvDisp->updateStatusBar(rssi, bat, mqtt_connected);
+}
 
 /*!
     @brief  Removes a suffix from the hardware instance name, if it exists.

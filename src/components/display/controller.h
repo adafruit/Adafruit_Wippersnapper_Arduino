@@ -35,6 +35,7 @@ public:
       wippersnapper_display_v1_DisplayAddOrReplace *msgAdd);
   bool Handle_Display_Remove(wippersnapper_display_v1_DisplayRemove *msgRemove);
   bool Handle_Display_Write(wippersnapper_display_v1_DisplayWrite *msgWrite);
+  void update();
 
 private:
   std::vector<DisplayHardware *>
